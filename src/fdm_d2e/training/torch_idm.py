@@ -12,6 +12,19 @@ from fdm_d2e.schema import validate_named
 from fdm_d2e.training.neural_idm import record_features, target_mouse_delta, tokens_from_delta
 
 
+def categorical_token_vocab(records: list[dict[str, Any]], *, min_count: int = 1) -> list[str]:
+    counts: dict[str, int] = {}
+    for row in records:
+        for token in row.get("ground_truth_tokens", []):
+            if token.startswith("KEY_") or (
+                token.startswith("MOUSE_")
+                and not token.startswith("MOUSE_DX_")
+                and not token.startswith("MOUSE_DY_")
+            ):
+                counts[token] = counts.get(token, 0) + 1
+    return sorted(token for token, count in counts.items() if count >= min_count)
+
+
 def torch_available() -> bool:
     try:
         import torch  # noqa: F401
@@ -32,22 +45,28 @@ class TorchUnavailableError(RuntimeError):
     pass
 
 
-def _build_model(torch, input_dim: int, hidden_dim: int, depth: int, dropout: float):
+def _build_model(torch, input_dim: int, output_dim: int, hidden_dim: int, depth: int, dropout: float):
     layers = []
     dim = input_dim
     for _ in range(max(1, depth)):
         layers.extend([torch.nn.Linear(dim, hidden_dim), torch.nn.GELU(), torch.nn.Dropout(dropout)])
         dim = hidden_dim
-    layers.append(torch.nn.Linear(dim, 2))
+    layers.append(torch.nn.Linear(dim, output_dim))
     return torch.nn.Sequential(*layers)
 
 
-def _tensorize(torch, records: list[dict[str, Any]], device: str):
+def _tensorize(torch, records: list[dict[str, Any]], device: str, vocab: list[str]):
     xs = torch.tensor([record_features(row) for row in records], dtype=torch.float32, device=device)
-    ys = torch.tensor([target_mouse_delta(row) for row in records], dtype=torch.float32, device=device)
+    mouse_y = torch.tensor([target_mouse_delta(row) for row in records], dtype=torch.float32, device=device)
+    cat_y = torch.zeros((len(records), len(vocab)), dtype=torch.float32, device=device)
+    vocab_index = {token: idx for idx, token in enumerate(vocab)}
+    for row_idx, row in enumerate(records):
+        for token in set(row.get("ground_truth_tokens", [])):
+            if token in vocab_index:
+                cat_y[row_idx, vocab_index[token]] = 1.0
     mean = xs.mean(dim=0, keepdim=True)
     std = xs.std(dim=0, keepdim=True).clamp_min(1e-6)
-    return (xs - mean) / std, ys, mean.squeeze(0).detach().cpu().tolist(), std.squeeze(0).detach().cpu().tolist()
+    return (xs - mean) / std, mouse_y, cat_y, mean.squeeze(0).detach().cpu().tolist(), std.squeeze(0).detach().cpu().tolist()
 
 
 def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
@@ -60,11 +79,13 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         device = "cpu"
     train_records = read_jsonl(config["train_records"])
     target_records = read_jsonl(config["target_records"])
-    train_x, train_y, mean, std = _tensorize(torch, train_records, device)
+    vocab = categorical_token_vocab(train_records, min_count=int(config.get("categorical_min_count", 1)))
+    train_x, mouse_y, cat_y, mean, std = _tensorize(torch, train_records, device, vocab)
     input_dim = int(train_x.shape[1])
     model = _build_model(
         torch,
         input_dim=input_dim,
+        output_dim=2 + len(vocab),
         hidden_dim=int(config.get("hidden_dim", 128)),
         depth=int(config.get("depth", 3)),
         dropout=float(config.get("dropout", 0.05)),
@@ -79,7 +100,12 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         for start in range(0, train_x.shape[0], batch_size):
             idx = perm[start : start + batch_size]
             pred = model(train_x[idx])
-            loss = torch.nn.functional.smooth_l1_loss(pred, train_y[idx])
+            mouse_loss = torch.nn.functional.smooth_l1_loss(pred[:, :2], mouse_y[idx])
+            if vocab:
+                cat_loss = torch.nn.functional.binary_cross_entropy_with_logits(pred[:, 2:], cat_y[idx])
+            else:
+                cat_loss = torch.tensor(0.0, device=device)
+            loss = mouse_loss + float(config.get("categorical_loss_weight", 0.5)) * cat_loss
             opt.zero_grad(set_to_none=True)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), float(config.get("grad_clip", 1.0)))
@@ -98,11 +124,20 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     model.eval()
     with torch.no_grad():
         deltas = model(target_x).detach().cpu().tolist()
+    category_threshold = float(config.get("category_threshold", 0.35))
     train_hash = stable_hash_json([{"id": row["sequence_id"], "tokens": row.get("ground_truth_tokens", []), "features": record_features(row)} for row in train_records])
     pseudo_rows = []
     predictions = []
-    for row, (dx, dy) in zip(target_records, deltas):
+    for row, output in zip(target_records, deltas):
+        dx, dy = float(output[0]), float(output[1])
         tokens = tokens_from_delta(float(dx), float(dy))
+        if vocab:
+            import math
+
+            for token, logit in zip(vocab, output[2:]):
+                prob = 1.0 / (1.0 + math.exp(-float(logit)))
+                if prob >= category_threshold:
+                    tokens.append(token)
         confidence = max(0.05, min(0.99, 1.0 / (1.0 + abs(float(dx)) + abs(float(dy)))))
         pseudo = {
             "schema": "idm_pseudolabel.v1",
@@ -139,6 +174,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "checkpoint_path": str(checkpoint_path),
         "metrics_path": str(metrics_path),
         "calibration": {"confidence_threshold": threshold, "kept": sum(1 for row in pseudo_rows if row["confidence"] >= threshold), "total": len(pseudo_rows), "last_train_loss": history[-1]["loss"] if history else None},
+        "categorical_vocab": vocab,
+        "category_threshold": category_threshold,
     }
     validate_named(metadata, "idm_checkpoint_metadata.schema.json")
     write_json(out_dir / "checkpoint_metadata.json", metadata)

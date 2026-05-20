@@ -3,7 +3,7 @@
   "metadata": {
     "schema": "idm_checkpoint_metadata.v1",
     "model": "torch_mlp_idm_apex8",
-    "dataset_fingerprint": "b2871b75bead06f5b22187bf0fafa70b081cd4815804b0934d15a1af08fb738d",
+    "dataset_fingerprint": "b124f16575219a3f293ca28ec4936419e3457ee403eebb37484b21f85c651414",
     "train_records": 384,
     "target_records": 128,
     "pseudo_label_path": "outputs/idm_torch_apex8/pseudolabels.jsonl",
@@ -12,10 +12,31 @@
     "metrics_path": "outputs/idm_torch_apex8/metrics.json",
     "calibration": {
       "confidence_threshold": 0.15,
-      "kept": 88,
+      "kept": 94,
       "total": 128,
-      "last_train_loss": 3.5577677488327026
-    }
+      "last_train_loss": 3.683480143547058
+    },
+    "categorical_vocab": [
+      "KEY_PRESS_160",
+      "KEY_PRESS_162",
+      "KEY_PRESS_32",
+      "KEY_PRESS_51",
+      "KEY_PRESS_65",
+      "KEY_PRESS_68",
+      "KEY_PRESS_70",
+      "KEY_PRESS_87",
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_162",
+      "KEY_RELEASE_32",
+      "KEY_RELEASE_51",
+      "KEY_RELEASE_65",
+      "KEY_RELEASE_68",
+      "KEY_RELEASE_70",
+      "KEY_RELEASE_87",
+      "MOUSE_LEFT_DOWN",
+      "MOUSE_LEFT_UP"
+    ],
+    "category_threshold": 0.3
   },
   "metrics": {
     "schema": "metrics.v1",
@@ -23,7 +44,7 @@
     "num_examples": 128,
     "keyboard": {
       "status": "computed",
-      "accuracy": 0.0,
+      "accuracy": 0.1694915254237288,
       "num_examples": 59
     },
     "mouse_button": {
@@ -33,8 +54,8 @@
     },
     "mouse_move": {
       "status": "computed",
-      "pearson": 0.08923202083189072,
-      "scale_ratio": 1.6010594284418165,
+      "pearson": 0.12302296614772645,
+      "scale_ratio": 1.9959071671853628,
       "num_values": 254
     },
     "failure_count": 128
@@ -94,7 +115,7 @@
         ],
         "p_value": 0.0995,
         "num_clusters": 8,
-        "p_adjusted_holm": 0.8955000000000001,
+        "p_adjusted_holm": 0.796,
         "reject_holm_0_05": false
       },
       {
@@ -104,14 +125,14 @@
         "direction": "higher",
         "min_effect": 0.05,
         "status": "computed",
-        "delta": 0.0,
+        "delta": 0.1,
         "ci": [
-          0.0,
-          0.0
+          0.0125,
+          0.2375
         ],
-        "p_value": 1.0,
+        "p_value": 0.0205,
         "num_clusters": 8,
-        "p_adjusted_holm": 1.0,
+        "p_adjusted_holm": 0.20500000000000002,
         "reject_holm_0_05": false
       },
       {
@@ -240,14 +261,14 @@
         "direction": "higher",
         "min_effect": 0.05,
         "status": "computed",
-        "delta": 0.29932948502622764,
+        "delta": 0.2800972333653866,
         "ci": [
-          -0.007999328476519952,
-          0.654754051302452
+          -0.07763463655489096,
+          0.6660197482094108
         ],
-        "p_value": 0.0305,
+        "p_value": 0.066,
         "num_clusters": 8,
-        "p_adjusted_holm": 0.305,
+        "p_adjusted_holm": 0.5940000000000001,
         "reject_holm_0_05": false
       },
       {
@@ -308,12 +329,12 @@
         "direction": "lower",
         "min_effect": 0.1,
         "status": "computed",
-        "delta": 0.04300258394173373,
+        "delta": 0.03911157985352043,
         "ci": [
-          -0.47594300410383084,
-          0.5631972822052245
+          -0.5682152002133265,
+          0.6970647267427242
         ],
-        "p_value": 0.448,
+        "p_value": 0.469,
         "num_clusters": 8,
         "p_adjusted_holm": 1.0,
         "reject_holm_0_05": false
@@ -323,23 +344,23 @@
   "history_tail": [
     {
       "epoch": 56,
-      "loss": 3.606397032737732
+      "loss": 3.732914924621582
     },
     {
       "epoch": 57,
-      "loss": 3.479157328605652
+      "loss": 3.6094948053359985
     },
     {
       "epoch": 58,
-      "loss": 3.5585721731185913
+      "loss": 3.6875098943710327
     },
     {
       "epoch": 59,
-      "loss": 3.5094906091690063
+      "loss": 3.6442184448242188
     },
     {
       "epoch": 60,
-      "loss": 3.5577677488327026
+      "loss": 3.683480143547058
     }
   ],
   "device": "cuda"
