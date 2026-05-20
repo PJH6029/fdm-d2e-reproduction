@@ -4,6 +4,9 @@ from pathlib import Path
 from typing import Any
 
 from fdm_d2e.eval.action_metrics import compute_metrics
+from fdm_d2e.eval.baselines import build_baseline_predictions
+from fdm_d2e.eval.statistics import compare_systems
+from fdm_d2e.config import load_config
 from fdm_d2e.io_utils import read_jsonl, stable_hash_json, write_json, write_jsonl
 from fdm_d2e.schema import validate_named
 from fdm_d2e.training.neural_idm import record_features, target_mouse_delta, tokens_from_delta
@@ -117,9 +120,11 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         predictions.append({"sequence_id": row["sequence_id"], "recording_id": row.get("recording_id"), "game": row.get("game"), "timestamp_ns": row["timestamp_ns"], "predicted_tokens": tokens})
     pseudo_path = out_dir / "pseudolabels.jsonl"
     filtered_path = out_dir / "pseudolabels.filtered.jsonl"
+    predictions_path = out_dir / "predictions.jsonl"
     threshold = float(config.get("confidence_threshold", 0.15))
     write_jsonl(pseudo_path, pseudo_rows)
     write_jsonl(filtered_path, [row for row in pseudo_rows if row["confidence"] >= threshold])
+    write_jsonl(predictions_path, predictions)
     metrics = compute_metrics(predictions, target_records)
     metrics_path = out_dir / "metrics.json"
     write_json(metrics_path, metrics)
@@ -137,6 +142,21 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     }
     validate_named(metadata, "idm_checkpoint_metadata.schema.json")
     write_json(out_dir / "checkpoint_metadata.json", metadata)
-    summary = {"schema": "torch_idm_train_summary.v1", "metadata": metadata, "metrics": metrics, "history_tail": history[-5:], "device": device}
+    endpoints_path = config.get("endpoints")
+    stat_comparison = None
+    if endpoints_path:
+        predictions_by_name = build_baseline_predictions(train_records, target_records)
+        predictions_by_name[str(config.get("model_name", "torch_mlp_idm"))] = predictions
+        stat_comparison = compare_systems(predictions_by_name, target_records, load_config(endpoints_path))
+        write_json(out_dir / "statistical_comparison.json", stat_comparison)
+    summary = {
+        "schema": "torch_idm_train_summary.v1",
+        "metadata": metadata,
+        "metrics": metrics,
+        "predictions_path": str(predictions_path),
+        "statistical_comparison": stat_comparison,
+        "history_tail": history[-5:],
+        "device": device,
+    }
     write_json(config.get("summary_out", out_dir / "summary.json"), summary)
     return summary
