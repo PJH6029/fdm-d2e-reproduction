@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "step", "timestamp_ns", "tokens", "mode", "valid"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["rollout_action.v1"]},
+    "step": {"type": "integer"},
+    "timestamp_ns": {"type": "integer"},
+    "tokens": {"type": "array", "items": {"type": "string"}},
+    "mode": {"type": "string"},
+    "valid": {"type": "boolean"}
+  }
+}

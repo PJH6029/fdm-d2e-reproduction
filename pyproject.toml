@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fdm-d2e"
+version = "0.1.0"
+description = "Recipe-faithful scaled FDM-1 reproduction smoke pipeline on D2E"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Research-only; D2E-derived artifacts must honor upstream CC-BY-NC-4.0 terms" }
+authors = [{ name = "OMX-generated research scaffold" }]
+dependencies = []
+
+[project.optional-dependencies]
+d2e = [
+  "huggingface_hub",
+  "mcap-owa-support",
+  "owa-msgs"
+]
+test = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "context_length", "sequences"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["sequence_pack.v1"]},
+    "context_length": {"type": "integer"},
+    "sequences": {"type": "array", "items": {"type": "object", "required": ["sequence_id", "timestamp_ns", "frame_features", "ground_truth_tokens", "split"], "properties": {"sequence_id": {"type": "string"}, "timestamp_ns": {"type": "integer"}, "frame_features": {"type": "array", "items": {"type": "number"}}, "ground_truth_tokens": {"type": "array", "items": {"type": "string"}}, "split": {"type": "string"}}}}
+  }
+}

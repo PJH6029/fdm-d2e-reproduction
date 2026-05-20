@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "tokens", "categories"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["action_vocab.v1"]},
+    "tokens": {"type": "array", "items": {"type": "string"}},
+    "categories": {"type": "object"}
+  }
+}

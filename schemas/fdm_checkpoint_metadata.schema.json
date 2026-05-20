@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "model", "label_source", "source_label_artifact", "source_label_sha256", "predictions_path", "num_training_examples", "oracle_ground_truth_control"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["fdm_checkpoint_metadata.v1"]},
+    "model": {"type": "string"},
+    "label_source": {"type": "string", "enum": ["idm_pseudolabel"]},
+    "source_label_artifact": {"type": "string"},
+    "source_label_sha256": {"type": "string"},
+    "predictions_path": {"type": "string"},
+    "num_training_examples": {"type": "integer"},
+    "oracle_ground_truth_control": {"type": "boolean"}
+  }
+}

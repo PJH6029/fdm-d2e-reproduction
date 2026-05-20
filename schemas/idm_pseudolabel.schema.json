@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "sequence_id", "timestamp_ns", "predicted_tokens", "label_source", "confidence", "model", "training_split_hash"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["idm_pseudolabel.v1"]},
+    "sequence_id": {"type": "string"},
+    "timestamp_ns": {"type": "integer"},
+    "predicted_tokens": {"type": "array", "items": {"type": "string"}},
+    "label_source": {"type": "string", "enum": ["idm_generated"]},
+    "confidence": {"type": "number"},
+    "model": {"type": "string"},
+    "training_split_hash": {"type": "string"},
+    "input_window": {"type": "object"}
+  }
+}

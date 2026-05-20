@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "dataset", "source_mode", "license", "source_contract", "recordings", "splits", "event_categories"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["data_manifest.v1"]},
+    "dataset": {"type": "string"},
+    "source_mode": {"type": "string"},
+    "hf_repo_id": {"type": "string"},
+    "license": {"type": "string"},
+    "source_contract": {"type": "object"},
+    "recordings": {"type": "array", "items": {"type": "object"}},
+    "splits": {"type": "object"},
+    "event_categories": {"type": "array", "items": {"type": "string"}}
+  }
+}

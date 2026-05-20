@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "stage", "num_examples"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["metrics.v1"]},
+    "stage": {"type": "string"},
+    "num_examples": {"type": "integer"},
+    "keyboard": {"type": "object"},
+    "mouse_button": {"type": "object"},
+    "mouse_move": {"type": "object"}
+  }
+}
