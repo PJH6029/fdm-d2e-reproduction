@@ -55,6 +55,7 @@ strongest useful artifacts are:
 | Shooter32 residual softmax button-head sweep | `artifacts/idm/idm_torch_shooter32_seq_button_softmax_residual_sweep_h200.json` | Same Shooter32 split; softmax button head plus residual mouse targets and causal autoregressive heldout residual baselines | 24 H200 variants; no button/motion endpoint rejects. Best Pearson row: `mouse_move_pearson` `0.2432`, raw p `0.134` / Holm p `1.0`; mouse-button accuracy `0.05`, precision `0.0741`, no-button false-positive rate `0.0330`; keyboard remains significant | Causal residual feedback improves raw mouse correlation versus the absolute softmax sweep but does not clear the strong statistical bar and regresses click recovery. This is useful failure evidence for a future predeclared portfolio or stronger motion head, not a completion artifact. |
 | Shooter32 softmax-click + residual-motion portfolio diagnostic | `artifacts/idm/idm_shooter32_softmax_click_residual_motion_portfolio_h200.json` | One composed heldout artifact from predeclared group sources: keyboard/click tokens from the best softmax click-head row and mouse movement from the best residual Pearson row | Keyboard accuracy `0.1096`; mouse-button accuracy `0.125`, precision `0.2273`, no-button false-positive rate `0.0192`; mouse Pearson `0.2432`, scale ratio `1.2573`; Holm rejects only `keyboard_accuracy` and `mouse_button_accuracy` | The composer proves specialist token streams can be evaluated as a single reproducible artifact with source fingerprints. The selected residual motion source still fails motion significance, so the portfolio diagnostic remains non-terminal G005 evidence. |
 | Shooter32 motion-only residual sweep | `artifacts/idm/idm_torch_shooter32_motion_only_residual_sweep_h200.json` | Same residual/autoregressive setup with categorical and button losses set to zero; width/depth motion-specialist grid | 9 H200 variants; no motion endpoint rejects. Best Pearson row reaches `0.1790` with scale ratio `1.1224`, below the residual+softmax raw Pearson (`0.2432`) and non-significant | Removing categorical/button loss does not improve Shooter32 motion; shared supervision was not the main motion bottleneck. |
+| Shooter32 axis-softmax motion sweep | `artifacts/idm/idm_torch_shooter32_axis_softmax_motion_sweep_h200.json` | Residual/autoregressive model with direct DX/DY bin-classification head aligned to the binned motion metric | 32 H200 variants; no motion endpoint rejects. Best Pearson row reaches `0.2102` with raw p `0.060` / Holm p `0.54`; two variants still reject keyboard + mouse-button, best button precision `0.2308` with no-button FPR `0.0261` | Directly classifying binned motion tokens is useful target-modeling evidence but does not outperform the residual+softmax raw Pearson peak and still fails the motion gate. |
 
 Current conclusion: G4 has meaningful non-smoke IDM progress across real D2E
 splits, including H200 checkpoint metadata and pseudo-label artifacts, but it
@@ -78,9 +79,12 @@ evaluates a single heldout artifact, but the first softmax-click/residual-motion
 diagnostic still rejects only keyboard and mouse-button endpoints. A
 motion-only residual loss sweep also failed, suggesting the next motion attempt
 needs better temporal/visual representation or more targeted target modeling,
-not merely reweighting away categorical losses. In every case, the evaluation
-must use one predeclared heldout prediction artifact without untrained
-categorical logits or post-hoc heldout thresholding.
+not merely reweighting away categorical losses. The axis-softmax motion sweep
+tested direct binned-target classification and improved some raw p-values but
+still failed Holm correction, so the next motion iteration should add a stronger
+visual/temporal representation rather than another head-only change. In every
+case, the evaluation must use one predeclared heldout prediction artifact
+without untrained categorical logits or post-hoc heldout thresholding.
 
 ## Completion caveat
 
