@@ -103,16 +103,18 @@ def _records_with_pseudolabel_tokens(
 def train_fdm_real(config: dict[str, Any]) -> dict[str, Any]:
     """Train a non-smoke FDM action model from IDM pseudo-labels.
 
-    The trainer uses a causal per-recording tail split over the IDM pseudo-label
-    artifact: earlier pseudo-labeled windows train the FDM; later windows are
-    held out and evaluated against real D2E ground-truth tokens.  Baselines are
-    built from the same pseudo-labeled training rows, avoiding oracle
-    ground-truth control for the FDM training signal.
+    By default the trainer uses a causal per-recording tail split over the IDM
+    pseudo-label artifact: earlier pseudo-labeled windows train the FDM; later
+    windows are held out and evaluated against real D2E ground-truth tokens.
+    When ``target_records_path`` is provided, all pseudo-label rows train the
+    FDM and the explicit target records provide the real-D2E evaluation split.
+    Baselines are built from the same pseudo-labeled training rows, avoiding
+    oracle ground-truth control for the FDM training signal.
     """
 
     labels_path = Path(config["labels_path"])
     records_path = Path(config["records_path"])
-    target_records_path = Path(config["target_records_path"]) if config.get("target_records_path") else None
+    configured_target_records_path = Path(config["target_records_path"]) if config.get("target_records_path") else None
     labels = read_jsonl(labels_path)
     for row in labels:
         validate_named(row, "idm_pseudolabel.schema.json")
@@ -120,7 +122,7 @@ def train_fdm_real(config: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"FDM real training requires IDM-generated labels; got {row.get('label_source')}")
     source_records = read_jsonl(records_path)
     records_by_id = {str(row["sequence_id"]): row for row in source_records}
-    if target_records_path is None:
+    if configured_target_records_path is None:
         train_labels, target_labels = _split_labels_by_recording_tail(
             labels,
             train_fraction=float(config.get("fdm_train_fraction", 0.75)),
@@ -129,7 +131,7 @@ def train_fdm_real(config: dict[str, Any]) -> dict[str, Any]:
         target_records = [records_by_id[str(row["sequence_id"])] for row in target_labels if str(row["sequence_id"]) in records_by_id]
     else:
         train_labels = labels
-        target_records = read_jsonl(target_records_path)
+        target_records = read_jsonl(configured_target_records_path)
     train_records = _records_with_pseudolabel_tokens(records_by_id, train_labels)
     if not train_records or not target_records:
         raise ValueError("FDM real training needs non-empty pseudo-label train and ground-truth target splits")
@@ -137,16 +139,16 @@ def train_fdm_real(config: dict[str, Any]) -> dict[str, Any]:
     output_dir = Path(config.get("output_dir", "outputs/fdm_real"))
     output_dir.mkdir(parents=True, exist_ok=True)
     train_records_path = output_dir / "fdm_train_pseudolabeled_records.jsonl"
-    target_records_path = output_dir / "fdm_target_ground_truth_records.jsonl"
+    written_target_records_path = output_dir / "fdm_target_ground_truth_records.jsonl"
     write_jsonl(train_records_path, train_records)
-    write_jsonl(target_records_path, target_records)
+    write_jsonl(written_target_records_path, target_records)
 
     torch_cfg = dict(config.get("torch_idm_config", {}))
     torch_cfg.update(
         {
             "model_name": str(config.get("model_name", "torch_fdm_real")),
             "train_records": str(train_records_path),
-            "target_records": str(target_records_path),
+            "target_records": str(written_target_records_path),
             "output_dir": str(output_dir / "torch_model"),
             "summary_out": str(output_dir / "torch_train_summary.json"),
             "endpoints": str(config.get("endpoints", "configs/eval/primary_endpoints.yaml")),
@@ -172,9 +174,9 @@ def train_fdm_real(config: dict[str, Any]) -> dict[str, Any]:
         "num_training_examples": len(train_records),
         "oracle_ground_truth_control": False,
         "records_path": str(records_path),
-        "target_records_source_path": str(target_records_path) if target_records_path is not None else str(records_path),
+        "target_records_source_path": str(configured_target_records_path) if configured_target_records_path is not None else str(records_path),
         "train_records_path": str(train_records_path),
-        "target_records_path": str(target_records_path),
+        "target_records_path": str(written_target_records_path),
         "target_examples": len(target_records),
         "fdm_train_fraction": float(config.get("fdm_train_fraction", 0.75)),
         "dataset_fingerprint": stable_hash_json(
