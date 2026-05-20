@@ -1,0 +1,382 @@
+{
+  "schema": "torch_idm_train_summary.v1",
+  "metadata": {
+    "schema": "idm_checkpoint_metadata.v1",
+    "model": "torch_mlp_idm_apex36",
+    "dataset_fingerprint": "c519c4bb1aecbd576a7379185822f1698f42752cc0fb6bebd8a4d26235c48b58",
+    "train_records": 1728,
+    "target_records": 576,
+    "pseudo_label_path": "outputs/idm_torch_apex36/pseudolabels.jsonl",
+    "filtered_pseudo_label_path": "outputs/idm_torch_apex36/pseudolabels.filtered.jsonl",
+    "checkpoint_path": "outputs/idm_torch_apex36/checkpoint.pt",
+    "metrics_path": "outputs/idm_torch_apex36/metrics.json",
+    "calibration": {
+      "confidence_threshold": 0.15,
+      "kept": 416,
+      "total": 576,
+      "last_train_loss": 2.162315470831735
+    },
+    "categorical_vocab": [
+      "KEY_PRESS_160",
+      "KEY_PRESS_162",
+      "KEY_PRESS_32",
+      "KEY_PRESS_49",
+      "KEY_PRESS_50",
+      "KEY_PRESS_51",
+      "KEY_PRESS_65",
+      "KEY_PRESS_68",
+      "KEY_PRESS_70",
+      "KEY_PRESS_82",
+      "KEY_PRESS_83",
+      "KEY_PRESS_87",
+      "KEY_PRESS_9",
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_162",
+      "KEY_RELEASE_32",
+      "KEY_RELEASE_49",
+      "KEY_RELEASE_50",
+      "KEY_RELEASE_51",
+      "KEY_RELEASE_65",
+      "KEY_RELEASE_68",
+      "KEY_RELEASE_70",
+      "KEY_RELEASE_82",
+      "KEY_RELEASE_83",
+      "KEY_RELEASE_87",
+      "KEY_RELEASE_9",
+      "MOUSE_LEFT_DOWN",
+      "MOUSE_LEFT_UP",
+      "MOUSE_RIGHT_DOWN",
+      "MOUSE_RIGHT_UP"
+    ],
+    "feature_mode": "summary_grid4_shift",
+    "input_dim": 164,
+    "category_threshold": 0.45,
+    "categorical_pos_weight_cap": 20.0
+  },
+  "metrics": {
+    "schema": "metrics.v1",
+    "stage": "fdm_eval",
+    "num_examples": 576,
+    "keyboard": {
+      "status": "computed",
+      "accuracy": 0.11764705882352941,
+      "num_examples": 204
+    },
+    "mouse_button": {
+      "status": "computed",
+      "accuracy": 0.0,
+      "num_examples": 16
+    },
+    "mouse_move": {
+      "status": "computed",
+      "pearson": 0.2780663234605897,
+      "scale_ratio": 1.437893166151879,
+      "num_values": 1114
+    },
+    "failure_count": 576
+  },
+  "predictions_path": "outputs/idm_torch_apex36/predictions.jsonl",
+  "statistical_comparison": {
+    "schema": "stat_comparison.v1",
+    "reference_baseline": "noop",
+    "correction": "holm_bonferroni",
+    "cluster_key": "recording_id",
+    "comparisons": [
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 33,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 33,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.10353463876191149,
+        "ci": [
+          0.043757378984651714,
+          0.17203621294530386
+        ],
+        "p_value": 0.0,
+        "num_clusters": 33,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "torch_mlp_idm_apex36",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.07035670558397832,
+        "ci": [
+          0.026262626262626265,
+          0.12489614762342037
+        ],
+        "p_value": 0.0005,
+        "num_clusters": 33,
+        "p_adjusted_holm": 0.0045000000000000005,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 6,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 6,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 6,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "torch_mlp_idm_apex36",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 6,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "torch_mlp_idm_apex36",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.17521783353102938,
+        "ci": [
+          -0.05360561663084208,
+          0.38815915725307515
+        ],
+        "p_value": 0.0635,
+        "num_clusters": 30,
+        "p_adjusted_holm": 0.4445,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "torch_mlp_idm_apex36",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": 0.25136250738943133,
+        "ci": [
+          -0.021353472873744783,
+          0.5403869825146486
+        ],
+        "p_value": 0.034,
+        "num_clusters": 31,
+        "p_adjusted_holm": 0.272,
+        "reject_holm_0_05": false
+      }
+    ]
+  },
+  "history_tail": [
+    {
+      "epoch": 56,
+      "loss": 2.1865017073495046
+    },
+    {
+      "epoch": 57,
+      "loss": 2.1753084659576416
+    },
+    {
+      "epoch": 58,
+      "loss": 2.1716082096099854
+    },
+    {
+      "epoch": 59,
+      "loss": 2.1367166553224837
+    },
+    {
+      "epoch": 60,
+      "loss": 2.162315470831735
+    }
+  ],
+  "device": "cuda"
+}
