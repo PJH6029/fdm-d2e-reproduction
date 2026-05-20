@@ -1,0 +1,14 @@
+{
+  "schema": "idm_prediction_portfolio_config.v1",
+  "model_name": "idm_shooter32_softmax_click_residual_motion_portfolio",
+  "train_records": "outputs/data/real_multi_shooter32/train.jsonl",
+  "target_records": "outputs/data/real_multi_shooter32/heldout.jsonl",
+  "endpoints": "configs/eval/primary_endpoints.yaml",
+  "keyboard_predictions": "outputs/idm_torch_sweeps/idm_torch_shooter32_seq_button_softmax/lw1_pc20_th0.35_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1/predictions.jsonl",
+  "mouse_button_predictions": "outputs/idm_torch_sweeps/idm_torch_shooter32_seq_button_softmax/lw1_pc20_th0.35_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1/predictions.jsonl",
+  "mouse_move_predictions": "outputs/idm_torch_sweeps/idm_torch_shooter32_seq_button_softmax_residual/lw1_pc20_th0.35_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw1_bcw12_bnw1.5_bpw2/predictions.jsonl",
+  "output_dir": "outputs/idm_portfolio/shooter32_softmax_click_residual_motion",
+  "predictions_out": "outputs/idm_portfolio/shooter32_softmax_click_residual_motion/predictions.jsonl",
+  "metrics_out": "outputs/idm_portfolio/shooter32_softmax_click_residual_motion/metrics.json",
+  "summary_out": "artifacts/idm/idm_shooter32_softmax_click_residual_motion_portfolio_h200.json"
+}
