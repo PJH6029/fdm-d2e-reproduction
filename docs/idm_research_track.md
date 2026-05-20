@@ -42,13 +42,16 @@ strongest useful artifacts are:
 | Apex16 rich-motion | `artifacts/idm/g4_h200_idm_run_h200_richmotion16.json` | 16 Apex recordings; 768 train / 256 heldout; H200 GPU | `keyboard_accuracy` delta `0.1008`, Holm-adjusted p `0.005`; mouse/button not significant | Scaling adds keyboard evidence but exposes a mouse generalization regression versus `last_seen_train`. |
 | Apex16 categorical sweep | `artifacts/idm/idm_torch_apex16_sweep_h200.json` | Same Apex16 split | 30 categorical-weight/threshold variants; best rows preserve keyboard significance only | Categorical loss/threshold tuning alone does not recover mouse endpoints. |
 | Apex16 capacity sweep | `artifacts/idm/idm_torch_apex16_capacity_sweep_h200.json` | Same Apex16 split | 64 depth/width variants; zero-categorical-loss linear heads show apparent mouse-button wins | Treat zero-loss categorical wins as invalid failure-analysis clues because the categorical head is untrained; capacity reduction does not solve mouse motion. |
+| Apex36 rich-motion | `artifacts/idm/g4_h200_idm_run_h200_richmotion36b.json` | 36 Apex recordings; 1728 train / 576 heldout; H200 GPU | `keyboard_accuracy` delta `0.0704`, Holm-adjusted p `0.0045`; mouse Pearson raw p `0.0635` / Holm p `0.4445`; mouse button `0.0` accuracy | More clusters make the keyboard result robust and strengthen failure evidence: shared-head rich-motion MLP still does not clear mouse/click endpoints at scale. |
 
 Current conclusion: G4 has meaningful non-smoke IDM progress across real D2E
 splits, including H200 checkpoint metadata and pseudo-label artifacts, but it
-should remain `in_progress`.  The next credible completion attempt should add
-more click-rich recordings and/or endpoint-specific trained heads, then require a
-single predeclared checkpoint/portfolio to beat the relevant baselines without
-depending on untrained categorical logits.
+should remain `in_progress`.  Apex36 rules out "just add more Apex recordings"
+as a sufficient fix for the mouse/click endpoints. The next credible completion
+attempt should add click-rich or mouse-specialized recordings and/or
+endpoint-specific trained heads, then require a single predeclared
+checkpoint/portfolio to beat the relevant baselines without depending on
+untrained categorical logits.
 
 ## Completion caveat
 
