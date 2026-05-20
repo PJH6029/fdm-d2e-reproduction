@@ -23,3 +23,10 @@ Initial implementation uses deterministic synthetic D2E-shaped fixtures for loca
 - Command: `uv run python scripts/calibrate_fdm_predictions.py --config configs/model/fdm_bth05_d2e_train_scale_calibrated.yaml` after the bth05 FDM training run.
 - Result: all four predeclared primary endpoints reject after Holm correction: keyboard p `0.0`, mouse-button p `0.025`, mouse Pearson p `0.0`, mouse scale-ratio-distance p `0.0`.
 - Caveat: scale is fixed by train-split D2E ground-truth calibration (`calibration_uses_target_ground_truth=false`), not by pure IDM pseudo-labels alone.
+
+## G6 ablation/scaling summary
+
+- Generated `artifacts/ablation_scaling/g007_ablation_scaling_summary.json` and `docs/ablation_scaling.md` from source-controlled H200 artifacts.
+- Axes summarized: FDM branch/calibration (`5` points), FDM sweeps (`84` total runs across neural button-weight, neural decode/recall, and KNN retrieval axes), and IDM data/model scaling (`5` points from Apex8 through Shooter64).
+- Quality gate: pass; selected FDM branch rejects all four primary endpoints, at least two ablation/scaling axes are present, and total sweep coverage is non-smoke.
+- Verification: `uv run python -m py_compile scripts/summarize_ablation_scaling.py`; JSON contract assertions for status/axes/run count; `uv run pytest -q` (`55 passed`).

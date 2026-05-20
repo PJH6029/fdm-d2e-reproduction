@@ -1,0 +1,621 @@
+{
+  "schema": "fdm_real_train_summary.v1",
+  "checkpoint": {
+    "schema": "fdm_checkpoint_metadata.v1",
+    "model": "torch_fdm_shooter64_surface_motion_fulltrain_bth05_regression",
+    "label_source": "idm_pseudolabel",
+    "source_label_artifact": "outputs/idm_shooter64_train_pseudolabels_bth05/pseudolabels.jsonl",
+    "source_label_sha256": "d1f4198656e0ba53715410bcdbdebd3da4be333941be96d08591333e3faf8dd3",
+    "predictions_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05_regression/torch_model/predictions.jsonl",
+    "num_training_examples": 4608,
+    "oracle_ground_truth_control": false,
+    "records_path": "outputs/data/real_multi_shooter64/train.jsonl",
+    "target_records_source_path": "outputs/data/real_multi_shooter64/heldout.jsonl",
+    "train_records_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05_regression/fdm_train_pseudolabeled_records.jsonl",
+    "target_records_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05_regression/fdm_target_ground_truth_records.jsonl",
+    "target_examples": 1536,
+    "fdm_train_fraction": 0.75,
+    "dataset_fingerprint": "03698fb6cec359b896173d7c7b47ec16fd56bc6399392079fb0dd3df05b08158",
+    "torch_checkpoint_metadata": {
+      "schema": "idm_checkpoint_metadata.v1",
+      "model": "torch_fdm_shooter64_surface_motion_fulltrain_bth05_regression",
+      "dataset_fingerprint": "f4a4c493feb97fe818078950df15acc83d99f412dc75b2feeb2aaa599e412cc9",
+      "train_records": 4608,
+      "target_records": 1536,
+      "pseudo_label_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05_regression/torch_model/pseudolabels.jsonl",
+      "filtered_pseudo_label_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05_regression/torch_model/pseudolabels.filtered.jsonl",
+      "checkpoint_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05_regression/torch_model/checkpoint.pt",
+      "metrics_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05_regression/torch_model/metrics.json",
+      "calibration": {
+        "confidence_threshold": 0.15,
+        "kept": 739,
+        "total": 1536,
+        "last_train_loss": 0.7971330053276486,
+        "category_threshold_mode": "group_exact_calibrated",
+        "category_threshold": 0.35,
+        "category_thresholds": {
+          "KEY_PRESS_160": 0.7,
+          "KEY_PRESS_162": 0.7,
+          "KEY_PRESS_164": 0.7,
+          "KEY_PRESS_32": 0.7,
+          "KEY_PRESS_65": 0.7,
+          "KEY_PRESS_66": 0.7,
+          "KEY_PRESS_68": 0.7,
+          "KEY_PRESS_69": 0.7,
+          "KEY_PRESS_70": 0.7,
+          "KEY_PRESS_83": 0.7,
+          "KEY_PRESS_87": 0.7,
+          "KEY_PRESS_9": 0.7,
+          "KEY_RELEASE_160": 0.7,
+          "KEY_RELEASE_162": 0.7,
+          "KEY_RELEASE_32": 0.7,
+          "KEY_RELEASE_65": 0.7,
+          "KEY_RELEASE_68": 0.7,
+          "KEY_RELEASE_70": 0.7,
+          "KEY_RELEASE_83": 0.7,
+          "KEY_RELEASE_87": 0.7,
+          "KEY_RELEASE_9": 0.7
+        },
+        "button_head_mode": "softmax",
+        "button_softmax_threshold": 0.9,
+        "button_softmax_threshold_mode": "fbeta_calibrated",
+        "button_softmax_classes": [
+          {
+            "index": 0,
+            "tokens": [],
+            "name": "NO_BUTTON",
+            "train_count": 4417
+          },
+          {
+            "index": 1,
+            "tokens": [
+              "MOUSE_LEFT_DOWN"
+            ],
+            "name": "MOUSE_LEFT_DOWN",
+            "train_count": 90
+          },
+          {
+            "index": 2,
+            "tokens": [
+              "MOUSE_LEFT_UP"
+            ],
+            "name": "MOUSE_LEFT_UP",
+            "train_count": 84
+          },
+          {
+            "index": 3,
+            "tokens": [
+              "MOUSE_RIGHT_DOWN"
+            ],
+            "name": "MOUSE_RIGHT_DOWN",
+            "train_count": 10
+          },
+          {
+            "index": 4,
+            "tokens": [
+              "MOUSE_RIGHT_UP"
+            ],
+            "name": "MOUSE_RIGHT_UP",
+            "train_count": 7
+          }
+        ],
+        "category_calibration_records": 896,
+        "category_calibration_fit_records": 3712,
+        "category_calibration_refit_full_train": true,
+        "category_calibration_history_tail": [
+          {
+            "epoch": 78,
+            "loss": 0.81717955271403
+          },
+          {
+            "epoch": 79,
+            "loss": 0.827588685353597
+          },
+          {
+            "epoch": 80,
+            "loss": 0.8139447848002116
+          }
+        ],
+        "category_threshold_diagnostics": {
+          "default_threshold": 0.35,
+          "grid": [
+            0.02,
+            0.05,
+            0.08,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.6,
+            0.7,
+            0.8,
+            0.9
+          ],
+          "per_group": {
+            "keyboard": {
+              "threshold": 0.7,
+              "positive_examples": 396,
+              "accuracy": 0.5984848484848485,
+              "correct": 237
+            }
+          }
+        },
+        "button_softmax_threshold_diagnostics": {
+          "positive_examples": 50,
+          "score": 0.8045977011494252,
+          "precision": 0.9032258064516129,
+          "recall": 0.56,
+          "tp": 28,
+          "fp": 3,
+          "fn": 22,
+          "predicted_positive_examples": 31
+        }
+      },
+      "categorical_vocab": [
+        "KEY_PRESS_160",
+        "KEY_PRESS_162",
+        "KEY_PRESS_164",
+        "KEY_PRESS_32",
+        "KEY_PRESS_65",
+        "KEY_PRESS_66",
+        "KEY_PRESS_68",
+        "KEY_PRESS_69",
+        "KEY_PRESS_70",
+        "KEY_PRESS_83",
+        "KEY_PRESS_87",
+        "KEY_PRESS_9",
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_162",
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_70",
+        "KEY_RELEASE_83",
+        "KEY_RELEASE_87",
+        "KEY_RELEASE_9"
+      ],
+      "history_vocab": [
+        "KEY_PRESS_160",
+        "KEY_PRESS_162",
+        "KEY_PRESS_164",
+        "KEY_PRESS_32",
+        "KEY_PRESS_65",
+        "KEY_PRESS_66",
+        "KEY_PRESS_68",
+        "KEY_PRESS_69",
+        "KEY_PRESS_70",
+        "KEY_PRESS_83",
+        "KEY_PRESS_87",
+        "KEY_PRESS_9",
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_162",
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_70",
+        "KEY_RELEASE_83",
+        "KEY_RELEASE_87",
+        "KEY_RELEASE_9",
+        "MOUSE_LEFT_DOWN",
+        "MOUSE_LEFT_UP",
+        "MOUSE_RIGHT_DOWN",
+        "MOUSE_RIGHT_UP"
+      ],
+      "feature_mode": "summary_grid8_shift_surface_time",
+      "input_dim": 733,
+      "model_arch": "mlp",
+      "mouse_target_mode": "residual_last_seen",
+      "mouse_head_mode": "regression",
+      "mouse_axis_classes": [],
+      "mouse_axis_decode_mode": "argmax",
+      "mouse_axis_temperature": 1.0,
+      "mouse_output_gain": 1.0,
+      "mouse_output_gain_mode": "fixed",
+      "mouse_output_gain_info": {
+        "status": "fixed",
+        "configured_gain": 1.0,
+        "gain": 1.0,
+        "min_gain": 0.25,
+        "max_gain": 4.0
+      },
+      "mouse_axis_loss_weight": 0.0,
+      "mouse_regression_loss_weight": 1.0,
+      "mouse_axis_class_weight_cap": 4.0,
+      "category_threshold": 0.35,
+      "category_threshold_mode": "group_exact_calibrated",
+      "category_thresholds": {
+        "KEY_PRESS_160": 0.7,
+        "KEY_PRESS_162": 0.7,
+        "KEY_PRESS_164": 0.7,
+        "KEY_PRESS_32": 0.7,
+        "KEY_PRESS_65": 0.7,
+        "KEY_PRESS_66": 0.7,
+        "KEY_PRESS_68": 0.7,
+        "KEY_PRESS_69": 0.7,
+        "KEY_PRESS_70": 0.7,
+        "KEY_PRESS_83": 0.7,
+        "KEY_PRESS_87": 0.7,
+        "KEY_PRESS_9": 0.7,
+        "KEY_RELEASE_160": 0.7,
+        "KEY_RELEASE_162": 0.7,
+        "KEY_RELEASE_32": 0.7,
+        "KEY_RELEASE_65": 0.7,
+        "KEY_RELEASE_68": 0.7,
+        "KEY_RELEASE_70": 0.7,
+        "KEY_RELEASE_83": 0.7,
+        "KEY_RELEASE_87": 0.7,
+        "KEY_RELEASE_9": 0.7
+      },
+      "categorical_loss": "focal",
+      "categorical_pos_weight_cap": 20.0,
+      "button_head_mode": "softmax",
+      "button_softmax_threshold": 0.9,
+      "button_softmax_threshold_mode": "fbeta_calibrated",
+      "button_softmax_classes": [
+        {
+          "index": 0,
+          "tokens": [],
+          "name": "NO_BUTTON",
+          "train_count": 4417
+        },
+        {
+          "index": 1,
+          "tokens": [
+            "MOUSE_LEFT_DOWN"
+          ],
+          "name": "MOUSE_LEFT_DOWN",
+          "train_count": 90
+        },
+        {
+          "index": 2,
+          "tokens": [
+            "MOUSE_LEFT_UP"
+          ],
+          "name": "MOUSE_LEFT_UP",
+          "train_count": 84
+        },
+        {
+          "index": 3,
+          "tokens": [
+            "MOUSE_RIGHT_DOWN"
+          ],
+          "name": "MOUSE_RIGHT_DOWN",
+          "train_count": 10
+        },
+        {
+          "index": 4,
+          "tokens": [
+            "MOUSE_RIGHT_UP"
+          ],
+          "name": "MOUSE_RIGHT_UP",
+          "train_count": 7
+        }
+      ],
+      "button_softmax_loss_weight": 0.5,
+      "button_softmax_class_weight_cap": 4.0,
+      "action_history_len": 4,
+      "action_history_feedback": "autoregressive_predicted"
+    },
+    "statistical_comparison_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05_regression/statistical_comparison.json",
+    "summary_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05_regression/summary.json"
+  },
+  "metrics": {
+    "schema": "metrics.v1",
+    "stage": "fdm_eval",
+    "num_examples": 1536,
+    "keyboard": {
+      "status": "computed",
+      "accuracy": 0.08333333333333333,
+      "num_examples": 672
+    },
+    "mouse_button": {
+      "status": "computed",
+      "accuracy": 0.058823529411764705,
+      "num_examples": 68,
+      "predicted_examples": 44,
+      "exact_true_positive_examples": 4,
+      "false_positive_examples": 40,
+      "false_negative_examples": 64,
+      "precision": 0.09090909090909091,
+      "recall": 0.058823529411764705,
+      "f1": 0.07142857142857142,
+      "no_button_examples": 1468,
+      "no_button_false_positive_examples": 34,
+      "no_button_false_positive_rate": 0.02316076294277929
+    },
+    "mouse_move": {
+      "status": "computed",
+      "pearson": 0.18872236326884784,
+      "scale_ratio": 1.2390562515799572,
+      "num_values": 2810
+    },
+    "failure_count": 1536
+  },
+  "predictions_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05_regression/torch_model/predictions.jsonl",
+  "statistical_comparison": {
+    "schema": "stat_comparison.v1",
+    "reference_baseline": "noop",
+    "correction": "holm_bonferroni",
+    "cluster_key": "recording_id",
+    "comparisons": [
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 56,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.006855867346938775,
+        "ci": [
+          0.0,
+          0.018973214285714284
+        ],
+        "p_value": 0.0395,
+        "num_clusters": 56,
+        "p_adjusted_holm": 0.395,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.09141374929418408,
+        "ci": [
+          0.046297407302842083,
+          0.14112965838509314
+        ],
+        "p_value": 0.0,
+        "num_clusters": 56,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "torch_fdm_shooter64_surface_motion_fulltrain_bth05_regression",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.052498168239627864,
+        "ci": [
+          0.021130952380952382,
+          0.08973012624021941
+        ],
+        "p_value": 0.0,
+        "num_clusters": 56,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 15,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 15,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.05555555555555555,
+        "ci": [
+          0.0,
+          0.14444444444444443
+        ],
+        "p_value": 0.124,
+        "num_clusters": 15,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "torch_fdm_shooter64_surface_motion_fulltrain_bth05_regression",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0493939393939394,
+        "ci": [
+          0.0,
+          0.11272727272727273
+        ],
+        "p_value": 0.033,
+        "num_clusters": 15,
+        "p_adjusted_holm": 0.363,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": -0.060972351985144634,
+        "ci": [
+          -0.20654515969365986,
+          0.08566175713320788
+        ],
+        "p_value": 1.0,
+        "num_clusters": 53,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": -0.06578615523464501,
+        "ci": [
+          -0.2167880004436318,
+          0.08016033791202747
+        ],
+        "p_value": 1.0,
+        "num_clusters": 45,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "torch_fdm_shooter64_surface_motion_fulltrain_bth05_regression",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.23568539526245352,
+        "ci": [
+          0.11725890091956669,
+          0.3609408156910048
+        ],
+        "p_value": 0.0,
+        "num_clusters": 53,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": -0.20608181932228375,
+        "ci": [
+          -0.4156886862099548,
+          0.015910763000846373
+        ],
+        "p_value": 1.0,
+        "num_clusters": 57,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": -0.13975418551466845,
+        "ci": [
+          -0.37405149048060227,
+          0.10715154754880551
+        ],
+        "p_value": 1.0,
+        "num_clusters": 49,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "torch_fdm_shooter64_surface_motion_fulltrain_bth05_regression",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": 0.02286459259559037,
+        "ci": [
+          -0.131233140860057,
+          0.1833312829852236
+        ],
+        "p_value": 0.4005,
+        "num_clusters": 57,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      }
+    ]
+  },
+  "torch_summary_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05_regression/torch_train_summary.json"
+}

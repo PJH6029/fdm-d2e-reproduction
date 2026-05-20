@@ -29,3 +29,10 @@ D2E-derived artifacts remain non-commercial unless separate rights are provided.
 | `artifacts/fdm/fdm_shooter64_fulltrain_button_sweep_h200.json` | `409f5ebce55c7a7134ee2ac6e19da890ff221cc4d3b97f5b92d576054ba4d12d` | 916294 |
 | `artifacts/fdm/fdm_shooter64_recall_beta_sweep_h200.json` | `4bb2cffd53ca5732258b1715f27f68758a943422f926bd108b191c38dc1eafce` | 934437 |
 | `artifacts/fdm/fdm_knn_shooter64_surface_sweep_h200.json` | `b6f58d189c0fd761423bf89e54aa3d998bcde793ca0a52928161023bebb6abea` | 259229 |
+
+## G6 ablation/scaling artifacts
+
+| Artifact | SHA-256 | Bytes |
+| --- | --- | ---: |
+| `artifacts/ablation_scaling/g007_ablation_scaling_summary.json` | `d78f263fc9996b09f765c54a9b311048f28d776a30269d052f669228c71f854f` | 89249 |
+| `docs/ablation_scaling.md` | `13755da33b717b8561caeadc01fb8c15033795ae6e423b5897145b7b86124ae1` | 2615 |
