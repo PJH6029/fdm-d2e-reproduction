@@ -56,14 +56,16 @@ def _scale_predictions(
     *,
     min_gain: float,
     max_gain: float,
+    calibration_predictions: list[dict[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if min_gain <= 0 or max_gain <= 0 or min_gain > max_gain:
         raise ValueError("min_gain/max_gain must be positive and ordered")
+    prediction_reference_rows = calibration_predictions if calibration_predictions is not None else predictions
     train_by_recording = _mean_abs_by_key(train_records, _recording_id, source="ground_truth")
     train_by_game = _mean_abs_by_key(train_records, _game_id, source="ground_truth")
-    pred_by_recording = _mean_abs_by_key(predictions, _recording_id, source="prediction")
+    pred_by_recording = _mean_abs_by_key(prediction_reference_rows, _recording_id, source="prediction")
     global_train = _abs_axis_mean([target_mouse_delta(row) for row in train_records]) or 1.0
-    global_pred = _abs_axis_mean([_prediction_mouse_delta(row) for row in predictions]) or 1.0
+    global_pred = _abs_axis_mean([_prediction_mouse_delta(row) for row in prediction_reference_rows]) or 1.0
     global_gain = min(max_gain, max(min_gain, global_train / max(global_pred, 1e-9)))
     gains: dict[str, dict[str, Any]] = {}
 
@@ -100,6 +102,7 @@ def _scale_predictions(
         "global_train_abs_mean": global_train,
         "global_prediction_abs_mean": global_pred,
         "global_gain": global_gain,
+        "prediction_reference": "calibration_predictions" if calibration_predictions is not None else "target_predictions",
         "recording_gains": sorted(gains.values(), key=lambda item: item["recording_id"]),
     }
     return calibrated, diagnostics
@@ -120,6 +123,7 @@ def calibrate_fdm_predictions(config: dict[str, Any]) -> dict[str, Any]:
     source_predictions_path = Path(config["source_predictions_path"])
     train_records_path = Path(config["train_records_path"])
     calibration_records_path = Path(config.get("calibration_records_path", train_records_path))
+    calibration_predictions_path = Path(config["calibration_predictions_path"]) if config.get("calibration_predictions_path") else None
     baseline_train_records_path = Path(config.get("baseline_train_records_path", train_records_path))
     target_records_path = Path(config["target_records_path"])
     labels_path = Path(config["labels_path"])
@@ -130,6 +134,7 @@ def calibrate_fdm_predictions(config: dict[str, Any]) -> dict[str, Any]:
     predictions = read_jsonl(source_predictions_path)
     train_records = read_jsonl(train_records_path)
     calibration_records = read_jsonl(calibration_records_path)
+    calibration_predictions = read_jsonl(calibration_predictions_path) if calibration_predictions_path is not None else None
     baseline_train_records = read_jsonl(baseline_train_records_path)
     target_records = read_jsonl(target_records_path)
     calibrated, diagnostics = _scale_predictions(
@@ -137,6 +142,7 @@ def calibrate_fdm_predictions(config: dict[str, Any]) -> dict[str, Any]:
         calibration_records,
         min_gain=float(config.get("min_gain", 0.25)),
         max_gain=float(config.get("max_gain", 4.0)),
+        calibration_predictions=calibration_predictions,
     )
     predictions_path = output_dir / "predictions.jsonl"
     write_jsonl(predictions_path, calibrated)
@@ -160,13 +166,16 @@ def calibrate_fdm_predictions(config: dict[str, Any]) -> dict[str, Any]:
         "source_predictions_path": str(source_predictions_path),
         "train_records_path": str(train_records_path),
         "calibration_records_path": str(calibration_records_path),
+        "calibration_predictions_path": str(calibration_predictions_path) if calibration_predictions_path is not None else "",
         "baseline_train_records_path": str(baseline_train_records_path),
         "target_records_path": str(target_records_path),
         "target_examples": len(target_records),
         "num_calibration_examples": len(calibration_records),
+        "num_calibration_prediction_examples": len(calibration_predictions or []),
         "num_baseline_train_examples": len(baseline_train_records),
         "calibration_label_source": str(config.get("calibration_label_source", "train_records_ground_truth_tokens")),
         "calibration_uses_target_ground_truth": False,
+        "calibration_uses_target_prediction_distribution": calibration_predictions_path is None,
         "calibration": diagnostics,
         "dataset_fingerprint": stable_hash_json(
             {
@@ -176,7 +185,10 @@ def calibrate_fdm_predictions(config: dict[str, Any]) -> dict[str, Any]:
                 "train_sequence_ids": [row["sequence_id"] for row in train_records],
                 "calibration_records_path": str(calibration_records_path),
                 "calibration_records_sha256": sha256_file(calibration_records_path),
+                "calibration_predictions_path": str(calibration_predictions_path) if calibration_predictions_path is not None else "",
+                "calibration_predictions_sha256": sha256_file(calibration_predictions_path) if calibration_predictions_path is not None else "",
                 "calibration_sequence_ids": [row["sequence_id"] for row in calibration_records],
+                "calibration_prediction_sequence_ids": [row["sequence_id"] for row in calibration_predictions or []],
                 "baseline_train_records_path": str(baseline_train_records_path),
                 "baseline_train_records_sha256": sha256_file(baseline_train_records_path),
                 "baseline_train_sequence_ids": [row["sequence_id"] for row in baseline_train_records],

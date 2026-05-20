@@ -48,6 +48,20 @@ class CalibratedFDMContractTests(unittest.TestCase):
                     }
                 ],
             )
+            calibration_predictions = root / "calibration_predictions.jsonl"
+            write_jsonl(
+                calibration_predictions,
+                [
+                    {
+                        "schema": "fdm_prediction.v1",
+                        "sequence_id": "r#1",
+                        "recording_id": "r",
+                        "game": "g",
+                        "timestamp_ns": 1,
+                        "predicted_tokens": ["MOUSE_DX_P1", "MOUSE_DY_Z0"],
+                    }
+                ],
+            )
             write_jsonl(
                 fdm_train,
                 [
@@ -101,6 +115,7 @@ class CalibratedFDMContractTests(unittest.TestCase):
                     "train_records_path": str(fdm_train),
                     "baseline_train_records_path": str(fdm_train),
                     "calibration_records_path": str(calibration_train),
+                    "calibration_predictions_path": str(calibration_predictions),
                     "calibration_label_source": "d2e_train_ground_truth",
                     "target_records_path": str(target),
                     "labels_path": str(labels),
@@ -117,8 +132,11 @@ class CalibratedFDMContractTests(unittest.TestCase):
             self.assertEqual(checkpoint["train_records_path"], str(fdm_train))
             self.assertEqual(checkpoint["baseline_train_records_path"], str(fdm_train))
             self.assertEqual(checkpoint["calibration_records_path"], str(calibration_train))
+            self.assertEqual(checkpoint["calibration_predictions_path"], str(calibration_predictions))
             self.assertEqual(checkpoint["calibration_label_source"], "d2e_train_ground_truth")
             self.assertFalse(checkpoint["calibration_uses_target_ground_truth"])
+            self.assertFalse(checkpoint["calibration_uses_target_prediction_distribution"])
+            self.assertEqual(checkpoint["calibration"]["prediction_reference"], "calibration_predictions")
 
 
 if __name__ == "__main__":
