@@ -18,7 +18,8 @@ COPY configs ./configs
 COPY schemas ./schemas
 COPY docs ./docs
 
-RUN python -m pip install --no-cache-dir uv || true \
+RUN if command -v apt-get >/dev/null 2>&1; then apt-get update -y && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*; fi \
+    && python -m pip install --no-cache-dir uv || true \
     && uv sync --frozen --extra d2e --extra test --extra train
 
 CMD ["bash", "scripts/cluster_bootstrap.sh", "--self-check"]

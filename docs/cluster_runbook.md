@@ -27,7 +27,7 @@ cd /root/work/code/continuous-gui-poc/fdm-d2e-reproduction
 bash scripts/cluster_bootstrap.sh --self-check
 ```
 
-The bootstrap does `git fetch`, `git pull --ff-only`, and `uv sync --frozen --extra d2e --extra test --extra train` before running the real-D2E manifest check and the launcher matrix dry run.
+The bootstrap installs `ffmpeg` when missing, then does `git fetch`, `git pull --ff-only`, and `uv sync --frozen --extra d2e --extra test --extra train` before running the real-D2E manifest check and the launcher matrix dry run.
 
 ## 1/2/4 GPU launcher smoke matrix
 

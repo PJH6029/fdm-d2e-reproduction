@@ -22,6 +22,16 @@ git fetch "${REMOTE}" "${BRANCH}"
 git checkout "${BRANCH}"
 git pull --ff-only "${REMOTE}" "${BRANCH}"
 
+if ! command -v ffmpeg >/dev/null 2>&1; then
+  if command -v apt-get >/dev/null 2>&1; then
+    apt-get update -y
+    apt-get install -y ffmpeg
+  else
+    echo "ffmpeg is required for D2E video feature extraction and apt-get is unavailable" >&2
+    exit 3
+  fi
+fi
+
 uv sync --frozen --extra d2e --extra test --extra train
 
 if [[ "${SELF_CHECK}" == "1" ]]; then

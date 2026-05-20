@@ -1,23 +1,12 @@
 {
-  "schema": "torch_idm_train_summary.v1",
-  "metadata": {
-    "schema": "idm_checkpoint_metadata.v1",
-    "model": "torch_mlp_idm_apex8",
-    "dataset_fingerprint": "b2871b75bead06f5b22187bf0fafa70b081cd4815804b0934d15a1af08fb738d",
-    "train_records": 384,
-    "target_records": 128,
-    "pseudo_label_path": "outputs/idm_torch_apex8/pseudolabels.jsonl",
-    "filtered_pseudo_label_path": "outputs/idm_torch_apex8/pseudolabels.filtered.jsonl",
-    "checkpoint_path": "outputs/idm_torch_apex8/checkpoint.pt",
-    "metrics_path": "outputs/idm_torch_apex8/metrics.json",
-    "calibration": {
-      "confidence_threshold": 0.15,
-      "kept": 88,
-      "total": 128,
-      "last_train_loss": 3.5577677488327026
-    }
-  },
-  "metrics": {
+  "schema": "g4_h200_idm_run_evidence.v1",
+  "suffix": "h200",
+  "host": "prod-rsv-jeonghunpark-20260520-b16310",
+  "gpu": [
+    "NVIDIA H200, 143771 MiB, 580.126.16"
+  ],
+  "torch_device": "cuda",
+  "torch_metrics": {
     "schema": "metrics.v1",
     "stage": "fdm_eval",
     "num_examples": 128,
@@ -39,7 +28,23 @@
     },
     "failure_count": 128
   },
-  "predictions_path": "outputs/idm_torch_apex8/predictions.jsonl",
+  "torch_metadata": {
+    "schema": "idm_checkpoint_metadata.v1",
+    "model": "torch_mlp_idm_apex8",
+    "dataset_fingerprint": "b2871b75bead06f5b22187bf0fafa70b081cd4815804b0934d15a1af08fb738d",
+    "train_records": 384,
+    "target_records": 128,
+    "pseudo_label_path": "outputs/idm_torch_apex8/pseudolabels.jsonl",
+    "filtered_pseudo_label_path": "outputs/idm_torch_apex8/pseudolabels.filtered.jsonl",
+    "checkpoint_path": "outputs/idm_torch_apex8/checkpoint.pt",
+    "metrics_path": "outputs/idm_torch_apex8/metrics.json",
+    "calibration": {
+      "confidence_threshold": 0.15,
+      "kept": 88,
+      "total": 128,
+      "last_train_loss": 3.5577677488327026
+    }
+  },
   "statistical_comparison": {
     "schema": "stat_comparison.v1",
     "reference_baseline": "noop",
@@ -320,27 +325,10 @@
       }
     ]
   },
-  "history_tail": [
-    {
-      "epoch": 56,
-      "loss": 3.606397032737732
-    },
-    {
-      "epoch": 57,
-      "loss": 3.479157328605652
-    },
-    {
-      "epoch": 58,
-      "loss": 3.5585721731185913
-    },
-    {
-      "epoch": 59,
-      "loss": 3.5094906091690063
-    },
-    {
-      "epoch": 60,
-      "loss": 3.5577677488327026
-    }
-  ],
-  "device": "cuda"
+  "artifacts": {
+    "gpu_smoke": "outputs/cluster/h200_gpu_smoke_1.json",
+    "decode_summary": "artifacts/sources/d2e_multi_decode_apex8_h200_summary.json",
+    "baseline_summary": "artifacts/eval/baseline_stat_eval_multi_apex8_h200.json",
+    "torch_summary": "artifacts/idm/idm_torch_apex8_summary.json"
+  }
 }

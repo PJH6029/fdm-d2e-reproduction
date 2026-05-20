@@ -1,45 +1,104 @@
 {
-  "schema": "torch_idm_train_summary.v1",
-  "metadata": {
-    "schema": "idm_checkpoint_metadata.v1",
-    "model": "torch_mlp_idm_apex8",
-    "dataset_fingerprint": "b2871b75bead06f5b22187bf0fafa70b081cd4815804b0934d15a1af08fb738d",
-    "train_records": 384,
-    "target_records": 128,
-    "pseudo_label_path": "outputs/idm_torch_apex8/pseudolabels.jsonl",
-    "filtered_pseudo_label_path": "outputs/idm_torch_apex8/pseudolabels.filtered.jsonl",
-    "checkpoint_path": "outputs/idm_torch_apex8/checkpoint.pt",
-    "metrics_path": "outputs/idm_torch_apex8/metrics.json",
-    "calibration": {
-      "confidence_threshold": 0.15,
-      "kept": 88,
-      "total": 128,
-      "last_train_loss": 3.5577677488327026
-    }
+  "schema": "baseline_stat_eval_sample.v1",
+  "train_records": "outputs/data/real_multi_apex8/train.jsonl",
+  "ground_truth": "outputs/data/real_multi_apex8/heldout.jsonl",
+  "endpoints_config": "configs/eval/primary_endpoints.yaml",
+  "prediction_paths": {
+    "noop": "outputs/eval/baselines_multi_apex8_h200/noop.jsonl",
+    "global_majority": "outputs/eval/baselines_multi_apex8_h200/global_majority.jsonl",
+    "game_majority": "outputs/eval/baselines_multi_apex8_h200/game_majority.jsonl",
+    "last_seen_train": "outputs/eval/baselines_multi_apex8_h200/last_seen_train.jsonl"
   },
   "metrics": {
-    "schema": "metrics.v1",
-    "stage": "fdm_eval",
-    "num_examples": 128,
-    "keyboard": {
-      "status": "computed",
-      "accuracy": 0.0,
-      "num_examples": 59
+    "noop": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 128,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 59
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
+      },
+      "mouse_move": {
+        "status": "absent",
+        "pearson": null,
+        "scale_ratio": null,
+        "num_values": 0
+      },
+      "failure_count": 127
     },
-    "mouse_button": {
-      "status": "computed",
-      "accuracy": 0.0,
-      "num_examples": 5
+    "global_majority": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 128,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 59
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
+      },
+      "mouse_move": {
+        "status": "absent",
+        "pearson": null,
+        "scale_ratio": null,
+        "num_values": 0
+      },
+      "failure_count": 127
     },
-    "mouse_move": {
-      "status": "computed",
-      "pearson": 0.08923202083189072,
-      "scale_ratio": 1.6010594284418165,
-      "num_values": 254
+    "game_majority": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 128,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 59
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
+      },
+      "mouse_move": {
+        "status": "absent",
+        "pearson": null,
+        "scale_ratio": null,
+        "num_values": 0
+      },
+      "failure_count": 127
     },
-    "failure_count": 128
+    "last_seen_train": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 128,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.23728813559322035,
+        "num_examples": 59
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
+      },
+      "mouse_move": {
+        "status": "computed",
+        "pearson": -0.05487018575281837,
+        "scale_ratio": 1.148842237674774,
+        "num_values": 254
+      },
+      "failure_count": 128
+    }
   },
-  "predictions_path": "outputs/idm_torch_apex8/predictions.jsonl",
   "statistical_comparison": {
     "schema": "stat_comparison.v1",
     "reference_baseline": "noop",
@@ -94,24 +153,7 @@
         ],
         "p_value": 0.0995,
         "num_clusters": 8,
-        "p_adjusted_holm": 0.8955000000000001,
-        "reject_holm_0_05": false
-      },
-      {
-        "model": "torch_mlp_idm_apex8",
-        "reference": "noop",
-        "endpoint": "keyboard_accuracy",
-        "direction": "higher",
-        "min_effect": 0.05,
-        "status": "computed",
-        "delta": 0.0,
-        "ci": [
-          0.0,
-          0.0
-        ],
-        "p_value": 1.0,
-        "num_clusters": 8,
-        "p_adjusted_holm": 1.0,
+        "p_adjusted_holm": 0.597,
         "reject_holm_0_05": false
       },
       {
@@ -166,23 +208,6 @@
         "reject_holm_0_05": false
       },
       {
-        "model": "torch_mlp_idm_apex8",
-        "reference": "noop",
-        "endpoint": "mouse_button_accuracy",
-        "direction": "higher",
-        "min_effect": 0.05,
-        "status": "computed",
-        "delta": 0.0,
-        "ci": [
-          0.0,
-          0.0
-        ],
-        "p_value": 1.0,
-        "num_clusters": 2,
-        "p_adjusted_holm": 1.0,
-        "reject_holm_0_05": false
-      },
-      {
         "model": "noop",
         "reference": "last_seen_train",
         "endpoint": "mouse_move_pearson",
@@ -234,23 +259,6 @@
         "reject_holm_0_05": false
       },
       {
-        "model": "torch_mlp_idm_apex8",
-        "reference": "last_seen_train",
-        "endpoint": "mouse_move_pearson",
-        "direction": "higher",
-        "min_effect": 0.05,
-        "status": "computed",
-        "delta": 0.29932948502622764,
-        "ci": [
-          -0.007999328476519952,
-          0.654754051302452
-        ],
-        "p_value": 0.0305,
-        "num_clusters": 8,
-        "p_adjusted_holm": 0.305,
-        "reject_holm_0_05": false
-      },
-      {
         "model": "noop",
         "reference": "last_seen_train",
         "endpoint": "mouse_move_scale_ratio_distance",
@@ -299,48 +307,8 @@
         "p_value": null,
         "num_clusters": 0,
         "p_adjusted_holm": null,
-        "reject_holm_0_05": false
-      },
-      {
-        "model": "torch_mlp_idm_apex8",
-        "reference": "last_seen_train",
-        "endpoint": "mouse_move_scale_ratio_distance",
-        "direction": "lower",
-        "min_effect": 0.1,
-        "status": "computed",
-        "delta": 0.04300258394173373,
-        "ci": [
-          -0.47594300410383084,
-          0.5631972822052245
-        ],
-        "p_value": 0.448,
-        "num_clusters": 8,
-        "p_adjusted_holm": 1.0,
         "reject_holm_0_05": false
       }
     ]
-  },
-  "history_tail": [
-    {
-      "epoch": 56,
-      "loss": 3.606397032737732
-    },
-    {
-      "epoch": 57,
-      "loss": 3.479157328605652
-    },
-    {
-      "epoch": 58,
-      "loss": 3.5585721731185913
-    },
-    {
-      "epoch": 59,
-      "loss": 3.5094906091690063
-    },
-    {
-      "epoch": 60,
-      "loss": 3.5577677488327026
-    }
-  ],
-  "device": "cuda"
+  }
 }
