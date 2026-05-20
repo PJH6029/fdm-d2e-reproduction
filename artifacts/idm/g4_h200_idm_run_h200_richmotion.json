@@ -1,6 +1,34 @@
 {
-  "schema": "torch_idm_train_summary.v1",
-  "metadata": {
+  "schema": "g4_h200_idm_run_evidence.v1",
+  "suffix": "h200_richmotion",
+  "host": "prod-rsv-jeonghunpark-20260520-b16310",
+  "gpu": [
+    "NVIDIA H200, 143771 MiB, 580.126.16"
+  ],
+  "torch_device": "cuda",
+  "torch_metrics": {
+    "schema": "metrics.v1",
+    "stage": "fdm_eval",
+    "num_examples": 128,
+    "keyboard": {
+      "status": "computed",
+      "accuracy": 0.15254237288135594,
+      "num_examples": 59
+    },
+    "mouse_button": {
+      "status": "computed",
+      "accuracy": 0.2,
+      "num_examples": 5
+    },
+    "mouse_move": {
+      "status": "computed",
+      "pearson": 0.2547288922585573,
+      "scale_ratio": 1.0695231798374423,
+      "num_values": 254
+    },
+    "failure_count": 128
+  },
+  "torch_metadata": {
     "schema": "idm_checkpoint_metadata.v1",
     "model": "torch_mlp_idm_apex8",
     "dataset_fingerprint": "453db4a31be4a7dcfa5156ce0cdf3e40d437a1e0f5dde1a0be496c2a02891400",
@@ -41,29 +69,6 @@
     "category_threshold": 0.45,
     "categorical_pos_weight_cap": 20.0
   },
-  "metrics": {
-    "schema": "metrics.v1",
-    "stage": "fdm_eval",
-    "num_examples": 128,
-    "keyboard": {
-      "status": "computed",
-      "accuracy": 0.15254237288135594,
-      "num_examples": 59
-    },
-    "mouse_button": {
-      "status": "computed",
-      "accuracy": 0.2,
-      "num_examples": 5
-    },
-    "mouse_move": {
-      "status": "computed",
-      "pearson": 0.2547288922585573,
-      "scale_ratio": 1.0695231798374423,
-      "num_values": 254
-    },
-    "failure_count": 128
-  },
-  "predictions_path": "outputs/idm_torch_apex8/predictions.jsonl",
   "statistical_comparison": {
     "schema": "stat_comparison.v1",
     "reference_baseline": "noop",
@@ -344,27 +349,10 @@
       }
     ]
   },
-  "history_tail": [
-    {
-      "epoch": 56,
-      "loss": 2.209576368331909
-    },
-    {
-      "epoch": 57,
-      "loss": 2.135062336921692
-    },
-    {
-      "epoch": 58,
-      "loss": 2.1375114917755127
-    },
-    {
-      "epoch": 59,
-      "loss": 2.098507046699524
-    },
-    {
-      "epoch": 60,
-      "loss": 2.1129838824272156
-    }
-  ],
-  "device": "cuda"
+  "artifacts": {
+    "gpu_smoke": "outputs/cluster/h200_richmotion_gpu_smoke_1.json",
+    "decode_summary": "artifacts/sources/d2e_multi_decode_apex8_h200_richmotion_summary.json",
+    "baseline_summary": "artifacts/eval/baseline_stat_eval_multi_apex8_h200_richmotion.json",
+    "torch_summary": "artifacts/idm/idm_torch_apex8_summary.json"
+  }
 }
