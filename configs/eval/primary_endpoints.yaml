@@ -1,0 +1,40 @@
+{
+  "schema": "primary_endpoints.v1",
+  "cluster_key": "recording_id",
+  "bootstrap": {
+    "n_resamples": 2000,
+    "confidence": 0.95,
+    "seed": 20260520
+  },
+  "correction": "holm_bonferroni",
+  "reference_baseline": "noop",
+  "endpoints": [
+    {
+      "name": "keyboard_accuracy",
+      "metric_path": ["keyboard", "accuracy"],
+      "direction": "higher",
+      "min_effect": 0.05
+    },
+    {
+      "name": "mouse_button_accuracy",
+      "metric_path": ["mouse_button", "accuracy"],
+      "direction": "higher",
+      "min_effect": 0.05
+    },
+    {
+      "name": "mouse_move_pearson",
+      "reference_baseline": "global_majority",
+      "metric_path": ["mouse_move", "pearson"],
+      "direction": "higher",
+      "min_effect": 0.05
+    },
+    {
+      "name": "mouse_move_scale_ratio_distance",
+      "reference_baseline": "global_majority",
+      "metric_path": ["mouse_move", "scale_ratio"],
+      "direction": "lower",
+      "transform": "abs_log_distance",
+      "min_effect": 0.10
+    }
+  ]
+}

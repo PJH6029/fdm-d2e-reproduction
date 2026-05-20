@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "reference_baseline", "comparisons", "correction"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["stat_comparison.v1"]},
+    "reference_baseline": {"type": "string"},
+    "correction": {"type": "string"},
+    "comparisons": {"type": "array", "items": {"type": "object"}}
+  }
+}
