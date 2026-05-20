@@ -58,10 +58,13 @@ strongest useful artifacts are:
 | Shooter32 axis-softmax motion sweep | `artifacts/idm/idm_torch_shooter32_axis_softmax_motion_sweep_h200.json` | Residual/autoregressive model with direct DX/DY bin-classification head aligned to the binned motion metric | 32 H200 variants; no motion endpoint rejects. Best Pearson row reaches `0.2102` with raw p `0.060` / Holm p `0.54`; two variants still reject keyboard + mouse-button, best button precision `0.2308` with no-button FPR `0.0261` | Directly classifying binned motion tokens is useful target-modeling evidence but does not outperform the residual+softmax raw Pearson peak and still fails the motion gate. |
 | Shooter32 shift-surface motion sweep | `artifacts/idm/idm_torch_shooter32_surface_motion_sweep_h200.json` | Same residual + axis-softmax setup with expanded grid8 visual shift-surface features | 32 H200 variants; no motion endpoint rejects. Best ranked row reaches mouse Pearson `0.2447`, raw p `0.059` / Holm p `0.472`; best Pearson row reaches `0.2738` but raw p `0.113` / Holm p `0.904`; best click-accuracy row reaches `0.175` accuracy and precision `0.2258`, but Holm p `0.2115` | The richer hand-built shift-cost surface recovers raw mouse/click signal comparable to earlier peaks but still does not clear strong correction gates. Representation needs a learned temporal/visual encoder or a larger data regime, not another small summary-feature variant. |
 | Shooter32 luma-temporal Conv3D sweep | `artifacts/idm/idm_torch_shooter32_luma_temporal_conv_sweep_h200.json`, `artifacts/idm/idm_torch_shooter32_luma_temporal_conv_h256_sweep_h200.json` | Five-frame 16x16 luma stack plus inter-frame deltas, residual + axis-softmax heads, learned Conv3D encoder, H200 | 32-run h128/depth sweep plus 24-run h256 focused sweep. Best h128 row rejects keyboard + mouse-button with click accuracy `0.275`, but precision `0.1089` and no-button FPR `0.1030`; best h128 mouse Pearson `0.2456` with Holm p `1.0`. Best h256 mouse Pearson `0.2652` with Holm p `1.0`; button Holm p `0.198` | A small learned luma-temporal encoder improves keyboard and can produce corrected click wins, but those click wins are spammy and motion remains non-significant. This rules out the first lightweight Conv3D/pixel-stack formulation as sufficient for G005. |
+| Shooter64 surface-motion scale sweep | `artifacts/sources/d2e_multi_decode_shooter64_summary.json`, `artifacts/idm/idm_torch_shooter64_surface_motion_sweep_h200.json`, selected artifacts under `artifacts/idm/shooter64_surface_motion_selected/` | 64 game-only shooter/action recordings; 6,144 records; 4,608 train / 1,536 heldout; 64 heldout recording clusters; residual + axis-softmax surface-motion IDM | 32 H200 variants. Selected top row stores checkpoint/predictions/pseudo-labels and rejects `keyboard_accuracy`, `mouse_button_accuracy`, and `mouse_move_pearson`: keyboard delta `0.1183` Holm p `0.0`; mouse-button delta `0.2069` Holm p `0.0035`, accuracy `0.2206`, precision `0.2679`, no-button FPR `0.0266`; mouse Pearson delta `0.1636` Holm p `0.0`, Pearson `0.3040`. Scale-ratio distance improves but is not significant: delta `0.1170`, Holm p `0.4675` | Scaling recording diversity/data volume is the first G4 configuration to clear a strong corrected real-D2E IDM bar across keyboard, click, and mouse-direction endpoints with a retained checkpoint and pseudo-label package. Scale calibration remains a known limitation for G5/G6 failure analysis rather than a blocker for the IDM research-track handoff. |
 
-Current conclusion: G4 has meaningful non-smoke IDM progress across real D2E
-splits, including H200 checkpoint metadata and pseudo-label artifacts, but it
-should remain `in_progress`.  Apex36 rules out "just add more Apex recordings"
+Current conclusion: G4 now has meaningful non-smoke IDM progress across real D2E
+splits, including H200 checkpoint metadata, pseudo-label artifacts, and a
+selected Shooter64 checkpoint that beats strong baselines on keyboard,
+mouse-button, and mouse-direction endpoints after Holm correction.  Earlier
+Apex36 evidence rules out "just add more Apex recordings"
 as a sufficient fix for the mouse/click endpoints, while Shooter32 rules out a
 simple "mix in more click-heavy shooter recordings plus tune a global
 categorical threshold" fix. The grid8-time group-calibrated sweep further rules
@@ -90,13 +93,16 @@ first learned luma-temporal Conv3D encoder does not solve the motion endpoint
 either; it produces stronger keyboard/click rows, but the corrected click row is
 not harness-safe due to low precision and a high no-button false-positive rate.
 The next motion iteration should therefore move beyond the current small-data
-Shooter32 regime and lightweight encoders: either scale recording diversity /
-data volume substantially, use a stronger pretrained/sequence visual backbone,
-or reformulate the target around longer-horizon cursor displacement before
-recomposing a completion portfolio. In every case, the evaluation must use one
-predeclared heldout prediction artifact without untrained categorical logits or
-post-hoc heldout thresholding.
+Shooter32 regime and lightweight encoders. The Shooter64 scale sweep validates
+the data-diversity hypothesis for direction/click/keyboard quality, while
+leaving scale-ratio calibration as an explicit limitation. Future G5/G6 work
+should preserve the selected Shooter64 checkpoint as the current IDM handoff,
+then test whether larger data, stronger pretrained/sequence visual backbones,
+or longer-horizon displacement targets improve scale calibration and downstream
+FDM/harness stability. In every case, the evaluation must use one predeclared
+heldout prediction artifact without untrained categorical logits or post-hoc
+heldout thresholding.
 
 ## Completion caveat
 
-This milestone proves the real-D2E neural IDM training/evaluation path on the decoded sample and already beats the `global_majority` movement baseline on sample mouse endpoints. It is not the final G4 completion proof: G4 still needs full selected-D2E training on MLXP storage, enough recording clusters for the strong statistical bar, and durable trained checkpoints before the ultragoal story should be checkpointed complete.
+This milestone proves the real-D2E neural IDM training/evaluation path and now includes a durable Shooter64 H200 checkpoint package. It is not a claim of FDM-1 parity or final ultragoal success: FDM training, ablations/scaling, harness execution, and the final report remain separate downstream goals.

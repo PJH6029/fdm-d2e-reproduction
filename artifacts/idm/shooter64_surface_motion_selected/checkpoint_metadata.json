@@ -1,0 +1,332 @@
+{
+  "schema": "idm_checkpoint_metadata.v1",
+  "model": "torch_mlp_idm_shooter64_surface_motion_lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4",
+  "dataset_fingerprint": "1bc7d9a5988936b29f607709728dde8dab26daa3b6caa99dfebde58c27e1de76",
+  "train_records": 4608,
+  "target_records": 1536,
+  "pseudo_label_path": "outputs/idm_torch_sweeps/idm_torch_shooter64_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4/pseudolabels.jsonl",
+  "filtered_pseudo_label_path": "outputs/idm_torch_sweeps/idm_torch_shooter64_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4/pseudolabels.filtered.jsonl",
+  "checkpoint_path": "outputs/idm_torch_sweeps/idm_torch_shooter64_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4/checkpoint.pt",
+  "metrics_path": "outputs/idm_torch_sweeps/idm_torch_shooter64_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4/metrics.json",
+  "calibration": {
+    "confidence_threshold": 0.15,
+    "kept": 721,
+    "total": 1536,
+    "last_train_loss": 0.7616459363036685,
+    "category_threshold_mode": "group_exact_calibrated",
+    "category_threshold": 0.35,
+    "category_thresholds": {
+      "KEY_PRESS_160": 0.7,
+      "KEY_PRESS_162": 0.7,
+      "KEY_PRESS_164": 0.7,
+      "KEY_PRESS_32": 0.7,
+      "KEY_PRESS_49": 0.7,
+      "KEY_PRESS_51": 0.7,
+      "KEY_PRESS_65": 0.7,
+      "KEY_PRESS_66": 0.7,
+      "KEY_PRESS_68": 0.7,
+      "KEY_PRESS_69": 0.7,
+      "KEY_PRESS_70": 0.7,
+      "KEY_PRESS_83": 0.7,
+      "KEY_PRESS_87": 0.7,
+      "KEY_PRESS_9": 0.7,
+      "KEY_RELEASE_160": 0.7,
+      "KEY_RELEASE_162": 0.7,
+      "KEY_RELEASE_32": 0.7,
+      "KEY_RELEASE_49": 0.7,
+      "KEY_RELEASE_51": 0.7,
+      "KEY_RELEASE_65": 0.7,
+      "KEY_RELEASE_66": 0.7,
+      "KEY_RELEASE_68": 0.7,
+      "KEY_RELEASE_69": 0.7,
+      "KEY_RELEASE_70": 0.7,
+      "KEY_RELEASE_83": 0.7,
+      "KEY_RELEASE_87": 0.7,
+      "KEY_RELEASE_88": 0.7,
+      "KEY_RELEASE_9": 0.7
+    },
+    "button_head_mode": "softmax",
+    "button_softmax_threshold": 0.7,
+    "button_softmax_threshold_mode": "fbeta_calibrated",
+    "button_softmax_classes": [
+      {
+        "index": 0,
+        "tokens": [],
+        "name": "NO_BUTTON",
+        "train_count": 4432
+      },
+      {
+        "index": 1,
+        "tokens": [
+          "MOUSE_LEFT_DOWN"
+        ],
+        "name": "MOUSE_LEFT_DOWN",
+        "train_count": 74
+      },
+      {
+        "index": 2,
+        "tokens": [
+          "MOUSE_LEFT_DOWN",
+          "MOUSE_LEFT_UP"
+        ],
+        "name": "MOUSE_LEFT_DOWN+MOUSE_LEFT_UP",
+        "train_count": 1
+      },
+      {
+        "index": 3,
+        "tokens": [
+          "MOUSE_LEFT_UP"
+        ],
+        "name": "MOUSE_LEFT_UP",
+        "train_count": 70
+      },
+      {
+        "index": 4,
+        "tokens": [
+          "MOUSE_RIGHT_DOWN"
+        ],
+        "name": "MOUSE_RIGHT_DOWN",
+        "train_count": 16
+      },
+      {
+        "index": 5,
+        "tokens": [
+          "MOUSE_RIGHT_UP"
+        ],
+        "name": "MOUSE_RIGHT_UP",
+        "train_count": 15
+      }
+    ],
+    "category_calibration_records": 896,
+    "category_calibration_fit_records": 3712,
+    "category_calibration_refit_full_train": true,
+    "category_calibration_history_tail": [
+      {
+        "epoch": 78,
+        "loss": 0.7682485699653625
+      },
+      {
+        "epoch": 79,
+        "loss": 0.7643948992093405
+      },
+      {
+        "epoch": 80,
+        "loss": 0.7612102588017782
+      }
+    ],
+    "category_threshold_diagnostics": {
+      "default_threshold": 0.35,
+      "grid": [
+        0.02,
+        0.05,
+        0.08,
+        0.1,
+        0.15,
+        0.2,
+        0.25,
+        0.3,
+        0.35,
+        0.4,
+        0.45,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9
+      ],
+      "per_group": {
+        "keyboard": {
+          "threshold": 0.7,
+          "positive_examples": 354,
+          "accuracy": 0.6101694915254238,
+          "correct": 216
+        }
+      }
+    },
+    "button_softmax_threshold_diagnostics": {
+      "positive_examples": 51,
+      "score": 0.6296296296296295,
+      "precision": 0.8095238095238095,
+      "recall": 0.3333333333333333,
+      "tp": 17,
+      "fp": 4,
+      "fn": 34,
+      "predicted_positive_examples": 21
+    }
+  },
+  "categorical_vocab": [
+    "KEY_PRESS_160",
+    "KEY_PRESS_162",
+    "KEY_PRESS_164",
+    "KEY_PRESS_32",
+    "KEY_PRESS_49",
+    "KEY_PRESS_51",
+    "KEY_PRESS_65",
+    "KEY_PRESS_66",
+    "KEY_PRESS_68",
+    "KEY_PRESS_69",
+    "KEY_PRESS_70",
+    "KEY_PRESS_83",
+    "KEY_PRESS_87",
+    "KEY_PRESS_9",
+    "KEY_RELEASE_160",
+    "KEY_RELEASE_162",
+    "KEY_RELEASE_32",
+    "KEY_RELEASE_49",
+    "KEY_RELEASE_51",
+    "KEY_RELEASE_65",
+    "KEY_RELEASE_66",
+    "KEY_RELEASE_68",
+    "KEY_RELEASE_69",
+    "KEY_RELEASE_70",
+    "KEY_RELEASE_83",
+    "KEY_RELEASE_87",
+    "KEY_RELEASE_88",
+    "KEY_RELEASE_9"
+  ],
+  "history_vocab": [
+    "KEY_PRESS_160",
+    "KEY_PRESS_162",
+    "KEY_PRESS_164",
+    "KEY_PRESS_32",
+    "KEY_PRESS_49",
+    "KEY_PRESS_51",
+    "KEY_PRESS_65",
+    "KEY_PRESS_66",
+    "KEY_PRESS_68",
+    "KEY_PRESS_69",
+    "KEY_PRESS_70",
+    "KEY_PRESS_83",
+    "KEY_PRESS_87",
+    "KEY_PRESS_9",
+    "KEY_RELEASE_160",
+    "KEY_RELEASE_162",
+    "KEY_RELEASE_32",
+    "KEY_RELEASE_49",
+    "KEY_RELEASE_51",
+    "KEY_RELEASE_65",
+    "KEY_RELEASE_66",
+    "KEY_RELEASE_68",
+    "KEY_RELEASE_69",
+    "KEY_RELEASE_70",
+    "KEY_RELEASE_83",
+    "KEY_RELEASE_87",
+    "KEY_RELEASE_88",
+    "KEY_RELEASE_9",
+    "MOUSE_LEFT_DOWN",
+    "MOUSE_LEFT_UP",
+    "MOUSE_RIGHT_DOWN",
+    "MOUSE_RIGHT_UP"
+  ],
+  "feature_mode": "summary_grid8_shift_surface_time",
+  "input_dim": 761,
+  "model_arch": "mlp",
+  "mouse_target_mode": "residual_last_seen",
+  "mouse_head_mode": "axis_softmax",
+  "mouse_axis_classes": [
+    "N5",
+    "N4",
+    "N3",
+    "N2",
+    "N1",
+    "Z0",
+    "P1",
+    "P2",
+    "P3",
+    "P4",
+    "P5"
+  ],
+  "mouse_axis_loss_weight": 0.5,
+  "mouse_regression_loss_weight": 0.25,
+  "mouse_axis_class_weight_cap": 4.0,
+  "category_threshold": 0.35,
+  "category_threshold_mode": "group_exact_calibrated",
+  "category_thresholds": {
+    "KEY_PRESS_160": 0.7,
+    "KEY_PRESS_162": 0.7,
+    "KEY_PRESS_164": 0.7,
+    "KEY_PRESS_32": 0.7,
+    "KEY_PRESS_49": 0.7,
+    "KEY_PRESS_51": 0.7,
+    "KEY_PRESS_65": 0.7,
+    "KEY_PRESS_66": 0.7,
+    "KEY_PRESS_68": 0.7,
+    "KEY_PRESS_69": 0.7,
+    "KEY_PRESS_70": 0.7,
+    "KEY_PRESS_83": 0.7,
+    "KEY_PRESS_87": 0.7,
+    "KEY_PRESS_9": 0.7,
+    "KEY_RELEASE_160": 0.7,
+    "KEY_RELEASE_162": 0.7,
+    "KEY_RELEASE_32": 0.7,
+    "KEY_RELEASE_49": 0.7,
+    "KEY_RELEASE_51": 0.7,
+    "KEY_RELEASE_65": 0.7,
+    "KEY_RELEASE_66": 0.7,
+    "KEY_RELEASE_68": 0.7,
+    "KEY_RELEASE_69": 0.7,
+    "KEY_RELEASE_70": 0.7,
+    "KEY_RELEASE_83": 0.7,
+    "KEY_RELEASE_87": 0.7,
+    "KEY_RELEASE_88": 0.7,
+    "KEY_RELEASE_9": 0.7
+  },
+  "categorical_loss": "focal",
+  "categorical_pos_weight_cap": 20.0,
+  "button_head_mode": "softmax",
+  "button_softmax_threshold": 0.7,
+  "button_softmax_threshold_mode": "fbeta_calibrated",
+  "button_softmax_classes": [
+    {
+      "index": 0,
+      "tokens": [],
+      "name": "NO_BUTTON",
+      "train_count": 4432
+    },
+    {
+      "index": 1,
+      "tokens": [
+        "MOUSE_LEFT_DOWN"
+      ],
+      "name": "MOUSE_LEFT_DOWN",
+      "train_count": 74
+    },
+    {
+      "index": 2,
+      "tokens": [
+        "MOUSE_LEFT_DOWN",
+        "MOUSE_LEFT_UP"
+      ],
+      "name": "MOUSE_LEFT_DOWN+MOUSE_LEFT_UP",
+      "train_count": 1
+    },
+    {
+      "index": 3,
+      "tokens": [
+        "MOUSE_LEFT_UP"
+      ],
+      "name": "MOUSE_LEFT_UP",
+      "train_count": 70
+    },
+    {
+      "index": 4,
+      "tokens": [
+        "MOUSE_RIGHT_DOWN"
+      ],
+      "name": "MOUSE_RIGHT_DOWN",
+      "train_count": 16
+    },
+    {
+      "index": 5,
+      "tokens": [
+        "MOUSE_RIGHT_UP"
+      ],
+      "name": "MOUSE_RIGHT_UP",
+      "train_count": 15
+    }
+  ],
+  "button_softmax_loss_weight": 0.25,
+  "button_softmax_class_weight_cap": 4.0,
+  "action_history_len": 4,
+  "action_history_feedback": "autoregressive_predicted"
+}

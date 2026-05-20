@@ -1,0 +1,280 @@
+{
+  "schema": "stat_comparison.v1",
+  "reference_baseline": "noop",
+  "correction": "holm_bonferroni",
+  "cluster_key": "recording_id",
+  "comparisons": [
+    {
+      "model": "global_majority",
+      "reference": "noop",
+      "endpoint": "keyboard_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_value": 1.0,
+      "num_clusters": 56,
+      "p_adjusted_holm": 1.0,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "game_majority",
+      "reference": "noop",
+      "endpoint": "keyboard_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.016724896480331264,
+      "ci": [
+        0.0,
+        0.041990165631469976
+      ],
+      "p_value": 0.1255,
+      "num_clusters": 56,
+      "p_adjusted_holm": 0.502,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "last_seen_train",
+      "reference": "noop",
+      "endpoint": "keyboard_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.1295118862762496,
+      "ci": [
+        0.07775297619047619,
+        0.18327972493345165
+      ],
+      "p_value": 0.0,
+      "num_clusters": 56,
+      "p_adjusted_holm": 0.0,
+      "reject_holm_0_05": true
+    },
+    {
+      "model": "torch_mlp_idm_shooter64_surface_motion_lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4",
+      "reference": "noop",
+      "endpoint": "keyboard_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.11827570290303206,
+      "ci": [
+        0.07054280045351474,
+        0.16384088220268347
+      ],
+      "p_value": 0.0,
+      "num_clusters": 56,
+      "p_adjusted_holm": 0.0,
+      "reject_holm_0_05": true
+    },
+    {
+      "model": "global_majority",
+      "reference": "noop",
+      "endpoint": "mouse_button_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_value": 1.0,
+      "num_clusters": 15,
+      "p_adjusted_holm": 1.0,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "game_majority",
+      "reference": "noop",
+      "endpoint": "mouse_button_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_value": 1.0,
+      "num_clusters": 15,
+      "p_adjusted_holm": 1.0,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "last_seen_train",
+      "reference": "noop",
+      "endpoint": "mouse_button_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.08888888888888888,
+      "ci": [
+        0.0,
+        0.18888888888888886
+      ],
+      "p_value": 0.0315,
+      "num_clusters": 15,
+      "p_adjusted_holm": 0.189,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "torch_mlp_idm_shooter64_surface_motion_lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4",
+      "reference": "noop",
+      "endpoint": "mouse_button_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.20686868686868687,
+      "ci": [
+        0.05333333333333334,
+        0.38707070707070707
+      ],
+      "p_value": 0.0005,
+      "num_clusters": 15,
+      "p_adjusted_holm": 0.0035,
+      "reject_holm_0_05": true
+    },
+    {
+      "model": "noop",
+      "reference": "last_seen_train",
+      "endpoint": "mouse_move_pearson",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "no_shared_clusters",
+      "delta": null,
+      "ci": [
+        null,
+        null
+      ],
+      "p_value": null,
+      "num_clusters": 0,
+      "p_adjusted_holm": null,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "global_majority",
+      "reference": "last_seen_train",
+      "endpoint": "mouse_move_pearson",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "no_shared_clusters",
+      "delta": null,
+      "ci": [
+        null,
+        null
+      ],
+      "p_value": null,
+      "num_clusters": 0,
+      "p_adjusted_holm": null,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "game_majority",
+      "reference": "last_seen_train",
+      "endpoint": "mouse_move_pearson",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "no_shared_clusters",
+      "delta": null,
+      "ci": [
+        null,
+        null
+      ],
+      "p_value": null,
+      "num_clusters": 0,
+      "p_adjusted_holm": null,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "torch_mlp_idm_shooter64_surface_motion_lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4",
+      "reference": "last_seen_train",
+      "endpoint": "mouse_move_pearson",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.16359511537042076,
+      "ci": [
+        0.06761315668012971,
+        0.2647897810975601
+      ],
+      "p_value": 0.0,
+      "num_clusters": 54,
+      "p_adjusted_holm": 0.0,
+      "reject_holm_0_05": true
+    },
+    {
+      "model": "noop",
+      "reference": "last_seen_train",
+      "endpoint": "mouse_move_scale_ratio_distance",
+      "direction": "lower",
+      "min_effect": 0.1,
+      "status": "no_shared_clusters",
+      "delta": null,
+      "ci": [
+        null,
+        null
+      ],
+      "p_value": null,
+      "num_clusters": 0,
+      "p_adjusted_holm": null,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "global_majority",
+      "reference": "last_seen_train",
+      "endpoint": "mouse_move_scale_ratio_distance",
+      "direction": "lower",
+      "min_effect": 0.1,
+      "status": "no_shared_clusters",
+      "delta": null,
+      "ci": [
+        null,
+        null
+      ],
+      "p_value": null,
+      "num_clusters": 0,
+      "p_adjusted_holm": null,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "game_majority",
+      "reference": "last_seen_train",
+      "endpoint": "mouse_move_scale_ratio_distance",
+      "direction": "lower",
+      "min_effect": 0.1,
+      "status": "no_shared_clusters",
+      "delta": null,
+      "ci": [
+        null,
+        null
+      ],
+      "p_value": null,
+      "num_clusters": 0,
+      "p_adjusted_holm": null,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "torch_mlp_idm_shooter64_surface_motion_lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4",
+      "reference": "last_seen_train",
+      "endpoint": "mouse_move_scale_ratio_distance",
+      "direction": "lower",
+      "min_effect": 0.1,
+      "status": "computed",
+      "delta": 0.11697293470913728,
+      "ci": [
+        -0.060348580645045447,
+        0.29980529677801926
+      ],
+      "p_value": 0.0935,
+      "num_clusters": 54,
+      "p_adjusted_holm": 0.4675,
+      "reject_holm_0_05": false
+    }
+  ]
+}
