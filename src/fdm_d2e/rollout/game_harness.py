@@ -306,6 +306,8 @@ def run_combo_door_task(frames: list[ControlFrame], config: dict[str, Any], thre
                 matched += 1
     progress = matched / max(1, len(required))
     passed, common = _pass_common(frames, progress, thresholds)
+    if matched < len(required):
+        passed = False
     return {
         "environment": "combo_door_arena",
         "task": str(config.get("task", "combo_door")),

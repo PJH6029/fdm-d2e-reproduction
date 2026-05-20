@@ -25,7 +25,8 @@ FDM_BRANCH_RUNS = [
     ("bth05_recall_teacher", "IDM button threshold override 0.5", Path("artifacts/fdm/fdm_shooter64_surface_motion_fulltrain_bth05_h200/summary.json")),
     ("bth05_pseudo_recording_scale", "pseudo-label recording scale calibration", Path("artifacts/fdm/fdm_bth05_recording_scale_calibrated_h200/summary.json")),
     ("bth05_residual_regression", "residual-regression FDM branch", Path("artifacts/fdm/fdm_shooter64_surface_motion_fulltrain_bth05_regression_h200/summary.json")),
-    ("bth05_d2e_train_scale", "D2E train-split scale calibration", Path("artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/summary.json")),
+    ("bth05_d2e_train_prediction_scale", "strict D2E train-label + train-prediction scale calibration", Path("artifacts/fdm/fdm_bth05_d2e_train_prediction_scale_calibrated_h200/summary.json")),
+    ("bth05_d2e_train_scale", "D2E train-label + target-prediction scale normalization", Path("artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/summary.json")),
 ]
 
 FDM_SWEEPS = [
@@ -233,7 +234,7 @@ def _analysis(branches: list[dict[str, Any]], sweeps: list[dict[str, Any]], scal
         },
         "findings": [
             "IDM-pseudo FDM training plus bth05 teacher labels clears keyboard, button, and mouse-direction endpoints, but raw/pure-pseudo scale remains non-significant.",
-            "D2E train-split scale calibration is the only selected branch that clears the scale-ratio endpoint after Holm while preserving the other three endpoint wins.",
+            "D2E train-split scale targets plus target-prediction distribution normalization are the only selected branch that clears the scale-ratio endpoint after Holm while preserving the other three endpoint wins.",
             "KNN retrieval can clear keyboard/button for some variants but has weak motion correlation and no scale rejections, so retrieval alone is not a sufficient FDM replacement.",
             "IDM scaling from small Apex splits to Shooter64 changes which endpoints are learnable: Shooter64 is the first selected IDM handoff with keyboard, button, and mouse-direction wins, giving the FDM teacher enough signal for G5.",
         ],

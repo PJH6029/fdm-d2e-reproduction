@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.io_utils import read_json, write_jsonl
-from fdm_d2e.rollout.game_harness import candidate_catalog, prediction_controls, run_game_harness_eval
+from fdm_d2e.rollout.game_harness import candidate_catalog, prediction_controls, run_combo_door_task, run_game_harness_eval
 
 
 class GameHarnessContractTests(unittest.TestCase):
@@ -53,6 +53,18 @@ class GameHarnessContractTests(unittest.TestCase):
             )
             self.assertEqual(result["quality_gate"]["status"], "pass")
             self.assertEqual(read_json(output)["quality_gate"]["status"], "pass")
+
+    def test_combo_door_requires_complete_sequence_for_pass(self):
+        frames = prediction_controls([{"timestamp_ns": 0, "predicted_tokens": ["KEY_PRESS_69"]}])
+
+        result = run_combo_door_task(
+            frames,
+            {"task": "combo", "required_key_codes": ["69", "70"]},
+            {"min_valid_action_rate": 0.98, "max_crashes": 0, "min_progress_score": 0.1},
+        )
+
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["progress_score"], 0.5)
 
 
 if __name__ == "__main__":

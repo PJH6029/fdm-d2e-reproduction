@@ -14,7 +14,7 @@ This milestone evaluates trained FDM prediction tokens in deterministic repo-loc
 | `pong_paddle_arena` | paddle tracking | W/S movement |
 | `combo_door_arena` | key interaction | E/F/Space interaction keys |
 
-All five candidates passed install/control probes in `artifacts/harness/g008_game_harness_eval.json`; the G008 threshold required at least three.
+All five candidates passed repo-local deterministic install/control probes in `artifacts/harness/g008_game_harness_eval.json`; the G008 threshold required at least three.
 
 ## Trained action source
 
@@ -33,8 +33,8 @@ Quality gate:
 | --- | ---: | ---: |
 | Candidate count | 5 | 5 |
 | Install/control probes passing | 5 | 3 |
-| Tasks passing | 3 | 3 |
-| Environments passing | 3 | 2 |
+| Tasks passing | 5 | 5 |
+| Environments passing | 5 | 5 |
 | Status | pass | pass |
 
 Task results:
@@ -44,6 +44,8 @@ Task results:
 | `grid_forward_right_navigation` | `grid_target_arena` | `0.600` | valid action rate `1.0`, crashes `0` | yes |
 | `aim_left_sweep_click_stability` | `aim_click_arena` | `0.893` | valid action rate `1.0`, crashes `0` | yes |
 | `dodge_runner_survival` | `dodge_runner_arena` | `1.000` | valid action rate `1.0`, crashes `0` | yes |
+| `pong_paddle_tracking` | `pong_paddle_arena` | `1.000` | valid action rate `1.0`, crashes `0` | yes |
+| `combo_door_interaction` | `combo_door_arena` | `1.000` | valid action rate `1.0`, crashes `0` | yes |
 
 ## Caveats and next integration path
 

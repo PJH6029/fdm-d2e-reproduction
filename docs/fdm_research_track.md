@@ -4,10 +4,10 @@ G5 now has a real-D2E, H200-backed FDM path that trains from IDM pseudo-labels, 
 
 ## Data and training signal
 
-- Data split: `outputs/data/real_multi_shooter64` from 64 shooter/action D2E recordings (`4,608` train windows, `1,536` heldout windows).
+- Data split: `outputs/data/real_multi_shooter64` from 64 shooter/action D2E recordings (`4,608` train windows, `1,536` within-recording temporal heldout windows).
 - IDM teacher: selected Shooter64 surface-motion IDM handoff from G4, plus the recall-oriented `button_softmax_threshold_override=0.5` pseudo-label generation path.
 - FDM training: `configs/model/fdm_shooter64_surface_motion_fulltrain_bth05.yaml` trains the Torch FDM on IDM-generated train-split pseudo-labels and evaluates against real D2E heldout labels.
-- Scale calibration branch: `configs/model/fdm_bth05_d2e_train_scale_calibrated.yaml` preserves the trained bth05 FDM predictions, then rescales mouse-motion tokens using **train-split D2E ground-truth motion scale only**. It does not consume heldout/target labels (`calibration_uses_target_ground_truth=false`) and keeps endpoint reference baselines tied to the pseudo-labeled FDM training stream.
+- Scale calibration branch: `configs/model/fdm_bth05_d2e_train_scale_calibrated.yaml` preserves the trained bth05 FDM predictions, then rescales mouse-motion tokens using train-split D2E ground-truth motion scale and the heldout prediction-distribution denominator. It does not consume heldout/target labels (`calibration_uses_target_ground_truth=false`) but is transductive over target predictions (`calibration_uses_target_prediction_distribution=true`). The stricter `configs/model/fdm_bth05_d2e_train_prediction_scale_calibrated.yaml` uses train-side predictions for the denominator and is retained as a 3/4-endpoint failure-analysis variant.
 
 ## Selected G5 artifact
 
@@ -20,9 +20,9 @@ G5 now has a real-D2E, H200-backed FDM path that trains from IDM pseudo-labels, 
 | Calibration records | `outputs/data/real_multi_shooter64/train.jsonl` |
 | Baseline train records | `outputs/fdm_shooter64_surface_motion_fulltrain_bth05/fdm_train_pseudolabeled_records.jsonl` |
 | Heldout target | `outputs/fdm_shooter64_surface_motion_fulltrain_bth05/fdm_target_ground_truth_records.jsonl` |
-| Checkpoint metadata SHA-256 | `38fa66dd65276ad3d818a6a6de38f86bcd3db440a8bd9a034bbc11f478df65fd` |
+| Checkpoint metadata SHA-256 | `128fd509de096c4f67e0a2244c56747e21e69311d636fa2269229bc3e6c2e2d0` |
 | Predictions SHA-256 | `012844afe3c4c8eebe50c8f809247815f7056c8f0b763c5148257229e37d587a` |
-| Summary SHA-256 | `0d6ebc68a2fe8fdb98fd95bf159b1eeb166015be41fd73e7dc1db228099dbd1b` |
+| Summary SHA-256 | `cf99fbc7e5f9a1561663b5b5af29c17894adcb86f8dc7c1f020c3aebc592318e` |
 
 ## Primary endpoint results
 
@@ -67,4 +67,4 @@ uv run pytest -q
 
 ## Caveats
 
-This is not an FDM-1 parity claim. The selected branch uses real D2E train-split labels for post-hoc mouse-scale calibration, so report it as a train-labeled calibration variant rather than a pure IDM-pseudo-label FDM. Heldout labels are not used in training or calibration. G6 should treat pure-pseudo scale calibration, KNN retrieval, and train-labeled calibration as separate ablation axes.
+This is not an FDM-1 parity claim. The selected branch uses real D2E train-split labels plus target prediction-distribution normalization for post-hoc mouse-scale calibration, so report it as a transductive train-labeled/no-heldout-label calibration variant rather than a pure IDM-pseudo-label FDM. Heldout labels are not used in training or calibration. G6 should treat pure-pseudo scale calibration, KNN retrieval, and train-labeled calibration as separate ablation axes.

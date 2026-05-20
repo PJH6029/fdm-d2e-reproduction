@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+from pathlib import Path
+from typing import Iterable
+
+DEFAULT_PATTERNS = [
+    "README.md",
+    "docs/source_validation.md",
+    "docs/mlxp_resource_plan.md",
+    "docs/d2e_real_ingestion.md",
+    "docs/baselines_statistics.md",
+    "docs/idm_research_track.md",
+    "docs/fdm_research_track.md",
+    "docs/ablation_scaling.md",
+    "docs/harness_selection_and_execution.md",
+    "docs/final_research_report.md",
+    "docs/failure_analysis.md",
+    "docs/reproducibility_runbook.md",
+    "docs/cluster_runbook.md",
+    "configs/data/d2e_real_multi_shooter64.yaml",
+    "configs/eval/primary_endpoints.yaml",
+    "configs/harness/g008_game_harness.yaml",
+    "configs/model/idm_torch_shooter64_surface_motion.yaml",
+    "configs/model/idm_predict_shooter64_train_button_recall.yaml",
+    "configs/model/fdm_shooter64_surface_motion_fulltrain_bth05.yaml",
+    "configs/model/fdm_bth05_d2e_train_scale_calibrated.yaml",
+    "configs/model/fdm_bth05_d2e_train_prediction_scale_calibrated.yaml",
+    "configs/model/fdm_bth05_predict_train_for_scale.yaml",
+    "scripts/prepare_d2e_real.py",
+    "scripts/extract_d2e_real_multi.py",
+    "scripts/train_idm_torch.py",
+    "scripts/predict_idm_torch.py",
+    "scripts/train_fdm_real.py",
+    "scripts/calibrate_fdm_predictions.py",
+    "scripts/summarize_ablation_scaling.py",
+    "scripts/run_game_harness_eval.py",
+    "scripts/build_repro_package_manifest.py",
+    "src/fdm_d2e/training/calibrated_fdm.py",
+    "src/fdm_d2e/training/train_fdm.py",
+    "src/fdm_d2e/training/torch_idm.py",
+    "src/fdm_d2e/rollout/game_harness.py",
+    "src/fdm_d2e/eval/statistics.py",
+    "src/fdm_d2e/eval/action_metrics.py",
+    "tests/test_calibrated_fdm_contract.py",
+    "tests/test_game_harness_contract.py",
+    "tests/test_eval_statistics.py",
+    "artifacts/sources/d2e_multi_decode_shooter64_summary.json",
+    "artifacts/idm/shooter64_surface_motion_selected/summary.json",
+    "artifacts/idm/shooter64_surface_motion_selected/checkpoint_metadata.json",
+    "artifacts/idm/shooter64_surface_motion_selected/metrics.json",
+    "artifacts/idm/shooter64_surface_motion_selected/statistical_comparison.json",
+    "artifacts/idm/idm_torch_shooter64_surface_motion_sweep_h200.json",
+    "artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/summary.json",
+    "artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/checkpoint_metadata.json",
+    "artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/metrics.json",
+    "artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/statistical_comparison.json",
+    "artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/predictions.jsonl",
+    "artifacts/fdm/fdm_bth05_d2e_train_prediction_scale_calibrated_h200/summary.json",
+    "artifacts/fdm/fdm_bth05_d2e_train_prediction_scale_calibrated_h200/checkpoint_metadata.json",
+    "artifacts/fdm/fdm_bth05_d2e_train_prediction_scale_calibrated_h200/metrics.json",
+    "artifacts/fdm/fdm_bth05_d2e_train_prediction_scale_calibrated_h200/statistical_comparison.json",
+    "artifacts/fdm/fdm_shooter64_fulltrain_button_sweep_h200.json",
+    "artifacts/fdm/fdm_shooter64_recall_beta_sweep_h200.json",
+    "artifacts/fdm/fdm_knn_shooter64_surface_sweep_h200.json",
+    "artifacts/ablation_scaling/g007_ablation_scaling_summary.json",
+    "artifacts/harness/g008_game_harness_eval.json",
+    "artifacts/reproducibility/final_cleanup_review.md",
+]
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def iter_paths(patterns: Iterable[str]) -> list[Path]:
+    paths: dict[str, Path] = {}
+    for pattern in patterns:
+        matches = sorted(Path().glob(pattern))
+        if not matches and Path(pattern).exists():
+            matches = [Path(pattern)]
+        if not matches and not any(ch in pattern for ch in "*?[]"):
+            raise FileNotFoundError(f"required manifest path is missing: {pattern}")
+        for path in matches:
+            if path.is_file():
+                paths[str(path)] = path
+    return [paths[key] for key in sorted(paths)]
+
+
+def classify(path: Path) -> str:
+    text = str(path)
+    if text.startswith("docs/") or text == "README.md":
+        return "documentation"
+    if text.startswith("configs/"):
+        return "configuration"
+    if text.startswith("scripts/"):
+        return "reproduction_script"
+    if text.startswith("artifacts/"):
+        return "evidence_artifact"
+    return "other"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Build a reproducibility package manifest with hashes for key evidence artifacts.")
+    parser.add_argument("--output", default="artifacts/reproducibility/package_manifest.json")
+    parser.add_argument("--patterns", nargs="*", default=DEFAULT_PATTERNS)
+    args = parser.parse_args()
+    entries = []
+    for path in iter_paths(args.patterns):
+        entries.append({"path": str(path), "kind": classify(path), "bytes": path.stat().st_size, "sha256": sha256_file(path)})
+    payload = {
+        "schema": "repro_package_manifest.v1",
+        "generated_at_utc": "deterministic-manifest-no-wall-clock",
+        "entry_count": len(entries),
+        "entries": entries,
+        "notes": [
+            "D2E-derived artifacts are research/non-commercial and must follow upstream terms.",
+            "This manifest supports a scaled reproduction report, not an FDM-1 parity claim.",
+        ],
+    }
+    out = Path(args.output)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    print(f"wrote {out} entries={len(entries)}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

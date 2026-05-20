@@ -1,6 +1,6 @@
 # FDM-D2E: recipe-faithful scaled FDM-1 reproduction on D2E
 
-This repository is a greenfield smoke-scale implementation plan and code scaffold for reproducing the **recipe shape** of FDM-1 using the public D2E dataset.
+This repository contains a scaled, real-D2E research reproduction of the **recipe shape** of FDM-1 using the public D2E dataset, including real data decoding, neural IDM/FDM training, statistical evaluation, ablations, and bounded game-adjacent harness replay.
 
 ## Scope guardrails
 
@@ -12,7 +12,7 @@ This repository is a greenfield smoke-scale implementation plan and code scaffol
 
 ## Smoke pipeline
 
-The default smoke pipeline uses a deterministic D2E-shaped fixture so a fresh checkout can run without downloading the full dataset. Real D2E files can be wired into the same contracts after `docs/d2e_source_contract.md` is confirmed in the target environment.
+A lightweight smoke pipeline remains for local contract checks, but the main evidence package uses decoded real D2E Shooter64 data and H200-trained IDM/FDM artifacts. See `docs/final_research_report.md` and `docs/reproducibility_runbook.md` for the non-smoke path.
 
 ```bash
 python scripts/prepare_d2e_smoke.py --config configs/data/d2e_smoke.yaml

@@ -172,8 +172,51 @@
       }
     },
     {
+      "name": "bth05_d2e_train_prediction_scale",
+      "description": "strict D2E train-label + train-prediction scale calibration",
+      "artifact": "artifacts/fdm/fdm_bth05_d2e_train_prediction_scale_calibrated_h200/summary.json",
+      "model": "fdm_bth05_d2e_train_prediction_scale_calibrated",
+      "metrics": {
+        "num_examples": 1536,
+        "keyboard_accuracy": 0.11011904761904762,
+        "mouse_button_accuracy": 0.22058823529411764,
+        "mouse_button_precision": 0.3488372093023256,
+        "mouse_button_no_button_false_positive_rate": 0.018392370572207085,
+        "mouse_move_pearson": 0.15505565400780458,
+        "mouse_move_scale_ratio": 1.0862670660126141
+      },
+      "reject_count": 3,
+      "rejected_endpoints": [
+        "keyboard_accuracy",
+        "mouse_button_accuracy",
+        "mouse_move_pearson"
+      ],
+      "endpoint_stats": {
+        "keyboard_accuracy": {
+          "delta": 0.08562719199365162,
+          "p_adjusted_holm": 0.0,
+          "reject_holm_0_05": true
+        },
+        "mouse_button_accuracy": {
+          "delta": 0.13303030303030303,
+          "p_adjusted_holm": 0.0275,
+          "reject_holm_0_05": true
+        },
+        "mouse_move_pearson": {
+          "delta": 0.23697221960899306,
+          "p_adjusted_holm": 0.0,
+          "reject_holm_0_05": true
+        },
+        "mouse_move_scale_ratio_distance": {
+          "delta": 0.15734733882709606,
+          "p_adjusted_holm": 0.32,
+          "reject_holm_0_05": false
+        }
+      }
+    },
+    {
       "name": "bth05_d2e_train_scale",
-      "description": "D2E train-split scale calibration",
+      "description": "D2E train-label + target-prediction scale normalization",
       "artifact": "artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/summary.json",
       "model": "fdm_bth05_d2e_train_scale_calibrated",
       "metrics": {
@@ -2215,7 +2258,7 @@
     },
     "findings": [
       "IDM-pseudo FDM training plus bth05 teacher labels clears keyboard, button, and mouse-direction endpoints, but raw/pure-pseudo scale remains non-significant.",
-      "D2E train-split scale calibration is the only selected branch that clears the scale-ratio endpoint after Holm while preserving the other three endpoint wins.",
+      "D2E train-split scale targets plus target-prediction distribution normalization are the only selected branch that clears the scale-ratio endpoint after Holm while preserving the other three endpoint wins.",
       "KNN retrieval can clear keyboard/button for some variants but has weak motion correlation and no scale rejections, so retrieval alone is not a sufficient FDM replacement.",
       "IDM scaling from small Apex splits to Shooter64 changes which endpoints are learnable: Shooter64 is the first selected IDM handoff with keyboard, button, and mouse-direction wins, giving the FDM teacher enough signal for G5."
     ],
@@ -2224,5 +2267,5 @@
     "knn_max_reject_count": 2,
     "mean_fdm_sweep_runs_per_axis": 28.0
   },
-  "artifact_fingerprint": "588864dc4655ab01b50b9558ca698a9ec2f26c20174a2a59f45ea42fa4127542"
+  "artifact_fingerprint": "050bbe3d40c0d754c0108f32f4fb0cc9da65b02e8f020b691b3cd2842b38c8c9"
 }

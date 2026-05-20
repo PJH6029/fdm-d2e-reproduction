@@ -34,7 +34,13 @@ Initial implementation uses deterministic synthetic D2E-shaped fixtures for loca
 ## G7 harness selection/execution
 
 - Implemented deterministic repo-local game/game-adjacent harnesses in `src/fdm_d2e/rollout/game_harness.py` and CLI `scripts/run_game_harness_eval.py`.
-- Candidate catalog contains five game-like environments; all five passed install/control probes.
+- Candidate catalog contains five game-like environments; all five passed repo-local deterministic install/control probes.
 - Replayed the trained `fdm_bth05_d2e_train_scale_calibrated` prediction stream from `artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/predictions.jsonl`.
-- Quality gate passed: `3/3` tasks, `3/2` required environments, `5/3` install/control probes.
+- Quality gate passed: `5/5` tasks, `5/5` required environments, `5/3` install/control probes.
 - Verification: `uv run python -m py_compile src/fdm_d2e/rollout/game_harness.py scripts/run_game_harness_eval.py`; `uv run pytest -q` (`58 passed`).
+
+## G8 final report/reproducibility package
+
+- Wrote final report, failure analysis, and reproducibility runbook: `docs/final_research_report.md`, `docs/failure_analysis.md`, `docs/reproducibility_runbook.md`.
+- Added `scripts/build_repro_package_manifest.py` and generated `artifacts/reproducibility/package_manifest.json`.
+- Final gates include ai-slop-cleaner no-op review, code-review/architect review, full tests, manifest validation, and artifact consistency checks.
