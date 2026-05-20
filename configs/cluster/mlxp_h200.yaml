@@ -1,0 +1,11 @@
+{
+  "schema": "mlxp_cluster_config.v1",
+  "pvc_repo_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction",
+  "production_base_image": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+  "custom_image": "docker.io/pjh6029/fdm-d2e-reproduction:dev",
+  "max_gpus": 4,
+  "smoke_gpu_counts": [1, 2, 4],
+  "data_root": "/root/work/data/d2e",
+  "output_root": "/root/work/outputs/fdm-d2e-reproduction",
+  "bootstrap_command": "bash scripts/cluster_bootstrap.sh --self-check"
+}

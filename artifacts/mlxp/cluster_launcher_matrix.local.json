@@ -1,0 +1,79 @@
+{
+  "schema": "cluster_gpu_smoke_matrix.v1",
+  "repo_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction",
+  "mode": "dry_run_launcher_contract",
+  "commands": [
+    {
+      "gpu_count": 1,
+      "repo_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/cluster_gpu_smoke.py",
+        "--expected-gpus",
+        "1",
+        "--report",
+        "outputs/cluster/gpu_smoke_1.json"
+      ],
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "NCCL_DEBUG": "WARN",
+        "TOKENIZERS_PARALLELISM": "false",
+        "UV_LINK_MODE": "copy"
+      },
+      "report_path": "outputs/cluster/gpu_smoke_1.json",
+      "shell": "cd /root/work/code/continuous-gui-poc/fdm-d2e-reproduction && CUDA_VISIBLE_DEVICES=0 NCCL_DEBUG=WARN TOKENIZERS_PARALLELISM=false UV_LINK_MODE=copy uv run python scripts/cluster_gpu_smoke.py --expected-gpus 1 --report outputs/cluster/gpu_smoke_1.json"
+    },
+    {
+      "gpu_count": 2,
+      "repo_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction",
+      "command": [
+        "uv",
+        "run",
+        "torchrun",
+        "--standalone",
+        "--nproc-per-node",
+        "2",
+        "scripts/cluster_gpu_smoke.py",
+        "--expected-gpus",
+        "2",
+        "--report",
+        "outputs/cluster/gpu_smoke_2.json"
+      ],
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0,1",
+        "NCCL_DEBUG": "WARN",
+        "TOKENIZERS_PARALLELISM": "false",
+        "UV_LINK_MODE": "copy"
+      },
+      "report_path": "outputs/cluster/gpu_smoke_2.json",
+      "shell": "cd /root/work/code/continuous-gui-poc/fdm-d2e-reproduction && CUDA_VISIBLE_DEVICES=0,1 NCCL_DEBUG=WARN TOKENIZERS_PARALLELISM=false UV_LINK_MODE=copy uv run torchrun --standalone --nproc-per-node 2 scripts/cluster_gpu_smoke.py --expected-gpus 2 --report outputs/cluster/gpu_smoke_2.json"
+    },
+    {
+      "gpu_count": 4,
+      "repo_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction",
+      "command": [
+        "uv",
+        "run",
+        "torchrun",
+        "--standalone",
+        "--nproc-per-node",
+        "4",
+        "scripts/cluster_gpu_smoke.py",
+        "--expected-gpus",
+        "4",
+        "--report",
+        "outputs/cluster/gpu_smoke_4.json"
+      ],
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0,1,2,3",
+        "NCCL_DEBUG": "WARN",
+        "TOKENIZERS_PARALLELISM": "false",
+        "UV_LINK_MODE": "copy"
+      },
+      "report_path": "outputs/cluster/gpu_smoke_4.json",
+      "shell": "cd /root/work/code/continuous-gui-poc/fdm-d2e-reproduction && CUDA_VISIBLE_DEVICES=0,1,2,3 NCCL_DEBUG=WARN TOKENIZERS_PARALLELISM=false UV_LINK_MODE=copy uv run torchrun --standalone --nproc-per-node 4 scripts/cluster_gpu_smoke.py --expected-gpus 4 --report outputs/cluster/gpu_smoke_4.json"
+    }
+  ]
+}

@@ -19,6 +19,14 @@ d2e = [
   "owa-msgs"
 ]
 test = ["pytest"]
+train = [
+  "accelerate",
+  "einops",
+  "safetensors",
+  "tensorboard",
+  "torch",
+  "transformers"
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
