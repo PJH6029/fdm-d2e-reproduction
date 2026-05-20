@@ -994,6 +994,8 @@ def _prediction_from_output(
     button_softmax_threshold: float = 0.5,
     mouse_head_mode: str = "regression",
     mouse_axis_classes: list[str] | None = None,
+    mouse_axis_decode_mode: str = "argmax",
+    mouse_axis_temperature: float = 1.0,
 ) -> tuple[float, float, list[str]]:
     dx, dy = float(output[0]), float(output[1])
     if residual_mouse:
@@ -1009,10 +1011,19 @@ def _prediction_from_output(
         dx_logits = output[button_end : button_end + axis_count]
         dy_logits = output[button_end + axis_count : button_end + (2 * axis_count)]
         if dx_logits and dy_logits:
-            dx_idx = max(range(len(dx_logits)), key=lambda idx: dx_logits[idx])
-            dy_idx = max(range(len(dy_logits)), key=lambda idx: dy_logits[idx])
-            dx = _axis_class_to_delta(axis_classes[dx_idx])
-            dy = _axis_class_to_delta(axis_classes[dy_idx])
+            if mouse_axis_decode_mode == "expected":
+                temperature = max(float(mouse_axis_temperature), 1e-6)
+                dx_probs = _softmax([float(value) / temperature for value in dx_logits])
+                dy_probs = _softmax([float(value) / temperature for value in dy_logits])
+                dx = sum(prob * _axis_class_to_delta(axis_classes[idx]) for idx, prob in enumerate(dx_probs))
+                dy = sum(prob * _axis_class_to_delta(axis_classes[idx]) for idx, prob in enumerate(dy_probs))
+            elif mouse_axis_decode_mode == "argmax":
+                dx_idx = max(range(len(dx_logits)), key=lambda idx: dx_logits[idx])
+                dy_idx = max(range(len(dy_logits)), key=lambda idx: dy_logits[idx])
+                dx = _axis_class_to_delta(axis_classes[dx_idx])
+                dy = _axis_class_to_delta(axis_classes[dy_idx])
+            else:
+                raise ValueError(f"unsupported mouse_axis_decode_mode: {mouse_axis_decode_mode}")
     tokens = tokens_from_delta(float(dx), float(dy))
     for token, logit in zip(category_vocab, output[2:category_end]):
         prob = _sigmoid(float(logit))
@@ -1051,6 +1062,8 @@ def _predict_autoregressive_target(
     mouse_head_mode: str,
     mouse_axis_classes: list[str],
     action_history_len: int,
+    mouse_axis_decode_mode: str = "argmax",
+    mouse_axis_temperature: float = 1.0,
 ) -> dict[str, dict[str, Any]]:
     histories: dict[str, list[list[str]]] = {}
     button_states: dict[str, dict[str, float]] = {}
@@ -1106,6 +1119,8 @@ def _predict_autoregressive_target(
             button_softmax_threshold=button_softmax_threshold,
             mouse_head_mode=mouse_head_mode,
             mouse_axis_classes=mouse_axis_classes,
+            mouse_axis_decode_mode=mouse_axis_decode_mode,
+            mouse_axis_temperature=mouse_axis_temperature,
         )
         outputs[sequence_id] = {"output": output, "dx": dx, "dy": dy, "tokens": tokens}
         _append_history(history, button_state, tokens, history_len=action_history_len)
@@ -1135,6 +1150,12 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     mouse_head_mode = str(config.get("mouse_head_mode", "regression"))
     if mouse_head_mode not in {"regression", "axis_softmax"}:
         raise ValueError(f"unsupported mouse_head_mode: {mouse_head_mode}")
+    mouse_axis_decode_mode = str(config.get("mouse_axis_decode_mode", "argmax"))
+    if mouse_axis_decode_mode not in {"argmax", "expected"}:
+        raise ValueError(f"unsupported mouse_axis_decode_mode: {mouse_axis_decode_mode}")
+    mouse_axis_temperature = float(config.get("mouse_axis_temperature", 1.0))
+    if mouse_axis_temperature <= 0:
+        raise ValueError("mouse_axis_temperature must be positive")
     raw_axis_classes = config.get("mouse_axis_classes")
     mouse_axis_classes = (
         [str(value) for value in raw_axis_classes]
@@ -1351,6 +1372,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             "button_softmax_threshold": button_softmax_threshold,
             "mouse_head_mode": mouse_head_mode,
             "mouse_axis_classes": mouse_axis_classes,
+            "mouse_axis_decode_mode": mouse_axis_decode_mode,
+            "mouse_axis_temperature": mouse_axis_temperature,
             "model_arch": str(config.get("model_arch", "mlp")),
         },
         checkpoint_path,
@@ -1384,6 +1407,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             mouse_head_mode=mouse_head_mode,
             mouse_axis_classes=mouse_axis_classes,
             action_history_len=action_history_len,
+            mouse_axis_decode_mode=mouse_axis_decode_mode,
+            mouse_axis_temperature=mouse_axis_temperature,
         )
         deltas = [autoregressive_outputs[str(row["sequence_id"])]["output"] for row in target_records]
     else:
@@ -1442,6 +1467,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 button_softmax_threshold=button_softmax_threshold,
                 mouse_head_mode=mouse_head_mode,
                 mouse_axis_classes=mouse_axis_classes,
+                mouse_axis_decode_mode=mouse_axis_decode_mode,
+                mouse_axis_temperature=mouse_axis_temperature,
             )
         confidence = max(0.05, min(0.99, 1.0 / (1.0 + abs(float(dx)) + abs(float(dy)))))
         pseudo = {
@@ -1493,6 +1520,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "mouse_target_mode": mouse_target_mode,
         "mouse_head_mode": mouse_head_mode,
         "mouse_axis_classes": mouse_axis_classes if mouse_head_mode == "axis_softmax" else [],
+        "mouse_axis_decode_mode": mouse_axis_decode_mode,
+        "mouse_axis_temperature": mouse_axis_temperature,
         "mouse_axis_loss_weight": float(config.get("mouse_axis_loss_weight", 1.0 if mouse_head_mode == "axis_softmax" else 0.0)),
         "mouse_regression_loss_weight": float(config.get("mouse_regression_loss_weight", 1.0)),
         "mouse_axis_class_weight_cap": float(config.get("mouse_axis_class_weight_cap", 20.0)),
@@ -1552,6 +1581,8 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     button_softmax_threshold = float(checkpoint.get("button_softmax_threshold", 0.5))
     mouse_head_mode = str(checkpoint.get("mouse_head_mode", "regression"))
     mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", MOUSE_AXIS_CLASSES)]
+    mouse_axis_decode_mode = str(checkpoint.get("mouse_axis_decode_mode", model_config.get("mouse_axis_decode_mode", "argmax")))
+    mouse_axis_temperature = float(checkpoint.get("mouse_axis_temperature", model_config.get("mouse_axis_temperature", 1.0)))
     mean = [float(value) for value in checkpoint["mean"]]
     std = [float(value) for value in checkpoint["std"]]
     output_dim = 2 + len(category_vocab)
@@ -1604,6 +1635,8 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             mouse_head_mode=mouse_head_mode,
             mouse_axis_classes=mouse_axis_classes,
             action_history_len=action_history_len,
+            mouse_axis_decode_mode=mouse_axis_decode_mode,
+            mouse_axis_temperature=mouse_axis_temperature,
         )
         for row in records:
             pred = outputs_by_id[str(row["sequence_id"])]
@@ -1634,6 +1667,8 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 button_softmax_threshold=button_softmax_threshold,
                 mouse_head_mode=mouse_head_mode,
                 mouse_axis_classes=mouse_axis_classes,
+                mouse_axis_decode_mode=mouse_axis_decode_mode,
+                mouse_axis_temperature=mouse_axis_temperature,
             )
             predicted.append({"dx": dx, "dy": dy, "tokens": tokens})
     out_dir = Path(config.get("output_dir", "outputs/idm_torch_predict"))
