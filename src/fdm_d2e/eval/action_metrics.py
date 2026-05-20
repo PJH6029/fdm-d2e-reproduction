@@ -44,6 +44,8 @@ def compute_metrics(predictions: list[dict[str, Any]], ground_truth: list[dict[s
     gt_by_id = {row['sequence_id']: row for row in ground_truth}
     keyboard_total = keyboard_correct = 0
     button_total = button_correct = 0
+    button_predicted_total = button_exact_tp = button_false_positive = button_false_negative = 0
+    button_no_ground_truth_total = button_no_ground_truth_false_positive = 0
     pred_mouse: list[float] = []
     gt_mouse: list[float] = []
     failures: list[dict[str, Any]] = []
@@ -61,9 +63,22 @@ def compute_metrics(predictions: list[dict[str, Any]], ground_truth: list[dict[s
             keyboard_correct += int(pk == gk)
         pb = _category_tokens(ptokens, ('MOUSE_LEFT_', 'MOUSE_RIGHT_', 'MOUSE_MIDDLE_'))
         gb = _category_tokens(gtokens, ('MOUSE_LEFT_', 'MOUSE_RIGHT_', 'MOUSE_MIDDLE_'))
+        if pb:
+            button_predicted_total += 1
         if gb:
             button_total += 1
             button_correct += int(pb == gb)
+            if pb == gb:
+                button_exact_tp += 1
+            else:
+                button_false_negative += 1
+                if pb:
+                    button_false_positive += 1
+        else:
+            button_no_ground_truth_total += 1
+            if pb:
+                button_false_positive += 1
+                button_no_ground_truth_false_positive += 1
         for axis_prefix in ('MOUSE_DX_', 'MOUSE_DY_'):
             pred_axis = _axis_mean(ptokens, axis_prefix)
             gt_axis = _axis_mean(gtokens, axis_prefix)
@@ -86,6 +101,24 @@ def compute_metrics(predictions: list[dict[str, Any]], ground_truth: list[dict[s
             'status': 'computed' if button_total else 'absent',
             'accuracy': button_correct / button_total if button_total else None,
             'num_examples': button_total,
+            'predicted_examples': button_predicted_total,
+            'exact_true_positive_examples': button_exact_tp,
+            'false_positive_examples': button_false_positive,
+            'false_negative_examples': button_false_negative,
+            'precision': button_exact_tp / (button_exact_tp + button_false_positive) if (button_exact_tp + button_false_positive) else None,
+            'recall': button_exact_tp / (button_exact_tp + button_false_negative) if (button_exact_tp + button_false_negative) else None,
+            'f1': (
+                (2 * button_exact_tp) / ((2 * button_exact_tp) + button_false_positive + button_false_negative)
+                if ((2 * button_exact_tp) + button_false_positive + button_false_negative)
+                else None
+            ),
+            'no_button_examples': button_no_ground_truth_total,
+            'no_button_false_positive_examples': button_no_ground_truth_false_positive,
+            'no_button_false_positive_rate': (
+                button_no_ground_truth_false_positive / button_no_ground_truth_total
+                if button_no_ground_truth_total
+                else None
+            ),
         },
         'mouse_move': {
             'status': mouse_status,
