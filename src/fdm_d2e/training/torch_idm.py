@@ -57,9 +57,75 @@ def _build_model(torch, input_dim: int, output_dim: int, hidden_dim: int, depth:
     return torch.nn.Sequential(*layers)
 
 
-def _tensorize(torch, records: list[dict[str, Any]], device: str, vocab: list[str], *, feature_mode: str):
-    xs = torch.tensor([record_features(row, feature_mode=feature_mode) for row in records], dtype=torch.float32, device=device)
-    mouse_y = torch.tensor([target_mouse_delta(row) for row in records], dtype=torch.float32, device=device)
+def _mouse_baseline_deltas(
+    records: list[dict[str, Any]],
+    *,
+    mode: str,
+    train_records: list[dict[str, Any]] | None = None,
+) -> list[tuple[float, float]]:
+    if mode == "none":
+        return [(0.0, 0.0) for _ in records]
+    if mode not in {"causal_last_seen", "target_last_seen_train"}:
+        raise ValueError(f"unsupported mouse_baseline mode: {mode}")
+
+    fallback = (0.0, 0.0)
+    last_by_recording: dict[str, tuple[float, float]] = {}
+    last_by_game: dict[str, tuple[float, float]] = {}
+    if mode == "target_last_seen_train":
+        if train_records is None:
+            raise ValueError("target_last_seen_train requires train_records")
+        for row in sorted(train_records, key=lambda item: (str(item.get("recording_id", "")), int(item.get("timestamp_ns", 0)))):
+            delta = target_mouse_delta(row)
+            last_by_recording[str(row.get("recording_id", ""))] = delta
+            last_by_game[str(row.get("game", "unknown"))] = delta
+        if train_records:
+            fallback = target_mouse_delta(train_records[-1])
+
+    baselines_by_id: dict[str, tuple[float, float]] = {}
+    ordered = sorted(records, key=lambda item: (str(item.get("recording_id", "")), int(item.get("timestamp_ns", 0))))
+    for row in ordered:
+        baseline = (
+            last_by_recording.get(str(row.get("recording_id", "")))
+            or last_by_game.get(str(row.get("game", "unknown")))
+            or fallback
+        )
+        baselines_by_id[str(row["sequence_id"])] = baseline
+        if mode == "causal_last_seen":
+            delta = target_mouse_delta(row)
+            last_by_recording[str(row.get("recording_id", ""))] = delta
+            last_by_game[str(row.get("game", "unknown"))] = delta
+            fallback = delta
+    return [baselines_by_id[str(row["sequence_id"])] for row in records]
+
+
+def _tensorize(
+    torch,
+    records: list[dict[str, Any]],
+    device: str,
+    vocab: list[str],
+    *,
+    feature_mode: str,
+    mouse_baselines: list[tuple[float, float]] | None = None,
+    residual_mouse: bool = False,
+):
+    mouse_baselines = mouse_baselines or [(0.0, 0.0) for _ in records]
+    def features_for(row: dict[str, Any], baseline: tuple[float, float]) -> list[float]:
+        values = record_features(row, feature_mode=feature_mode)
+        if residual_mouse:
+            values = values + [float(baseline[0]), float(baseline[1])]
+        return values
+
+    xs = torch.tensor(
+        [features_for(row, baseline) for row, baseline in zip(records, mouse_baselines)],
+        dtype=torch.float32,
+        device=device,
+    )
+    target_deltas = [target_mouse_delta(row) for row in records]
+    if residual_mouse:
+        mouse_targets = [(tx - bx, ty - by) for (tx, ty), (bx, by) in zip(target_deltas, mouse_baselines)]
+    else:
+        mouse_targets = target_deltas
+    mouse_y = torch.tensor(mouse_targets, dtype=torch.float32, device=device)
     cat_y = torch.zeros((len(records), len(vocab)), dtype=torch.float32, device=device)
     vocab_index = {token: idx for idx, token in enumerate(vocab)}
     for row_idx, row in enumerate(records):
@@ -82,8 +148,24 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     train_records = read_jsonl(config["train_records"])
     target_records = read_jsonl(config["target_records"])
     feature_mode = str(config.get("feature_mode", "summary"))
+    mouse_target_mode = str(config.get("mouse_target_mode", "absolute"))
+    if mouse_target_mode not in {"absolute", "residual_last_seen"}:
+        raise ValueError(f"unsupported mouse_target_mode: {mouse_target_mode}")
+    residual_mouse = mouse_target_mode == "residual_last_seen"
+    train_mouse_baselines = _mouse_baseline_deltas(
+        train_records,
+        mode="causal_last_seen" if residual_mouse else "none",
+    )
     vocab = categorical_token_vocab(train_records, min_count=int(config.get("categorical_min_count", 1)))
-    train_x, mouse_y, cat_y, mean, std = _tensorize(torch, train_records, device, vocab, feature_mode=feature_mode)
+    train_x, mouse_y, cat_y, mean, std = _tensorize(
+        torch,
+        train_records,
+        device,
+        vocab,
+        feature_mode=feature_mode,
+        mouse_baselines=train_mouse_baselines,
+        residual_mouse=residual_mouse,
+    )
     cat_pos_weight = None
     if vocab:
         positives = cat_y.sum(dim=0)
@@ -131,7 +213,18 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     checkpoint_path = out_dir / "checkpoint.pt"
     torch.save({"model_state_dict": model.state_dict(), "mean": mean, "std": std, "config": config, "history": history}, checkpoint_path)
     # Predict heldout pseudo-labels.
-    raw_target_x = torch.tensor([record_features(row, feature_mode=feature_mode) for row in target_records], dtype=torch.float32, device=device)
+    target_mouse_baselines = _mouse_baseline_deltas(
+        target_records,
+        mode="target_last_seen_train" if residual_mouse else "none",
+        train_records=train_records,
+    )
+    target_features = []
+    for row, baseline in zip(target_records, target_mouse_baselines):
+        values = record_features(row, feature_mode=feature_mode)
+        if residual_mouse:
+            values = values + [float(baseline[0]), float(baseline[1])]
+        target_features.append(values)
+    raw_target_x = torch.tensor(target_features, dtype=torch.float32, device=device)
     mean_t = torch.tensor(mean, dtype=torch.float32, device=device)
     std_t = torch.tensor(std, dtype=torch.float32, device=device).clamp_min(1e-6)
     target_x = (raw_target_x - mean_t) / std_t
@@ -145,15 +238,20 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 "id": row["sequence_id"],
                 "tokens": row.get("ground_truth_tokens", []),
                 "features": record_features(row, feature_mode=feature_mode),
+                "mouse_baseline": baseline,
                 "feature_mode": feature_mode,
+                "mouse_target_mode": mouse_target_mode,
             }
-            for row in train_records
+            for row, baseline in zip(train_records, train_mouse_baselines)
         ]
     )
     pseudo_rows = []
     predictions = []
-    for row, output in zip(target_records, deltas):
+    for row, output, (base_dx, base_dy) in zip(target_records, deltas, target_mouse_baselines):
         dx, dy = float(output[0]), float(output[1])
+        if residual_mouse:
+            dx += float(base_dx)
+            dy += float(base_dy)
         tokens = tokens_from_delta(float(dx), float(dy))
         if vocab:
             import math
@@ -201,6 +299,7 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "categorical_vocab": vocab,
         "feature_mode": feature_mode,
         "input_dim": input_dim,
+        "mouse_target_mode": mouse_target_mode,
         "category_threshold": category_threshold,
         "categorical_pos_weight_cap": float(config.get("categorical_pos_weight_cap", 20.0)),
     }
