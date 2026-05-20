@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from fdm_d2e.training.torch_idm import (
     _action_history_features,
     _calibrated_category_thresholds_from_scores,
+    _calibrated_group_fbeta_thresholds_from_scores,
     _calibrated_group_thresholds_from_scores,
     _mouse_baseline_deltas,
     _split_calibration_records,
@@ -80,6 +81,21 @@ class TorchIDMContractTests(unittest.TestCase):
         self.assertEqual(thresholds["MOUSE_LEFT_DOWN"], 0.75)
         self.assertEqual(diagnostics["per_group"]["keyboard"]["accuracy"], 1.0)
         self.assertEqual(diagnostics["per_group"]["mouse_button"]["accuracy"], 1.0)
+
+    def test_group_fbeta_calibration_penalizes_no_button_false_positives(self):
+        vocab = ["MOUSE_LEFT_DOWN"]
+        thresholds, diagnostics = _calibrated_group_fbeta_thresholds_from_scores(
+            score_rows=[[0.9], [0.7], [0.6], [0.1]],
+            label_rows=[[1], [0], [0], [0]],
+            vocab=vocab,
+            default_threshold=0.5,
+            grid=[0.5, 0.8],
+            beta=0.5,
+        )
+
+        self.assertEqual(thresholds["MOUSE_LEFT_DOWN"], 0.8)
+        self.assertEqual(diagnostics["per_group"]["mouse_button"]["tp"], 1)
+        self.assertEqual(diagnostics["per_group"]["mouse_button"]["fp"], 0)
 
     def test_action_history_features_are_causal_and_seedable(self):
         vocab = ["KEY_PRESS_87", "MOUSE_LEFT_DOWN", "MOUSE_LEFT_UP"]

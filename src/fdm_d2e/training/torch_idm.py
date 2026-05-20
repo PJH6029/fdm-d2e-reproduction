@@ -241,6 +241,76 @@ def _calibrated_group_thresholds_from_scores(
     return thresholds, diagnostics
 
 
+def _calibrated_group_fbeta_thresholds_from_scores(
+    score_rows: list[list[float]],
+    label_rows: list[list[int]],
+    vocab: list[str],
+    *,
+    default_threshold: float,
+    grid: list[float],
+    beta: float,
+) -> tuple[dict[str, float], dict[str, Any]]:
+    thresholds = {token: default_threshold for token in vocab}
+    per_group: dict[str, Any] = {}
+    beta2 = beta * beta
+    groups = sorted({_category_group(token) for token in vocab})
+    for group in groups:
+        indices = [idx for idx, token in enumerate(vocab) if _category_group(token) == group]
+        if not indices:
+            continue
+        positives = sum(1 for labels in label_rows if any(labels[idx] for idx in indices))
+        if positives == 0:
+            per_group[group] = {"threshold": default_threshold, "positive_examples": 0, "score": None}
+            continue
+        best_threshold = default_threshold
+        best_key: tuple[float, float, float, float] = (-1.0, -1.0, -1.0, default_threshold)
+        best_stats: dict[str, Any] = {}
+        for threshold in grid:
+            tp = fp = fn = 0
+            for scores, labels in zip(score_rows, label_rows):
+                pred = tuple(vocab[idx] for idx in indices if scores[idx] >= threshold)
+                gold = tuple(vocab[idx] for idx in indices if labels[idx])
+                if gold and pred == gold:
+                    tp += 1
+                elif gold:
+                    fn += 1
+                    if pred:
+                        fp += 1
+                elif pred:
+                    fp += 1
+            precision = tp / (tp + fp) if (tp + fp) else 0.0
+            recall = tp / (tp + fn) if (tp + fn) else 0.0
+            score = (
+                (1.0 + beta2) * precision * recall / ((beta2 * precision) + recall)
+                if precision or recall
+                else 0.0
+            )
+            # Prefer F-beta, then precision to suppress click spam, then recall.
+            key = (score, precision, recall, threshold)
+            if key > best_key:
+                best_key = key
+                best_threshold = threshold
+                best_stats = {
+                    "positive_examples": positives,
+                    "score": score,
+                    "precision": precision,
+                    "recall": recall,
+                    "tp": tp,
+                    "fp": fp,
+                    "fn": fn,
+                }
+        for idx in indices:
+            thresholds[vocab[idx]] = float(best_threshold)
+        per_group[group] = {"threshold": float(best_threshold), **best_stats}
+    diagnostics = {
+        "default_threshold": default_threshold,
+        "beta": beta,
+        "grid": grid,
+        "per_group": per_group,
+    }
+    return thresholds, diagnostics
+
+
 def _sigmoid(value: float) -> float:
     if value >= 0:
         z = math.exp(-value)
@@ -677,12 +747,12 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "category_thresholds": category_thresholds,
     }
     threshold_mode = calibration_info["category_threshold_mode"]
-    if threshold_mode not in {"global", "per_token_calibrated", "group_exact_calibrated"}:
+    if threshold_mode not in {"global", "per_token_calibrated", "group_exact_calibrated", "group_fbeta_calibrated"}:
         raise ValueError(f"unsupported category_threshold_mode: {threshold_mode}")
 
     calibrated_model = None
     calibrated_mean = calibrated_std = calibrated_history = None
-    if threshold_mode in {"per_token_calibrated", "group_exact_calibrated"} and vocab:
+    if threshold_mode in {"per_token_calibrated", "group_exact_calibrated", "group_fbeta_calibrated"} and vocab:
         fraction = float(config.get("category_calibration_fraction", 0.0))
         fit_records, calibration_records = _split_calibration_records(
             train_records,
@@ -740,6 +810,15 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 vocab,
                 default_threshold=category_threshold,
                 grid=grid,
+            )
+        elif threshold_mode == "group_fbeta_calibrated":
+            category_thresholds, threshold_diagnostics = _calibrated_group_fbeta_thresholds_from_scores(
+                score_rows,
+                label_rows,
+                vocab,
+                default_threshold=category_threshold,
+                grid=grid,
+                beta=float(config.get("category_calibration_beta", 1.0)),
             )
         else:
             category_thresholds, threshold_diagnostics = _calibrated_category_thresholds_from_scores(
