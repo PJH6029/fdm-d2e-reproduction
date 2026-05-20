@@ -6,9 +6,14 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
 from fdm_d2e.data.d2e_real import (
+    D2ERecordingRef,
+    _ppm_features,
     build_real_manifests,
     build_recording_refs,
+    build_window_records,
+    choose_action_dense_window_start,
     normalize_owa_event,
+    normalize_owa_events,
     prepare_real_dataset,
     split_recordings,
 )
@@ -67,11 +72,62 @@ class D2ERealContractTests(unittest.TestCase):
 
     def test_normalize_owa_event_without_owa_imports(self):
         key = normalize_owa_event("keyboard", {"event_type": "press", "vk": 87}, 123)
-        move = normalize_owa_event("mouse/raw", {"dx": 5, "dy": -2, "button_flags": 0}, 124)
+        move = normalize_owa_event("mouse/raw", {"last_x": 5, "last_y": -2, "button_flags": 0}, 124)
         button = normalize_owa_event("mouse/raw", {"dx": 0, "dy": 0, "button_flags": 1}, 125)
         self.assertEqual(key["type"], "keyboard")
         self.assertEqual(move["type"], "mouse_move")
         self.assertEqual(button["type"], "mouse_button")
+        self.assertEqual(button["button"], "left")
+        self.assertEqual(button["event_type"], "press")
+
+    def test_normalize_raw_mouse_preserves_move_button_and_wheel(self):
+        rows = normalize_owa_events("mouse/raw", {"last_x": 3, "last_y": -1, "button_flags": 0x0001 | 0x0400, "button_data": 65416}, 200)
+        self.assertEqual([row["type"] for row in rows], ["mouse_move", "mouse_button", "scroll"])
+        self.assertEqual(rows[1]["button"], "left")
+        self.assertEqual(rows[2]["dy"], -1.0)
+
+    def test_build_window_records_bins_real_decoded_actions(self):
+        ref = D2ERecordingRef(
+            repo_id="open-world-agents/D2E-480p",
+            revision="main",
+            game="Apex_Legends",
+            recording_id="0805_01",
+            video_path="Apex_Legends/0805_01.mkv",
+            mcap_path="Apex_Legends/0805_01.mcap",
+            video_url="https://example.test/0805_01.mkv",
+            mcap_url="https://example.test/0805_01.mcap",
+        )
+        events = [
+            {"type": "screen", "timestamp_ns": 1_000_000_000, "pts_ns": 1_000_000_000},
+            {"type": "keyboard", "event_type": "press", "key": "87", "timestamp_ns": 1_005_000_000},
+            {"type": "mouse_move", "dx": 2, "dy": -2, "timestamp_ns": 1_055_000_000},
+        ]
+        frames = [
+            {"frame_index": 0, "path": "frame0.ppm", "features": [0.1, 0.2, 0.3, 0.2]},
+            {"frame_index": 1, "path": "frame1.ppm", "features": [0.4, 0.5, 0.6, 0.5]},
+        ]
+        records = build_window_records(ref, events, split="train", bin_ms=50, frame_features=frames)
+        self.assertEqual(len(records), 2)
+        self.assertEqual(records[0]["ground_truth_tokens"], ["KEY_PRESS_87"])
+        self.assertEqual(records[1]["ground_truth_tokens"], ["MOUSE_DX_P2", "MOUSE_DY_N2"])
+
+    def test_choose_action_dense_window_skips_noop_prefix(self):
+        events = [
+            {"type": "screen", "timestamp_ns": 0},
+            {"type": "keyboard", "timestamp_ns": 1_000_000_000},
+            {"type": "mouse_move", "timestamp_ns": 2_000_000_000},
+            {"type": "mouse_move", "timestamp_ns": 2_010_000_000},
+        ]
+        self.assertEqual(choose_action_dense_window_start(events, duration_ns=50_000_000), 2_000_000_000)
+
+    def test_ppm_feature_extraction_uses_real_pixels(self):
+        with tempfile.TemporaryDirectory() as td:
+            ppm = Path(td) / "tiny.ppm"
+            ppm.write_bytes(b"P6\n2 1\n255\n" + bytes([255, 0, 0, 0, 0, 255]))
+            features = _ppm_features(ppm)
+            self.assertAlmostEqual(features[0], 0.5)
+            self.assertAlmostEqual(features[1], 0.0)
+            self.assertAlmostEqual(features[2], 0.5)
 
 
 if __name__ == "__main__":

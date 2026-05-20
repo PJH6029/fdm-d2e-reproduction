@@ -2,18 +2,34 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
+import subprocess
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
-from fdm_d2e.io_utils import ensure_dir, stable_hash_json, write_json, write_jsonl
+from fdm_d2e.io_utils import ensure_dir, sha256_file, stable_hash_json, write_json, write_jsonl
 from fdm_d2e.schema import validate_named
+from fdm_d2e.tokenization.actions import add_tokens
 
 
 HF_DATASET_API = "https://huggingface.co/api/datasets/{repo_id}"
 HF_RESOLVE = "https://huggingface.co/datasets/{repo_id}/resolve/{revision}/{path}"
+
+RAW_MOUSE_BUTTON_FLAGS = {
+    0x0001: ("left", "press"),
+    0x0002: ("left", "release"),
+    0x0004: ("right", "press"),
+    0x0008: ("right", "release"),
+    0x0010: ("middle", "press"),
+    0x0020: ("middle", "release"),
+    0x0040: ("x1", "press"),
+    0x0080: ("x1", "release"),
+}
+RAW_MOUSE_WHEEL_FLAG = 0x0400
+RAW_MOUSE_HWHEEL_FLAG = 0x0800
 
 
 @dataclass(frozen=True)
@@ -155,41 +171,91 @@ def split_recordings(
     return {"train": refs[:train_count], "heldout": refs[train_count:]}
 
 
-def normalize_owa_event(topic: str, decoded: Any, timestamp_ns: int) -> dict[str, Any] | None:
-    """Normalize decoded OWA desktop events into this repo's event shape.
+def _field(decoded: Any, key: str, default: Any = None) -> Any:
+    if isinstance(decoded, dict):
+        return decoded.get(key, default)
+    return getattr(decoded, key, default)
+
+
+def _to_int(value: Any, default: int = 0) -> int:
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except Exception:
+        enum_value = getattr(value, "value", None)
+        if enum_value is not None:
+            return int(enum_value)
+    return default
+
+
+def _wheel_units(button_data: Any) -> float:
+    value = _to_int(button_data, 0)
+    if value > 32767:
+        value -= 65536
+    return value / 120.0 if value else 0.0
+
+
+def normalize_owa_events(topic: str, decoded: Any, timestamp_ns: int) -> list[dict[str, Any]]:
+    """Normalize one decoded OWA message into zero or more training events.
 
     The function intentionally accepts a generic decoded object/dict so tests can
     cover the contract without importing OWA packages. Full MCAP decoding is
     handled by `decode_mcap_events` when optional dependencies are installed.
+    Raw mouse packets may contain both movement and button/scroll state, so this
+    plural API preserves all action events at the same timestamp.
     """
 
-    if isinstance(decoded, dict):
-        get = decoded.get
-    else:
-        get = lambda key, default=None: getattr(decoded, key, default)
-
     if topic == "keyboard":
-        key = get("key") or get("vk") or get("vk_code") or "UNKNOWN"
-        event_type = str(get("event_type", "")).lower()
+        key = _field(decoded, "key") or _field(decoded, "vk") or _field(decoded, "vk_code") or "UNKNOWN"
+        event_type = str(_field(decoded, "event_type", "")).lower()
         action = "release" if "release" in event_type or "up" in event_type else "press"
-        return {"type": "keyboard", "event_type": action, "key": str(key), "vk": get("vk", get("vk_code", None)), "timestamp_ns": int(timestamp_ns)}
+        return [{"type": "keyboard", "event_type": action, "key": str(key), "vk": _field(decoded, "vk", _field(decoded, "vk_code", None)), "timestamp_ns": int(timestamp_ns)}]
 
     if topic == "mouse/raw":
-        button_flags = int(get("button_flags", 0) or 0)
-        dx = int(get("dx", 0) or 0)
-        dy = int(get("dy", 0) or 0)
-        if button_flags:
-            # Preserve raw flags; later action-token work can map OWA flags to
-            # left/right/middle down/up with the owa-msgs enum available.
-            return {"type": "mouse_button", "event_type": "raw_flags", "button_flags": button_flags, "dx": dx, "dy": dy, "timestamp_ns": int(timestamp_ns)}
-        return {"type": "mouse_move", "dx": dx, "dy": dy, "timestamp_ns": int(timestamp_ns)}
+        button_flags = _to_int(_field(decoded, "button_flags", 0), 0)
+        dx = _to_int(_field(decoded, "dx", _field(decoded, "last_x", 0)), 0)
+        dy = _to_int(_field(decoded, "dy", _field(decoded, "last_y", 0)), 0)
+        rows: list[dict[str, Any]] = []
+        if dx or dy or not button_flags:
+            rows.append({"type": "mouse_move", "dx": dx, "dy": dy, "timestamp_ns": int(timestamp_ns)})
+        for flag, (button, action) in RAW_MOUSE_BUTTON_FLAGS.items():
+            if button_flags & flag:
+                rows.append({"type": "mouse_button", "button": button, "event_type": action, "timestamp_ns": int(timestamp_ns)})
+        if button_flags & RAW_MOUSE_WHEEL_FLAG:
+            rows.append({"type": "scroll", "dx": 0.0, "dy": _wheel_units(_field(decoded, "button_data", 0)), "timestamp_ns": int(timestamp_ns)})
+        if button_flags & RAW_MOUSE_HWHEEL_FLAG:
+            rows.append({"type": "scroll", "dx": _wheel_units(_field(decoded, "button_data", 0)), "dy": 0.0, "timestamp_ns": int(timestamp_ns)})
+        return rows
+
+    if topic == "mouse":
+        event_type = str(_field(decoded, "event_type", "")).lower()
+        if event_type == "scroll":
+            return [{"type": "scroll", "dx": float(_field(decoded, "dx", 0) or 0), "dy": float(_field(decoded, "dy", 0) or 0), "timestamp_ns": int(timestamp_ns)}]
+        button = _field(decoded, "button", None)
+        pressed = _field(decoded, "pressed", None)
+        if button and pressed is not None:
+            return [{"type": "mouse_button", "button": str(button), "event_type": "press" if pressed else "release", "timestamp_ns": int(timestamp_ns)}]
+        dx = _field(decoded, "dx", None)
+        dy = _field(decoded, "dy", None)
+        if dx is not None or dy is not None:
+            return [{"type": "mouse_move", "dx": _to_int(dx, 0), "dy": _to_int(dy, 0), "timestamp_ns": int(timestamp_ns)}]
+        return []
 
     if topic == "screen":
-        media_ref = get("media_ref", {}) or {}
+        media_ref = _field(decoded, "media_ref", {}) or {}
         pts_ns = media_ref.get("pts_ns") if isinstance(media_ref, dict) else getattr(media_ref, "pts_ns", None)
-        return {"type": "screen", "timestamp_ns": int(timestamp_ns), "pts_ns": int(pts_ns) if pts_ns is not None else None}
+        uri = media_ref.get("uri") if isinstance(media_ref, dict) else getattr(media_ref, "uri", None)
+        return [{"type": "screen", "timestamp_ns": int(timestamp_ns), "pts_ns": int(pts_ns) if pts_ns is not None else None, "media_uri": uri}]
 
-    return None
+    return []
+
+
+def normalize_owa_event(topic: str, decoded: Any, timestamp_ns: int) -> dict[str, Any] | None:
+    """Backward-compatible single-event normalizer used by contract tests."""
+
+    rows = normalize_owa_events(topic, decoded, timestamp_ns)
+    return rows[0] if rows else None
 
 
 def decode_mcap_events(mcap_path: str | Path, *, topics: list[str] | None = None, limit: int | None = None) -> list[dict[str, Any]]:
@@ -206,15 +272,21 @@ def decode_mcap_events(mcap_path: str | Path, *, topics: list[str] | None = None
     rows: list[dict[str, Any]] = []
     with OWAMcapReader(str(mcap_path)) as reader:
         for message in reader.iter_messages(topics=selected_topics):
-            row = normalize_owa_event(message.topic, message.decoded, int(message.timestamp))
-            if row is not None:
+            for row in normalize_owa_events(message.topic, message.decoded, int(message.timestamp)):
+                row["topic"] = message.topic
                 rows.append(row)
-            if limit is not None and len(rows) >= limit:
-                break
+                if limit is not None and len(rows) >= limit:
+                    return rows
     return rows
 
 
-def download_recording_ref(ref: D2ERecordingRef, cache_dir: str | Path, token: str | None = None) -> dict[str, str]:
+def download_recording_ref(
+    ref: D2ERecordingRef,
+    cache_dir: str | Path,
+    token: str | None = None,
+    *,
+    kinds: Iterable[str] = ("video", "mcap"),
+) -> dict[str, str]:
     """Download a paired recording into cache when requested.
 
     Full D2E downloads should normally happen on MLXP storage, not the local
@@ -225,7 +297,10 @@ def download_recording_ref(ref: D2ERecordingRef, cache_dir: str | Path, token: s
     cache = ensure_dir(cache_dir)
     out_dir = ensure_dir(cache / ref.game)
     results: dict[str, str] = {}
+    wanted = set(kinds)
     for kind, rel_path, url in [("video", ref.video_path, ref.video_url), ("mcap", ref.mcap_path, ref.mcap_url)]:
+        if kind not in wanted:
+            continue
         out = out_dir / Path(rel_path).name
         if not out.exists():
             headers = {"Authorization": f"Bearer {token}"} if token else {}
@@ -238,6 +313,173 @@ def download_recording_ref(ref: D2ERecordingRef, cache_dir: str | Path, token: s
                     f.write(chunk)
         results[kind] = str(out)
     return results
+
+
+def _ppm_features(path: str | Path) -> list[float]:
+    data = Path(path).read_bytes()
+    cursor = 0
+
+    def next_token() -> bytes:
+        nonlocal cursor
+        while cursor < len(data) and data[cursor] in b" \t\r\n":
+            cursor += 1
+        if cursor < len(data) and data[cursor] == ord("#"):
+            while cursor < len(data) and data[cursor] not in b"\r\n":
+                cursor += 1
+            return next_token()
+        start = cursor
+        while cursor < len(data) and data[cursor] not in b" \t\r\n":
+            cursor += 1
+        return data[start:cursor]
+
+    magic = next_token()
+    if magic != b"P6":
+        raise ValueError(f"{path} is not a binary PPM frame")
+    width = int(next_token())
+    height = int(next_token())
+    max_value = int(next_token())
+    while cursor < len(data) and data[cursor] in b" \t\r\n":
+        cursor += 1
+        break
+    pixels = data[cursor:]
+    expected = width * height * 3
+    if len(pixels) < expected:
+        raise ValueError(f"{path} has truncated PPM pixel data")
+    pixels = pixels[:expected]
+    count = width * height
+    r_sum = sum(pixels[0::3])
+    g_sum = sum(pixels[1::3])
+    b_sum = sum(pixels[2::3])
+    lumas = [(pixels[i] * 0.2126 + pixels[i + 1] * 0.7152 + pixels[i + 2] * 0.0722) / max_value for i in range(0, expected, 3)]
+    luma_mean = sum(lumas) / count
+    luma_energy = sum(v * v for v in lumas) / count
+    return [r_sum / count / max_value, g_sum / count / max_value, b_sum / count / max_value, luma_mean, luma_energy]
+
+
+def extract_video_frame_features(
+    video_source: str,
+    output_dir: str | Path,
+    *,
+    max_frames: int = 16,
+    fps: int = 20,
+    image_size: int = 64,
+    start_seconds: float = 0.0,
+) -> list[dict[str, Any]]:
+    """Extract small real-video frame features through ffmpeg without storing raw D2E frames in git."""
+
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        raise RuntimeError("ffmpeg is required for real D2E video feature extraction")
+    frame_dir = ensure_dir(Path(output_dir) / "frames_ppm")
+    for old in frame_dir.glob("frame_*.ppm"):
+        old.unlink()
+    cmd = [
+        ffmpeg,
+        "-v",
+        "error",
+        "-ss",
+        str(start_seconds),
+        "-i",
+        video_source,
+        "-vf",
+        f"fps={int(fps)},scale={int(image_size)}:{int(image_size)}",
+        "-frames:v",
+        str(int(max_frames)),
+        "-y",
+        str(frame_dir / "frame_%06d.ppm"),
+    ]
+    subprocess.run(cmd, check=True)
+    rows: list[dict[str, Any]] = []
+    for idx, frame_path in enumerate(sorted(frame_dir.glob("frame_*.ppm"))):
+        rows.append(
+            {
+                "frame_index": idx,
+                "path": str(frame_path),
+                "features": _ppm_features(frame_path),
+                "source_video": video_source,
+            }
+        )
+    if not rows:
+        raise RuntimeError(f"ffmpeg produced no frames from {video_source}")
+    return rows
+
+
+def build_window_records(
+    ref: D2ERecordingRef,
+    decoded_events: list[dict[str, Any]],
+    *,
+    split: str = "sample",
+    bin_ms: int = 50,
+    max_bins: int | None = None,
+    frame_features: list[dict[str, Any]] | None = None,
+    start_ns: int | None = None,
+) -> list[dict[str, Any]]:
+    """Bin decoded MCAP action events into D2E-style 50 ms training records."""
+
+    screen_times = sorted(int(row["timestamp_ns"]) for row in decoded_events if row.get("type") == "screen")
+    all_times = sorted(int(row["timestamp_ns"]) for row in decoded_events)
+    if not all_times:
+        return []
+    start_ns = int(start_ns if start_ns is not None else (screen_times[0] if screen_times else all_times[0]))
+    bin_ns = int(bin_ms) * 1_000_000
+    action_events = [row for row in decoded_events if row.get("type") != "screen"]
+    if frame_features:
+        num_bins = len(frame_features)
+    else:
+        last_ns = max(all_times)
+        num_bins = int((last_ns - start_ns) // bin_ns) + 1
+    if max_bins is not None:
+        num_bins = min(num_bins, int(max_bins))
+    records: list[dict[str, Any]] = []
+    for bin_index in range(max(0, num_bins)):
+        bin_start = start_ns + bin_index * bin_ns
+        bin_end = bin_start + bin_ns
+        events = [
+            {k: v for k, v in row.items() if k != "topic"}
+            for row in action_events
+            if bin_start <= int(row["timestamp_ns"]) < bin_end
+        ]
+        frame_row = frame_features[bin_index] if frame_features and bin_index < len(frame_features) else {}
+        record = {
+            "schema": "d2e_window_record.v1",
+            "sequence_id": f"{ref.pair_id}#{bin_index:06d}",
+            "recording_id": ref.recording_id,
+            "game": ref.game,
+            "split": split,
+            "timestamp_ns": bin_start,
+            "bin_index": bin_index,
+            "frame": {
+                "path": frame_row.get("path", ref.video_path),
+                "index": int(frame_row.get("frame_index", bin_index)),
+                "features": list(frame_row.get("features", [])),
+            },
+            "events": events,
+            "source": "real_d2e_decoded_mcap_video",
+        }
+        records.append(record)
+    tokenized = add_tokens(records)
+    for row in tokenized:
+        validate_named(row, "d2e_window_record.schema.json")
+    return tokenized
+
+
+def choose_action_dense_window_start(decoded_events: list[dict[str, Any]], *, duration_ns: int) -> int | None:
+    """Pick a window start that contains real actions instead of a no-op-only prefix."""
+
+    action_times = sorted(int(row["timestamp_ns"]) for row in decoded_events if row.get("type") != "screen")
+    if not action_times:
+        return None
+    best_start = action_times[0]
+    best_count = -1
+    right = 0
+    for left, start in enumerate(action_times):
+        while right < len(action_times) and action_times[right] < start + duration_ns:
+            right += 1
+        count = right - left
+        if count > best_count:
+            best_start = start
+            best_count = count
+    return best_start
 
 
 def build_real_manifests(config: dict[str, Any], *, files: list[str] | None = None) -> dict[str, Any]:
@@ -328,3 +570,115 @@ def prepare_real_dataset(config: dict[str, Any], *, files: list[str] | None = No
     write_json(data_dir / "sample_sequence_pack.v2.json", prepared["sequence_pack"])
     write_jsonl(data_dir / "recordings.jsonl", prepared["recording_manifest"]["recordings"])
     return prepared
+
+
+def prepare_decoded_sample(config: dict[str, Any], *, files: list[str] | None = None) -> dict[str, Any]:
+    """Download/decode one real D2E sample pair into ignored training artifacts.
+
+    This is the G1 bridge between source-only manifests and actual D2E training
+    examples: it decodes MCAP actions, extracts video frame features from the
+    paired MKV stream, bins actions to the configured timebase, tokenizes them,
+    and writes v2 sequence-pack plus train/heldout JSONL artifacts.
+    """
+
+    prepared = build_real_manifests(config, files=files)
+    refs = [D2ERecordingRef(**{k: row[k] for k in ["repo_id", "revision", "game", "recording_id", "video_path", "mcap_path", "video_url", "mcap_url"]}) for row in prepared["recording_manifest"]["recordings"]]
+    if not refs:
+        raise ValueError("No paired D2E recording references selected for decoded sample")
+    ref = refs[0]
+    output_dir = Path(config.get("output_dir", "outputs"))
+    sample_dir = ensure_dir(output_dir / "data" / "real_sample" / ref.game / ref.recording_id)
+    cache_dir = Path(config.get("cache_dir", "/tmp/fdm-d2e-sample-cache"))
+    downloaded = download_recording_ref(ref, cache_dir, kinds=("mcap",))
+    event_limit = config.get("event_limit")
+    decoded_events = decode_mcap_events(downloaded["mcap"], limit=int(event_limit) if event_limit is not None else None)
+    bin_ms = int(config.get("bin_ms", 50))
+    max_bins = int(config.get("max_bins", int(config.get("max_frames", 32))))
+    window_duration_ns = max_bins * bin_ms * 1_000_000
+    configured_start = config.get("window_start_ns")
+    window_start_ns = int(configured_start) if configured_start is not None else choose_action_dense_window_start(decoded_events, duration_ns=window_duration_ns)
+    if window_start_ns is None:
+        window_start_ns = min(int(row["timestamp_ns"]) for row in decoded_events) if decoded_events else 0
+    video_start_seconds = float(config.get("video_start_seconds", window_start_ns / 1_000_000_000))
+    frame_features = extract_video_frame_features(
+        str(config.get("video_source") or ref.video_url),
+        sample_dir,
+        max_frames=int(config.get("max_frames", 32)),
+        fps=int(config.get("frame_fps", max(1, round(1000 / bin_ms)))),
+        image_size=int(config.get("image_size", 64)),
+        start_seconds=video_start_seconds,
+    )
+    records = build_window_records(
+        ref,
+        decoded_events,
+        split="sample",
+        bin_ms=bin_ms,
+        max_bins=max_bins,
+        frame_features=frame_features,
+        start_ns=window_start_ns,
+    )
+    train_count = max(1, int(round(len(records) * float(config.get("train_fraction", 0.75))))) if len(records) > 1 else len(records)
+    train_count = min(train_count, max(1, len(records) - int(config.get("min_heldout", 1)))) if len(records) > 1 else train_count
+    for idx, row in enumerate(records):
+        row["split"] = "train" if idx < train_count else "heldout"
+    train = [row for row in records if row["split"] == "train"]
+    heldout = [row for row in records if row["split"] == "heldout"]
+    dataset_fingerprint = stable_hash_json(
+        {
+            "ref": ref.to_manifest_row(),
+            "mcap_sha256": sha256_file(downloaded["mcap"]),
+            "num_decoded_events": len(decoded_events),
+            "num_records": len(records),
+            "bin_ms": bin_ms,
+            "window_start_ns": window_start_ns,
+        }
+    )
+    sequence_pack = {
+        "schema": "sequence_pack.v2",
+        "dataset_fingerprint": dataset_fingerprint,
+        "timebase": {"timestamp_unit": "nanoseconds", "bin_ms": bin_ms, "window_start_ns": window_start_ns},
+        "sequences": [
+            {
+                "sequence_id": row["sequence_id"],
+                "recording_id": row["recording_id"],
+                "game": row["game"],
+                "split": row["split"],
+                "timestamp_ns": row["timestamp_ns"],
+                "bin_index": row["bin_index"],
+                "frame_features": row["frame"]["features"],
+                "ground_truth_tokens": row["ground_truth_tokens"],
+                "decoded_events_path": str(sample_dir / "decoded_events.jsonl"),
+                "frame_source": {"type": "mkv", "url": ref.video_url, "feature_path": row["frame"]["path"]},
+                "event_source": {"type": "mcap", "path": downloaded["mcap"], "url": ref.mcap_url},
+            }
+            for row in records
+        ],
+    }
+    validate_named(sequence_pack, "sequence_pack_v2.schema.json")
+    write_jsonl(sample_dir / "decoded_events.jsonl", decoded_events)
+    write_jsonl(sample_dir / "frame_features.jsonl", frame_features)
+    write_jsonl(sample_dir / "all_records.jsonl", records)
+    write_jsonl(sample_dir / "train.jsonl", train)
+    write_jsonl(sample_dir / "heldout.jsonl", heldout)
+    write_json(sample_dir / "sequence_pack.v2.json", sequence_pack)
+    summary = {
+        "schema": "d2e_decoded_sample_summary.v1",
+        "repo_id": ref.repo_id,
+        "revision": ref.revision,
+        "pair_id": ref.pair_id,
+        "mcap_path": downloaded["mcap"],
+        "mcap_sha256": sha256_file(downloaded["mcap"]),
+        "video_url": ref.video_url,
+        "output_dir": str(sample_dir),
+        "num_decoded_events": len(decoded_events),
+        "num_frame_features": len(frame_features),
+        "num_window_records": len(records),
+        "window_start_ns": window_start_ns,
+        "video_start_seconds": video_start_seconds,
+        "splits": {"train": len(train), "heldout": len(heldout)},
+        "event_types": sorted({str(row.get("type")) for row in decoded_events}),
+        "token_fingerprint": stable_hash_json([row.get("ground_truth_tokens", []) for row in records]),
+        "dataset_fingerprint": dataset_fingerprint,
+    }
+    write_json(sample_dir / "decode_summary.json", summary)
+    return {"summary": summary, "sequence_pack": sequence_pack, "records": records, "decoded_events": decoded_events}

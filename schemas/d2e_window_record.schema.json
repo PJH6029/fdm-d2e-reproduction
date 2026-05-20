@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "sequence_id", "recording_id", "game", "split", "timestamp_ns", "bin_index", "frame", "events", "ground_truth_tokens", "source"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["d2e_window_record.v1"]},
+    "sequence_id": {"type": "string"},
+    "recording_id": {"type": "string"},
+    "game": {"type": "string"},
+    "split": {"type": "string"},
+    "timestamp_ns": {"type": "integer"},
+    "bin_index": {"type": "integer"},
+    "frame": {"type": "object"},
+    "events": {"type": "array", "items": {"type": "object"}},
+    "ground_truth_tokens": {"type": "array", "items": {"type": "string"}},
+    "source": {"type": "string"}
+  }
+}
