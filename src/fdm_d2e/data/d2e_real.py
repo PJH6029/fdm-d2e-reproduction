@@ -457,6 +457,12 @@ def build_window_records(
             "source": "real_d2e_decoded_mcap_video",
         }
         records.append(record)
+    for idx, row in enumerate(records):
+        current_features = list(row.get("frame", {}).get("features", []))
+        next_features = list(records[idx + 1].get("frame", {}).get("features", [])) if idx + 1 < len(records) else current_features
+        dims = min(len(current_features), len(next_features))
+        row["next_frame_features"] = next_features
+        row["frame_delta_features"] = [next_features[i] - current_features[i] for i in range(dims)]
     tokenized = add_tokens(records)
     for row in tokenized:
         validate_named(row, "d2e_window_record.schema.json")
@@ -587,7 +593,8 @@ def prepare_decoded_sample(config: dict[str, Any], *, files: list[str] | None = 
         raise ValueError("No paired D2E recording references selected for decoded sample")
     ref = refs[0]
     output_dir = Path(config.get("output_dir", "outputs"))
-    sample_dir = ensure_dir(output_dir / "data" / "real_sample" / ref.game / ref.recording_id)
+    sample_root = str(config.get("sample_root", "real_sample"))
+    sample_dir = ensure_dir(output_dir / "data" / sample_root / ref.game / ref.recording_id)
     cache_dir = Path(config.get("cache_dir", "/tmp/fdm-d2e-sample-cache"))
     downloaded = download_recording_ref(ref, cache_dir, kinds=("mcap",))
     event_limit = config.get("event_limit")

@@ -1,28 +1,28 @@
 {
   "schema": "baseline_stat_eval_sample.v1",
-  "train_records": "outputs/data/real_sample/Apex_Legends/0805_01/train.jsonl",
-  "ground_truth": "outputs/data/real_sample/Apex_Legends/0805_01/heldout.jsonl",
+  "train_records": "outputs/data/real_multi_apex8/train.jsonl",
+  "ground_truth": "outputs/data/real_multi_apex8/heldout.jsonl",
   "endpoints_config": "configs/eval/primary_endpoints.yaml",
   "prediction_paths": {
-    "noop": "outputs/eval/baselines/noop.jsonl",
-    "global_majority": "outputs/eval/baselines/global_majority.jsonl",
-    "game_majority": "outputs/eval/baselines/game_majority.jsonl",
-    "last_seen_train": "outputs/eval/baselines/last_seen_train.jsonl"
+    "noop": "outputs/eval/baselines_multi_apex8/noop.jsonl",
+    "global_majority": "outputs/eval/baselines_multi_apex8/global_majority.jsonl",
+    "game_majority": "outputs/eval/baselines_multi_apex8/game_majority.jsonl",
+    "last_seen_train": "outputs/eval/baselines_multi_apex8/last_seen_train.jsonl"
   },
   "metrics": {
     "noop": {
       "schema": "metrics.v1",
       "stage": "fdm_eval",
-      "num_examples": 8,
+      "num_examples": 128,
       "keyboard": {
         "status": "computed",
         "accuracy": 0.0,
-        "num_examples": 3
+        "num_examples": 59
       },
       "mouse_button": {
-        "status": "absent",
-        "accuracy": null,
-        "num_examples": 0
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
       },
       "mouse_move": {
         "status": "absent",
@@ -30,73 +30,73 @@
         "scale_ratio": null,
         "num_values": 0
       },
-      "failure_count": 8
+      "failure_count": 127
     },
     "global_majority": {
       "schema": "metrics.v1",
       "stage": "fdm_eval",
-      "num_examples": 8,
+      "num_examples": 128,
       "keyboard": {
         "status": "computed",
         "accuracy": 0.0,
-        "num_examples": 3
+        "num_examples": 59
       },
       "mouse_button": {
-        "status": "absent",
-        "accuracy": null,
-        "num_examples": 0
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
       },
       "mouse_move": {
-        "status": "computed",
-        "pearson": -0.5415806581979097,
-        "scale_ratio": 3.5360584911930877,
-        "num_values": 16
+        "status": "absent",
+        "pearson": null,
+        "scale_ratio": null,
+        "num_values": 0
       },
-      "failure_count": 8
+      "failure_count": 127
     },
     "game_majority": {
       "schema": "metrics.v1",
       "stage": "fdm_eval",
-      "num_examples": 8,
+      "num_examples": 128,
       "keyboard": {
         "status": "computed",
         "accuracy": 0.0,
-        "num_examples": 3
+        "num_examples": 59
       },
       "mouse_button": {
-        "status": "absent",
-        "accuracy": null,
-        "num_examples": 0
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
       },
       "mouse_move": {
-        "status": "computed",
-        "pearson": -0.5415806581979097,
-        "scale_ratio": 3.5360584911930877,
-        "num_values": 16
+        "status": "absent",
+        "pearson": null,
+        "scale_ratio": null,
+        "num_values": 0
       },
-      "failure_count": 8
+      "failure_count": 127
     },
     "last_seen_train": {
       "schema": "metrics.v1",
       "stage": "fdm_eval",
-      "num_examples": 8,
+      "num_examples": 128,
       "keyboard": {
         "status": "computed",
-        "accuracy": 0.0,
-        "num_examples": 3
+        "accuracy": 0.23728813559322035,
+        "num_examples": 59
       },
       "mouse_button": {
-        "status": "absent",
-        "accuracy": null,
-        "num_examples": 0
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
       },
       "mouse_move": {
         "status": "computed",
-        "pearson": 0.5415806581979098,
-        "scale_ratio": 1.194047619047619,
-        "num_values": 16
+        "pearson": -0.054870185752818386,
+        "scale_ratio": 1.1488422376747738,
+        "num_values": 254
       },
-      "failure_count": 8
+      "failure_count": 128
     }
   },
   "statistical_comparison": {
@@ -118,7 +118,7 @@
           0.0
         ],
         "p_value": 1.0,
-        "num_clusters": 1,
+        "num_clusters": 8,
         "p_adjusted_holm": 1.0,
         "reject_holm_0_05": false
       },
@@ -135,7 +135,7 @@
           0.0
         ],
         "p_value": 1.0,
-        "num_clusters": 1,
+        "num_clusters": 8,
         "p_adjusted_holm": 1.0,
         "reject_holm_0_05": false
       },
@@ -146,14 +146,14 @@
         "direction": "higher",
         "min_effect": 0.05,
         "status": "computed",
-        "delta": 0.0,
+        "delta": 0.1201923076923077,
         "ci": [
           0.0,
-          0.0
+          0.2980769230769231
         ],
-        "p_value": 1.0,
-        "num_clusters": 1,
-        "p_adjusted_holm": 1.0,
+        "p_value": 0.0995,
+        "num_clusters": 8,
+        "p_adjusted_holm": 0.597,
         "reject_holm_0_05": false
       },
       {
@@ -162,15 +162,15 @@
         "endpoint": "mouse_button_accuracy",
         "direction": "higher",
         "min_effect": 0.05,
-        "status": "no_shared_clusters",
-        "delta": null,
+        "status": "computed",
+        "delta": 0.0,
         "ci": [
-          null,
-          null
+          0.0,
+          0.0
         ],
-        "p_value": null,
-        "num_clusters": 0,
-        "p_adjusted_holm": null,
+        "p_value": 1.0,
+        "num_clusters": 2,
+        "p_adjusted_holm": 1.0,
         "reject_holm_0_05": false
       },
       {
@@ -179,15 +179,15 @@
         "endpoint": "mouse_button_accuracy",
         "direction": "higher",
         "min_effect": 0.05,
-        "status": "no_shared_clusters",
-        "delta": null,
+        "status": "computed",
+        "delta": 0.0,
         "ci": [
-          null,
-          null
+          0.0,
+          0.0
         ],
-        "p_value": null,
-        "num_clusters": 0,
-        "p_adjusted_holm": null,
+        "p_value": 1.0,
+        "num_clusters": 2,
+        "p_adjusted_holm": 1.0,
         "reject_holm_0_05": false
       },
       {
@@ -196,15 +196,15 @@
         "endpoint": "mouse_button_accuracy",
         "direction": "higher",
         "min_effect": 0.05,
-        "status": "no_shared_clusters",
-        "delta": null,
+        "status": "computed",
+        "delta": 0.0,
         "ci": [
-          null,
-          null
+          0.0,
+          0.0
         ],
-        "p_value": null,
-        "num_clusters": 0,
-        "p_adjusted_holm": null,
+        "p_value": 1.0,
+        "num_clusters": 2,
+        "p_adjusted_holm": 1.0,
         "reject_holm_0_05": false
       },
       {
@@ -230,15 +230,15 @@
         "endpoint": "mouse_move_pearson",
         "direction": "higher",
         "min_effect": 0.05,
-        "status": "computed",
-        "delta": -1.0831613163958194,
+        "status": "no_shared_clusters",
+        "delta": null,
         "ci": [
-          -1.0831613163958194,
-          -1.0831613163958194
+          null,
+          null
         ],
-        "p_value": 1.0,
-        "num_clusters": 1,
-        "p_adjusted_holm": 1.0,
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
         "reject_holm_0_05": false
       },
       {
@@ -247,15 +247,15 @@
         "endpoint": "mouse_move_pearson",
         "direction": "higher",
         "min_effect": 0.05,
-        "status": "computed",
-        "delta": -1.0831613163958194,
+        "status": "no_shared_clusters",
+        "delta": null,
         "ci": [
-          -1.0831613163958194,
-          -1.0831613163958194
+          null,
+          null
         ],
-        "p_value": 1.0,
-        "num_clusters": 1,
-        "p_adjusted_holm": 1.0,
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
         "reject_holm_0_05": false
       },
       {
@@ -281,15 +281,15 @@
         "endpoint": "mouse_move_scale_ratio_distance",
         "direction": "lower",
         "min_effect": 0.1,
-        "status": "computed",
-        "delta": -1.085663790141014,
+        "status": "no_shared_clusters",
+        "delta": null,
         "ci": [
-          -1.085663790141014,
-          -1.085663790141014
+          null,
+          null
         ],
-        "p_value": 1.0,
-        "num_clusters": 1,
-        "p_adjusted_holm": 1.0,
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
         "reject_holm_0_05": false
       },
       {
@@ -298,15 +298,15 @@
         "endpoint": "mouse_move_scale_ratio_distance",
         "direction": "lower",
         "min_effect": 0.1,
-        "status": "computed",
-        "delta": -1.085663790141014,
+        "status": "no_shared_clusters",
+        "delta": null,
         "ci": [
-          -1.085663790141014,
-          -1.085663790141014
+          null,
+          null
         ],
-        "p_value": 1.0,
-        "num_clusters": 1,
-        "p_adjusted_holm": 1.0,
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
         "reject_holm_0_05": false
       }
     ]

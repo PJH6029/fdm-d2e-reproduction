@@ -22,7 +22,7 @@ Implemented in `src/fdm_d2e/eval/baselines.py`:
 - mouse movement Pearson correlation,
 - mouse movement scale-ratio distance using `abs(log(scale_ratio))`.
 
-The default reference baseline is `noop`; movement endpoints use `global_majority` as their endpoint-local reference because `noop` has no movement-valued predictions.
+The default reference baseline is `noop`; movement endpoints use `last_seen_train` as their endpoint-local reference because it is the strongest movement-valued non-neural baseline in the current real-D2E preflight.
 
 ## Statistical protocol
 

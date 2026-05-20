@@ -110,6 +110,8 @@ class D2ERealContractTests(unittest.TestCase):
         self.assertEqual(len(records), 2)
         self.assertEqual(records[0]["ground_truth_tokens"], ["KEY_PRESS_87"])
         self.assertEqual(records[1]["ground_truth_tokens"], ["MOUSE_DX_P2", "MOUSE_DY_N2"])
+        self.assertEqual(records[0]["next_frame_features"], frames[1]["features"])
+        self.assertAlmostEqual(records[0]["frame_delta_features"][0], 0.3)
 
     def test_choose_action_dense_window_skips_noop_prefix(self):
         events = [

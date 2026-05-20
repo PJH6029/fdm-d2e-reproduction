@@ -34,6 +34,12 @@ def _category_tokens(tokens: list[str], prefix: tuple[str, ...]) -> list[str]:
     return sorted(t for t in tokens if t.startswith(prefix))
 
 
+def _axis_mean(tokens: list[str], axis_prefix: str) -> float | None:
+    values = [token_to_delta_class(t) for t in tokens if t.startswith(axis_prefix)]
+    numeric = [float(v) for v in values if v is not None]
+    return sum(numeric) / len(numeric) if numeric else None
+
+
 def compute_metrics(predictions: list[dict[str, Any]], ground_truth: list[dict[str, Any]]) -> dict[str, Any]:
     gt_by_id = {row['sequence_id']: row for row in ground_truth}
     keyboard_total = keyboard_correct = 0
@@ -58,15 +64,12 @@ def compute_metrics(predictions: list[dict[str, Any]], ground_truth: list[dict[s
         if gb:
             button_total += 1
             button_correct += int(pb == gb)
-        for p_tok in ptokens:
-            pd = token_to_delta_class(p_tok)
-            if pd is None:
-                continue
-            axis_prefix = 'MOUSE_DX_' if p_tok.startswith('MOUSE_DX_') else 'MOUSE_DY_'
-            matching = [token_to_delta_class(t) for t in gtokens if t.startswith(axis_prefix)]
-            if matching and matching[0] is not None:
-                pred_mouse.append(float(pd))
-                gt_mouse.append(float(matching[0]))
+        for axis_prefix in ('MOUSE_DX_', 'MOUSE_DY_'):
+            pred_axis = _axis_mean(ptokens, axis_prefix)
+            gt_axis = _axis_mean(gtokens, axis_prefix)
+            if pred_axis is not None and gt_axis is not None:
+                pred_mouse.append(pred_axis)
+                gt_mouse.append(gt_axis)
         if ptokens != gtokens:
             failures.append({'sequence_id': pred['sequence_id'], 'predicted_tokens': ptokens, 'ground_truth_tokens': gtokens})
     mouse_status = 'computed' if pred_mouse and gt_mouse else 'absent'

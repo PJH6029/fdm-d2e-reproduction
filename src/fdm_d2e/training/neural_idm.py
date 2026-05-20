@@ -16,7 +16,13 @@ def record_features(row: dict[str, Any]) -> list[float]:
     features = [float(v) for v in frame.get("features", [])]
     while len(features) < 5:
         features.append(0.0)
-    return features[:5] + [float(row.get("bin_index", 0)) / 100.0]
+    next_features = [float(v) for v in row.get("next_frame_features", [])]
+    while len(next_features) < 5:
+        next_features.append(0.0)
+    delta_features = [float(v) for v in row.get("frame_delta_features", [])]
+    while len(delta_features) < 5:
+        delta_features.append(0.0)
+    return features[:5] + next_features[:5] + delta_features[:5] + [float(row.get("bin_index", 0)) / 100.0]
 
 
 def target_mouse_delta(row: dict[str, Any]) -> tuple[float, float]:

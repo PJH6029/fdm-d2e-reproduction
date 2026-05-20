@@ -28,7 +28,7 @@ class NeuralIDMTests(unittest.TestCase):
     def test_tiny_mouse_idm_trains_and_writes_pseudolabels(self):
         train = [rec(i, "MOUSE_DX_P1" if i < 3 else "MOUSE_DX_N1", "MOUSE_DY_Z0") for i in range(6)]
         target = [rec(7, "MOUSE_DX_N1", "MOUSE_DY_Z0")]
-        model = TinyMouseIDM(input_dim=6, hidden_dim=4, seed=1).fit(train, epochs=20, lr=0.01)
+        model = TinyMouseIDM(input_dim=16, hidden_dim=4, seed=1).fit(train, epochs=20, lr=0.01)
         dx, dy = model.predict_delta(target[0])
         self.assertIsInstance(dx, float)
         self.assertIsInstance(dy, float)

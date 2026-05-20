@@ -23,14 +23,14 @@
     },
     {
       "name": "mouse_move_pearson",
-      "reference_baseline": "global_majority",
+      "reference_baseline": "last_seen_train",
       "metric_path": ["mouse_move", "pearson"],
       "direction": "higher",
       "min_effect": 0.05
     },
     {
       "name": "mouse_move_scale_ratio_distance",
-      "reference_baseline": "global_majority",
+      "reference_baseline": "last_seen_train",
       "metric_path": ["mouse_move", "scale_ratio"],
       "direction": "lower",
       "transform": "abs_log_distance",

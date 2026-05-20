@@ -13,6 +13,16 @@ G4 now has an executable neural-IDM path over decoded real D2E records.
 
 Each pseudo-label receives a confidence derived from the trained model residual scale. The config threshold writes both full and filtered pseudo-label artifacts. Later full-scale runs should tune this threshold on a validation split and record label-retention/quality curves.
 
+## Multi-recording preflight
+
+`configs/data/d2e_real_multi_apex8.yaml` and `configs/model/idm_real_multi_apex8.yaml` run an eight-recording Apex Legends preflight (512 decoded windows; 384 train / 128 heldout; 8 heldout recording clusters). The summary artifacts are:
+
+- `artifacts/sources/d2e_multi_decode_apex8_summary.json`
+- `artifacts/eval/baseline_stat_eval_multi_apex8.json`
+- `artifacts/idm/idm_real_multi_apex8_summary.json`
+
+The best current neural IDM variants improve mean mouse endpoints over the `last_seen_train` movement baseline, but Holm-corrected significance is not yet clean. Treat this as the escalation signal for larger MLXP-scale extraction/training, not as final G4 completion.
+
 ## Completion caveat
 
 This milestone proves the real-D2E neural IDM training/evaluation path on the decoded sample and already beats the `global_majority` movement baseline on sample mouse endpoints. It is not the final G4 completion proof: G4 still needs full selected-D2E training on MLXP storage, enough recording clusters for the strong statistical bar, and durable trained checkpoints before the ultragoal story should be checkpointed complete.

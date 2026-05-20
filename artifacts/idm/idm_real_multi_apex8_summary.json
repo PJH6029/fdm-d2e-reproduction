@@ -1,0 +1,637 @@
+{
+  "schema": "idm_real_train_summary.v1",
+  "train_records": "outputs/data/real_multi_apex8/train.jsonl",
+  "target_records": "outputs/data/real_multi_apex8/heldout.jsonl",
+  "endpoints": "configs/eval/primary_endpoints.yaml",
+  "variants": {
+    "tiny_mouse_idm_linear": {
+      "metadata": {
+        "schema": "idm_checkpoint_metadata.v1",
+        "model": "tiny_mouse_idm_linear",
+        "dataset_fingerprint": "b124f16575219a3f293ca28ec4936419e3457ee403eebb37484b21f85c651414",
+        "train_records": 384,
+        "target_records": 128,
+        "pseudo_label_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_linear/pseudolabels.jsonl",
+        "filtered_pseudo_label_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_linear/pseudolabels.filtered.jsonl",
+        "checkpoint_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_linear/checkpoint.json",
+        "metrics_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_linear/metrics.json",
+        "calibration": {
+          "confidence_threshold": 0.25,
+          "kept": 108,
+          "total": 128,
+          "train_rmse": 12.348169328718924
+        }
+      },
+      "metrics": {
+        "schema": "metrics.v1",
+        "stage": "fdm_eval",
+        "num_examples": 128,
+        "keyboard": {
+          "status": "computed",
+          "accuracy": 0.0,
+          "num_examples": 59
+        },
+        "mouse_button": {
+          "status": "computed",
+          "accuracy": 0.0,
+          "num_examples": 5
+        },
+        "mouse_move": {
+          "status": "computed",
+          "pearson": -0.03868840046637786,
+          "scale_ratio": 1.225063380779877,
+          "num_values": 254
+        },
+        "failure_count": 128
+      }
+    },
+    "tiny_mouse_idm_mlp8": {
+      "metadata": {
+        "schema": "idm_checkpoint_metadata.v1",
+        "model": "tiny_mouse_idm_mlp8",
+        "dataset_fingerprint": "b124f16575219a3f293ca28ec4936419e3457ee403eebb37484b21f85c651414",
+        "train_records": 384,
+        "target_records": 128,
+        "pseudo_label_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_mlp8/pseudolabels.jsonl",
+        "filtered_pseudo_label_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_mlp8/pseudolabels.filtered.jsonl",
+        "checkpoint_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_mlp8/checkpoint.json",
+        "metrics_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_mlp8/metrics.json",
+        "calibration": {
+          "confidence_threshold": 0.25,
+          "kept": 101,
+          "total": 128,
+          "train_rmse": 10.272616665773208
+        }
+      },
+      "metrics": {
+        "schema": "metrics.v1",
+        "stage": "fdm_eval",
+        "num_examples": 128,
+        "keyboard": {
+          "status": "computed",
+          "accuracy": 0.0,
+          "num_examples": 59
+        },
+        "mouse_button": {
+          "status": "computed",
+          "accuracy": 0.0,
+          "num_examples": 5
+        },
+        "mouse_move": {
+          "status": "computed",
+          "pearson": -0.09121114215496591,
+          "scale_ratio": 1.4474135945237363,
+          "num_values": 254
+        },
+        "failure_count": 128
+      }
+    },
+    "tiny_mouse_idm_mlp16": {
+      "metadata": {
+        "schema": "idm_checkpoint_metadata.v1",
+        "model": "tiny_mouse_idm_mlp16",
+        "dataset_fingerprint": "b124f16575219a3f293ca28ec4936419e3457ee403eebb37484b21f85c651414",
+        "train_records": 384,
+        "target_records": 128,
+        "pseudo_label_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_mlp16/pseudolabels.jsonl",
+        "filtered_pseudo_label_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_mlp16/pseudolabels.filtered.jsonl",
+        "checkpoint_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_mlp16/checkpoint.json",
+        "metrics_path": "outputs/idm_real_multi_apex8/tiny_mouse_idm_mlp16/metrics.json",
+        "calibration": {
+          "confidence_threshold": 0.25,
+          "kept": 120,
+          "total": 128,
+          "train_rmse": 10.154041359706644
+        }
+      },
+      "metrics": {
+        "schema": "metrics.v1",
+        "stage": "fdm_eval",
+        "num_examples": 128,
+        "keyboard": {
+          "status": "computed",
+          "accuracy": 0.0,
+          "num_examples": 59
+        },
+        "mouse_button": {
+          "status": "computed",
+          "accuracy": 0.0,
+          "num_examples": 5
+        },
+        "mouse_move": {
+          "status": "computed",
+          "pearson": -0.04653505373685088,
+          "scale_ratio": 1.296638424552379,
+          "num_values": 254
+        },
+        "failure_count": 128
+      }
+    }
+  },
+  "baseline_metrics": {
+    "noop": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 128,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 59
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
+      },
+      "mouse_move": {
+        "status": "absent",
+        "pearson": null,
+        "scale_ratio": null,
+        "num_values": 0
+      },
+      "failure_count": 127
+    },
+    "global_majority": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 128,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 59
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
+      },
+      "mouse_move": {
+        "status": "absent",
+        "pearson": null,
+        "scale_ratio": null,
+        "num_values": 0
+      },
+      "failure_count": 127
+    },
+    "game_majority": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 128,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 59
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
+      },
+      "mouse_move": {
+        "status": "absent",
+        "pearson": null,
+        "scale_ratio": null,
+        "num_values": 0
+      },
+      "failure_count": 127
+    },
+    "last_seen_train": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 128,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.23728813559322035,
+        "num_examples": 59
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 5
+      },
+      "mouse_move": {
+        "status": "computed",
+        "pearson": -0.054870185752818386,
+        "scale_ratio": 1.1488422376747738,
+        "num_values": 254
+      },
+      "failure_count": 128
+    }
+  },
+  "statistical_comparison": {
+    "schema": "stat_comparison.v1",
+    "reference_baseline": "noop",
+    "correction": "holm_bonferroni",
+    "cluster_key": "recording_id",
+    "comparisons": [
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 8,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 8,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.1201923076923077,
+        "ci": [
+          0.0,
+          0.2980769230769231
+        ],
+        "p_value": 0.0995,
+        "num_clusters": 8,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_linear",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 8,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_mlp8",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 8,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_mlp16",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 8,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 2,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 2,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 2,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_linear",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 2,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_mlp8",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 2,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_mlp16",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 2,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_linear",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.16876252868120264,
+        "ci": [
+          -0.17560908290031793,
+          0.5001169709029355
+        ],
+        "p_value": 0.1635,
+        "num_clusters": 8,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_mlp8",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.14386025126728766,
+        "ci": [
+          -0.11173323002821228,
+          0.3850384567456887
+        ],
+        "p_value": 0.1575,
+        "num_clusters": 8,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_mlp16",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.14775044765789302,
+        "ci": [
+          -0.07173752426308977,
+          0.34582345674988674
+        ],
+        "p_value": 0.0875,
+        "num_clusters": 8,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_linear",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": 0.3524558008404103,
+        "ci": [
+          -0.1247785137370695,
+          0.861392198520401
+        ],
+        "p_value": 0.08,
+        "num_clusters": 8,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_mlp8",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": 0.534237219449472,
+        "ci": [
+          -0.05069442317344286,
+          1.1544542361625383
+        ],
+        "p_value": 0.038,
+        "num_clusters": 8,
+        "p_adjusted_holm": 0.646,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "tiny_mouse_idm_mlp16",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": 0.5162748090746664,
+        "ci": [
+          0.006309492201757139,
+          0.9768738273529658
+        ],
+        "p_value": 0.023,
+        "num_clusters": 8,
+        "p_adjusted_holm": 0.414,
+        "reject_holm_0_05": false
+      }
+    ]
+  }
+}
