@@ -1,0 +1,226 @@
+{
+  "schema": "mlxp_board_snapshot.v1",
+  "base_url": "http://147.46.219.248:8000",
+  "project_id": "production",
+  "namespace": "p-production",
+  "slot_minutes": 60,
+  "slot_label": "1-hour",
+  "visible_days": 2,
+  "window_start": "2026-05-20T17:00:00+09:00",
+  "window_end": "2026-05-22T17:00:00+09:00",
+  "default_image_key": "base",
+  "default_image": {
+    "key": "base",
+    "label": "Production Base",
+    "image": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+    "description": "Default managed reservation image built from images/production-base."
+  },
+  "managed_images": [
+    {
+      "key": "codex",
+      "label": "Codex",
+      "image": "ghcr.io/pjh6029/snupi-personal-codex:20260414",
+      "description": "Codex-enabled image that inherits from the production base image."
+    }
+  ],
+  "registry_profiles": [
+    {
+      "key": "snupi-lab-registry",
+      "label": "SNUPI Lab Registry",
+      "image_prefixes": [
+        "snupi-nas2.synology.me:55031/"
+      ]
+    }
+  ],
+  "free_gpu_totals": {
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 3,
+    "5": 0,
+    "6": 0
+  },
+  "nodes": [
+    {
+      "label": "Node 1",
+      "gpu_count": 8
+    },
+    {
+      "label": "Node 2",
+      "gpu_count": 8
+    },
+    {
+      "label": "Node 3",
+      "gpu_count": 8
+    },
+    {
+      "label": "Node 4",
+      "gpu_count": 8
+    },
+    {
+      "label": "Node 5",
+      "gpu_count": 8
+    },
+    {
+      "label": "Node 6",
+      "gpu_count": 8
+    }
+  ],
+  "reservations_count": 10,
+  "candidate_4gpu_same_node_slots_first10": [
+    {
+      "slot_start": "2026-05-21T01:00:00+09:00",
+      "slot_end": "2026-05-21T02:00:00+09:00",
+      "node_id": "5",
+      "gpu_start": 0,
+      "gpu_count": 4
+    },
+    {
+      "slot_start": "2026-05-21T02:00:00+09:00",
+      "slot_end": "2026-05-21T03:00:00+09:00",
+      "node_id": "5",
+      "gpu_start": 0,
+      "gpu_count": 4
+    },
+    {
+      "slot_start": "2026-05-21T03:00:00+09:00",
+      "slot_end": "2026-05-21T04:00:00+09:00",
+      "node_id": "3",
+      "gpu_start": 0,
+      "gpu_count": 4
+    },
+    {
+      "slot_start": "2026-05-21T03:00:00+09:00",
+      "slot_end": "2026-05-21T04:00:00+09:00",
+      "node_id": "5",
+      "gpu_start": 0,
+      "gpu_count": 4
+    },
+    {
+      "slot_start": "2026-05-21T03:00:00+09:00",
+      "slot_end": "2026-05-21T04:00:00+09:00",
+      "node_id": "6",
+      "gpu_start": 0,
+      "gpu_count": 4
+    },
+    {
+      "slot_start": "2026-05-21T04:00:00+09:00",
+      "slot_end": "2026-05-21T05:00:00+09:00",
+      "node_id": "3",
+      "gpu_start": 0,
+      "gpu_count": 4
+    },
+    {
+      "slot_start": "2026-05-21T04:00:00+09:00",
+      "slot_end": "2026-05-21T05:00:00+09:00",
+      "node_id": "5",
+      "gpu_start": 0,
+      "gpu_count": 4
+    },
+    {
+      "slot_start": "2026-05-21T04:00:00+09:00",
+      "slot_end": "2026-05-21T05:00:00+09:00",
+      "node_id": "6",
+      "gpu_start": 0,
+      "gpu_count": 4
+    },
+    {
+      "slot_start": "2026-05-21T05:00:00+09:00",
+      "slot_end": "2026-05-21T06:00:00+09:00",
+      "node_id": "2",
+      "gpu_start": 0,
+      "gpu_count": 4
+    },
+    {
+      "slot_start": "2026-05-21T05:00:00+09:00",
+      "slot_end": "2026-05-21T06:00:00+09:00",
+      "node_id": "3",
+      "gpu_start": 0,
+      "gpu_count": 4
+    }
+  ],
+  "visible_days_latest": 3,
+  "window_end_latest": "2026-05-23T17:00:00+09:00",
+  "longest_4gpu_same_node_windows_first10": [
+    {
+      "node_id": "5",
+      "gpu_start": 0,
+      "gpu_count": 4,
+      "start_at": "2026-05-21T01:00:00+09:00",
+      "end_at": "2026-05-23T17:00:00+09:00",
+      "hours": 64
+    },
+    {
+      "node_id": "5",
+      "gpu_start": 1,
+      "gpu_count": 4,
+      "start_at": "2026-05-21T01:00:00+09:00",
+      "end_at": "2026-05-23T17:00:00+09:00",
+      "hours": 64
+    },
+    {
+      "node_id": "5",
+      "gpu_start": 2,
+      "gpu_count": 4,
+      "start_at": "2026-05-21T01:00:00+09:00",
+      "end_at": "2026-05-23T17:00:00+09:00",
+      "hours": 64
+    },
+    {
+      "node_id": "5",
+      "gpu_start": 3,
+      "gpu_count": 4,
+      "start_at": "2026-05-21T01:00:00+09:00",
+      "end_at": "2026-05-23T17:00:00+09:00",
+      "hours": 64
+    },
+    {
+      "node_id": "5",
+      "gpu_start": 4,
+      "gpu_count": 4,
+      "start_at": "2026-05-21T01:00:00+09:00",
+      "end_at": "2026-05-23T17:00:00+09:00",
+      "hours": 64
+    },
+    {
+      "node_id": "3",
+      "gpu_start": 0,
+      "gpu_count": 4,
+      "start_at": "2026-05-21T03:00:00+09:00",
+      "end_at": "2026-05-23T17:00:00+09:00",
+      "hours": 62
+    },
+    {
+      "node_id": "3",
+      "gpu_start": 1,
+      "gpu_count": 4,
+      "start_at": "2026-05-21T03:00:00+09:00",
+      "end_at": "2026-05-23T17:00:00+09:00",
+      "hours": 62
+    },
+    {
+      "node_id": "3",
+      "gpu_start": 2,
+      "gpu_count": 4,
+      "start_at": "2026-05-21T03:00:00+09:00",
+      "end_at": "2026-05-23T17:00:00+09:00",
+      "hours": 62
+    },
+    {
+      "node_id": "3",
+      "gpu_start": 3,
+      "gpu_count": 4,
+      "start_at": "2026-05-21T03:00:00+09:00",
+      "end_at": "2026-05-23T17:00:00+09:00",
+      "hours": 62
+    },
+    {
+      "node_id": "3",
+      "gpu_start": 4,
+      "gpu_count": 4,
+      "start_at": "2026-05-21T03:00:00+09:00",
+      "end_at": "2026-05-23T17:00:00+09:00",
+      "hours": 62
+    }
+  ]
+}

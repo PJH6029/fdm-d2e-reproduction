@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "dataset", "hf_repo_id", "revision", "num_recordings", "recordings"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["recording_manifest.v1"]},
+    "dataset": {"type": "string"},
+    "hf_repo_id": {"type": "string"},
+    "revision": {"type": "string"},
+    "num_recordings": {"type": "integer"},
+    "recordings": {"type": "array", "items": {"type": "object"}}
+  }
+}

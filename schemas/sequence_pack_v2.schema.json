@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "dataset_fingerprint", "timebase", "sequences"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["sequence_pack.v2"]},
+    "dataset_fingerprint": {"type": "string"},
+    "timebase": {"type": "object"},
+    "sequences": {"type": "array", "items": {"type": "object"}}
+  }
+}

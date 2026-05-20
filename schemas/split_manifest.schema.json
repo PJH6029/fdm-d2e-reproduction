@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "dataset_fingerprint", "split_policy", "splits"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["split_manifest.v1"]},
+    "dataset_fingerprint": {"type": "string"},
+    "split_policy": {"type": "object"},
+    "splits": {"type": "object"}
+  }
+}
