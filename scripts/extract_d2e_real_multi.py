@@ -24,6 +24,11 @@ def _sample_config(base: dict, sample: dict) -> dict:
     return cfg
 
 
+def _files_for_sample(sample: dict) -> list[str]:
+    stem = f"{sample['game']}/{sample['recording_id']}"
+    return [f"{stem}.mcap", f"{stem}.mkv"]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Decode multiple real D2E recordings and combine train/heldout contracts.")
     parser.add_argument("--config", default="configs/data/d2e_real_multi_apex.yaml")
@@ -41,7 +46,11 @@ def main() -> None:
     summaries = []
     sequences = []
     for sample in samples:
-        result = prepare_decoded_sample(_sample_config(config, sample))
+        # Avoid repeated Hugging Face inventory calls during cluster jobs.  The
+        # selected recording pair is explicit in the config, so the manifest can
+        # be constructed from the two known repo paths and only the actual media
+        # downloads need remote access.
+        result = prepare_decoded_sample(_sample_config(config, sample), files=_files_for_sample(sample))
         summary = result["summary"]
         summaries.append(summary)
         records = result["records"]
