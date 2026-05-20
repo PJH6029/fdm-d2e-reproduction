@@ -10,7 +10,10 @@ from fdm_d2e.eval.statistics import compare_systems
 from fdm_d2e.config import load_config
 from fdm_d2e.io_utils import read_jsonl, stable_hash_json, write_json, write_jsonl
 from fdm_d2e.schema import validate_named
+from fdm_d2e.tokenization.actions import token_to_delta_class
 from fdm_d2e.training.neural_idm import record_features, target_mouse_delta, tokens_from_delta
+
+MOUSE_AXIS_CLASSES = ["N5", "N4", "N3", "N2", "N1", "Z0", "P1", "P2", "P3", "P4", "P5"]
 
 
 def categorical_token_vocab(records: list[dict[str, Any]], *, min_count: int = 1) -> list[str]:
@@ -99,6 +102,32 @@ def _category_label_matrix(records: list[dict[str, Any]], vocab: list[str]) -> l
             if token in vocab_index:
                 rows[row_idx][vocab_index[token]] = 1
     return rows
+
+
+def _axis_suffix_from_delta(value: float, axis_prefix: str) -> str:
+    token = tokens_from_delta(value if axis_prefix == "MOUSE_DX_" else 0.0, value if axis_prefix == "MOUSE_DY_" else 0.0)
+    for item in token:
+        if item.startswith(axis_prefix):
+            return item.removeprefix(axis_prefix)
+    raise ValueError(f"failed to build axis token for {axis_prefix}")
+
+
+def _axis_class_indices(records: list[dict[str, Any]], axis_classes: list[str]) -> tuple[list[int], list[int]]:
+    class_index = {label: idx for idx, label in enumerate(axis_classes)}
+    dx_indices: list[int] = []
+    dy_indices: list[int] = []
+    for row in records:
+        dx, dy = target_mouse_delta(row)
+        dx_indices.append(class_index[_axis_suffix_from_delta(dx, "MOUSE_DX_")])
+        dy_indices.append(class_index[_axis_suffix_from_delta(dy, "MOUSE_DY_")])
+    return dx_indices, dy_indices
+
+
+def _axis_class_to_delta(axis_class: str) -> float:
+    value = token_to_delta_class(f"MOUSE_DX_{axis_class}")
+    if value is None:
+        raise ValueError(f"unsupported mouse axis class: {axis_class}")
+    return float(value)
 
 
 def _select_threshold(
@@ -681,6 +710,8 @@ def _fit_torch_model(
     history_vocab: list[str],
     button_classes: list[tuple[str, ...]],
     button_head_mode: str,
+    mouse_head_mode: str,
+    mouse_axis_classes: list[str],
     feature_mode: str,
     residual_mouse: bool,
     action_history_len: int,
@@ -724,12 +755,25 @@ def _fit_torch_model(
             button_class_weight[0] = button_class_weight[0] * float(config.get("button_softmax_no_button_weight", 1.0))
             if len(button_classes) > 1:
                 button_class_weight[1:] = button_class_weight[1:] * float(config.get("button_softmax_positive_weight", 1.0))
+    mouse_axis_dx_y = mouse_axis_dy_y = None
+    mouse_axis_class_weight = None
+    if mouse_head_mode == "axis_softmax":
+        dx_indices, dy_indices = _axis_class_indices(records, mouse_axis_classes)
+        mouse_axis_dx_y = torch.tensor(dx_indices, dtype=torch.long, device=device)
+        mouse_axis_dy_y = torch.tensor(dy_indices, dtype=torch.long, device=device)
+        all_indices = torch.tensor(dx_indices + dy_indices, dtype=torch.long, device=device)
+        counts = torch.bincount(all_indices, minlength=len(mouse_axis_classes)).to(dtype=torch.float32)
+        total = counts.sum().clamp_min(1.0)
+        mouse_axis_class_weight = (total / (counts.clamp_min(1.0) * len(mouse_axis_classes))).clamp(
+            max=float(config.get("mouse_axis_class_weight_cap", 20.0))
+        )
     input_dim = int(train_x.shape[1])
     button_output_dim = len(button_classes) if button_head_mode == "softmax" else 0
+    mouse_axis_output_dim = (2 * len(mouse_axis_classes)) if mouse_head_mode == "axis_softmax" else 0
     model = _build_model(
         torch,
         input_dim=input_dim,
-        output_dim=2 + len(category_vocab) + button_output_dim,
+        output_dim=2 + len(category_vocab) + button_output_dim + mouse_axis_output_dim,
         hidden_dim=int(config.get("hidden_dim", 128)),
         depth=int(config.get("depth", 3)),
         dropout=float(config.get("dropout", 0.05)),
@@ -746,6 +790,7 @@ def _fit_torch_model(
             pred = model(train_x[idx])
             mouse_loss = torch.nn.functional.smooth_l1_loss(pred[:, :2], mouse_y[idx])
             category_end = 2 + len(category_vocab)
+            button_end = category_end + button_output_dim
             if category_vocab:
                 cat_loss = _categorical_loss(torch, pred[:, 2:category_end], cat_y[idx], cat_pos_weight, config)
             else:
@@ -758,8 +803,23 @@ def _fit_torch_model(
                 )
             else:
                 button_loss = torch.tensor(0.0, device=device)
+            if (
+                mouse_head_mode == "axis_softmax"
+                and mouse_axis_dx_y is not None
+                and mouse_axis_dy_y is not None
+            ):
+                axis_count = len(mouse_axis_classes)
+                dx_logits = pred[:, button_end : button_end + axis_count]
+                dy_logits = pred[:, button_end + axis_count : button_end + (2 * axis_count)]
+                mouse_axis_loss = 0.5 * (
+                    torch.nn.functional.cross_entropy(dx_logits, mouse_axis_dx_y[idx], weight=mouse_axis_class_weight)
+                    + torch.nn.functional.cross_entropy(dy_logits, mouse_axis_dy_y[idx], weight=mouse_axis_class_weight)
+                )
+            else:
+                mouse_axis_loss = torch.tensor(0.0, device=device)
             loss = (
-                mouse_loss
+                float(config.get("mouse_regression_loss_weight", 1.0)) * mouse_loss
+                + float(config.get("mouse_axis_loss_weight", 1.0 if mouse_head_mode == "axis_softmax" else 0.0)) * mouse_axis_loss
                 + float(config.get("categorical_loss_weight", 0.5)) * cat_loss
                 + float(config.get("button_softmax_loss_weight", 1.0)) * button_loss
             )
@@ -815,13 +875,28 @@ def _prediction_from_output(
     button_head_mode: str = "multilabel",
     button_classes: list[tuple[str, ...]] | None = None,
     button_softmax_threshold: float = 0.5,
+    mouse_head_mode: str = "regression",
+    mouse_axis_classes: list[str] | None = None,
 ) -> tuple[float, float, list[str]]:
     dx, dy = float(output[0]), float(output[1])
     if residual_mouse:
         dx += float(base_dx)
         dy += float(base_dy)
-    tokens = tokens_from_delta(float(dx), float(dy))
     category_end = 2 + len(category_vocab)
+    button_end = category_end
+    if button_head_mode == "softmax":
+        button_end = category_end + len(button_classes or [])
+    if mouse_head_mode == "axis_softmax":
+        axis_classes = mouse_axis_classes or MOUSE_AXIS_CLASSES
+        axis_count = len(axis_classes)
+        dx_logits = output[button_end : button_end + axis_count]
+        dy_logits = output[button_end + axis_count : button_end + (2 * axis_count)]
+        if dx_logits and dy_logits:
+            dx_idx = max(range(len(dx_logits)), key=lambda idx: dx_logits[idx])
+            dy_idx = max(range(len(dy_logits)), key=lambda idx: dy_logits[idx])
+            dx = _axis_class_to_delta(axis_classes[dx_idx])
+            dy = _axis_class_to_delta(axis_classes[dy_idx])
+    tokens = tokens_from_delta(float(dx), float(dy))
     for token, logit in zip(category_vocab, output[2:category_end]):
         prob = _sigmoid(float(logit))
         if prob >= float(category_thresholds.get(token, category_threshold)):
@@ -856,6 +931,8 @@ def _predict_autoregressive_target(
     button_head_mode: str,
     button_classes: list[tuple[str, ...]],
     button_softmax_threshold: float,
+    mouse_head_mode: str,
+    mouse_axis_classes: list[str],
     action_history_len: int,
 ) -> dict[str, dict[str, Any]]:
     histories: dict[str, list[list[str]]] = {}
@@ -910,6 +987,8 @@ def _predict_autoregressive_target(
             button_head_mode=button_head_mode,
             button_classes=button_classes,
             button_softmax_threshold=button_softmax_threshold,
+            mouse_head_mode=mouse_head_mode,
+            mouse_axis_classes=mouse_axis_classes,
         )
         outputs[sequence_id] = {"output": output, "dx": dx, "dy": dy, "tokens": tokens}
         _append_history(history, button_state, tokens, history_len=action_history_len)
@@ -936,6 +1015,15 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     if mouse_target_mode not in {"absolute", "residual_last_seen"}:
         raise ValueError(f"unsupported mouse_target_mode: {mouse_target_mode}")
     residual_mouse = mouse_target_mode == "residual_last_seen"
+    mouse_head_mode = str(config.get("mouse_head_mode", "regression"))
+    if mouse_head_mode not in {"regression", "axis_softmax"}:
+        raise ValueError(f"unsupported mouse_head_mode: {mouse_head_mode}")
+    raw_axis_classes = config.get("mouse_axis_classes")
+    mouse_axis_classes = (
+        [str(value) for value in raw_axis_classes]
+        if isinstance(raw_axis_classes, list) and raw_axis_classes
+        else list(MOUSE_AXIS_CLASSES)
+    )
     history_vocab = categorical_token_vocab(train_records, min_count=int(config.get("categorical_min_count", 1)))
     button_head_mode = str(config.get("button_head_mode", "multilabel"))
     if button_head_mode not in {"multilabel", "softmax"}:
@@ -1002,6 +1090,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             history_vocab=history_vocab,
             button_classes=button_classes,
             button_head_mode=button_head_mode,
+            mouse_head_mode=mouse_head_mode,
+            mouse_axis_classes=mouse_axis_classes,
             feature_mode=feature_mode,
             residual_mouse=residual_mouse,
             action_history_len=action_history_len,
@@ -1120,6 +1210,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             history_vocab=history_vocab,
             button_classes=button_classes,
             button_head_mode=button_head_mode,
+            mouse_head_mode=mouse_head_mode,
+            mouse_axis_classes=mouse_axis_classes,
             feature_mode=feature_mode,
             residual_mouse=residual_mouse,
             action_history_len=action_history_len,
@@ -1140,6 +1232,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             "button_head_mode": button_head_mode,
             "button_classes": [list(tokens) for tokens in button_classes],
             "button_softmax_threshold": button_softmax_threshold,
+            "mouse_head_mode": mouse_head_mode,
+            "mouse_axis_classes": mouse_axis_classes,
         },
         checkpoint_path,
     )
@@ -1169,6 +1263,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             button_head_mode=button_head_mode,
             button_classes=button_classes,
             button_softmax_threshold=button_softmax_threshold,
+            mouse_head_mode=mouse_head_mode,
+            mouse_axis_classes=mouse_axis_classes,
             action_history_len=action_history_len,
         )
         deltas = [autoregressive_outputs[str(row["sequence_id"])]["output"] for row in target_records]
@@ -1226,6 +1322,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 button_head_mode=button_head_mode,
                 button_classes=button_classes,
                 button_softmax_threshold=button_softmax_threshold,
+                mouse_head_mode=mouse_head_mode,
+                mouse_axis_classes=mouse_axis_classes,
             )
         confidence = max(0.05, min(0.99, 1.0 / (1.0 + abs(float(dx)) + abs(float(dy)))))
         pseudo = {
@@ -1274,6 +1372,11 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "feature_mode": feature_mode,
         "input_dim": input_dim,
         "mouse_target_mode": mouse_target_mode,
+        "mouse_head_mode": mouse_head_mode,
+        "mouse_axis_classes": mouse_axis_classes if mouse_head_mode == "axis_softmax" else [],
+        "mouse_axis_loss_weight": float(config.get("mouse_axis_loss_weight", 1.0 if mouse_head_mode == "axis_softmax" else 0.0)),
+        "mouse_regression_loss_weight": float(config.get("mouse_regression_loss_weight", 1.0)),
+        "mouse_axis_class_weight_cap": float(config.get("mouse_axis_class_weight_cap", 20.0)),
         "category_threshold": category_threshold,
         "category_threshold_mode": threshold_mode,
         "category_thresholds": category_thresholds,

@@ -69,6 +69,10 @@ def main() -> int:
     parser.add_argument("--button-class-weight-caps", default="")
     parser.add_argument("--button-no-button-weights", default="")
     parser.add_argument("--button-positive-weights", default="")
+    parser.add_argument("--mouse-head-modes", default="")
+    parser.add_argument("--mouse-axis-loss-weights", default="")
+    parser.add_argument("--mouse-regression-loss-weights", default="")
+    parser.add_argument("--mouse-axis-class-weight-caps", default="")
     parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--max-runs", type=int, default=None)
     args = parser.parse_args()
@@ -94,6 +98,10 @@ def main() -> int:
     button_class_weight_caps = _floats(args.button_class_weight_caps) or [float(base.get("button_softmax_class_weight_cap", 20.0))]
     button_no_button_weights = _floats(args.button_no_button_weights) or [float(base.get("button_softmax_no_button_weight", 1.0))]
     button_positive_weights = _floats(args.button_positive_weights) or [float(base.get("button_softmax_positive_weight", 1.0))]
+    mouse_head_modes = _strings(args.mouse_head_modes) or [str(base.get("mouse_head_mode", "regression"))]
+    mouse_axis_loss_weights = _floats(args.mouse_axis_loss_weights) or [float(base.get("mouse_axis_loss_weight", 1.0))]
+    mouse_regression_loss_weights = _floats(args.mouse_regression_loss_weights) or [float(base.get("mouse_regression_loss_weight", 1.0))]
+    mouse_axis_class_weight_caps = _floats(args.mouse_axis_class_weight_caps) or [float(base.get("mouse_axis_class_weight_cap", 20.0))]
     grid = itertools.product(
         _floats(args.loss_weights),
         _floats(args.poscaps),
@@ -112,6 +120,10 @@ def main() -> int:
         button_class_weight_caps,
         button_no_button_weights,
         button_positive_weights,
+        mouse_head_modes,
+        mouse_axis_loss_weights,
+        mouse_regression_loss_weights,
+        mouse_axis_class_weight_caps,
     )
     for idx, (
         loss_weight,
@@ -131,6 +143,10 @@ def main() -> int:
         button_class_weight_cap,
         button_no_button_weight,
         button_positive_weight,
+        mouse_head_mode,
+        mouse_axis_loss_weight,
+        mouse_regression_loss_weight,
+        mouse_axis_class_weight_cap,
     ) in enumerate(grid, start=1):
         if args.max_runs is not None and idx > args.max_runs:
             break
@@ -140,6 +156,7 @@ def main() -> int:
             f"_loss{loss_mode}_fg{focal_gamma:g}_cal{calibration_mode}_cb{calibration_beta:g}_cf{calibration_fraction:g}"
             f"_bh{button_head_mode}_bth{button_threshold:g}_btm{button_threshold_mode}"
             f"_blw{button_loss_weight:g}_bcw{button_class_weight_cap:g}_bnw{button_no_button_weight:g}_bpw{button_positive_weight:g}"
+            f"_mh{mouse_head_mode}_malw{mouse_axis_loss_weight:g}_mrlw{mouse_regression_loss_weight:g}_macw{mouse_axis_class_weight_cap:g}"
         )
         model_name = f"{base.get('model_name', 'torch_mlp_idm')}_{variant}"
         cfg.update(
@@ -162,6 +179,10 @@ def main() -> int:
                 "button_softmax_class_weight_cap": button_class_weight_cap,
                 "button_softmax_no_button_weight": button_no_button_weight,
                 "button_softmax_positive_weight": button_positive_weight,
+                "mouse_head_mode": mouse_head_mode,
+                "mouse_axis_loss_weight": mouse_axis_loss_weight,
+                "mouse_regression_loss_weight": mouse_regression_loss_weight,
+                "mouse_axis_class_weight_cap": mouse_axis_class_weight_cap,
                 "output_dir": str(work_dir / variant),
                 "summary_out": str(work_dir / variant / "summary.json"),
             }
@@ -188,6 +209,10 @@ def main() -> int:
                 "button_softmax_class_weight_cap": button_class_weight_cap,
                 "button_softmax_no_button_weight": button_no_button_weight,
                 "button_softmax_positive_weight": button_positive_weight,
+                "mouse_head_mode": mouse_head_mode,
+                "mouse_axis_loss_weight": mouse_axis_loss_weight,
+                "mouse_regression_loss_weight": mouse_regression_loss_weight,
+                "mouse_axis_class_weight_cap": mouse_axis_class_weight_cap,
                 "epochs": cfg.get("epochs"),
                 "feature_mode": cfg.get("feature_mode", "summary"),
                 "train_records": cfg.get("train_records"),

@@ -6,6 +6,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.training.torch_idm import (
     _action_history_features,
+    _axis_class_indices,
+    _axis_class_to_delta,
+    _axis_suffix_from_delta,
     _button_target_indices,
     _calibrated_category_thresholds_from_scores,
     _calibrated_button_softmax_threshold_from_scores,
@@ -148,6 +151,21 @@ class TorchIDMContractTests(unittest.TestCase):
         self.assertEqual(diagnostics["tp"], 1)
         self.assertEqual(diagnostics["fp"], 0)
 
+    def test_mouse_axis_classes_match_delta_token_bins(self):
+        records = [
+            {"sequence_id": "r#0", "ground_truth_tokens": ["MOUSE_DX_P2", "MOUSE_DY_N1"]},
+            {"sequence_id": "r#1", "ground_truth_tokens": ["MOUSE_DX_Z0", "MOUSE_DY_P3"]},
+        ]
+
+        dx_indices, dy_indices = _axis_class_indices(records, ["N3", "N2", "N1", "Z0", "P1", "P2", "P3"])
+
+        self.assertEqual(_axis_suffix_from_delta(2.0, "MOUSE_DX_"), "P2")
+        self.assertEqual(_axis_suffix_from_delta(-1.0, "MOUSE_DY_"), "N1")
+        self.assertEqual(dx_indices, [5, 3])
+        self.assertEqual(dy_indices, [2, 6])
+        self.assertEqual(_axis_class_to_delta("P3"), 6.0)
+        self.assertEqual(_axis_class_to_delta("N2"), -2.0)
+
     def test_prediction_softmax_button_head_emits_at_most_one_exact_set(self):
         _, _, tokens = _prediction_from_output(
             [0.0, 0.0, 3.0, 0.1, 2.5],
@@ -165,6 +183,22 @@ class TorchIDMContractTests(unittest.TestCase):
         self.assertIn("KEY_PRESS_87", tokens)
         self.assertIn("MOUSE_LEFT_DOWN", tokens)
         self.assertNotIn("MOUSE_LEFT_UP", tokens)
+
+    def test_prediction_axis_softmax_overrides_regression_motion_tokens(self):
+        _, _, tokens = _prediction_from_output(
+            [0.0, 0.0, 0.1, 5.0, 0.2, 4.0, 0.3, 0.1],
+            base_dx=0.0,
+            base_dy=0.0,
+            residual_mouse=False,
+            category_vocab=[],
+            category_thresholds={},
+            category_threshold=0.5,
+            button_head_mode="multilabel",
+            mouse_head_mode="axis_softmax",
+            mouse_axis_classes=["N1", "Z0", "P2"],
+        )
+
+        self.assertEqual(tokens[:2], ["MOUSE_DX_Z0", "MOUSE_DY_N1"])
 
     def test_action_history_features_are_causal_and_seedable(self):
         vocab = ["KEY_PRESS_87", "MOUSE_LEFT_DOWN", "MOUSE_LEFT_UP"]
