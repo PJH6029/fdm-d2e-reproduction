@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema", "model", "dataset_fingerprint", "train_records", "target_records", "pseudo_label_path", "metrics_path", "checkpoint_path", "calibration"],
+  "properties": {
+    "schema": {"type": "string", "enum": ["idm_checkpoint_metadata.v1"]},
+    "model": {"type": "string"},
+    "dataset_fingerprint": {"type": "string"},
+    "train_records": {"type": "integer"},
+    "target_records": {"type": "integer"},
+    "pseudo_label_path": {"type": "string"},
+    "metrics_path": {"type": "string"},
+    "checkpoint_path": {"type": "string"},
+    "calibration": {"type": "object"}
+  }
+}

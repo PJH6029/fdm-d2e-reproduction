@@ -1,0 +1,42 @@
+import tempfile
+import unittest
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from fdm_d2e.training.neural_idm import TinyMouseIDM, target_mouse_delta, tokens_from_delta, train_idm_variant
+
+
+def rec(idx, dx_token, dy_token):
+    return {
+        "sequence_id": f"r#{idx}",
+        "recording_id": "r",
+        "game": "g",
+        "timestamp_ns": idx,
+        "bin_index": idx,
+        "frame": {"path": f"f{idx}.ppm", "index": idx, "features": [idx / 10, 0.0, 0.0, 0.0, 0.0]},
+        "ground_truth_tokens": [dx_token, dy_token],
+    }
+
+
+class NeuralIDMTests(unittest.TestCase):
+    def test_target_mouse_delta_reduces_tokens(self):
+        self.assertEqual(target_mouse_delta(rec(0, "MOUSE_DX_P2", "MOUSE_DY_N1")), (2.0, -1.0))
+        self.assertEqual(tokens_from_delta(2.2, -0.5), ["MOUSE_DX_P2", "MOUSE_DY_N1"])
+
+    def test_tiny_mouse_idm_trains_and_writes_pseudolabels(self):
+        train = [rec(i, "MOUSE_DX_P1" if i < 3 else "MOUSE_DX_N1", "MOUSE_DY_Z0") for i in range(6)]
+        target = [rec(7, "MOUSE_DX_N1", "MOUSE_DY_Z0")]
+        model = TinyMouseIDM(input_dim=6, hidden_dim=4, seed=1).fit(train, epochs=20, lr=0.01)
+        dx, dy = model.predict_delta(target[0])
+        self.assertIsInstance(dx, float)
+        self.assertIsInstance(dy, float)
+        with tempfile.TemporaryDirectory() as td:
+            result = train_idm_variant(train, target, model_name="unit_idm", hidden_dim=4, epochs=20, lr=0.01, seed=1, confidence_threshold=0.0, output_dir=td)
+            self.assertTrue((Path(td) / "unit_idm" / "pseudolabels.jsonl").exists())
+            self.assertEqual(result["metadata"]["schema"], "idm_checkpoint_metadata.v1")
+
+
+if __name__ == "__main__":
+    unittest.main()

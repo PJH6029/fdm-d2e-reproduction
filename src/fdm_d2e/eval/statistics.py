@@ -98,11 +98,10 @@ def cluster_bootstrap_delta(
     alpha = 1.0 - confidence
     lo = samples[max(0, int(math.floor(alpha / 2 * (len(samples) - 1))))]
     hi = samples[min(len(samples) - 1, int(math.ceil((1 - alpha / 2) * (len(samples) - 1))))]
-    if observed >= 0:
-        tail = sum(1 for value in samples if value <= 0) / len(samples)
-    else:
-        tail = sum(1 for value in samples if value >= 0) / len(samples)
-    p_value = min(1.0, 2.0 * tail)
+    # One-sided improvement test: positive deltas mean the candidate is better
+    # after applying endpoint direction/transform. Negative observed deltas are
+    # not wins, even if they are consistently non-zero.
+    p_value = 1.0 if observed <= 0 else sum(1 for value in samples if value <= 0) / len(samples)
     return {"status": "computed", "delta": observed, "ci": [lo, hi], "p_value": p_value, "num_clusters": len(clusters)}
 
 

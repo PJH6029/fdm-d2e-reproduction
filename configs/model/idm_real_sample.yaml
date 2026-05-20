@@ -1,0 +1,13 @@
+{
+  "schema": "idm_real_train_config.v1",
+  "train_records": "outputs/data/real_sample/Apex_Legends/0805_01/train.jsonl",
+  "target_records": "outputs/data/real_sample/Apex_Legends/0805_01/heldout.jsonl",
+  "endpoints": "configs/eval/primary_endpoints.yaml",
+  "output_dir": "outputs/idm_real",
+  "summary_out": "artifacts/idm/idm_real_sample_summary.json",
+  "confidence_threshold": 0.25,
+  "variants": [
+    {"model_name": "tiny_mouse_idm_linear", "hidden_dim": 0, "epochs": 500, "lr": 0.03, "seed": 11},
+    {"model_name": "tiny_mouse_idm_mlp8", "hidden_dim": 8, "epochs": 700, "lr": 0.02, "seed": 17}
+  ]
+}
