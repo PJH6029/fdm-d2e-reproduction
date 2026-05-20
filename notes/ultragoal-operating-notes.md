@@ -22,9 +22,9 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 ## Current gates to preserve
 
 - Active aggregate ultragoal covers G001–G009 in `.omx/ultragoal/goals.json`; do not complete the aggregate Codex goal until all stories are complete.
-- G005 (`G4 IDM research track`) remains `in_progress` until real-D2E IDM evidence satisfies the statistical endpoints and label/harness-safety constraints.
-- Do not checkpoint G005 complete from partial IDM evidence such as click-spam variants, near-significant raw p-values that fail Holm correction, or threshold-only repairs that remove true positives.
-- Strong IDM evidence should include keyboard, mouse movement, and mouse-button endpoints; mouse-button claims must report precision/F1 and no-button false-positive rate, not only positive-class accuracy.
+- G005 (`G4 IDM research track`) is complete using the Shooter64 IDM handoff (`artifacts/idm/shooter64_surface_motion_selected/`) and must be treated as an IDM-only handoff, not final FDM/harness proof.
+- G006 (`G5 FDM research track`) is active: train a real FDM from IDM pseudo-labels, beat smoke baselines on real D2E heldout metrics with a strong statistical bar, preserve checkpoints/configs/predictions, and record failure evidence for insufficient variants.
+- Strong FDM/IDM evidence should include keyboard, mouse movement, and mouse-button endpoints; mouse-button claims must report precision/F1 and no-button false-positive rate, not only positive-class accuracy.
 
 ## Resource / cluster policy
 
