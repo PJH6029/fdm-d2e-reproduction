@@ -30,6 +30,15 @@ def _summary_features(row: dict[str, Any]) -> list[float]:
     return features[:5] + next_features[:5] + delta_features[:5] + [float(row.get("bin_index", 0)) / 100.0]
 
 
+def _temporal_basis_features(row: dict[str, Any]) -> list[float]:
+    bin_index = float(row.get("bin_index", 0))
+    values: list[float] = []
+    for period in (2.0, 3.0, 4.0, 5.0, 8.0, 16.0):
+        phase = 2.0 * math.pi * bin_index / period
+        values.extend([math.sin(phase), math.cos(phase)])
+    return values
+
+
 def _read_ppm_tokens(payload: bytes) -> tuple[list[bytes], int]:
     tokens: list[bytes] = []
     idx = 0
@@ -190,6 +199,8 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
         return base + _frame_pair_features(row, grid_size=4, luma_size=16)
     if feature_mode == "summary_grid8_shift":
         return base + _frame_pair_features(row, grid_size=8, luma_size=16)
+    if feature_mode == "summary_grid8_shift_time":
+        return base + _frame_pair_features(row, grid_size=8, luma_size=16) + _temporal_basis_features(row)
     raise ValueError(f"unsupported IDM feature_mode: {feature_mode}")
 
 
