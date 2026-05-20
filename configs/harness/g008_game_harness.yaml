@@ -7,8 +7,8 @@
   "held_keys": true,
   "candidate_minimum": 5,
   "install_control_minimum": 3,
-  "tasks_minimum": 3,
-  "environments_minimum": 2,
+  "tasks_minimum": 5,
+  "environments_minimum": 5,
   "thresholds": {
     "min_valid_action_rate": 0.98,
     "max_crashes": 0,
@@ -41,6 +41,22 @@
       "start_lane": 0,
       "min_lane": -2,
       "max_lane": 2
+    },
+    {
+      "task": "pong_paddle_tracking",
+      "environment": "pong_paddle_arena",
+      "height": 21,
+      "start_y": 10,
+      "target_y": 2,
+      "target_vertical_actions": 16
+    },
+    {
+      "task": "combo_door_interaction",
+      "environment": "combo_door_arena",
+      "required_key_codes": [
+        "69",
+        "70"
+      ]
     }
   ]
 }

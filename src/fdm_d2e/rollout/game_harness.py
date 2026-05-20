@@ -266,20 +266,102 @@ def run_dodge_runner_task(frames: list[ControlFrame], config: dict[str, Any], th
     }
 
 
+def run_pong_paddle_task(frames: list[ControlFrame], config: dict[str, Any], thresholds: dict[str, float]) -> dict[str, Any]:
+    height = int(config.get("height", 21))
+    paddle_y = int(config.get("start_y", height // 2))
+    target_y = int(config.get("target_y", 2))
+    initial_error = abs(target_y - paddle_y) or 1
+    best_error = initial_error
+    vertical_actions = 0
+    for frame in frames:
+        if frame.move_y:
+            vertical_actions += 1
+        paddle_y = max(0, min(height - 1, paddle_y + frame.move_y))
+        best_error = min(best_error, abs(target_y - paddle_y))
+    tracking_progress = max(0.0, (initial_error - best_error) / initial_error)
+    activity_progress = min(1.0, vertical_actions / max(1, int(config.get("target_vertical_actions", 16))))
+    progress = max(tracking_progress, activity_progress * 0.5)
+    passed, common = _pass_common(frames, progress, thresholds)
+    return {
+        "environment": "pong_paddle_arena",
+        "task": str(config.get("task", "pong_paddle")),
+        "passed": passed,
+        **common,
+        "final_paddle_y": paddle_y,
+        "target_y": target_y,
+        "best_error": best_error,
+        "vertical_actions": vertical_actions,
+    }
+
+
+def run_combo_door_task(frames: list[ControlFrame], config: dict[str, Any], thresholds: dict[str, float]) -> dict[str, Any]:
+    required = [str(value) for value in config.get("required_key_codes", ["69", "70"])]
+    observed: list[str] = []
+    matched = 0
+    for frame in frames:
+        pressed = [_key_code(token, "KEY_PRESS_") for token in frame.tokens]
+        for key in [item for item in pressed if item is not None]:
+            observed.append(key)
+            if matched < len(required) and key == required[matched]:
+                matched += 1
+    progress = matched / max(1, len(required))
+    passed, common = _pass_common(frames, progress, thresholds)
+    return {
+        "environment": "combo_door_arena",
+        "task": str(config.get("task", "combo_door")),
+        "passed": passed,
+        **common,
+        "required_key_codes": required,
+        "matched_prefix": matched,
+        "observed_interactions": observed[:32],
+    }
+
+
+def _run_task_for_environment(env: str, frames: list[ControlFrame], task: dict[str, Any], thresholds: dict[str, float]) -> dict[str, Any]:
+    if env == "grid_target_arena":
+        return run_grid_target_task(frames, task, thresholds)
+    if env == "aim_click_arena":
+        return run_aim_click_task(frames, task, thresholds)
+    if env == "dodge_runner_arena":
+        return run_dodge_runner_task(frames, task, thresholds)
+    if env == "pong_paddle_arena":
+        return run_pong_paddle_task(frames, task, thresholds)
+    if env == "combo_door_arena":
+        return run_combo_door_task(frames, task, thresholds)
+    return {"environment": env, "task": task.get("task", env), "passed": False, "error": "unsupported_task_environment"}
+
+
 def _probe_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
-    probe_predictions = [
-        {"timestamp_ns": 0, "predicted_tokens": ["KEY_PRESS_68", "MOUSE_DX_N2", "MOUSE_DY_P1"]},
-        {"timestamp_ns": 1, "predicted_tokens": ["KEY_PRESS_87", "MOUSE_LEFT_DOWN"]},
-        {"timestamp_ns": 2, "predicted_tokens": ["KEY_RELEASE_68", "KEY_RELEASE_87"]},
-    ]
+    env = str(candidate["id"])
+    probe_tokens = {
+        "grid_target_arena": [["KEY_PRESS_68", "KEY_PRESS_87"], ["KEY_RELEASE_68"], ["KEY_RELEASE_87"]],
+        "aim_click_arena": [["MOUSE_DX_N3", "MOUSE_DY_P1"], ["MOUSE_LEFT_DOWN"], ["MOUSE_DX_N2"]],
+        "dodge_runner_arena": [["KEY_PRESS_65"], ["KEY_RELEASE_65", "KEY_PRESS_68"], ["KEY_RELEASE_68"]],
+        "pong_paddle_arena": [["KEY_PRESS_87"], ["KEY_RELEASE_87", "KEY_PRESS_83"], ["KEY_RELEASE_83"]],
+        "combo_door_arena": [["KEY_PRESS_69"], ["KEY_PRESS_70"], ["KEY_PRESS_32"]],
+    }.get(env, [[]])
+    probe_predictions = [{"timestamp_ns": idx, "predicted_tokens": tokens} for idx, tokens in enumerate(probe_tokens)]
     frames = prediction_controls(probe_predictions, limit=3)
     control_ok = bool(frames) and all(frame.valid for frame in frames)
+    probe_task_by_env = {
+        "aim_click_arena": {"target_x": -8, "target_y": 2, "click_radius": 8},
+        "grid_target_arena": {"target_x": 12, "target_y": 8},
+        "pong_paddle_arena": {"target_vertical_actions": 1, "target_y": 8},
+        "combo_door_arena": {"required_key_codes": ["69", "70"]},
+    }
+    task_probe = _run_task_for_environment(
+        env,
+        frames,
+        {"task": "candidate_control_probe", "environment": env, **probe_task_by_env.get(env, {})},
+        {"min_valid_action_rate": 0.98, "max_crashes": 0, "min_progress_score": 0.1},
+    )
     return {
         "candidate_id": candidate["id"],
         "install_status": "pass",
         "install_evidence": candidate["install"],
-        "control_probe_status": "pass" if control_ok else "fail",
+        "control_probe_status": "pass" if control_ok and task_probe.get("passed") is True else "fail",
         "control_probe_frames": [frame.as_dict() for frame in frames],
+        "task_probe": task_probe,
     }
 
 
@@ -301,18 +383,13 @@ def run_game_harness_eval(config: dict[str, Any]) -> dict[str, Any]:
         {"task": "grid_forward_right", "environment": "grid_target_arena", "target_x": 16, "target_y": 2},
         {"task": "aim_left_sweep", "environment": "aim_click_arena", "target_x": -300, "target_y": 30},
         {"task": "dodge_runner_survival", "environment": "dodge_runner_arena", "target_steps": action_limit},
+        {"task": "pong_paddle_tracking", "environment": "pong_paddle_arena", "target_y": 2},
+        {"task": "combo_door_interaction", "environment": "combo_door_arena", "required_key_codes": ["69", "70"]},
     ]
     task_results: list[dict[str, Any]] = []
     for task in task_configs:
         env = str(task.get("environment"))
-        if env == "grid_target_arena":
-            task_results.append(run_grid_target_task(frames, task, thresholds))
-        elif env == "aim_click_arena":
-            task_results.append(run_aim_click_task(frames, task, thresholds))
-        elif env == "dodge_runner_arena":
-            task_results.append(run_dodge_runner_task(frames, task, thresholds))
-        else:
-            task_results.append({"environment": env, "task": task.get("task", env), "passed": False, "error": "unsupported_task_environment"})
+        task_results.append(_run_task_for_environment(env, frames, task, thresholds))
     candidates = candidate_catalog()
     probes = [_probe_candidate(candidate) for candidate in candidates]
     passed_tasks = [row for row in task_results if row.get("passed") is True]

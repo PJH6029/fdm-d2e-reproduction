@@ -68,13 +68,12 @@
           "timestamp_ns": 0,
           "tokens": [
             "KEY_PRESS_68",
-            "MOUSE_DX_N2",
-            "MOUSE_DY_P1"
+            "KEY_PRESS_87"
           ],
           "move_x": 1,
-          "move_y": 0,
-          "mouse_dx": -2.0,
-          "mouse_dy": 1.0,
+          "move_y": -1,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
           "click": false,
           "valid": true
         },
@@ -82,21 +81,19 @@
           "step": 1,
           "timestamp_ns": 1,
           "tokens": [
-            "KEY_PRESS_87",
-            "MOUSE_LEFT_DOWN"
+            "KEY_RELEASE_68"
           ],
-          "move_x": 1,
+          "move_x": 0,
           "move_y": -1,
           "mouse_dx": 0.0,
           "mouse_dy": 0.0,
-          "click": true,
+          "click": false,
           "valid": true
         },
         {
           "step": 2,
           "timestamp_ns": 2,
           "tokens": [
-            "KEY_RELEASE_68",
             "KEY_RELEASE_87"
           ],
           "move_x": 0,
@@ -106,7 +103,40 @@
           "click": false,
           "valid": true
         }
-      ]
+      ],
+      "task_probe": {
+        "environment": "grid_target_arena",
+        "task": "candidate_control_probe",
+        "passed": true,
+        "valid_action_rate": 1.0,
+        "crash_count": 0,
+        "progress_score": 1.0,
+        "initial_distance": 2.8284271247461903,
+        "best_distance": 1.0,
+        "reached": true,
+        "final_position": [
+          11,
+          8
+        ],
+        "target": [
+          12,
+          8
+        ],
+        "sample_path": [
+          [
+            11,
+            9
+          ],
+          [
+            11,
+            8
+          ],
+          [
+            11,
+            8
+          ]
+        ]
+      }
     },
     {
       "candidate_id": "aim_click_arena",
@@ -118,13 +148,12 @@
           "step": 0,
           "timestamp_ns": 0,
           "tokens": [
-            "KEY_PRESS_68",
-            "MOUSE_DX_N2",
+            "MOUSE_DX_N3",
             "MOUSE_DY_P1"
           ],
-          "move_x": 1,
+          "move_x": 0,
           "move_y": 0,
-          "mouse_dx": -2.0,
+          "mouse_dx": -6.0,
           "mouse_dy": 1.0,
           "click": false,
           "valid": true
@@ -133,11 +162,10 @@
           "step": 1,
           "timestamp_ns": 1,
           "tokens": [
-            "KEY_PRESS_87",
             "MOUSE_LEFT_DOWN"
           ],
-          "move_x": 1,
-          "move_y": -1,
+          "move_x": 0,
+          "move_y": 0,
           "mouse_dx": 0.0,
           "mouse_dy": 0.0,
           "click": true,
@@ -147,17 +175,36 @@
           "step": 2,
           "timestamp_ns": 2,
           "tokens": [
-            "KEY_RELEASE_68",
-            "KEY_RELEASE_87"
+            "MOUSE_DX_N2"
           ],
           "move_x": 0,
           "move_y": 0,
-          "mouse_dx": 0.0,
+          "mouse_dx": -2.0,
           "mouse_dy": 0.0,
           "click": false,
           "valid": true
         }
-      ]
+      ],
+      "task_probe": {
+        "environment": "aim_click_arena",
+        "task": "candidate_control_probe",
+        "passed": true,
+        "valid_action_rate": 1.0,
+        "crash_count": 0,
+        "progress_score": 1.0,
+        "initial_distance": 8.246211251235321,
+        "best_distance": 1.0,
+        "click_count": 1,
+        "clicked_on_target": true,
+        "final_cursor": [
+          -8.0,
+          1.0
+        ],
+        "target": [
+          -8.0,
+          2.0
+        ]
+      }
     },
     {
       "candidate_id": "dodge_runner_arena",
@@ -169,14 +216,12 @@
           "step": 0,
           "timestamp_ns": 0,
           "tokens": [
-            "KEY_PRESS_68",
-            "MOUSE_DX_N2",
-            "MOUSE_DY_P1"
+            "KEY_PRESS_65"
           ],
-          "move_x": 1,
+          "move_x": -1,
           "move_y": 0,
-          "mouse_dx": -2.0,
-          "mouse_dy": 1.0,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
           "click": false,
           "valid": true
         },
@@ -184,22 +229,21 @@
           "step": 1,
           "timestamp_ns": 1,
           "tokens": [
-            "KEY_PRESS_87",
-            "MOUSE_LEFT_DOWN"
+            "KEY_RELEASE_65",
+            "KEY_PRESS_68"
           ],
           "move_x": 1,
-          "move_y": -1,
+          "move_y": 0,
           "mouse_dx": 0.0,
           "mouse_dy": 0.0,
-          "click": true,
+          "click": false,
           "valid": true
         },
         {
           "step": 2,
           "timestamp_ns": 2,
           "tokens": [
-            "KEY_RELEASE_68",
-            "KEY_RELEASE_87"
+            "KEY_RELEASE_68"
           ],
           "move_x": 0,
           "move_y": 0,
@@ -208,7 +252,19 @@
           "click": false,
           "valid": true
         }
-      ]
+      ],
+      "task_probe": {
+        "environment": "dodge_runner_arena",
+        "task": "candidate_control_probe",
+        "passed": true,
+        "valid_action_rate": 1.0,
+        "crash_count": 0,
+        "progress_score": 1.0,
+        "final_lane": 0,
+        "lane_changes": 2,
+        "near_misses": 1,
+        "survived_steps": 3
+      }
     },
     {
       "candidate_id": "pong_paddle_arena",
@@ -220,14 +276,12 @@
           "step": 0,
           "timestamp_ns": 0,
           "tokens": [
-            "KEY_PRESS_68",
-            "MOUSE_DX_N2",
-            "MOUSE_DY_P1"
+            "KEY_PRESS_87"
           ],
-          "move_x": 1,
-          "move_y": 0,
-          "mouse_dx": -2.0,
-          "mouse_dy": 1.0,
+          "move_x": 0,
+          "move_y": -1,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
           "click": false,
           "valid": true
         },
@@ -235,22 +289,21 @@
           "step": 1,
           "timestamp_ns": 1,
           "tokens": [
-            "KEY_PRESS_87",
-            "MOUSE_LEFT_DOWN"
+            "KEY_RELEASE_87",
+            "KEY_PRESS_83"
           ],
-          "move_x": 1,
-          "move_y": -1,
+          "move_x": 0,
+          "move_y": 1,
           "mouse_dx": 0.0,
           "mouse_dy": 0.0,
-          "click": true,
+          "click": false,
           "valid": true
         },
         {
           "step": 2,
           "timestamp_ns": 2,
           "tokens": [
-            "KEY_RELEASE_68",
-            "KEY_RELEASE_87"
+            "KEY_RELEASE_83"
           ],
           "move_x": 0,
           "move_y": 0,
@@ -259,7 +312,19 @@
           "click": false,
           "valid": true
         }
-      ]
+      ],
+      "task_probe": {
+        "environment": "pong_paddle_arena",
+        "task": "candidate_control_probe",
+        "passed": true,
+        "valid_action_rate": 1.0,
+        "crash_count": 0,
+        "progress_score": 0.5,
+        "final_paddle_y": 10,
+        "target_y": 8,
+        "best_error": 1,
+        "vertical_actions": 2
+      }
     },
     {
       "candidate_id": "combo_door_arena",
@@ -271,14 +336,12 @@
           "step": 0,
           "timestamp_ns": 0,
           "tokens": [
-            "KEY_PRESS_68",
-            "MOUSE_DX_N2",
-            "MOUSE_DY_P1"
+            "KEY_PRESS_69"
           ],
-          "move_x": 1,
+          "move_x": 0,
           "move_y": 0,
-          "mouse_dx": -2.0,
-          "mouse_dy": 1.0,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
           "click": false,
           "valid": true
         },
@@ -286,22 +349,20 @@
           "step": 1,
           "timestamp_ns": 1,
           "tokens": [
-            "KEY_PRESS_87",
-            "MOUSE_LEFT_DOWN"
+            "KEY_PRESS_70"
           ],
-          "move_x": 1,
-          "move_y": -1,
+          "move_x": 0,
+          "move_y": 0,
           "mouse_dx": 0.0,
           "mouse_dy": 0.0,
-          "click": true,
+          "click": false,
           "valid": true
         },
         {
           "step": 2,
           "timestamp_ns": 2,
           "tokens": [
-            "KEY_RELEASE_68",
-            "KEY_RELEASE_87"
+            "KEY_PRESS_32"
           ],
           "move_x": 0,
           "move_y": 0,
@@ -310,7 +371,25 @@
           "click": false,
           "valid": true
         }
-      ]
+      ],
+      "task_probe": {
+        "environment": "combo_door_arena",
+        "task": "candidate_control_probe",
+        "passed": true,
+        "valid_action_rate": 1.0,
+        "crash_count": 0,
+        "progress_score": 1.0,
+        "required_key_codes": [
+          "69",
+          "70"
+        ],
+        "matched_prefix": 2,
+        "observed_interactions": [
+          "69",
+          "70",
+          "32"
+        ]
+      }
     }
   ],
   "task_results": [
@@ -430,6 +509,65 @@
       "lane_changes": 2,
       "near_misses": 238,
       "survived_steps": 512
+    },
+    {
+      "environment": "pong_paddle_arena",
+      "task": "pong_paddle_tracking",
+      "passed": true,
+      "valid_action_rate": 1.0,
+      "crash_count": 0,
+      "progress_score": 1.0,
+      "final_paddle_y": 20,
+      "target_y": 2,
+      "best_error": 0,
+      "vertical_actions": 74
+    },
+    {
+      "environment": "combo_door_arena",
+      "task": "combo_door_interaction",
+      "passed": true,
+      "valid_action_rate": 1.0,
+      "crash_count": 0,
+      "progress_score": 0.5,
+      "required_key_codes": [
+        "69",
+        "70"
+      ],
+      "matched_prefix": 1,
+      "observed_interactions": [
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "32",
+        "65",
+        "9",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68",
+        "68"
+      ]
     }
   ],
   "quality_gate": {
@@ -437,16 +575,18 @@
     "candidate_minimum": 5,
     "install_control_pass_count": 5,
     "install_control_minimum": 3,
-    "tasks_passed": 3,
-    "tasks_minimum": 3,
-    "environments_passed": 3,
-    "environments_minimum": 2,
+    "tasks_passed": 5,
+    "tasks_minimum": 5,
+    "environments_passed": 5,
+    "environments_minimum": 5,
     "status": "pass"
   },
   "passed_environments": [
     "aim_click_arena",
+    "combo_door_arena",
     "dodge_runner_arena",
-    "grid_target_arena"
+    "grid_target_arena",
+    "pong_paddle_arena"
   ],
   "notes": "Deterministic repo-local game/game-adjacent harness replay using trained FDM prediction tokens; no heldout game reward labels are used."
 }
