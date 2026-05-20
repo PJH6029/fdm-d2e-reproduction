@@ -587,6 +587,20 @@ def _mouse_baseline_deltas(
     return [baselines_by_id[str(row["sequence_id"])] for row in records]
 
 
+def _seed_mouse_delta_state(
+    records: list[dict[str, Any]],
+) -> tuple[dict[str, tuple[float, float]], dict[str, tuple[float, float]], tuple[float, float]]:
+    last_by_recording: dict[str, tuple[float, float]] = {}
+    last_by_game: dict[str, tuple[float, float]] = {}
+    fallback = (0.0, 0.0)
+    for row in sorted(records, key=lambda item: (str(item.get("recording_id", "")), int(item.get("timestamp_ns", 0)))):
+        delta = target_mouse_delta(row)
+        last_by_recording[str(row.get("recording_id", ""))] = delta
+        last_by_game[str(row.get("game", "unknown"))] = delta
+        fallback = delta
+    return last_by_recording, last_by_game, fallback
+
+
 def _tensorize(
     torch,
     records: list[dict[str, Any]],
@@ -858,6 +872,7 @@ def _predict_autoregressive_target(
         _append_history(history, button_state, list(row.get("ground_truth_tokens", [])), history_len=action_history_len)
 
     baseline_by_id = {str(row["sequence_id"]): baseline for row, baseline in zip(target_records, target_mouse_baselines)}
+    last_mouse_by_recording, last_mouse_by_game, last_mouse_fallback = _seed_mouse_delta_state(train_records)
     mean_t = torch.tensor(mean, dtype=torch.float32, device=device)
     std_t = torch.tensor(std, dtype=torch.float32, device=device).clamp_min(1e-6)
     outputs: dict[str, dict[str, Any]] = {}
@@ -865,9 +880,18 @@ def _predict_autoregressive_target(
     ordered = sorted(target_records, key=lambda item: (str(item.get("recording_id", "")), int(item.get("timestamp_ns", 0))))
     for row in ordered:
         sequence_id = str(row["sequence_id"])
-        history, button_state = ensure(str(row.get("recording_id", "")))
+        recording_id = str(row.get("recording_id", ""))
+        game = str(row.get("game", "unknown"))
+        history, button_state = ensure(recording_id)
         history_features = _history_vector(history, button_state, history_vocab, history_len=action_history_len)
-        base_dx, base_dy = baseline_by_id[sequence_id]
+        if residual_mouse:
+            base_dx, base_dy = (
+                last_mouse_by_recording.get(recording_id)
+                or last_mouse_by_game.get(game)
+                or last_mouse_fallback
+            )
+        else:
+            base_dx, base_dy = baseline_by_id[sequence_id]
         values = record_features(row, feature_mode=feature_mode)
         if residual_mouse:
             values = values + [float(base_dx), float(base_dy)]
@@ -889,6 +913,11 @@ def _predict_autoregressive_target(
         )
         outputs[sequence_id] = {"output": output, "dx": dx, "dy": dy, "tokens": tokens}
         _append_history(history, button_state, tokens, history_len=action_history_len)
+        if residual_mouse:
+            predicted_delta = (float(dx), float(dy))
+            last_mouse_by_recording[recording_id] = predicted_delta
+            last_mouse_by_game[game] = predicted_delta
+            last_mouse_fallback = predicted_delta
     return outputs
 
 

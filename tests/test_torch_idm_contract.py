@@ -13,6 +13,7 @@ from fdm_d2e.training.torch_idm import (
     _calibrated_group_thresholds_from_scores,
     _prediction_from_output,
     _mouse_baseline_deltas,
+    _seed_mouse_delta_state,
     _split_calibration_records,
     button_softmax_classes,
     torch_available,
@@ -34,6 +35,20 @@ class TorchIDMContractTests(unittest.TestCase):
 
         self.assertEqual(_mouse_baseline_deltas(train, mode="causal_last_seen"), [(0.0, 0.0), (1.0, 0.0)])
         self.assertEqual(_mouse_baseline_deltas(target, mode="target_last_seen_train", train_records=train), [(2.0, -1.0)])
+
+    def test_seed_mouse_delta_state_uses_latest_train_delta_per_recording_and_game(self):
+        records = [
+            {"sequence_id": "r#1", "recording_id": "r", "game": "g", "timestamp_ns": 1, "ground_truth_tokens": ["MOUSE_DX_P2", "MOUSE_DY_Z0"]},
+            {"sequence_id": "r#0", "recording_id": "r", "game": "g", "timestamp_ns": 0, "ground_truth_tokens": ["MOUSE_DX_P1", "MOUSE_DY_N1"]},
+            {"sequence_id": "s#0", "recording_id": "s", "game": "h", "timestamp_ns": 0, "ground_truth_tokens": ["MOUSE_DX_N1", "MOUSE_DY_P1"]},
+        ]
+
+        by_recording, by_game, fallback = _seed_mouse_delta_state(records)
+
+        self.assertEqual(by_recording["r"], (2.0, 0.0))
+        self.assertEqual(by_game["g"], (2.0, 0.0))
+        self.assertEqual(by_recording["s"], (-1.0, 1.0))
+        self.assertEqual(fallback, (-1.0, 1.0))
 
     def test_calibration_split_uses_training_tail_per_recording(self):
         records = [
