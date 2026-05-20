@@ -47,18 +47,21 @@ strongest useful artifacts are:
 | Shooter32 rich-motion | `artifacts/idm/g4_h200_idm_run_h200_shooter32.json` | 32 shooter/action recordings; 2304 train / 768 heldout; H200 GPU | `keyboard_accuracy` Holm p `0.0`; mouse button raw p did not survive Holm; mouse motion endpoints failed | Domain mixing/click-richer data helps keyboard robustness but does not by itself satisfy G4 mouse/click criteria. |
 | Shooter32 residual mouse head | `artifacts/idm/g4_h200_idm_run_shooter32_residual.json` | Same Shooter32 split | `keyboard_accuracy` delta `0.1047`, Holm p `0.0`; mouse button Holm p `1.0`; mouse Pearson Holm p `1.0`; scale-ratio failed | Residual motion does not transfer the Apex36 scale-ratio improvement to mixed shooter/action data. |
 | Shooter32 categorical sweep | `artifacts/idm/idm_torch_shooter32_sweep_h200.json` | Same Shooter32 split | 72 loss-weight / positive-cap / threshold variants; best mouse-button row reached `0.125` accuracy with raw p `0.0235` but Holm p `0.2115`; best mouse Pearson Holm p `1.0` | A trained categorical sweep improves the raw click signal but remains below the strong statistical bar; this rules out global threshold/pos-weight tuning as a sufficient G4 fix. |
+| Shooter32 grid8-time group-calibrated sweep | `artifacts/idm/idm_torch_shooter32_grid8_time_group_calibrated_sweep_h200.json` | Same Shooter32 split | 36 grid8 + temporal-basis + focal-loss + group-exact calibration variants; best keyboard row `0.1030` accuracy with Holm p `0.0`; best mouse-button row `0.075` accuracy with Holm p `0.8685`; best mouse Pearson Holm p `1.0` | Higher spatial resolution, train-only exact group calibration, and temporal bin bases preserve keyboard significance but regress click evidence versus the simpler categorical sweep. |
 
 Current conclusion: G4 has meaningful non-smoke IDM progress across real D2E
 splits, including H200 checkpoint metadata and pseudo-label artifacts, but it
 should remain `in_progress`.  Apex36 rules out "just add more Apex recordings"
 as a sufficient fix for the mouse/click endpoints, while Shooter32 rules out a
 simple "mix in more click-heavy shooter recordings plus tune a global
-categorical threshold" fix. The next credible completion attempt should use
-endpoint-specific trained heads with calibration learned away from the heldout
-test split (for example per-token thresholds/focal loss for clicks plus a
-separate motion objective), then evaluate a single predeclared checkpoint or
-portfolio against the baselines without depending on untrained categorical
-logits or post-hoc endpoint cherry-picking.
+categorical threshold" fix. The grid8-time group-calibrated sweep further rules
+out naive spatial-detail and periodic-bin features for click recovery. The next
+credible completion attempt should move beyond independent frame-pair MLP heads:
+for example a sequential IDM that conditions on recent action/state history and
+reports button false-positive rates, or a predeclared trained portfolio that
+combines a motion-specialized head with a click-specialized head and evaluates
+all endpoints without untrained categorical logits or post-hoc heldout
+thresholding.
 
 ## Completion caveat
 
