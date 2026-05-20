@@ -51,6 +51,7 @@ strongest useful artifacts are:
 | Shooter32 sequential-history sweep | `artifacts/idm/idm_torch_shooter32_seq_history_sweep_h200.json` | Same Shooter32 split | 36 autoregressive action-history variants; best keyboard row `0.1130` accuracy with Holm p `0.0`; best mouse-button row `0.1000` accuracy with raw p `0.006` but Holm p `0.054`; mouse Pearson/scale endpoints failed | Causal action history nearly clears the mouse-button correction gate without heldout leakage, but autoregressive feedback hurts mouse-motion correlation and still misses the predeclared strong bar. |
 | Shooter32 sequential-history focused FP audit | `artifacts/idm/idm_torch_shooter32_seq_history_focused_fp_h200.json` | Best seq-history click variant under expanded button metrics | Mouse-button positive accuracy `0.1000`, precision `0.0074`, F1 `0.0138`, `540` predicted button examples, no-button false-positive rate `0.6964` | The near-significant click result is not harness-safe: it mostly comes from button spam. Future click work must optimize precision/false-positive rate, not only positive-example accuracy. |
 | Shooter32 sequential-history F-beta focused audit | `artifacts/idm/idm_torch_shooter32_seq_history_fbeta_focused_h200.json` | Same focused variant with train-only group F-beta calibration (`beta=0.5`) | Mouse-button positive accuracy `0.0`, precision `0.0`, `21` predicted button examples, no-button false-positive rate `0.0247`; keyboard still non-significant in this focused run | Precision-aware calibration suppresses click spam but becomes too conservative, confirming that a better click model/objective is needed rather than threshold-only repair. |
+| Shooter32 softmax button-head sweep | `artifacts/idm/idm_torch_shooter32_seq_button_softmax_sweep_h200.json` | Same Shooter32 split; exact-set mouse-button softmax head with explicit no-button class and train-tail F-beta threshold calibration | 24 H200 variants; 4 variants reject both `keyboard_accuracy` and `mouse_button_accuracy` after Holm correction. Best precision row: mouse-button accuracy `0.125`, precision `0.2273`, F1 `0.1613`, no-button false-positive rate `0.0192`, mouse-button Holm p `0.0405`; mouse motion still fails (`mouse_move_pearson` Holm p `1.0`, scale-ratio Holm p `1.0`) | Learning no-button as a class fixes the click-spam failure mode and clears the click correction gate for several variants, but it does not solve mouse motion. G4 remains incomplete until a single predeclared IDM/prediction artifact also clears or explicitly composes motion evidence without heldout leakage. |
 
 Current conclusion: G4 has meaningful non-smoke IDM progress across real D2E
 splits, including H200 checkpoint metadata and pseudo-label artifacts, but it
@@ -60,16 +61,18 @@ simple "mix in more click-heavy shooter recordings plus tune a global
 categorical threshold" fix. The grid8-time group-calibrated sweep further rules
 out naive spatial-detail and periodic-bin features for click recovery. The
 sequential-history sweep is the strongest non-leaky positive-click attempt so
-far (Holm p `0.054`) but still fails the predeclared correction gate, regresses
-mouse motion, and has an unacceptable no-button false-positive rate (`0.6964`)
-on the focused audit. Precision-aware F-beta calibration reduces the
-false-positive rate to `0.0247` but loses all true click positives. The next
-credible completion attempt therefore needs a better trained click objective
-instead of threshold-only repair, then can pair it in a predeclared trained
-portfolio with a motion-specialized head only if the combined heldout artifact
-preserves keyboard, mouse, click precision, and no-heldout-leakage semantics. In
-every case, the evaluation must use one predeclared heldout prediction artifact
-without untrained categorical logits or post-hoc heldout thresholding.
+far under independent button logits (Holm p `0.054`) but still fails the
+predeclared correction gate, regresses mouse motion, and has an unacceptable
+no-button false-positive rate (`0.6964`) on the focused audit. Precision-aware
+F-beta calibration reduces the false-positive rate to `0.0247` but loses all
+true click positives. The exact-set softmax button head is the first trained
+click objective to clear Holm correction while keeping no-button false positives
+low, so the next credible completion attempt should keep this click head and
+pair it with a motion-specialized residual/autoregressive head only if the
+combined heldout artifact preserves keyboard, mouse, click precision, and
+no-heldout-leakage semantics. In every case, the evaluation must use one
+predeclared heldout prediction artifact without untrained categorical logits or
+post-hoc heldout thresholding.
 
 ## Completion caveat
 
