@@ -607,14 +607,25 @@ def prepare_decoded_sample(config: dict[str, Any], *, files: list[str] | None = 
     if window_start_ns is None:
         window_start_ns = min(int(row["timestamp_ns"]) for row in decoded_events) if decoded_events else 0
     video_start_seconds = float(config.get("video_start_seconds", window_start_ns / 1_000_000_000))
-    frame_features = extract_video_frame_features(
-        str(config.get("video_source") or ref.video_url),
-        sample_dir,
-        max_frames=int(config.get("max_frames", 32)),
-        fps=int(config.get("frame_fps", max(1, round(1000 / bin_ms)))),
-        image_size=int(config.get("image_size", 64)),
-        start_seconds=video_start_seconds,
-    )
+    video_source = str(config.get("video_source") or ref.video_url)
+    frame_kwargs = {
+        "max_frames": int(config.get("max_frames", 32)),
+        "fps": int(config.get("frame_fps", max(1, round(1000 / bin_ms)))),
+        "image_size": int(config.get("image_size", 64)),
+        "start_seconds": video_start_seconds,
+    }
+    try:
+        frame_features = extract_video_frame_features(video_source, sample_dir, **frame_kwargs)
+    except subprocess.CalledProcessError:
+        if config.get("download_video_on_ffmpeg_failure", True) is False or video_source != ref.video_url:
+            raise
+        video_download = download_recording_ref(
+            ref,
+            cache_dir,
+            token=config.get("hf_token") or os.environ.get("HF_TOKEN"),
+            kinds=("video",),
+        )
+        frame_features = extract_video_frame_features(video_download["video"], sample_dir, **frame_kwargs)
     records = build_window_records(
         ref,
         decoded_events,
