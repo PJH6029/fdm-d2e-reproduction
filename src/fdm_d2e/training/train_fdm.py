@@ -112,6 +112,7 @@ def train_fdm_real(config: dict[str, Any]) -> dict[str, Any]:
 
     labels_path = Path(config["labels_path"])
     records_path = Path(config["records_path"])
+    target_records_path = Path(config["target_records_path"]) if config.get("target_records_path") else None
     labels = read_jsonl(labels_path)
     for row in labels:
         validate_named(row, "idm_pseudolabel.schema.json")
@@ -119,13 +120,17 @@ def train_fdm_real(config: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"FDM real training requires IDM-generated labels; got {row.get('label_source')}")
     source_records = read_jsonl(records_path)
     records_by_id = {str(row["sequence_id"]): row for row in source_records}
-    train_labels, target_labels = _split_labels_by_recording_tail(
-        labels,
-        train_fraction=float(config.get("fdm_train_fraction", 0.75)),
-        min_target_per_recording=int(config.get("min_target_per_recording", 1)),
-    )
+    if target_records_path is None:
+        train_labels, target_labels = _split_labels_by_recording_tail(
+            labels,
+            train_fraction=float(config.get("fdm_train_fraction", 0.75)),
+            min_target_per_recording=int(config.get("min_target_per_recording", 1)),
+        )
+        target_records = [records_by_id[str(row["sequence_id"])] for row in target_labels if str(row["sequence_id"]) in records_by_id]
+    else:
+        train_labels = labels
+        target_records = read_jsonl(target_records_path)
     train_records = _records_with_pseudolabel_tokens(records_by_id, train_labels)
-    target_records = [records_by_id[str(row["sequence_id"])] for row in target_labels if str(row["sequence_id"]) in records_by_id]
     if not train_records or not target_records:
         raise ValueError("FDM real training needs non-empty pseudo-label train and ground-truth target splits")
 
@@ -167,6 +172,7 @@ def train_fdm_real(config: dict[str, Any]) -> dict[str, Any]:
         "num_training_examples": len(train_records),
         "oracle_ground_truth_control": False,
         "records_path": str(records_path),
+        "target_records_source_path": str(target_records_path) if target_records_path is not None else str(records_path),
         "train_records_path": str(train_records_path),
         "target_records_path": str(target_records_path),
         "target_examples": len(target_records),

@@ -1530,3 +1530,163 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     }
     write_json(config.get("summary_out", out_dir / "summary.json"), summary)
     return summary
+
+
+def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
+    torch = require_torch()
+    if torch.cuda.is_available() and not bool(config.get("force_cpu", False)):
+        device = "cuda"
+    else:
+        device = "cpu"
+    checkpoint_path = Path(config["checkpoint_path"])
+    checkpoint = torch.load(checkpoint_path, map_location=device)
+    model_config = dict(checkpoint.get("config", {}))
+    records = read_jsonl(config["target_records"])
+    seed_records = read_jsonl(config["seed_records"]) if config.get("seed_records") else []
+    feature_mode = str(model_config.get("feature_mode", "summary"))
+    residual_mouse = str(model_config.get("mouse_target_mode", "absolute")) == "residual_last_seen"
+    category_vocab = [str(value) for value in checkpoint.get("category_vocab", [])]
+    history_vocab = [str(value) for value in checkpoint.get("history_vocab", [])]
+    button_head_mode = str(checkpoint.get("button_head_mode", "multilabel"))
+    button_classes = [tuple(str(token) for token in row) for row in checkpoint.get("button_classes", [])]
+    button_softmax_threshold = float(checkpoint.get("button_softmax_threshold", 0.5))
+    mouse_head_mode = str(checkpoint.get("mouse_head_mode", "regression"))
+    mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", MOUSE_AXIS_CLASSES)]
+    mean = [float(value) for value in checkpoint["mean"]]
+    std = [float(value) for value in checkpoint["std"]]
+    output_dim = 2 + len(category_vocab)
+    if button_head_mode == "softmax":
+        output_dim += len(button_classes)
+    if mouse_head_mode == "axis_softmax":
+        output_dim += 2 * len(mouse_axis_classes)
+    model = _build_model(
+        torch,
+        input_dim=len(mean),
+        output_dim=output_dim,
+        hidden_dim=int(model_config.get("hidden_dim", 128)),
+        depth=int(model_config.get("depth", 3)),
+        dropout=float(model_config.get("dropout", 0.05)),
+        config=model_config,
+        feature_mode=feature_mode,
+    ).to(device)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    category_threshold = float(model_config.get("category_threshold", 0.35))
+    category_thresholds = {
+        str(token): float(value)
+        for token, value in (checkpoint.get("category_thresholds") or {}).items()
+    } or {token: category_threshold for token in category_vocab}
+    action_history_len = int(model_config.get("action_history_len", 0))
+    target_mouse_baselines = _mouse_baseline_deltas(
+        records,
+        mode="target_last_seen_train" if residual_mouse else "none",
+        train_records=seed_records,
+    )
+    predicted: list[dict[str, Any]] = []
+    if action_history_len > 0:
+        outputs_by_id = _predict_autoregressive_target(
+            torch,
+            model,
+            seed_records,
+            records,
+            device=device,
+            mean=mean,
+            std=std,
+            feature_mode=feature_mode,
+            target_mouse_baselines=target_mouse_baselines,
+            residual_mouse=residual_mouse,
+            history_vocab=history_vocab,
+            category_vocab=category_vocab,
+            category_thresholds=category_thresholds,
+            category_threshold=category_threshold,
+            button_head_mode=button_head_mode,
+            button_classes=button_classes,
+            button_softmax_threshold=button_softmax_threshold,
+            mouse_head_mode=mouse_head_mode,
+            mouse_axis_classes=mouse_axis_classes,
+            action_history_len=action_history_len,
+        )
+        for row in records:
+            pred = outputs_by_id[str(row["sequence_id"])]
+            predicted.append({"dx": float(pred["dx"]), "dy": float(pred["dy"]), "tokens": list(pred["tokens"])})
+    else:
+        raw_outputs = _predict_raw_outputs(
+            torch,
+            model,
+            records,
+            device=device,
+            mean=mean,
+            std=std,
+            feature_mode=feature_mode,
+            mouse_baselines=target_mouse_baselines,
+            residual_mouse=residual_mouse,
+        )
+        for output, (base_dx, base_dy) in zip(raw_outputs, target_mouse_baselines):
+            dx, dy, tokens = _prediction_from_output(
+                output,
+                base_dx=float(base_dx),
+                base_dy=float(base_dy),
+                residual_mouse=residual_mouse,
+                category_vocab=category_vocab,
+                category_thresholds=category_thresholds,
+                category_threshold=category_threshold,
+                button_head_mode=button_head_mode,
+                button_classes=button_classes,
+                button_softmax_threshold=button_softmax_threshold,
+                mouse_head_mode=mouse_head_mode,
+                mouse_axis_classes=mouse_axis_classes,
+            )
+            predicted.append({"dx": dx, "dy": dy, "tokens": tokens})
+    out_dir = Path(config.get("output_dir", "outputs/idm_torch_predict"))
+    out_dir.mkdir(parents=True, exist_ok=True)
+    prediction_hash = stable_hash_json(
+        {
+            "checkpoint_path": str(checkpoint_path),
+            "target_records": [row["sequence_id"] for row in records],
+            "seed_records": [row["sequence_id"] for row in seed_records],
+        }
+    )
+    pseudo_rows = []
+    prediction_rows = []
+    for row, pred in zip(records, predicted):
+        dx, dy, tokens = float(pred["dx"]), float(pred["dy"]), list(pred["tokens"])
+        pseudo = {
+            "schema": "idm_pseudolabel.v1",
+            "sequence_id": row["sequence_id"],
+            "timestamp_ns": int(row["timestamp_ns"]),
+            "predicted_tokens": tokens,
+            "label_source": "idm_generated",
+            "confidence": max(0.05, min(0.99, 1.0 / (1.0 + abs(dx) + abs(dy)))),
+            "model": str(config.get("model_name", model_config.get("model_name", "torch_idm_predict"))),
+            "training_split_hash": prediction_hash,
+            "input_window": {
+                "frame_ref": row.get("frame", {}).get("path", ""),
+                "frame_index": int(row.get("frame", {}).get("index", 0)),
+            },
+        }
+        validate_named(pseudo, "idm_pseudolabel.schema.json")
+        pseudo_rows.append(pseudo)
+        prediction_rows.append(
+            {
+                "sequence_id": row["sequence_id"],
+                "recording_id": row.get("recording_id"),
+                "game": row.get("game"),
+                "timestamp_ns": row["timestamp_ns"],
+                "predicted_tokens": tokens,
+            }
+        )
+    pseudo_path = out_dir / "pseudolabels.jsonl"
+    predictions_path = out_dir / "predictions.jsonl"
+    write_jsonl(pseudo_path, pseudo_rows)
+    write_jsonl(predictions_path, prediction_rows)
+    summary = {
+        "schema": "torch_idm_predict_summary.v1",
+        "checkpoint_path": str(checkpoint_path),
+        "target_records": str(config["target_records"]),
+        "seed_records": str(config.get("seed_records", "")),
+        "num_records": len(records),
+        "pseudolabels_path": str(pseudo_path),
+        "predictions_path": str(predictions_path),
+        "device": device,
+    }
+    write_json(config.get("summary_out", out_dir / "summary.json"), summary)
+    return summary
