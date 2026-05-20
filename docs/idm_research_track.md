@@ -57,6 +57,7 @@ strongest useful artifacts are:
 | Shooter32 motion-only residual sweep | `artifacts/idm/idm_torch_shooter32_motion_only_residual_sweep_h200.json` | Same residual/autoregressive setup with categorical and button losses set to zero; width/depth motion-specialist grid | 9 H200 variants; no motion endpoint rejects. Best Pearson row reaches `0.1790` with scale ratio `1.1224`, below the residual+softmax raw Pearson (`0.2432`) and non-significant | Removing categorical/button loss does not improve Shooter32 motion; shared supervision was not the main motion bottleneck. |
 | Shooter32 axis-softmax motion sweep | `artifacts/idm/idm_torch_shooter32_axis_softmax_motion_sweep_h200.json` | Residual/autoregressive model with direct DX/DY bin-classification head aligned to the binned motion metric | 32 H200 variants; no motion endpoint rejects. Best Pearson row reaches `0.2102` with raw p `0.060` / Holm p `0.54`; two variants still reject keyboard + mouse-button, best button precision `0.2308` with no-button FPR `0.0261` | Directly classifying binned motion tokens is useful target-modeling evidence but does not outperform the residual+softmax raw Pearson peak and still fails the motion gate. |
 | Shooter32 shift-surface motion sweep | `artifacts/idm/idm_torch_shooter32_surface_motion_sweep_h200.json` | Same residual + axis-softmax setup with expanded grid8 visual shift-surface features | 32 H200 variants; no motion endpoint rejects. Best ranked row reaches mouse Pearson `0.2447`, raw p `0.059` / Holm p `0.472`; best Pearson row reaches `0.2738` but raw p `0.113` / Holm p `0.904`; best click-accuracy row reaches `0.175` accuracy and precision `0.2258`, but Holm p `0.2115` | The richer hand-built shift-cost surface recovers raw mouse/click signal comparable to earlier peaks but still does not clear strong correction gates. Representation needs a learned temporal/visual encoder or a larger data regime, not another small summary-feature variant. |
+| Shooter32 luma-temporal Conv3D sweep | `artifacts/idm/idm_torch_shooter32_luma_temporal_conv_sweep_h200.json`, `artifacts/idm/idm_torch_shooter32_luma_temporal_conv_h256_sweep_h200.json` | Five-frame 16x16 luma stack plus inter-frame deltas, residual + axis-softmax heads, learned Conv3D encoder, H200 | 32-run h128/depth sweep plus 24-run h256 focused sweep. Best h128 row rejects keyboard + mouse-button with click accuracy `0.275`, but precision `0.1089` and no-button FPR `0.1030`; best h128 mouse Pearson `0.2456` with Holm p `1.0`. Best h256 mouse Pearson `0.2652` with Holm p `1.0`; button Holm p `0.198` | A small learned luma-temporal encoder improves keyboard and can produce corrected click wins, but those click wins are spammy and motion remains non-significant. This rules out the first lightweight Conv3D/pixel-stack formulation as sufficient for G005. |
 
 Current conclusion: G4 has meaningful non-smoke IDM progress across real D2E
 splits, including H200 checkpoint metadata and pseudo-label artifacts, but it
@@ -85,11 +86,16 @@ tested direct binned-target classification and improved some raw p-values but
 still failed Holm correction. The follow-up shift-surface sweep adds denser
 hand-built visual alignment features and reaches raw mouse/click peaks similar
 to previous best rows, but it also fails the predeclared correction gates. The
-next motion iteration should therefore move beyond summary-feature MLPs toward a
-learned temporal/visual encoder or a larger data regime before recomposing a
-completion portfolio. In every case, the evaluation must use one predeclared
-heldout prediction artifact without untrained categorical logits or post-hoc
-heldout thresholding.
+first learned luma-temporal Conv3D encoder does not solve the motion endpoint
+either; it produces stronger keyboard/click rows, but the corrected click row is
+not harness-safe due to low precision and a high no-button false-positive rate.
+The next motion iteration should therefore move beyond the current small-data
+Shooter32 regime and lightweight encoders: either scale recording diversity /
+data volume substantially, use a stronger pretrained/sequence visual backbone,
+or reformulate the target around longer-horizon cursor displacement before
+recomposing a completion portfolio. In every case, the evaluation must use one
+predeclared heldout prediction artifact without untrained categorical logits or
+post-hoc heldout thresholding.
 
 ## Completion caveat
 
