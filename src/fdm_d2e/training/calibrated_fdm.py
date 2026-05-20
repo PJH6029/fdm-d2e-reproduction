@@ -106,10 +106,21 @@ def _scale_predictions(
 
 
 def calibrate_fdm_predictions(config: dict[str, Any]) -> dict[str, Any]:
-    """Post-calibrate a trained FDM decoder's mouse scale without target labels."""
+    """Post-calibrate a trained FDM decoder's mouse scale without target labels.
+
+    ``train_records_path`` remains the FDM training/baseline record stream for
+    backwards compatibility.  Serious D2E runs may additionally pass
+    ``calibration_records_path`` when the scale calibration signal intentionally
+    differs from the IDM pseudo-labels consumed by the FDM (for example, real
+    D2E train-split labels).  ``baseline_train_records_path`` can also be set
+    explicitly so endpoint references stay tied to the model's training signal
+    while the calibration metadata records the separate train-only scale signal.
+    """
 
     source_predictions_path = Path(config["source_predictions_path"])
     train_records_path = Path(config["train_records_path"])
+    calibration_records_path = Path(config.get("calibration_records_path", train_records_path))
+    baseline_train_records_path = Path(config.get("baseline_train_records_path", train_records_path))
     target_records_path = Path(config["target_records_path"])
     labels_path = Path(config["labels_path"])
     endpoints_path = str(config.get("endpoints", "configs/eval/primary_endpoints.yaml"))
@@ -118,10 +129,12 @@ def calibrate_fdm_predictions(config: dict[str, Any]) -> dict[str, Any]:
 
     predictions = read_jsonl(source_predictions_path)
     train_records = read_jsonl(train_records_path)
+    calibration_records = read_jsonl(calibration_records_path)
+    baseline_train_records = read_jsonl(baseline_train_records_path)
     target_records = read_jsonl(target_records_path)
     calibrated, diagnostics = _scale_predictions(
         predictions,
-        train_records,
+        calibration_records,
         min_gain=float(config.get("min_gain", 0.25)),
         max_gain=float(config.get("max_gain", 4.0)),
     )
@@ -129,7 +142,7 @@ def calibrate_fdm_predictions(config: dict[str, Any]) -> dict[str, Any]:
     write_jsonl(predictions_path, calibrated)
     metrics = compute_metrics(calibrated, target_records)
     write_json(output_dir / "metrics.json", metrics)
-    predictions_by_name = build_baseline_predictions(train_records, target_records)
+    predictions_by_name = build_baseline_predictions(baseline_train_records, target_records)
     model_name = str(config.get("model_name", "fdm_recording_scale_calibrated"))
     predictions_by_name[model_name] = calibrated
     stat = compare_systems(predictions_by_name, target_records, load_config(endpoints_path))
@@ -146,8 +159,14 @@ def calibrate_fdm_predictions(config: dict[str, Any]) -> dict[str, Any]:
         "oracle_ground_truth_control": False,
         "source_predictions_path": str(source_predictions_path),
         "train_records_path": str(train_records_path),
+        "calibration_records_path": str(calibration_records_path),
+        "baseline_train_records_path": str(baseline_train_records_path),
         "target_records_path": str(target_records_path),
         "target_examples": len(target_records),
+        "num_calibration_examples": len(calibration_records),
+        "num_baseline_train_examples": len(baseline_train_records),
+        "calibration_label_source": str(config.get("calibration_label_source", "train_records_ground_truth_tokens")),
+        "calibration_uses_target_ground_truth": False,
         "calibration": diagnostics,
         "dataset_fingerprint": stable_hash_json(
             {
@@ -155,6 +174,12 @@ def calibrate_fdm_predictions(config: dict[str, Any]) -> dict[str, Any]:
                 "source_predictions_sha256": sha256_file(source_predictions_path),
                 "labels_sha256": label_hash,
                 "train_sequence_ids": [row["sequence_id"] for row in train_records],
+                "calibration_records_path": str(calibration_records_path),
+                "calibration_records_sha256": sha256_file(calibration_records_path),
+                "calibration_sequence_ids": [row["sequence_id"] for row in calibration_records],
+                "baseline_train_records_path": str(baseline_train_records_path),
+                "baseline_train_records_sha256": sha256_file(baseline_train_records_path),
+                "baseline_train_sequence_ids": [row["sequence_id"] for row in baseline_train_records],
                 "target_sequence_ids": [row["sequence_id"] for row in target_records],
                 "config": {key: value for key, value in config.items() if key != "output_dir"},
             }

@@ -12,7 +12,13 @@ from fdm_d2e.training.calibrated_fdm import calibrate_fdm_predictions
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Calibrate a trained FDM prediction stream using train-only IDM pseudo-label scale.")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Calibrate a trained FDM prediction stream using train-only scale "
+            "records; calibration_records_path may differ from the FDM "
+            "pseudo-label training/baseline records."
+        )
+    )
     parser.add_argument("--config", required=True)
     args = parser.parse_args()
     summary = calibrate_fdm_predictions(load_config(args.config))
