@@ -1,0 +1,378 @@
+{
+  "schema": "torch_idm_train_summary.v1",
+  "metadata": {
+    "schema": "idm_checkpoint_metadata.v1",
+    "model": "torch_mlp_idm_shooter32_residual",
+    "dataset_fingerprint": "9ffac3b2765faa063e5be4ddebf1afbd96162b4c7db242a7d623a11f25e478dc",
+    "train_records": 2304,
+    "target_records": 768,
+    "pseudo_label_path": "outputs/idm_torch_shooter32_residual/pseudolabels.jsonl",
+    "filtered_pseudo_label_path": "outputs/idm_torch_shooter32_residual/pseudolabels.filtered.jsonl",
+    "checkpoint_path": "outputs/idm_torch_shooter32_residual/checkpoint.pt",
+    "metrics_path": "outputs/idm_torch_shooter32_residual/metrics.json",
+    "calibration": {
+      "confidence_threshold": 0.15,
+      "kept": 481,
+      "total": 768,
+      "last_train_loss": 1.8871507512198553
+    },
+    "categorical_vocab": [
+      "KEY_PRESS_160",
+      "KEY_PRESS_162",
+      "KEY_PRESS_164",
+      "KEY_PRESS_32",
+      "KEY_PRESS_65",
+      "KEY_PRESS_68",
+      "KEY_PRESS_69",
+      "KEY_PRESS_70",
+      "KEY_PRESS_83",
+      "KEY_PRESS_87",
+      "KEY_PRESS_9",
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_162",
+      "KEY_RELEASE_32",
+      "KEY_RELEASE_65",
+      "KEY_RELEASE_68",
+      "KEY_RELEASE_69",
+      "KEY_RELEASE_70",
+      "KEY_RELEASE_83",
+      "KEY_RELEASE_87",
+      "KEY_RELEASE_9",
+      "MOUSE_LEFT_DOWN",
+      "MOUSE_LEFT_UP",
+      "MOUSE_RIGHT_DOWN",
+      "MOUSE_RIGHT_UP"
+    ],
+    "feature_mode": "summary_grid4_shift",
+    "input_dim": 166,
+    "mouse_target_mode": "residual_last_seen",
+    "category_threshold": 0.45,
+    "categorical_pos_weight_cap": 20.0
+  },
+  "metrics": {
+    "schema": "metrics.v1",
+    "stage": "fdm_eval",
+    "num_examples": 768,
+    "keyboard": {
+      "status": "computed",
+      "accuracy": 0.13953488372093023,
+      "num_examples": 301
+    },
+    "mouse_button": {
+      "status": "computed",
+      "accuracy": 0.025,
+      "num_examples": 40
+    },
+    "mouse_move": {
+      "status": "computed",
+      "pearson": 0.21500904758598102,
+      "scale_ratio": 1.1782256257706616,
+      "num_values": 1408
+    },
+    "failure_count": 768
+  },
+  "predictions_path": "outputs/idm_torch_shooter32_residual/predictions.jsonl",
+  "statistical_comparison": {
+    "schema": "stat_comparison.v1",
+    "reference_baseline": "noop",
+    "correction": "holm_bonferroni",
+    "cluster_key": "recording_id",
+    "comparisons": [
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 28,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 28,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.1258715986394558,
+        "ci": [
+          0.05846088435374149,
+          0.19976615646258503
+        ],
+        "p_value": 0.0,
+        "num_clusters": 28,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "torch_mlp_idm_shooter32_residual",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.10465239125953411,
+        "ci": [
+          0.052353896103896104,
+          0.164676097711812
+        ],
+        "p_value": 0.0,
+        "num_clusters": 28,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 9,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 9,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.05555555555555555,
+        "ci": [
+          0.0,
+          0.16666666666666666
+        ],
+        "p_value": 0.3465,
+        "num_clusters": 9,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "torch_mlp_idm_shooter32_residual",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.037037037037037035,
+        "ci": [
+          0.0,
+          0.1111111111111111
+        ],
+        "p_value": 0.3645,
+        "num_clusters": 9,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 1.6653345369377348e-16,
+        "ci": [
+          1.6653345369377348e-16,
+          1.6653345369377348e-16
+        ],
+        "p_value": 0.0,
+        "num_clusters": 1,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "torch_mlp_idm_shooter32_residual",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.02075858677203507,
+        "ci": [
+          -0.03245142563740977,
+          0.07313718172371028
+        ],
+        "p_value": 0.215,
+        "num_clusters": 24,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": -1.3054681870324987,
+        "ci": [
+          -1.3054681870324987,
+          -1.3054681870324987
+        ],
+        "p_value": 1.0,
+        "num_clusters": 1,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "torch_mlp_idm_shooter32_residual",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": -0.021654788118324997,
+        "ci": [
+          -0.17017083168865532,
+          0.11407969325221246
+        ],
+        "p_value": 1.0,
+        "num_clusters": 25,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      }
+    ]
+  },
+  "history_tail": [
+    {
+      "epoch": 56,
+      "loss": 1.9136873616112604
+    },
+    {
+      "epoch": 57,
+      "loss": 1.904300742679172
+    },
+    {
+      "epoch": 58,
+      "loss": 1.8907084332572088
+    },
+    {
+      "epoch": 59,
+      "loss": 1.8926003111733332
+    },
+    {
+      "epoch": 60,
+      "loss": 1.8871507512198553
+    }
+  ],
+  "device": "cuda"
+}
