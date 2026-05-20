@@ -50,6 +50,7 @@ strongest useful artifacts are:
 | Shooter32 grid8-time group-calibrated sweep | `artifacts/idm/idm_torch_shooter32_grid8_time_group_calibrated_sweep_h200.json` | Same Shooter32 split | 36 grid8 + temporal-basis + focal-loss + group-exact calibration variants; best keyboard row `0.1030` accuracy with Holm p `0.0`; best mouse-button row `0.075` accuracy with Holm p `0.8685`; best mouse Pearson Holm p `1.0` | Higher spatial resolution, train-only exact group calibration, and temporal bin bases preserve keyboard significance but regress click evidence versus the simpler categorical sweep. |
 | Shooter32 sequential-history sweep | `artifacts/idm/idm_torch_shooter32_seq_history_sweep_h200.json` | Same Shooter32 split | 36 autoregressive action-history variants; best keyboard row `0.1130` accuracy with Holm p `0.0`; best mouse-button row `0.1000` accuracy with raw p `0.006` but Holm p `0.054`; mouse Pearson/scale endpoints failed | Causal action history nearly clears the mouse-button correction gate without heldout leakage, but autoregressive feedback hurts mouse-motion correlation and still misses the predeclared strong bar. |
 | Shooter32 sequential-history focused FP audit | `artifacts/idm/idm_torch_shooter32_seq_history_focused_fp_h200.json` | Best seq-history click variant under expanded button metrics | Mouse-button positive accuracy `0.1000`, precision `0.0074`, F1 `0.0138`, `540` predicted button examples, no-button false-positive rate `0.6964` | The near-significant click result is not harness-safe: it mostly comes from button spam. Future click work must optimize precision/false-positive rate, not only positive-example accuracy. |
+| Shooter32 sequential-history F-beta focused audit | `artifacts/idm/idm_torch_shooter32_seq_history_fbeta_focused_h200.json` | Same focused variant with train-only group F-beta calibration (`beta=0.5`) | Mouse-button positive accuracy `0.0`, precision `0.0`, `21` predicted button examples, no-button false-positive rate `0.0247`; keyboard still non-significant in this focused run | Precision-aware calibration suppresses click spam but becomes too conservative, confirming that a better click model/objective is needed rather than threshold-only repair. |
 
 Current conclusion: G4 has meaningful non-smoke IDM progress across real D2E
 splits, including H200 checkpoint metadata and pseudo-label artifacts, but it
@@ -61,12 +62,13 @@ out naive spatial-detail and periodic-bin features for click recovery. The
 sequential-history sweep is the strongest non-leaky positive-click attempt so
 far (Holm p `0.054`) but still fails the predeclared correction gate, regresses
 mouse motion, and has an unacceptable no-button false-positive rate (`0.6964`)
-on the focused audit. The next credible completion attempt should use a
-precision-aware click objective/calibration (or a richer sequential model)
-before any harness claim, then pair it in a predeclared trained portfolio with a
-motion-specialized head only if the combined heldout artifact preserves
-keyboard, mouse, click precision, and no-heldout-leakage semantics. In every
-case, the evaluation must use one predeclared heldout prediction artifact
+on the focused audit. Precision-aware F-beta calibration reduces the
+false-positive rate to `0.0247` but loses all true click positives. The next
+credible completion attempt therefore needs a better trained click objective
+instead of threshold-only repair, then can pair it in a predeclared trained
+portfolio with a motion-specialized head only if the combined heldout artifact
+preserves keyboard, mouse, click precision, and no-heldout-leakage semantics. In
+every case, the evaluation must use one predeclared heldout prediction artifact
 without untrained categorical logits or post-hoc heldout thresholding.
 
 ## Completion caveat
