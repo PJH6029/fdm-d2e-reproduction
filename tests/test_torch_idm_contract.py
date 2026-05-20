@@ -242,6 +242,21 @@ class TorchIDMContractTests(unittest.TestCase):
         self.assertEqual(tokens[0], "MOUSE_DX_P1")
         self.assertTrue(tokens[1].startswith("MOUSE_DY_"))
 
+    def test_mouse_output_gain_rescales_decoded_motion_before_tokenization(self):
+        dx, dy, tokens = _prediction_from_output(
+            [2.0, -1.0],
+            base_dx=0.0,
+            base_dy=0.0,
+            residual_mouse=False,
+            category_vocab=[],
+            category_thresholds={},
+            category_threshold=0.5,
+            mouse_output_gain=3.0,
+        )
+
+        self.assertEqual((dx, dy), (6.0, -3.0))
+        self.assertEqual(tokens[:2], ["MOUSE_DX_P3", "MOUSE_DY_N2"])
+
     def test_action_history_features_are_causal_and_seedable(self):
         vocab = ["KEY_PRESS_87", "MOUSE_LEFT_DOWN", "MOUSE_LEFT_UP"]
         records = [

@@ -996,6 +996,7 @@ def _prediction_from_output(
     mouse_axis_classes: list[str] | None = None,
     mouse_axis_decode_mode: str = "argmax",
     mouse_axis_temperature: float = 1.0,
+    mouse_output_gain: float = 1.0,
 ) -> tuple[float, float, list[str]]:
     dx, dy = float(output[0]), float(output[1])
     if residual_mouse:
@@ -1024,6 +1025,8 @@ def _prediction_from_output(
                 dy = _axis_class_to_delta(axis_classes[dy_idx])
             else:
                 raise ValueError(f"unsupported mouse_axis_decode_mode: {mouse_axis_decode_mode}")
+    dx *= float(mouse_output_gain)
+    dy *= float(mouse_output_gain)
     tokens = tokens_from_delta(float(dx), float(dy))
     for token, logit in zip(category_vocab, output[2:category_end]):
         prob = _sigmoid(float(logit))
@@ -1064,6 +1067,7 @@ def _predict_autoregressive_target(
     action_history_len: int,
     mouse_axis_decode_mode: str = "argmax",
     mouse_axis_temperature: float = 1.0,
+    mouse_output_gain: float = 1.0,
 ) -> dict[str, dict[str, Any]]:
     histories: dict[str, list[list[str]]] = {}
     button_states: dict[str, dict[str, float]] = {}
@@ -1121,6 +1125,7 @@ def _predict_autoregressive_target(
             mouse_axis_classes=mouse_axis_classes,
             mouse_axis_decode_mode=mouse_axis_decode_mode,
             mouse_axis_temperature=mouse_axis_temperature,
+            mouse_output_gain=mouse_output_gain,
         )
         outputs[sequence_id] = {"output": output, "dx": dx, "dy": dy, "tokens": tokens}
         _append_history(history, button_state, tokens, history_len=action_history_len)
@@ -1130,6 +1135,115 @@ def _predict_autoregressive_target(
             last_mouse_by_game[game] = predicted_delta
             last_mouse_fallback = predicted_delta
     return outputs
+
+
+def _axis_abs_mean(deltas: list[tuple[float, float]]) -> float | None:
+    values = [abs(float(value)) for pair in deltas for value in pair]
+    return sum(values) / len(values) if values else None
+
+
+def _calibrate_mouse_output_gain_from_train(
+    torch,
+    model,
+    train_records: list[dict[str, Any]],
+    *,
+    device: str,
+    mean: list[float],
+    std: list[float],
+    feature_mode: str,
+    residual_mouse: bool,
+    history_vocab: list[str],
+    category_vocab: list[str],
+    category_thresholds: dict[str, float],
+    category_threshold: float,
+    button_head_mode: str,
+    button_classes: list[tuple[str, ...]],
+    button_softmax_threshold: float,
+    mouse_head_mode: str,
+    mouse_axis_classes: list[str],
+    action_history_len: int,
+    mouse_axis_decode_mode: str,
+    mouse_axis_temperature: float,
+    configured_gain: float,
+    min_gain: float,
+    max_gain: float,
+) -> tuple[float, dict[str, Any]]:
+    """Estimate a non-oracle global mouse scale from pseudo-labeled train rows.
+
+    FDM target splits must remain unseen, but the IDM pseudo-labels used to train
+    the FDM define an allowed action-scale prior.  The gain matches the mean
+    absolute decoded mouse magnitude on the pseudo-labeled training split before
+    evaluating heldout D2E records.
+    """
+
+    if not train_records:
+        return configured_gain, {"status": "empty_train", "configured_gain": configured_gain}
+    train_mouse_baselines = _mouse_baseline_deltas(
+        train_records,
+        mode="causal_last_seen" if residual_mouse else "none",
+    )
+    train_history_features = _action_history_features(
+        train_records,
+        history_vocab,
+        history_len=action_history_len,
+    )
+    raw_outputs = _predict_raw_outputs(
+        torch,
+        model,
+        train_records,
+        device=device,
+        mean=mean,
+        std=std,
+        feature_mode=feature_mode,
+        mouse_baselines=train_mouse_baselines,
+        residual_mouse=residual_mouse,
+        history_features=train_history_features,
+    )
+    predicted_deltas: list[tuple[float, float]] = []
+    target_deltas = [target_mouse_delta(row) for row in train_records]
+    for output, (base_dx, base_dy) in zip(raw_outputs, train_mouse_baselines):
+        dx, dy, _ = _prediction_from_output(
+            output,
+            base_dx=float(base_dx),
+            base_dy=float(base_dy),
+            residual_mouse=residual_mouse,
+            category_vocab=category_vocab,
+            category_thresholds=category_thresholds,
+            category_threshold=category_threshold,
+            button_head_mode=button_head_mode,
+            button_classes=button_classes,
+            button_softmax_threshold=button_softmax_threshold,
+            mouse_head_mode=mouse_head_mode,
+            mouse_axis_classes=mouse_axis_classes,
+            mouse_axis_decode_mode=mouse_axis_decode_mode,
+            mouse_axis_temperature=mouse_axis_temperature,
+            mouse_output_gain=1.0,
+        )
+        predicted_deltas.append((float(dx), float(dy)))
+    predicted_abs_mean = _axis_abs_mean(predicted_deltas)
+    target_abs_mean = _axis_abs_mean(target_deltas)
+    if not predicted_abs_mean or not target_abs_mean:
+        return configured_gain, {
+            "status": "insufficient_nonzero_mouse",
+            "configured_gain": configured_gain,
+            "predicted_abs_mean": predicted_abs_mean,
+            "target_abs_mean": target_abs_mean,
+        }
+    raw_ratio = float(target_abs_mean) / max(float(predicted_abs_mean), 1e-9)
+    unclipped_gain = float(configured_gain) * raw_ratio
+    gain = min(float(max_gain), max(float(min_gain), unclipped_gain))
+    return gain, {
+        "status": "computed",
+        "configured_gain": configured_gain,
+        "raw_ratio": raw_ratio,
+        "unclipped_gain": unclipped_gain,
+        "gain": gain,
+        "min_gain": min_gain,
+        "max_gain": max_gain,
+        "predicted_abs_mean": predicted_abs_mean,
+        "target_abs_mean": target_abs_mean,
+        "num_train_records": len(train_records),
+    }
 
 
 def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
@@ -1156,6 +1270,16 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     mouse_axis_temperature = float(config.get("mouse_axis_temperature", 1.0))
     if mouse_axis_temperature <= 0:
         raise ValueError("mouse_axis_temperature must be positive")
+    mouse_output_gain_mode = str(config.get("mouse_output_gain_mode", "fixed"))
+    if mouse_output_gain_mode not in {"fixed", "train_abs_ratio"}:
+        raise ValueError(f"unsupported mouse_output_gain_mode: {mouse_output_gain_mode}")
+    mouse_output_gain = float(config.get("mouse_output_gain", 1.0))
+    if mouse_output_gain <= 0:
+        raise ValueError("mouse_output_gain must be positive")
+    mouse_output_gain_min = float(config.get("mouse_output_gain_min", 0.25))
+    mouse_output_gain_max = float(config.get("mouse_output_gain_max", 4.0))
+    if mouse_output_gain_min <= 0 or mouse_output_gain_max <= 0 or mouse_output_gain_min > mouse_output_gain_max:
+        raise ValueError("mouse_output_gain_min/max must be positive and ordered")
     raw_axis_classes = config.get("mouse_axis_classes")
     mouse_axis_classes = (
         [str(value) for value in raw_axis_classes]
@@ -1354,6 +1478,40 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             residual_mouse=residual_mouse,
             action_history_len=action_history_len,
         )
+    if mouse_output_gain_mode == "train_abs_ratio":
+        mouse_output_gain, mouse_output_gain_info = _calibrate_mouse_output_gain_from_train(
+            torch,
+            model,
+            train_records,
+            device=device,
+            mean=mean,
+            std=std,
+            feature_mode=feature_mode,
+            residual_mouse=residual_mouse,
+            history_vocab=history_vocab,
+            category_vocab=category_vocab,
+            category_thresholds=category_thresholds,
+            category_threshold=category_threshold,
+            button_head_mode=button_head_mode,
+            button_classes=button_classes,
+            button_softmax_threshold=button_softmax_threshold,
+            mouse_head_mode=mouse_head_mode,
+            mouse_axis_classes=mouse_axis_classes,
+            action_history_len=action_history_len,
+            mouse_axis_decode_mode=mouse_axis_decode_mode,
+            mouse_axis_temperature=mouse_axis_temperature,
+            configured_gain=mouse_output_gain,
+            min_gain=mouse_output_gain_min,
+            max_gain=mouse_output_gain_max,
+        )
+    else:
+        mouse_output_gain_info = {
+            "status": "fixed",
+            "configured_gain": mouse_output_gain,
+            "gain": mouse_output_gain,
+            "min_gain": mouse_output_gain_min,
+            "max_gain": mouse_output_gain_max,
+        }
     out_dir = Path(config.get("output_dir", "outputs/idm_torch"))
     out_dir.mkdir(parents=True, exist_ok=True)
     checkpoint_path = out_dir / "checkpoint.pt"
@@ -1374,6 +1532,9 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             "mouse_axis_classes": mouse_axis_classes,
             "mouse_axis_decode_mode": mouse_axis_decode_mode,
             "mouse_axis_temperature": mouse_axis_temperature,
+            "mouse_output_gain": mouse_output_gain,
+            "mouse_output_gain_mode": mouse_output_gain_mode,
+            "mouse_output_gain_info": mouse_output_gain_info,
             "model_arch": str(config.get("model_arch", "mlp")),
         },
         checkpoint_path,
@@ -1409,6 +1570,7 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             action_history_len=action_history_len,
             mouse_axis_decode_mode=mouse_axis_decode_mode,
             mouse_axis_temperature=mouse_axis_temperature,
+            mouse_output_gain=mouse_output_gain,
         )
         deltas = [autoregressive_outputs[str(row["sequence_id"])]["output"] for row in target_records]
     else:
@@ -1469,6 +1631,7 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 mouse_axis_classes=mouse_axis_classes,
                 mouse_axis_decode_mode=mouse_axis_decode_mode,
                 mouse_axis_temperature=mouse_axis_temperature,
+                mouse_output_gain=mouse_output_gain,
             )
         confidence = max(0.05, min(0.99, 1.0 / (1.0 + abs(float(dx)) + abs(float(dy)))))
         pseudo = {
@@ -1522,6 +1685,9 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "mouse_axis_classes": mouse_axis_classes if mouse_head_mode == "axis_softmax" else [],
         "mouse_axis_decode_mode": mouse_axis_decode_mode,
         "mouse_axis_temperature": mouse_axis_temperature,
+        "mouse_output_gain": mouse_output_gain,
+        "mouse_output_gain_mode": mouse_output_gain_mode,
+        "mouse_output_gain_info": mouse_output_gain_info,
         "mouse_axis_loss_weight": float(config.get("mouse_axis_loss_weight", 1.0 if mouse_head_mode == "axis_softmax" else 0.0)),
         "mouse_regression_loss_weight": float(config.get("mouse_regression_loss_weight", 1.0)),
         "mouse_axis_class_weight_cap": float(config.get("mouse_axis_class_weight_cap", 20.0)),
@@ -1585,6 +1751,7 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", MOUSE_AXIS_CLASSES)]
     mouse_axis_decode_mode = str(checkpoint.get("mouse_axis_decode_mode", model_config.get("mouse_axis_decode_mode", "argmax")))
     mouse_axis_temperature = float(checkpoint.get("mouse_axis_temperature", model_config.get("mouse_axis_temperature", 1.0)))
+    mouse_output_gain = float(config.get("mouse_output_gain_override", checkpoint.get("mouse_output_gain", 1.0)))
     mean = [float(value) for value in checkpoint["mean"]]
     std = [float(value) for value in checkpoint["std"]]
     output_dim = 2 + len(category_vocab)
@@ -1639,6 +1806,7 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             action_history_len=action_history_len,
             mouse_axis_decode_mode=mouse_axis_decode_mode,
             mouse_axis_temperature=mouse_axis_temperature,
+            mouse_output_gain=mouse_output_gain,
         )
         for row in records:
             pred = outputs_by_id[str(row["sequence_id"])]
@@ -1671,6 +1839,7 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 mouse_axis_classes=mouse_axis_classes,
                 mouse_axis_decode_mode=mouse_axis_decode_mode,
                 mouse_axis_temperature=mouse_axis_temperature,
+                mouse_output_gain=mouse_output_gain,
             )
             predicted.append({"dx": dx, "dy": dy, "tokens": tokens})
     out_dir = Path(config.get("output_dir", "outputs/idm_torch_predict"))
@@ -1721,6 +1890,7 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "target_records": str(config["target_records"]),
         "seed_records": str(config.get("seed_records", "")),
         "button_softmax_threshold": button_softmax_threshold,
+        "mouse_output_gain": mouse_output_gain,
         "num_records": len(records),
         "pseudolabels_path": str(pseudo_path),
         "predictions_path": str(predictions_path),

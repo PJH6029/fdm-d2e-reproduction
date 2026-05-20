@@ -82,6 +82,8 @@ def main() -> int:
     parser.add_argument("--mouse-regression-loss-weights", default="")
     parser.add_argument("--mouse-axis-decode-modes", default="")
     parser.add_argument("--mouse-axis-temperatures", default="")
+    parser.add_argument("--mouse-output-gain-modes", default="")
+    parser.add_argument("--mouse-output-gains", default="")
     parser.add_argument("--seeds", default="")
     parser.add_argument("--max-runs", type=int, default=None)
     args = parser.parse_args()
@@ -112,6 +114,8 @@ def main() -> int:
     mouse_regression_loss_weights = _floats(args.mouse_regression_loss_weights) or [float(torch_base.get("mouse_regression_loss_weight", 1.0))]
     mouse_axis_decode_modes = _strings(args.mouse_axis_decode_modes) or [str(torch_base.get("mouse_axis_decode_mode", "argmax"))]
     mouse_axis_temperatures = _floats(args.mouse_axis_temperatures) or [float(torch_base.get("mouse_axis_temperature", 1.0))]
+    mouse_output_gain_modes = _strings(args.mouse_output_gain_modes) or [str(torch_base.get("mouse_output_gain_mode", "fixed"))]
+    mouse_output_gains = _floats(args.mouse_output_gains) or [float(torch_base.get("mouse_output_gain", 1.0))]
     seeds = _ints(args.seeds) or [int(torch_base.get("seed", 0))]
 
     grid = itertools.product(
@@ -135,6 +139,8 @@ def main() -> int:
         mouse_regression_loss_weights,
         mouse_axis_decode_modes,
         mouse_axis_temperatures,
+        mouse_output_gain_modes,
+        mouse_output_gains,
         seeds,
     )
     rows: list[dict[str, Any]] = []
@@ -162,6 +168,8 @@ def main() -> int:
             mouse_regression_loss_weight,
             mouse_axis_decode_mode,
             mouse_axis_temperature,
+            mouse_output_gain_mode,
+            mouse_output_gain,
             seed,
         ) = values
         variant = (
@@ -171,7 +179,8 @@ def main() -> int:
             f"_blw{button_loss_weight:g}_bcw{button_class_weight_cap:g}_bnw{button_no_button_weight:g}"
             f"_bpw{button_positive_weight:g}_hist{action_history_len}_malw{mouse_axis_loss_weight:g}"
             f"_mrlw{mouse_regression_loss_weight:g}_mad{mouse_axis_decode_mode}"
-            f"_mat{mouse_axis_temperature:g}_seed{seed}"
+            f"_mat{mouse_axis_temperature:g}_mogm{mouse_output_gain_mode}"
+            f"_mog{mouse_output_gain:g}_seed{seed}"
         )
         cfg = copy.deepcopy(base)
         model_name = f"{base.get('model_name', 'torch_fdm_real')}_{variant}"
@@ -198,6 +207,8 @@ def main() -> int:
                 "mouse_regression_loss_weight": mouse_regression_loss_weight,
                 "mouse_axis_decode_mode": mouse_axis_decode_mode,
                 "mouse_axis_temperature": mouse_axis_temperature,
+                "mouse_output_gain_mode": mouse_output_gain_mode,
+                "mouse_output_gain": mouse_output_gain,
                 "seed": seed,
             }
         )
@@ -234,6 +245,8 @@ def main() -> int:
                 "mouse_regression_loss_weight": mouse_regression_loss_weight,
                 "mouse_axis_decode_mode": mouse_axis_decode_mode,
                 "mouse_axis_temperature": mouse_axis_temperature,
+                "mouse_output_gain_mode": mouse_output_gain_mode,
+                "mouse_output_gain": mouse_output_gain,
                 "seed": seed,
             },
             "metrics": summary["metrics"],
