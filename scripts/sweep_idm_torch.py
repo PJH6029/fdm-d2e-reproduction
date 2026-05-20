@@ -20,6 +20,10 @@ def _floats(csv: str) -> list[float]:
     return [float(part) for part in csv.split(",") if part.strip()]
 
 
+def _strings(csv: str) -> list[str]:
+    return [part.strip() for part in csv.split(",") if part.strip()]
+
+
 def _model_rows(summary: dict[str, Any], model_name: str) -> list[dict[str, Any]]:
     comparison = summary.get("statistical_comparison") or {}
     return [row for row in comparison.get("comparisons", []) if row.get("model") == model_name]
@@ -53,6 +57,11 @@ def main() -> int:
     parser.add_argument("--thresholds", default="0.25,0.45")
     parser.add_argument("--hidden-dims", default="")
     parser.add_argument("--depths", default="")
+    parser.add_argument("--category-losses", default="")
+    parser.add_argument("--focal-gammas", default="")
+    parser.add_argument("--calibration-modes", default="")
+    parser.add_argument("--calibration-betas", default="")
+    parser.add_argument("--calibration-fractions", default="")
     parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--max-runs", type=int, default=None)
     args = parser.parse_args()
@@ -66,12 +75,31 @@ def main() -> int:
     rows: list[dict[str, Any]] = []
     hidden_dims = [int(value) for value in _floats(args.hidden_dims)] or [int(base.get("hidden_dim", 128))]
     depths = [int(value) for value in _floats(args.depths)] or [int(base.get("depth", 3))]
-    grid = itertools.product(_floats(args.loss_weights), _floats(args.poscaps), _floats(args.thresholds), hidden_dims, depths)
-    for idx, (loss_weight, poscap, threshold, hidden_dim, depth) in enumerate(grid, start=1):
+    category_losses = _strings(args.category_losses) or [str(base.get("categorical_loss", "bce"))]
+    focal_gammas = _floats(args.focal_gammas) or [float(base.get("focal_gamma", 2.0))]
+    calibration_modes = _strings(args.calibration_modes) or [str(base.get("category_threshold_mode", "global"))]
+    calibration_betas = _floats(args.calibration_betas) or [float(base.get("category_calibration_beta", 1.0))]
+    calibration_fractions = _floats(args.calibration_fractions) or [float(base.get("category_calibration_fraction", 0.0))]
+    grid = itertools.product(
+        _floats(args.loss_weights),
+        _floats(args.poscaps),
+        _floats(args.thresholds),
+        hidden_dims,
+        depths,
+        category_losses,
+        focal_gammas,
+        calibration_modes,
+        calibration_betas,
+        calibration_fractions,
+    )
+    for idx, (loss_weight, poscap, threshold, hidden_dim, depth, loss_mode, focal_gamma, calibration_mode, calibration_beta, calibration_fraction) in enumerate(grid, start=1):
         if args.max_runs is not None and idx > args.max_runs:
             break
         cfg = copy.deepcopy(base)
-        variant = f"lw{loss_weight:g}_pc{poscap:g}_th{threshold:g}_h{hidden_dim}_d{depth}"
+        variant = (
+            f"lw{loss_weight:g}_pc{poscap:g}_th{threshold:g}_h{hidden_dim}_d{depth}"
+            f"_loss{loss_mode}_fg{focal_gamma:g}_cal{calibration_mode}_cb{calibration_beta:g}_cf{calibration_fraction:g}"
+        )
         model_name = f"{base.get('model_name', 'torch_mlp_idm')}_{variant}"
         cfg.update(
             {
@@ -81,6 +109,11 @@ def main() -> int:
                 "category_threshold": threshold,
                 "hidden_dim": hidden_dim,
                 "depth": depth,
+                "categorical_loss": loss_mode,
+                "focal_gamma": focal_gamma,
+                "category_threshold_mode": calibration_mode,
+                "category_calibration_beta": calibration_beta,
+                "category_calibration_fraction": calibration_fraction,
                 "output_dir": str(work_dir / variant),
                 "summary_out": str(work_dir / variant / "summary.json"),
             }
@@ -95,6 +128,11 @@ def main() -> int:
                 "category_threshold": threshold,
                 "hidden_dim": hidden_dim,
                 "depth": depth,
+                "categorical_loss": loss_mode,
+                "focal_gamma": focal_gamma,
+                "category_threshold_mode": calibration_mode,
+                "category_calibration_beta": calibration_beta,
+                "category_calibration_fraction": calibration_fraction,
                 "epochs": cfg.get("epochs"),
                 "feature_mode": cfg.get("feature_mode", "summary"),
                 "train_records": cfg.get("train_records"),
