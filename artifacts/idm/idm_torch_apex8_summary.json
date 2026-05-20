@@ -3,7 +3,7 @@
   "metadata": {
     "schema": "idm_checkpoint_metadata.v1",
     "model": "torch_mlp_idm_apex8",
-    "dataset_fingerprint": "b2871b75bead06f5b22187bf0fafa70b081cd4815804b0934d15a1af08fb738d",
+    "dataset_fingerprint": "1b0151dbc0fb91463599262e8efac60338df468f848222cb84676a4ab2753e0f",
     "train_records": 384,
     "target_records": 128,
     "pseudo_label_path": "outputs/idm_torch_apex8/pseudolabels.jsonl",
@@ -12,9 +12,9 @@
     "metrics_path": "outputs/idm_torch_apex8/metrics.json",
     "calibration": {
       "confidence_threshold": 0.15,
-      "kept": 94,
+      "kept": 46,
       "total": 128,
-      "last_train_loss": 3.683480143547058
+      "last_train_loss": 2.1129839420318604
     },
     "categorical_vocab": [
       "KEY_PRESS_160",
@@ -36,7 +36,10 @@
       "MOUSE_LEFT_DOWN",
       "MOUSE_LEFT_UP"
     ],
-    "category_threshold": 0.3
+    "feature_mode": "summary_grid4_shift",
+    "input_dim": 164,
+    "category_threshold": 0.45,
+    "categorical_pos_weight_cap": 20.0
   },
   "metrics": {
     "schema": "metrics.v1",
@@ -44,18 +47,18 @@
     "num_examples": 128,
     "keyboard": {
       "status": "computed",
-      "accuracy": 0.1694915254237288,
+      "accuracy": 0.15254237288135594,
       "num_examples": 59
     },
     "mouse_button": {
       "status": "computed",
-      "accuracy": 0.0,
+      "accuracy": 0.2,
       "num_examples": 5
     },
     "mouse_move": {
       "status": "computed",
-      "pearson": 0.12302296614772633,
-      "scale_ratio": 1.9959071671853625,
+      "pearson": 0.2547288922585571,
+      "scale_ratio": 1.0695231798374425,
       "num_values": 254
     },
     "failure_count": 128
@@ -125,14 +128,14 @@
         "direction": "higher",
         "min_effect": 0.05,
         "status": "computed",
-        "delta": 0.09999999999999999,
+        "delta": 0.0875,
         "ci": [
-          0.0125,
-          0.2375
+          0.0,
+          0.225
         ],
-        "p_value": 0.0205,
+        "p_value": 0.114,
         "num_clusters": 8,
-        "p_adjusted_holm": 0.20500000000000002,
+        "p_adjusted_holm": 0.798,
         "reject_holm_0_05": false
       },
       {
@@ -193,12 +196,12 @@
         "direction": "higher",
         "min_effect": 0.05,
         "status": "computed",
-        "delta": 0.0,
+        "delta": 0.16666666666666666,
         "ci": [
           0.0,
-          0.0
+          0.3333333333333333
         ],
-        "p_value": 1.0,
+        "p_value": 0.265,
         "num_clusters": 2,
         "p_adjusted_holm": 1.0,
         "reject_holm_0_05": false
@@ -261,15 +264,15 @@
         "direction": "higher",
         "min_effect": 0.05,
         "status": "computed",
-        "delta": 0.28009723336538667,
+        "delta": 0.3040952479951141,
         "ci": [
-          -0.07763463655489093,
-          0.666019748209411
+          0.05402385784832489,
+          0.5841577819529197
         ],
-        "p_value": 0.066,
+        "p_value": 0.0055,
         "num_clusters": 8,
-        "p_adjusted_holm": 0.5940000000000001,
-        "reject_holm_0_05": false
+        "p_adjusted_holm": 0.049499999999999995,
+        "reject_holm_0_05": true
       },
       {
         "model": "noop",
@@ -329,38 +332,38 @@
         "direction": "lower",
         "min_effect": 0.1,
         "status": "computed",
-        "delta": 0.03911157985352065,
+        "delta": 0.6274991541572631,
         "ci": [
-          -0.568215200213326,
-          0.6970647267427243
+          0.2177652012556236,
+          1.0535876123092653
         ],
-        "p_value": 0.469,
+        "p_value": 0.0015,
         "num_clusters": 8,
-        "p_adjusted_holm": 1.0,
-        "reject_holm_0_05": false
+        "p_adjusted_holm": 0.015,
+        "reject_holm_0_05": true
       }
     ]
   },
   "history_tail": [
     {
       "epoch": 56,
-      "loss": 3.732915163040161
+      "loss": 2.209576368331909
     },
     {
       "epoch": 57,
-      "loss": 3.6094948053359985
+      "loss": 2.1350622177124023
     },
     {
       "epoch": 58,
-      "loss": 3.6875096559524536
+      "loss": 2.137511372566223
     },
     {
       "epoch": 59,
-      "loss": 3.6442184448242188
+      "loss": 2.098507046699524
     },
     {
       "epoch": 60,
-      "loss": 3.683480143547058
+      "loss": 2.1129839420318604
     }
   ],
   "device": "cuda"

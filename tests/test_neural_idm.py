@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from fdm_d2e.training.neural_idm import TinyMouseIDM, target_mouse_delta, tokens_from_delta, train_idm_variant
+from fdm_d2e.training.neural_idm import TinyMouseIDM, record_features, target_mouse_delta, tokens_from_delta, train_idm_variant
 
 
 def rec(idx, dx_token, dy_token):
@@ -36,6 +36,32 @@ class NeuralIDMTests(unittest.TestCase):
             result = train_idm_variant(train, target, model_name="unit_idm", hidden_dim=4, epochs=20, lr=0.01, seed=1, confidence_threshold=0.0, output_dir=td)
             self.assertTrue((Path(td) / "unit_idm" / "pseudolabels.jsonl").exists())
             self.assertEqual(result["metadata"]["schema"], "idm_checkpoint_metadata.v1")
+
+    def test_record_features_can_include_dependency_free_frame_pair_signal(self):
+        with tempfile.TemporaryDirectory() as td:
+            frame_dir = Path(td)
+            first = frame_dir / "frame_000001.ppm"
+            second = frame_dir / "frame_000002.ppm"
+
+            def write_ppm(path: Path, offset: int) -> None:
+                pixels = bytearray()
+                for y in range(16):
+                    for x in range(16):
+                        value = (x * 7 + y * 3 + offset) % 256
+                        pixels.extend([value, value // 2, 255 - value])
+                path.write_bytes(b"P6\n16 16\n255\n" + bytes(pixels))
+
+            write_ppm(first, 0)
+            write_ppm(second, 11)
+            row = rec(0, "MOUSE_DX_P1", "MOUSE_DY_Z0")
+            row["frame"]["path"] = str(first)
+
+            summary = record_features(row)
+            rich = record_features(row, feature_mode="summary_grid4_shift")
+
+            self.assertEqual(len(summary), 16)
+            self.assertEqual(len(rich), 164)
+            self.assertTrue(any(abs(value) > 0 for value in rich[16:]))
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@
   "endpoints": "configs/eval/primary_endpoints.yaml",
   "output_dir": "outputs/idm_torch_apex8",
   "summary_out": "artifacts/idm/idm_torch_apex8_summary.json",
+  "feature_mode": "summary_grid4_shift",
   "hidden_dim": 256,
   "depth": 3,
   "dropout": 0.05,
@@ -16,7 +17,8 @@
   "grad_clip": 1.0,
   "categorical_min_count": 2,
   "categorical_loss_weight": 0.75,
-  "category_threshold": 0.30,
+  "categorical_pos_weight_cap": 20.0,
+  "category_threshold": 0.45,
   "seed": 20260520,
   "confidence_threshold": 0.15
 }

@@ -55,8 +55,8 @@ def _build_model(torch, input_dim: int, output_dim: int, hidden_dim: int, depth:
     return torch.nn.Sequential(*layers)
 
 
-def _tensorize(torch, records: list[dict[str, Any]], device: str, vocab: list[str]):
-    xs = torch.tensor([record_features(row) for row in records], dtype=torch.float32, device=device)
+def _tensorize(torch, records: list[dict[str, Any]], device: str, vocab: list[str], *, feature_mode: str):
+    xs = torch.tensor([record_features(row, feature_mode=feature_mode) for row in records], dtype=torch.float32, device=device)
     mouse_y = torch.tensor([target_mouse_delta(row) for row in records], dtype=torch.float32, device=device)
     cat_y = torch.zeros((len(records), len(vocab)), dtype=torch.float32, device=device)
     vocab_index = {token: idx for idx, token in enumerate(vocab)}
@@ -79,8 +79,16 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         device = "cpu"
     train_records = read_jsonl(config["train_records"])
     target_records = read_jsonl(config["target_records"])
+    feature_mode = str(config.get("feature_mode", "summary"))
     vocab = categorical_token_vocab(train_records, min_count=int(config.get("categorical_min_count", 1)))
-    train_x, mouse_y, cat_y, mean, std = _tensorize(torch, train_records, device, vocab)
+    train_x, mouse_y, cat_y, mean, std = _tensorize(torch, train_records, device, vocab, feature_mode=feature_mode)
+    cat_pos_weight = None
+    if vocab:
+        positives = cat_y.sum(dim=0)
+        negatives = max(1, cat_y.shape[0]) - positives
+        cat_pos_weight = (negatives / positives.clamp_min(1.0)).clamp(
+            max=float(config.get("categorical_pos_weight_cap", 20.0))
+        )
     input_dim = int(train_x.shape[1])
     model = _build_model(
         torch,
@@ -102,7 +110,11 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             pred = model(train_x[idx])
             mouse_loss = torch.nn.functional.smooth_l1_loss(pred[:, :2], mouse_y[idx])
             if vocab:
-                cat_loss = torch.nn.functional.binary_cross_entropy_with_logits(pred[:, 2:], cat_y[idx])
+                cat_loss = torch.nn.functional.binary_cross_entropy_with_logits(
+                    pred[:, 2:],
+                    cat_y[idx],
+                    pos_weight=cat_pos_weight,
+                )
             else:
                 cat_loss = torch.tensor(0.0, device=device)
             loss = mouse_loss + float(config.get("categorical_loss_weight", 0.5)) * cat_loss
@@ -117,7 +129,7 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     checkpoint_path = out_dir / "checkpoint.pt"
     torch.save({"model_state_dict": model.state_dict(), "mean": mean, "std": std, "config": config, "history": history}, checkpoint_path)
     # Predict heldout pseudo-labels.
-    raw_target_x = torch.tensor([record_features(row) for row in target_records], dtype=torch.float32, device=device)
+    raw_target_x = torch.tensor([record_features(row, feature_mode=feature_mode) for row in target_records], dtype=torch.float32, device=device)
     mean_t = torch.tensor(mean, dtype=torch.float32, device=device)
     std_t = torch.tensor(std, dtype=torch.float32, device=device).clamp_min(1e-6)
     target_x = (raw_target_x - mean_t) / std_t
@@ -125,7 +137,17 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     with torch.no_grad():
         deltas = model(target_x).detach().cpu().tolist()
     category_threshold = float(config.get("category_threshold", 0.35))
-    train_hash = stable_hash_json([{"id": row["sequence_id"], "tokens": row.get("ground_truth_tokens", []), "features": record_features(row)} for row in train_records])
+    train_hash = stable_hash_json(
+        [
+            {
+                "id": row["sequence_id"],
+                "tokens": row.get("ground_truth_tokens", []),
+                "features": record_features(row, feature_mode=feature_mode),
+                "feature_mode": feature_mode,
+            }
+            for row in train_records
+        ]
+    )
     pseudo_rows = []
     predictions = []
     for row, output in zip(target_records, deltas):
@@ -175,7 +197,10 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "metrics_path": str(metrics_path),
         "calibration": {"confidence_threshold": threshold, "kept": sum(1 for row in pseudo_rows if row["confidence"] >= threshold), "total": len(pseudo_rows), "last_train_loss": history[-1]["loss"] if history else None},
         "categorical_vocab": vocab,
+        "feature_mode": feature_mode,
+        "input_dim": input_dim,
         "category_threshold": category_threshold,
+        "categorical_pos_weight_cap": float(config.get("categorical_pos_weight_cap", 20.0)),
     }
     validate_named(metadata, "idm_checkpoint_metadata.schema.json")
     write_json(out_dir / "checkpoint_metadata.json", metadata)

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import math
 import random
+import re
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +13,10 @@ from fdm_d2e.schema import validate_named
 from fdm_d2e.tokenization.actions import bin_delta, token_to_delta_class
 
 
-def record_features(row: dict[str, Any]) -> list[float]:
+_FRAME_RE = re.compile(r"^(?P<prefix>.*?)(?P<number>\d+)(?P<suffix>\.ppm)$")
+
+
+def _summary_features(row: dict[str, Any]) -> list[float]:
     frame = row.get("frame", {})
     features = [float(v) for v in frame.get("features", [])]
     while len(features) < 5:
@@ -23,6 +28,167 @@ def record_features(row: dict[str, Any]) -> list[float]:
     while len(delta_features) < 5:
         delta_features.append(0.0)
     return features[:5] + next_features[:5] + delta_features[:5] + [float(row.get("bin_index", 0)) / 100.0]
+
+
+def _read_ppm_tokens(payload: bytes) -> tuple[list[bytes], int]:
+    tokens: list[bytes] = []
+    idx = 0
+    while len(tokens) < 4:
+        while idx < len(payload) and payload[idx] in b" \t\r\n":
+            idx += 1
+        if idx < len(payload) and payload[idx] == ord("#"):
+            while idx < len(payload) and payload[idx] not in b"\r\n":
+                idx += 1
+            continue
+        start = idx
+        while idx < len(payload) and payload[idx] not in b" \t\r\n":
+            idx += 1
+        if start == idx:
+            raise ValueError("invalid PPM header")
+        tokens.append(payload[start:idx])
+    while idx < len(payload) and payload[idx] in b" \t\r\n":
+        idx += 1
+    return tokens, idx
+
+
+@lru_cache(maxsize=8192)
+def _ppm_grid_and_luma(path: str, grid_size: int = 4, luma_size: int = 16) -> tuple[tuple[float, ...], tuple[float, ...]]:
+    """Return compact frame features from a raw 8-bit P6 PPM frame.
+
+    D2E sample decode writes 64x64 PPM frames.  Loading those pixels directly in
+    the MLP would add a dependency and a large input surface; this helper keeps a
+    deterministic, dependency-free inverse-dynamics signal by caching only small
+    RGB grid averages plus a luma grid used for coarse frame-shift features.
+    """
+
+    payload = Path(path).read_bytes()
+    tokens, offset = _read_ppm_tokens(payload)
+    if tokens[0] != b"P6":
+        raise ValueError(f"expected P6 PPM frame: {path}")
+    width, height, max_value = int(tokens[1]), int(tokens[2]), int(tokens[3])
+    if width <= 0 or height <= 0 or max_value <= 0 or max_value > 255:
+        raise ValueError(f"unsupported PPM geometry/header: {path}")
+    expected = width * height * 3
+    pixels = payload[offset : offset + expected]
+    if len(pixels) != expected:
+        raise ValueError(f"truncated PPM payload: {path}")
+
+    grid_sums = [[0.0, 0.0, 0.0, 0.0] for _ in range(grid_size * grid_size)]
+    luma_sums = [[0.0, 0.0] for _ in range(luma_size * luma_size)]
+    for y in range(height):
+        gy = min(grid_size - 1, y * grid_size // height)
+        ly = min(luma_size - 1, y * luma_size // height)
+        for x in range(width):
+            gx = min(grid_size - 1, x * grid_size // width)
+            lx = min(luma_size - 1, x * luma_size // width)
+            base = (y * width + x) * 3
+            r = pixels[base] / max_value
+            g = pixels[base + 1] / max_value
+            b = pixels[base + 2] / max_value
+            luma = 0.2126 * r + 0.7152 * g + 0.0722 * b
+            grid_bucket = grid_sums[gy * grid_size + gx]
+            grid_bucket[0] += r
+            grid_bucket[1] += g
+            grid_bucket[2] += b
+            grid_bucket[3] += 1.0
+            luma_bucket = luma_sums[ly * luma_size + lx]
+            luma_bucket[0] += luma
+            luma_bucket[1] += 1.0
+
+    grid: list[float] = []
+    for r, g, b, count in grid_sums:
+        denom = count or 1.0
+        grid.extend([r / denom, g / denom, b / denom])
+    luma = tuple(total / (count or 1.0) for total, count in luma_sums)
+    return tuple(grid), luma
+
+
+def _next_frame_path(row: dict[str, Any]) -> str | None:
+    path = str(row.get("frame", {}).get("path", ""))
+    if not path:
+        return None
+    frame_path = Path(path)
+    match = _FRAME_RE.match(frame_path.name)
+    if not match:
+        return None
+    width = len(match.group("number"))
+    next_name = f"{match.group('prefix')}{int(match.group('number')) + 1:0{width}d}{match.group('suffix')}"
+    next_path = frame_path.with_name(next_name)
+    return str(next_path) if next_path.exists() else None
+
+
+def _frame_pair_features(row: dict[str, Any], *, grid_size: int = 4, luma_size: int = 16) -> list[float]:
+    current_path = str(row.get("frame", {}).get("path", ""))
+    grid_len = grid_size * grid_size * 3
+    luma_len = luma_size * luma_size
+    if not current_path or not Path(current_path).exists():
+        return [0.0] * (grid_len * 3 + 4)
+    try:
+        cur_grid, cur_luma = _ppm_grid_and_luma(current_path, grid_size, luma_size)
+    except (OSError, ValueError):
+        return [0.0] * (grid_len * 3 + 4)
+    next_path = _next_frame_path(row)
+    if next_path:
+        try:
+            next_grid, next_luma = _ppm_grid_and_luma(next_path, grid_size, luma_size)
+        except (OSError, ValueError):
+            next_grid = tuple(0.0 for _ in range(grid_len))
+            next_luma = tuple(0.0 for _ in range(luma_len))
+    else:
+        next_grid = tuple(0.0 for _ in range(grid_len))
+        next_luma = tuple(0.0 for _ in range(luma_len))
+    delta_grid = [float(n - c) for c, n in zip(cur_grid, next_grid)]
+    shift = _coarse_shift_features(cur_luma, next_luma, luma_size=luma_size)
+    return list(cur_grid) + list(next_grid) + delta_grid + shift
+
+
+def _coarse_shift_features(cur_luma: tuple[float, ...], next_luma: tuple[float, ...], *, luma_size: int = 16, max_shift: int = 4) -> list[float]:
+    if not cur_luma or not next_luma or len(cur_luma) != len(next_luma):
+        return [0.0, 0.0, 0.0, 0.0]
+    best_shift = (0, 0)
+    best_mse: float | None = None
+    zero_mse: float | None = None
+    for sy in range(-max_shift, max_shift + 1):
+        for sx in range(-max_shift, max_shift + 1):
+            total = 0.0
+            count = 0
+            for y in range(luma_size):
+                ny = y + sy
+                if ny < 0 or ny >= luma_size:
+                    continue
+                for x in range(luma_size):
+                    nx = x + sx
+                    if nx < 0 or nx >= luma_size:
+                        continue
+                    diff = next_luma[ny * luma_size + nx] - cur_luma[y * luma_size + x]
+                    total += diff * diff
+                    count += 1
+            if not count:
+                continue
+            mse = total / count
+            if sx == 0 and sy == 0:
+                zero_mse = mse
+            if best_mse is None or mse < best_mse:
+                best_mse = mse
+                best_shift = (sx, sy)
+    best = best_mse if best_mse is not None else 0.0
+    zero = zero_mse if zero_mse is not None else best
+    improvement = max(0.0, zero - best)
+    return [
+        best_shift[0] / max_shift,
+        best_shift[1] / max_shift,
+        1.0 / (1.0 + best),
+        improvement,
+    ]
+
+
+def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> list[float]:
+    base = _summary_features(row)
+    if feature_mode == "summary":
+        return base
+    if feature_mode == "summary_grid4_shift":
+        return base + _frame_pair_features(row, grid_size=4, luma_size=16)
+    raise ValueError(f"unsupported IDM feature_mode: {feature_mode}")
 
 
 def target_mouse_delta(row: dict[str, Any]) -> tuple[float, float]:
