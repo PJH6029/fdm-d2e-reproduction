@@ -36,3 +36,9 @@ D2E-derived artifacts remain non-commercial unless separate rights are provided.
 | --- | --- | ---: |
 | `artifacts/ablation_scaling/g007_ablation_scaling_summary.json` | `d78f263fc9996b09f765c54a9b311048f28d776a30269d052f669228c71f854f` | 89249 |
 | `docs/ablation_scaling.md` | `13755da33b717b8561caeadc01fb8c15033795ae6e423b5897145b7b86124ae1` | 2615 |
+
+## G7 harness artifacts
+
+| Artifact | SHA-256 | Bytes |
+| --- | --- | ---: |
+| `artifacts/harness/g008_game_harness_eval.json` | `855a5e2476bb512f381d28ddba47829fc18a57bb677149278cc4f9e56c8418b8` | 10194 |

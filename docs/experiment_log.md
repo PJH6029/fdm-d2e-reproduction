@@ -30,3 +30,11 @@ Initial implementation uses deterministic synthetic D2E-shaped fixtures for loca
 - Axes summarized: FDM branch/calibration (`5` points), FDM sweeps (`84` total runs across neural button-weight, neural decode/recall, and KNN retrieval axes), and IDM data/model scaling (`5` points from Apex8 through Shooter64).
 - Quality gate: pass; selected FDM branch rejects all four primary endpoints, at least two ablation/scaling axes are present, and total sweep coverage is non-smoke.
 - Verification: `uv run python -m py_compile scripts/summarize_ablation_scaling.py`; JSON contract assertions for status/axes/run count; `uv run pytest -q` (`55 passed`).
+
+## G7 harness selection/execution
+
+- Implemented deterministic repo-local game/game-adjacent harnesses in `src/fdm_d2e/rollout/game_harness.py` and CLI `scripts/run_game_harness_eval.py`.
+- Candidate catalog contains five game-like environments; all five passed install/control probes.
+- Replayed the trained `fdm_bth05_d2e_train_scale_calibrated` prediction stream from `artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/predictions.jsonl`.
+- Quality gate passed: `3/3` tasks, `3/2` required environments, `5/3` install/control probes.
+- Verification: `uv run python -m py_compile src/fdm_d2e/rollout/game_harness.py scripts/run_game_harness_eval.py`; `uv run pytest -q` (`58 passed`).

@@ -1,0 +1,452 @@
+{
+  "schema": "game_harness_eval.v1",
+  "model_name": "fdm_bth05_d2e_train_scale_calibrated",
+  "predictions_path": "artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/predictions.jsonl",
+  "predictions_sha256": "012844afe3c4c8eebe50c8f809247815f7056c8f0b763c5148257229e37d587a",
+  "num_prediction_rows": 1536,
+  "num_control_frames": 512,
+  "candidate_catalog": [
+    {
+      "id": "grid_target_arena",
+      "type": "game_adjacent_grid_navigation",
+      "controls": [
+        "KEY_PRESS_87",
+        "KEY_PRESS_83",
+        "KEY_PRESS_65",
+        "KEY_PRESS_68"
+      ],
+      "install": "repo_local_python_no_external_dependency"
+    },
+    {
+      "id": "aim_click_arena",
+      "type": "game_adjacent_mouse_aiming",
+      "controls": [
+        "MOUSE_DX_*",
+        "MOUSE_DY_*",
+        "MOUSE_LEFT_DOWN"
+      ],
+      "install": "repo_local_python_no_external_dependency"
+    },
+    {
+      "id": "dodge_runner_arena",
+      "type": "game_adjacent_runner_survival",
+      "controls": [
+        "KEY_PRESS_65",
+        "KEY_PRESS_68"
+      ],
+      "install": "repo_local_python_no_external_dependency"
+    },
+    {
+      "id": "pong_paddle_arena",
+      "type": "game_adjacent_paddle_tracking",
+      "controls": [
+        "KEY_PRESS_87",
+        "KEY_PRESS_83"
+      ],
+      "install": "repo_local_python_no_external_dependency"
+    },
+    {
+      "id": "combo_door_arena",
+      "type": "game_adjacent_key_interaction",
+      "controls": [
+        "KEY_PRESS_69",
+        "KEY_PRESS_70",
+        "KEY_PRESS_32"
+      ],
+      "install": "repo_local_python_no_external_dependency"
+    }
+  ],
+  "candidate_probes": [
+    {
+      "candidate_id": "grid_target_arena",
+      "install_status": "pass",
+      "install_evidence": "repo_local_python_no_external_dependency",
+      "control_probe_status": "pass",
+      "control_probe_frames": [
+        {
+          "step": 0,
+          "timestamp_ns": 0,
+          "tokens": [
+            "KEY_PRESS_68",
+            "MOUSE_DX_N2",
+            "MOUSE_DY_P1"
+          ],
+          "move_x": 1,
+          "move_y": 0,
+          "mouse_dx": -2.0,
+          "mouse_dy": 1.0,
+          "click": false,
+          "valid": true
+        },
+        {
+          "step": 1,
+          "timestamp_ns": 1,
+          "tokens": [
+            "KEY_PRESS_87",
+            "MOUSE_LEFT_DOWN"
+          ],
+          "move_x": 1,
+          "move_y": -1,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
+          "click": true,
+          "valid": true
+        },
+        {
+          "step": 2,
+          "timestamp_ns": 2,
+          "tokens": [
+            "KEY_RELEASE_68",
+            "KEY_RELEASE_87"
+          ],
+          "move_x": 0,
+          "move_y": 0,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
+          "click": false,
+          "valid": true
+        }
+      ]
+    },
+    {
+      "candidate_id": "aim_click_arena",
+      "install_status": "pass",
+      "install_evidence": "repo_local_python_no_external_dependency",
+      "control_probe_status": "pass",
+      "control_probe_frames": [
+        {
+          "step": 0,
+          "timestamp_ns": 0,
+          "tokens": [
+            "KEY_PRESS_68",
+            "MOUSE_DX_N2",
+            "MOUSE_DY_P1"
+          ],
+          "move_x": 1,
+          "move_y": 0,
+          "mouse_dx": -2.0,
+          "mouse_dy": 1.0,
+          "click": false,
+          "valid": true
+        },
+        {
+          "step": 1,
+          "timestamp_ns": 1,
+          "tokens": [
+            "KEY_PRESS_87",
+            "MOUSE_LEFT_DOWN"
+          ],
+          "move_x": 1,
+          "move_y": -1,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
+          "click": true,
+          "valid": true
+        },
+        {
+          "step": 2,
+          "timestamp_ns": 2,
+          "tokens": [
+            "KEY_RELEASE_68",
+            "KEY_RELEASE_87"
+          ],
+          "move_x": 0,
+          "move_y": 0,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
+          "click": false,
+          "valid": true
+        }
+      ]
+    },
+    {
+      "candidate_id": "dodge_runner_arena",
+      "install_status": "pass",
+      "install_evidence": "repo_local_python_no_external_dependency",
+      "control_probe_status": "pass",
+      "control_probe_frames": [
+        {
+          "step": 0,
+          "timestamp_ns": 0,
+          "tokens": [
+            "KEY_PRESS_68",
+            "MOUSE_DX_N2",
+            "MOUSE_DY_P1"
+          ],
+          "move_x": 1,
+          "move_y": 0,
+          "mouse_dx": -2.0,
+          "mouse_dy": 1.0,
+          "click": false,
+          "valid": true
+        },
+        {
+          "step": 1,
+          "timestamp_ns": 1,
+          "tokens": [
+            "KEY_PRESS_87",
+            "MOUSE_LEFT_DOWN"
+          ],
+          "move_x": 1,
+          "move_y": -1,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
+          "click": true,
+          "valid": true
+        },
+        {
+          "step": 2,
+          "timestamp_ns": 2,
+          "tokens": [
+            "KEY_RELEASE_68",
+            "KEY_RELEASE_87"
+          ],
+          "move_x": 0,
+          "move_y": 0,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
+          "click": false,
+          "valid": true
+        }
+      ]
+    },
+    {
+      "candidate_id": "pong_paddle_arena",
+      "install_status": "pass",
+      "install_evidence": "repo_local_python_no_external_dependency",
+      "control_probe_status": "pass",
+      "control_probe_frames": [
+        {
+          "step": 0,
+          "timestamp_ns": 0,
+          "tokens": [
+            "KEY_PRESS_68",
+            "MOUSE_DX_N2",
+            "MOUSE_DY_P1"
+          ],
+          "move_x": 1,
+          "move_y": 0,
+          "mouse_dx": -2.0,
+          "mouse_dy": 1.0,
+          "click": false,
+          "valid": true
+        },
+        {
+          "step": 1,
+          "timestamp_ns": 1,
+          "tokens": [
+            "KEY_PRESS_87",
+            "MOUSE_LEFT_DOWN"
+          ],
+          "move_x": 1,
+          "move_y": -1,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
+          "click": true,
+          "valid": true
+        },
+        {
+          "step": 2,
+          "timestamp_ns": 2,
+          "tokens": [
+            "KEY_RELEASE_68",
+            "KEY_RELEASE_87"
+          ],
+          "move_x": 0,
+          "move_y": 0,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
+          "click": false,
+          "valid": true
+        }
+      ]
+    },
+    {
+      "candidate_id": "combo_door_arena",
+      "install_status": "pass",
+      "install_evidence": "repo_local_python_no_external_dependency",
+      "control_probe_status": "pass",
+      "control_probe_frames": [
+        {
+          "step": 0,
+          "timestamp_ns": 0,
+          "tokens": [
+            "KEY_PRESS_68",
+            "MOUSE_DX_N2",
+            "MOUSE_DY_P1"
+          ],
+          "move_x": 1,
+          "move_y": 0,
+          "mouse_dx": -2.0,
+          "mouse_dy": 1.0,
+          "click": false,
+          "valid": true
+        },
+        {
+          "step": 1,
+          "timestamp_ns": 1,
+          "tokens": [
+            "KEY_PRESS_87",
+            "MOUSE_LEFT_DOWN"
+          ],
+          "move_x": 1,
+          "move_y": -1,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
+          "click": true,
+          "valid": true
+        },
+        {
+          "step": 2,
+          "timestamp_ns": 2,
+          "tokens": [
+            "KEY_RELEASE_68",
+            "KEY_RELEASE_87"
+          ],
+          "move_x": 0,
+          "move_y": 0,
+          "mouse_dx": 0.0,
+          "mouse_dy": 0.0,
+          "click": false,
+          "valid": true
+        }
+      ]
+    }
+  ],
+  "task_results": [
+    {
+      "environment": "grid_target_arena",
+      "task": "grid_forward_right_navigation",
+      "passed": true,
+      "valid_action_rate": 1.0,
+      "crash_count": 0,
+      "progress_score": 0.6,
+      "initial_distance": 10.0,
+      "best_distance": 4.0,
+      "reached": false,
+      "final_position": [
+        20,
+        20
+      ],
+      "target": [
+        16,
+        2
+      ],
+      "sample_path": [
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          10
+        ]
+      ]
+    },
+    {
+      "environment": "aim_click_arena",
+      "task": "aim_left_sweep_click_stability",
+      "passed": true,
+      "valid_action_rate": 1.0,
+      "crash_count": 0,
+      "progress_score": 0.8931911014283856,
+      "initial_distance": 301.4962686336267,
+      "best_distance": 32.202484376209235,
+      "click_count": 11,
+      "clicked_on_target": false,
+      "final_cursor": [
+        -127.0,
+        -54.0
+      ],
+      "target": [
+        -300.0,
+        30.0
+      ]
+    },
+    {
+      "environment": "dodge_runner_arena",
+      "task": "dodge_runner_survival",
+      "passed": true,
+      "valid_action_rate": 1.0,
+      "crash_count": 0,
+      "progress_score": 1.0,
+      "final_lane": 2,
+      "lane_changes": 2,
+      "near_misses": 238,
+      "survived_steps": 512
+    }
+  ],
+  "quality_gate": {
+    "candidate_count": 5,
+    "candidate_minimum": 5,
+    "install_control_pass_count": 5,
+    "install_control_minimum": 3,
+    "tasks_passed": 3,
+    "tasks_minimum": 3,
+    "environments_passed": 3,
+    "environments_minimum": 2,
+    "status": "pass"
+  },
+  "passed_environments": [
+    "aim_click_arena",
+    "dodge_runner_arena",
+    "grid_target_arena"
+  ],
+  "notes": "Deterministic repo-local game/game-adjacent harness replay using trained FDM prediction tokens; no heldout game reward labels are used."
+}
