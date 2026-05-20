@@ -221,6 +221,27 @@ class TorchIDMContractTests(unittest.TestCase):
 
         self.assertEqual(tokens[:2], ["MOUSE_DX_Z0", "MOUSE_DY_N1"])
 
+    def test_prediction_axis_softmax_expected_decode_can_reduce_extreme_bins(self):
+        dx, dy, tokens = _prediction_from_output(
+            [0.0, 0.0, 5.0, 0.0, 5.0, 0.0, 5.0, 0.0],
+            base_dx=0.0,
+            base_dy=0.0,
+            residual_mouse=False,
+            category_vocab=[],
+            category_thresholds={},
+            category_threshold=0.5,
+            button_head_mode="multilabel",
+            mouse_head_mode="axis_softmax",
+            mouse_axis_classes=["N1", "Z0", "P2"],
+            mouse_axis_decode_mode="expected",
+        )
+
+        self.assertGreater(dx, 0.0)
+        self.assertLess(dx, 1.0)
+        self.assertLess(abs(dy), 0.01)
+        self.assertEqual(tokens[0], "MOUSE_DX_P1")
+        self.assertTrue(tokens[1].startswith("MOUSE_DY_"))
+
     def test_action_history_features_are_causal_and_seedable(self):
         vocab = ["KEY_PRESS_87", "MOUSE_LEFT_DOWN", "MOUSE_LEFT_UP"]
         records = [
