@@ -1,0 +1,314 @@
+{
+  "schema": "baseline_stat_eval_sample.v1",
+  "train_records": "outputs/data/real_multi_apex16/train.jsonl",
+  "ground_truth": "outputs/data/real_multi_apex16/heldout.jsonl",
+  "endpoints_config": "configs/eval/primary_endpoints.yaml",
+  "prediction_paths": {
+    "noop": "outputs/eval/baselines_multi_apex16_h200_richmotion16/noop.jsonl",
+    "global_majority": "outputs/eval/baselines_multi_apex16_h200_richmotion16/global_majority.jsonl",
+    "game_majority": "outputs/eval/baselines_multi_apex16_h200_richmotion16/game_majority.jsonl",
+    "last_seen_train": "outputs/eval/baselines_multi_apex16_h200_richmotion16/last_seen_train.jsonl"
+  },
+  "metrics": {
+    "noop": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 256,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 106
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 10
+      },
+      "mouse_move": {
+        "status": "absent",
+        "pearson": null,
+        "scale_ratio": null,
+        "num_values": 0
+      },
+      "failure_count": 252
+    },
+    "global_majority": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 256,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 106
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 10
+      },
+      "mouse_move": {
+        "status": "absent",
+        "pearson": null,
+        "scale_ratio": null,
+        "num_values": 0
+      },
+      "failure_count": 252
+    },
+    "game_majority": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 256,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 106
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 10
+      },
+      "mouse_move": {
+        "status": "absent",
+        "pearson": null,
+        "scale_ratio": null,
+        "num_values": 0
+      },
+      "failure_count": 252
+    },
+    "last_seen_train": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 256,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.2641509433962264,
+        "num_examples": 106
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.0,
+        "num_examples": 10
+      },
+      "mouse_move": {
+        "status": "computed",
+        "pearson": 0.029468494726640607,
+        "scale_ratio": 1.2759259810794594,
+        "num_values": 466
+      },
+      "failure_count": 255
+    }
+  },
+  "statistical_comparison": {
+    "schema": "stat_comparison.v1",
+    "reference_baseline": "noop",
+    "correction": "holm_bonferroni",
+    "cluster_key": "recording_id",
+    "comparisons": [
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 14,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 14,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.14804639804639805,
+        "ci": [
+          0.043650793650793655,
+          0.2655677655677656
+        ],
+        "p_value": 0.002,
+        "num_clusters": 14,
+        "p_adjusted_holm": 0.012,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 4,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 4,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 4,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      }
+    ]
+  }
+}

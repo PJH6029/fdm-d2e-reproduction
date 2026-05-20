@@ -1,0 +1,368 @@
+{
+  "schema": "g4_h200_idm_run_evidence.v1",
+  "suffix": "h200_richmotion16",
+  "host": "prod-rsv-jeonghunpark-20260520-b16310",
+  "gpu": [
+    "NVIDIA H200, 143771 MiB, 580.126.16"
+  ],
+  "torch_device": "cuda",
+  "torch_metrics": {
+    "schema": "metrics.v1",
+    "stage": "fdm_eval",
+    "num_examples": 256,
+    "keyboard": {
+      "status": "computed",
+      "accuracy": 0.18867924528301888,
+      "num_examples": 106
+    },
+    "mouse_button": {
+      "status": "computed",
+      "accuracy": 0.1,
+      "num_examples": 10
+    },
+    "mouse_move": {
+      "status": "computed",
+      "pearson": 0.1279008442349116,
+      "scale_ratio": 1.0473179826988186,
+      "num_values": 494
+    },
+    "failure_count": 256
+  },
+  "torch_metadata": {
+    "schema": "idm_checkpoint_metadata.v1",
+    "model": "torch_mlp_idm_apex16",
+    "dataset_fingerprint": "718c33e46ffbe3fe06ceb09278d3dea0e3984102356a7bf63b32f77e81771f85",
+    "train_records": 768,
+    "target_records": 256,
+    "pseudo_label_path": "outputs/idm_torch_apex16/pseudolabels.jsonl",
+    "filtered_pseudo_label_path": "outputs/idm_torch_apex16/pseudolabels.filtered.jsonl",
+    "checkpoint_path": "outputs/idm_torch_apex16/checkpoint.pt",
+    "metrics_path": "outputs/idm_torch_apex16/metrics.json",
+    "calibration": {
+      "confidence_threshold": 0.15,
+      "kept": 132,
+      "total": 256,
+      "last_train_loss": 2.2888625462849936
+    },
+    "categorical_vocab": [
+      "KEY_PRESS_160",
+      "KEY_PRESS_162",
+      "KEY_PRESS_32",
+      "KEY_PRESS_49",
+      "KEY_PRESS_50",
+      "KEY_PRESS_51",
+      "KEY_PRESS_65",
+      "KEY_PRESS_68",
+      "KEY_PRESS_70",
+      "KEY_PRESS_83",
+      "KEY_PRESS_87",
+      "KEY_PRESS_9",
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_162",
+      "KEY_RELEASE_32",
+      "KEY_RELEASE_49",
+      "KEY_RELEASE_50",
+      "KEY_RELEASE_51",
+      "KEY_RELEASE_65",
+      "KEY_RELEASE_68",
+      "KEY_RELEASE_70",
+      "KEY_RELEASE_83",
+      "KEY_RELEASE_87",
+      "KEY_RELEASE_9",
+      "MOUSE_LEFT_DOWN",
+      "MOUSE_LEFT_UP",
+      "MOUSE_RIGHT_DOWN",
+      "MOUSE_RIGHT_UP"
+    ],
+    "feature_mode": "summary_grid4_shift",
+    "input_dim": 164,
+    "category_threshold": 0.45,
+    "categorical_pos_weight_cap": 20.0
+  },
+  "statistical_comparison": {
+    "schema": "stat_comparison.v1",
+    "reference_baseline": "noop",
+    "correction": "holm_bonferroni",
+    "cluster_key": "recording_id",
+    "comparisons": [
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 14,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 14,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.14804639804639805,
+        "ci": [
+          0.043650793650793655,
+          0.2655677655677656
+        ],
+        "p_value": 0.002,
+        "num_clusters": 14,
+        "p_adjusted_holm": 0.018000000000000002,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "torch_mlp_idm_apex16",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.1007936507936508,
+        "ci": [
+          0.021428571428571432,
+          0.2007936507936508
+        ],
+        "p_value": 0.0005,
+        "num_clusters": 14,
+        "p_adjusted_holm": 0.005,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 4,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 4,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 4,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "torch_mlp_idm_apex16",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.125,
+        "ci": [
+          0.0,
+          0.375
+        ],
+        "p_value": 0.318,
+        "num_clusters": 4,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "torch_mlp_idm_apex16",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": -0.016095232545270247,
+        "ci": [
+          -0.3260910887583359,
+          0.275081719073615
+        ],
+        "p_value": 1.0,
+        "num_clusters": 15,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "torch_mlp_idm_apex16",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": 0.361180373486071,
+        "ci": [
+          -0.059010070941847625,
+          0.8359805237310454
+        ],
+        "p_value": 0.0515,
+        "num_clusters": 15,
+        "p_adjusted_holm": 0.412,
+        "reject_holm_0_05": false
+      }
+    ]
+  },
+  "artifacts": {
+    "gpu_smoke": "outputs/cluster/h200_richmotion16_gpu_smoke_1.json",
+    "decode_summary": "artifacts/sources/d2e_multi_decode_apex16_h200_richmotion16_summary.json",
+    "baseline_summary": "artifacts/eval/baseline_stat_eval_multi_apex16_h200_richmotion16.json",
+    "torch_summary": "artifacts/idm/idm_torch_apex16_summary.json"
+  }
+}
