@@ -1578,7 +1578,9 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     history_vocab = [str(value) for value in checkpoint.get("history_vocab", [])]
     button_head_mode = str(checkpoint.get("button_head_mode", "multilabel"))
     button_classes = [tuple(str(token) for token in row) for row in checkpoint.get("button_classes", [])]
-    button_softmax_threshold = float(checkpoint.get("button_softmax_threshold", 0.5))
+    button_softmax_threshold = float(
+        config.get("button_softmax_threshold_override", checkpoint.get("button_softmax_threshold", 0.5))
+    )
     mouse_head_mode = str(checkpoint.get("mouse_head_mode", "regression"))
     mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", MOUSE_AXIS_CLASSES)]
     mouse_axis_decode_mode = str(checkpoint.get("mouse_axis_decode_mode", model_config.get("mouse_axis_decode_mode", "argmax")))
@@ -1718,6 +1720,7 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "checkpoint_path": str(checkpoint_path),
         "target_records": str(config["target_records"]),
         "seed_records": str(config.get("seed_records", "")),
+        "button_softmax_threshold": button_softmax_threshold,
         "num_records": len(records),
         "pseudolabels_path": str(pseudo_path),
         "predictions_path": str(predictions_path),
