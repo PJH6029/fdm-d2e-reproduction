@@ -1,0 +1,325 @@
+{
+  "schema": "idm_prediction_portfolio_summary.v1",
+  "model_name": "idm_shooter32_softmax_click_residual_motion_portfolio",
+  "source_paths": {
+    "keyboard": "outputs/idm_torch_sweeps/idm_torch_shooter32_seq_button_softmax/lw1_pc20_th0.35_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1/predictions.jsonl",
+    "mouse_move": "outputs/idm_torch_sweeps/idm_torch_shooter32_seq_button_softmax_residual/lw1_pc20_th0.35_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw1_bcw12_bnw1.5_bpw2/predictions.jsonl",
+    "mouse_button": "outputs/idm_torch_sweeps/idm_torch_shooter32_seq_button_softmax/lw1_pc20_th0.35_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1/predictions.jsonl"
+  },
+  "source_fingerprint": "aa93cef509335d79282cee565b4d7a710ab5dd349a0e25cdef39707a87ad0e87",
+  "target_records": 768,
+  "predictions_path": "outputs/idm_portfolio/shooter32_softmax_click_residual_motion/predictions.jsonl",
+  "metrics_path": "outputs/idm_portfolio/shooter32_softmax_click_residual_motion/metrics.json",
+  "metrics": {
+    "schema": "metrics.v1",
+    "stage": "fdm_eval",
+    "num_examples": 768,
+    "keyboard": {
+      "status": "computed",
+      "accuracy": 0.10963455149501661,
+      "num_examples": 301
+    },
+    "mouse_button": {
+      "status": "computed",
+      "accuracy": 0.125,
+      "num_examples": 40,
+      "predicted_examples": 22,
+      "exact_true_positive_examples": 5,
+      "false_positive_examples": 17,
+      "false_negative_examples": 35,
+      "precision": 0.22727272727272727,
+      "recall": 0.125,
+      "f1": 0.16129032258064516,
+      "no_button_examples": 728,
+      "no_button_false_positive_examples": 14,
+      "no_button_false_positive_rate": 0.019230769230769232
+    },
+    "mouse_move": {
+      "status": "computed",
+      "pearson": 0.24319224465952247,
+      "scale_ratio": 1.2572950266691278,
+      "num_values": 1408
+    },
+    "failure_count": 768
+  },
+  "statistical_comparison": {
+    "schema": "stat_comparison.v1",
+    "reference_baseline": "noop",
+    "correction": "holm_bonferroni",
+    "cluster_key": "recording_id",
+    "comparisons": [
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 28,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 28,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.1258715986394558,
+        "ci": [
+          0.05846088435374149,
+          0.19976615646258503
+        ],
+        "p_value": 0.0,
+        "num_clusters": 28,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "idm_shooter32_softmax_click_residual_motion_portfolio",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.078542439703154,
+        "ci": [
+          0.02976190476190476,
+          0.1334647495361781
+        ],
+        "p_value": 0.0,
+        "num_clusters": 28,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 9,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 9,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.05555555555555555,
+        "ci": [
+          0.0,
+          0.16666666666666666
+        ],
+        "p_value": 0.3465,
+        "num_clusters": 9,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "idm_shooter32_softmax_click_residual_motion_portfolio",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.20484330484330485,
+        "ci": [
+          0.017094017094017096,
+          0.4555555555555555
+        ],
+        "p_value": 0.0045,
+        "num_clusters": 9,
+        "p_adjusted_holm": 0.040499999999999994,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 1.6653345369377348e-16,
+        "ci": [
+          1.6653345369377348e-16,
+          1.6653345369377348e-16
+        ],
+        "p_value": 0.0,
+        "num_clusters": 1,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "idm_shooter32_softmax_click_residual_motion_portfolio",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.06856468827514856,
+        "ci": [
+          -0.05278647766060887,
+          0.18386338079922643
+        ],
+        "p_value": 0.134,
+        "num_clusters": 24,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "game_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": -1.3054681870324987,
+        "ci": [
+          -1.3054681870324987,
+          -1.3054681870324987
+        ],
+        "p_value": 1.0,
+        "num_clusters": 1,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "idm_shooter32_softmax_click_residual_motion_portfolio",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": -0.07987014448920837,
+        "ci": [
+          -0.4093281690250695,
+          0.23136263188189432
+        ],
+        "p_value": 1.0,
+        "num_clusters": 25,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      }
+    ]
+  }
+}
