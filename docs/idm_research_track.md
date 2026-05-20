@@ -56,6 +56,7 @@ strongest useful artifacts are:
 | Shooter32 softmax-click + residual-motion portfolio diagnostic | `artifacts/idm/idm_shooter32_softmax_click_residual_motion_portfolio_h200.json` | One composed heldout artifact from predeclared group sources: keyboard/click tokens from the best softmax click-head row and mouse movement from the best residual Pearson row | Keyboard accuracy `0.1096`; mouse-button accuracy `0.125`, precision `0.2273`, no-button false-positive rate `0.0192`; mouse Pearson `0.2432`, scale ratio `1.2573`; Holm rejects only `keyboard_accuracy` and `mouse_button_accuracy` | The composer proves specialist token streams can be evaluated as a single reproducible artifact with source fingerprints. The selected residual motion source still fails motion significance, so the portfolio diagnostic remains non-terminal G005 evidence. |
 | Shooter32 motion-only residual sweep | `artifacts/idm/idm_torch_shooter32_motion_only_residual_sweep_h200.json` | Same residual/autoregressive setup with categorical and button losses set to zero; width/depth motion-specialist grid | 9 H200 variants; no motion endpoint rejects. Best Pearson row reaches `0.1790` with scale ratio `1.1224`, below the residual+softmax raw Pearson (`0.2432`) and non-significant | Removing categorical/button loss does not improve Shooter32 motion; shared supervision was not the main motion bottleneck. |
 | Shooter32 axis-softmax motion sweep | `artifacts/idm/idm_torch_shooter32_axis_softmax_motion_sweep_h200.json` | Residual/autoregressive model with direct DX/DY bin-classification head aligned to the binned motion metric | 32 H200 variants; no motion endpoint rejects. Best Pearson row reaches `0.2102` with raw p `0.060` / Holm p `0.54`; two variants still reject keyboard + mouse-button, best button precision `0.2308` with no-button FPR `0.0261` | Directly classifying binned motion tokens is useful target-modeling evidence but does not outperform the residual+softmax raw Pearson peak and still fails the motion gate. |
+| Shooter32 shift-surface motion sweep | `artifacts/idm/idm_torch_shooter32_surface_motion_sweep_h200.json` | Same residual + axis-softmax setup with expanded grid8 visual shift-surface features | 32 H200 variants; no motion endpoint rejects. Best ranked row reaches mouse Pearson `0.2447`, raw p `0.059` / Holm p `0.472`; best Pearson row reaches `0.2738` but raw p `0.113` / Holm p `0.904`; best click-accuracy row reaches `0.175` accuracy and precision `0.2258`, but Holm p `0.2115` | The richer hand-built shift-cost surface recovers raw mouse/click signal comparable to earlier peaks but still does not clear strong correction gates. Representation needs a learned temporal/visual encoder or a larger data regime, not another small summary-feature variant. |
 
 Current conclusion: G4 has meaningful non-smoke IDM progress across real D2E
 splits, including H200 checkpoint metadata and pseudo-label artifacts, but it
@@ -81,10 +82,14 @@ motion-only residual loss sweep also failed, suggesting the next motion attempt
 needs better temporal/visual representation or more targeted target modeling,
 not merely reweighting away categorical losses. The axis-softmax motion sweep
 tested direct binned-target classification and improved some raw p-values but
-still failed Holm correction, so the next motion iteration should add a stronger
-visual/temporal representation rather than another head-only change. In every
-case, the evaluation must use one predeclared heldout prediction artifact
-without untrained categorical logits or post-hoc heldout thresholding.
+still failed Holm correction. The follow-up shift-surface sweep adds denser
+hand-built visual alignment features and reaches raw mouse/click peaks similar
+to previous best rows, but it also fails the predeclared correction gates. The
+next motion iteration should therefore move beyond summary-feature MLPs toward a
+learned temporal/visual encoder or a larger data regime before recomposing a
+completion portfolio. In every case, the evaluation must use one predeclared
+heldout prediction artifact without untrained categorical logits or post-hoc
+heldout thresholding.
 
 ## Completion caveat
 
