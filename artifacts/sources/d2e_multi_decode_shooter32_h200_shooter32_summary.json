@@ -1,0 +1,936 @@
+{
+  "schema": "d2e_multi_decode_summary.v1",
+  "dataset_name": "real_multi_shooter32",
+  "output_dir": "outputs/data/real_multi_shooter32",
+  "num_recordings": 32,
+  "num_records": 3072,
+  "splits": {
+    "train": 2304,
+    "heldout": 768
+  },
+  "heldout_recording_clusters": [
+    "0805_01",
+    "battlefield6beta_20250817",
+    "battlefield6beta_20250817_1329_2",
+    "battlefield6beta_20250817_1350_3",
+    "battlefield6beta_20250817_1412_4",
+    "recording_20250729_222558_Grand_Theft_Auto_V_85b838f8",
+    "recording_20250802_222007_Grand_Theft_Auto_V_81dcb5bd",
+    "recording_20250813_221454_Counter-Strike_2_943307d7",
+    "recording_20250813_221652_Counter-Strike_2_ec09fbed",
+    "recording_20250813_223608_Counter-Strike_2_19d72d58",
+    "recording_20250815_172156_Counter-Strike_2_3258b569",
+    "recording_20250815_182710_Rainbow_Six_77fa960c",
+    "recording_20250815_183156_Rainbow_Six_f44f8aff",
+    "recording_20250815_184821_Rainbow_Six_243a3c5a",
+    "recording_20250815_184841_Rainbow_Six_795c66c6",
+    "recording_20250815_204905_Rainbow_Six_7b788016",
+    "recording_20250816_001536_Counter-Strike_2_45cf102e",
+    "recording_20250816_160341_PUBG_360a5aec",
+    "recording_20250816_235408_Counter-Strike_2_a5935293",
+    "recording_20250830_220949__771f8096",
+    "recording_20250830_221020__eae4e8fd",
+    "recording_20250830_232028__b54fc5ef_split_00",
+    "recording_20250830_232028__b54fc5ef_split_01",
+    "recording_20250830_232253__568efca9",
+    "recording_20250831_001630__f9f277f6_split_00",
+    "recording_20250831_001630__f9f277f6_split_01",
+    "recording_20250831_001947__f74a9b24",
+    "recording_20250831_195148__4d954395",
+    "recording_20250914_041835__19737c6d",
+    "recording_20250914_053544__2a35a2fc",
+    "recording_20250915_005118__975868f9_split_00",
+    "recording_20250915_005118__975868f9_split_01"
+  ],
+  "games": [
+    "Apex_Legends",
+    "Battlefield_6_Open_Beta",
+    "Counter-Strike_2",
+    "Grand_Theft_Auto_V",
+    "PUBG",
+    "Rainbow_Six",
+    "Ready_Or_Not"
+  ],
+  "recordings": [
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Ready_Or_Not/recording_20250830_220949__771f8096",
+      "mcap_path": "/tmp/fdm-d2e-multi/Ready_Or_Not/recording_20250830_220949__771f8096.mcap",
+      "mcap_sha256": "ddc3bd3b109e704d5dcc82e2eff2ccdddbbde1c3df2e295288816bc3f770dd6a",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Ready_Or_Not/recording_20250830_220949__771f8096.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Ready_Or_Not/recording_20250830_220949__771f8096",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 56124488900,
+      "video_start_seconds": 56.1244889,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "f338eb1ff619e8a44d88c91f3d5487f656d03839759ee11c9571813cbb4d65b8",
+      "dataset_fingerprint": "f6375d396e37ae7d642da174531873a8be20ec0b9289958ba0ae9f2513378b49"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Ready_Or_Not/recording_20250830_221020__eae4e8fd",
+      "mcap_path": "/tmp/fdm-d2e-multi/Ready_Or_Not/recording_20250830_221020__eae4e8fd.mcap",
+      "mcap_sha256": "4ae3358423ed604d0eaf0aa9b8cd9bdd18217c14b07d8dd046dec8b2f1c5841f",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Ready_Or_Not/recording_20250830_221020__eae4e8fd.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Ready_Or_Not/recording_20250830_221020__eae4e8fd",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 267119089400,
+      "video_start_seconds": 267.1190894,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "92a7ff9c16f3418a1ca68706359757ec5abccf305b6ec9950c6220e2a56ce371",
+      "dataset_fingerprint": "bcb443c51bd21c3d8caa619e5aeed8927fec0ddadb7004f6368c5b5d8d88e385"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Ready_Or_Not/recording_20250830_232028__b54fc5ef_split_00",
+      "mcap_path": "/tmp/fdm-d2e-multi/Ready_Or_Not/recording_20250830_232028__b54fc5ef_split_00.mcap",
+      "mcap_sha256": "9084a5d67cfc0088317dadf6419fd5e15e0683ebb26ad409b39974cb6b22a026",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Ready_Or_Not/recording_20250830_232028__b54fc5ef_split_00.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Ready_Or_Not/recording_20250830_232028__b54fc5ef_split_00",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 227286112000,
+      "video_start_seconds": 227.286112,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "b0edc3037463b4cf3b454fea8e98a7ef5d5fd79faa559c729cfe30a969c90d37",
+      "dataset_fingerprint": "0cf43a819a82f4d3f6ad49f4b4cecaa9bae0e21f2e3c386209b098c09ca53d2a"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Ready_Or_Not/recording_20250830_232028__b54fc5ef_split_01",
+      "mcap_path": "/tmp/fdm-d2e-multi/Ready_Or_Not/recording_20250830_232028__b54fc5ef_split_01.mcap",
+      "mcap_sha256": "08dee750354438d7a32c99d0d2493873e39e11990036b490ae38a167d86391a8",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Ready_Or_Not/recording_20250830_232028__b54fc5ef_split_01.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Ready_Or_Not/recording_20250830_232028__b54fc5ef_split_01",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 279426387500,
+      "video_start_seconds": 279.4263875,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "02531abac600feec060bfd30ad76ba99456ac2222f850b9bf29e0533a22ce867",
+      "dataset_fingerprint": "e520538161a9b9d33d9079307188beff9879973996a6e33deda5fafc1a9f4dac"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Ready_Or_Not/recording_20250830_232253__568efca9",
+      "mcap_path": "/tmp/fdm-d2e-multi/Ready_Or_Not/recording_20250830_232253__568efca9.mcap",
+      "mcap_sha256": "50136cbb7575e76f5f95d1d8ad167bd14f97505c5416f92e925aaa84f60c3ccd",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Ready_Or_Not/recording_20250830_232253__568efca9.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Ready_Or_Not/recording_20250830_232253__568efca9",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 32727280300,
+      "video_start_seconds": 32.7272803,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "b6f51b8149fd41d76d2b26ed4c3e206249a14a0d898862dc2e8ca5f917c2045e",
+      "dataset_fingerprint": "862ce953b19c99a37a9d1e6a5a7667b23f7e58e2ee631cf38761193050fc6915"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Ready_Or_Not/recording_20250831_001630__f9f277f6_split_00",
+      "mcap_path": "/tmp/fdm-d2e-multi/Ready_Or_Not/recording_20250831_001630__f9f277f6_split_00.mcap",
+      "mcap_sha256": "3e26b3afc03e174523a20c52a1afc7717a39b5b7b3c289a7f4225485656415bd",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Ready_Or_Not/recording_20250831_001630__f9f277f6_split_00.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Ready_Or_Not/recording_20250831_001630__f9f277f6_split_00",
+      "num_decoded_events": 11003,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 15695462000,
+      "video_start_seconds": 15.695462,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "a9e319e16974c5af3e3124983b82fa84767e2321d8ed839592fd61ab06ab8162",
+      "dataset_fingerprint": "a3554a11c0d6c0a5bc66fa9f193f6e8396a8f93f8dd5de137b7dcac4436b662d"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Ready_Or_Not/recording_20250831_001630__f9f277f6_split_01",
+      "mcap_path": "/tmp/fdm-d2e-multi/Ready_Or_Not/recording_20250831_001630__f9f277f6_split_01.mcap",
+      "mcap_sha256": "04e26e48ea0abcd50fcba0de2c025eed1be3d4d0a18f1f21cd0edff32dd61472",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Ready_Or_Not/recording_20250831_001630__f9f277f6_split_01.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Ready_Or_Not/recording_20250831_001630__f9f277f6_split_01",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 267791022900,
+      "video_start_seconds": 267.7910229,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "5597d421ffc8d9c678eafefabc094b4b9dacd7e9f122523653919e5d00e1dd44",
+      "dataset_fingerprint": "c8681131135af08e2a7c6e1143100131484a22defb4f8b02c8fc45f505767eca"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Ready_Or_Not/recording_20250831_001947__f74a9b24",
+      "mcap_path": "/tmp/fdm-d2e-multi/Ready_Or_Not/recording_20250831_001947__f74a9b24.mcap",
+      "mcap_sha256": "f3206b20e12f5033adc0d605e806aa3844ceb7fd94f323f31d28163169f6f159",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Ready_Or_Not/recording_20250831_001947__f74a9b24.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Ready_Or_Not/recording_20250831_001947__f74a9b24",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 67377376700,
+      "video_start_seconds": 67.3773767,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "6704e0be869fa3728c07b82b5a89f1f4f6e635b9bca885bd5ce37000994ce379",
+      "dataset_fingerprint": "768901a874afd5455d4c2c5bf04ae15914061bc6f4d25d02e5a69ca3efe98f5c"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Counter-Strike_2/recording_20250813_221454_Counter-Strike_2_943307d7",
+      "mcap_path": "/tmp/fdm-d2e-multi/Counter-Strike_2/recording_20250813_221454_Counter-Strike_2_943307d7.mcap",
+      "mcap_sha256": "ac9eb55291c2e92635c0240cb7305e5f6558a8c9fba42eff9da5f82e28edb4ea",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Counter-Strike_2/recording_20250813_221454_Counter-Strike_2_943307d7.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Counter-Strike_2/recording_20250813_221454_Counter-Strike_2_943307d7",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 198390268900,
+      "video_start_seconds": 198.3902689,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "e645206a061daff861b2badf4ff3d04e05eaa21cb4fc793002eb58f0d6f9fdc6",
+      "dataset_fingerprint": "9bb20a544108d81dc0a0070152b2425540f5b28ea2421a513d9379c646f14f09"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Counter-Strike_2/recording_20250813_221652_Counter-Strike_2_ec09fbed",
+      "mcap_path": "/tmp/fdm-d2e-multi/Counter-Strike_2/recording_20250813_221652_Counter-Strike_2_ec09fbed.mcap",
+      "mcap_sha256": "3f0b26b02101041c66405662b83d1d85273d7ad1ece38f7d63f50436e14639ab",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Counter-Strike_2/recording_20250813_221652_Counter-Strike_2_ec09fbed.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Counter-Strike_2/recording_20250813_221652_Counter-Strike_2_ec09fbed",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 607694664000,
+      "video_start_seconds": 607.694664,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "64445ad0327cc1de61d81cdf1ec79baec06f80410f79e1b4fb15bb3a02a6b1fd",
+      "dataset_fingerprint": "bb14a2b86be5e4c8b1e229339d8b4ca048a5f69ed97f935a9b0c2735bc826c6f"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Counter-Strike_2/recording_20250813_223608_Counter-Strike_2_19d72d58",
+      "mcap_path": "/tmp/fdm-d2e-multi/Counter-Strike_2/recording_20250813_223608_Counter-Strike_2_19d72d58.mcap",
+      "mcap_sha256": "8535e1c1a6fd0fea060e9a831a84e76c58bf58bd4516e82444cb5becc6962137",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Counter-Strike_2/recording_20250813_223608_Counter-Strike_2_19d72d58.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Counter-Strike_2/recording_20250813_223608_Counter-Strike_2_19d72d58",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 57796661100,
+      "video_start_seconds": 57.7966611,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "931a09b70d8ca014eedbb1e06e795064b8fe181c4f99ae02b2a07665f4656deb",
+      "dataset_fingerprint": "c31edb63cd771a377964fee55dc0da98568b9bb24d9b10da0c348cd4ca97dc28"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Counter-Strike_2/recording_20250815_172156_Counter-Strike_2_3258b569",
+      "mcap_path": "/tmp/fdm-d2e-multi/Counter-Strike_2/recording_20250815_172156_Counter-Strike_2_3258b569.mcap",
+      "mcap_sha256": "7d53626c3c6bef7d1646ccc977121df75a8a562d8f9e6eea36d89f9f9c9c8b41",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Counter-Strike_2/recording_20250815_172156_Counter-Strike_2_3258b569.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Counter-Strike_2/recording_20250815_172156_Counter-Strike_2_3258b569",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 226574495000,
+      "video_start_seconds": 226.574495,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "dee16a59c98177803a27fa2f094d06b68ffd1f5983926d878c21b202ae73a870",
+      "dataset_fingerprint": "a71d7917158db4439fa7434f1a792cb2c97bb44869fc4c62f15bff86572bd70a"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Counter-Strike_2/recording_20250816_001536_Counter-Strike_2_45cf102e",
+      "mcap_path": "/tmp/fdm-d2e-multi/Counter-Strike_2/recording_20250816_001536_Counter-Strike_2_45cf102e.mcap",
+      "mcap_sha256": "bbffdea9b0abfa7f15c7a75fde81b0d19ee6c20ade2cd8cd97257206bd5587b5",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Counter-Strike_2/recording_20250816_001536_Counter-Strike_2_45cf102e.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Counter-Strike_2/recording_20250816_001536_Counter-Strike_2_45cf102e",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 343838303400,
+      "video_start_seconds": 343.8383034,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "518a442e9c6dc426564d9d03c382f2dffbec0a9c7de3fb3f0c0003b894c7ce9f",
+      "dataset_fingerprint": "6f7fe81d5a5a59f46609151fefd132b9ed3c35aede65f9c544400da54184ddd7"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Counter-Strike_2/recording_20250816_235408_Counter-Strike_2_a5935293",
+      "mcap_path": "/tmp/fdm-d2e-multi/Counter-Strike_2/recording_20250816_235408_Counter-Strike_2_a5935293.mcap",
+      "mcap_sha256": "e9db4bd1ef28fdaf9adf391f191ae7dd7360abc667d95be869f1608bf33924d9",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Counter-Strike_2/recording_20250816_235408_Counter-Strike_2_a5935293.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Counter-Strike_2/recording_20250816_235408_Counter-Strike_2_a5935293",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 296633551500,
+      "video_start_seconds": 296.6335515,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "70ddb3987c49f040885a7a65d4545d34bd35c4dd547f7caa810740a6866b0912",
+      "dataset_fingerprint": "71ea69a62488363ae57335e3da3e54007d9bbe1a3a84f4fddd1114f265086bad"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "PUBG/recording_20250816_160341_PUBG_360a5aec",
+      "mcap_path": "/tmp/fdm-d2e-multi/PUBG/recording_20250816_160341_PUBG_360a5aec.mcap",
+      "mcap_sha256": "1656392a0b92b8cb7448e331d32c9920cf3855dad9cb881bf7e4d994900f5d49",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/PUBG/recording_20250816_160341_PUBG_360a5aec.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/PUBG/recording_20250816_160341_PUBG_360a5aec",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 82493163700,
+      "video_start_seconds": 82.4931637,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "05eacd8e040b060f64bd94668d30a5363fd2cf177722033b374777d476b8fdc7",
+      "dataset_fingerprint": "97b49a1d04d27669ca5d8a8df6c6cfd7874d975b90b33c9cb80604186d54c489"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "PUBG/recording_20250831_195148__4d954395",
+      "mcap_path": "/tmp/fdm-d2e-multi/PUBG/recording_20250831_195148__4d954395.mcap",
+      "mcap_sha256": "41ce536b7db4001781d9f5ab4383ea0a249f0f9193fc9a99e6c08f46351231a0",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/PUBG/recording_20250831_195148__4d954395.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/PUBG/recording_20250831_195148__4d954395",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 122978343600,
+      "video_start_seconds": 122.9783436,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "d9d5ff1190caa919f636e4dbe1826ef61f16d8e71c1a1a01eb71efb71ad95e62",
+      "dataset_fingerprint": "bf7b2a1a83c2094c04782a69f1c02d88679e084dff1227bce49eb9ee1adf8e40"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "PUBG/recording_20250914_041835__19737c6d",
+      "mcap_path": "/tmp/fdm-d2e-multi/PUBG/recording_20250914_041835__19737c6d.mcap",
+      "mcap_sha256": "03ca3bcab9fa91e4ae9d142fafde4e71e0f4e8404ee7971df294a36c05bed1d2",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/PUBG/recording_20250914_041835__19737c6d.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/PUBG/recording_20250914_041835__19737c6d",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 203268318300,
+      "video_start_seconds": 203.2683183,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "e2e93dd06db1fd8c7d3040ba80ef87a5fed21b990f36aa9ca61913a12807ac22",
+      "dataset_fingerprint": "ccff5915fcae2bd7d46199a2fb0e008568ce3219e39085dcf26ed70a1a7720d2"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "PUBG/recording_20250914_053544__2a35a2fc",
+      "mcap_path": "/tmp/fdm-d2e-multi/PUBG/recording_20250914_053544__2a35a2fc.mcap",
+      "mcap_sha256": "9a18bd0288538e1e7ce48e26ef1b3df41cf73262cef222e56ffbaec514feec80",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/PUBG/recording_20250914_053544__2a35a2fc.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/PUBG/recording_20250914_053544__2a35a2fc",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 167619886300,
+      "video_start_seconds": 167.6198863,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "b9622871d403e9abf2367c9c0175e0e8dcaa1d56b799fa30b0e1b8359f6199a7",
+      "dataset_fingerprint": "92b59865ac76090e5c2884dd4418788ae5b20ecd282d4236d9f8830fc3a229a7"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "PUBG/recording_20250915_005118__975868f9_split_00",
+      "mcap_path": "/tmp/fdm-d2e-multi/PUBG/recording_20250915_005118__975868f9_split_00.mcap",
+      "mcap_sha256": "3adebf2663becef13ba46546d3ca88c62a8a9319a06f4bc4a8d0373b95ab6da6",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/PUBG/recording_20250915_005118__975868f9_split_00.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/PUBG/recording_20250915_005118__975868f9_split_00",
+      "num_decoded_events": 35270,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 91587171700,
+      "video_start_seconds": 91.5871717,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "1bfd34d3ee89ac918f517423295f07a944df58dbff445cadae3855ffa1ea23b1",
+      "dataset_fingerprint": "5a5df7b9ba0c1a9925fa9e1f4dc64cbf41186abbf53fe72d9dc7c2ac86b597bb"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "PUBG/recording_20250915_005118__975868f9_split_01",
+      "mcap_path": "/tmp/fdm-d2e-multi/PUBG/recording_20250915_005118__975868f9_split_01.mcap",
+      "mcap_sha256": "0b4a4d343e3d2ae3bcc78eac085aa5af5165eba7a63da920c66226ce65b6e81f",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/PUBG/recording_20250915_005118__975868f9_split_01.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/PUBG/recording_20250915_005118__975868f9_split_01",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 63328479400,
+      "video_start_seconds": 63.3284794,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "4241a84c5ea809c07e82dfea5c9431f8a4b81e06352da517776f504769b214e6",
+      "dataset_fingerprint": "54bbea722a01ab80db78d4a0b60d58a48c54dc944598c0b302453b91dbfb19fb"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Rainbow_Six/recording_20250815_182710_Rainbow_Six_77fa960c",
+      "mcap_path": "/tmp/fdm-d2e-multi/Rainbow_Six/recording_20250815_182710_Rainbow_Six_77fa960c.mcap",
+      "mcap_sha256": "248f65117a90c19566ef2f5098c0987d40e3df938ded7b46f917c0c8302bab1c",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Rainbow_Six/recording_20250815_182710_Rainbow_Six_77fa960c.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Rainbow_Six/recording_20250815_182710_Rainbow_Six_77fa960c",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 104504068800,
+      "video_start_seconds": 104.5040688,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "8b428065f15aa70c0f0b05893c8458c7405503ce71c8a35c48da01bf1dd9c5e1",
+      "dataset_fingerprint": "415e79acd8e15106f8180b6ce37577b264ecaa014a75a96900ab24f5cd6b1400"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Rainbow_Six/recording_20250815_183156_Rainbow_Six_f44f8aff",
+      "mcap_path": "/tmp/fdm-d2e-multi/Rainbow_Six/recording_20250815_183156_Rainbow_Six_f44f8aff.mcap",
+      "mcap_sha256": "b46567e3c10f992c01a9aeb853162200ac7a0ba54773fbfadf1bf54b8d90e61e",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Rainbow_Six/recording_20250815_183156_Rainbow_Six_f44f8aff.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Rainbow_Six/recording_20250815_183156_Rainbow_Six_f44f8aff",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 90898788600,
+      "video_start_seconds": 90.8987886,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "bcf32574082be66562f88ebb3af56813fd208e0eac25ca803e41ce3db0836de6",
+      "dataset_fingerprint": "b371671e2989f1d02563334c16260f72fbcd24b6e81c4d8bd5e6bc4b63d02b1e"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Rainbow_Six/recording_20250815_184821_Rainbow_Six_243a3c5a",
+      "mcap_path": "/tmp/fdm-d2e-multi/Rainbow_Six/recording_20250815_184821_Rainbow_Six_243a3c5a.mcap",
+      "mcap_sha256": "e7f84c8cef1563e98c936d3c066686c126fcc1c661ae9ed52d3a30df8a863177",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Rainbow_Six/recording_20250815_184821_Rainbow_Six_243a3c5a.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Rainbow_Six/recording_20250815_184821_Rainbow_Six_243a3c5a",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 354362007000,
+      "video_start_seconds": 354.362007,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "4d389f5576d3bee984168fbb853bc0b7775ccaf90d86e00477144837bc11eed9",
+      "dataset_fingerprint": "493f8a78b040a09e2005d56ca52a829acf19db0f4a0f0ea8f188f9b7f9d84c5c"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Rainbow_Six/recording_20250815_184841_Rainbow_Six_795c66c6",
+      "mcap_path": "/tmp/fdm-d2e-multi/Rainbow_Six/recording_20250815_184841_Rainbow_Six_795c66c6.mcap",
+      "mcap_sha256": "d175fb27faaaa3b9acaee45f58ce1c669f8fcc8938f70ad3e973828fd8985003",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Rainbow_Six/recording_20250815_184841_Rainbow_Six_795c66c6.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Rainbow_Six/recording_20250815_184841_Rainbow_Six_795c66c6",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 224367848600,
+      "video_start_seconds": 224.3678486,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "d64c680578f940e19da3a17bf328e31f83be82d5007dfaaba4ec6b726ce03717",
+      "dataset_fingerprint": "3be864ebf05e637dd887bb0c60e58a3eb2340efd28341c889dffb3a0409e7f85"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Rainbow_Six/recording_20250815_204905_Rainbow_Six_7b788016",
+      "mcap_path": "/tmp/fdm-d2e-multi/Rainbow_Six/recording_20250815_204905_Rainbow_Six_7b788016.mcap",
+      "mcap_sha256": "34afebb51eb373c276182a7d3e8d55f892cb55cf652fe0c45cde2930d1086eb6",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Rainbow_Six/recording_20250815_204905_Rainbow_Six_7b788016.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Rainbow_Six/recording_20250815_204905_Rainbow_Six_7b788016",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 383049956900,
+      "video_start_seconds": 383.0499569,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "742475e1df1b37db37c98611c27c9a4a3618c36ff293d5518f4234d89fe89ce0",
+      "dataset_fingerprint": "0bb40d7672c42107a46059c65034e4d74cbb3c80bed104172715f8345161b5f2"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Battlefield_6_Open_Beta/battlefield6beta_20250817",
+      "mcap_path": "/tmp/fdm-d2e-multi/Battlefield_6_Open_Beta/battlefield6beta_20250817.mcap",
+      "mcap_sha256": "e69d3991c189c9fd9ef90a79d70e2b50780e11c58b97b2128e4151c948e3b4c9",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Battlefield_6_Open_Beta/battlefield6beta_20250817.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Battlefield_6_Open_Beta/battlefield6beta_20250817",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 55066655600,
+      "video_start_seconds": 55.0666556,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "ef433743a1f0f02b4109bb6433f4feb60abf7f094a408503dc53430a95f18baa",
+      "dataset_fingerprint": "cc3849319dc08c043cd8c66177e02926d58697e70d516031dd35f055861da73f"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Battlefield_6_Open_Beta/battlefield6beta_20250817_1329_2",
+      "mcap_path": "/tmp/fdm-d2e-multi/Battlefield_6_Open_Beta/battlefield6beta_20250817_1329_2.mcap",
+      "mcap_sha256": "248fb5fed87c9207dd8e1d549f25454670ca75598336f1dc37f223f6da8bbd60",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Battlefield_6_Open_Beta/battlefield6beta_20250817_1329_2.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Battlefield_6_Open_Beta/battlefield6beta_20250817_1329_2",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 29419354800,
+      "video_start_seconds": 29.4193548,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "ffb580e74a86c2be6f29c3b4b0dcff22078af20220a77679c6d5617c06334cb6",
+      "dataset_fingerprint": "d48340a22d3a0c2693c1490ea4214cc7aa9f43216a86ad54ff778b7aac7b6271"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Battlefield_6_Open_Beta/battlefield6beta_20250817_1350_3",
+      "mcap_path": "/tmp/fdm-d2e-multi/Battlefield_6_Open_Beta/battlefield6beta_20250817_1350_3.mcap",
+      "mcap_sha256": "83be225ab4a853083a91af2493a69f11ec7098c8b388fc1510cefd2a349fb97b",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Battlefield_6_Open_Beta/battlefield6beta_20250817_1350_3.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Battlefield_6_Open_Beta/battlefield6beta_20250817_1350_3",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 30921339100,
+      "video_start_seconds": 30.9213391,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "e5b2d96d181beb3921f065febeaf414926ecc6d044774fa299e5058aa65ca0ac",
+      "dataset_fingerprint": "8fe323ff81c92f6e1fff0ec1ec90e86e4643bd9d7cd531a2eae5e79c8927ddc1"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Battlefield_6_Open_Beta/battlefield6beta_20250817_1412_4",
+      "mcap_path": "/tmp/fdm-d2e-multi/Battlefield_6_Open_Beta/battlefield6beta_20250817_1412_4.mcap",
+      "mcap_sha256": "4c50f87521a052dcbb9aa45671692c9db4b2497d8f3c8fd15c0728b0aed71dd9",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Battlefield_6_Open_Beta/battlefield6beta_20250817_1412_4.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Battlefield_6_Open_Beta/battlefield6beta_20250817_1412_4",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 83819041200,
+      "video_start_seconds": 83.8190412,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen"
+      ],
+      "token_fingerprint": "98c8283742efe094c4a880bae207997d98f1a2eca05ca6cb569d9c6ad6988ed7",
+      "dataset_fingerprint": "0bde05b572a2bc02a28fbdb9f44e2207167b97e5cd9820bb5c2d14e2eecfe5e3"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Grand_Theft_Auto_V/recording_20250729_222558_Grand_Theft_Auto_V_85b838f8",
+      "mcap_path": "/tmp/fdm-d2e-multi/Grand_Theft_Auto_V/recording_20250729_222558_Grand_Theft_Auto_V_85b838f8.mcap",
+      "mcap_sha256": "be1ebb042cb46ac7759c4684074845aa8ebd363c1dd9160f822bcb9aad032259",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Grand_Theft_Auto_V/recording_20250729_222558_Grand_Theft_Auto_V_85b838f8.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Grand_Theft_Auto_V/recording_20250729_222558_Grand_Theft_Auto_V_85b838f8",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 216248650000,
+      "video_start_seconds": 216.24865,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "ab6d72ec1a7ed18111d1eed106937b2e548e5bcc0c7967367f222da973060694",
+      "dataset_fingerprint": "5230edc1dce77a3822bd07725ec9163c8283bbe2cec7437fc2bd3f2e6b8d2521"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Grand_Theft_Auto_V/recording_20250802_222007_Grand_Theft_Auto_V_81dcb5bd",
+      "mcap_path": "/tmp/fdm-d2e-multi/Grand_Theft_Auto_V/recording_20250802_222007_Grand_Theft_Auto_V_81dcb5bd.mcap",
+      "mcap_sha256": "8a5d56834beb09ffce5d01632a40757eea513356a162bbe441cd477cdaa1ec7a",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Grand_Theft_Auto_V/recording_20250802_222007_Grand_Theft_Auto_V_81dcb5bd.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Grand_Theft_Auto_V/recording_20250802_222007_Grand_Theft_Auto_V_81dcb5bd",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 268551993100,
+      "video_start_seconds": 268.5519931,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "804c26da98cffce492e72826c7a44ba10df0442402c7eb70cb363b46ea591d7f",
+      "dataset_fingerprint": "93bb95d119a8eb37b0b4f3373c41b733a9d665b211eb56ac7ec2f63266bf1ed4"
+    },
+    {
+      "schema": "d2e_decoded_sample_summary.v1",
+      "repo_id": "open-world-agents/D2E-480p",
+      "revision": "main",
+      "pair_id": "Apex_Legends/0805_01",
+      "mcap_path": "/tmp/fdm-d2e-multi/Apex_Legends/0805_01.mcap",
+      "mcap_sha256": "da003e63e09f4a019e9411ca4bb39f5a494ffdfab71c39bb3339076a63642246",
+      "video_url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/resolve/main/Apex_Legends/0805_01.mkv",
+      "output_dir": "outputs/data/real_multi_shooter32_per_recording/Apex_Legends/0805_01",
+      "num_decoded_events": 36000,
+      "num_frame_features": 96,
+      "num_window_records": 96,
+      "window_start_ns": 270803482600,
+      "video_start_seconds": 270.8034826,
+      "splits": {
+        "train": 72,
+        "heldout": 24
+      },
+      "event_types": [
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "screen",
+        "scroll"
+      ],
+      "token_fingerprint": "f035caa57b0f19a08eab74cd083463953aa7da813c247f2696aeaa0d3f14fb50",
+      "dataset_fingerprint": "261302e0ae004010b104f6b300094bea5336b4b84919d6d4e713baf835f9d410"
+    }
+  ],
+  "dataset_fingerprint": "35489e0a0ce59ee8574041943d01fc08b228e04403c528987b59bc8e06f380b7"
+}
