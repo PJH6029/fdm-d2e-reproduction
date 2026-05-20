@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from typing import Any
 
@@ -240,6 +241,118 @@ def _calibrated_group_thresholds_from_scores(
     return thresholds, diagnostics
 
 
+def _sigmoid(value: float) -> float:
+    if value >= 0:
+        z = math.exp(-value)
+        return 1.0 / (1.0 + z)
+    z = math.exp(value)
+    return z / (1.0 + z)
+
+
+def _button_name(token: str) -> str | None:
+    for prefix, name in (
+        ("MOUSE_LEFT_", "left"),
+        ("MOUSE_RIGHT_", "right"),
+        ("MOUSE_MIDDLE_", "middle"),
+    ):
+        if token.startswith(prefix):
+            return name
+    return None
+
+
+def _apply_button_tokens(state: dict[str, float], tokens: list[str]) -> None:
+    for token in tokens:
+        name = _button_name(token)
+        if name is None:
+            continue
+        if token.endswith("_DOWN"):
+            state[name] = 1.0
+        elif token.endswith("_UP"):
+            state[name] = 0.0
+
+
+def _history_vector(
+    history: list[list[str]],
+    button_state: dict[str, float],
+    vocab: list[str],
+    *,
+    history_len: int,
+) -> list[float]:
+    if history_len <= 0:
+        return []
+    values: list[float] = []
+    vocab_set_by_slot = []
+    for offset in range(history_len):
+        tokens = history[-1 - offset] if offset < len(history) else []
+        vocab_set_by_slot.append(set(tokens))
+        dx, dy = target_mouse_delta({"ground_truth_tokens": tokens})
+        # Delta tokens are small integer classes; keep them in a stable range
+        # relative to binary categorical indicators.
+        values.extend([float(dx) / 8.0, float(dy) / 8.0])
+    for token_set in vocab_set_by_slot:
+        values.extend([1.0 if token in token_set else 0.0 for token in vocab])
+    values.extend([float(button_state.get(name, 0.0)) for name in ("left", "right", "middle")])
+    return values
+
+
+def _empty_button_state() -> dict[str, float]:
+    return {"left": 0.0, "right": 0.0, "middle": 0.0}
+
+
+def _append_history(
+    history: list[list[str]],
+    button_state: dict[str, float],
+    tokens: list[str],
+    *,
+    history_len: int,
+) -> None:
+    history.append(list(tokens))
+    if len(history) > history_len:
+        del history[:-history_len]
+    _apply_button_tokens(button_state, list(tokens))
+
+
+def _action_history_features(
+    records: list[dict[str, Any]],
+    vocab: list[str],
+    *,
+    history_len: int,
+    seed_records: list[dict[str, Any]] | None = None,
+    token_rows: dict[str, list[str]] | None = None,
+) -> list[list[float]]:
+    """Build causal action-history features aligned to ``records``.
+
+    Features for a row are computed before that row's tokens are appended, so
+    training can use teacher-forced prior actions while heldout inference can
+    use predicted prior actions without peeking at heldout labels.
+    """
+
+    if history_len <= 0:
+        return [[] for _ in records]
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+
+    def ensure(recording_id: str) -> tuple[list[list[str]], dict[str, float]]:
+        if recording_id not in histories:
+            histories[recording_id] = []
+            button_states[recording_id] = _empty_button_state()
+        return histories[recording_id], button_states[recording_id]
+
+    for row in sorted(seed_records or [], key=lambda item: (str(item.get("recording_id", "")), int(item.get("timestamp_ns", 0)))):
+        history, button_state = ensure(str(row.get("recording_id", "")))
+        _append_history(history, button_state, list(row.get("ground_truth_tokens", [])), history_len=history_len)
+
+    features_by_id: dict[str, list[float]] = {}
+    ordered = sorted(records, key=lambda item: (str(item.get("recording_id", "")), int(item.get("timestamp_ns", 0))))
+    for row in ordered:
+        recording_id = str(row.get("recording_id", ""))
+        history, button_state = ensure(recording_id)
+        features_by_id[str(row["sequence_id"])] = _history_vector(history, button_state, vocab, history_len=history_len)
+        tokens = (token_rows or {}).get(str(row["sequence_id"]), list(row.get("ground_truth_tokens", [])))
+        _append_history(history, button_state, list(tokens), history_len=history_len)
+    return [features_by_id[str(row["sequence_id"])] for row in records]
+
+
 def _mouse_baseline_deltas(
     records: list[dict[str, Any]],
     *,
@@ -290,16 +403,20 @@ def _tensorize(
     feature_mode: str,
     mouse_baselines: list[tuple[float, float]] | None = None,
     residual_mouse: bool = False,
+    history_features: list[list[float]] | None = None,
 ):
     mouse_baselines = mouse_baselines or [(0.0, 0.0) for _ in records]
-    def features_for(row: dict[str, Any], baseline: tuple[float, float]) -> list[float]:
+    history_features = history_features or [[] for _ in records]
+    def features_for(row: dict[str, Any], baseline: tuple[float, float], history: list[float]) -> list[float]:
         values = record_features(row, feature_mode=feature_mode)
         if residual_mouse:
             values = values + [float(baseline[0]), float(baseline[1])]
+        if history:
+            values = values + [float(value) for value in history]
         return values
 
     xs = torch.tensor(
-        [features_for(row, baseline) for row, baseline in zip(records, mouse_baselines)],
+        [features_for(row, baseline, history) for row, baseline, history in zip(records, mouse_baselines, history_features)],
         dtype=torch.float32,
         device=device,
     )
@@ -356,10 +473,16 @@ def _fit_torch_model(
     vocab: list[str],
     feature_mode: str,
     residual_mouse: bool,
+    action_history_len: int,
 ):
     train_mouse_baselines = _mouse_baseline_deltas(
         records,
         mode="causal_last_seen" if residual_mouse else "none",
+    )
+    history_features = _action_history_features(
+        records,
+        vocab,
+        history_len=action_history_len,
     )
     train_x, mouse_y, cat_y, mean, std = _tensorize(
         torch,
@@ -369,6 +492,7 @@ def _fit_torch_model(
         feature_mode=feature_mode,
         mouse_baselines=train_mouse_baselines,
         residual_mouse=residual_mouse,
+        history_features=history_features,
     )
     cat_pos_weight = None
     if vocab:
@@ -422,12 +546,16 @@ def _predict_raw_outputs(
     feature_mode: str,
     mouse_baselines: list[tuple[float, float]],
     residual_mouse: bool,
+    history_features: list[list[float]] | None = None,
 ) -> list[list[float]]:
+    history_features = history_features or [[] for _ in records]
     target_features = []
-    for row, baseline in zip(records, mouse_baselines):
+    for row, baseline, history in zip(records, mouse_baselines, history_features):
         values = record_features(row, feature_mode=feature_mode)
         if residual_mouse:
             values = values + [float(baseline[0]), float(baseline[1])]
+        if history:
+            values = values + [float(value) for value in history]
         target_features.append(values)
     raw_target_x = torch.tensor(target_features, dtype=torch.float32, device=device)
     mean_t = torch.tensor(mean, dtype=torch.float32, device=device)
@@ -436,6 +564,90 @@ def _predict_raw_outputs(
     model.eval()
     with torch.no_grad():
         return model(target_x).detach().cpu().tolist()
+
+
+def _prediction_from_output(
+    output: list[float],
+    *,
+    base_dx: float,
+    base_dy: float,
+    residual_mouse: bool,
+    vocab: list[str],
+    category_thresholds: dict[str, float],
+    category_threshold: float,
+) -> tuple[float, float, list[str]]:
+    dx, dy = float(output[0]), float(output[1])
+    if residual_mouse:
+        dx += float(base_dx)
+        dy += float(base_dy)
+    tokens = tokens_from_delta(float(dx), float(dy))
+    for token, logit in zip(vocab, output[2:]):
+        prob = _sigmoid(float(logit))
+        if prob >= float(category_thresholds.get(token, category_threshold)):
+            tokens.append(token)
+    return dx, dy, tokens
+
+
+def _predict_autoregressive_target(
+    torch,
+    model,
+    train_records: list[dict[str, Any]],
+    target_records: list[dict[str, Any]],
+    *,
+    device: str,
+    mean: list[float],
+    std: list[float],
+    feature_mode: str,
+    target_mouse_baselines: list[tuple[float, float]],
+    residual_mouse: bool,
+    vocab: list[str],
+    category_thresholds: dict[str, float],
+    category_threshold: float,
+    action_history_len: int,
+) -> dict[str, dict[str, Any]]:
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+
+    def ensure(recording_id: str) -> tuple[list[list[str]], dict[str, float]]:
+        if recording_id not in histories:
+            histories[recording_id] = []
+            button_states[recording_id] = _empty_button_state()
+        return histories[recording_id], button_states[recording_id]
+
+    for row in sorted(train_records, key=lambda item: (str(item.get("recording_id", "")), int(item.get("timestamp_ns", 0)))):
+        history, button_state = ensure(str(row.get("recording_id", "")))
+        _append_history(history, button_state, list(row.get("ground_truth_tokens", [])), history_len=action_history_len)
+
+    baseline_by_id = {str(row["sequence_id"]): baseline for row, baseline in zip(target_records, target_mouse_baselines)}
+    mean_t = torch.tensor(mean, dtype=torch.float32, device=device)
+    std_t = torch.tensor(std, dtype=torch.float32, device=device).clamp_min(1e-6)
+    outputs: dict[str, dict[str, Any]] = {}
+    model.eval()
+    ordered = sorted(target_records, key=lambda item: (str(item.get("recording_id", "")), int(item.get("timestamp_ns", 0))))
+    for row in ordered:
+        sequence_id = str(row["sequence_id"])
+        history, button_state = ensure(str(row.get("recording_id", "")))
+        history_features = _history_vector(history, button_state, vocab, history_len=action_history_len)
+        base_dx, base_dy = baseline_by_id[sequence_id]
+        values = record_features(row, feature_mode=feature_mode)
+        if residual_mouse:
+            values = values + [float(base_dx), float(base_dy)]
+        values = values + history_features
+        raw_x = torch.tensor([values], dtype=torch.float32, device=device)
+        with torch.no_grad():
+            output = model((raw_x - mean_t) / std_t).detach().cpu().tolist()[0]
+        dx, dy, tokens = _prediction_from_output(
+            output,
+            base_dx=base_dx,
+            base_dy=base_dy,
+            residual_mouse=residual_mouse,
+            vocab=vocab,
+            category_thresholds=category_thresholds,
+            category_threshold=category_threshold,
+        )
+        outputs[sequence_id] = {"output": output, "dx": dx, "dy": dy, "tokens": tokens}
+        _append_history(history, button_state, tokens, history_len=action_history_len)
+    return outputs
 
 
 def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
@@ -454,6 +666,9 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"unsupported mouse_target_mode: {mouse_target_mode}")
     residual_mouse = mouse_target_mode == "residual_last_seen"
     vocab = categorical_token_vocab(train_records, min_count=int(config.get("categorical_min_count", 1)))
+    action_history_len = int(config.get("action_history_len", 0))
+    if action_history_len < 0:
+        raise ValueError("action_history_len must be non-negative")
     category_threshold = float(config.get("category_threshold", 0.35))
     category_thresholds = {token: category_threshold for token in vocab}
     calibration_info: dict[str, Any] = {
@@ -485,11 +700,18 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             vocab=vocab,
             feature_mode=feature_mode,
             residual_mouse=residual_mouse,
+            action_history_len=action_history_len,
         )
         calibration_baselines = _mouse_baseline_deltas(
             calibration_records,
             mode="target_last_seen_train" if residual_mouse else "none",
             train_records=fit_records,
+        )
+        calibration_history_features = _action_history_features(
+            calibration_records,
+            vocab,
+            history_len=action_history_len,
+            seed_records=fit_records,
         )
         calibration_outputs = _predict_raw_outputs(
             torch,
@@ -501,10 +723,9 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             feature_mode=feature_mode,
             mouse_baselines=calibration_baselines,
             residual_mouse=residual_mouse,
+            history_features=calibration_history_features,
         )
-        import math
-
-        score_rows = [[1.0 / (1.0 + math.exp(-float(logit))) for logit in output[2:]] for output in calibration_outputs]
+        score_rows = [[_sigmoid(float(logit)) for logit in output[2:]] for output in calibration_outputs]
         label_rows = _category_label_matrix(calibration_records, vocab)
         raw_grid = config.get("category_calibration_grid")
         grid = (
@@ -561,6 +782,7 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             vocab=vocab,
             feature_mode=feature_mode,
             residual_mouse=residual_mouse,
+            action_history_len=action_history_len,
         )
     out_dir = Path(config.get("output_dir", "outputs/idm_torch"))
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -572,20 +794,45 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         mode="target_last_seen_train" if residual_mouse else "none",
         train_records=train_records,
     )
-    deltas = _predict_raw_outputs(
-        torch,
-        model,
-        target_records,
-        device=device,
-        mean=mean,
-        std=std,
-        feature_mode=feature_mode,
-        mouse_baselines=target_mouse_baselines,
-        residual_mouse=residual_mouse,
-    )
+    autoregressive_outputs: dict[str, dict[str, Any]] | None = None
+    if action_history_len > 0:
+        autoregressive_outputs = _predict_autoregressive_target(
+            torch,
+            model,
+            train_records,
+            target_records,
+            device=device,
+            mean=mean,
+            std=std,
+            feature_mode=feature_mode,
+            target_mouse_baselines=target_mouse_baselines,
+            residual_mouse=residual_mouse,
+            vocab=vocab,
+            category_thresholds=category_thresholds,
+            category_threshold=category_threshold,
+            action_history_len=action_history_len,
+        )
+        deltas = [autoregressive_outputs[str(row["sequence_id"])]["output"] for row in target_records]
+    else:
+        deltas = _predict_raw_outputs(
+            torch,
+            model,
+            target_records,
+            device=device,
+            mean=mean,
+            std=std,
+            feature_mode=feature_mode,
+            mouse_baselines=target_mouse_baselines,
+            residual_mouse=residual_mouse,
+        )
     fingerprint_mouse_baselines = _mouse_baseline_deltas(
         train_records,
         mode="causal_last_seen" if residual_mouse else "none",
+    )
+    fingerprint_history_features = _action_history_features(
+        train_records,
+        vocab,
+        history_len=action_history_len,
     )
     train_hash = stable_hash_json(
         [
@@ -594,27 +841,30 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 "tokens": row.get("ground_truth_tokens", []),
                 "features": record_features(row, feature_mode=feature_mode),
                 "mouse_baseline": baseline,
+                "action_history": history_features,
                 "feature_mode": feature_mode,
                 "mouse_target_mode": mouse_target_mode,
+                "action_history_len": action_history_len,
             }
-            for row, baseline in zip(train_records, fingerprint_mouse_baselines)
+            for row, baseline, history_features in zip(train_records, fingerprint_mouse_baselines, fingerprint_history_features)
         ]
     )
     pseudo_rows = []
     predictions = []
     for row, output, (base_dx, base_dy) in zip(target_records, deltas, target_mouse_baselines):
-        dx, dy = float(output[0]), float(output[1])
-        if residual_mouse:
-            dx += float(base_dx)
-            dy += float(base_dy)
-        tokens = tokens_from_delta(float(dx), float(dy))
-        if vocab:
-            import math
-
-            for token, logit in zip(vocab, output[2:]):
-                prob = 1.0 / (1.0 + math.exp(-float(logit)))
-                if prob >= float(category_thresholds.get(token, category_threshold)):
-                    tokens.append(token)
+        if autoregressive_outputs is not None:
+            pred = autoregressive_outputs[str(row["sequence_id"])]
+            dx, dy, tokens = float(pred["dx"]), float(pred["dy"]), list(pred["tokens"])
+        else:
+            dx, dy, tokens = _prediction_from_output(
+                output,
+                base_dx=float(base_dx),
+                base_dy=float(base_dy),
+                residual_mouse=residual_mouse,
+                vocab=vocab,
+                category_thresholds=category_thresholds,
+                category_threshold=category_threshold,
+            )
         confidence = max(0.05, min(0.99, 1.0 / (1.0 + abs(float(dx)) + abs(float(dy)))))
         pseudo = {
             "schema": "idm_pseudolabel.v1",
@@ -666,6 +916,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "category_thresholds": category_thresholds,
         "categorical_loss": str(config.get("categorical_loss", "bce")),
         "categorical_pos_weight_cap": float(config.get("categorical_pos_weight_cap", 20.0)),
+        "action_history_len": action_history_len,
+        "action_history_feedback": "autoregressive_predicted" if action_history_len > 0 else "none",
     }
     validate_named(metadata, "idm_checkpoint_metadata.schema.json")
     write_json(out_dir / "checkpoint_metadata.json", metadata)

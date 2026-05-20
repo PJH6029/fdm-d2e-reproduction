@@ -5,6 +5,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.training.torch_idm import (
+    _action_history_features,
     _calibrated_category_thresholds_from_scores,
     _calibrated_group_thresholds_from_scores,
     _mouse_baseline_deltas,
@@ -79,6 +80,29 @@ class TorchIDMContractTests(unittest.TestCase):
         self.assertEqual(thresholds["MOUSE_LEFT_DOWN"], 0.75)
         self.assertEqual(diagnostics["per_group"]["keyboard"]["accuracy"], 1.0)
         self.assertEqual(diagnostics["per_group"]["mouse_button"]["accuracy"], 1.0)
+
+    def test_action_history_features_are_causal_and_seedable(self):
+        vocab = ["KEY_PRESS_87", "MOUSE_LEFT_DOWN", "MOUSE_LEFT_UP"]
+        records = [
+            {"sequence_id": "r#0", "recording_id": "r", "timestamp_ns": 0, "ground_truth_tokens": ["KEY_PRESS_87", "MOUSE_DX_P2", "MOUSE_DY_Z0", "MOUSE_LEFT_DOWN"]},
+            {"sequence_id": "r#1", "recording_id": "r", "timestamp_ns": 1, "ground_truth_tokens": ["MOUSE_DX_N1", "MOUSE_DY_Z0", "MOUSE_LEFT_UP"]},
+        ]
+
+        features = _action_history_features(records, vocab, history_len=2)
+
+        self.assertEqual(features[0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        # Slot 0 sees the previous row only: dx=+2 scaled by 8, key/button one-hots, and left button down.
+        self.assertEqual(features[1][:4], [0.25, 0.0, 0.0, 0.0])
+        self.assertEqual(features[1][4:7], [1.0, 1.0, 0.0])
+        self.assertEqual(features[1][-3:], [1.0, 0.0, 0.0])
+
+        target = [{"sequence_id": "r#2", "recording_id": "r", "timestamp_ns": 2, "ground_truth_tokens": []}]
+        seeded = _action_history_features(target, vocab, history_len=2, seed_records=records)
+
+        self.assertEqual(seeded[0][:4], [-0.125, 0.0, 0.25, 0.0])
+        self.assertEqual(seeded[0][4:7], [0.0, 0.0, 1.0])
+        self.assertEqual(seeded[0][7:10], [1.0, 1.0, 0.0])
+        self.assertEqual(seeded[0][-3:], [0.0, 0.0, 0.0])
 
 
 if __name__ == "__main__":
