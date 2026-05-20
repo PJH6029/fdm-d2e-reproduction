@@ -188,6 +188,8 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
         return base
     if feature_mode == "summary_grid4_shift":
         return base + _frame_pair_features(row, grid_size=4, luma_size=16)
+    if feature_mode == "summary_grid8_shift":
+        return base + _frame_pair_features(row, grid_size=8, luma_size=16)
     raise ValueError(f"unsupported IDM feature_mode: {feature_mode}")
 
 

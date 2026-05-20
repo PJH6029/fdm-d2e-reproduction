@@ -58,10 +58,13 @@ class NeuralIDMTests(unittest.TestCase):
 
             summary = record_features(row)
             rich = record_features(row, feature_mode="summary_grid4_shift")
+            richer = record_features(row, feature_mode="summary_grid8_shift")
 
             self.assertEqual(len(summary), 16)
             self.assertEqual(len(rich), 164)
+            self.assertEqual(len(richer), 596)
             self.assertTrue(any(abs(value) > 0 for value in rich[16:]))
+            self.assertTrue(any(abs(value) > 0 for value in richer[16:]))
 
 
 if __name__ == "__main__":
