@@ -126,16 +126,23 @@ def _next_frame_path(row: dict[str, Any]) -> str | None:
     return str(next_path) if next_path.exists() else None
 
 
-def _frame_pair_features(row: dict[str, Any], *, grid_size: int = 4, luma_size: int = 16) -> list[float]:
+def _frame_pair_features(
+    row: dict[str, Any],
+    *,
+    grid_size: int = 4,
+    luma_size: int = 16,
+    shift_surface: bool = False,
+) -> list[float]:
     current_path = str(row.get("frame", {}).get("path", ""))
     grid_len = grid_size * grid_size * 3
+    shift_len = 16 if shift_surface else 4
     luma_len = luma_size * luma_size
     if not current_path or not Path(current_path).exists():
-        return [0.0] * (grid_len * 3 + 4)
+        return [0.0] * (grid_len * 3 + shift_len)
     try:
         cur_grid, cur_luma = _ppm_grid_and_luma(current_path, grid_size, luma_size)
     except (OSError, ValueError):
-        return [0.0] * (grid_len * 3 + 4)
+        return [0.0] * (grid_len * 3 + shift_len)
     next_path = _next_frame_path(row)
     if next_path:
         try:
@@ -147,16 +154,31 @@ def _frame_pair_features(row: dict[str, Any], *, grid_size: int = 4, luma_size: 
         next_grid = tuple(0.0 for _ in range(grid_len))
         next_luma = tuple(0.0 for _ in range(luma_len))
     delta_grid = [float(n - c) for c, n in zip(cur_grid, next_grid)]
-    shift = _coarse_shift_features(cur_luma, next_luma, luma_size=luma_size)
+    shift = (
+        _coarse_shift_surface_features(cur_luma, next_luma, luma_size=luma_size)
+        if shift_surface
+        else _coarse_shift_features(cur_luma, next_luma, luma_size=luma_size)
+    )
     return list(cur_grid) + list(next_grid) + delta_grid + shift
 
 
 def _coarse_shift_features(cur_luma: tuple[float, ...], next_luma: tuple[float, ...], *, luma_size: int = 16, max_shift: int = 4) -> list[float]:
+    return _coarse_shift_surface_features(cur_luma, next_luma, luma_size=luma_size, max_shift=max_shift)[:4]
+
+
+def _coarse_shift_surface_features(
+    cur_luma: tuple[float, ...],
+    next_luma: tuple[float, ...],
+    *,
+    luma_size: int = 16,
+    max_shift: int = 4,
+) -> list[float]:
     if not cur_luma or not next_luma or len(cur_luma) != len(next_luma):
-        return [0.0, 0.0, 0.0, 0.0]
+        return [0.0] * 16
     best_shift = (0, 0)
     best_mse: float | None = None
     zero_mse: float | None = None
+    costs: list[tuple[int, int, float]] = []
     for sy in range(-max_shift, max_shift + 1):
         for sx in range(-max_shift, max_shift + 1):
             total = 0.0
@@ -175,6 +197,7 @@ def _coarse_shift_features(cur_luma: tuple[float, ...], next_luma: tuple[float, 
             if not count:
                 continue
             mse = total / count
+            costs.append((sx, sy, mse))
             if sx == 0 and sy == 0:
                 zero_mse = mse
             if best_mse is None or mse < best_mse:
@@ -183,11 +206,48 @@ def _coarse_shift_features(cur_luma: tuple[float, ...], next_luma: tuple[float, 
     best = best_mse if best_mse is not None else 0.0
     zero = zero_mse if zero_mse is not None else best
     improvement = max(0.0, zero - best)
+    if not costs:
+        return [0.0] * 16
+    mean_mse = sum(cost for _, _, cost in costs) / len(costs)
+    std_mse = math.sqrt(sum((cost - mean_mse) ** 2 for _, _, cost in costs) / max(1, len(costs) - 1))
+    temperature = max(std_mse, mean_mse * 0.05, 1e-6)
+    weights = [math.exp(-(cost - best) / temperature) for _, _, cost in costs]
+    weight_total = sum(weights) or 1.0
+    soft_x = sum(sx * weight for (sx, _, _), weight in zip(costs, weights)) / weight_total
+    soft_y = sum(sy * weight for (_, sy, _), weight in zip(costs, weights)) / weight_total
+
+    def axis_profile(axis: str) -> tuple[float, float]:
+        buckets: dict[int, list[float]] = {}
+        for sx, sy, cost in costs:
+            key = sx if axis == "x" else sy
+            buckets.setdefault(key, []).append(cost)
+        averaged = sorted((sum(values) / len(values), key) for key, values in buckets.items())
+        if not averaged:
+            return 0.0, 0.0
+        best_axis_cost, best_axis = averaged[0]
+        second_axis_cost = averaged[1][0] if len(averaged) > 1 else best_axis_cost
+        return best_axis / max_shift, max(0.0, second_axis_cost - best_axis_cost)
+
+    x_axis, x_margin = axis_profile("x")
+    y_axis, y_margin = axis_profile("y")
+    near_best = sum(1 for _, _, cost in costs if cost <= best + max(1e-6, 0.05 * max(best, mean_mse)))
     return [
         best_shift[0] / max_shift,
         best_shift[1] / max_shift,
         1.0 / (1.0 + best),
         improvement,
+        soft_x / max_shift,
+        soft_y / max_shift,
+        x_axis,
+        y_axis,
+        x_margin,
+        y_margin,
+        zero,
+        best,
+        mean_mse,
+        std_mse,
+        max(0.0, mean_mse - best),
+        near_best / len(costs),
     ]
 
 
@@ -201,6 +261,8 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
         return base + _frame_pair_features(row, grid_size=8, luma_size=16)
     if feature_mode == "summary_grid8_shift_time":
         return base + _frame_pair_features(row, grid_size=8, luma_size=16) + _temporal_basis_features(row)
+    if feature_mode == "summary_grid8_shift_surface_time":
+        return base + _frame_pair_features(row, grid_size=8, luma_size=16, shift_surface=True) + _temporal_basis_features(row)
     raise ValueError(f"unsupported IDM feature_mode: {feature_mode}")
 
 

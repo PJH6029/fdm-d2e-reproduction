@@ -60,14 +60,18 @@ class NeuralIDMTests(unittest.TestCase):
             rich = record_features(row, feature_mode="summary_grid4_shift")
             richer = record_features(row, feature_mode="summary_grid8_shift")
             timed = record_features(row, feature_mode="summary_grid8_shift_time")
+            surfaced = record_features(row, feature_mode="summary_grid8_shift_surface_time")
 
             self.assertEqual(len(summary), 16)
             self.assertEqual(len(rich), 164)
             self.assertEqual(len(richer), 596)
             self.assertEqual(len(timed), 608)
+            self.assertEqual(len(surfaced), 620)
             self.assertTrue(any(abs(value) > 0 for value in rich[16:]))
             self.assertTrue(any(abs(value) > 0 for value in richer[16:]))
             self.assertTrue(any(abs(value) > 0 for value in timed[596:]))
+            self.assertTrue(any(abs(value) > 0 for value in surfaced[596:608]))
+            self.assertTrue(any(abs(value) > 0 for value in surfaced[608:]))
 
 
 if __name__ == "__main__":
