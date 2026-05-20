@@ -1,0 +1,12 @@
+{
+  "schema": "fdm_recording_scale_calibration_config.v1",
+  "model_name": "fdm_bth05_recording_scale_calibrated",
+  "labels_path": "outputs/idm_shooter64_train_pseudolabels_bth05/pseudolabels.jsonl",
+  "source_predictions_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05/torch_model/predictions.jsonl",
+  "train_records_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05/fdm_train_pseudolabeled_records.jsonl",
+  "target_records_path": "outputs/fdm_shooter64_surface_motion_fulltrain_bth05/fdm_target_ground_truth_records.jsonl",
+  "endpoints": "configs/eval/primary_endpoints.yaml",
+  "output_dir": "outputs/fdm_bth05_recording_scale_calibrated",
+  "min_gain": 0.25,
+  "max_gain": 4.0
+}
