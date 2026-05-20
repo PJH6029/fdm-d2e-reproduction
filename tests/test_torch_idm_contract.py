@@ -6,11 +6,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.training.torch_idm import (
     _action_history_features,
+    _button_target_indices,
     _calibrated_category_thresholds_from_scores,
+    _calibrated_button_softmax_threshold_from_scores,
     _calibrated_group_fbeta_thresholds_from_scores,
     _calibrated_group_thresholds_from_scores,
+    _prediction_from_output,
     _mouse_baseline_deltas,
     _split_calibration_records,
+    button_softmax_classes,
     torch_available,
 )
 
@@ -96,6 +100,56 @@ class TorchIDMContractTests(unittest.TestCase):
         self.assertEqual(thresholds["MOUSE_LEFT_DOWN"], 0.8)
         self.assertEqual(diagnostics["per_group"]["mouse_button"]["tp"], 1)
         self.assertEqual(diagnostics["per_group"]["mouse_button"]["fp"], 0)
+
+    def test_button_softmax_classes_make_no_button_explicit(self):
+        records = [
+            {"sequence_id": "r#0", "ground_truth_tokens": ["MOUSE_LEFT_DOWN"]},
+            {"sequence_id": "r#1", "ground_truth_tokens": []},
+            {"sequence_id": "r#2", "ground_truth_tokens": ["MOUSE_LEFT_DOWN"]},
+            {"sequence_id": "r#3", "ground_truth_tokens": ["MOUSE_RIGHT_UP"]},
+        ]
+
+        classes = button_softmax_classes(records, min_count=2)
+
+        self.assertEqual(classes, [(), ("MOUSE_LEFT_DOWN",)])
+        self.assertEqual(_button_target_indices(records, classes), [1, 0, 1, 0])
+
+    def test_button_softmax_calibration_prefers_precision_over_spam(self):
+        threshold, diagnostics = _calibrated_button_softmax_threshold_from_scores(
+            score_rows=[
+                [0.05, 0.95],
+                [0.25, 0.75],
+                [0.35, 0.65],
+                [0.9, 0.1],
+            ],
+            label_indices=[1, 0, 0, 0],
+            button_classes=[(), ("MOUSE_LEFT_DOWN",)],
+            default_threshold=0.5,
+            grid=[0.5, 0.8],
+            beta=0.5,
+        )
+
+        self.assertEqual(threshold, 0.8)
+        self.assertEqual(diagnostics["tp"], 1)
+        self.assertEqual(diagnostics["fp"], 0)
+
+    def test_prediction_softmax_button_head_emits_at_most_one_exact_set(self):
+        _, _, tokens = _prediction_from_output(
+            [0.0, 0.0, 3.0, 0.1, 2.5],
+            base_dx=0.0,
+            base_dy=0.0,
+            residual_mouse=False,
+            category_vocab=["KEY_PRESS_87"],
+            category_thresholds={"KEY_PRESS_87": 0.5},
+            category_threshold=0.5,
+            button_head_mode="softmax",
+            button_classes=[(), ("MOUSE_LEFT_DOWN",)],
+            button_softmax_threshold=0.5,
+        )
+
+        self.assertIn("KEY_PRESS_87", tokens)
+        self.assertIn("MOUSE_LEFT_DOWN", tokens)
+        self.assertNotIn("MOUSE_LEFT_UP", tokens)
 
     def test_action_history_features_are_causal_and_seedable(self):
         vocab = ["KEY_PRESS_87", "MOUSE_LEFT_DOWN", "MOUSE_LEFT_UP"]

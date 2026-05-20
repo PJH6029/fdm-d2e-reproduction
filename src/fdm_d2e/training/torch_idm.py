@@ -190,6 +190,129 @@ def _category_group(token: str) -> str:
     return "other"
 
 
+def _is_mouse_button_token(token: str) -> bool:
+    return _category_group(token) == "mouse_button"
+
+
+def _button_label(row: dict[str, Any]) -> tuple[str, ...]:
+    return tuple(sorted({token for token in row.get("ground_truth_tokens", []) if _is_mouse_button_token(str(token))}))
+
+
+def button_softmax_classes(records: list[dict[str, Any]], *, min_count: int = 1) -> list[tuple[str, ...]]:
+    """Return deterministic exact-set mouse-button classes for a softmax head.
+
+    Class 0 is always the empty/no-button class.  Positive classes are exact
+    button-token sets observed in training.  This makes "predict no click" an
+    explicit learned alternative instead of asking independent binary logits to
+    abstain via a fragile post-hoc threshold.
+    """
+
+    counts: dict[tuple[str, ...], int] = {(): 0}
+    for row in records:
+        label = _button_label(row)
+        counts[label] = counts.get(label, 0) + 1
+    classes = [()]
+    for label in sorted(label for label, count in counts.items() if label and count >= min_count):
+        classes.append(label)
+    return classes
+
+
+def _button_class_counts(records: list[dict[str, Any]], classes: list[tuple[str, ...]]) -> dict[str, int]:
+    class_index = {label: idx for idx, label in enumerate(classes)}
+    counts = {str(idx): 0 for idx in range(len(classes))}
+    for row in records:
+        idx = class_index.get(_button_label(row), 0)
+        counts[str(idx)] = counts.get(str(idx), 0) + 1
+    return counts
+
+
+def _button_target_indices(records: list[dict[str, Any]], classes: list[tuple[str, ...]]) -> list[int]:
+    class_index = {label: idx for idx, label in enumerate(classes)}
+    return [int(class_index.get(_button_label(row), 0)) for row in records]
+
+
+def _button_class_metadata(records: list[dict[str, Any]], classes: list[tuple[str, ...]]) -> list[dict[str, Any]]:
+    counts = _button_class_counts(records, classes)
+    return [
+        {
+            "index": idx,
+            "tokens": list(tokens),
+            "name": "NO_BUTTON" if idx == 0 else "+".join(tokens),
+            "train_count": counts.get(str(idx), 0),
+        }
+        for idx, tokens in enumerate(classes)
+    ]
+
+
+def _softmax(values: list[float]) -> list[float]:
+    if not values:
+        return []
+    max_value = max(values)
+    exps = [math.exp(float(value) - max_value) for value in values]
+    denom = sum(exps) or 1.0
+    return [value / denom for value in exps]
+
+
+def _calibrated_button_softmax_threshold_from_scores(
+    score_rows: list[list[float]],
+    label_indices: list[int],
+    button_classes: list[tuple[str, ...]],
+    *,
+    default_threshold: float,
+    grid: list[float],
+    beta: float,
+) -> tuple[float, dict[str, Any]]:
+    positives = sum(1 for label in label_indices if label != 0)
+    if not score_rows or positives == 0 or len(button_classes) <= 1:
+        return default_threshold, {"positive_examples": positives, "score": None}
+    beta2 = beta * beta
+    best_threshold = default_threshold
+    best_key: tuple[float, float, float, float] = (-1.0, -1.0, -1.0, default_threshold)
+    best_stats: dict[str, Any] = {}
+    for threshold in grid:
+        tp = fp = fn = predicted_positive = 0
+        for scores, gold_idx in zip(score_rows, label_indices):
+            if not scores:
+                pred_idx = 0
+            else:
+                top_idx = max(range(len(scores)), key=lambda idx: scores[idx])
+                pred_idx = top_idx if top_idx != 0 and float(scores[top_idx]) >= threshold else 0
+            if pred_idx != 0:
+                predicted_positive += 1
+            if gold_idx != 0 and pred_idx == gold_idx:
+                tp += 1
+            elif gold_idx != 0:
+                fn += 1
+                if pred_idx != 0:
+                    fp += 1
+            elif pred_idx != 0:
+                fp += 1
+        precision = tp / (tp + fp) if (tp + fp) else 0.0
+        recall = tp / (tp + fn) if (tp + fn) else 0.0
+        score = (
+            (1.0 + beta2) * precision * recall / ((beta2 * precision) + recall)
+            if precision or recall
+            else 0.0
+        )
+        # Prefer calibrated precision before recall; false positive click spam
+        # is unsafe for downstream desktop/game harness execution.
+        key = (score, precision, recall, threshold)
+        if key > best_key:
+            best_key = key
+            best_threshold = float(threshold)
+            best_stats = {
+                "positive_examples": positives,
+                "score": score,
+                "precision": precision,
+                "recall": recall,
+                "tp": tp,
+                "fp": fp,
+                "fn": fn,
+                "predicted_positive_examples": predicted_positive,
+            }
+    return best_threshold, best_stats
+
+
 def _calibrated_group_thresholds_from_scores(
     score_rows: list[list[float]],
     label_rows: list[list[int]],
@@ -540,7 +663,10 @@ def _fit_torch_model(
     *,
     config: dict[str, Any],
     device: str,
-    vocab: list[str],
+    category_vocab: list[str],
+    history_vocab: list[str],
+    button_classes: list[tuple[str, ...]],
+    button_head_mode: str,
     feature_mode: str,
     residual_mouse: bool,
     action_history_len: int,
@@ -551,31 +677,45 @@ def _fit_torch_model(
     )
     history_features = _action_history_features(
         records,
-        vocab,
+        history_vocab,
         history_len=action_history_len,
     )
     train_x, mouse_y, cat_y, mean, std = _tensorize(
         torch,
         records,
         device,
-        vocab,
+        category_vocab,
         feature_mode=feature_mode,
         mouse_baselines=train_mouse_baselines,
         residual_mouse=residual_mouse,
         history_features=history_features,
     )
     cat_pos_weight = None
-    if vocab:
+    if category_vocab:
         positives = cat_y.sum(dim=0)
         negatives = max(1, cat_y.shape[0]) - positives
         cat_pos_weight = (negatives / positives.clamp_min(1.0)).clamp(
             max=float(config.get("categorical_pos_weight_cap", 20.0))
         )
+    button_y = None
+    button_class_weight = None
+    if button_head_mode == "softmax" and button_classes:
+        button_y = torch.tensor(_button_target_indices(records, button_classes), dtype=torch.long, device=device)
+        if len(button_classes) > 1:
+            counts = torch.bincount(button_y, minlength=len(button_classes)).to(dtype=torch.float32)
+            total = counts.sum().clamp_min(1.0)
+            button_class_weight = (total / (counts.clamp_min(1.0) * len(button_classes))).clamp(
+                max=float(config.get("button_softmax_class_weight_cap", 20.0))
+            )
+            button_class_weight[0] = button_class_weight[0] * float(config.get("button_softmax_no_button_weight", 1.0))
+            if len(button_classes) > 1:
+                button_class_weight[1:] = button_class_weight[1:] * float(config.get("button_softmax_positive_weight", 1.0))
     input_dim = int(train_x.shape[1])
+    button_output_dim = len(button_classes) if button_head_mode == "softmax" else 0
     model = _build_model(
         torch,
         input_dim=input_dim,
-        output_dim=2 + len(vocab),
+        output_dim=2 + len(category_vocab) + button_output_dim,
         hidden_dim=int(config.get("hidden_dim", 128)),
         depth=int(config.get("depth", 3)),
         dropout=float(config.get("dropout", 0.05)),
@@ -591,11 +731,24 @@ def _fit_torch_model(
             idx = perm[start : start + batch_size]
             pred = model(train_x[idx])
             mouse_loss = torch.nn.functional.smooth_l1_loss(pred[:, :2], mouse_y[idx])
-            if vocab:
-                cat_loss = _categorical_loss(torch, pred[:, 2:], cat_y[idx], cat_pos_weight, config)
+            category_end = 2 + len(category_vocab)
+            if category_vocab:
+                cat_loss = _categorical_loss(torch, pred[:, 2:category_end], cat_y[idx], cat_pos_weight, config)
             else:
                 cat_loss = torch.tensor(0.0, device=device)
-            loss = mouse_loss + float(config.get("categorical_loss_weight", 0.5)) * cat_loss
+            if button_head_mode == "softmax" and button_y is not None and len(button_classes) > 1:
+                button_loss = torch.nn.functional.cross_entropy(
+                    pred[:, category_end : category_end + len(button_classes)],
+                    button_y[idx],
+                    weight=button_class_weight,
+                )
+            else:
+                button_loss = torch.tensor(0.0, device=device)
+            loss = (
+                mouse_loss
+                + float(config.get("categorical_loss_weight", 0.5)) * cat_loss
+                + float(config.get("button_softmax_loss_weight", 1.0)) * button_loss
+            )
             opt.zero_grad(set_to_none=True)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), float(config.get("grad_clip", 1.0)))
@@ -642,19 +795,31 @@ def _prediction_from_output(
     base_dx: float,
     base_dy: float,
     residual_mouse: bool,
-    vocab: list[str],
+    category_vocab: list[str],
     category_thresholds: dict[str, float],
     category_threshold: float,
+    button_head_mode: str = "multilabel",
+    button_classes: list[tuple[str, ...]] | None = None,
+    button_softmax_threshold: float = 0.5,
 ) -> tuple[float, float, list[str]]:
     dx, dy = float(output[0]), float(output[1])
     if residual_mouse:
         dx += float(base_dx)
         dy += float(base_dy)
     tokens = tokens_from_delta(float(dx), float(dy))
-    for token, logit in zip(vocab, output[2:]):
+    category_end = 2 + len(category_vocab)
+    for token, logit in zip(category_vocab, output[2:category_end]):
         prob = _sigmoid(float(logit))
         if prob >= float(category_thresholds.get(token, category_threshold)):
             tokens.append(token)
+    if button_head_mode == "softmax":
+        classes = button_classes or []
+        button_logits = output[category_end : category_end + len(classes)]
+        probs = _softmax([float(value) for value in button_logits])
+        if probs:
+            best_idx = max(range(len(probs)), key=lambda idx: probs[idx])
+            if best_idx != 0 and probs[best_idx] >= float(button_softmax_threshold):
+                tokens.extend(classes[best_idx])
     return dx, dy, tokens
 
 
@@ -670,9 +835,13 @@ def _predict_autoregressive_target(
     feature_mode: str,
     target_mouse_baselines: list[tuple[float, float]],
     residual_mouse: bool,
-    vocab: list[str],
+    history_vocab: list[str],
+    category_vocab: list[str],
     category_thresholds: dict[str, float],
     category_threshold: float,
+    button_head_mode: str,
+    button_classes: list[tuple[str, ...]],
+    button_softmax_threshold: float,
     action_history_len: int,
 ) -> dict[str, dict[str, Any]]:
     histories: dict[str, list[list[str]]] = {}
@@ -697,7 +866,7 @@ def _predict_autoregressive_target(
     for row in ordered:
         sequence_id = str(row["sequence_id"])
         history, button_state = ensure(str(row.get("recording_id", "")))
-        history_features = _history_vector(history, button_state, vocab, history_len=action_history_len)
+        history_features = _history_vector(history, button_state, history_vocab, history_len=action_history_len)
         base_dx, base_dy = baseline_by_id[sequence_id]
         values = record_features(row, feature_mode=feature_mode)
         if residual_mouse:
@@ -711,9 +880,12 @@ def _predict_autoregressive_target(
             base_dx=base_dx,
             base_dy=base_dy,
             residual_mouse=residual_mouse,
-            vocab=vocab,
+            category_vocab=category_vocab,
             category_thresholds=category_thresholds,
             category_threshold=category_threshold,
+            button_head_mode=button_head_mode,
+            button_classes=button_classes,
+            button_softmax_threshold=button_softmax_threshold,
         )
         outputs[sequence_id] = {"output": output, "dx": dx, "dy": dy, "tokens": tokens}
         _append_history(history, button_state, tokens, history_len=action_history_len)
@@ -735,24 +907,54 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     if mouse_target_mode not in {"absolute", "residual_last_seen"}:
         raise ValueError(f"unsupported mouse_target_mode: {mouse_target_mode}")
     residual_mouse = mouse_target_mode == "residual_last_seen"
-    vocab = categorical_token_vocab(train_records, min_count=int(config.get("categorical_min_count", 1)))
+    history_vocab = categorical_token_vocab(train_records, min_count=int(config.get("categorical_min_count", 1)))
+    button_head_mode = str(config.get("button_head_mode", "multilabel"))
+    if button_head_mode not in {"multilabel", "softmax"}:
+        raise ValueError(f"unsupported button_head_mode: {button_head_mode}")
+    button_classes: list[tuple[str, ...]] = []
+    if button_head_mode == "softmax":
+        category_vocab = [token for token in history_vocab if not _is_mouse_button_token(token)]
+        button_classes = button_softmax_classes(
+            train_records,
+            min_count=int(config.get("button_softmax_min_count", 1)),
+        )
+    else:
+        category_vocab = history_vocab
     action_history_len = int(config.get("action_history_len", 0))
     if action_history_len < 0:
         raise ValueError("action_history_len must be non-negative")
     category_threshold = float(config.get("category_threshold", 0.35))
-    category_thresholds = {token: category_threshold for token in vocab}
+    category_thresholds = {token: category_threshold for token in category_vocab}
+    button_softmax_threshold = float(config.get("button_softmax_threshold", 0.5))
+    button_softmax_threshold_mode = str(config.get("button_softmax_threshold_mode", "global"))
+    if button_softmax_threshold_mode not in {"global", "fbeta_calibrated"}:
+        raise ValueError(f"unsupported button_softmax_threshold_mode: {button_softmax_threshold_mode}")
     calibration_info: dict[str, Any] = {
         "category_threshold_mode": str(config.get("category_threshold_mode", "global")),
         "category_threshold": category_threshold,
         "category_thresholds": category_thresholds,
+        "button_head_mode": button_head_mode,
+        "button_softmax_threshold": button_softmax_threshold,
+        "button_softmax_threshold_mode": button_softmax_threshold_mode,
     }
+    if button_head_mode == "softmax":
+        calibration_info["button_softmax_classes"] = _button_class_metadata(train_records, button_classes)
     threshold_mode = calibration_info["category_threshold_mode"]
     if threshold_mode not in {"global", "per_token_calibrated", "group_exact_calibrated", "group_fbeta_calibrated"}:
         raise ValueError(f"unsupported category_threshold_mode: {threshold_mode}")
 
     calibrated_model = None
     calibrated_mean = calibrated_std = calibrated_history = None
-    if threshold_mode in {"per_token_calibrated", "group_exact_calibrated", "group_fbeta_calibrated"} and vocab:
+    needs_category_calibration = (
+        threshold_mode in {"per_token_calibrated", "group_exact_calibrated", "group_fbeta_calibrated"}
+        and bool(category_vocab)
+    )
+    needs_button_calibration = (
+        button_head_mode == "softmax"
+        and button_softmax_threshold_mode == "fbeta_calibrated"
+        and len(button_classes) > 1
+    )
+    if needs_category_calibration or needs_button_calibration:
         fraction = float(config.get("category_calibration_fraction", 0.0))
         fit_records, calibration_records = _split_calibration_records(
             train_records,
@@ -767,7 +969,10 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             fit_records,
             config=config,
             device=device,
-            vocab=vocab,
+            category_vocab=category_vocab,
+            history_vocab=history_vocab,
+            button_classes=button_classes,
+            button_head_mode=button_head_mode,
             feature_mode=feature_mode,
             residual_mouse=residual_mouse,
             action_history_len=action_history_len,
@@ -779,7 +984,7 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         )
         calibration_history_features = _action_history_features(
             calibration_records,
-            vocab,
+            history_vocab,
             history_len=action_history_len,
             seed_records=fit_records,
         )
@@ -795,40 +1000,62 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             residual_mouse=residual_mouse,
             history_features=calibration_history_features,
         )
-        score_rows = [[_sigmoid(float(logit)) for logit in output[2:]] for output in calibration_outputs]
-        label_rows = _category_label_matrix(calibration_records, vocab)
         raw_grid = config.get("category_calibration_grid")
         grid = (
             [float(value) for value in raw_grid]
             if isinstance(raw_grid, list)
             else [0.02, 0.05, 0.08, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 0.9]
         )
-        if threshold_mode == "group_exact_calibrated":
-            category_thresholds, threshold_diagnostics = _calibrated_group_thresholds_from_scores(
-                score_rows,
-                label_rows,
-                vocab,
-                default_threshold=category_threshold,
+        if needs_category_calibration:
+            score_rows = [
+                [_sigmoid(float(logit)) for logit in output[2 : 2 + len(category_vocab)]]
+                for output in calibration_outputs
+            ]
+            label_rows = _category_label_matrix(calibration_records, category_vocab)
+            if threshold_mode == "group_exact_calibrated":
+                category_thresholds, threshold_diagnostics = _calibrated_group_thresholds_from_scores(
+                    score_rows,
+                    label_rows,
+                    category_vocab,
+                    default_threshold=category_threshold,
+                    grid=grid,
+                )
+            elif threshold_mode == "group_fbeta_calibrated":
+                category_thresholds, threshold_diagnostics = _calibrated_group_fbeta_thresholds_from_scores(
+                    score_rows,
+                    label_rows,
+                    category_vocab,
+                    default_threshold=category_threshold,
+                    grid=grid,
+                    beta=float(config.get("category_calibration_beta", 1.0)),
+                )
+            else:
+                category_thresholds, threshold_diagnostics = _calibrated_category_thresholds_from_scores(
+                    score_rows,
+                    label_rows,
+                    category_vocab,
+                    default_threshold=category_threshold,
+                    grid=grid,
+                    beta=float(config.get("category_calibration_beta", 1.0)),
+                )
+        else:
+            threshold_diagnostics = None
+        if needs_button_calibration:
+            button_start = 2 + len(category_vocab)
+            button_score_rows = [
+                _softmax([float(value) for value in output[button_start : button_start + len(button_classes)]])
+                for output in calibration_outputs
+            ]
+            button_softmax_threshold, button_threshold_diagnostics = _calibrated_button_softmax_threshold_from_scores(
+                button_score_rows,
+                _button_target_indices(calibration_records, button_classes),
+                button_classes,
+                default_threshold=button_softmax_threshold,
                 grid=grid,
-            )
-        elif threshold_mode == "group_fbeta_calibrated":
-            category_thresholds, threshold_diagnostics = _calibrated_group_fbeta_thresholds_from_scores(
-                score_rows,
-                label_rows,
-                vocab,
-                default_threshold=category_threshold,
-                grid=grid,
-                beta=float(config.get("category_calibration_beta", 1.0)),
+                beta=float(config.get("button_softmax_calibration_beta", config.get("category_calibration_beta", 0.5))),
             )
         else:
-            category_thresholds, threshold_diagnostics = _calibrated_category_thresholds_from_scores(
-                score_rows,
-                label_rows,
-                vocab,
-                default_threshold=category_threshold,
-                grid=grid,
-                beta=float(config.get("category_calibration_beta", 1.0)),
-            )
+            button_threshold_diagnostics = None
         calibration_info.update(
             {
                 "category_thresholds": category_thresholds,
@@ -837,6 +1064,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 "category_calibration_refit_full_train": bool(config.get("category_calibration_refit_full_train", True)),
                 "category_calibration_history_tail": calibration_history[-3:],
                 "category_threshold_diagnostics": threshold_diagnostics,
+                "button_softmax_threshold": button_softmax_threshold,
+                "button_softmax_threshold_diagnostics": button_threshold_diagnostics,
             }
         )
         if not bool(config.get("category_calibration_refit_full_train", True)):
@@ -858,7 +1087,10 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             train_records,
             config=config,
             device=device,
-            vocab=vocab,
+            category_vocab=category_vocab,
+            history_vocab=history_vocab,
+            button_classes=button_classes,
+            button_head_mode=button_head_mode,
             feature_mode=feature_mode,
             residual_mouse=residual_mouse,
             action_history_len=action_history_len,
@@ -866,7 +1098,22 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     out_dir = Path(config.get("output_dir", "outputs/idm_torch"))
     out_dir.mkdir(parents=True, exist_ok=True)
     checkpoint_path = out_dir / "checkpoint.pt"
-    torch.save({"model_state_dict": model.state_dict(), "mean": mean, "std": std, "config": config, "history": history, "category_thresholds": category_thresholds}, checkpoint_path)
+    torch.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "mean": mean,
+            "std": std,
+            "config": config,
+            "history": history,
+            "category_thresholds": category_thresholds,
+            "category_vocab": category_vocab,
+            "history_vocab": history_vocab,
+            "button_head_mode": button_head_mode,
+            "button_classes": [list(tokens) for tokens in button_classes],
+            "button_softmax_threshold": button_softmax_threshold,
+        },
+        checkpoint_path,
+    )
     # Predict heldout pseudo-labels.
     target_mouse_baselines = _mouse_baseline_deltas(
         target_records,
@@ -886,9 +1133,13 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             feature_mode=feature_mode,
             target_mouse_baselines=target_mouse_baselines,
             residual_mouse=residual_mouse,
-            vocab=vocab,
+            history_vocab=history_vocab,
+            category_vocab=category_vocab,
             category_thresholds=category_thresholds,
             category_threshold=category_threshold,
+            button_head_mode=button_head_mode,
+            button_classes=button_classes,
+            button_softmax_threshold=button_softmax_threshold,
             action_history_len=action_history_len,
         )
         deltas = [autoregressive_outputs[str(row["sequence_id"])]["output"] for row in target_records]
@@ -910,7 +1161,7 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     )
     fingerprint_history_features = _action_history_features(
         train_records,
-        vocab,
+        history_vocab,
         history_len=action_history_len,
     )
     train_hash = stable_hash_json(
@@ -940,9 +1191,12 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 base_dx=float(base_dx),
                 base_dy=float(base_dy),
                 residual_mouse=residual_mouse,
-                vocab=vocab,
+                category_vocab=category_vocab,
                 category_thresholds=category_thresholds,
                 category_threshold=category_threshold,
+                button_head_mode=button_head_mode,
+                button_classes=button_classes,
+                button_softmax_threshold=button_softmax_threshold,
             )
         confidence = max(0.05, min(0.99, 1.0 / (1.0 + abs(float(dx)) + abs(float(dy)))))
         pseudo = {
@@ -986,7 +1240,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             "last_train_loss": history[-1]["loss"] if history else None,
             **calibration_info,
         },
-        "categorical_vocab": vocab,
+        "categorical_vocab": category_vocab,
+        "history_vocab": history_vocab,
         "feature_mode": feature_mode,
         "input_dim": input_dim,
         "mouse_target_mode": mouse_target_mode,
@@ -995,6 +1250,12 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "category_thresholds": category_thresholds,
         "categorical_loss": str(config.get("categorical_loss", "bce")),
         "categorical_pos_weight_cap": float(config.get("categorical_pos_weight_cap", 20.0)),
+        "button_head_mode": button_head_mode,
+        "button_softmax_threshold": button_softmax_threshold,
+        "button_softmax_threshold_mode": button_softmax_threshold_mode,
+        "button_softmax_classes": _button_class_metadata(train_records, button_classes) if button_head_mode == "softmax" else [],
+        "button_softmax_loss_weight": float(config.get("button_softmax_loss_weight", 1.0)),
+        "button_softmax_class_weight_cap": float(config.get("button_softmax_class_weight_cap", 20.0)),
         "action_history_len": action_history_len,
         "action_history_feedback": "autoregressive_predicted" if action_history_len > 0 else "none",
     }

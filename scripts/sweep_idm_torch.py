@@ -62,6 +62,13 @@ def main() -> int:
     parser.add_argument("--calibration-modes", default="")
     parser.add_argument("--calibration-betas", default="")
     parser.add_argument("--calibration-fractions", default="")
+    parser.add_argument("--button-head-modes", default="")
+    parser.add_argument("--button-thresholds", default="")
+    parser.add_argument("--button-threshold-modes", default="")
+    parser.add_argument("--button-loss-weights", default="")
+    parser.add_argument("--button-class-weight-caps", default="")
+    parser.add_argument("--button-no-button-weights", default="")
+    parser.add_argument("--button-positive-weights", default="")
     parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--max-runs", type=int, default=None)
     args = parser.parse_args()
@@ -80,6 +87,13 @@ def main() -> int:
     calibration_modes = _strings(args.calibration_modes) or [str(base.get("category_threshold_mode", "global"))]
     calibration_betas = _floats(args.calibration_betas) or [float(base.get("category_calibration_beta", 1.0))]
     calibration_fractions = _floats(args.calibration_fractions) or [float(base.get("category_calibration_fraction", 0.0))]
+    button_head_modes = _strings(args.button_head_modes) or [str(base.get("button_head_mode", "multilabel"))]
+    button_thresholds = _floats(args.button_thresholds) or [float(base.get("button_softmax_threshold", 0.5))]
+    button_threshold_modes = _strings(args.button_threshold_modes) or [str(base.get("button_softmax_threshold_mode", "global"))]
+    button_loss_weights = _floats(args.button_loss_weights) or [float(base.get("button_softmax_loss_weight", 1.0))]
+    button_class_weight_caps = _floats(args.button_class_weight_caps) or [float(base.get("button_softmax_class_weight_cap", 20.0))]
+    button_no_button_weights = _floats(args.button_no_button_weights) or [float(base.get("button_softmax_no_button_weight", 1.0))]
+    button_positive_weights = _floats(args.button_positive_weights) or [float(base.get("button_softmax_positive_weight", 1.0))]
     grid = itertools.product(
         _floats(args.loss_weights),
         _floats(args.poscaps),
@@ -91,14 +105,41 @@ def main() -> int:
         calibration_modes,
         calibration_betas,
         calibration_fractions,
+        button_head_modes,
+        button_thresholds,
+        button_threshold_modes,
+        button_loss_weights,
+        button_class_weight_caps,
+        button_no_button_weights,
+        button_positive_weights,
     )
-    for idx, (loss_weight, poscap, threshold, hidden_dim, depth, loss_mode, focal_gamma, calibration_mode, calibration_beta, calibration_fraction) in enumerate(grid, start=1):
+    for idx, (
+        loss_weight,
+        poscap,
+        threshold,
+        hidden_dim,
+        depth,
+        loss_mode,
+        focal_gamma,
+        calibration_mode,
+        calibration_beta,
+        calibration_fraction,
+        button_head_mode,
+        button_threshold,
+        button_threshold_mode,
+        button_loss_weight,
+        button_class_weight_cap,
+        button_no_button_weight,
+        button_positive_weight,
+    ) in enumerate(grid, start=1):
         if args.max_runs is not None and idx > args.max_runs:
             break
         cfg = copy.deepcopy(base)
         variant = (
             f"lw{loss_weight:g}_pc{poscap:g}_th{threshold:g}_h{hidden_dim}_d{depth}"
             f"_loss{loss_mode}_fg{focal_gamma:g}_cal{calibration_mode}_cb{calibration_beta:g}_cf{calibration_fraction:g}"
+            f"_bh{button_head_mode}_bth{button_threshold:g}_btm{button_threshold_mode}"
+            f"_blw{button_loss_weight:g}_bcw{button_class_weight_cap:g}_bnw{button_no_button_weight:g}_bpw{button_positive_weight:g}"
         )
         model_name = f"{base.get('model_name', 'torch_mlp_idm')}_{variant}"
         cfg.update(
@@ -114,6 +155,13 @@ def main() -> int:
                 "category_threshold_mode": calibration_mode,
                 "category_calibration_beta": calibration_beta,
                 "category_calibration_fraction": calibration_fraction,
+                "button_head_mode": button_head_mode,
+                "button_softmax_threshold": button_threshold,
+                "button_softmax_threshold_mode": button_threshold_mode,
+                "button_softmax_loss_weight": button_loss_weight,
+                "button_softmax_class_weight_cap": button_class_weight_cap,
+                "button_softmax_no_button_weight": button_no_button_weight,
+                "button_softmax_positive_weight": button_positive_weight,
                 "output_dir": str(work_dir / variant),
                 "summary_out": str(work_dir / variant / "summary.json"),
             }
@@ -133,6 +181,13 @@ def main() -> int:
                 "category_threshold_mode": calibration_mode,
                 "category_calibration_beta": calibration_beta,
                 "category_calibration_fraction": calibration_fraction,
+                "button_head_mode": button_head_mode,
+                "button_softmax_threshold": button_threshold,
+                "button_softmax_threshold_mode": button_threshold_mode,
+                "button_softmax_loss_weight": button_loss_weight,
+                "button_softmax_class_weight_cap": button_class_weight_cap,
+                "button_softmax_no_button_weight": button_no_button_weight,
+                "button_softmax_positive_weight": button_positive_weight,
                 "epochs": cfg.get("epochs"),
                 "feature_mode": cfg.get("feature_mode", "summary"),
                 "train_records": cfg.get("train_records"),
