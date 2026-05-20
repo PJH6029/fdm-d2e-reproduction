@@ -1,0 +1,575 @@
+{
+  "schema": "idm_torch_sweep.v1",
+  "base_config": "configs/model/idm_torch_shooter32_seq_history.yaml",
+  "num_runs": 1,
+  "rows": [
+    {
+      "variant": "lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+      "model_name": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+      "config": {
+        "categorical_loss_weight": 1.25,
+        "categorical_pos_weight_cap": 20.0,
+        "category_threshold": 0.25,
+        "hidden_dim": 256,
+        "depth": 3,
+        "categorical_loss": "focal",
+        "focal_gamma": 2.0,
+        "category_threshold_mode": "group_exact_calibrated",
+        "category_calibration_beta": 1.0,
+        "category_calibration_fraction": 0.2,
+        "epochs": 60,
+        "feature_mode": "summary_grid8_shift_time",
+        "train_records": "outputs/data/real_multi_shooter32/train.jsonl",
+        "target_records": "outputs/data/real_multi_shooter32/heldout.jsonl"
+      },
+      "metrics": {
+        "schema": "metrics.v1",
+        "stage": "fdm_eval",
+        "num_examples": 768,
+        "keyboard": {
+          "status": "computed",
+          "accuracy": 0.07973421926910298,
+          "num_examples": 301
+        },
+        "mouse_button": {
+          "status": "computed",
+          "accuracy": 0.1,
+          "num_examples": 40,
+          "predicted_examples": 540,
+          "exact_true_positive_examples": 4,
+          "false_positive_examples": 536,
+          "false_negative_examples": 36,
+          "precision": 0.007407407407407408,
+          "recall": 0.1,
+          "f1": 0.013793103448275862,
+          "no_button_examples": 728,
+          "no_button_false_positive_examples": 507,
+          "no_button_false_positive_rate": 0.6964285714285714
+        },
+        "mouse_move": {
+          "status": "computed",
+          "pearson": -0.009356741533199108,
+          "scale_ratio": 1.6005336559401784,
+          "num_values": 1408
+        },
+        "failure_count": 768
+      },
+      "metadata": {
+        "schema": "idm_checkpoint_metadata.v1",
+        "model": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+        "dataset_fingerprint": "69061d309b2700b15516a0df3bedf6eb715747008a17162ce916d5935084c2da",
+        "train_records": 2304,
+        "target_records": 768,
+        "pseudo_label_path": "outputs/idm_torch_shooter32_seq_history_focused_fp_h200/idm_torch_shooter32_seq_history/lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2/pseudolabels.jsonl",
+        "filtered_pseudo_label_path": "outputs/idm_torch_shooter32_seq_history_focused_fp_h200/idm_torch_shooter32_seq_history/lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2/pseudolabels.filtered.jsonl",
+        "checkpoint_path": "outputs/idm_torch_shooter32_seq_history_focused_fp_h200/idm_torch_shooter32_seq_history/lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2/checkpoint.pt",
+        "metrics_path": "outputs/idm_torch_shooter32_seq_history_focused_fp_h200/idm_torch_shooter32_seq_history/lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2/metrics.json",
+        "calibration": {
+          "confidence_threshold": 0.15,
+          "kept": 218,
+          "total": 768,
+          "last_train_loss": 1.1776112119356792,
+          "category_threshold_mode": "group_exact_calibrated",
+          "category_threshold": 0.25,
+          "category_thresholds": {
+            "KEY_PRESS_160": 0.6,
+            "KEY_PRESS_162": 0.6,
+            "KEY_PRESS_164": 0.6,
+            "KEY_PRESS_32": 0.6,
+            "KEY_PRESS_65": 0.6,
+            "KEY_PRESS_68": 0.6,
+            "KEY_PRESS_69": 0.6,
+            "KEY_PRESS_70": 0.6,
+            "KEY_PRESS_83": 0.6,
+            "KEY_PRESS_87": 0.6,
+            "KEY_PRESS_9": 0.6,
+            "KEY_RELEASE_160": 0.6,
+            "KEY_RELEASE_162": 0.6,
+            "KEY_RELEASE_32": 0.6,
+            "KEY_RELEASE_65": 0.6,
+            "KEY_RELEASE_68": 0.6,
+            "KEY_RELEASE_69": 0.6,
+            "KEY_RELEASE_70": 0.6,
+            "KEY_RELEASE_83": 0.6,
+            "KEY_RELEASE_87": 0.6,
+            "KEY_RELEASE_9": 0.6,
+            "MOUSE_LEFT_DOWN": 0.45,
+            "MOUSE_LEFT_UP": 0.45,
+            "MOUSE_RIGHT_DOWN": 0.45,
+            "MOUSE_RIGHT_UP": 0.45
+          },
+          "category_calibration_records": 448,
+          "category_calibration_fit_records": 1856,
+          "category_calibration_refit_full_train": true,
+          "category_calibration_history_tail": [
+            {
+              "epoch": 58,
+              "loss": 1.2250200361013412
+            },
+            {
+              "epoch": 59,
+              "loss": 1.2213897109031677
+            },
+            {
+              "epoch": 60,
+              "loss": 1.1834758520126343
+            }
+          ],
+          "category_threshold_diagnostics": {
+            "default_threshold": 0.25,
+            "grid": [
+              0.02,
+              0.05,
+              0.08,
+              0.1,
+              0.15,
+              0.2,
+              0.25,
+              0.3,
+              0.35,
+              0.4,
+              0.45,
+              0.5,
+              0.6,
+              0.7,
+              0.8,
+              0.9
+            ],
+            "per_group": {
+              "keyboard": {
+                "threshold": 0.6,
+                "positive_examples": 161,
+                "accuracy": 0.4472049689440994,
+                "correct": 72
+              },
+              "mouse_button": {
+                "threshold": 0.45,
+                "positive_examples": 31,
+                "accuracy": 0.22580645161290322,
+                "correct": 7
+              }
+            }
+          }
+        },
+        "categorical_vocab": [
+          "KEY_PRESS_160",
+          "KEY_PRESS_162",
+          "KEY_PRESS_164",
+          "KEY_PRESS_32",
+          "KEY_PRESS_65",
+          "KEY_PRESS_68",
+          "KEY_PRESS_69",
+          "KEY_PRESS_70",
+          "KEY_PRESS_83",
+          "KEY_PRESS_87",
+          "KEY_PRESS_9",
+          "KEY_RELEASE_160",
+          "KEY_RELEASE_162",
+          "KEY_RELEASE_32",
+          "KEY_RELEASE_65",
+          "KEY_RELEASE_68",
+          "KEY_RELEASE_69",
+          "KEY_RELEASE_70",
+          "KEY_RELEASE_83",
+          "KEY_RELEASE_87",
+          "KEY_RELEASE_9",
+          "MOUSE_LEFT_DOWN",
+          "MOUSE_LEFT_UP",
+          "MOUSE_RIGHT_DOWN",
+          "MOUSE_RIGHT_UP"
+        ],
+        "feature_mode": "summary_grid8_shift_time",
+        "input_dim": 719,
+        "mouse_target_mode": "absolute",
+        "category_threshold": 0.25,
+        "category_threshold_mode": "group_exact_calibrated",
+        "category_thresholds": {
+          "KEY_PRESS_160": 0.6,
+          "KEY_PRESS_162": 0.6,
+          "KEY_PRESS_164": 0.6,
+          "KEY_PRESS_32": 0.6,
+          "KEY_PRESS_65": 0.6,
+          "KEY_PRESS_68": 0.6,
+          "KEY_PRESS_69": 0.6,
+          "KEY_PRESS_70": 0.6,
+          "KEY_PRESS_83": 0.6,
+          "KEY_PRESS_87": 0.6,
+          "KEY_PRESS_9": 0.6,
+          "KEY_RELEASE_160": 0.6,
+          "KEY_RELEASE_162": 0.6,
+          "KEY_RELEASE_32": 0.6,
+          "KEY_RELEASE_65": 0.6,
+          "KEY_RELEASE_68": 0.6,
+          "KEY_RELEASE_69": 0.6,
+          "KEY_RELEASE_70": 0.6,
+          "KEY_RELEASE_83": 0.6,
+          "KEY_RELEASE_87": 0.6,
+          "KEY_RELEASE_9": 0.6,
+          "MOUSE_LEFT_DOWN": 0.45,
+          "MOUSE_LEFT_UP": 0.45,
+          "MOUSE_RIGHT_DOWN": 0.45,
+          "MOUSE_RIGHT_UP": 0.45
+        },
+        "categorical_loss": "focal",
+        "categorical_pos_weight_cap": 20.0,
+        "action_history_len": 4,
+        "action_history_feedback": "autoregressive_predicted"
+      },
+      "comparisons": [
+        {
+          "model": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+          "reference": "noop",
+          "endpoint": "keyboard_accuracy",
+          "direction": "higher",
+          "min_effect": 0.05,
+          "status": "computed",
+          "delta": 0.06671176046176046,
+          "ci": [
+            0.02435064935064935,
+            0.11417748917748917
+          ],
+          "p_value": 0.0,
+          "num_clusters": 28,
+          "p_adjusted_holm": 0.0,
+          "reject_holm_0_05": true
+        },
+        {
+          "model": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+          "reference": "noop",
+          "endpoint": "mouse_button_accuracy",
+          "direction": "higher",
+          "min_effect": 0.05,
+          "status": "computed",
+          "delta": 0.1289173789173789,
+          "ci": [
+            0.025641025641025644,
+            0.25
+          ],
+          "p_value": 0.006,
+          "num_clusters": 9,
+          "p_adjusted_holm": 0.054,
+          "reject_holm_0_05": false
+        },
+        {
+          "model": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+          "reference": "last_seen_train",
+          "endpoint": "mouse_move_pearson",
+          "direction": "higher",
+          "min_effect": 0.05,
+          "status": "computed",
+          "delta": -0.09874529397164344,
+          "ci": [
+            -0.3203667128493993,
+            0.10618965512732301
+          ],
+          "p_value": 1.0,
+          "num_clusters": 24,
+          "p_adjusted_holm": 1.0,
+          "reject_holm_0_05": false
+        },
+        {
+          "model": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+          "reference": "last_seen_train",
+          "endpoint": "mouse_move_scale_ratio_distance",
+          "direction": "lower",
+          "min_effect": 0.1,
+          "status": "computed",
+          "delta": -0.23995708415171058,
+          "ci": [
+            -0.6602547944238546,
+            0.14093722976773493
+          ],
+          "p_value": 1.0,
+          "num_clusters": 25,
+          "p_adjusted_holm": 1.0,
+          "reject_holm_0_05": false
+        }
+      ]
+    }
+  ],
+  "top_variants": [
+    {
+      "variant": "lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+      "model_name": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+      "config": {
+        "categorical_loss_weight": 1.25,
+        "categorical_pos_weight_cap": 20.0,
+        "category_threshold": 0.25,
+        "hidden_dim": 256,
+        "depth": 3,
+        "categorical_loss": "focal",
+        "focal_gamma": 2.0,
+        "category_threshold_mode": "group_exact_calibrated",
+        "category_calibration_beta": 1.0,
+        "category_calibration_fraction": 0.2,
+        "epochs": 60,
+        "feature_mode": "summary_grid8_shift_time",
+        "train_records": "outputs/data/real_multi_shooter32/train.jsonl",
+        "target_records": "outputs/data/real_multi_shooter32/heldout.jsonl"
+      },
+      "metrics": {
+        "schema": "metrics.v1",
+        "stage": "fdm_eval",
+        "num_examples": 768,
+        "keyboard": {
+          "status": "computed",
+          "accuracy": 0.07973421926910298,
+          "num_examples": 301
+        },
+        "mouse_button": {
+          "status": "computed",
+          "accuracy": 0.1,
+          "num_examples": 40,
+          "predicted_examples": 540,
+          "exact_true_positive_examples": 4,
+          "false_positive_examples": 536,
+          "false_negative_examples": 36,
+          "precision": 0.007407407407407408,
+          "recall": 0.1,
+          "f1": 0.013793103448275862,
+          "no_button_examples": 728,
+          "no_button_false_positive_examples": 507,
+          "no_button_false_positive_rate": 0.6964285714285714
+        },
+        "mouse_move": {
+          "status": "computed",
+          "pearson": -0.009356741533199108,
+          "scale_ratio": 1.6005336559401784,
+          "num_values": 1408
+        },
+        "failure_count": 768
+      },
+      "metadata": {
+        "schema": "idm_checkpoint_metadata.v1",
+        "model": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+        "dataset_fingerprint": "69061d309b2700b15516a0df3bedf6eb715747008a17162ce916d5935084c2da",
+        "train_records": 2304,
+        "target_records": 768,
+        "pseudo_label_path": "outputs/idm_torch_shooter32_seq_history_focused_fp_h200/idm_torch_shooter32_seq_history/lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2/pseudolabels.jsonl",
+        "filtered_pseudo_label_path": "outputs/idm_torch_shooter32_seq_history_focused_fp_h200/idm_torch_shooter32_seq_history/lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2/pseudolabels.filtered.jsonl",
+        "checkpoint_path": "outputs/idm_torch_shooter32_seq_history_focused_fp_h200/idm_torch_shooter32_seq_history/lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2/checkpoint.pt",
+        "metrics_path": "outputs/idm_torch_shooter32_seq_history_focused_fp_h200/idm_torch_shooter32_seq_history/lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2/metrics.json",
+        "calibration": {
+          "confidence_threshold": 0.15,
+          "kept": 218,
+          "total": 768,
+          "last_train_loss": 1.1776112119356792,
+          "category_threshold_mode": "group_exact_calibrated",
+          "category_threshold": 0.25,
+          "category_thresholds": {
+            "KEY_PRESS_160": 0.6,
+            "KEY_PRESS_162": 0.6,
+            "KEY_PRESS_164": 0.6,
+            "KEY_PRESS_32": 0.6,
+            "KEY_PRESS_65": 0.6,
+            "KEY_PRESS_68": 0.6,
+            "KEY_PRESS_69": 0.6,
+            "KEY_PRESS_70": 0.6,
+            "KEY_PRESS_83": 0.6,
+            "KEY_PRESS_87": 0.6,
+            "KEY_PRESS_9": 0.6,
+            "KEY_RELEASE_160": 0.6,
+            "KEY_RELEASE_162": 0.6,
+            "KEY_RELEASE_32": 0.6,
+            "KEY_RELEASE_65": 0.6,
+            "KEY_RELEASE_68": 0.6,
+            "KEY_RELEASE_69": 0.6,
+            "KEY_RELEASE_70": 0.6,
+            "KEY_RELEASE_83": 0.6,
+            "KEY_RELEASE_87": 0.6,
+            "KEY_RELEASE_9": 0.6,
+            "MOUSE_LEFT_DOWN": 0.45,
+            "MOUSE_LEFT_UP": 0.45,
+            "MOUSE_RIGHT_DOWN": 0.45,
+            "MOUSE_RIGHT_UP": 0.45
+          },
+          "category_calibration_records": 448,
+          "category_calibration_fit_records": 1856,
+          "category_calibration_refit_full_train": true,
+          "category_calibration_history_tail": [
+            {
+              "epoch": 58,
+              "loss": 1.2250200361013412
+            },
+            {
+              "epoch": 59,
+              "loss": 1.2213897109031677
+            },
+            {
+              "epoch": 60,
+              "loss": 1.1834758520126343
+            }
+          ],
+          "category_threshold_diagnostics": {
+            "default_threshold": 0.25,
+            "grid": [
+              0.02,
+              0.05,
+              0.08,
+              0.1,
+              0.15,
+              0.2,
+              0.25,
+              0.3,
+              0.35,
+              0.4,
+              0.45,
+              0.5,
+              0.6,
+              0.7,
+              0.8,
+              0.9
+            ],
+            "per_group": {
+              "keyboard": {
+                "threshold": 0.6,
+                "positive_examples": 161,
+                "accuracy": 0.4472049689440994,
+                "correct": 72
+              },
+              "mouse_button": {
+                "threshold": 0.45,
+                "positive_examples": 31,
+                "accuracy": 0.22580645161290322,
+                "correct": 7
+              }
+            }
+          }
+        },
+        "categorical_vocab": [
+          "KEY_PRESS_160",
+          "KEY_PRESS_162",
+          "KEY_PRESS_164",
+          "KEY_PRESS_32",
+          "KEY_PRESS_65",
+          "KEY_PRESS_68",
+          "KEY_PRESS_69",
+          "KEY_PRESS_70",
+          "KEY_PRESS_83",
+          "KEY_PRESS_87",
+          "KEY_PRESS_9",
+          "KEY_RELEASE_160",
+          "KEY_RELEASE_162",
+          "KEY_RELEASE_32",
+          "KEY_RELEASE_65",
+          "KEY_RELEASE_68",
+          "KEY_RELEASE_69",
+          "KEY_RELEASE_70",
+          "KEY_RELEASE_83",
+          "KEY_RELEASE_87",
+          "KEY_RELEASE_9",
+          "MOUSE_LEFT_DOWN",
+          "MOUSE_LEFT_UP",
+          "MOUSE_RIGHT_DOWN",
+          "MOUSE_RIGHT_UP"
+        ],
+        "feature_mode": "summary_grid8_shift_time",
+        "input_dim": 719,
+        "mouse_target_mode": "absolute",
+        "category_threshold": 0.25,
+        "category_threshold_mode": "group_exact_calibrated",
+        "category_thresholds": {
+          "KEY_PRESS_160": 0.6,
+          "KEY_PRESS_162": 0.6,
+          "KEY_PRESS_164": 0.6,
+          "KEY_PRESS_32": 0.6,
+          "KEY_PRESS_65": 0.6,
+          "KEY_PRESS_68": 0.6,
+          "KEY_PRESS_69": 0.6,
+          "KEY_PRESS_70": 0.6,
+          "KEY_PRESS_83": 0.6,
+          "KEY_PRESS_87": 0.6,
+          "KEY_PRESS_9": 0.6,
+          "KEY_RELEASE_160": 0.6,
+          "KEY_RELEASE_162": 0.6,
+          "KEY_RELEASE_32": 0.6,
+          "KEY_RELEASE_65": 0.6,
+          "KEY_RELEASE_68": 0.6,
+          "KEY_RELEASE_69": 0.6,
+          "KEY_RELEASE_70": 0.6,
+          "KEY_RELEASE_83": 0.6,
+          "KEY_RELEASE_87": 0.6,
+          "KEY_RELEASE_9": 0.6,
+          "MOUSE_LEFT_DOWN": 0.45,
+          "MOUSE_LEFT_UP": 0.45,
+          "MOUSE_RIGHT_DOWN": 0.45,
+          "MOUSE_RIGHT_UP": 0.45
+        },
+        "categorical_loss": "focal",
+        "categorical_pos_weight_cap": 20.0,
+        "action_history_len": 4,
+        "action_history_feedback": "autoregressive_predicted"
+      },
+      "comparisons": [
+        {
+          "model": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+          "reference": "noop",
+          "endpoint": "keyboard_accuracy",
+          "direction": "higher",
+          "min_effect": 0.05,
+          "status": "computed",
+          "delta": 0.06671176046176046,
+          "ci": [
+            0.02435064935064935,
+            0.11417748917748917
+          ],
+          "p_value": 0.0,
+          "num_clusters": 28,
+          "p_adjusted_holm": 0.0,
+          "reject_holm_0_05": true
+        },
+        {
+          "model": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+          "reference": "noop",
+          "endpoint": "mouse_button_accuracy",
+          "direction": "higher",
+          "min_effect": 0.05,
+          "status": "computed",
+          "delta": 0.1289173789173789,
+          "ci": [
+            0.025641025641025644,
+            0.25
+          ],
+          "p_value": 0.006,
+          "num_clusters": 9,
+          "p_adjusted_holm": 0.054,
+          "reject_holm_0_05": false
+        },
+        {
+          "model": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+          "reference": "last_seen_train",
+          "endpoint": "mouse_move_pearson",
+          "direction": "higher",
+          "min_effect": 0.05,
+          "status": "computed",
+          "delta": -0.09874529397164344,
+          "ci": [
+            -0.3203667128493993,
+            0.10618965512732301
+          ],
+          "p_value": 1.0,
+          "num_clusters": 24,
+          "p_adjusted_holm": 1.0,
+          "reject_holm_0_05": false
+        },
+        {
+          "model": "torch_mlp_idm_shooter32_seq_history_lw1.25_pc20_th0.25_h256_d3_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2",
+          "reference": "last_seen_train",
+          "endpoint": "mouse_move_scale_ratio_distance",
+          "direction": "lower",
+          "min_effect": 0.1,
+          "status": "computed",
+          "delta": -0.23995708415171058,
+          "ci": [
+            -0.6602547944238546,
+            0.14093722976773493
+          ],
+          "p_value": 1.0,
+          "num_clusters": 25,
+          "p_adjusted_holm": 1.0,
+          "reject_holm_0_05": false
+        }
+      ]
+    }
+  ]
+}
