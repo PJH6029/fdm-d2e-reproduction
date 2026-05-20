@@ -1,0 +1,15 @@
+{
+  "schema": "fdm_knn_train_config.v1",
+  "model_name": "knn_fdm_shooter64_surface_motion",
+  "labels_path": "outputs/idm_shooter64_train_pseudolabels/pseudolabels.jsonl",
+  "records_path": "outputs/data/real_multi_shooter64/train.jsonl",
+  "target_records_path": "outputs/data/real_multi_shooter64/heldout.jsonl",
+  "endpoints": "configs/eval/primary_endpoints.yaml",
+  "output_dir": "outputs/fdm_knn_shooter64_surface_motion",
+  "feature_mode": "summary_grid8_shift_surface_time",
+  "k": 5,
+  "distance_temperature": 0.1,
+  "keyboard_vote_threshold": 0.4,
+  "button_vote_threshold": 0.25,
+  "batch_size": 256
+}
