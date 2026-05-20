@@ -181,6 +181,65 @@ def _calibrated_category_thresholds_from_scores(
     return thresholds, diagnostics
 
 
+def _category_group(token: str) -> str:
+    if token.startswith("KEY_"):
+        return "keyboard"
+    if token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")):
+        return "mouse_button"
+    return "other"
+
+
+def _calibrated_group_thresholds_from_scores(
+    score_rows: list[list[float]],
+    label_rows: list[list[int]],
+    vocab: list[str],
+    *,
+    default_threshold: float,
+    grid: list[float],
+) -> tuple[dict[str, float], dict[str, Any]]:
+    thresholds = {token: default_threshold for token in vocab}
+    per_group: dict[str, Any] = {}
+    groups = sorted({_category_group(token) for token in vocab})
+    for group in groups:
+        indices = [idx for idx, token in enumerate(vocab) if _category_group(token) == group]
+        if not indices:
+            continue
+        eligible = [row_idx for row_idx, labels in enumerate(label_rows) if any(labels[idx] for idx in indices)]
+        if not eligible:
+            per_group[group] = {"threshold": default_threshold, "positive_examples": 0, "accuracy": None}
+            continue
+        best_threshold = default_threshold
+        best_key: tuple[float, float] = (-1.0, default_threshold)
+        best_correct = 0
+        for threshold in grid:
+            correct = 0
+            for row_idx in eligible:
+                pred = tuple(vocab[idx] for idx in indices if score_rows[row_idx][idx] >= threshold)
+                gold = tuple(vocab[idx] for idx in indices if label_rows[row_idx][idx])
+                correct += int(pred == gold)
+            accuracy = correct / len(eligible)
+            # Prefer exact-set accuracy, then a conservative/higher threshold.
+            key = (accuracy, threshold)
+            if key > best_key:
+                best_key = key
+                best_threshold = threshold
+                best_correct = correct
+        for idx in indices:
+            thresholds[vocab[idx]] = float(best_threshold)
+        per_group[group] = {
+            "threshold": float(best_threshold),
+            "positive_examples": len(eligible),
+            "accuracy": best_correct / len(eligible),
+            "correct": best_correct,
+        }
+    diagnostics = {
+        "default_threshold": default_threshold,
+        "grid": grid,
+        "per_group": per_group,
+    }
+    return thresholds, diagnostics
+
+
 def _mouse_baseline_deltas(
     records: list[dict[str, Any]],
     *,
@@ -403,12 +462,12 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "category_thresholds": category_thresholds,
     }
     threshold_mode = calibration_info["category_threshold_mode"]
-    if threshold_mode not in {"global", "per_token_calibrated"}:
+    if threshold_mode not in {"global", "per_token_calibrated", "group_exact_calibrated"}:
         raise ValueError(f"unsupported category_threshold_mode: {threshold_mode}")
 
     calibrated_model = None
     calibrated_mean = calibrated_std = calibrated_history = None
-    if threshold_mode == "per_token_calibrated" and vocab:
+    if threshold_mode in {"per_token_calibrated", "group_exact_calibrated"} and vocab:
         fraction = float(config.get("category_calibration_fraction", 0.0))
         fit_records, calibration_records = _split_calibration_records(
             train_records,
@@ -453,14 +512,23 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             if isinstance(raw_grid, list)
             else [0.02, 0.05, 0.08, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 0.9]
         )
-        category_thresholds, threshold_diagnostics = _calibrated_category_thresholds_from_scores(
-            score_rows,
-            label_rows,
-            vocab,
-            default_threshold=category_threshold,
-            grid=grid,
-            beta=float(config.get("category_calibration_beta", 1.0)),
-        )
+        if threshold_mode == "group_exact_calibrated":
+            category_thresholds, threshold_diagnostics = _calibrated_group_thresholds_from_scores(
+                score_rows,
+                label_rows,
+                vocab,
+                default_threshold=category_threshold,
+                grid=grid,
+            )
+        else:
+            category_thresholds, threshold_diagnostics = _calibrated_category_thresholds_from_scores(
+                score_rows,
+                label_rows,
+                vocab,
+                default_threshold=category_threshold,
+                grid=grid,
+                beta=float(config.get("category_calibration_beta", 1.0)),
+            )
         calibration_info.update(
             {
                 "category_thresholds": category_thresholds,

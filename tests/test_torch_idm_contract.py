@@ -6,6 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.training.torch_idm import (
     _calibrated_category_thresholds_from_scores,
+    _calibrated_group_thresholds_from_scores,
     _mouse_baseline_deltas,
     _split_calibration_records,
     torch_available,
@@ -55,6 +56,29 @@ class TorchIDMContractTests(unittest.TestCase):
         self.assertEqual(thresholds["MOUSE_LEFT_DOWN"], 0.5)
         self.assertEqual(diagnostics["per_token"]["MOUSE_LEFT_DOWN"]["tp"], 2)
         self.assertEqual(diagnostics["per_token"]["MOUSE_LEFT_DOWN"]["fp"], 0)
+
+    def test_group_exact_calibration_uses_separate_keyboard_and_button_thresholds(self):
+        vocab = ["KEY_PRESS_87", "MOUSE_LEFT_DOWN"]
+        thresholds, diagnostics = _calibrated_group_thresholds_from_scores(
+            score_rows=[
+                [0.8, 0.2],
+                [0.4, 0.8],
+                [0.7, 0.1],
+            ],
+            label_rows=[
+                [1, 0],
+                [0, 1],
+                [1, 0],
+            ],
+            vocab=vocab,
+            default_threshold=0.5,
+            grid=[0.15, 0.5, 0.75],
+        )
+
+        self.assertEqual(thresholds["KEY_PRESS_87"], 0.5)
+        self.assertEqual(thresholds["MOUSE_LEFT_DOWN"], 0.75)
+        self.assertEqual(diagnostics["per_group"]["keyboard"]["accuracy"], 1.0)
+        self.assertEqual(diagnostics["per_group"]["mouse_button"]["accuracy"], 1.0)
 
 
 if __name__ == "__main__":
