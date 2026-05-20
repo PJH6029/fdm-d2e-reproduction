@@ -215,6 +215,7 @@ def main() -> int:
                 "mouse_axis_class_weight_cap": mouse_axis_class_weight_cap,
                 "epochs": cfg.get("epochs"),
                 "feature_mode": cfg.get("feature_mode", "summary"),
+                "model_arch": cfg.get("model_arch", "mlp"),
                 "train_records": cfg.get("train_records"),
                 "target_records": cfg.get("target_records"),
             },

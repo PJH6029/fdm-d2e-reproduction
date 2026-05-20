@@ -112,7 +112,7 @@ def _ppm_grid_and_luma(path: str, grid_size: int = 4, luma_size: int = 16) -> tu
     return tuple(grid), luma
 
 
-def _next_frame_path(row: dict[str, Any]) -> str | None:
+def _frame_path_with_offset(row: dict[str, Any], offset: int) -> str | None:
     path = str(row.get("frame", {}).get("path", ""))
     if not path:
         return None
@@ -120,10 +120,17 @@ def _next_frame_path(row: dict[str, Any]) -> str | None:
     match = _FRAME_RE.match(frame_path.name)
     if not match:
         return None
+    frame_number = int(match.group("number")) + int(offset)
+    if frame_number < 0:
+        return None
     width = len(match.group("number"))
-    next_name = f"{match.group('prefix')}{int(match.group('number')) + 1:0{width}d}{match.group('suffix')}"
-    next_path = frame_path.with_name(next_name)
-    return str(next_path) if next_path.exists() else None
+    shifted_name = f"{match.group('prefix')}{frame_number:0{width}d}{match.group('suffix')}"
+    shifted_path = frame_path.with_name(shifted_name)
+    return str(shifted_path) if shifted_path.exists() else None
+
+
+def _next_frame_path(row: dict[str, Any]) -> str | None:
+    return _frame_path_with_offset(row, 1)
 
 
 def _frame_pair_features(
@@ -251,6 +258,40 @@ def _coarse_shift_surface_features(
     ]
 
 
+def _luma_stack_features(
+    row: dict[str, Any],
+    *,
+    offsets: tuple[int, ...] = (-2, -1, 0, 1, 2),
+    luma_size: int = 16,
+    include_deltas: bool = True,
+) -> list[float]:
+    plane_len = luma_size * luma_size
+    planes: list[tuple[float, ...]] = []
+    present: list[bool] = []
+    for offset in offsets:
+        path = _frame_path_with_offset(row, offset)
+        if path is None:
+            planes.append(tuple(0.0 for _ in range(plane_len)))
+            present.append(False)
+            continue
+        try:
+            _, luma = _ppm_grid_and_luma(path, grid_size=1, luma_size=luma_size)
+        except (OSError, ValueError):
+            planes.append(tuple(0.0 for _ in range(plane_len)))
+            present.append(False)
+        else:
+            planes.append(luma)
+            present.append(True)
+    values: list[float] = [float(value) for plane in planes for value in plane]
+    if include_deltas:
+        for idx in range(len(planes) - 1):
+            if present[idx] and present[idx + 1]:
+                values.extend(float(next_value - cur_value) for cur_value, next_value in zip(planes[idx], planes[idx + 1]))
+            else:
+                values.extend(0.0 for _ in range(plane_len))
+    return values
+
+
 def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> list[float]:
     base = _summary_features(row)
     if feature_mode == "summary":
@@ -263,6 +304,8 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
         return base + _frame_pair_features(row, grid_size=8, luma_size=16) + _temporal_basis_features(row)
     if feature_mode == "summary_grid8_shift_surface_time":
         return base + _frame_pair_features(row, grid_size=8, luma_size=16, shift_surface=True) + _temporal_basis_features(row)
+    if feature_mode == "summary_luma16_stack5_time":
+        return base + _luma_stack_features(row, offsets=(-2, -1, 0, 1, 2), luma_size=16) + _temporal_basis_features(row)
     raise ValueError(f"unsupported IDM feature_mode: {feature_mode}")
 
 

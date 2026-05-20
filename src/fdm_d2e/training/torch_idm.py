@@ -49,7 +49,7 @@ class TorchUnavailableError(RuntimeError):
     pass
 
 
-def _build_model(torch, input_dim: int, output_dim: int, hidden_dim: int, depth: int, dropout: float):
+def _build_mlp(torch, input_dim: int, output_dim: int, hidden_dim: int, depth: int, dropout: float):
     if depth <= 0:
         return torch.nn.Linear(input_dim, output_dim)
     layers = []
@@ -59,6 +59,121 @@ def _build_model(torch, input_dim: int, output_dim: int, hidden_dim: int, depth:
         dim = hidden_dim
     layers.append(torch.nn.Linear(dim, output_dim))
     return torch.nn.Sequential(*layers)
+
+
+def _luma_temporal_layout(input_dim: int, feature_mode: str, config: dict[str, Any]) -> dict[str, int]:
+    if feature_mode != "summary_luma16_stack5_time":
+        raise ValueError("model_arch=luma_temporal_conv requires feature_mode=summary_luma16_stack5_time")
+    luma_size = int(config.get("visual_luma_size", 16))
+    stack_frames = int(config.get("visual_stack_frames", 5))
+    if luma_size <= 0 or stack_frames < 2:
+        raise ValueError("visual_luma_size must be positive and visual_stack_frames must be >=2")
+    if luma_size != 16 or stack_frames != 5:
+        raise ValueError("summary_luma16_stack5_time requires visual_luma_size=16 and visual_stack_frames=5")
+    summary_dim = 16
+    temporal_dim = 12
+    plane_dim = luma_size * luma_size
+    visual_planes = stack_frames + (stack_frames - 1)
+    visual_dim = visual_planes * plane_dim
+    expected_feature_dim = summary_dim + visual_dim + temporal_dim
+    if input_dim < expected_feature_dim:
+        raise ValueError(
+            f"input_dim {input_dim} is too small for {feature_mode} visual layout "
+            f"(expected at least {expected_feature_dim})"
+        )
+    return {
+        "summary_dim": summary_dim,
+        "temporal_dim": temporal_dim,
+        "luma_size": luma_size,
+        "stack_frames": stack_frames,
+        "visual_planes": visual_planes,
+        "visual_offset": summary_dim,
+        "visual_dim": visual_dim,
+        "expected_feature_dim": expected_feature_dim,
+        "aux_dim": summary_dim + temporal_dim + max(0, input_dim - expected_feature_dim),
+    }
+
+
+def _build_luma_temporal_conv_model(
+    torch,
+    *,
+    input_dim: int,
+    output_dim: int,
+    hidden_dim: int,
+    depth: int,
+    dropout: float,
+    feature_mode: str,
+    config: dict[str, Any],
+):
+    layout = _luma_temporal_layout(input_dim, feature_mode, config)
+    conv_channels = int(config.get("visual_conv_channels", 8))
+    pool_hw = int(config.get("visual_conv_pool_hw", 4))
+    if conv_channels <= 0 or pool_hw <= 0:
+        raise ValueError("visual_conv_channels and visual_conv_pool_hw must be positive")
+
+    class LumaTemporalConvIDM(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.layout = dict(layout)
+            self.encoder = torch.nn.Sequential(
+                torch.nn.Conv3d(1, conv_channels, kernel_size=(3, 3, 3), padding=(1, 1, 1)),
+                torch.nn.GELU(),
+                torch.nn.Conv3d(conv_channels, conv_channels, kernel_size=(3, 3, 3), padding=(1, 1, 1)),
+                torch.nn.GELU(),
+                torch.nn.AdaptiveAvgPool3d((1, pool_hw, pool_hw)),
+                torch.nn.Flatten(),
+            )
+            encoded_dim = conv_channels * pool_hw * pool_hw
+            self.head = _build_mlp(
+                torch,
+                encoded_dim + int(layout["aux_dim"]),
+                output_dim,
+                hidden_dim,
+                depth,
+                dropout,
+            )
+
+        def forward(self, x):
+            visual_start = int(self.layout["visual_offset"])
+            visual_end = visual_start + int(self.layout["visual_dim"])
+            size = int(self.layout["luma_size"])
+            planes = int(self.layout["visual_planes"])
+            summary = x[:, :visual_start]
+            visual = x[:, visual_start:visual_end].reshape(x.shape[0], 1, planes, size, size)
+            aux = torch.cat([summary, x[:, visual_end:]], dim=1)
+            encoded = self.encoder(visual)
+            return self.head(torch.cat([encoded, aux], dim=1))
+
+    return LumaTemporalConvIDM()
+
+
+def _build_model(
+    torch,
+    input_dim: int,
+    output_dim: int,
+    hidden_dim: int,
+    depth: int,
+    dropout: float,
+    *,
+    config: dict[str, Any] | None = None,
+    feature_mode: str = "summary",
+):
+    config = config or {}
+    model_arch = str(config.get("model_arch", "mlp"))
+    if model_arch == "mlp":
+        return _build_mlp(torch, input_dim, output_dim, hidden_dim, depth, dropout)
+    if model_arch == "luma_temporal_conv":
+        return _build_luma_temporal_conv_model(
+            torch,
+            input_dim=input_dim,
+            output_dim=output_dim,
+            hidden_dim=hidden_dim,
+            depth=depth,
+            dropout=dropout,
+            feature_mode=feature_mode,
+            config=config,
+        )
+    raise ValueError(f"unsupported model_arch: {model_arch}")
 
 
 def _split_calibration_records(
@@ -777,6 +892,8 @@ def _fit_torch_model(
         hidden_dim=int(config.get("hidden_dim", 128)),
         depth=int(config.get("depth", 3)),
         dropout=float(config.get("dropout", 0.05)),
+        config=config,
+        feature_mode=feature_mode,
     ).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=float(config.get("lr", 3e-4)), weight_decay=float(config.get("weight_decay", 1e-4)))
     batch_size = int(config.get("batch_size", 256))
@@ -1234,6 +1351,7 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             "button_softmax_threshold": button_softmax_threshold,
             "mouse_head_mode": mouse_head_mode,
             "mouse_axis_classes": mouse_axis_classes,
+            "model_arch": str(config.get("model_arch", "mlp")),
         },
         checkpoint_path,
     )
@@ -1371,6 +1489,7 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "history_vocab": history_vocab,
         "feature_mode": feature_mode,
         "input_dim": input_dim,
+        "model_arch": str(config.get("model_arch", "mlp")),
         "mouse_target_mode": mouse_target_mode,
         "mouse_head_mode": mouse_head_mode,
         "mouse_axis_classes": mouse_axis_classes if mouse_head_mode == "axis_softmax" else [],

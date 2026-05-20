@@ -9,6 +9,7 @@ from fdm_d2e.training.torch_idm import (
     _axis_class_indices,
     _axis_class_to_delta,
     _axis_suffix_from_delta,
+    _build_model,
     _button_target_indices,
     _calibrated_category_thresholds_from_scores,
     _calibrated_button_softmax_threshold_from_scores,
@@ -19,6 +20,7 @@ from fdm_d2e.training.torch_idm import (
     _seed_mouse_delta_state,
     _split_calibration_records,
     button_softmax_classes,
+    require_torch,
     torch_available,
 )
 
@@ -26,6 +28,25 @@ from fdm_d2e.training.torch_idm import (
 class TorchIDMContractTests(unittest.TestCase):
     def test_torch_availability_probe_is_boolean(self):
         self.assertIsInstance(torch_available(), bool)
+
+    def test_luma_temporal_conv_model_accepts_feature_plus_history_tail(self):
+        if not torch_available():
+            self.skipTest("torch extra is not installed")
+        torch = require_torch()
+        model = _build_model(
+            torch,
+            input_dim=2332 + 2 + 13,
+            output_dim=7,
+            hidden_dim=8,
+            depth=1,
+            dropout=0.0,
+            config={"model_arch": "luma_temporal_conv", "visual_conv_channels": 2, "visual_conv_pool_hw": 2},
+            feature_mode="summary_luma16_stack5_time",
+        )
+
+        out = model(torch.zeros((3, 2332 + 2 + 13), dtype=torch.float32))
+
+        self.assertEqual(tuple(out.shape), (3, 7))
 
     def test_residual_mouse_baselines_are_causal_for_train_and_last_seen_for_target(self):
         train = [
