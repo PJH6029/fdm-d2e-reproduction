@@ -43,15 +43,22 @@ strongest useful artifacts are:
 | Apex16 categorical sweep | `artifacts/idm/idm_torch_apex16_sweep_h200.json` | Same Apex16 split | 30 categorical-weight/threshold variants; best rows preserve keyboard significance only | Categorical loss/threshold tuning alone does not recover mouse endpoints. |
 | Apex16 capacity sweep | `artifacts/idm/idm_torch_apex16_capacity_sweep_h200.json` | Same Apex16 split | 64 depth/width variants; zero-categorical-loss linear heads show apparent mouse-button wins | Treat zero-loss categorical wins as invalid failure-analysis clues because the categorical head is untrained; capacity reduction does not solve mouse motion. |
 | Apex36 rich-motion | `artifacts/idm/g4_h200_idm_run_h200_richmotion36b.json` | 36 Apex recordings; 1728 train / 576 heldout; H200 GPU | `keyboard_accuracy` delta `0.0704`, Holm-adjusted p `0.0045`; mouse Pearson raw p `0.0635` / Holm p `0.4445`; mouse button `0.0` accuracy | More clusters make the keyboard result robust and strengthen failure evidence: shared-head rich-motion MLP still does not clear mouse/click endpoints at scale. |
+| Apex36 residual mouse head | `artifacts/idm/g4_h200_idm_run_apex36_residual.json` | Same Apex36 split | `keyboard_accuracy` delta `0.1108`, Holm p `0.0`; `mouse_move_scale_ratio_distance` delta `0.1720`, Holm p `0.0`; mouse Pearson raw p `0.0655` / Holm p `0.4585`; mouse button not significant | Predicting residual motion over the last-seen baseline is a real improvement for scale calibration, but it still does not solve direction/correlation or click recovery. |
+| Shooter32 rich-motion | `artifacts/idm/g4_h200_idm_run_h200_shooter32.json` | 32 shooter/action recordings; 2304 train / 768 heldout; H200 GPU | `keyboard_accuracy` Holm p `0.0`; mouse button raw p did not survive Holm; mouse motion endpoints failed | Domain mixing/click-richer data helps keyboard robustness but does not by itself satisfy G4 mouse/click criteria. |
+| Shooter32 residual mouse head | `artifacts/idm/g4_h200_idm_run_shooter32_residual.json` | Same Shooter32 split | `keyboard_accuracy` delta `0.1047`, Holm p `0.0`; mouse button Holm p `1.0`; mouse Pearson Holm p `1.0`; scale-ratio failed | Residual motion does not transfer the Apex36 scale-ratio improvement to mixed shooter/action data. |
+| Shooter32 categorical sweep | `artifacts/idm/idm_torch_shooter32_sweep_h200.json` | Same Shooter32 split | 72 loss-weight / positive-cap / threshold variants; best mouse-button row reached `0.125` accuracy with raw p `0.0235` but Holm p `0.2115`; best mouse Pearson Holm p `1.0` | A trained categorical sweep improves the raw click signal but remains below the strong statistical bar; this rules out global threshold/pos-weight tuning as a sufficient G4 fix. |
 
 Current conclusion: G4 has meaningful non-smoke IDM progress across real D2E
 splits, including H200 checkpoint metadata and pseudo-label artifacts, but it
 should remain `in_progress`.  Apex36 rules out "just add more Apex recordings"
-as a sufficient fix for the mouse/click endpoints. The next credible completion
-attempt should add click-rich or mouse-specialized recordings and/or
-endpoint-specific trained heads, then require a single predeclared
-checkpoint/portfolio to beat the relevant baselines without depending on
-untrained categorical logits.
+as a sufficient fix for the mouse/click endpoints, while Shooter32 rules out a
+simple "mix in more click-heavy shooter recordings plus tune a global
+categorical threshold" fix. The next credible completion attempt should use
+endpoint-specific trained heads with calibration learned away from the heldout
+test split (for example per-token thresholds/focal loss for clicks plus a
+separate motion objective), then evaluate a single predeclared checkpoint or
+portfolio against the baselines without depending on untrained categorical
+logits or post-hoc endpoint cherry-picking.
 
 ## Completion caveat
 
