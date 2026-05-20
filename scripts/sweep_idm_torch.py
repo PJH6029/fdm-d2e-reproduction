@@ -51,6 +51,8 @@ def main() -> int:
     parser.add_argument("--loss-weights", default="0.25,0.5,0.75,1.0")
     parser.add_argument("--poscaps", default="1,5,20")
     parser.add_argument("--thresholds", default="0.25,0.45")
+    parser.add_argument("--hidden-dims", default="")
+    parser.add_argument("--depths", default="")
     parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--max-runs", type=int, default=None)
     args = parser.parse_args()
@@ -62,12 +64,14 @@ def main() -> int:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     work_dir = Path(args.work_dir) / Path(args.config).stem
     rows: list[dict[str, Any]] = []
-    grid = itertools.product(_floats(args.loss_weights), _floats(args.poscaps), _floats(args.thresholds))
-    for idx, (loss_weight, poscap, threshold) in enumerate(grid, start=1):
+    hidden_dims = [int(value) for value in _floats(args.hidden_dims)] or [int(base.get("hidden_dim", 128))]
+    depths = [int(value) for value in _floats(args.depths)] or [int(base.get("depth", 3))]
+    grid = itertools.product(_floats(args.loss_weights), _floats(args.poscaps), _floats(args.thresholds), hidden_dims, depths)
+    for idx, (loss_weight, poscap, threshold, hidden_dim, depth) in enumerate(grid, start=1):
         if args.max_runs is not None and idx > args.max_runs:
             break
         cfg = copy.deepcopy(base)
-        variant = f"lw{loss_weight:g}_pc{poscap:g}_th{threshold:g}"
+        variant = f"lw{loss_weight:g}_pc{poscap:g}_th{threshold:g}_h{hidden_dim}_d{depth}"
         model_name = f"{base.get('model_name', 'torch_mlp_idm')}_{variant}"
         cfg.update(
             {
@@ -75,6 +79,8 @@ def main() -> int:
                 "categorical_loss_weight": loss_weight,
                 "categorical_pos_weight_cap": poscap,
                 "category_threshold": threshold,
+                "hidden_dim": hidden_dim,
+                "depth": depth,
                 "output_dir": str(work_dir / variant),
                 "summary_out": str(work_dir / variant / "summary.json"),
             }
@@ -87,6 +93,8 @@ def main() -> int:
                 "categorical_loss_weight": loss_weight,
                 "categorical_pos_weight_cap": poscap,
                 "category_threshold": threshold,
+                "hidden_dim": hidden_dim,
+                "depth": depth,
                 "epochs": cfg.get("epochs"),
                 "feature_mode": cfg.get("feature_mode", "summary"),
                 "train_records": cfg.get("train_records"),

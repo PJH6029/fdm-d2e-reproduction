@@ -46,9 +46,11 @@ class TorchUnavailableError(RuntimeError):
 
 
 def _build_model(torch, input_dim: int, output_dim: int, hidden_dim: int, depth: int, dropout: float):
+    if depth <= 0:
+        return torch.nn.Linear(input_dim, output_dim)
     layers = []
     dim = input_dim
-    for _ in range(max(1, depth)):
+    for _ in range(depth):
         layers.extend([torch.nn.Linear(dim, hidden_dim), torch.nn.GELU(), torch.nn.Dropout(dropout)])
         dim = hidden_dim
     layers.append(torch.nn.Linear(dim, output_dim))
