@@ -103,3 +103,70 @@ def test_g003_progress_write_report(tmp_path):
     loaded = json.loads(output.read_text())
     assert loaded["schema"] == "g003_progress_report.v1"
     assert payload["expected_recording_variants"] == 4
+
+from fdm_d2e.cluster.g003_monitor import build_g003_resume_plan
+
+
+def test_g003_resume_plan_defers_when_parent_is_active():
+    progress = {
+        "status": "running",
+        "pid_running": True,
+        "decoded_recording_variants": 5,
+        "expected_recording_variants": 10,
+        "complete_shards": 0,
+        "num_shards": 2,
+        "stale_shards": [],
+        "no_progress_shards": [1],
+        "shards": [
+            {"shard_index": 0, "status": "running_or_pending"},
+            {"shard_index": 1, "status": "running_or_pending"},
+        ],
+    }
+    plan = build_g003_resume_plan(progress_report=progress, num_shards=2)
+    assert plan["status"] == "defer_active_parent"
+    assert plan["runnable"] is False
+    assert plan["incomplete_shards"] == [0, 1]
+    assert "extract_d2e_full_corpus.py" in plan["shard_commands"][0]["shell"]
+
+
+def test_g003_resume_plan_ready_when_parent_is_not_running():
+    progress = {
+        "status": "not_running_partial",
+        "pid_running": False,
+        "decoded_recording_variants": 1,
+        "expected_recording_variants": 4,
+        "complete_shards": 1,
+        "num_shards": 2,
+        "stale_shards": [],
+        "no_progress_shards": [],
+        "shards": [
+            {"shard_index": 0, "status": "complete"},
+            {"shard_index": 1, "status": "running_or_pending"},
+        ],
+    }
+    plan = build_g003_resume_plan(progress_report=progress, num_shards=2, uv_bin="/root/.local/bin/uv")
+    assert plan["status"] == "ready_to_resume"
+    assert plan["runnable"] is True
+    assert plan["incomplete_shards"] == [1]
+    assert plan["shard_commands"][0]["argv"][0] == "/root/.local/bin/uv"
+    assert "merge_d2e_full_corpus_shards.py" in plan["followup_commands_after_all_shards_complete"]["merge"]["shell"]
+
+
+def test_g003_resume_plan_noop_when_all_shards_complete():
+    progress = {
+        "status": "complete",
+        "pid_running": False,
+        "decoded_recording_variants": 4,
+        "expected_recording_variants": 4,
+        "complete_shards": 2,
+        "num_shards": 2,
+        "stale_shards": [],
+        "no_progress_shards": [],
+        "shards": [
+            {"shard_index": 0, "status": "complete"},
+            {"shard_index": 1, "status": "complete"},
+        ],
+    }
+    plan = build_g003_resume_plan(progress_report=progress, num_shards=2)
+    assert plan["status"] == "no_resume_needed"
+    assert plan["shard_commands"] == []

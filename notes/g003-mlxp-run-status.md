@@ -96,6 +96,7 @@ kubectl -n p-production exec prod-rsv-jeonghunpark-20260521-76e25a -- bash -lc '
 - Monitor artifact copied back to `artifacts/idm/g003_full_compact_parallel_progress.json`.
 - Monitor status: `running`; decoded recording variants: `50 / 918`; complete shards: `0 / 16`; stale shards: `[]`; no-progress shards: `[2]`; parent PID running: `true`.
 - Merged train/eval and IDM metrics are still absent, so this is progress evidence only.
+- Resume plan artifact `artifacts/idm/g003_resume_plan.json` currently reports `defer_active_parent` because the original parent PID is still active; do not run resume shard commands unless the parent exits or an operator intentionally reviews `--allow-active-parent`.
 
 Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts exist:
 

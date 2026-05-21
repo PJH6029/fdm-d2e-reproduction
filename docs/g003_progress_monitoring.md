@@ -54,3 +54,22 @@ Do not checkpoint `G003-d2e-only-idm` complete until all are present and verifie
 - `artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.json`
 
 This monitor is progress evidence only. It is not a completion claim.
+
+
+## Resume planning after interruption
+
+If the parent process exits before all shard summaries exist, first generate a
+read-only resume plan:
+
+```bash
+uv run python scripts/plan_g003_resume.py   --progress-report artifacts/idm/g003_full_compact_parallel_progress.json   --output artifacts/idm/g003_resume_plan.json
+```
+
+The plan lists incomplete shards and exact extraction commands. It deliberately
+sets `runnable=false` while the original parent PID is still active. Only use the
+shard commands after verifying the parent process is gone or after intentionally
+passing `--allow-active-parent` for an operator-reviewed recovery.
+
+The per-recording cache layout makes these shard reruns resumable: existing
+`by_recording/.../all_records.jsonl` and `decode_summary.json` files are reused,
+while each shard aggregate JSONL is rebuilt from per-recording records.

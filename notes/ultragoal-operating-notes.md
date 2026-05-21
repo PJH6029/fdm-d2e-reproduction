@@ -56,5 +56,6 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current G003 full-corpus IDM run path: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - G003 progress monitor exists (`scripts/monitor_g003_progress.py`, `docs/g003_progress_monitoring.md`) for non-mutating shard/PID/stale-progress summaries; monitor output is progress evidence only, not G003 completion.
+- G003 resume planner exists (`scripts/plan_g003_resume.py`, `artifacts/idm/g003_resume_plan.json`) and defers while the original parent PID is active; use only for operator-reviewed recovery if G003 stops before all shard summaries exist.
 - Runtime adapter contract evidence: `artifacts/runtime/g007_runtime_replay_adapter_contract.json`; commits `34cddb7` and `e858114`; OMX checkpointed `G007-runtime-sdk-adapter` complete locally.
 - Do not checkpoint `G003-d2e-only-idm` complete until all 918 source variants are decoded/merged, streaming IDM training finishes, reports/metrics are validated, and evidence summaries are committed.
