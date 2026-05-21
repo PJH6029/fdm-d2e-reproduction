@@ -106,6 +106,18 @@ training command in `artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.l
 if it fell back to single-GPU training, rerun only the IDM training stage with
 `torchrun` on the merged full-corpus JSONLs before checkpointing G003 complete.
 
+The standalone rerun/recovery entry point is:
+
+```bash
+NPROC_PER_NODE=4 EXPECTED_GPUS=4 bash scripts/run_g003_idm_training_4xh200.sh
+```
+
+It requires merged full-corpus JSONLs, runs GPU smoke, launches `torchrun`, and
+writes `artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json` plus
+`artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv`. These artifacts are
+part of the final G003 gate so the IDM claim includes explicit multi-GPU
+training evidence.
+
 
 ## G003 checkpoint metadata contract
 
