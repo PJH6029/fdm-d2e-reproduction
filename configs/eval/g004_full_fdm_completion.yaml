@@ -1,0 +1,40 @@
+{
+  "schema": "g004_full_fdm_completion_config.v1",
+  "goals_path": ".omx/ultragoal/goals.json",
+  "goal_id": "G004-d2e-only-fdm-4xh200",
+  "prerequisite_goals": ["G003-d2e-only-idm"],
+  "output_path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+  "expected_nproc_per_node": 4,
+  "expected_gpus": 4,
+  "min_validation_checkpoints": 1,
+  "require_convergence_plateau": false,
+  "required_target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],
+  "paths": {
+    "fdm_train_records": "outputs/fdm_streaming_d2e_full_compact/fdm_train_pseudolabeled_records.jsonl",
+    "fdm_target_records": "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl",
+    "split_summary": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+    "checkpoint_metadata": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "resolved_config": "outputs/fdm_streaming_d2e_full_compact/resolved_config.json",
+    "summary": "outputs/fdm_streaming_d2e_full_compact/summary.json",
+    "torch_train_summary": "outputs/fdm_streaming_d2e_full_compact/torch_train_summary.json",
+    "checkpoint": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+    "predictions": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+    "metrics": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
+    "statistical_comparison": "outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json",
+    "convergence_report": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json",
+    "artifact_summary": "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json",
+    "run_summary": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
+    "gpu_monitor": "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv",
+    "split_stats_summary": "artifacts/eval/g004_split_statistical_comparisons_summary.json"
+  },
+  "metadata_expectations": {
+    "label_source": "idm_pseudolabel",
+    "oracle_ground_truth_control": false,
+    "source_namespace": "d2e_full_corpus",
+    "source_idm_metadata.exists": true,
+    "data_universe.exists": true,
+    "split_contract.exists": true,
+    "torch_checkpoint_metadata.distributed.enabled": true,
+    "torch_checkpoint_metadata.distributed.world_size": 4
+  }
+}

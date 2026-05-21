@@ -37,7 +37,8 @@ The audit checks, without mutating OMX/Codex goal state:
    failures), per-split statistical summaries for temporal, heldout-recording,
    and heldout-game splits, and `g003_full_idm_completion_audit.status=pass`.
 4. G004 D2E-only FDM artifacts exist: checkpoint, predictions, metrics,
-   statistical comparison, convergence report, and 4×H200 run evidence. The
+   statistical comparison, convergence report, split-stat summaries,
+   `g004_full_fdm_completion_audit.status=pass`, and 4×H200 run evidence. The
    FDM metadata must prove IDM-pseudolabel training, no oracle ground-truth
    control, D2E-only provenance, source-IDM metadata linkage, distributed
    world-size/run-exit evidence, and per-split statistical summaries for

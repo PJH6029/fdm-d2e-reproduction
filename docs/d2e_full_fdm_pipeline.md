@@ -79,6 +79,22 @@ validation checkpoints and a preregistered plateau rule:
   checkpoints;
 - final full metrics/statistics are still computed on the full target stream.
 
+
+## G004 completion audit
+
+Before checkpointing `G004-d2e-only-fdm-4xh200` complete, run:
+
+```bash
+uv run python scripts/validate_g004_full_fdm_completion.py
+```
+
+During upstream G003/G004 execution this may be run with `--allow-fail`, but a
+terminal G004 checkpoint requires `artifacts/fdm/g004_full_fdm_completion_audit.json`
+to report `status == pass`. The audit checks G003/G004 goal state, D2E-only
+FDM-from-IDM-pseudolabel provenance, split materialization counts, prediction
+coverage, target split tags, convergence-report presence, split statistics, and
+4×H200 run evidence.
+
 ## Claim boundary
 
 G004 is not complete merely because this path runs. Completion still requires:

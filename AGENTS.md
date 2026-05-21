@@ -46,16 +46,16 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 13:51 KST.
+Latest known live run snapshot: 2026-05-21 13:56 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout was synced to commit `a0fbd99` (`Require full-corpus and split-stat gate evidence`) before the local G003 completion-audit patch.
+- Pod checkout was synced to commit `8495d65` (`Add G003 full-IDM completion audit`); the local G004 completion-audit patch still needs push/sync after commit.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
-- Last decoded count: `76 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
+- Last decoded count: `77 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
 - Monitor status was `running`; long-running active shards `[8, 9, 13]`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
 
 Useful pod monitor command:
@@ -120,6 +120,10 @@ Required separation:
 - D2E-only vs D2E+aux metrics on the same D2E eval split,
 - no auxiliary leakage into D2E heldout recordings/games.
 
+## G004 completion gate
+
+Do **not** checkpoint `G004-d2e-only-fdm-4xh200` complete until `scripts/validate_g004_full_fdm_completion.py` reports `status=pass` in `artifacts/fdm/g004_full_fdm_completion_audit.json`. This audit requires G003 complete, D2E-only FDM-from-IDM-pseudolabel provenance, split count consistency, prediction coverage, convergence-report evidence, split-stat summaries, and 4×H200 run metadata.
+
 ## Runtime and harness boundary
 
 Current adapter-contract evidence is not live commercial-game control. Future live evidence must use open-source graphical games/tasks and include:
@@ -144,6 +148,7 @@ uv run pytest -q
 uv run python scripts/audit_claim_boundaries.py --output artifacts/reproducibility/claim_boundary_audit.json
 uv run python scripts/build_repro_package_manifest.py --output artifacts/reproducibility/package_manifest.json
 uv run python scripts/validate_g003_full_idm_completion.py --allow-fail
+uv run python scripts/validate_g004_full_fdm_completion.py --allow-fail
 uv run python scripts/validate_final_quality_gates.py --allow-fail
 ```
 

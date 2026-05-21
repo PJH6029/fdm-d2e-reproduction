@@ -188,3 +188,9 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Monitor status: `running`; decoded recording variants: `76 / 918`; complete shards: `0 / 16`; long-running active shards: `[8, 9, 13]`; stale shards: `[]`; no-progress shards: `[]`; IDM metrics absent.
 - Observed throughput: `33.31` recording variants/hour; ETA at current rate: `25.28` hours. This remains progress telemetry only.
 - Added `artifacts/idm/g003_full_idm_completion_audit.json`; current status is `fail` with `24` expected errors while G003 artifacts are missing/incomplete.
+
+## 2026-05-21 13:56 KST post-G003-audit sync snapshot
+
+- Pushed commit `8495d65` and fast-forwarded pod checkout to `8495d65`; `scripts/validate_g003_full_idm_completion.py` and config are present in pod.
+- Parent PID `9289` still running; monitor status `running`; decoded recording variants `77 / 918`; complete shards `0 / 16`; long-running active shards `[8, 9, 13]`; stale/no-progress shards `[]`; IDM metrics absent.
+- Pod-local G003 completion audit reports `fail` with `24` expected errors while full extraction/training artifacts are incomplete.

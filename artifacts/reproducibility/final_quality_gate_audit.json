@@ -552,6 +552,12 @@
           "exists": false,
           "bytes": 0,
           "sha256": null
+        },
+        {
+          "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+          "exists": true,
+          "bytes": 8630,
+          "sha256": "cf1077f90723959e3ff3e3c7bf581b67e63cabc63430c7d2f16748267c640b76"
         }
       ],
       "findings": [
@@ -723,6 +729,14 @@
           "code": "json_assertion_file_missing",
           "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
           "json_path": "status"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_mismatch",
+          "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+          "json_path": "status",
+          "expected": "pass",
+          "actual": "fail"
         },
         {
           "severity": "error",
@@ -986,8 +1000,8 @@
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 30152,
-          "sha256": "1a903a4f371b15fe3ac2400b1fdf4f971c66a94044e3d7b731335132bbf6fa5e"
+          "bytes": 31186,
+          "sha256": "6b3ce2ba5c1b25d9a98279dfc67f9cd77aa66deb7fc075ff6402832709603dba"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -1010,8 +1024,8 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 30152,
-    "sha256": "1a903a4f371b15fe3ac2400b1fdf4f971c66a94044e3d7b731335132bbf6fa5e"
+    "bytes": 31186,
+    "sha256": "6b3ce2ba5c1b25d9a98279dfc67f9cd77aa66deb7fc075ff6402832709603dba"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -1412,6 +1426,14 @@
     },
     {
       "severity": "error",
+      "code": "json_assertion_mismatch",
+      "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+      "json_path": "status",
+      "expected": "pass",
+      "actual": "fail"
+    },
+    {
+      "severity": "error",
       "code": "json_assertion_file_missing",
       "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
       "json_path": "split"
@@ -1540,6 +1562,6 @@
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
     }
   ],
-  "error_count": 85,
+  "error_count": 86,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

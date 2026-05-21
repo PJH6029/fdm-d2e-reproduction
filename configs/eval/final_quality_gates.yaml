@@ -158,7 +158,8 @@
         "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
         "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
         "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
-        "artifacts/eval/g004_split_statistical_comparisons_summary.json"
+        "artifacts/eval/g004_split_statistical_comparisons_summary.json",
+        "artifacts/fdm/g004_full_fdm_completion_audit.json"
       ],
       "json_assertions": [
         {
@@ -208,6 +209,11 @@
         },
         {
           "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
+          "json_path": "status",
+          "equals": "pass"
+        },
+        {
+          "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
           "json_path": "status",
           "equals": "pass"
         },
