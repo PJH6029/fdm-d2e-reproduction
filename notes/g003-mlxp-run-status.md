@@ -259,3 +259,10 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Parent PID `9289` still running; decoded recording variants `92 / 918`; complete shards `0 / 16`; merged train/eval and IDM metrics absent.
 - G003 monitor status remained `running`; stale/no-progress shards `[]`.
 - G004 completion gate now rejects next-frame inverse-dynamics features for FDM and requires prior-action context provenance in the split summary.
+
+## 2026-05-21 15:15 KST G005 namespace-gate sync snapshot
+
+- Pushed commit `875f46f` and fast-forwarded pod checkout to `875f46f`; G005 completion now requires `artifacts/aux/g005_aux_namespace_manifest.json` with `completion_ready=true`, source-specific aux namespaces/action heads, no D2E heldout overlap, and byte-identical D2E eval-manifest hashes for D2E-only vs D2E+aux ablations.
+- Parent PID `9289` still running; decoded recording variants `94 / 918`; complete shards `0 / 16`; merged train/eval and IDM metrics absent.
+- Attached GPU monitor PID `31950` still running. The live pod-owned CSV `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv` remains uncommitted; copy/package it only after the integrated parent exits and monitor metadata is written.
+- G003 monitor status remained `running`; stale/no-progress shards `[]`.
