@@ -1,0 +1,68 @@
+{
+  "attached_monitor_metadata": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_attached.json",
+  "attached_monitor_samples": null,
+  "checkpoint_path": null,
+  "claim_boundary": "4xH200 run evidence synthesized from a successful integrated G003 parallel extraction+training run plus attached GPU monitor; not a completion claim without G003 audit pass.",
+  "convergence_plateau_met": null,
+  "convergence_report_path": null,
+  "distributed": {},
+  "exit_code": 2,
+  "expected_gpus": 4,
+  "findings": [
+    {
+      "code": "missing_integrated_run_evidence",
+      "path": "artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.json",
+      "severity": "error"
+    },
+    {
+      "code": "missing_idm_summary",
+      "path": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
+      "severity": "error"
+    },
+    {
+      "code": "missing_checkpoint_metadata",
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "severity": "error"
+    },
+    {
+      "code": "missing_gpu_monitor",
+      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
+      "severity": "error"
+    },
+    {
+      "code": "missing_metrics",
+      "path": "outputs/idm_streaming_d2e_full_compact/metrics.json",
+      "severity": "error"
+    },
+    {
+      "code": "missing_attached_monitor_metadata",
+      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_attached.json",
+      "severity": "error"
+    }
+  ],
+  "git_head": "d2e73048008b561422595e1aed52ddd8b226b04f",
+  "gpu_monitor_log": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
+  "gpu_monitor_sha256": null,
+  "gpu_monitor_status": {
+    "covers_expected_gpus": false,
+    "expected_gpus": 4,
+    "rows": 0,
+    "sample_count": 0,
+    "unique_gpu_indices": []
+  },
+  "integrated_run_evidence": "artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.json",
+  "integrated_run_evidence_sha256": null,
+  "label_quality_report_path": null,
+  "metadata_exists": false,
+  "metadata_path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+  "metrics_exists": false,
+  "metrics_path": "outputs/idm_streaming_d2e_full_compact/metrics.json",
+  "nproc_per_node": 4,
+  "schema": "g003_idm_4xh200_train_run.v1",
+  "source": "attached_summary_from_integrated_parallel_run",
+  "statistical_comparison_path": null,
+  "summary_exists": false,
+  "summary_path": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
+  "target_records_count": null,
+  "train_records_count": null
+}

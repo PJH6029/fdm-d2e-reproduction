@@ -55,6 +55,34 @@ Do not checkpoint `G003-d2e-only-idm` complete until all are present and verifie
 
 This monitor is progress evidence only. It is not a completion claim.
 
+## Attached GPU-utilization evidence
+
+The progress monitor above reports shard/PID health, but it does not sample GPU
+utilization for the final 4×H200 evidence path. For an already-running integrated
+parallel job, attach a separate sampler without restarting the job:
+
+```bash
+nohup uv run python scripts/attach_g003_gpu_monitor.py \
+  --pid-file outputs/cluster/g003_full_compact_parallel.pid \
+  --output artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv \
+  --metadata-out artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_attached.json \
+  --monitor-pid-file outputs/cluster/g003_attached_gpu_monitor.pid \
+  --interval-seconds 30 \
+  > artifacts/idm/g003_attached_gpu_monitor.log 2>&1 &
+```
+
+The attached monitor writes one CSV row per visible GPU per sample and exits
+when the parent PID exits. A second invocation is fail-safe: it detects a live
+monitor PID and records `existing_monitor_running` instead of duplicating
+sampling. After the integrated run finishes, run:
+
+```bash
+uv run python scripts/build_g003_attached_train_run_summary.py
+```
+
+That summary remains non-passing until the integrated run evidence, checkpoint
+metadata, metrics, and four-GPU monitor coverage are all present.
+
 
 ## Resume planning after interruption
 

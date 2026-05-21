@@ -98,9 +98,9 @@
     },
     "run_summary": {
       "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 2506,
+      "sha256": "3c18933b2eb3f5f54d146e4376d3feea2ba084f97ff7d56c348115a8b59ccb58"
     },
     "gpu_monitor": {
       "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
@@ -223,12 +223,6 @@
     {
       "severity": "error",
       "code": "missing_required_artifact",
-      "artifact_key": "run_summary",
-      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
       "artifact_key": "gpu_monitor",
       "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"
     },
@@ -272,6 +266,11 @@
       "json_path": "distributed.world_size",
       "expected": 4,
       "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "run_summary_exit_nonzero",
+      "actual": 2
     }
   ],
   "error_count": 24,

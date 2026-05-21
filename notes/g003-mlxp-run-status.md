@@ -230,3 +230,9 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Pushed commit `22717f6` and fast-forwarded pod checkout to `22717f6`; `scripts/validate_g007_completion.py` and config are present in pod.
 - Parent PID `9289` still running; decoded recording variants `83 / 918`; complete shards `0 / 16`; IDM metrics absent.
 - Local committed G007 completion audit reports `pass`. Pod-local G007 audit reports `fail` with `1` error only because `.omx/ultragoal/goals.json` is intentionally not present in the ignored pod checkout; use local worktree for OMX goal-state audits.
+
+## 2026-05-21 14:38 KST post-G007-sync snapshot
+
+- Pushed commit `d2e7304` and fast-forwarded pod checkout to `d2e7304`.
+- Parent PID `9289` still running; decoded recording variants `87 / 918`; complete shards `0 / 16`; all 16 shard Python processes were still active; IDM metrics absent.
+- The active integrated run may train with 4 ranks, but it was not launched through the dedicated standalone wrapper that writes the final G003 4×H200 monitor summary. Do not kill or restart it for this. Instead, after pulling the next commit, attach `scripts/attach_g003_gpu_monitor.py` to `outputs/cluster/g003_full_compact_parallel.pid`, then run `scripts/build_g003_attached_train_run_summary.py` after the integrated run exits.

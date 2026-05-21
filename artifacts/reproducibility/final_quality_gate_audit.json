@@ -175,9 +175,9 @@
         },
         {
           "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 2506,
+          "sha256": "3c18933b2eb3f5f54d146e4376d3feea2ba084f97ff7d56c348115a8b59ccb58"
         },
         {
           "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
@@ -212,8 +212,8 @@
         {
           "path": "artifacts/idm/g003_full_idm_completion_audit.json",
           "exists": true,
-          "bytes": 8234,
-          "sha256": "b7cbc31e05b06c814cdf8b25cd01e56f3cddfae218403b923de5e2cb15e6a50d"
+          "bytes": 8208,
+          "sha256": "18330ba593d19c7d408ff095f49539d06c0c4f9f867c7439f72be8995365e86e"
         }
       ],
       "findings": [
@@ -318,12 +318,6 @@
           "severity": "error",
           "code": "missing_required_artifact",
           "goal_id": "G003-d2e-only-idm",
-          "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
           "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"
         },
         {
@@ -382,15 +376,11 @@
         },
         {
           "severity": "error",
-          "code": "json_assertion_file_missing",
+          "code": "json_assertion_mismatch",
           "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
-          "json_path": "exit_code"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
-          "json_path": "nproc_per_node"
+          "json_path": "exit_code",
+          "expected": 0,
+          "actual": 2
         },
         {
           "severity": "error",
@@ -961,7 +951,7 @@
           "path": "artifacts/runtime/g007_completion_audit.json",
           "exists": true,
           "bytes": 1474,
-          "sha256": "c0a26b7b6479858ac7371bdcbeea55e169372bf8c0a555ae246d7d97b6bd895d"
+          "sha256": "ada245c915982f81af5952353a3db8cf8bcc4a12e81cebc1b42faaf2cda209bd"
         },
         {
           "path": "configs/runtime/game_adapter_demo.yaml",
@@ -1068,8 +1058,8 @@
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 36302,
-          "sha256": "374244c07ef420223c331b4351bfd8fa237718420d53d434c029d425a231120b"
+          "bytes": 37360,
+          "sha256": "e716998f7b0e0bc118ff9aa8ab42ae82d72acead8d4b98730a6b2b141629c558"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -1106,8 +1096,8 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 36302,
-    "sha256": "374244c07ef420223c331b4351bfd8fa237718420d53d434c029d425a231120b"
+    "bytes": 37360,
+    "sha256": "e716998f7b0e0bc118ff9aa8ab42ae82d72acead8d4b98730a6b2b141629c558"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -1213,12 +1203,6 @@
       "severity": "error",
       "code": "missing_required_artifact",
       "goal_id": "G003-d2e-only-idm",
-      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
       "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"
     },
     {
@@ -1277,15 +1261,11 @@
     },
     {
       "severity": "error",
-      "code": "json_assertion_file_missing",
+      "code": "json_assertion_mismatch",
       "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
-      "json_path": "exit_code"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
-      "json_path": "nproc_per_node"
+      "json_path": "exit_code",
+      "expected": 0,
+      "actual": 2
     },
     {
       "severity": "error",
@@ -1690,6 +1670,6 @@
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
     }
   ],
-  "error_count": 92,
+  "error_count": 90,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

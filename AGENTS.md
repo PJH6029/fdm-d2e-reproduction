@@ -46,16 +46,16 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 14:31 KST.
+Latest known live run snapshot: 2026-05-21 14:38 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout was synced to commit `22717f6` (`Add G007 adapter completion audit`); G003/G004/G005/G006/G007/G008/G009 completion audit scripts are present in pod.
+- Pod checkout was synced to commit `d2e7304` (`Record G007 audit pod sync`); G003/G004/G005/G006/G007/G008/G009 completion audit scripts are present in pod.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
-- Last decoded count: `83 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
+- Last decoded count: `87 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
 - Monitor status was `running`; long-running active shards `[8, 9, 13]`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
 
 Useful pod monitor command:
@@ -91,6 +91,40 @@ The current streaming IDM config must carry:
 - `data_universe: artifacts/sources/d2e_full_data_universe_manifest.json`,
 - `split_contract: artifacts/sources/d2e_full_split_contract.json`,
 - `source_namespace: d2e_full_corpus`.
+
+### Current-run 4×H200 monitor recovery
+
+The active integrated run predates the dedicated standalone train wrapper, so do
+not restart it just to create GPU-monitor evidence. Use the attached monitor
+path once the commit containing `scripts/attach_g003_gpu_monitor.py` and
+`scripts/build_g003_attached_train_run_summary.py` is pulled in the pod:
+
+```bash
+kubectl -n p-production exec prod-rsv-jeonghunpark-20260521-76e25a -- bash -lc '
+  cd /root/work/code/continuous-gui-poc/fdm-d2e-reproduction
+  git fetch origin main && git pull --ff-only origin main
+  export PATH="$HOME/.local/bin:$PATH"
+  nohup /root/.local/bin/uv run python scripts/attach_g003_gpu_monitor.py \
+    --pid-file outputs/cluster/g003_full_compact_parallel.pid \
+    --output artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv \
+    --metadata-out artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_attached.json \
+    --monitor-pid-file outputs/cluster/g003_attached_gpu_monitor.pid \
+    --interval-seconds 30 \
+    > artifacts/idm/g003_attached_gpu_monitor.log 2>&1 &
+  echo monitor_launcher_pid=$!
+'
+```
+
+When the integrated run exits, synthesize
+`artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json` with:
+
+```bash
+uv run python scripts/build_g003_attached_train_run_summary.py
+```
+
+The summary builder is fail-closed and requires integrated run evidence,
+checkpoint metadata/metrics, attached-monitor metadata, and CSV coverage for all
+four GPU indices before it reports `exit_code=0`.
 
 ## Dataset and split artifacts
 

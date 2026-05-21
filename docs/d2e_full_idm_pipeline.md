@@ -87,6 +87,42 @@ The monitor summarizes decoded/expected recording variants, completed shards,
 stale/no-progress shards, parent PID state, and whether merged train/eval plus
 IDM metrics exist. It is progress evidence only and does not complete G003.
 
+## Attached 4×H200 GPU monitor for an already-running integrated run
+
+If the integrated parallel script was launched before the standalone
+`run_g003_idm_training_4xh200.sh` wrapper is used, do **not** restart or kill the
+long-running extraction/training process just to add monitor evidence. Attach a
+non-mutating GPU sampler to the parent PID instead:
+
+```bash
+nohup uv run python scripts/attach_g003_gpu_monitor.py \
+  --pid-file outputs/cluster/g003_full_compact_parallel.pid \
+  --output artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv \
+  --metadata-out artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_attached.json \
+  --monitor-pid-file outputs/cluster/g003_attached_gpu_monitor.pid \
+  --interval-seconds 30 \
+  > artifacts/idm/g003_attached_gpu_monitor.log 2>&1 &
+```
+
+The monitor is idempotent: if `outputs/cluster/g003_attached_gpu_monitor.pid`
+points at a live process, it records `existing_monitor_running` and does not
+start a duplicate sampler unless `--force` is explicitly used. This evidence is
+only GPU-utilization telemetry; it does not prove G003 completion.
+
+After the integrated run finishes and writes
+`artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.json`, synthesize the
+required G003 train-run summary:
+
+```bash
+uv run python scripts/build_g003_attached_train_run_summary.py
+```
+
+The builder only passes when the integrated run evidence, IDM summary,
+checkpoint metadata, metrics, attached monitor metadata, and a GPU monitor CSV
+covering all four GPU indices exist. Until then it writes
+`artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json` with `exit_code=2` and
+explicit findings so the final gate remains fail-closed.
+
 ## Distributed IDM training
 
 `scripts/run_g003_d2e_full_idm_parallel.sh` defaults to
