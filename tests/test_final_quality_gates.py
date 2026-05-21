@@ -91,3 +91,8 @@ def test_final_quality_gate_writes_output_without_requiring_self_reference(tmp_p
     written = json.loads((tmp_path / "artifacts/reproducibility/final_quality_gate_audit.json").read_text())
     assert payload["status"] == "pass"
     assert written["schema"] == "final_quality_gate_audit.v1"
+
+
+def test_repro_manifest_covers_configured_g006_build_summary():
+    text = Path("scripts/build_repro_package_manifest.py").read_text()
+    assert '"artifacts/eval/g006_final_artifact_build_summary.json"' in text

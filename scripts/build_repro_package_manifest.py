@@ -173,6 +173,7 @@ DEFAULT_PATTERNS = [
     "artifacts/aux/g005_aux_completion_audit.json",
     "artifacts/harness/g008_live_suite_completion_audit.json",
     "artifacts/eval/final_*.json",
+    "artifacts/eval/g006_final_artifact_build_summary.json",
     "artifacts/eval/g00[34]_split_statistical_comparisons_summary.json",
     "artifacts/eval/g006_evaluation_readiness_audit.json",
     "artifacts/eval/g006_completion_audit.json",
