@@ -14,6 +14,40 @@
     "temporal"
   ],
   "ablation_splits": [],
+  "d2e_only_audit_report": {
+    "g003": {
+      "audit_key": "g003",
+      "status": "fail",
+      "error_count": 23,
+      "included_recording_variants": 918,
+      "source_ids": {
+        "d2e_480p": 459,
+        "d2e_original": 459
+      },
+      "resolution_tiers": {
+        "480p": 459,
+        "original_fhd_qhd": 459
+      },
+      "decode_source_ids": {},
+      "decode_resolution_tiers": {}
+    },
+    "g004": {
+      "audit_key": "g004",
+      "status": "fail",
+      "error_count": 46,
+      "included_recording_variants": 918,
+      "source_ids": {
+        "d2e_480p": 459,
+        "d2e_original": 459
+      },
+      "resolution_tiers": {
+        "480p": 459,
+        "original_fhd_qhd": 459
+      },
+      "decode_source_ids": {},
+      "decode_resolution_tiers": {}
+    }
+  },
   "namespace_report": {
     "aux_source_ids": [],
     "d2e_eval_splits": [],
@@ -63,8 +97,8 @@
     "aux_plan_doc": {
       "path": "docs/auxiliary_data_plan.md",
       "exists": true,
-      "bytes": 15859,
-      "sha256": "a90b6b518e83f1057cd6898e7400e9464e5841b3acd28cad6c8f8252c9fe9ca1"
+      "bytes": 16430,
+      "sha256": "e970b4dd999996ee250281b2f4e15b51f41f6dd6cea850b141526fd9d4128bd9"
     },
     "action_registry": {
       "path": "artifacts/aux/g005_aux_action_registry.json",
@@ -95,6 +129,18 @@
       "exists": false,
       "bytes": 0,
       "sha256": null
+    },
+    "g003_completion_audit": {
+      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "exists": true,
+      "bytes": 8633,
+      "sha256": "1858703d2bedb8ead48840c731a9e9730538c523d8a99b9e6594c650984e8567"
+    },
+    "g004_completion_audit": {
+      "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+      "exists": true,
+      "bytes": 14059,
+      "sha256": "e0bec9eec0b0cfbe1e52210c4a0910c5d9bff8ea6ed16d220d32eec4f01020e8"
     },
     "checkpoint_metadata": {
       "path": "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json",
@@ -344,6 +390,20 @@
     },
     {
       "severity": "error",
+      "code": "d2e_only_completion_audit_not_pass",
+      "audit_key": "g003",
+      "status": "fail",
+      "error_count": 23
+    },
+    {
+      "severity": "error",
+      "code": "d2e_only_completion_audit_not_pass",
+      "audit_key": "g004",
+      "status": "fail",
+      "error_count": 46
+    },
+    {
+      "severity": "error",
       "code": "aux_examples_not_pass",
       "status": "blocked",
       "error_count": 3
@@ -475,6 +535,6 @@
       "split": "val"
     }
   ],
-  "error_count": 49,
-  "claim_boundary": "This audit is required before checkpointing G005 complete; it proves D2E-only prerequisites, aux provenance/storage policy, separated namespaces, D2E-only vs D2E+aux ablations, target split tags, and run evidence."
+  "error_count": 51,
+  "claim_boundary": "This audit is required before checkpointing G005 complete; it proves passing full-corpus D2E-only G003/G004 audits, aux provenance/storage policy, separated namespaces, D2E-only vs D2E+aux ablations, target split tags, and run evidence."
 }

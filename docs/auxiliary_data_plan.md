@@ -293,6 +293,9 @@ uv run python scripts/validate_g005_aux_completion.py
 During preparation this may be run with `--allow-fail`, but a terminal G005
 checkpoint requires `artifacts/aux/g005_aux_completion_audit.json` to report
 `status == pass`. The audit rejects missing G003/G004 D2E-only prerequisites,
-missing namespace-manifest evidence, selected-source/provenance mismatches,
-non-identical D2E eval manifests, auxiliary overlap with D2E heldouts, missing
-D2E-only vs D2E+aux run IDs, prediction-count mismatch, and non-zero run exits.
+non-passing G003/G004 completion audits, weakened one-tier D2E evidence
+(`d2e_480p=459`, `d2e_original=459`, `480p=459`, and
+`original_fhd_qhd=459` are required), missing namespace-manifest evidence,
+selected-source/provenance mismatches, non-identical D2E eval manifests,
+auxiliary overlap with D2E heldouts, missing D2E-only vs D2E+aux run IDs,
+prediction-count mismatch, and non-zero run exits.

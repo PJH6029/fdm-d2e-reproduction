@@ -8,6 +8,16 @@
   ],
   "output_path": "artifacts/aux/g005_aux_completion_audit.json",
   "expected_gpus": 4,
+  "expected_recording_variants": 918,
+  "require_d2e_only_completion_audits_pass": true,
+  "expected_variants_by_source": {
+    "d2e_480p": 459,
+    "d2e_original": 459
+  },
+  "expected_variants_by_resolution_tier": {
+    "480p": 459,
+    "original_fhd_qhd": 459
+  },
   "required_splits": [
     "temporal",
     "heldout_recording",
@@ -33,6 +43,8 @@
     "aux_examples_summary": "artifacts/aux/g005_aux_examples_summary.json",
     "namespace_manifest": "artifacts/aux/g005_aux_namespace_manifest.json",
     "ablation_summary": "artifacts/aux/d2e_aux_ablation_summary.json",
+    "g003_completion_audit": "artifacts/idm/g003_full_idm_completion_audit.json",
+    "g004_completion_audit": "artifacts/fdm/g004_full_fdm_completion_audit.json",
     "checkpoint_metadata": "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json",
     "resolved_config": "outputs/fdm_aux/d2e_aux_best/resolved_config.json",
     "checkpoint": "outputs/fdm_aux/d2e_aux_best/checkpoint.pt",

@@ -84,6 +84,96 @@ def _assert_json_expectations(
             )
 
 
+def _expected_count_mismatches(actual: dict[str, Any], expected: dict[str, Any], *, code: str, audit_key: str) -> list[dict[str, Any]]:
+    findings = []
+    for key, raw_expected in sorted(expected.items()):
+        try:
+            expected_count = int(raw_expected)
+        except (TypeError, ValueError):
+            findings.append({"severity": "error", "code": f"{code}_invalid_expected", "audit_key": audit_key, "key": key, "expected": raw_expected})
+            continue
+        actual_value = actual.get(str(key))
+        try:
+            actual_count = int(actual_value) if actual_value is not None else None
+        except (TypeError, ValueError):
+            actual_count = None
+        if actual_count != expected_count:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": code,
+                    "audit_key": audit_key,
+                    "key": str(key),
+                    "expected": expected_count,
+                    "actual": actual_value,
+                }
+            )
+    return findings
+
+
+def _validate_d2e_only_audit(
+    audit: dict[str, Any] | None,
+    *,
+    audit_key: str,
+    expected_variants: int,
+    expected_by_source: dict[str, Any],
+    expected_by_tier: dict[str, Any],
+    require_pass: bool,
+    findings: list[dict[str, Any]],
+) -> dict[str, Any]:
+    report = {
+        "audit_key": audit_key,
+        "status": None if audit is None else audit.get("status"),
+        "error_count": None if audit is None else audit.get("error_count"),
+        "included_recording_variants": None,
+        "source_ids": {},
+        "resolution_tiers": {},
+        "decode_source_ids": {},
+        "decode_resolution_tiers": {},
+    }
+    if audit is None:
+        findings.append({"severity": "error", "code": "missing_d2e_only_completion_audit", "audit_key": audit_key})
+        return report
+    if require_pass and audit.get("status") != "pass":
+        findings.append(
+            {
+                "severity": "error",
+                "code": "d2e_only_completion_audit_not_pass",
+                "audit_key": audit_key,
+                "status": audit.get("status"),
+                "error_count": audit.get("error_count"),
+            }
+        )
+    universe_counts = audit.get("data_universe_counts") if isinstance(audit.get("data_universe_counts"), dict) else {}
+    included = universe_counts.get("included_recording_variants")
+    report["included_recording_variants"] = included
+    if int(included or -1) != expected_variants:
+        findings.append(
+            {
+                "severity": "error",
+                "code": "d2e_only_audit_included_variants_mismatch",
+                "audit_key": audit_key,
+                "expected": expected_variants,
+                "actual": included,
+            }
+        )
+    source_ids = universe_counts.get("source_ids") if isinstance(universe_counts.get("source_ids"), dict) else {}
+    tiers = universe_counts.get("resolution_tiers") if isinstance(universe_counts.get("resolution_tiers"), dict) else {}
+    report["source_ids"] = dict(source_ids)
+    report["resolution_tiers"] = dict(tiers)
+    findings.extend(_expected_count_mismatches(source_ids, expected_by_source, code="d2e_only_audit_source_count_mismatch", audit_key=audit_key))
+    findings.extend(_expected_count_mismatches(tiers, expected_by_tier, code="d2e_only_audit_resolution_tier_count_mismatch", audit_key=audit_key))
+    decode_sources = audit.get("decode_counts_by_source") if isinstance(audit.get("decode_counts_by_source"), dict) else {}
+    decode_tiers = audit.get("decode_counts_by_resolution_tier") if isinstance(audit.get("decode_counts_by_resolution_tier"), dict) else {}
+    report["decode_source_ids"] = dict(decode_sources)
+    report["decode_resolution_tiers"] = dict(decode_tiers)
+    if decode_sources:
+        findings.extend(_expected_count_mismatches(decode_sources, expected_by_source, code="d2e_only_audit_decode_source_count_mismatch", audit_key=audit_key))
+    if decode_tiers:
+        findings.extend(_expected_count_mismatches(decode_tiers, expected_by_tier, code="d2e_only_audit_decode_resolution_tier_count_mismatch", audit_key=audit_key))
+    return report
+
+
 def _selected_aux_candidate_ids(aux_candidates: dict[str, Any] | None) -> set[str]:
     if aux_candidates is None:
         return set()
@@ -425,6 +515,8 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
     ablation = _load_json(root_path / paths.get("ablation_summary", "")) if paths.get("ablation_summary") else None
     metadata = _load_json(root_path / paths.get("checkpoint_metadata", "")) if paths.get("checkpoint_metadata") else None
     run_summary = _load_json(root_path / paths.get("run_summary", "")) if paths.get("run_summary") else None
+    g003_audit = _load_json(root_path / paths.get("g003_completion_audit", "")) if paths.get("g003_completion_audit") else None
+    g004_audit = _load_json(root_path / paths.get("g004_completion_audit", "")) if paths.get("g004_completion_audit") else None
 
     _assert_json_expectations(aux_candidates, dict(config.get("aux_candidate_expectations", {})), source_name="aux_candidates", findings=findings)
     _assert_json_expectations(namespace_manifest, dict(config.get("namespace_manifest_expectations", {})), source_name="namespace_manifest", findings=findings)
@@ -444,6 +536,30 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
             findings.append({"severity": "error", "code": "aux_storage_over_cap", "selected_plus_d2e_gib": selected_total, "cap_gib": cap})
 
     required_splits = set(config.get("required_splits", []))
+    expected_variants = int(config.get("expected_recording_variants", 918))
+    expected_by_source = {str(key): value for key, value in dict(config.get("expected_variants_by_source", {})).items()}
+    expected_by_tier = {str(key): value for key, value in dict(config.get("expected_variants_by_resolution_tier", {})).items()}
+    require_d2e_only_audits_pass = bool(config.get("require_d2e_only_completion_audits_pass", True))
+    d2e_only_audit_report = {
+        "g003": _validate_d2e_only_audit(
+            g003_audit,
+            audit_key="g003",
+            expected_variants=expected_variants,
+            expected_by_source=expected_by_source,
+            expected_by_tier=expected_by_tier,
+            require_pass=require_d2e_only_audits_pass,
+            findings=findings,
+        ),
+        "g004": _validate_d2e_only_audit(
+            g004_audit,
+            audit_key="g004",
+            expected_variants=expected_variants,
+            expected_by_source=expected_by_source,
+            expected_by_tier=expected_by_tier,
+            require_pass=require_d2e_only_audits_pass,
+            findings=findings,
+        ),
+    }
     namespace_report = _validate_namespace_manifest(
         namespace_manifest,
         selected_aux_ids=selected_aux_ids,
@@ -518,6 +634,7 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
         "prerequisite_goal_statuses": prereq_report,
         "required_splits": sorted(required_splits),
         "ablation_splits": sorted(ablation_splits),
+        "d2e_only_audit_report": d2e_only_audit_report,
         "namespace_report": namespace_report,
         "action_registry_report": action_registry_report,
         "aux_example_report": aux_example_report,
@@ -525,7 +642,7 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
         "counts": count_report,
         "findings": findings,
         "error_count": len(errors),
-        "claim_boundary": "This audit is required before checkpointing G005 complete; it proves D2E-only prerequisites, aux provenance/storage policy, separated namespaces, D2E-only vs D2E+aux ablations, target split tags, and run evidence.",
+        "claim_boundary": "This audit is required before checkpointing G005 complete; it proves passing full-corpus D2E-only G003/G004 audits, aux provenance/storage policy, separated namespaces, D2E-only vs D2E+aux ablations, target split tags, and run evidence.",
     }
 
 

@@ -63,6 +63,31 @@ def _write_fixture(root: Path) -> None:
     doc = root / "docs/aux.md"
     doc.parent.mkdir(parents=True, exist_ok=True)
     doc.write_text("aux plan")
+    d2e_audit_counts = {
+        "included_recording_variants": 3,
+        "source_ids": {"d2e_480p": 2, "d2e_original": 1},
+        "resolution_tiers": {"480p": 2, "original_fhd_qhd": 1},
+    }
+    write_json(
+        root / "artifacts/idm/g003_audit.json",
+        {
+            "schema": "g003_full_idm_completion_audit.v1",
+            "status": "pass",
+            "error_count": 0,
+            "data_universe_counts": d2e_audit_counts,
+            "decode_counts_by_source": {"d2e_480p": 2, "d2e_original": 1},
+            "decode_counts_by_resolution_tier": {"480p": 2, "original_fhd_qhd": 1},
+        },
+    )
+    write_json(
+        root / "artifacts/fdm/g004_audit.json",
+        {
+            "schema": "g004_full_fdm_completion_audit.v1",
+            "status": "pass",
+            "error_count": 0,
+            "data_universe_counts": d2e_audit_counts,
+        },
+    )
     write_json(
         root / "artifacts/aux/source_evidence.json",
         {
@@ -132,6 +157,10 @@ def _write_fixture(root: Path) -> None:
             "prerequisite_goals": ["G003", "G004"],
             "require_goal_checkpoint_complete": False,
             "expected_gpus": 4,
+            "expected_recording_variants": 3,
+            "require_d2e_only_completion_audits_pass": True,
+            "expected_variants_by_source": {"d2e_480p": 2, "d2e_original": 1},
+            "expected_variants_by_resolution_tier": {"480p": 2, "original_fhd_qhd": 1},
             "required_splits": SPLITS,
             "required_target_eval_split_tags": SPLITS,
             "paths": {
@@ -141,6 +170,8 @@ def _write_fixture(root: Path) -> None:
                 "runtime_env": "artifacts/aux/runtime_env.json",
                 "namespace_manifest": "artifacts/aux/namespace.json",
                 "ablation_summary": "artifacts/aux/ablation.json",
+                "g003_completion_audit": "artifacts/idm/g003_audit.json",
+                "g004_completion_audit": "artifacts/fdm/g004_audit.json",
                 "checkpoint_metadata": "outputs/fdm_aux/best/checkpoint_metadata.json",
                 "resolved_config": "outputs/fdm_aux/best/resolved_config.json",
                 "checkpoint": "outputs/fdm_aux/best/checkpoint.pt",

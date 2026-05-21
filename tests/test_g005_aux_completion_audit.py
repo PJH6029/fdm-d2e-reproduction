@@ -21,6 +21,8 @@ def _config() -> dict:
         "aux_examples_summary": "artifacts/aux/examples.json",
         "namespace_manifest": "artifacts/aux/namespace.json",
         "ablation_summary": "artifacts/aux/ablation.json",
+        "g003_completion_audit": "artifacts/idm/g003_audit.json",
+        "g004_completion_audit": "artifacts/fdm/g004_audit.json",
         "checkpoint_metadata": "outputs/fdm_aux/best/checkpoint_metadata.json",
         "resolved_config": "outputs/fdm_aux/best/resolved_config.json",
         "checkpoint": "outputs/fdm_aux/best/checkpoint.pt",
@@ -35,6 +37,10 @@ def _config() -> dict:
         "goal_id": "G005",
         "prerequisite_goals": ["G003", "G004"],
         "expected_gpus": 4,
+        "expected_recording_variants": 3,
+        "require_d2e_only_completion_audits_pass": True,
+        "expected_variants_by_source": {"d2e_480p": 2, "d2e_original": 1},
+        "expected_variants_by_resolution_tier": {"480p": 2, "original_fhd_qhd": 1},
         "required_splits": SPLITS,
         "required_aux_example_splits": ["train", "val", "test"],
         "required_target_eval_split_tags": SPLITS,
@@ -99,6 +105,31 @@ def _complete_fixture(root: Path) -> None:
     plan = root / cfg["paths"]["aux_plan_doc"]
     plan.parent.mkdir(parents=True, exist_ok=True)
     plan.write_text("aux plan")
+    d2e_audit_counts = {
+        "included_recording_variants": 3,
+        "source_ids": {"d2e_480p": 2, "d2e_original": 1},
+        "resolution_tiers": {"480p": 2, "original_fhd_qhd": 1},
+    }
+    write_json(
+        root / cfg["paths"]["g003_completion_audit"],
+        {
+            "schema": "g003_full_idm_completion_audit.v1",
+            "status": "pass",
+            "error_count": 0,
+            "data_universe_counts": d2e_audit_counts,
+            "decode_counts_by_source": {"d2e_480p": 2, "d2e_original": 1},
+            "decode_counts_by_resolution_tier": {"480p": 2, "original_fhd_qhd": 1},
+        },
+    )
+    write_json(
+        root / cfg["paths"]["g004_completion_audit"],
+        {
+            "schema": "g004_full_fdm_completion_audit.v1",
+            "status": "pass",
+            "error_count": 0,
+            "data_universe_counts": d2e_audit_counts,
+        },
+    )
     split_hashes = {
         split: {
             "d2e_only_manifest_sha256": f"{split}-hash",
@@ -290,6 +321,35 @@ def test_g005_aux_completion_audit_rejects_unselected_namespace_and_hash_mismatc
     assert "namespace_eval_split_missing_hashes" in codes
     assert "ablation_split_not_same_d2e_eval_manifest" in codes
     assert "ablation_split_eval_manifest_hash_mismatch" in codes
+
+
+def test_g005_aux_completion_audit_requires_passing_full_d2e_only_audits(tmp_path: Path):
+    _complete_fixture(tmp_path)
+    import json
+
+    cfg = _config()
+    g003_path = tmp_path / cfg["paths"]["g003_completion_audit"]
+    g003 = json.loads(g003_path.read_text())
+    g003["status"] = "fail"
+    g003["error_count"] = 2
+    g003["data_universe_counts"]["source_ids"] = {"d2e_480p": 3}
+    g003["decode_counts_by_resolution_tier"] = {"480p": 3}
+    write_json(g003_path, g003)
+    g004_path = tmp_path / cfg["paths"]["g004_completion_audit"]
+    g004 = json.loads(g004_path.read_text())
+    g004["data_universe_counts"]["included_recording_variants"] = 2
+    g004["data_universe_counts"]["resolution_tiers"] = {"480p": 2}
+    write_json(g004_path, g004)
+
+    result = validate_g005_aux_completion(cfg, root=tmp_path)
+    codes = {item["code"] for item in result["findings"]}
+    assert result["status"] == "fail"
+    assert "d2e_only_completion_audit_not_pass" in codes
+    assert "d2e_only_audit_included_variants_mismatch" in codes
+    assert "d2e_only_audit_source_count_mismatch" in codes
+    assert "d2e_only_audit_resolution_tier_count_mismatch" in codes
+    assert "d2e_only_audit_decode_resolution_tier_count_mismatch" in codes
+    assert result["d2e_only_audit_report"]["g003"]["status"] == "fail"
 
 
 def test_g005_aux_completion_audit_rejects_collapsed_or_mismatched_action_registry(tmp_path: Path):
