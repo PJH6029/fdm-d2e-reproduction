@@ -46,16 +46,16 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 14:43 KST.
+Latest known live run snapshot: 2026-05-21 14:57 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout was synced to commit `f5ed43d` (`Preserve G003 multi-GPU evidence without restarting`); G003/G004/G005/G006/G007/G008/G009 completion audit scripts are present in pod.
+- Pod checkout was synced to commit `dadccb8` (`Preserve heldout splits for G004 FDM training`); G003/G004/G005/G006/G007/G008/G009 completion audit scripts are present in pod.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
-- Last decoded count: `87 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
+- Last decoded count: `90 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
 - Monitor status was `running`; long-running active shards `[0, 2, 5, 6, 7, 8, 10, 11, 13, 14]`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
 - Attached GPU monitor is running as PID `31950` and has begun writing `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv` in the pod. Do not commit/push that live CSV from local until the run exits, because the pod currently owns it as an untracked live output.
 

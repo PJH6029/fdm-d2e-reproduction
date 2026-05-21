@@ -245,3 +245,10 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Parent PID `9289` still running at elapsed `03:49:12`; decoded recording variants `87 / 918`; complete shards `0 / 16`; all 16 shard processes active; IDM metrics absent.
 - Monitor status remained `running`; long-running active shards `[0, 2, 5, 6, 7, 8, 10, 11, 13, 14]`; stale/no-progress shards `[]`.
 - Do not commit the live GPU-monitor CSV from local while the pod owns it as an untracked live output. Copy it back and package it after the integrated parent exits and the attached monitor writes its metadata JSON.
+
+## 2026-05-21 14:57 KST G004 hardening sync snapshot
+
+- Pushed commit `dadccb8` and fast-forwarded pod checkout to `dadccb8`; `scripts/predict_idm_streaming.py` and the G004 explicit train-core pseudo-label path are present in pod.
+- Parent PID `9289` still running; decoded recording variants `90 / 918`; complete shards `0 / 16`; merged train/eval and IDM metrics absent.
+- G003 monitor status remained `running`; stale/no-progress shards `[]`.
+- G004 completion now requires prediction-only G003 IDM pseudo-labels on `train_core.jsonl` and FDM evaluation on untouched `target_all_eval.jsonl`; the older target-all-eval recording-tail FDM mode is rejected for completion evidence.
