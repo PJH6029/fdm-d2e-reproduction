@@ -26,13 +26,13 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
   - `G001-data-universe-audit`: full D2E-480p + D2E-Original universe manifest and storage/license report.
   - `G002-split-leakage-contract`: temporal, heldout-recording, and heldout-game split/leakage contract.
   - `G007-runtime-sdk-adapter`: reusable SDK/action decoder/safety adapter/latency logger/deterministic replay contract only; this is not G008 live-game success.
-- G008 live-suite protocol exists (`docs/live_open_game_suite.md`, `configs/harness/g008_live_open_game_suite.yaml`, `scripts/validate_live_game_suite.py`) and requires >=3 open-source graphical games, >=3 tasks, 5 seeds/task, video/replay/latency/failure logs, and statistical comparison; protocol readiness is not G008 completion.
+- G008 live-suite protocol exists (`docs/live_open_game_suite.md`, `configs/harness/g008_live_open_game_suite.yaml`, `scripts/validate_live_game_suite.py`) and requires >=3 open-source graphical games, >=3 tasks, 5 seeds/task, video/replay/latency/failure logs, and statistical comparison; protocol/readiness evidence is not G008 completion.
 - Final completion audit now exists (`configs/eval/final_quality_gates.yaml`, `scripts/validate_final_quality_gates.py`, `artifacts/reproducibility/final_quality_gate_audit.json`) and must pass before aggregate goal completion; current expected status is fail while G003-G009 remain incomplete.
 - G006 evaluation readiness audit exists (`configs/eval/g006_evaluation_readiness.yaml`, `scripts/validate_g006_evaluation_readiness.py`, `artifacts/eval/g006_evaluation_readiness_audit.json`) and must pass before G006 checkpoint; current expected status is fail until final split-aware endpoint stats, failure analysis, and claim taxonomy exist.
 - Current active gate:
   - `G003-d2e-only-idm`: full-corpus D2E-only IDM extraction/training/evaluation.
 - Pending gates:
-  - `G004-d2e-only-fdm-4xh200`, `G005-aux-data-best-model`, `G006-evaluation-failure-analysis`, `G007-runtime-sdk-adapter`, `G008-live-game-suite`, `G009-report-repro-package`.
+  - `G004-d2e-only-fdm-4xh200`, `G005-aux-data-best-model`, `G006-evaluation-failure-analysis`, `G008-live-game-suite`, `G009-report-repro-package`.
 - D2E-only gates must finish before D2E+aux or runtime success claims. D2E+aux may become the primary/best final model, but D2E-only results/ablations remain mandatory and separately reported.
 - Strong FDM/IDM evidence should include keyboard, mouse movement, and mouse-button endpoints; mouse-button claims must report precision/F1 and no-button false-positive rate, not only positive-class accuracy.
 
@@ -63,6 +63,7 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - G004 post-run watcher exists (`scripts/watch_g004_then_finalize.py`) and consumes `outputs/cluster/g004_d2e_full_fdm_4xh200.pid`; it runs the non-mutating finalizer after the parent exits but never checkpoints OMX/Codex state.
 - G005 launch planner/watcher exists (`scripts/plan_g005_launch.py`, `scripts/watch_g005_then_finalize.py`) for D2E+aux best-model preparation; both preserve G003/G004 D2E-only gates and never mutate OMX/Codex state.
 - G006 readiness planner/watcher exists (`scripts/plan_g006_readiness.py`, `scripts/watch_g006_then_finalize.py`) for final evaluation/failure-analysis handoff; both are non-mutating and require G003/G004/G005 evidence before finalization.
+- G008 readiness planner exists (`scripts/plan_g008_readiness.py`, `artifacts/harness/g008_readiness_plan.json`) for live open-source graphical-game collection prep; it is non-mutating, does not launch games, and currently blocks as expected until D2E-only prerequisites/checkpoint metadata and live-game host binaries are available.
 - Runtime adapter contract evidence: `artifacts/runtime/g007_runtime_replay_adapter_contract.json`; commits `34cddb7` and `e858114`; OMX checkpointed `G007-runtime-sdk-adapter` complete locally.
 - Do not checkpoint `G003-d2e-only-idm` complete until all 918 source variants are decoded/merged, streaming IDM training finishes, reports/metrics are validated, and evidence summaries are committed.
 - Streaming IDM metadata now records config/data/split/source provenance (`checkpoint_metadata.json`, `resolved_config.json`); ensure the pod checkout includes this before the G003 extraction reaches training.

@@ -1,0 +1,219 @@
+{
+  "schema": "g008_readiness_plan.v1",
+  "status": "blocked",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "allow_precheckpoint": false,
+  "skip_system_checks": false,
+  "goal_statuses": {
+    "G001-data-universe-audit": "complete",
+    "G002-split-leakage-contract": "complete",
+    "G003-d2e-only-idm": "in_progress",
+    "G004-d2e-only-fdm-4xh200": "pending",
+    "G005-aux-data-best-model": "pending",
+    "G006-evaluation-failure-analysis": "pending",
+    "G007-runtime-sdk-adapter": "complete",
+    "G008-live-game-suite": "pending",
+    "G009-report-repro-package": "pending"
+  },
+  "prerequisite_goal_statuses": {
+    "G003-d2e-only-idm": "in_progress",
+    "G004-d2e-only-fdm-4xh200": "pending",
+    "G007-runtime-sdk-adapter": "complete"
+  },
+  "protocol_status": "protocol_ready",
+  "planned_games": 3,
+  "planned_tasks": 3,
+  "planned_seeded_episodes": 15,
+  "required_artifacts_before_run": {
+    "suite_config": {
+      "path": "configs/harness/g008_live_open_game_suite.yaml",
+      "exists": true,
+      "bytes": 3916
+    },
+    "trained_checkpoint_metadata": {
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "exists": false,
+      "bytes": 0
+    },
+    "runtime_adapter_contract": {
+      "path": "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
+      "exists": true,
+      "bytes": 3339
+    },
+    "live_suite_doc": {
+      "path": "docs/live_open_game_suite.md",
+      "exists": true,
+      "bytes": 7012
+    }
+  },
+  "evidence_validation_artifact": {
+    "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
+    "exists": false,
+    "bytes": 0
+  },
+  "game_system_checks": [
+    {
+      "game_id": "supertuxkart",
+      "name": "SuperTuxKart",
+      "skip_system_checks": false,
+      "launch": {
+        "command": "supertuxkart --fullscreen=false --resolution=1280x720",
+        "executable": "supertuxkart",
+        "found": false,
+        "resolved": null
+      },
+      "window_title_pattern": "SuperTuxKart",
+      "tasks": [
+        "time_trial_finish_lap"
+      ]
+    },
+    {
+      "game_id": "luanti_minetest",
+      "name": "Luanti / Minetest Game",
+      "skip_system_checks": false,
+      "launch": {
+        "command": "luanti --go --name fdm_agent --address 127.0.0.1 --worldname fdm_g008_world",
+        "executable": "luanti",
+        "found": false,
+        "resolved": null
+      },
+      "window_title_pattern": "Luanti|Minetest",
+      "tasks": [
+        "navigate_and_collect_block"
+      ]
+    },
+    {
+      "game_id": "xonotic",
+      "name": "Xonotic",
+      "skip_system_checks": false,
+      "launch": {
+        "command": "xonotic-sdl +map courtfun +bot_number 0 +vid_width 1280 +vid_height 720",
+        "executable": "xonotic-sdl",
+        "found": false,
+        "resolved": null
+      },
+      "window_title_pattern": "Xonotic",
+      "tasks": [
+        "aim_move_and_fire_range"
+      ]
+    }
+  ],
+  "control_backend_checks": [
+    {
+      "backend": "evdev_uinput",
+      "skip_system_checks": false,
+      "requires_binary": true,
+      "available": false,
+      "resolved": null
+    },
+    {
+      "backend": "native_os_input",
+      "skip_system_checks": false,
+      "requires_binary": false,
+      "available": true
+    },
+    {
+      "backend": "os_input",
+      "skip_system_checks": false,
+      "requires_binary": false,
+      "available": true
+    },
+    {
+      "backend": "pyautogui_os_input",
+      "skip_system_checks": false,
+      "requires_binary": false,
+      "available": true
+    },
+    {
+      "backend": "uinput",
+      "skip_system_checks": false,
+      "requires_binary": true,
+      "available": false,
+      "resolved": null
+    },
+    {
+      "backend": "xdotool",
+      "skip_system_checks": false,
+      "requires_binary": true,
+      "available": false,
+      "resolved": null
+    },
+    {
+      "backend": "ydotool",
+      "skip_system_checks": false,
+      "requires_binary": true,
+      "available": false,
+      "resolved": null
+    }
+  ],
+  "commands": {
+    "protocol": [
+      "uv",
+      "run",
+      "python",
+      "scripts/validate_live_game_suite.py",
+      "--config",
+      "configs/harness/g008_live_open_game_suite.yaml"
+    ],
+    "finalize_with_evidence": [
+      "uv",
+      "run",
+      "python",
+      "scripts/finalize_g008_live_suite.py",
+      "--evidence",
+      "artifacts/harness/<run>/live_suite_evidence.json"
+    ],
+    "validate_completion": [
+      "uv",
+      "run",
+      "python",
+      "scripts/validate_g008_live_suite_completion.py"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G003-d2e-only-idm",
+      "actual": "in_progress"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_pre_run_artifact",
+      "artifact_key": "trained_checkpoint_metadata",
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "game_launch_executable_missing",
+      "game_id": "supertuxkart",
+      "executable": "supertuxkart"
+    },
+    {
+      "severity": "error",
+      "code": "game_launch_executable_missing",
+      "game_id": "luanti_minetest",
+      "executable": "luanti"
+    },
+    {
+      "severity": "error",
+      "code": "game_launch_executable_missing",
+      "game_id": "xonotic",
+      "executable": "xonotic-sdl"
+    }
+  ],
+  "warnings": [
+    {
+      "severity": "warning",
+      "code": "evidence_validation_not_collected_yet",
+      "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
+    }
+  ],
+  "claim_boundary": "G008 readiness planning is read-only; it does not launch games, collect live evidence, checkpoint G008, or permit commercial-game/live-control claims."
+}

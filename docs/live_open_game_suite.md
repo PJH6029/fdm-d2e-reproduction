@@ -7,6 +7,8 @@ separate from the older deterministic repo-local game-adjacent replay harness in
 Machine-readable files:
 
 - Config: `configs/harness/g008_live_open_game_suite.yaml`
+- Readiness planner: `scripts/plan_g008_readiness.py`
+- Readiness artifact: `artifacts/harness/g008_readiness_plan.json`
 - Protocol artifact: `artifacts/harness/g008_live_open_game_suite_protocol.json`
 - Validator: `scripts/validate_live_game_suite.py`
 - Finalizer: `scripts/finalize_g008_live_suite.py`
@@ -23,6 +25,34 @@ returns `quality_gate.status == pass`.
 The deterministic `g008_game_harness_eval.json` artifact remains useful as an
 action-sequence stability replay, but it cannot satisfy this live-suite gate and
 must not be described as live graphical-game control.
+
+## Readiness planning
+
+Before attempting a live graphical-game collection, run the non-mutating
+readiness planner:
+
+```bash
+uv run python scripts/plan_g008_readiness.py --allow-fail
+```
+
+The planner checks the live-suite protocol, G003/G004/G007 prerequisite goal
+statuses, trained checkpoint metadata, runtime adapter contract, live-suite
+documentation, planned launch commands, and available control backends. It writes
+`artifacts/harness/g008_readiness_plan.json`. A `blocked` readiness plan is
+expected while D2E-only training is still incomplete or when open-source game
+binaries are not installed in the execution environment.
+
+Diagnostic flags:
+
+- `--allow-precheckpoint`: downgrade incomplete prerequisite goals to warnings
+  for dry-run planning only.
+- `--skip-system-checks`: skip local launch-binary/control-backend checks when
+  building a plan outside the eventual graphical desktop host.
+- `--allow-overwrite-evidence`: allow an existing evidence-validation artifact
+  to be overwritten by a later live collection/finalization pass.
+
+The readiness planner does not launch games, collect evidence, validate live
+success, or checkpoint G008.
 
 ## Current suite candidates
 
