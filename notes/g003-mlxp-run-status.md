@@ -457,3 +457,14 @@ uv run python scripts/audit_g003_live_health.py \
 - New canonical watcher summary confirms lane evidence: status `waiting_active_parent`, decoded `277 / 918`, `progress.log_dir=/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/sources`, `progress.repair_pid_glob=/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/cluster/g003_shard_*_repair.pid`, `pid_running=true`.
 - Fresh lane-local probe at this continuation: canonical `277 / 918`, active `16 / 16`; accel64 `174 / 918`, active `64 / 64`, shard 29 repair PID `113351` still running and `shard_29/decode_summary.json` still absent.
 - G003 remains incomplete; completion audit still fails with missing full decode/merge/IDM artifacts. Do not checkpoint complete.
+
+## 2026-05-22 00:57 KST extraction activity audit artifacts
+
+- Pushed and deployed commit `67d2d03`, adding `scripts/audit_g003_extraction_activity.py` and tests. The tool writes non-mutating filesystem activity evidence for long-running extraction shards; it is liveness context only, not completion evidence.
+- Pod validation after pull: `uv run pytest tests/test_g003_extraction_activity.py -q` passed (`1` test).
+- Generated and copied back current activity artifacts:
+  - `artifacts/idm/g003_extraction_activity.json`: canonical shard root `outputs/data/d2e_full_corpus_shards`, log dir `artifacts/sources`, `16` shards with activity, `277` per-recording summaries, `0 / 16` complete shard summaries.
+  - `artifacts/idm/g003_accel64_extraction_activity.json`: accel64 shard root `outputs/data/d2e_full_corpus_shards_accel64`, log dir `artifacts/sources/g003_accel64`, `64` shards with activity, `177` per-recording summaries, `0 / 64` complete shard summaries.
+- Fresh pod probe in this continuation showed canonical `277 / 918` and accel64 `175 / 918` in progress before the activity audit; the copied activity artifact reflects a slightly newer accel64 per-recording-summary count (`177`) from filesystem summaries.
+- Shard 29 repair PID `113351` was still running, and `outputs/data/d2e_full_corpus_shards_accel64/shard_29/decode_summary.json` remained absent.
+- G003 remains incomplete; no checkpoint/update_goal was made.
