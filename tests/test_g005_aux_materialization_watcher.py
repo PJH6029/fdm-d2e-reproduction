@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from fdm_d2e.io_utils import write_json
-from watch_g005_aux_materialization import watch
+from watch_g005_aux_materialization import _tree_status, watch
 
 
 def _args(root: Path, **overrides) -> Namespace:
@@ -201,3 +201,18 @@ def test_watcher_refuses_duplicate_running_watcher(tmp_path: Path):
     finally:
         proc.terminate()
         proc.wait(timeout=5)
+
+
+def test_watcher_tree_status_tolerates_files_removed_during_download_scan(tmp_path: Path, monkeypatch):
+    namespace = tmp_path / "outputs/aux"
+    namespace.mkdir(parents=True)
+    stable = namespace / "stable.bin"
+    vanished = namespace / ".cache/huggingface/download/tmp.incomplete"
+    stable.write_bytes(b"x" * 9)
+
+    monkeypatch.setattr("watch_g005_aux_materialization._iter_tree_files", lambda path: [stable, vanished])
+
+    payload = _tree_status(tmp_path, "outputs/aux")
+    assert payload["file_count"] == 1
+    assert payload["bytes"] == 9
+    assert payload["transient_missing_file_count"] == 1

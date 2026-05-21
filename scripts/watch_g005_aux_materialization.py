@@ -65,14 +65,37 @@ def _file_status(path: Path, rel_path: str | Path) -> dict[str, Any]:
     return {"path": str(rel_path), "exists": path.exists() and path.is_file(), "bytes": path.stat().st_size if path.exists() and path.is_file() else 0}
 
 
+def _iter_tree_files(path: Path) -> list[Path]:
+    if not path.exists() or not path.is_dir():
+        return []
+    files: list[Path] = []
+    for item in path.rglob("*"):
+        try:
+            if item.is_file():
+                files.append(item)
+        except OSError:
+            continue
+    return files
+
+
+def _safe_file_size(path: Path) -> int | None:
+    try:
+        return path.stat().st_size
+    except (FileNotFoundError, OSError):
+        return None
+
+
 def _tree_status(root: Path, rel_path: str | Path) -> dict[str, Any]:
     path = _path(root, rel_path)
-    files = [item for item in path.rglob("*") if item.is_file()] if path.exists() and path.is_dir() else []
+    files = _iter_tree_files(path)
+    sizes = [_safe_file_size(item) for item in files]
+    existing_sizes = [int(size) for size in sizes if size is not None]
     return {
         "path": str(rel_path),
         "exists": path.exists() and path.is_dir(),
-        "file_count": len(files),
-        "bytes": sum(item.stat().st_size for item in files),
+        "file_count": len(existing_sizes),
+        "bytes": sum(existing_sizes),
+        "transient_missing_file_count": len(sizes) - len(existing_sizes),
     }
 
 
