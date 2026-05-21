@@ -2,7 +2,7 @@
 
 Updated: 2026-05-21 KST
 
-- Latest pushed commit: `90f9c27`.
+- Latest pushed commit pulled in pod: `34cddb7` (includes G004 streaming FDM path and G007 runtime SDK; running G003 shard processes were launched earlier and continue).
 - MLXP reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a` in namespace `p-production`.
 - Reservation window: 2026-05-21 10:00+09:00 to 2026-05-24 09:00+09:00.
@@ -26,6 +26,16 @@ kubectl -n p-production exec prod-rsv-jeonghunpark-20260521-76e25a -- bash -lc '
   du -sh /root/work/data/d2e/cache outputs/data/d2e_full_corpus_shards 2>/dev/null || true
 '
 ```
+
+
+## 2026-05-21 11:44 KST progress snapshot
+
+- Parallel extraction command is still running from PID `9289`.
+- Elapsed at snapshot: ~52 min.
+- Decoded per-recording summaries: `23 / 918`; shard summaries: `0 / 16`; IDM metrics not yet produced.
+- Cache size observed: ~26 GiB; shard output size observed earlier after latest pull: ~53 GiB.
+- Pod repo was fast-forwarded to `34cddb7` while extraction was running; loaded shard Python processes are unaffected, and downstream merge/training will use the updated checkout.
+- Expected next state: shard logs continue increasing until all 16 shard summaries exist, then merge and streaming IDM train/eval run.
 
 Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts exist:
 
