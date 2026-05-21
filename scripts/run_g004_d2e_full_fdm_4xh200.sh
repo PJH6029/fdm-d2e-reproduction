@@ -9,6 +9,10 @@ LOG_PATH="${LOG_PATH:-artifacts/fdm/g004_d2e_full_fdm_4xh200.log}"
 RUN_SUMMARY="${RUN_SUMMARY:-artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json}"
 GPU_MONITOR_LOG="${GPU_MONITOR_LOG:-artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv}"
 FDM_LABELS="${FDM_LABELS:-outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl}"
+BUILD_SPLIT_STATS="${BUILD_SPLIT_STATS:-1}"
+SPLIT_STATS_CONFIG="${SPLIT_STATS_CONFIG:-configs/eval/g004_split_statistics.yaml}"
+SPLIT_STATS_SUMMARY="${SPLIT_STATS_SUMMARY:-artifacts/eval/g004_split_statistical_comparisons_summary.json}"
+export BUILD_SPLIT_STATS SPLIT_STATS_CONFIG SPLIT_STATS_SUMMARY
 
 mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$RUN_SUMMARY")" "$(dirname "$GPU_MONITOR_LOG")" outputs/cluster
 
@@ -31,21 +35,28 @@ cleanup_monitor() {
 trap cleanup_monitor EXIT
 
 set +e
-{
+(
+  set -euo pipefail
   echo "started_at=$(date -Iseconds)"
   echo "git_head=$(git rev-parse HEAD)"
   echo "config=$CONFIG"
   echo "idm_predict_config=$IDM_PREDICT_CONFIG"
   echo "nproc_per_node=$NPROC_PER_NODE"
   echo "gpu_monitor_log=$GPU_MONITOR_LOG"
+  echo "build_split_stats=$BUILD_SPLIT_STATS"
+  echo "split_stats_config=$SPLIT_STATS_CONFIG"
+  echo "split_stats_summary=$SPLIT_STATS_SUMMARY"
   uv run python scripts/cluster_gpu_smoke.py --expected-gpus "$EXPECTED_GPUS"
   if [[ ! -s "$FDM_LABELS" ]]; then
     echo "missing FDM train-core pseudo-labels at $FDM_LABELS; generating with trained G003 IDM checkpoint"
     uv run python scripts/predict_idm_streaming.py --config "$IDM_PREDICT_CONFIG"
   fi
   uv run torchrun --standalone --nproc-per-node="$NPROC_PER_NODE" scripts/train_fdm_streaming.py --config "$CONFIG"
+  if [[ "$BUILD_SPLIT_STATS" != "0" ]]; then
+    uv run python scripts/build_split_statistical_comparisons.py --config "$SPLIT_STATS_CONFIG"
+  fi
   echo "finished_at=$(date -Iseconds)"
-} 2>&1 | tee "$LOG_PATH"
+) 2>&1 | tee "$LOG_PATH"
 RUN_STATUS="${PIPESTATUS[0]}"
 set -e
 cleanup_monitor
@@ -100,6 +111,7 @@ def _gpu_monitor_status(path: Path, expected_gpus: int) -> dict:
 
 summary_path = Path("outputs/fdm_streaming_d2e_full_compact/summary.json")
 gpu_monitor_path = Path("$GPU_MONITOR_LOG")
+split_stats_summary_path = Path("$SPLIT_STATS_SUMMARY")
 payload = {
     "schema": "g004_fdm_4xh200_run.v1",
     "config": "$CONFIG",
@@ -112,6 +124,10 @@ payload = {
     "exit_code": int("$RUN_STATUS"),
     "wall_clock_seconds": int("$END_EPOCH") - int("$START_EPOCH"),
     "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+    "build_split_stats": "$BUILD_SPLIT_STATS" != "0",
+    "split_stats_config": "$SPLIT_STATS_CONFIG",
+    "split_stats_summary_path": str(split_stats_summary_path),
+    "split_stats_summary_exists": split_stats_summary_path.exists(),
     "gpu_monitor_sha256": _sha256(gpu_monitor_path),
     "gpu_monitor_status": _gpu_monitor_status(gpu_monitor_path, int("$EXPECTED_GPUS")),
     "summary_path": str(summary_path),
@@ -130,6 +146,14 @@ if summary_path.exists():
             "statistical_comparison_path": checkpoint.get("statistical_comparison_path"),
             "convergence_report_path": checkpoint.get("convergence_report_path"),
             "convergence_plateau_met": checkpoint.get("convergence_plateau_met"),
+        }
+    )
+if split_stats_summary_path.exists():
+    split_stats = json.loads(split_stats_summary_path.read_text())
+    payload.update(
+        {
+            "split_stats_status": split_stats.get("status"),
+            "split_stats_outputs": split_stats.get("outputs", []),
         }
     )
 Path("$RUN_SUMMARY").write_text(json.dumps(payload, indent=2, sort_keys=True) + "\\n")

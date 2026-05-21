@@ -26,7 +26,8 @@ NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh
 
 The parallel script launches disjoint recording-variant extraction shards,
 merges split-aware JSONL files, trains a streaming IDM without loading all D2E
-windows into GPU memory, and writes a run evidence JSON under `artifacts/idm/`.
+windows into GPU memory, builds the preregistered split-specific statistical
+comparisons, and writes a run evidence JSON under `artifacts/idm/`.
 
 Use the sequential `scripts/run_g003_d2e_full_idm.sh` only for debugging. The
 uncapped full 480p+original corpus should use parallel shards; `NUM_SHARDS=16`
@@ -45,6 +46,10 @@ is the current MLXP setting for a 128-core H200 production pod.
 - `outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl`
 - `outputs/idm_streaming_d2e_full_compact/predictions.jsonl`
 - `outputs/idm_streaming_d2e_full_compact/metrics.json`
+- `outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json`
+- `outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json`
+- `outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json`
+- `artifacts/eval/g003_split_statistical_comparisons_summary.json`
 - `artifacts/idm/idm_streaming_d2e_full_compact_summary.json`
 - `artifacts/idm/g003_d2e_full_idm_run_full_compact.json`
 - `artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.json` for the
@@ -152,7 +157,11 @@ It requires merged full-corpus JSONLs, runs GPU smoke, launches `torchrun`, and
 writes `artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json` plus
 `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv`. These artifacts are
 part of the final G003 gate so the IDM claim includes explicit multi-GPU
-training evidence.
+training evidence. By default it also runs
+`scripts/build_split_statistical_comparisons.py --config configs/eval/g003_split_statistics.yaml`
+after successful training and records the split-stat summary status in the run
+summary. Set `BUILD_SPLIT_STATS=0` only for local recovery/debug runs; terminal
+G003 evidence still requires the summary and all three split comparison files.
 
 
 ## G003 checkpoint metadata contract

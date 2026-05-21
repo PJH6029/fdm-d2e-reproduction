@@ -41,14 +41,14 @@
     "final_quality_doc": {
       "path": "docs/final_quality_gates.md",
       "exists": true,
-      "bytes": 3884,
-      "sha256": "80a5e37408d8c55a310238a5d16bc97ae456b5f19a7155d0f9f3a62a57433c24"
+      "bytes": 3939,
+      "sha256": "e140355c89bb079eecc98feefb3b01c922c2ce10d1e5519802cfa59789ab0b62"
     },
     "package_manifest": {
       "path": "artifacts/reproducibility/package_manifest.json",
       "exists": true,
-      "bytes": 38854,
-      "sha256": "7ffd4bd763b74a8a4ddb07518d60bad8b5353e7093a350031d2c39810ca17d55"
+      "bytes": 38856,
+      "sha256": "4b811fef7b5aa6b45ccb9c1c6a34d785401ff7259caee9aad42cde58e525b581"
     },
     "claim_boundary_audit": {
       "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -59,8 +59,8 @@
     "final_quality_audit": {
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "exists": true,
-      "bytes": 62819,
-      "sha256": "8b1b5a3baecf580ce6644bea3bf06dd9954aa8a9f8069887373179d0ec98c5eb"
+      "bytes": 63057,
+      "sha256": "0e194cbb285b2c45ef83245fb3f11cd2145777f2c33e2925a8f02dba6940b387"
     }
   },
   "required_manifest_paths": [
@@ -123,19 +123,8 @@
       "missing": [
         "artifacts/reproducibility/final_quality_gate_audit.json"
       ]
-    },
-    {
-      "severity": "error",
-      "code": "package_manifest_hash_mismatch",
-      "mismatches": [
-        {
-          "path": "docs/final_quality_gates.md",
-          "manifest_sha256": "31e4492e7b56fa1613d792e6f871956090b9f827bd0edd1877349a4484923774",
-          "actual_sha256": "80a5e37408d8c55a310238a5d16bc97ae456b5f19a7155d0f9f3a62a57433c24"
-        }
-      ]
     }
   ],
-  "error_count": 9,
+  "error_count": 8,
   "claim_boundary": "This audit is required before checkpointing G009 complete; final report, evidence index, runbook, package manifest, claim-boundary audit, manifest hashes, and prerequisite goal statuses must all be current."
 }

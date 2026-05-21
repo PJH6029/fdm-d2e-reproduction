@@ -145,6 +145,7 @@ DEFAULT_PATTERNS = [
     "tests/test_g009_completion_audit.py",
     "tests/test_g003_monitor.py",
     "tests/test_g003_attached_run_evidence.py",
+    "tests/test_training_run_scripts.py",
     "tests/test_aux_dataset_plan.py",
     "tests/test_eval_statistics.py",
     "artifacts/sources/d2e_multi_decode_shooter64_summary.json",

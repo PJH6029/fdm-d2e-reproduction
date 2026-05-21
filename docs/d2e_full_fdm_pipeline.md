@@ -87,7 +87,8 @@ NPROC_PER_NODE=4 EXPECTED_GPUS=4 bash scripts/run_g004_d2e_full_fdm_4xh200.sh
 ```
 
 The script runs a GPU smoke check, launches the streaming action trainer through
-`torchrun`, and writes:
+`torchrun`, builds split-specific statistical comparisons for the preregistered
+temporal/heldout-recording/heldout-game splits, and writes:
 
 - `outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl`
 - `artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json`
@@ -101,6 +102,10 @@ The script runs a GPU smoke check, launches the streaming action trainer through
 - `outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl`
 - `outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json`
 - `outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json`
+- `outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json`
+- `outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json`
+- `outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json`
+- `artifacts/eval/g004_split_statistical_comparisons_summary.json`
 - `artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json`
 - `artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json`
 - `artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv`
@@ -108,6 +113,9 @@ The script runs a GPU smoke check, launches the streaming action trainer through
 The run summary records `gpu_monitor_status.covers_expected_gpus`. Terminal
 G004 evidence must show monitor rows for all expected GPU indices (`0..3` for
 the 4×H200 run); a CSV that merely exists is not enough.
+The run summary also records `split_stats_summary_exists` and
+`split_stats_status`. `BUILD_SPLIT_STATS=0` is reserved for local debug/recovery
+only; terminal G004 evidence still requires passing split-stat artifacts.
 
 `configs/model/fdm_streaming_d2e_full_compact.yaml` enables per-epoch
 validation checkpoints and a preregistered plateau rule:

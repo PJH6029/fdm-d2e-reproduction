@@ -9,6 +9,10 @@ DECODE_SUMMARY="${DECODE_SUMMARY:-artifacts/sources/d2e_full_corpus_decode_summa
 IDM_CONFIG="${IDM_CONFIG:-configs/model/idm_streaming_d2e_full_compact.yaml}"
 CACHE_DIR="${CACHE_DIR:-/root/work/data/d2e/cache}"
 IDM_NPROC_PER_NODE="${IDM_NPROC_PER_NODE:-4}"
+BUILD_SPLIT_STATS="${BUILD_SPLIT_STATS:-1}"
+SPLIT_STATS_CONFIG="${SPLIT_STATS_CONFIG:-configs/eval/g003_split_statistics.yaml}"
+SPLIT_STATS_SUMMARY="${SPLIT_STATS_SUMMARY:-artifacts/eval/g003_split_statistical_comparisons_summary.json}"
+export BUILD_SPLIT_STATS SPLIT_STATS_CONFIG SPLIT_STATS_SUMMARY
 
 mkdir -p artifacts/sources artifacts/idm artifacts/mlxp outputs/cluster "${SHARD_ROOT}" "${DATA_OUTPUT_DIR}"
 
@@ -59,6 +63,11 @@ uv run torchrun --standalone --nproc-per-node="${IDM_NPROC_PER_NODE}" scripts/tr
   --config "${IDM_CONFIG}" \
   --require-torch
 
+if [[ "${BUILD_SPLIT_STATS}" != "0" ]]; then
+  uv run python scripts/build_split_statistical_comparisons.py \
+    --config "${SPLIT_STATS_CONFIG}"
+fi
+
 uv run python - <<'PY'
 from __future__ import annotations
 import json, os, platform, subprocess
@@ -66,6 +75,7 @@ from pathlib import Path
 
 decode_summary = Path(os.environ.get("DECODE_SUMMARY", "artifacts/sources/d2e_full_corpus_decode_summary.json"))
 idm_summary_path = Path(os.environ.get("IDM_SUMMARY", "artifacts/idm/idm_streaming_d2e_full_compact_summary.json"))
+split_stats_summary_path = Path(os.environ.get("SPLIT_STATS_SUMMARY", "artifacts/eval/g003_split_statistical_comparisons_summary.json"))
 suffix = os.environ.get("OUTPUT_SUFFIX", "full_compact_parallel")
 try:
     smi = subprocess.check_output(
@@ -81,12 +91,18 @@ evidence = {
     "gpu": smi,
     "decode_summary": json.loads(decode_summary.read_text()) if decode_summary.exists() else None,
     "idm_summary": json.loads(idm_summary_path.read_text()) if idm_summary_path.exists() else None,
+    "split_stats_summary": json.loads(split_stats_summary_path.read_text()) if split_stats_summary_path.exists() else None,
     "artifacts": {
         "gpu_smoke": f"outputs/cluster/g003_{suffix}_gpu_smoke.json",
         "decode_summary": str(decode_summary),
         "idm_summary": str(idm_summary_path),
+        "split_stats_summary": str(split_stats_summary_path),
     },
     "idm_nproc_per_node": int(os.environ.get("IDM_NPROC_PER_NODE", "4")),
+    "build_split_stats": os.environ.get("BUILD_SPLIT_STATS", "1") != "0",
+    "split_stats_config": os.environ.get("SPLIT_STATS_CONFIG", "configs/eval/g003_split_statistics.yaml"),
+    "split_stats_summary_path": str(split_stats_summary_path),
+    "split_stats_summary_exists": split_stats_summary_path.exists(),
 }
 out = Path(f"artifacts/idm/g003_d2e_full_idm_run_{suffix}.json")
 out.parent.mkdir(parents=True, exist_ok=True)

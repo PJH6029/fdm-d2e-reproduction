@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 185,
+  "entry_count": 186,
   "entries": [
     {
       "path": "README.md",
@@ -19,7 +19,7 @@
       "path": "artifacts/aux/g005_aux_completion_audit.json",
       "kind": "evidence_artifact",
       "bytes": 8583,
-      "sha256": "aa17e4e8c0388e586f5cd2d829ee2d72e39fcd2f55570b2c52073e064430b33f"
+      "sha256": "40de51d8798af8bc01fa4240da08a828142a1d6a847e50eaf64781775987a531"
     },
     {
       "path": "artifacts/eval/final_claim_taxonomy.json",
@@ -216,8 +216,8 @@
     {
       "path": "artifacts/reproducibility/g009_completion_audit.json",
       "kind": "evidence_artifact",
-      "bytes": 4584,
-      "sha256": "bdef14042a25822f5afe34f3c51279a9a78174044e44165d777493c10c4cbb09"
+      "bytes": 4206,
+      "sha256": "e6dc19a56d532fe68b0037303980becb181e4723a6838c88f45df6e7294ddb99"
     },
     {
       "path": "artifacts/runtime/g007_completion_audit.json",
@@ -486,14 +486,14 @@
     {
       "path": "docs/d2e_full_fdm_pipeline.md",
       "kind": "documentation",
-      "bytes": 6967,
-      "sha256": "bea4c5d1bfacc71631d69c8846e71b9bc1474ef31b0fccc0f6dd98c6d03c3785"
+      "bytes": 7638,
+      "sha256": "132388e7cf67349c6270735ed77fc01fbe98c24512d092a19c94917943415755"
     },
     {
       "path": "docs/d2e_full_idm_pipeline.md",
       "kind": "documentation",
-      "bytes": 8117,
-      "sha256": "3117a402d54cf5832653f3c7f4e36ae2ed936a4170ab52833707ce5a292e0932"
+      "bytes": 8880,
+      "sha256": "094c5de84153377f6d5c015b5c441ffd4eb3afa858a8b7df71d0af518fa11864"
     },
     {
       "path": "docs/d2e_full_split_contract.md",
@@ -636,8 +636,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 12298,
-      "sha256": "cd25ab40289a2106fee4b31803d9df6842c5fcd25d306536db260be7e9dd31a0"
+      "bytes": 12340,
+      "sha256": "0044da41ce26eccb493bed2c2f86da10064ed8a848ca59470fc3dece306e066e"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -708,20 +708,20 @@
     {
       "path": "scripts/run_g003_d2e_full_idm_parallel.sh",
       "kind": "reproduction_script",
-      "bytes": 3746,
-      "sha256": "7a25f5fec05783c7d8bc5a8e6a4b0a52c81ccc6fd860a7ae862f62942d64c5e8"
+      "bytes": 4834,
+      "sha256": "06d87bf9b1a3475f369cf45205806633cedcec2dee5dc7cf7d4fe152a0fee7ac"
     },
     {
       "path": "scripts/run_g003_idm_training_4xh200.sh",
       "kind": "reproduction_script",
-      "bytes": 4041,
-      "sha256": "836646f1746b15cf80d9fc2aa9a9fa43987342cc8bbcc2cc912f6b22ab45c20c"
+      "bytes": 5222,
+      "sha256": "77b7e600bd7fdc5b367228a74e03a10d60598ea5435c0e012e586462dbdc6d79"
     },
     {
       "path": "scripts/run_g004_d2e_full_fdm_4xh200.sh",
       "kind": "reproduction_script",
-      "bytes": 5350,
-      "sha256": "763dd692fb214ac0424642cd0a7c3b19cf439e1ddc284cbb498953f66b478ea0"
+      "bytes": 6531,
+      "sha256": "53646bb7fbe4e8cdadf67b77cee651feb373fea76d7fc83403c81839a8200bfa"
     },
     {
       "path": "scripts/run_game_harness_eval.py",
@@ -1112,6 +1112,12 @@
       "kind": "other",
       "bytes": 6871,
       "sha256": "ae13856cad9577c3d77bfd4fa3811b77544c954b5384343c1308d84dee667db4"
+    },
+    {
+      "path": "tests/test_training_run_scripts.py",
+      "kind": "other",
+      "bytes": 1670,
+      "sha256": "34c42dc0a5cceeb52de964c471a420aeebcad60b518e9aec13b5acacb7c83aa9"
     }
   ],
   "notes": [
