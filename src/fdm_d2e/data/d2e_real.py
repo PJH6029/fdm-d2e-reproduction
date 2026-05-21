@@ -356,15 +356,7 @@ def _ppm_features(path: str | Path) -> list[float]:
     return [r_sum / count / max_value, g_sum / count / max_value, b_sum / count / max_value, luma_mean, luma_energy]
 
 
-def _ppm_grid_luma_features(path: str | Path, *, grid_size: int = 8, luma_size: int = 16) -> dict[str, list[float]]:
-    """Extract compact RGB-grid and luma-grid features from a PPM frame.
-
-    Full-corpus D2E runs cannot keep every decoded 64×64 frame as a long-lived
-    training artifact.  These features preserve enough spatial signal for the
-    repo-native IDM feature modes while allowing extraction jobs to delete
-    transient PPM files after each recording.
-    """
-
+def _ppm_header_and_pixels(path: str | Path) -> tuple[int, int, int, bytes]:
     data = Path(path).read_bytes()
     cursor = 0
 
@@ -390,12 +382,64 @@ def _ppm_grid_luma_features(path: str | Path, *, grid_size: int = 8, luma_size: 
     while cursor < len(data) and data[cursor] in b" \t\r\n":
         cursor += 1
         break
-    pixels = data[cursor:]
     expected = width * height * 3
+    pixels = data[cursor : cursor + expected]
     if len(pixels) < expected:
         raise ValueError(f"{path} has truncated PPM pixel data")
-    pixels = pixels[:expected]
+    return width, height, max_value, pixels
 
+
+def _ppm_compact_features(path: str | Path, *, grid_size: int = 8, luma_size: int = 16) -> dict[str, list[float]]:
+    """Return summary, RGB-grid, and luma-grid features for one PPM frame.
+
+    The NumPy path is critical for full-corpus D2E throughput.  A pure-Python
+    fallback remains for minimal local environments.
+    """
+
+    width, height, max_value, pixels = _ppm_header_and_pixels(path)
+    try:
+        import numpy as np  # type: ignore
+
+        arr = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, 3).astype("float32") / float(max_value)
+        rgb_mean = arr.mean(axis=(0, 1))
+        luma = (0.2126 * arr[:, :, 0]) + (0.7152 * arr[:, :, 1]) + (0.0722 * arr[:, :, 2])
+        summary = [
+            float(rgb_mean[0]),
+            float(rgb_mean[1]),
+            float(rgb_mean[2]),
+            float(luma.mean()),
+            float((luma * luma).mean()),
+        ]
+        if width % grid_size == 0 and height % grid_size == 0:
+            grid = arr.reshape(grid_size, height // grid_size, grid_size, width // grid_size, 3).mean(axis=(1, 3))
+            grid_values = grid.reshape(grid_size * grid_size * 3).astype("float32").tolist()
+        else:
+            grid_values = _ppm_grid_luma_features_python(width, height, max_value, pixels, grid_size=grid_size, luma_size=luma_size)[f"grid{grid_size}"]
+        if width % luma_size == 0 and height % luma_size == 0:
+            luma_grid = luma.reshape(luma_size, height // luma_size, luma_size, width // luma_size).mean(axis=(1, 3))
+            luma_values = luma_grid.reshape(luma_size * luma_size).astype("float32").tolist()
+        else:
+            luma_values = _ppm_grid_luma_features_python(width, height, max_value, pixels, grid_size=grid_size, luma_size=luma_size)[f"luma{luma_size}"]
+        return {"features": summary, f"grid{grid_size}": grid_values, f"luma{luma_size}": luma_values}
+    except Exception:
+        rgb_luma = _ppm_features(path)
+        grid_luma = _ppm_grid_luma_features_python(width, height, max_value, pixels, grid_size=grid_size, luma_size=luma_size)
+        return {"features": rgb_luma, **grid_luma}
+
+
+def _ppm_grid_luma_features_python(
+    width: int,
+    height: int,
+    max_value: int,
+    pixels: bytes,
+    *,
+    grid_size: int = 8,
+    luma_size: int = 16,
+) -> dict[str, list[float]]:
+    expected = width * height * 3
+    if len(pixels) < expected:
+        raise ValueError("truncated PPM pixel data")
+    pixels = pixels[:expected]
     grid_sums = [[0.0, 0.0, 0.0, 0.0] for _ in range(grid_size * grid_size)]
     luma_sums = [[0.0, 0.0] for _ in range(luma_size * luma_size)]
     for y in range(height):
@@ -423,6 +467,19 @@ def _ppm_grid_luma_features(path: str | Path, *, grid_size: int = 8, luma_size: 
         grid.extend([r / denom, g / denom, b / denom])
     luma = [total / (count or 1.0) for total, count in luma_sums]
     return {f"grid{grid_size}": grid, f"luma{luma_size}": luma}
+
+
+def _ppm_grid_luma_features(path: str | Path, *, grid_size: int = 8, luma_size: int = 16) -> dict[str, list[float]]:
+    """Extract compact RGB-grid and luma-grid features from a PPM frame.
+
+    Full-corpus D2E runs cannot keep every decoded 64×64 frame as a long-lived
+    training artifact.  These features preserve enough spatial signal for the
+    repo-native IDM feature modes while allowing extraction jobs to delete
+    transient PPM files after each recording.
+    """
+
+    width, height, max_value, pixels = _ppm_header_and_pixels(path)
+    return _ppm_grid_luma_features_python(width, height, max_value, pixels, grid_size=grid_size, luma_size=luma_size)
 
 
 def extract_video_frame_features(
@@ -462,14 +519,12 @@ def extract_video_frame_features(
     subprocess.run(cmd, check=True)
     rows: list[dict[str, Any]] = []
     for idx, frame_path in enumerate(sorted(frame_dir.glob("frame_*.ppm"))):
-        features = _ppm_features(frame_path)
-        extra = _ppm_grid_luma_features(frame_path, grid_size=8, luma_size=16) if compact_features else {}
+        compact = _ppm_compact_features(frame_path, grid_size=8, luma_size=16) if compact_features else {"features": _ppm_features(frame_path)}
         rows.append(
             {
                 "frame_index": idx,
                 "path": str(frame_path) if keep_frames else f"{video_source}#frame={idx}",
-                "features": features,
-                **extra,
+                **compact,
                 "source_video": video_source,
             }
         )
