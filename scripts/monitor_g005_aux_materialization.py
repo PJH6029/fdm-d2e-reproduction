@@ -71,19 +71,39 @@ def _selected_candidates(payload: dict[str, Any] | None) -> dict[str, dict[str, 
 def _iter_files(path: Path) -> list[Path]:
     if not path.exists() or not path.is_dir():
         return []
-    return sorted(item for item in path.rglob("*") if item.is_file())
+    files: list[Path] = []
+    for item in path.rglob("*"):
+        try:
+            if item.is_file():
+                files.append(item)
+        except OSError:
+            # Download managers can rename/remove temporary files while the
+            # monitor walks the tree. Treat those as transient churn, not as a
+            # monitor failure.
+            continue
+    return sorted(files)
+
+
+def _safe_file_size(path: Path) -> int | None:
+    try:
+        return path.stat().st_size
+    except (FileNotFoundError, OSError):
+        return None
 
 
 def _split_status(namespace: Path, split: str) -> dict[str, Any]:
     split_dir = namespace / split
     manifest = split_dir / "manifest.json"
     paths = _iter_files(split_dir)
+    sizes = [_safe_file_size(path) for path in paths]
+    existing_sizes = [int(size) for size in sizes if size is not None]
     return {
         "split": split,
         "dir_exists": split_dir.exists() and split_dir.is_dir(),
         "manifest_exists": manifest.exists() and manifest.is_file(),
-        "file_count": len(paths),
-        "bytes": sum(path.stat().st_size for path in paths),
+        "file_count": len(existing_sizes),
+        "bytes": sum(existing_sizes),
+        "transient_missing_file_count": len(sizes) - len(existing_sizes),
     }
 
 
@@ -107,15 +127,19 @@ def _source_row(source_id: str, candidate: dict[str, Any], namespace_root: Path,
     namespace = namespace_root / source_id
     raw_dir = namespace / "raw"
     raw_files = _iter_files(raw_dir)
-    raw_rows = [
-        {
-            "path": str(path.relative_to(namespace)),
-            "bytes": path.stat().st_size,
-        }
-        for path in raw_files[:max_files]
-    ]
+    raw_rows = []
+    raw_visible_sizes: list[int] = []
+    raw_transient_missing = 0
+    for path in raw_files:
+        size = _safe_file_size(path)
+        if size is None:
+            raw_transient_missing += 1
+            continue
+        raw_visible_sizes.append(int(size))
+        if len(raw_rows) < max_files:
+            raw_rows.append({"path": str(path.relative_to(namespace)), "bytes": int(size)})
     split_rows = [_split_status(namespace, split) for split in splits]
-    raw_total_bytes = sum(path.stat().st_size for path in raw_files)
+    raw_total_bytes = sum(raw_visible_sizes)
     expected_size_bytes = _expected_size_bytes(candidate)
     remaining_expected_bytes = max(0, expected_size_bytes - raw_total_bytes) if expected_size_bytes is not None else None
     return {
@@ -126,12 +150,13 @@ def _source_row(source_id: str, candidate: dict[str, Any], namespace_root: Path,
         "expected_size_bytes": expected_size_bytes,
         "namespace_exists": namespace.exists() and namespace.is_dir(),
         "raw_dir_exists": raw_dir.exists() and raw_dir.is_dir(),
-        "raw_file_count": len(raw_files),
+        "raw_file_count": len(raw_visible_sizes),
         "raw_total_bytes": raw_total_bytes,
         "raw_completion_ratio": raw_total_bytes / expected_size_bytes if expected_size_bytes else None,
         "raw_remaining_expected_bytes": remaining_expected_bytes,
         "raw_files": raw_rows,
-        "raw_files_truncated": len(raw_files) > max_files,
+        "raw_files_truncated": len(raw_visible_sizes) > max_files,
+        "raw_transient_missing_file_count": raw_transient_missing,
         "split_manifests_ready": all(row["manifest_exists"] for row in split_rows),
         "splits": split_rows,
     }

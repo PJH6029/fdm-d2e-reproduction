@@ -111,3 +111,27 @@ def test_monitor_converts_estimated_size_gib_to_bytes(tmp_path: Path):
     payload = build_progress(_args(tmp_path, source_id=["gib_aux"]))
     assert payload["expected_raw_total_bytes"] == 536870912
     assert payload["aux_sources"][0]["expected_size_bytes"] == 536870912
+
+
+def test_monitor_tolerates_files_removed_during_download_scan(tmp_path: Path, monkeypatch):
+    _write_candidates(tmp_path)
+    raw_dir = tmp_path / "outputs/aux/partial_aux/raw"
+    raw_dir.mkdir(parents=True)
+    stable = raw_dir / "stable.bin"
+    vanished = raw_dir / ".cache/huggingface/download/tmp.incomplete"
+    stable.write_bytes(b"x" * 7)
+    vanished.parent.mkdir(parents=True)
+
+    def fake_iter_files(path: Path) -> list[Path]:
+        if path == raw_dir:
+            return [stable, vanished]
+        return []
+
+    monkeypatch.setattr("monitor_g005_aux_materialization._iter_files", fake_iter_files)
+
+    payload = build_progress(_args(tmp_path, source_id=["partial_aux"]))
+    source = payload["aux_sources"][0]
+    assert payload["status"] == "blocked"
+    assert source["raw_total_bytes"] == 7
+    assert source["raw_file_count"] == 1
+    assert source["raw_transient_missing_file_count"] == 1
