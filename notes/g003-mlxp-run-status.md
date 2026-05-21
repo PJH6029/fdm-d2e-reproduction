@@ -206,3 +206,9 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Pushed commit `02d4b14` and fast-forwarded pod checkout to `02d4b14`; `scripts/validate_g005_aux_completion.py` and config are present in pod.
 - Parent PID `9289` still running; decoded recording variants `78 / 918`; complete shards `0 / 16`; IDM metrics absent.
 - Pod-local G005 completion audit reports `fail` with `20` expected errors because G003/G004 are incomplete and aux artifacts do not exist yet.
+
+## 2026-05-21 14:10 KST post-G008-audit sync snapshot
+
+- Pushed commit `1cb6129` and fast-forwarded pod checkout to `1cb6129`; `scripts/validate_g008_live_suite_completion.py` and config are present in pod.
+- Parent PID `9289` still running; decoded recording variants `81 / 918`; complete shards `0 / 16`; IDM metrics absent.
+- Pod-local G008 completion audit reports `fail` with `11` expected errors because D2E-only training/live evidence prerequisites are incomplete.
