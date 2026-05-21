@@ -518,3 +518,10 @@ uv run python scripts/audit_g003_live_health.py \
 - Local commit `ea8ed9d` hardens future G003 evidence generation by exporting lane-specific `IDM_SUMMARY` defaults, including the accel64 summary path `artifacts/idm/idm_streaming_d2e_full_compact_accel64_summary.json`. Local validation passed: `uv run pytest tests/test_training_run_scripts.py tests/test_g003_accel64_isolation.py` and full `uv run pytest` (`301` tests).
 - Important deployment note: `ea8ed9d` was pushed to origin but intentionally **not pulled into the active pod checkout** because the pod is running the accel64 parent shell from `b568f0b`. The current active run can still pass because the postrun finalizer/watcher already uses explicit accel64 paths for completion auditing; deploy `ea8ed9d` only after the active accel64 parent exits, or if a future restart is needed.
 - G003 remains non-terminal. Do not checkpoint complete until accel64 finishes extraction, merge, IDM training/eval, split stats, finalization audit, promotion to canonical paths, and canonical `g003_full_idm_completion_audit.json` reports `pass`.
+
+### 2026-05-22 03:17 KST accel64 extraction still healthy
+
+- Pod checkout remained at `b568f0b` (new local notes/evidence-path commits are intentionally not deployed while the active parent shell runs).
+- Accel64 monitor advanced to `578 / 918` decoded recording variants, status `running`, parent alive, watcher `waiting_active_parent`, filesystem summary count `578`.
+- Live health remained `healthy_running` with `64 / 64` active extractors. The monitor flagged long-running shards `[13, 56]`, but the recommendation was `continue_monitor_long_recordings`; no stale/no-progress shards were reported.
+- Full-corpus merged JSONLs, IDM metrics/checkpoint, integrated finalization summary, and accel64 completion audit were still absent, so G003 remains non-terminal and must not be checkpointed complete.
