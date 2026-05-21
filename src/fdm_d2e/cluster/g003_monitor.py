@@ -71,6 +71,36 @@ def _safe_mtime(path: Path) -> float | None:
     return path.stat().st_mtime
 
 
+def _detect_active_shard_processes() -> set[int]:
+    """Best-effort Linux /proc scan for active full-corpus extraction shards."""
+
+    active: set[int] = set()
+    proc = Path("/proc")
+    if not proc.exists():
+        return active
+    for entry in proc.iterdir():
+        if not entry.name.isdigit():
+            continue
+        try:
+            raw = (entry / "cmdline").read_bytes()
+        except (FileNotFoundError, ProcessLookupError, PermissionError, OSError):
+            continue
+        if not raw:
+            continue
+        parts = [part.decode("utf-8", errors="ignore") for part in raw.split(b"\0") if part]
+        joined = " ".join(parts)
+        if "scripts/extract_d2e_full_corpus.py" not in joined and "extract_d2e_full_corpus.py" not in joined:
+            continue
+        if "--shard-index" not in parts:
+            continue
+        try:
+            idx_pos = parts.index("--shard-index") + 1
+            active.add(int(parts[idx_pos]))
+        except (IndexError, ValueError):
+            continue
+    return active
+
+
 def _shard_report(
     *,
     index: int,
@@ -79,6 +109,7 @@ def _shard_report(
     log_dir: Path,
     now: float,
     stale_seconds: float,
+    active_shard_processes: set[int],
 ) -> dict[str, Any]:
     shard_dir = shard_root / f"shard_{index}"
     log_path = log_dir / f"d2e_full_corpus_shard_{index}.log"
@@ -91,8 +122,11 @@ def _shard_report(
     expected = len(expected_ids)
     decoded = max(summary_count, int(last_row.get("decoded", 0)) if last_row else 0)
     seconds_since_update = None if log_mtime is None else max(0.0, now - log_mtime)
+    process_active = index in active_shard_processes
     if summary is not None:
         status = "complete" if int(summary.get("selected_recording_variants", 0)) == expected else "summary_mismatch"
+    elif process_active and seconds_since_update is not None and seconds_since_update >= stale_seconds:
+        status = "running_long_recording"
     elif decoded <= 0 and seconds_since_update is not None and seconds_since_update >= stale_seconds:
         status = "no_progress_stale"
     elif seconds_since_update is not None and seconds_since_update >= stale_seconds:
@@ -107,6 +141,7 @@ def _shard_report(
         "decoded_log_count": int(last_row.get("decoded", 0)) if last_row else 0,
         "recording_summary_count": summary_count,
         "summary_exists": summary is not None,
+        "process_active": process_active,
         "log_path": str(log_path),
         "log_exists": log_path.exists(),
         "seconds_since_log_update": seconds_since_update,
@@ -127,22 +162,33 @@ def build_g003_progress_report(
     num_shards: int = 16,
     stale_seconds: float = 3600.0,
     now: float | None = None,
+    active_shard_processes: set[int] | list[int] | None = None,
 ) -> dict[str, Any]:
     now_value = time.time() if now is None else float(now)
     shard_root_path = Path(shard_root)
     log_dir_path = Path(log_dir)
     expected = _expected_by_shard(Path(data_universe), num_shards=int(num_shards))
+    active_processes = set(int(idx) for idx in active_shard_processes) if active_shard_processes is not None else _detect_active_shard_processes()
     shards = [
-        _shard_report(index=idx, expected_ids=expected.get(idx, []), shard_root=shard_root_path, log_dir=log_dir_path, now=now_value, stale_seconds=float(stale_seconds))
+        _shard_report(
+            index=idx,
+            expected_ids=expected.get(idx, []),
+            shard_root=shard_root_path,
+            log_dir=log_dir_path,
+            now=now_value,
+            stale_seconds=float(stale_seconds),
+            active_shard_processes=active_processes,
+        )
         for idx in range(int(num_shards))
     ]
     total_expected = sum(row["expected_variants"] for row in shards)
     decoded = sum(row["decoded_variants"] for row in shards)
     complete_shards = sum(1 for row in shards if row["status"] == "complete")
     stale_shards = [row for row in shards if row["status"] in {"stale_log", "no_progress_stale"}]
-    no_progress_shards = [row for row in shards if row["decoded_variants"] == 0 and not row["summary_exists"]]
+    long_running_shards = [row for row in shards if row["status"] == "running_long_recording"]
+    no_progress_shards = [row for row in shards if row["decoded_variants"] == 0 and not row["summary_exists"] and not row["process_active"]]
     pid = _read_pid(Path(pid_file))
-    running = _pid_running(pid) if pid is not None else False
+    running = (_pid_running(pid) if pid is not None else False) or bool(active_processes)
     merged_summary_exists = (Path(output_dir) / "train_core.jsonl").exists() and (Path(output_dir) / "target_all_eval.jsonl").exists()
     idm_metrics_exists = (Path(idm_output_dir) / "metrics.json").exists()
     if complete_shards == int(num_shards) and merged_summary_exists and idm_metrics_exists:
@@ -164,7 +210,9 @@ def build_g003_progress_report(
         "num_shards": int(num_shards),
         "complete_shards": complete_shards,
         "stale_shards": [row["shard_index"] for row in stale_shards],
+        "long_running_shards": [row["shard_index"] for row in long_running_shards],
         "no_progress_shards": [row["shard_index"] for row in no_progress_shards],
+        "active_shard_processes": sorted(active_processes),
         "decoded_recording_variants": decoded,
         "expected_recording_variants": total_expected,
         "completion_ratio": decoded / total_expected if total_expected else None,

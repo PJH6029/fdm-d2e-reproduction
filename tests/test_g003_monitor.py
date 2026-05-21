@@ -73,6 +73,29 @@ def test_g003_progress_detects_stale_no_progress_shard(tmp_path):
     assert 0 in report["no_progress_shards"]
 
 
+def test_g003_progress_treats_stale_active_process_as_long_recording(tmp_path):
+    universe = _universe(tmp_path)
+    log_dir = tmp_path / "artifacts/sources"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    stale = log_dir / "d2e_full_corpus_shard_0.log"
+    stale.write_text('{"decoded": 1, "total_selected": 2, "universe_row_id": "d2e_480p:Game/rec_0"}\n')
+    report = build_g003_progress_report(
+        shard_root=tmp_path / "outputs/data/d2e_full_corpus_shards",
+        log_dir=log_dir,
+        data_universe=universe,
+        pid_file=tmp_path / "missing.pid",
+        num_shards=2,
+        stale_seconds=10,
+        now=stale.stat().st_mtime + 100,
+        active_shard_processes={0},
+    )
+    assert report["status"] == "running"
+    assert report["stale_shards"] == []
+    assert report["long_running_shards"] == [0]
+    assert report["active_shard_processes"] == [0]
+    assert report["shards"][0]["status"] == "running_long_recording"
+
+
 def test_g003_progress_complete_requires_shards_merge_and_metrics(tmp_path):
     universe = _universe(tmp_path)
     shard_root = tmp_path / "outputs/data/d2e_full_corpus_shards"
