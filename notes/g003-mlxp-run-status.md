@@ -525,3 +525,10 @@ uv run python scripts/audit_g003_live_health.py \
 - Accel64 monitor advanced to `578 / 918` decoded recording variants, status `running`, parent alive, watcher `waiting_active_parent`, filesystem summary count `578`.
 - Live health remained `healthy_running` with `64 / 64` active extractors. The monitor flagged long-running shards `[13, 56]`, but the recommendation was `continue_monitor_long_recordings`; no stale/no-progress shards were reported.
 - Full-corpus merged JSONLs, IDM metrics/checkpoint, integrated finalization summary, and accel64 completion audit were still absent, so G003 remains non-terminal and must not be checkpointed complete.
+
+### 2026-05-22 03:51 KST accel64 crosses 600 variants with completed shards
+
+- Pod checkout still remained at `b568f0b`; local/origin remained ahead for notes/evidence-path hardening and is intentionally not deployed while the active accel64 parent runs.
+- Accel64 progressed over the monitoring window: `582 / 918` at 03:20 KST, `603 / 918` at 03:30 KST, `623 / 918` at 03:40 KST, and `647 / 918` at 03:51 KST.
+- At 03:51 KST, `complete_shards=2 / 64`, status `running`, parent alive, watcher `waiting_active_parent`, live health `healthy_running`, active extractors `62 / 62`, stale/no-progress shards `[]`, and long-running shards `[19, 33, 38, 41]` with continue-monitor guidance.
+- Terminal G003 artifacts were still absent: accel64 full decode summary, merged train/eval JSONLs, IDM metrics/checkpoint, run evidence, finalization summary, split-stat summary, and accel64 audit. G003 remains non-terminal and no checkpoint/update_goal was made.
