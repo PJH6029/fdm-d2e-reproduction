@@ -69,6 +69,8 @@ uv run python scripts/materialize_g005_aux_sources.py \
 uv run python scripts/materialize_g005_aux_sources.py \
   --execute \
   --output artifacts/aux/g005_aux_materialization_plan.json
+uv run python scripts/build_g005_aux_action_registry.py \
+  --output artifacts/aux/g005_aux_action_registry.json
 uv run python scripts/build_g005_aux_archive_inventory.py \
   --output artifacts/aux/g005_aux_archive_inventory.json
 uv run python scripts/build_g005_eval_manifest_hashes.py \
@@ -109,6 +111,12 @@ member hints. It deliberately does not parse/train from the data; it is a
 loader-implementation artifact so the next G005 lane can write source-specific
 MineRL/Atari/Breakout adapters from observed archive structure rather than
 guessing.
+
+`build_g005_aux_action_registry.py` records the source-specific action heads that
+must remain separate during auxiliary pretraining (`minecraft_keyboard_mouse`,
+`atari_discrete`, etc.). The G005 completion audit requires this registry and
+rejects collapsed/shared auxiliary action heads or any direct auxiliary claim on
+D2E keyboard/mouse endpoints.
 
 For unattended cluster source staging, start the materializer in the background
 and then run the non-mutating watcher:

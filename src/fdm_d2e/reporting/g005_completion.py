@@ -278,6 +278,59 @@ def _validate_aux_ablation_details(
             )
 
 
+def _validate_action_registry(
+    action_registry: dict[str, Any] | None,
+    *,
+    selected_aux_ids: set[str],
+    namespace_manifest: dict[str, Any] | None,
+    findings: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if action_registry is None:
+        return {"action_head_ids": [], "selected_aux_ids": sorted(selected_aux_ids)}
+    heads = action_registry.get("action_heads", [])
+    if not isinstance(heads, list):
+        findings.append({"severity": "error", "code": "action_registry_heads_malformed"})
+        heads = []
+    if action_registry.get("source_specific_action_heads") is not True:
+        findings.append({"severity": "error", "code": "action_registry_not_source_specific", "actual": action_registry.get("source_specific_action_heads")})
+    if action_registry.get("no_cross_source_action_collapse") is not True:
+        findings.append({"severity": "error", "code": "action_registry_allows_cross_source_collapse", "actual": action_registry.get("no_cross_source_action_collapse")})
+    if _get(action_registry, "d2e_endpoint_claim_boundary.no_aux_source_directly_claims_d2e_keyboard_mouse") is not True:
+        findings.append({"severity": "error", "code": "action_registry_missing_d2e_claim_boundary"})
+    by_id = {str(row.get("id")): row for row in heads if isinstance(row, dict) and row.get("id") is not None}
+    missing = sorted(selected_aux_ids - set(by_id))
+    extra = sorted(set(by_id) - selected_aux_ids)
+    if missing:
+        findings.append({"severity": "error", "code": "action_registry_missing_selected_aux_sources", "missing": missing})
+    if extra:
+        findings.append({"severity": "error", "code": "action_registry_contains_unselected_aux_sources", "extra": extra})
+
+    namespace_heads = {
+        str(row.get("id")): row.get("action_head")
+        for row in _namespace_source_rows(namespace_manifest)
+        if row.get("id") is not None and isinstance(row.get("action_head"), dict)
+    }
+    for source_id, row in sorted(by_id.items()):
+        if str(row.get("namespace") or "") != source_id:
+            findings.append({"severity": "error", "code": "action_registry_namespace_mismatch", "source_id": source_id, "actual": row.get("namespace")})
+        if not row.get("type"):
+            findings.append({"severity": "error", "code": "action_registry_missing_type", "source_id": source_id})
+        if row.get("d2e_endpoint_claims_allowed") not in ([], None):
+            findings.append({"severity": "error", "code": "action_registry_aux_allows_d2e_endpoint_claims", "source_id": source_id, "actual": row.get("d2e_endpoint_claims_allowed")})
+        namespace_head = namespace_heads.get(source_id)
+        if isinstance(namespace_head, dict) and namespace_head.get("type") and row.get("type") and namespace_head.get("type") != row.get("type"):
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "action_registry_namespace_type_mismatch",
+                    "source_id": source_id,
+                    "registry_type": row.get("type"),
+                    "namespace_type": namespace_head.get("type"),
+                }
+            )
+    return {"action_head_ids": sorted(by_id), "selected_aux_ids": sorted(selected_aux_ids)}
+
+
 def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = ".") -> dict[str, Any]:
     root_path = Path(root)
     findings: list[dict[str, Any]] = []
@@ -303,12 +356,14 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
 
     aux_candidates = _load_json(root_path / paths.get("aux_candidates", "")) if paths.get("aux_candidates") else None
     namespace_manifest = _load_json(root_path / paths.get("namespace_manifest", "")) if paths.get("namespace_manifest") else None
+    action_registry = _load_json(root_path / paths.get("action_registry", "")) if paths.get("action_registry") else None
     ablation = _load_json(root_path / paths.get("ablation_summary", "")) if paths.get("ablation_summary") else None
     metadata = _load_json(root_path / paths.get("checkpoint_metadata", "")) if paths.get("checkpoint_metadata") else None
     run_summary = _load_json(root_path / paths.get("run_summary", "")) if paths.get("run_summary") else None
 
     _assert_json_expectations(aux_candidates, dict(config.get("aux_candidate_expectations", {})), source_name="aux_candidates", findings=findings)
     _assert_json_expectations(namespace_manifest, dict(config.get("namespace_manifest_expectations", {})), source_name="namespace_manifest", findings=findings)
+    _assert_json_expectations(action_registry, dict(config.get("action_registry_expectations", {})), source_name="action_registry", findings=findings)
     _assert_json_expectations(ablation, dict(config.get("ablation_expectations", {})), source_name="ablation_summary", findings=findings)
     _assert_json_expectations(metadata, dict(config.get("metadata_expectations", {})), source_name="checkpoint_metadata", findings=findings)
 
@@ -327,6 +382,12 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
         namespace_manifest,
         selected_aux_ids=selected_aux_ids,
         required_splits=required_splits,
+        findings=findings,
+    )
+    action_registry_report = _validate_action_registry(
+        action_registry,
+        selected_aux_ids=selected_aux_ids,
+        namespace_manifest=namespace_manifest,
         findings=findings,
     )
     ablation_splits: set[str] = set()
@@ -386,6 +447,7 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
         "required_splits": sorted(required_splits),
         "ablation_splits": sorted(ablation_splits),
         "namespace_report": namespace_report,
+        "action_registry_report": action_registry_report,
         "artifacts": artifacts,
         "counts": count_report,
         "findings": findings,

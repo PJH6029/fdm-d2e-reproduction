@@ -16,6 +16,7 @@ def _config() -> dict:
     paths = {
         "aux_candidates": "artifacts/sources/aux.json",
         "aux_plan_doc": "docs/aux.md",
+        "action_registry": "artifacts/aux/action_registry.json",
         "namespace_manifest": "artifacts/aux/namespace.json",
         "ablation_summary": "artifacts/aux/ablation.json",
         "checkpoint_metadata": "outputs/fdm_aux/best/checkpoint_metadata.json",
@@ -60,6 +61,13 @@ def _config() -> dict:
             "claim_boundary.no_d2e_aux_claim_before_d2e_only_gates": True,
             "training_policy.source_specific_action_heads": True,
             "d2e_eval_manifests.same_as_d2e_only": True,
+        },
+        "action_registry_expectations": {
+            "schema": "g005_aux_action_registry.v1",
+            "status": "pass",
+            "source_specific_action_heads": True,
+            "no_cross_source_action_collapse": True,
+            "d2e_endpoint_claim_boundary.no_aux_source_directly_claims_d2e_keyboard_mouse": True,
         },
     }
 
@@ -119,6 +127,18 @@ def _complete_fixture(root: Path) -> None:
                     "d2e_heldout_overlap_recording_ids": [],
                 }
             ],
+        },
+    )
+    write_json(
+        root / cfg["paths"]["action_registry"],
+        {
+            "schema": "g005_aux_action_registry.v1",
+            "status": "pass",
+            "selected_aux_source_ids": ["aux_a"],
+            "source_specific_action_heads": True,
+            "no_cross_source_action_collapse": True,
+            "d2e_endpoint_claim_boundary": {"no_aux_source_directly_claims_d2e_keyboard_mouse": True},
+            "action_heads": [{"id": "aux_a", "namespace": "aux_a", "type": "discrete", "d2e_endpoint_claims_allowed": []}],
         },
     )
     write_json(
@@ -238,3 +258,24 @@ def test_g005_aux_completion_audit_rejects_unselected_namespace_and_hash_mismatc
     assert "namespace_eval_split_missing_hashes" in codes
     assert "ablation_split_not_same_d2e_eval_manifest" in codes
     assert "ablation_split_eval_manifest_hash_mismatch" in codes
+
+
+def test_g005_aux_completion_audit_rejects_collapsed_or_mismatched_action_registry(tmp_path: Path):
+    _complete_fixture(tmp_path)
+    import json
+
+    registry_path = tmp_path / _config()["paths"]["action_registry"]
+    registry = json.loads(registry_path.read_text())
+    registry["no_cross_source_action_collapse"] = False
+    registry["action_heads"][0]["namespace"] = "shared_aux"
+    registry["action_heads"][0]["d2e_endpoint_claims_allowed"] = ["keyboard_accuracy"]
+    registry["action_heads"].append({"id": "unselected", "namespace": "unselected", "type": "discrete", "d2e_endpoint_claims_allowed": []})
+    write_json(registry_path, registry)
+
+    result = validate_g005_aux_completion(_config(), root=tmp_path)
+    codes = {item["code"] for item in result["findings"]}
+    assert result["status"] == "fail"
+    assert "action_registry_allows_cross_source_collapse" in codes
+    assert "action_registry_namespace_mismatch" in codes
+    assert "action_registry_aux_allows_d2e_endpoint_claims" in codes
+    assert "action_registry_contains_unselected_aux_sources" in codes
