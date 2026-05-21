@@ -70,3 +70,19 @@ G003 is complete only after the uncapped run consumes all included D2E source
 variants from the data universe and produces checkpoint/metrics/pseudolabel
 artifacts. The compact-feature trainer is a D2E-only IDM baseline/labeler; it is
 not an FDM-1 parity claim and it is not live-game evidence.
+
+
+## Progress monitor
+
+For long MLXP extraction/training runs, use the non-mutating monitor documented
+in `docs/g003_progress_monitoring.md`:
+
+```bash
+uv run python scripts/monitor_g003_progress.py \
+  --stale-seconds 7200 \
+  --output artifacts/idm/g003_full_compact_parallel_progress.json
+```
+
+The monitor summarizes decoded/expected recording variants, completed shards,
+stale/no-progress shards, parent PID state, and whether merged train/eval plus
+IDM metrics exist. It is progress evidence only and does not complete G003.
