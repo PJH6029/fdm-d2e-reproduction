@@ -1,0 +1,115 @@
+{
+  "schema": "g009_completion_audit.v1",
+  "status": "fail",
+  "goal_id": "G009-report-repro-package",
+  "goal_status": "pending",
+  "prerequisite_goal_statuses": {
+    "G001-data-universe-audit": "complete",
+    "G002-split-leakage-contract": "complete",
+    "G003-d2e-only-idm": "in_progress",
+    "G004-d2e-only-fdm-4xh200": "pending",
+    "G005-aux-data-best-model": "pending",
+    "G006-evaluation-failure-analysis": "pending",
+    "G007-runtime-sdk-adapter": "complete",
+    "G008-live-game-suite": "pending"
+  },
+  "artifacts": {
+    "final_report": {
+      "path": "docs/final_research_report.md",
+      "exists": true,
+      "bytes": 6862,
+      "sha256": "38292857070cfc43b9b185f1c7192b675da0d85e4fde4db3e77b72f4e07f3ce4"
+    },
+    "evidence_index": {
+      "path": "docs/evidence_index.md",
+      "exists": true,
+      "bytes": 4843,
+      "sha256": "784fe6cb8a5896dfba9ee01afa3a6b1908f7e0baa7cb6796e9f1ab8925d9f17a"
+    },
+    "reproducibility_runbook": {
+      "path": "docs/reproducibility_runbook.md",
+      "exists": true,
+      "bytes": 3489,
+      "sha256": "63712e1c932919d732b5ec8cfdde083730a385f6281c211280ed1499d78b437d"
+    },
+    "failure_analysis_doc": {
+      "path": "docs/failure_analysis.md",
+      "exists": true,
+      "bytes": 2210,
+      "sha256": "cd77f696656010ae78060083a601644ee3eba1a8ea798ac065c9971f6b3e7cbe"
+    },
+    "final_quality_doc": {
+      "path": "docs/final_quality_gates.md",
+      "exists": true,
+      "bytes": 3469,
+      "sha256": "7d11ca900e5630541ab243874966a4b6f698e87ee0eca7ca5aea04d2f62df410"
+    },
+    "package_manifest": {
+      "path": "artifacts/reproducibility/package_manifest.json",
+      "exists": true,
+      "bytes": 35291,
+      "sha256": "2aa159b314422cdabd2f20aa2d6948d103ef12b6c7ae3436edc759bf73546f75"
+    },
+    "claim_boundary_audit": {
+      "path": "artifacts/reproducibility/claim_boundary_audit.json",
+      "exists": true,
+      "bytes": 850,
+      "sha256": "23d9ee62c70743703bf7991d1570ffec09e2a38520ecac03199c2959ed36bd71"
+    },
+    "final_quality_audit": {
+      "path": "artifacts/reproducibility/final_quality_gate_audit.json",
+      "exists": true,
+      "bytes": 56637,
+      "sha256": "75937e2a399fb367395d5ff392ccbd261177bea073f7d2aca80b2d149a4ea07f"
+    }
+  },
+  "required_manifest_paths": [
+    "docs/final_research_report.md",
+    "docs/evidence_index.md",
+    "docs/reproducibility_runbook.md",
+    "docs/failure_analysis.md",
+    "docs/final_quality_gates.md",
+    "artifacts/reproducibility/claim_boundary_audit.json"
+  ],
+  "manifest_entry_count": 168,
+  "findings": [
+    {
+      "severity": "error",
+      "code": "goal_not_checkpointed_complete",
+      "goal_id": "G009-report-repro-package",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G003-d2e-only-idm",
+      "actual": "in_progress"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G005-aux-data-best-model",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G006-evaluation-failure-analysis",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G008-live-game-suite",
+      "actual": "pending"
+    }
+  ],
+  "error_count": 6,
+  "claim_boundary": "This audit is required before checkpointing G009 complete; final report, evidence index, runbook, package manifest, claim-boundary audit, manifest hashes, and prerequisite goal statuses must all be current."
+}

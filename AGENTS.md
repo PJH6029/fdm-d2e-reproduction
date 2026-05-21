@@ -149,6 +149,10 @@ Current adapter-contract evidence is not live commercial-game control. Future li
 
 Commercial-game plug-and-play should be treated as an artifact/API compatibility target, not a current empirical claim.
 
+## G009 completion gate
+
+Do **not** checkpoint `G009-report-repro-package` complete until `scripts/validate_g009_completion.py` reports `status=pass` in `artifacts/reproducibility/g009_completion_audit.json`. This audit requires G001-G008 complete, final report/evidence/runbook docs, claim-boundary audit pass, package-manifest coverage with matching hashes, and final quality audit presence.
+
 ## Verification commands
 
 Run targeted checks first for the files you changed, then broader gates before committing claims.
@@ -164,6 +168,7 @@ uv run python scripts/validate_g004_full_fdm_completion.py --allow-fail
 uv run python scripts/validate_g005_aux_completion.py --allow-fail
 uv run python scripts/validate_g006_completion.py --allow-fail
 uv run python scripts/validate_g008_live_suite_completion.py --allow-fail
+uv run python scripts/validate_g009_completion.py --allow-fail
 uv run python scripts/validate_final_quality_gates.py --allow-fail
 ```
 

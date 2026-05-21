@@ -1056,20 +1056,26 @@
         {
           "path": "docs/reproducibility_runbook.md",
           "exists": true,
-          "bytes": 2726,
-          "sha256": "181cfd855aab9406bddf85b33e35ac70a762eff3f367e21336a3ff18f3d96214"
+          "bytes": 3489,
+          "sha256": "63712e1c932919d732b5ec8cfdde083730a385f6281c211280ed1499d78b437d"
         },
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 34272,
-          "sha256": "04ecb9a4a13c9baaf2fa2ade24c0918a4e12cdeb21c27e8a923bb4dea345ebaa"
+          "bytes": 35291,
+          "sha256": "2aa159b314422cdabd2f20aa2d6948d103ef12b6c7ae3436edc759bf73546f75"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
           "exists": true,
           "bytes": 850,
           "sha256": "23d9ee62c70743703bf7991d1570ffec09e2a38520ecac03199c2959ed36bd71"
+        },
+        {
+          "path": "artifacts/reproducibility/g009_completion_audit.json",
+          "exists": true,
+          "bytes": 3783,
+          "sha256": "3b5adc94f7afc1655b6cf3df78ac748ad68e63438f6b6ba093b7ec286ace9ba3"
         }
       ],
       "findings": [
@@ -1079,6 +1085,14 @@
           "goal_id": "G009-report-repro-package",
           "expected_status": "complete",
           "actual_status": "pending"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_mismatch",
+          "path": "artifacts/reproducibility/g009_completion_audit.json",
+          "json_path": "status",
+          "expected": "pass",
+          "actual": "fail"
         }
       ]
     }
@@ -1086,8 +1100,8 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 34272,
-    "sha256": "04ecb9a4a13c9baaf2fa2ade24c0918a4e12cdeb21c27e8a923bb4dea345ebaa"
+    "bytes": 35291,
+    "sha256": "2aa159b314422cdabd2f20aa2d6948d103ef12b6c7ae3436edc759bf73546f75"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -1646,6 +1660,14 @@
     },
     {
       "severity": "error",
+      "code": "json_assertion_mismatch",
+      "path": "artifacts/reproducibility/g009_completion_audit.json",
+      "json_path": "status",
+      "expected": "pass",
+      "actual": "fail"
+    },
+    {
+      "severity": "error",
       "code": "not_all_ultragoal_stories_complete",
       "goal_ids": [
         "G003-d2e-only-idm",
@@ -1662,6 +1684,6 @@
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
     }
   ],
-  "error_count": 91,
+  "error_count": 92,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

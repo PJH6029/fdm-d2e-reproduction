@@ -57,6 +57,24 @@ uv run python scripts/summarize_ablation_scaling.py \
 uv run python scripts/run_game_harness_eval.py --config configs/harness/g008_game_harness.yaml
 ```
 
+
+## G009 completion audit
+
+Before checkpointing `G009-report-repro-package` complete, run:
+
+```bash
+uv run python scripts/audit_claim_boundaries.py --output artifacts/reproducibility/claim_boundary_audit.json
+uv run python scripts/build_repro_package_manifest.py --output artifacts/reproducibility/package_manifest.json
+uv run python scripts/validate_g009_completion.py
+```
+
+During upstream G003-G008 execution the last command may be run with
+`--allow-fail`, but a terminal G009 checkpoint requires
+`artifacts/reproducibility/g009_completion_audit.json` to report `status == pass`.
+The audit checks prerequisite goal state, final report/evidence/runbook docs,
+claim-boundary audit status, package-manifest coverage and hashes, and final
+quality audit presence.
+
 ## Package manifest
 
 ```bash

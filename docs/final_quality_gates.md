@@ -50,7 +50,7 @@ The audit checks, without mutating OMX/Codex goal state:
 8. G008 live open-source graphical-game evidence validation exists and has
    `quality_gate.status == pass`, and `g008_live_suite_completion_audit.status=pass`; protocol readiness does not count.
 9. G009 final report, evidence index, reproducibility runbook, package manifest,
-   and claim-boundary audit exist.
+   claim-boundary audit, and `g009_completion_audit.status=pass` exist.
 10. Required configured artifacts that already exist are represented in the
     reproducibility package manifest.
 11. The claim-boundary audit reports `status == pass`.

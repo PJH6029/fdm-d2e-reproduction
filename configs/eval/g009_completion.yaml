@@ -1,0 +1,46 @@
+{
+  "schema": "g009_completion_config.v1",
+  "goals_path": ".omx/ultragoal/goals.json",
+  "goal_id": "G009-report-repro-package",
+  "prerequisite_goals": [
+    "G001-data-universe-audit",
+    "G002-split-leakage-contract",
+    "G003-d2e-only-idm",
+    "G004-d2e-only-fdm-4xh200",
+    "G005-aux-data-best-model",
+    "G006-evaluation-failure-analysis",
+    "G007-runtime-sdk-adapter",
+    "G008-live-game-suite"
+  ],
+  "output_path": "artifacts/reproducibility/g009_completion_audit.json",
+  "min_doc_bytes": 256,
+  "paths": {
+    "final_report": "docs/final_research_report.md",
+    "evidence_index": "docs/evidence_index.md",
+    "reproducibility_runbook": "docs/reproducibility_runbook.md",
+    "failure_analysis_doc": "docs/failure_analysis.md",
+    "final_quality_doc": "docs/final_quality_gates.md",
+    "package_manifest": "artifacts/reproducibility/package_manifest.json",
+    "claim_boundary_audit": "artifacts/reproducibility/claim_boundary_audit.json",
+    "final_quality_audit": "artifacts/reproducibility/final_quality_gate_audit.json"
+  },
+  "required_docs": ["final_report", "evidence_index", "reproducibility_runbook", "failure_analysis_doc", "final_quality_doc"],
+  "manifest_expectations": {
+    "schema": "repro_package_manifest.v1"
+  },
+  "claim_boundary_expectations": {
+    "status": "pass"
+  },
+  "final_quality_expectations": {
+    "schema": "final_quality_gate_audit.v1"
+  },
+  "required_manifest_paths": [
+    "docs/final_research_report.md",
+    "docs/evidence_index.md",
+    "docs/reproducibility_runbook.md",
+    "docs/failure_analysis.md",
+    "docs/final_quality_gates.md",
+    "artifacts/reproducibility/claim_boundary_audit.json"
+  ],
+  "required_forbidden_claims": ["fdm1_parity", "commercial_game_control_without_live_open_suite", "robotics_transfer", "car_control_transfer"]
+}

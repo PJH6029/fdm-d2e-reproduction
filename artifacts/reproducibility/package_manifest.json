@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 163,
+  "entry_count": 168,
   "entries": [
     {
       "path": "README.md",
@@ -190,6 +190,12 @@
       "sha256": "83700affd42811904cde86505d797aeaa464a3db2c452c32b4a5f7e10e714dce"
     },
     {
+      "path": "artifacts/reproducibility/g009_completion_audit.json",
+      "kind": "evidence_artifact",
+      "bytes": 4036,
+      "sha256": "47e1135bd930da1d7cc9f6bcea9671aa8f9bccf8bf121396a0c067e509955752"
+    },
+    {
       "path": "artifacts/runtime/g007_runtime_fixture_predictions.jsonl",
       "kind": "evidence_artifact",
       "bytes": 244,
@@ -264,8 +270,8 @@
     {
       "path": "configs/eval/final_quality_gates.yaml",
       "kind": "configuration",
-      "bytes": 13892,
-      "sha256": "f647e20f7afd146e493d261ffd0b0ac608733bbfe14f4732afdba47b3ae6d16e"
+      "bytes": 14111,
+      "sha256": "6b0a93eb25198c1d325fa765805d3a0e30e6fae2ed8930744637a3a428fd8a5b"
     },
     {
       "path": "configs/eval/g003_full_idm_completion.yaml",
@@ -320,6 +326,12 @@
       "kind": "configuration",
       "bytes": 1221,
       "sha256": "f522cedd58032163b6b90e74bd7c748d09d39d144dd7864538cf930df370e3b6"
+    },
+    {
+      "path": "configs/eval/g009_completion.yaml",
+      "kind": "configuration",
+      "bytes": 1812,
+      "sha256": "49b0746a91f99ed1aef0fcf379a05839af2156d30434141d4d5958b85de86a94"
     },
     {
       "path": "configs/eval/primary_endpoints.yaml",
@@ -474,8 +486,8 @@
     {
       "path": "docs/final_quality_gates.md",
       "kind": "documentation",
-      "bytes": 3432,
-      "sha256": "697bf864bc15eb9b748787d230e9b289ef1785c37334ca19da7c0fde0c33424c"
+      "bytes": 3469,
+      "sha256": "7d11ca900e5630541ab243874966a4b6f698e87ee0eca7ca5aea04d2f62df410"
     },
     {
       "path": "docs/final_research_report.md",
@@ -522,8 +534,8 @@
     {
       "path": "docs/reproducibility_runbook.md",
       "kind": "documentation",
-      "bytes": 2726,
-      "sha256": "181cfd855aab9406bddf85b33e35ac70a762eff3f367e21336a3ff18f3d96214"
+      "bytes": 3489,
+      "sha256": "63712e1c932919d732b5ec8cfdde083730a385f6281c211280ed1499d78b437d"
     },
     {
       "path": "docs/runtime_sdk_adapter.md",
@@ -564,8 +576,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 11227,
-      "sha256": "649410bbbdce17b64bc14ed8dfe0b025f82dabff8caa5a0c06188191f27629e4"
+      "bytes": 11462,
+      "sha256": "775f15fcb1a80631083b34366be5b236e82024dde35c838658063742e0084bd8"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -724,6 +736,12 @@
       "sha256": "83e90e26b6402cc001699414b59653a441e08729542c6b71e3e959dacd3eb958"
     },
     {
+      "path": "scripts/validate_g009_completion.py",
+      "kind": "reproduction_script",
+      "bytes": 1129,
+      "sha256": "5b087e064a493c5ed58d230af4b3da5146e5446feab8288b065b3420f07bde5b"
+    },
+    {
       "path": "scripts/validate_live_game_suite.py",
       "kind": "reproduction_script",
       "bytes": 1869,
@@ -806,6 +824,12 @@
       "kind": "other",
       "bytes": 7808,
       "sha256": "db56d3b40fa759298e6157a30237bbd0fa5883c43db3a67dc235b2348b9e3265"
+    },
+    {
+      "path": "src/fdm_d2e/reporting/g009_completion.py",
+      "kind": "other",
+      "bytes": 7576,
+      "sha256": "4a1beac06dbe8d8db21791ca910938f648ccba0c68fc3dcfca2e974788987102"
     },
     {
       "path": "src/fdm_d2e/reporting/quality_gates.py",
@@ -944,6 +968,12 @@
       "kind": "other",
       "bytes": 4961,
       "sha256": "8723fa14adc6245ecf5569bdf190850110473ebe0e6a4beed77dee7af7d8038a"
+    },
+    {
+      "path": "tests/test_g009_completion_audit.py",
+      "kind": "other",
+      "bytes": 3817,
+      "sha256": "06fabdbda670e73cab5103860763b984fe2fa3c5c625d7da28035477039d6d92"
     },
     {
       "path": "tests/test_game_harness_contract.py",
