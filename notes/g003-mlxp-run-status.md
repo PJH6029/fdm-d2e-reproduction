@@ -370,3 +370,12 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - G003 parent remained live; progress monitor status `running`, decoded recording variants `161 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`, long-running active shards `[0, 5, 12, 13, 14, 15]`.
 - Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
 - No story or aggregate checkpoint/completion claim was made.
+
+## 2026-05-21 18:34 KST G004→G005 readiness-chain tooling sync snapshot
+
+- Pushed commit `739e8eb` and fast-forwarded pod checkout to `739e8eb`; `scripts/watch_g004_then_plan_g005.py` is present for future post-G004 G005 readiness handoff.
+- The G004→G005 chain was not started yet because G004 has not launched; start it after G004 parent exists and source-specific aux materialization/eval-hash evidence paths are known.
+- Existing G003→G004 chain watcher remains `waiting_g003_parent`; it still has not launched G004.
+- G003 parent remained live; progress monitor status `running`, decoded recording variants `162 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`, long-running active shards `[0, 5, 12, 13, 14, 15]`.
+- Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
+- No story or aggregate checkpoint/completion claim was made.
