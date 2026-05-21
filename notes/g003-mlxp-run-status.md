@@ -506,3 +506,8 @@ uv run python scripts/audit_g003_live_health.py \
 - Follow-up monitor at `2026-05-22 02:32 KST` showed accel64 continuing to progress: monitor `482 / 918`, live-health progress `484 / 918`, filesystem per-recording summaries `484`, status `running`, no stale/no-progress shard lists, live health `healthy_running`.
 - Stage diagnosis showed the remaining workload dominated by `extract_frames_start` on original/high-resolution recordings and some `download_video_start`; active extractor processes were consuming CPU rather than idle. No fatal lines were found in current accel64 logs. A broad `du -sh` over cache was terminated after it ran too long; `df -h` still showed the mounted PVC at `140T` total, `120T` used, `21T` available (`86%`).
 - G003 remains non-terminal: accel64 has not yet produced merged full-corpus JSONLs, IDM metrics/checkpoints, split-statistics, or a passing accel64/canonical completion audit. Do not checkpoint G003 until accel64 finishes, passes its own audit, is promoted to canonical paths, and canonical `artifacts/idm/g003_full_idm_completion_audit.json` reports `pass`.
+
+### 2026-05-22 02:49 KST accel64-only monitor follow-up
+
+- After stopping canonical, accel64 continued to advance under the same parent `135996`: `484 -> 494 -> 503 -> 515 / 918` over the 02:33-02:49 KST monitor window. Status remained `running` with no stale/no-progress shards; merged JSONLs and IDM metrics had not appeared yet, so extraction was still active.
+- Live process sampling still showed extraction workers only (no merge/train/torchrun yet). Continue waiting on accel64 extraction; promotion/G004 handoff remains pending.
