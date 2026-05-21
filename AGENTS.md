@@ -176,7 +176,7 @@ artifacts exist.
 
 ## G005 completion gate
 
-Do **not** checkpoint `G005-aux-data-best-model` complete until `scripts/validate_g005_aux_completion.py` reports `status=pass` in `artifacts/aux/g005_aux_completion_audit.json`. This audit requires G003/G004 complete, selected aux provenance/storage policy, `artifacts/aux/g005_aux_namespace_manifest.json` with `completion_ready=true`, separated `outputs/aux/<dataset_id>/...` namespaces, source-specific action heads, byte-identical D2E eval-manifest hashes for D2E-only vs D2E+aux, ablation across all required splits, no aux leakage into D2E heldouts, target split tags, prediction coverage, and run evidence.
+Do **not** checkpoint `G005-aux-data-best-model` complete until `scripts/validate_g005_aux_completion.py` reports `status=pass` in `artifacts/aux/g005_aux_completion_audit.json`. This audit requires G003/G004 complete, selected aux provenance/storage policy, `artifacts/aux/g005_aux_namespace_manifest.json` with `completion_ready=true`, separated `outputs/aux/<dataset_id>/...` namespaces, source-specific action heads, byte-identical D2E eval-manifest hashes for D2E-only vs D2E+aux, ablation across all required splits, no aux leakage into D2E heldouts, target split tags, prediction coverage, and run evidence. Build that namespace manifest with `scripts/build_g005_aux_namespace_manifest.py` from explicit per-source materialization evidence and D2E eval hash evidence rather than editing it by hand.
 
 ## G006 completion gate
 

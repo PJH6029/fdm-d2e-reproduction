@@ -59,6 +59,12 @@ with schema `g005_aux_namespace_manifest.v1`. The manifest must prove:
 - `completion_ready == true` only after G003/G004 D2E-only gates are complete and the
   above evidence is populated.
 
+Build the manifest from explicit materialization/eval evidence rather than editing it by hand:
+
+```bash
+uv run python scripts/build_g005_aux_namespace_manifest.py   --source-evidence artifacts/aux/<source>_materialization.json   --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json   --completion-ready
+```
+
 ## Source evidence summary
 
 - MineRL 2019 Zenodo: backup of human Minecraft demonstrations with video feed and actions;
