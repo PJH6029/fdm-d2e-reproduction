@@ -88,6 +88,15 @@ kubectl -n p-production exec prod-rsv-jeonghunpark-20260521-76e25a -- bash -lc '
 - Cache size observed: ~33 GiB; shard output size: ~116 GiB.
 - Shards that were previously at 0 have started producing summaries; progress is still moving and no hard-stall evidence was observed.
 
+
+## 2026-05-21 13:00 KST monitor snapshot
+
+- Pod checkout synced to `b9600b0`.
+- `scripts/monitor_g003_progress.py` ran in pod using `/root/.local/bin/uv` because non-login `kubectl exec` did not include `uv` on `PATH`.
+- Monitor artifact copied back to `artifacts/idm/g003_full_compact_parallel_progress.json`.
+- Monitor status: `running`; decoded recording variants: `50 / 918`; complete shards: `0 / 16`; stale shards: `[]`; no-progress shards: `[2]`; parent PID running: `true`.
+- Merged train/eval and IDM metrics are still absent, so this is progress evidence only.
+
 Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts exist:
 
 - full decode summary covering all 918 D2E recording variants or audited exclusions with retry logs/reasons/impact,
