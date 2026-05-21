@@ -38,6 +38,8 @@ def main() -> int:
         f"status={report['status']} decoded={report['decoded_recording_variants']}/{report['expected_recording_variants']} "
         f"complete_shards={report['complete_shards']}/{report['num_shards']} "
         f"stale={report['stale_shards']} no_progress={report['no_progress_shards']} "
+        f"long_running={report['long_running_shards']} "
+        f"recommendation={report['recommendation']['code']} "
         f"pid_running={report['pid_running']} output={args.output}"
     )
     return 0 if report["status"] != "not_started_or_unknown" else 2

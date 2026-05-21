@@ -342,6 +342,8 @@ def build_g003_live_health_report(
             "no_progress_shards": progress.get("no_progress_shards", []),
             "decoded_recording_variants_per_hour": progress.get("decoded_recording_variants_per_hour"),
             "eta_seconds_at_current_rate": progress.get("eta_seconds_at_current_rate"),
+            "quiet_active_shards": progress.get("quiet_active_shards", []),
+            "recommendation": progress.get("recommendation"),
         },
         "claim_boundary": "Live health report only; it does not mutate the G003 run and does not prove G003 completion or quality-gate passage.",
     }
@@ -404,6 +406,115 @@ def _shard_report(
     }
 
 
+def _quiet_active_shard_details(shards: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    details: list[dict[str, Any]] = []
+    for row in shards:
+        if row.get("status") != "running_long_recording":
+            continue
+        details.append(
+            {
+                "shard_index": row["shard_index"],
+                "seconds_since_log_update": row.get("seconds_since_log_update"),
+                "decoded_variants": row.get("decoded_variants"),
+                "expected_variants": row.get("expected_variants"),
+                "last_universe_row_id": row.get("last_universe_row_id"),
+            }
+        )
+    return sorted(
+        details,
+        key=lambda row: float(row.get("seconds_since_log_update") or 0.0),
+        reverse=True,
+    )
+
+
+def _progress_recommendation(
+    *,
+    status: str,
+    running: bool,
+    stale_shards: list[dict[str, Any]],
+    long_running_shards: list[dict[str, Any]],
+    no_progress_shards: list[dict[str, Any]],
+    complete_shards: int,
+    num_shards: int,
+    merged_summary_exists: bool,
+    idm_metrics_exists: bool,
+) -> dict[str, Any]:
+    if status == "complete":
+        return {
+            "code": "run_completion_audit",
+            "severity": "info",
+            "next_actions": [
+                "Run scripts/validate_g003_full_idm_completion.py before any OMX completion checkpoint.",
+                "Do not claim G003 complete from the progress monitor alone.",
+            ],
+        }
+    if stale_shards:
+        return {
+            "code": "inspect_stale_inactive_shards",
+            "severity": "error",
+            "shards": [row["shard_index"] for row in stale_shards],
+            "next_actions": [
+                "Inspect shard logs and live process topology before relaunching anything.",
+                "Generate scripts/plan_g003_resume.py only after confirming the original parent process is not active.",
+            ],
+        }
+    if running and long_running_shards:
+        return {
+            "code": "continue_monitor_long_recordings",
+            "severity": "info",
+            "shards": [row["shard_index"] for row in long_running_shards],
+            "next_actions": [
+                "Keep the active parent/extractor processes running; original-resolution recordings can stay quiet for long periods.",
+                "Re-run scripts/audit_g003_live_health.py instead of restarting shards while extractor processes remain active.",
+            ],
+        }
+    if running:
+        return {
+            "code": "continue_waiting",
+            "severity": "info",
+            "next_actions": [
+                "Continue periodic non-mutating progress and live-health monitoring.",
+                "Wait for shard summaries before merge/training/finalization evidence.",
+            ],
+        }
+    if complete_shards == num_shards and (not merged_summary_exists or not idm_metrics_exists):
+        return {
+            "code": "run_merge_or_training_followup",
+            "severity": "warning",
+            "next_actions": [
+                "All shard summaries exist, but merge outputs or IDM metrics are missing.",
+                "Inspect the parent/postrun watcher logs before launching follow-up commands manually.",
+            ],
+        }
+    if status == "not_running_partial":
+        return {
+            "code": "plan_resume_if_parent_exited",
+            "severity": "warning",
+            "next_actions": [
+                "The run has partial artifacts but no live parent/extractor evidence.",
+                "Generate a read-only resume plan before restarting any extraction shards.",
+            ],
+        }
+    if no_progress_shards:
+        return {
+            "code": "not_started_or_missing_logs",
+            "severity": "warning",
+            "shards": [row["shard_index"] for row in no_progress_shards],
+            "next_actions": [
+                "Confirm the data universe path and shard log directory before treating this as a failed run.",
+                "If the parent is not active, use scripts/plan_g003_resume.py for exact resume commands.",
+            ],
+        }
+    return {
+        "code": "plan_resume_if_parent_exited",
+        "severity": "warning",
+        "next_actions": [
+            "The run is not complete and no live parent/extractor evidence was found.",
+            "Generate a read-only resume plan before restarting any extraction shards.",
+        ],
+    }
+
+
 def build_g003_progress_report(
     *,
     shard_root: str | Path = "outputs/data/d2e_full_corpus_shards",
@@ -442,6 +553,7 @@ def build_g003_progress_report(
     no_progress_shards = [row for row in shards if row["decoded_variants"] == 0 and not row["summary_exists"] and not row["process_active"]]
     log_mtimes = [float(row["log_mtime"]) for row in shards if row.get("log_mtime") is not None]
     elapsed_seconds = max(0.0, now_value - min(log_mtimes)) if log_mtimes else None
+    max_seconds_since_log_update = max((float(row["seconds_since_log_update"]) for row in shards if row.get("seconds_since_log_update") is not None), default=None)
     decoded_per_hour = None
     eta_seconds = None
     if elapsed_seconds and elapsed_seconds > 0 and decoded > 0:
@@ -462,6 +574,17 @@ def build_g003_progress_report(
         status = "not_running_partial"
     else:
         status = "not_started_or_unknown"
+    recommendation = _progress_recommendation(
+        status=status,
+        running=running,
+        stale_shards=stale_shards,
+        long_running_shards=long_running_shards,
+        no_progress_shards=no_progress_shards,
+        complete_shards=complete_shards,
+        num_shards=int(num_shards),
+        merged_summary_exists=merged_summary_exists,
+        idm_metrics_exists=idm_metrics_exists,
+    )
     return {
         "schema": "g003_progress_report.v1",
         "generated_at_unix": now_value,
@@ -479,8 +602,11 @@ def build_g003_progress_report(
         "expected_recording_variants": total_expected,
         "completion_ratio": decoded / total_expected if total_expected else None,
         "elapsed_seconds_since_first_log": elapsed_seconds,
+        "max_seconds_since_log_update": max_seconds_since_log_update,
         "decoded_recording_variants_per_hour": decoded_per_hour,
         "eta_seconds_at_current_rate": eta_seconds,
+        "quiet_active_shards": _quiet_active_shard_details(shards),
+        "recommendation": recommendation,
         "merged_train_eval_exists": merged_summary_exists,
         "idm_metrics_exists": idm_metrics_exists,
         "stale_seconds_threshold": float(stale_seconds),

@@ -22,6 +22,10 @@ The command writes `artifacts/idm/g003_full_compact_parallel_progress.json` with
 - decoded counts from shard logs and per-recording `decode_summary.json` files
 - completed shard count
 - no-progress/stale-log shard lists
+- quiet active shard details for long original-resolution recordings
+- a non-mutating `recommendation.code` such as `continue_waiting`,
+  `continue_monitor_long_recordings`, `inspect_stale_inactive_shards`, or
+  `plan_resume_if_parent_exited`
 - merged train/eval and IDM metrics existence checks
 
 For a richer live supervision snapshot, also run:
@@ -43,6 +47,10 @@ quality-gate proof.
 
 - `status=running`: parent PID exists, progress is not stale, and G003 remains in
   progress.
+- `recommendation=continue_monitor_long_recordings`: one or more active shard
+  extractors have been quiet beyond the stale threshold. This is not a restart
+  signal by itself; keep the active processes running and re-run live-health
+  checks because full/original D2E recordings can stay quiet for hours.
 - `status=review_stale_shards`: at least one shard log has not changed past the
   configured threshold; inspect before taking action because large original-video
   downloads can legitimately keep a shard quiet for a long time.

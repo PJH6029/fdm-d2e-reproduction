@@ -56,6 +56,7 @@ def main() -> int:
         f"status={report['status']} stage={report['stage']} "
         f"decoded={report['progress']['decoded_recording_variants']}/{report['progress']['expected_recording_variants']} "
         f"active_extractors={len(report['active_extractor_shards'])}/{report['expected_active_extractors']} "
+        f"recommendation={report['progress']['recommendation']['code']} "
         f"warnings={len(report['warnings'])} errors={len(report['errors'])} output={args.output}"
     )
     if args.fail_on_blocked and report["status"] == "blocked_live_health":

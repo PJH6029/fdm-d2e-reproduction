@@ -100,6 +100,8 @@ def test_g003_progress_treats_stale_active_process_as_long_recording(tmp_path):
     assert report["long_running_shards"] == [0]
     assert report["active_shard_processes"] == [0]
     assert report["shards"][0]["status"] == "running_long_recording"
+    assert report["quiet_active_shards"][0]["shard_index"] == 0
+    assert report["recommendation"]["code"] == "continue_monitor_long_recordings"
 
 
 def test_g003_progress_reports_rate_and_eta_from_log_mtime(tmp_path):
@@ -121,6 +123,8 @@ def test_g003_progress_reports_rate_and_eta_from_log_mtime(tmp_path):
     assert report["elapsed_seconds_since_first_log"] == 100.0
     assert report["decoded_recording_variants_per_hour"] == 36.0
     assert report["eta_seconds_at_current_rate"] == 300.0
+    assert report["max_seconds_since_log_update"] == 100.0
+    assert report["recommendation"]["code"] == "plan_resume_if_parent_exited"
 
 
 def test_g003_progress_complete_requires_shards_merge_and_metrics(tmp_path):
@@ -213,6 +217,7 @@ def test_g003_live_health_reports_healthy_full_extractor_topology(tmp_path):
     assert report["gpu_monitor"]["running"] is True
     assert report["active_extractor_shards"] == [0, 1]
     assert report["warnings"] == []
+    assert report["progress"]["recommendation"]["code"] == "continue_waiting"
 
 
 def test_g003_live_health_warns_when_incomplete_shard_has_no_extractor(tmp_path):
