@@ -440,3 +440,11 @@ uv run python scripts/audit_g003_live_health.py \
 - Accel64 live health with lane-local logs remains healthy: status `healthy_running`, active extractor shards `64 / 64`, inactive incomplete shards `[]`, repair pid evidence `outputs/cluster/g003_accel64_shard_29_repair.pid -> 113351` running.
 - Accel64 resume plan now writes shard repair logs under `artifacts/sources/g003_accel64/...`; current plan status is `defer_active_parent`, as expected while the accel64 parent is running.
 - Canonical G003 remains the D2E-only authoritative lane unless accel64 later passes its own audit and is explicitly promoted. `G003-d2e-only-idm` remains incomplete; do not checkpoint until the completion audit passes.
+
+## 2026-05-22 00:49 KST watcher summary lane-evidence rollout
+
+- Pushed and deployed commit `018336d`. G003 postrun watcher/finalizer summaries now include resolved `progress.log_dir` and `progress.repair_pid_glob` so lane-local evidence can be audited directly from watcher/finalizer artifacts.
+- The accel64 postrun watcher was restarted again without touching active extraction parents. New watcher Python PID at deployment: `123879`.
+- Pod validation after pull: `uv run pytest tests/test_g003_postrun_watcher.py tests/test_g003_integrated_finalization.py -q` passed (`6` tests).
+- New accel64 watcher summary confirms lane-local evidence fields: status `waiting_active_parent`, decoded `172 / 918`, `progress.log_dir=/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/sources/g003_accel64`, `progress.repair_pid_glob=/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/cluster/g003_accel64_shard_*_repair.pid`, `pid_running=true`.
+- G003 remains incomplete and must not be checkpointed complete until the completion audit passes after full decode, merge, IDM training/eval, label-quality, and split-stat artifacts exist.
