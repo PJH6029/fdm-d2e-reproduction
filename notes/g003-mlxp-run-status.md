@@ -313,3 +313,10 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Progress monitor status: `running`; decoded recording variants: `131 / 918`; complete shards: `0 / 16`; stale shards: `[]`; no-progress shards: `[]`; IDM metrics absent.
 - Live health audit status: `healthy_running`; stage: `extracting`; active extractor shards: `0..15`; inactive incomplete shards: `[]`; warnings: `[]`; errors: `[]`.
 - Duplicate extractor processes were recorded as an observation only because uv wrapper and child Python processes can both expose the same shard commandline. This is handoff/recovery telemetry only, not G003 completion evidence.
+
+## 2026-05-21 17:32 KST G008 gate sync snapshot
+
+- Pod checkout fast-forwarded to `470c7c9` after the G008 live-control evidence gate hardening commit.
+- G003 parent remained live; progress monitor status `running`, decoded recording variants `136 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`.
+- Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
+- The G008 changes are validation/test hardening only and do not affect the already-loaded extraction workers; G003 remains in progress and must not be checkpointed.
