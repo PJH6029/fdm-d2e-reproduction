@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 231,
+  "entry_count": 234,
   "entries": [
     {
       "path": "README.md",
@@ -14,6 +14,12 @@
       "kind": "evidence_artifact",
       "bytes": 90844,
       "sha256": "d02a6477a1add5ad7c4a577ef5aaea82f5f7b967ce37c3444efc5dd13df42d3c"
+    },
+    {
+      "path": "artifacts/aux/d2e_eval_manifest_hashes.json",
+      "kind": "evidence_artifact",
+      "bytes": 2415,
+      "sha256": "131723d3d84b3048121c6c30a649067ef7ee7ffb3fcfb3b4b8606479a4a72851"
     },
     {
       "path": "artifacts/aux/g005_aux_completion_audit.json",
@@ -552,8 +558,8 @@
     {
       "path": "docs/auxiliary_data_plan.md",
       "kind": "documentation",
-      "bytes": 8555,
-      "sha256": "43e00713f0012a394395ee00cf8f75a30c5e17b0e439bf2823742fd2790b59be"
+      "bytes": 9058,
+      "sha256": "64d78f0e7f2226fa1da17e6865bd70036cd0bdc37aea5683df4cc5f69c2000a6"
     },
     {
       "path": "docs/baselines_statistics.md",
@@ -724,6 +730,12 @@
       "sha256": "0a24c97c723792d452001a635ef54d47a3e907a58c44280267355c6e47046799"
     },
     {
+      "path": "scripts/build_g005_eval_manifest_hashes.py",
+      "kind": "reproduction_script",
+      "bytes": 5835,
+      "sha256": "06eee113c36b91700783ba449ae1665f11d8647164d25aed1a778311d6f1de02"
+    },
+    {
       "path": "scripts/build_g006_final_eval_artifacts.py",
       "kind": "reproduction_script",
       "bytes": 1290,
@@ -732,8 +744,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 14782,
-      "sha256": "d8a7824c8045bb78ede1be70fdd5ce1a22634a5982eb50526bb06dc73c6314e1"
+      "bytes": 14936,
+      "sha256": "1043690a376731b91169d789108373d48e121b61a654a7e4d497a04d4fc4d8f8"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -1268,6 +1280,12 @@
       "kind": "other",
       "bytes": 10220,
       "sha256": "b1f99bc2cf01627eae9322e4aadd9d1d992f11fcf596602cd9cf600068b30bdf"
+    },
+    {
+      "path": "tests/test_g005_eval_manifest_hash_builder.py",
+      "kind": "other",
+      "bytes": 3903,
+      "sha256": "c6aa767ff0c12edf396b606bd7b74179fc485594e82b4ee01834d60912034801"
     },
     {
       "path": "tests/test_g005_finalization.py",

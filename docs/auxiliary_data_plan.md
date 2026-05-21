@@ -62,8 +62,16 @@ with schema `g005_aux_namespace_manifest.v1`. The manifest must prove:
 Build the manifest from explicit materialization/eval evidence rather than editing it by hand:
 
 ```bash
+uv run python scripts/build_g005_eval_manifest_hashes.py \
+  --output artifacts/aux/d2e_eval_manifest_hashes.json
 uv run python scripts/build_g005_aux_namespace_manifest.py   --source-evidence artifacts/aux/<source>_materialization.json   --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json   --completion-ready
 ```
+
+`build_g005_eval_manifest_hashes.py` hashes the temporal, heldout-recording, and
+heldout-game D2E split manifests and writes `same_hash=true` evidence for the
+D2E-only vs D2E+aux comparison. By default the D2E+aux paths are the exact same
+files as D2E-only; if separate aux eval manifests are supplied, hash mismatches
+fail unless `--allow-mismatch` is used for non-terminal diagnostics.
 
 Before launching any D2E+aux training run, run the fail-closed readiness planner:
 

@@ -1,0 +1,49 @@
+{
+  "schema": "g005_d2e_eval_manifest_hashes.v1",
+  "status": "pass",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "required_splits": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
+  "same_d2e_eval_manifests": true,
+  "splits": {
+    "temporal": {
+      "split": "temporal",
+      "sha256": "0a11aeb5a529c5d2309544f34ec17b621ff22fcd7d2a112af4462e221a23ff45",
+      "d2e_only_manifest_path": "artifacts/sources/d2e_full_temporal_split_manifest.json",
+      "d2e_only_manifest_bytes": 283305,
+      "d2e_only_manifest_sha256": "0a11aeb5a529c5d2309544f34ec17b621ff22fcd7d2a112af4462e221a23ff45",
+      "d2e_aux_manifest_path": "artifacts/sources/d2e_full_temporal_split_manifest.json",
+      "d2e_aux_manifest_bytes": 283305,
+      "d2e_aux_manifest_sha256": "0a11aeb5a529c5d2309544f34ec17b621ff22fcd7d2a112af4462e221a23ff45",
+      "same_hash": true
+    },
+    "heldout_recording": {
+      "split": "heldout_recording",
+      "sha256": "5120cf7abcb78c005407479f52643748bcd3e125388daf8c8ddd79f28cdd08c3",
+      "d2e_only_manifest_path": "artifacts/sources/d2e_full_heldout_recording_split_manifest.json",
+      "d2e_only_manifest_bytes": 72346,
+      "d2e_only_manifest_sha256": "5120cf7abcb78c005407479f52643748bcd3e125388daf8c8ddd79f28cdd08c3",
+      "d2e_aux_manifest_path": "artifacts/sources/d2e_full_heldout_recording_split_manifest.json",
+      "d2e_aux_manifest_bytes": 72346,
+      "d2e_aux_manifest_sha256": "5120cf7abcb78c005407479f52643748bcd3e125388daf8c8ddd79f28cdd08c3",
+      "same_hash": true
+    },
+    "heldout_game": {
+      "split": "heldout_game",
+      "sha256": "16bca1616ab35f23f6ac1d028889def00cc271b8f48808dcddb8579e277d6b11",
+      "d2e_only_manifest_path": "artifacts/sources/d2e_full_heldout_game_split_manifest.json",
+      "d2e_only_manifest_bytes": 66791,
+      "d2e_only_manifest_sha256": "16bca1616ab35f23f6ac1d028889def00cc271b8f48808dcddb8579e277d6b11",
+      "d2e_aux_manifest_path": "artifacts/sources/d2e_full_heldout_game_split_manifest.json",
+      "d2e_aux_manifest_bytes": 66791,
+      "d2e_aux_manifest_sha256": "16bca1616ab35f23f6ac1d028889def00cc271b8f48808dcddb8579e277d6b11",
+      "same_hash": true
+    }
+  },
+  "findings": [],
+  "error_count": 0,
+  "claim_boundary": "D2E eval-manifest hashes for G005 namespace evidence only; this does not launch aux training, checkpoint G005, or prove D2E+aux model quality."
+}
