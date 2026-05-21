@@ -158,7 +158,7 @@ Required separation:
 
 ## G004 completion gate
 
-Do **not** checkpoint `G004-d2e-only-fdm-4xh200` complete until `scripts/validate_g004_full_fdm_completion.py` reports `status=pass` in `artifacts/fdm/g004_full_fdm_completion_audit.json`. This audit requires G003 complete, D2E-only FDM-from-IDM-pseudolabel provenance, split count consistency, prediction coverage, convergence-report evidence, split-stat summaries, and 4×H200 run metadata.
+Do **not** checkpoint `G004-d2e-only-fdm-4xh200` complete until `scripts/validate_g004_full_fdm_completion.py` reports `status=pass` in `artifacts/fdm/g004_full_fdm_completion_audit.json`. This audit requires G003 complete, D2E-only FDM-from-IDM-pseudolabel provenance, split count consistency, prediction coverage, convergence-report evidence, split-stat summaries, 4×H200 run metadata, and GPU-monitor coverage for all expected GPU indices.
 
 Current G004 hardening: FDM training must use G003 IDM prediction-only
 pseudo-labels over `outputs/data/d2e_full_corpus/train_core.jsonl`, written to

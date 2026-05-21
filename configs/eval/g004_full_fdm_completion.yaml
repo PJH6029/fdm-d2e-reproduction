@@ -6,6 +6,8 @@
   "output_path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
   "expected_nproc_per_node": 4,
   "expected_gpus": 4,
+  "min_gpu_monitor_rows": 4,
+  "require_gpu_monitor_covers_expected_gpus": true,
   "min_validation_checkpoints": 1,
   "require_convergence_plateau": false,
   "required_target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],

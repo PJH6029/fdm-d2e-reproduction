@@ -56,10 +56,50 @@ uv run python - <<PY
 from __future__ import annotations
 
 import json
+import csv
+import hashlib
 import subprocess
 from pathlib import Path
 
+def _sha256(path: Path) -> str | None:
+    if not path.exists() or not path.is_file():
+        return None
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+def _gpu_monitor_status(path: Path, expected_gpus: int) -> dict:
+    status = {
+        "rows": 0,
+        "unique_gpu_indices": [],
+        "expected_gpus": expected_gpus,
+        "covers_expected_gpus": False,
+    }
+    if not path.exists() or not path.is_file() or path.stat().st_size == 0:
+        return status
+    index_col = None
+    with path.open(newline="", encoding="utf-8") as handle:
+        for raw_row in csv.reader(handle):
+            row = [cell.strip() for cell in raw_row]
+            if not row:
+                continue
+            lowered = [cell.lower() for cell in row]
+            if "index" in lowered:
+                index_col = lowered.index("index")
+                continue
+            if index_col is None:
+                index_col = 1 if len(row) > 1 else 0
+            if index_col < len(row):
+                status["unique_gpu_indices"].append(row[index_col])
+            status["rows"] += 1
+    status["unique_gpu_indices"] = sorted(set(status["unique_gpu_indices"]))
+    status["covers_expected_gpus"] = len(status["unique_gpu_indices"]) >= expected_gpus
+    return status
+
 summary_path = Path("outputs/fdm_streaming_d2e_full_compact/summary.json")
+gpu_monitor_path = Path("$GPU_MONITOR_LOG")
 payload = {
     "schema": "g004_fdm_4xh200_run.v1",
     "config": "$CONFIG",
@@ -72,6 +112,8 @@ payload = {
     "exit_code": int("$RUN_STATUS"),
     "wall_clock_seconds": int("$END_EPOCH") - int("$START_EPOCH"),
     "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+    "gpu_monitor_sha256": _sha256(gpu_monitor_path),
+    "gpu_monitor_status": _gpu_monitor_status(gpu_monitor_path, int("$EXPECTED_GPUS")),
     "summary_path": str(summary_path),
     "summary_exists": summary_path.exists(),
 }

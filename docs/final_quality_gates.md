@@ -41,8 +41,9 @@ The audit checks, without mutating OMX/Codex goal state:
    `g004_full_fdm_completion_audit.status=pass`, and 4×H200 run evidence. The
    FDM metadata must prove IDM-pseudolabel training, no oracle ground-truth
    control, D2E-only provenance, source-IDM metadata linkage, distributed
-   world-size/run-exit evidence, and per-split statistical summaries for
-   temporal, heldout-recording, and heldout-game splits.
+   world-size/run-exit evidence, GPU-monitor coverage for all expected H200
+   indices, and per-split statistical summaries for temporal,
+   heldout-recording, and heldout-game splits.
 5. G005 aux artifacts exist and remain separated from D2E-only namespaces; `g005_aux_namespace_manifest.completion_ready=true`, byte-identical D2E eval-manifest hashes, source-specific action-head namespaces, `g005_aux_completion_audit.status=pass`, and `d2e_aux_ablation_summary.status=pass` are required before D2E+aux can be primary/best.
 6. G006 final endpoint statistics, failure-analysis, claim-taxonomy, readiness,
    final artifact-build summary, and `g006_completion_audit` artifacts exist and report `status == pass`;

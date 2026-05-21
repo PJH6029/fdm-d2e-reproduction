@@ -105,6 +105,10 @@ The script runs a GPU smoke check, launches the streaming action trainer through
 - `artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json`
 - `artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv`
 
+The run summary records `gpu_monitor_status.covers_expected_gpus`. Terminal
+G004 evidence must show monitor rows for all expected GPU indices (`0..3` for
+the 4×H200 run); a CSV that merely exists is not enough.
+
 `configs/model/fdm_streaming_d2e_full_compact.yaml` enables per-epoch
 validation checkpoints and a preregistered plateau rule:
 
@@ -130,13 +134,15 @@ FDM-from-IDM-pseudolabel provenance, split materialization counts, prediction
 coverage, explicit train-core → target-all-eval split mode, causal FDM feature
 mode, prior-action context provenance, target split tags, convergence-report
 presence, split statistics, and 4×H200 run evidence.
+The 4×H200 evidence includes both `nproc_per_node == 4` and GPU-monitor coverage
+for all expected GPU indices.
 
 ## Claim boundary
 
 G004 is not complete merely because this path runs. Completion still requires:
 
 - full G003 IDM pseudo-label inputs;
-- 4×H200 run logs and checkpoint metadata;
+- 4×H200 run logs, GPU-monitor coverage for all expected GPU indices, and checkpoint metadata;
 - convergence/saturation evidence or a documented stricter preregistered rule;
 - baseline/statistical comparisons with Holm-adjusted endpoint claims;
 - failure analysis for non-rejected endpoints and unstable variants.

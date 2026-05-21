@@ -114,6 +114,12 @@
     "split_target": null,
     "split_pairs": null
   },
+  "gpu_monitor_status": {
+    "rows": 0,
+    "unique_gpu_indices": [],
+    "expected_gpus": 4,
+    "covers_expected_gpus": false
+  },
   "findings": [
     {
       "severity": "error",
@@ -320,8 +326,21 @@
       "json_path": "prior_action_context.target_source",
       "expected": "d2e_ground_truth_previous_teacher_forced",
       "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "gpu_monitor_too_few_rows",
+      "expected_min": 4,
+      "actual": 0
+    },
+    {
+      "severity": "error",
+      "code": "gpu_monitor_does_not_cover_expected_gpus",
+      "expected_gpus": 4,
+      "unique_gpu_indices": [],
+      "rows": 0
     }
   ],
-  "error_count": 32,
+  "error_count": 34,
   "claim_boundary": "This audit is required before checkpointing G004 complete; it proves D2E-only FDM-from-IDM-pseudolabel provenance, split counts, prediction coverage, split stats, convergence evidence, and 4xH200 run evidence."
 }

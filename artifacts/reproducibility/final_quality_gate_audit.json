@@ -558,8 +558,8 @@
         {
           "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
           "exists": true,
-          "bytes": 9962,
-          "sha256": "1467595cb60d374a6d3f7f7b31879f598b0126c2d32d972ad5169ad3c156c361"
+          "bytes": 10393,
+          "sha256": "3f58151b7dc5a8985924dc647bbf205298d682bffb466c1a1be55bef76fd0126"
         }
       ],
       "findings": [
@@ -773,6 +773,12 @@
           "code": "json_assertion_file_missing",
           "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
           "json_path": "nproc_per_node"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
+          "json_path": "gpu_monitor_status.covers_expected_gpus"
         },
         {
           "severity": "error",
@@ -1133,7 +1139,7 @@
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
           "bytes": 38854,
-          "sha256": "7ffd4bd763b74a8a4ddb07518d60bad8b5353e7093a350031d2c39810ca17d55"
+          "sha256": "6cab3dae067acef6ab1ebb5419545d9e07c1daa5d6532e8e19afd6fbab164a8b"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -1144,8 +1150,8 @@
         {
           "path": "artifacts/reproducibility/final_quality_gate_audit.json",
           "exists": true,
-          "bytes": 62819,
-          "sha256": "8b1b5a3baecf580ce6644bea3bf06dd9954aa8a9f8069887373179d0ec98c5eb"
+          "bytes": 62610,
+          "sha256": "8c1ddaf5dd15ff0b8748fbfd1d5dfa140f273df4d125c034e59f44b1b18dac9e"
         },
         {
           "path": "artifacts/reproducibility/g009_completion_audit.json",
@@ -1191,7 +1197,7 @@
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
     "bytes": 38854,
-    "sha256": "7ffd4bd763b74a8a4ddb07518d60bad8b5353e7093a350031d2c39810ca17d55"
+    "sha256": "6cab3dae067acef6ab1ebb5419545d9e07c1daa5d6532e8e19afd6fbab164a8b"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -1625,6 +1631,12 @@
     {
       "severity": "error",
       "code": "json_assertion_file_missing",
+      "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
+      "json_path": "gpu_monitor_status.covers_expected_gpus"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
       "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
       "json_path": "status"
     },
@@ -1842,6 +1854,6 @@
       ]
     }
   ],
-  "error_count": 101,
+  "error_count": 102,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

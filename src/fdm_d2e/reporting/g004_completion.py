@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import csv
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +45,37 @@ def _goal_statuses(root: Path, goals_path: str) -> dict[str, str]:
     return {str(goal.get("id")): str(goal.get("status")) for goal in payload.get("goals", [])}
 
 
+def _gpu_monitor_status(path: Path, expected_gpus: int) -> dict[str, Any]:
+    status: dict[str, Any] = {
+        "rows": 0,
+        "unique_gpu_indices": [],
+        "expected_gpus": expected_gpus,
+        "covers_expected_gpus": False,
+    }
+    if not path.exists() or not path.is_file() or path.stat().st_size == 0:
+        return status
+    index_col: int | None = None
+    with path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.reader(handle)
+        for raw_row in reader:
+            row = [cell.strip() for cell in raw_row]
+            if not row:
+                continue
+            lowered = [cell.lower() for cell in row]
+            if "index" in lowered:
+                index_col = lowered.index("index")
+                continue
+            if index_col is None:
+                # nvidia-smi --query-gpu output without a header normally uses timestamp,index,...
+                index_col = 1 if len(row) > 1 else 0
+            if index_col < len(row):
+                status["unique_gpu_indices"].append(row[index_col])
+            status["rows"] += 1
+    status["unique_gpu_indices"] = sorted(set(status["unique_gpu_indices"]))
+    status["covers_expected_gpus"] = len(status["unique_gpu_indices"]) >= expected_gpus
+    return status
+
+
 def validate_g004_full_fdm_completion(config: dict[str, Any], *, root: str | Path = ".") -> dict[str, Any]:
     root_path = Path(root)
     findings: list[dict[str, Any]] = []
@@ -71,6 +103,9 @@ def validate_g004_full_fdm_completion(config: dict[str, Any], *, root: str | Pat
     run_summary = _load_json(root_path / paths.get("run_summary", "")) if paths.get("run_summary") else None
     split_stats = _load_json(root_path / paths.get("split_stats_summary", "")) if paths.get("split_stats_summary") else None
     convergence = _load_json(root_path / paths.get("convergence_report", "")) if paths.get("convergence_report") else None
+    gpu_monitor_path = root_path / paths.get("gpu_monitor", "")
+    expected_gpus = int(config.get("expected_gpus", 4))
+    gpu_monitor_status = _gpu_monitor_status(gpu_monitor_path, expected_gpus) if paths.get("gpu_monitor") else {"rows": 0, "unique_gpu_indices": [], "expected_gpus": expected_gpus, "covers_expected_gpus": False}
 
     train_count = _jsonl_count(root_path / paths.get("fdm_train_records", "")) if paths.get("fdm_train_records") else None
     target_count = _jsonl_count(root_path / paths.get("fdm_target_records", "")) if paths.get("fdm_target_records") else None
@@ -125,6 +160,22 @@ def validate_g004_full_fdm_completion(config: dict[str, Any], *, root: str | Pat
             findings.append({"severity": "error", "code": "run_summary_nproc_mismatch", "expected": int(config.get("expected_nproc_per_node", 4)), "actual": run_summary.get("nproc_per_node")})
         if int(run_summary.get("expected_gpus", -1)) != int(config.get("expected_gpus", 4)):
             findings.append({"severity": "error", "code": "run_summary_expected_gpus_mismatch", "expected": int(config.get("expected_gpus", 4)), "actual": run_summary.get("expected_gpus")})
+        run_gpu_status = run_summary.get("gpu_monitor_status")
+        if isinstance(run_gpu_status, dict) and bool(config.get("require_gpu_monitor_covers_expected_gpus", True)) and run_gpu_status.get("covers_expected_gpus") is not True:
+            findings.append({"severity": "error", "code": "run_summary_gpu_monitor_missing_expected_gpus", "actual": run_gpu_status})
+    min_gpu_rows = int(config.get("min_gpu_monitor_rows", expected_gpus))
+    if gpu_monitor_status["rows"] < min_gpu_rows:
+        findings.append({"severity": "error", "code": "gpu_monitor_too_few_rows", "expected_min": min_gpu_rows, "actual": gpu_monitor_status["rows"]})
+    if bool(config.get("require_gpu_monitor_covers_expected_gpus", True)) and not gpu_monitor_status["covers_expected_gpus"]:
+        findings.append(
+            {
+                "severity": "error",
+                "code": "gpu_monitor_does_not_cover_expected_gpus",
+                "expected_gpus": expected_gpus,
+                "unique_gpu_indices": gpu_monitor_status["unique_gpu_indices"],
+                "rows": gpu_monitor_status["rows"],
+            }
+        )
     if split_stats is not None and split_stats.get("status") != "pass":
         findings.append({"severity": "error", "code": "split_stats_summary_not_pass", "actual": split_stats.get("status")})
     if convergence is not None:
@@ -146,6 +197,7 @@ def validate_g004_full_fdm_completion(config: dict[str, Any], *, root: str | Pat
         "expected_gpus": int(config.get("expected_gpus", 4)),
         "artifacts": artifacts,
         "counts": count_report,
+        "gpu_monitor_status": gpu_monitor_status,
         "findings": findings,
         "error_count": len(errors),
         "claim_boundary": "This audit is required before checkpointing G004 complete; it proves D2E-only FDM-from-IDM-pseudolabel provenance, split counts, prediction coverage, split stats, convergence evidence, and 4xH200 run evidence.",

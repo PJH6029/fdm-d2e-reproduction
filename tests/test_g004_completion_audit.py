@@ -34,6 +34,8 @@ def _config() -> dict:
         "prerequisite_goals": ["G003"],
         "expected_nproc_per_node": 4,
         "expected_gpus": 4,
+        "min_gpu_monitor_rows": 4,
+        "require_gpu_monitor_covers_expected_gpus": True,
         "min_validation_checkpoints": 1,
         "required_target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],
         "paths": paths,
@@ -107,11 +109,30 @@ def _complete_fixture(root: Path) -> None:
             "target_records_path": cfg["paths"]["fdm_target_records"],
         },
     )
-    write_json(root / cfg["paths"]["run_summary"], {"exit_code": 0, "nproc_per_node": 4, "expected_gpus": 4})
+    write_json(
+        root / cfg["paths"]["run_summary"],
+        {
+            "exit_code": 0,
+            "nproc_per_node": 4,
+            "expected_gpus": 4,
+            "gpu_monitor_status": {
+                "rows": 4,
+                "unique_gpu_indices": ["0", "1", "2", "3"],
+                "expected_gpus": 4,
+                "covers_expected_gpus": True,
+            },
+        },
+    )
     write_json(root / cfg["paths"]["split_stats_summary"], {"status": "pass"})
     gpu = root / cfg["paths"]["gpu_monitor"]
     gpu.parent.mkdir(parents=True, exist_ok=True)
-    gpu.write_text("timestamp,index\n")
+    gpu.write_text(
+        "timestamp,index,name,utilization.gpu,utilization.memory,memory.used,memory.total,power.draw\n"
+        "now,0,H200,90,10,1,80,200\n"
+        "now,1,H200,91,11,1,80,201\n"
+        "now,2,H200,92,12,1,80,202\n"
+        "now,3,H200,93,13,1,80,203\n"
+    )
 
 
 def test_g004_completion_audit_passes_on_full_fixture(tmp_path: Path):
@@ -120,6 +141,7 @@ def test_g004_completion_audit_passes_on_full_fixture(tmp_path: Path):
     assert payload["status"] == "pass"
     assert payload["error_count"] == 0
     assert payload["counts"]["fdm_train_records"] == 3
+    assert payload["gpu_monitor_status"]["covers_expected_gpus"] is True
 
 
 def test_g004_completion_audit_fails_on_prereq_and_prediction_count(tmp_path: Path):
@@ -150,3 +172,33 @@ def test_g004_completion_audit_rejects_recording_tail_split_mode(tmp_path: Path)
     codes = {item["code"] for item in payload["findings"]}
     assert payload["status"] == "fail"
     assert "split_summary_expectation_mismatch" in codes
+
+
+def test_g004_completion_audit_rejects_partial_gpu_monitor(tmp_path: Path):
+    _complete_fixture(tmp_path)
+    cfg = _config()
+    (tmp_path / cfg["paths"]["gpu_monitor"]).write_text(
+        "timestamp,index,name\n"
+        "now,0,H200\n"
+        "now,1,H200\n"
+    )
+    write_json(
+        tmp_path / cfg["paths"]["run_summary"],
+        {
+            "exit_code": 0,
+            "nproc_per_node": 4,
+            "expected_gpus": 4,
+            "gpu_monitor_status": {
+                "rows": 2,
+                "unique_gpu_indices": ["0", "1"],
+                "expected_gpus": 4,
+                "covers_expected_gpus": False,
+            },
+        },
+    )
+    payload = validate_g004_full_fdm_completion(cfg, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "gpu_monitor_too_few_rows" in codes
+    assert "gpu_monitor_does_not_cover_expected_gpus" in codes
+    assert "run_summary_gpu_monitor_missing_expected_gpus" in codes
