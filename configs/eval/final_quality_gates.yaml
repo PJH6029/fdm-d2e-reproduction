@@ -401,23 +401,11 @@
         "docs/evidence_index.md",
         "docs/reproducibility_runbook.md",
         "artifacts/reproducibility/package_manifest.json",
-        "artifacts/reproducibility/claim_boundary_audit.json",
-        "artifacts/reproducibility/final_quality_gate_audit.json",
-        "artifacts/reproducibility/g009_completion_audit.json"
+        "artifacts/reproducibility/claim_boundary_audit.json"
       ],
       "json_assertions": [
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
-          "json_path": "status",
-          "equals": "pass"
-        },
-        {
-          "path": "artifacts/reproducibility/final_quality_gate_audit.json",
-          "json_path": "status",
-          "equals": "pass"
-        },
-        {
-          "path": "artifacts/reproducibility/g009_completion_audit.json",
           "json_path": "status",
           "equals": "pass"
         }

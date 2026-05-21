@@ -96,3 +96,11 @@ def test_final_quality_gate_writes_output_without_requiring_self_reference(tmp_p
 def test_repro_manifest_covers_configured_g006_build_summary():
     text = Path("scripts/build_repro_package_manifest.py").read_text()
     assert '"artifacts/eval/g006_final_artifact_build_summary.json"' in text
+
+
+def test_final_quality_config_does_not_require_self_referential_g009_artifacts():
+    text = Path("configs/eval/final_quality_gates.yaml").read_text()
+    g009_section = text[text.index('"id": "G009-report-repro-package"') :]
+    g009_section = g009_section[: g009_section.index("\n    }") + 6]
+    assert "artifacts/reproducibility/final_quality_gate_audit.json" not in g009_section
+    assert "artifacts/reproducibility/g009_completion_audit.json" not in g009_section

@@ -1,0 +1,59 @@
+{
+  "schema": "g009_report_package_finalization.v1",
+  "status": "fail",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "claim_audit_status": "pass",
+  "final_quality_status": "fail",
+  "final_quality_error_count": 97,
+  "package_manifest_entry_count": 207,
+  "g009_audit_status": "fail",
+  "g009_audit_error_count": 6,
+  "actions": [
+    {
+      "name": "claim_boundary_audit",
+      "output": "artifacts/reproducibility/claim_boundary_audit.json",
+      "status": "pass"
+    },
+    {
+      "name": "package_manifest_bootstrap",
+      "output": "artifacts/reproducibility/package_manifest.json",
+      "entry_count": 207
+    },
+    {
+      "name": "final_quality_gate_audit",
+      "output": "artifacts/reproducibility/final_quality_gate_audit.json",
+      "status": "fail",
+      "error_count": 97
+    },
+    {
+      "name": "g009_completion_audit_pre_final_manifest",
+      "output": "artifacts/reproducibility/g009_completion_audit.json",
+      "status": "fail",
+      "error_count": 7
+    },
+    {
+      "name": "package_manifest_final",
+      "output": "artifacts/reproducibility/package_manifest.json",
+      "entry_count": 207
+    },
+    {
+      "name": "g009_completion_audit",
+      "output": "artifacts/reproducibility/g009_completion_audit.json",
+      "status": "fail",
+      "error_count": 6
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "final_quality_gate_audit_not_pass",
+      "error_count": 97
+    },
+    {
+      "severity": "error",
+      "code": "g009_completion_audit_not_pass",
+      "error_count": 6
+    }
+  ],
+  "claim_boundary": "Finalizes report/package evidence by refreshing claim audit, final quality gates, package manifest, and G009 completion audit; it does not checkpoint G009 or complete the aggregate goal."
+}

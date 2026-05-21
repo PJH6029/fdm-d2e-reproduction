@@ -100,6 +100,7 @@ DEFAULT_PATTERNS = [
     "scripts/validate_g005_aux_completion.py",
     "scripts/validate_g008_live_suite_completion.py",
     "scripts/validate_g009_completion.py",
+    "scripts/finalize_g009_report_package.py",
     "scripts/monitor_g003_progress.py",
     "scripts/plan_g003_resume.py",
     "scripts/run_runtime_replay_adapter.py",
@@ -154,6 +155,7 @@ DEFAULT_PATTERNS = [
     "tests/test_g008_live_suite_completion_audit.py",
     "tests/test_g008_live_suite_finalization.py",
     "tests/test_g009_completion_audit.py",
+    "tests/test_g009_finalization.py",
     "tests/test_g003_monitor.py",
     "tests/test_g003_attached_run_evidence.py",
     "tests/test_g003_integrated_finalization.py",
@@ -222,6 +224,7 @@ DEFAULT_PATTERNS = [
     "artifacts/reproducibility/claim_boundary_audit.json",
     "artifacts/reproducibility/final_quality_gate_audit.json",
     "artifacts/reproducibility/g009_completion_audit.json",
+    "artifacts/reproducibility/g009_finalization_summary*.json",
     "artifacts/reproducibility/final_cleanup_review.md",
 ]
 

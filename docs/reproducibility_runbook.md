@@ -68,6 +68,17 @@ uv run python scripts/build_repro_package_manifest.py --output artifacts/reprodu
 uv run python scripts/validate_g009_completion.py
 ```
 
+Prefer the fail-closed finalizer for terminal and handoff runs:
+
+```bash
+uv run python scripts/finalize_g009_report_package.py
+```
+
+It refreshes the claim-boundary audit, final-quality audit, package manifest,
+and G009 completion audit, then writes
+`artifacts/reproducibility/g009_finalization_summary.json`. It does not mutate
+OMX state or checkpoint G009.
+
 During upstream G003-G008 execution the last command may be run with
 `--allow-fail`, but a terminal G009 checkpoint requires
 `artifacts/reproducibility/g009_completion_audit.json` to report `status == pass`.

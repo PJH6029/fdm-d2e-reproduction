@@ -264,6 +264,13 @@ Commercial-game plug-and-play should be treated as an artifact/API compatibility
 
 Do **not** checkpoint `G009-report-repro-package` complete until `scripts/validate_g009_completion.py` reports `status=pass` in `artifacts/reproducibility/g009_completion_audit.json`. This audit requires G001-G008 complete, final report/evidence/runbook docs, claim-boundary audit pass, final quality audit `status=pass`, and package-manifest coverage with matching hashes for the final quality audit and other required report artifacts.
 
+Latest G009 finalization helper: run
+`uv run python scripts/finalize_g009_report_package.py` to refresh the
+claim-boundary audit, final-quality audit, package manifest, and G009 completion
+audit in one fail-closed sequence. It writes
+`artifacts/reproducibility/g009_finalization_summary.json` and does not mutate
+OMX state or checkpoint G009.
+
 ## Verification commands
 
 Run targeted checks first for the files you changed, then broader gates before committing claims.

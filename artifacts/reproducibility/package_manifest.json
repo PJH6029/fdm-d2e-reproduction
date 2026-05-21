@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 204,
+  "entry_count": 207,
   "entries": [
     {
       "path": "README.md",
@@ -246,14 +246,20 @@
     {
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "kind": "evidence_artifact",
-      "bytes": 61910,
-      "sha256": "75b44edd9c928a0ad0dde71dadaff1e49cea48b7dc58ccc80a3b3f4cf6ffaefc"
+      "bytes": 60454,
+      "sha256": "f18d8ceaf033060d077de375d9d91bcfcbba9443da7a7b026dcc5f2496f5d36d"
     },
     {
       "path": "artifacts/reproducibility/g009_completion_audit.json",
       "kind": "evidence_artifact",
       "bytes": 3901,
-      "sha256": "346b361f9a0102cee6ab15ed3fe690febc30ae7a8840976d8df29e719cbcb90b"
+      "sha256": "029f8cf55deb61bf07e30000e67d5636b9d87bbf4c59b2a2cdb00700fefbc5ac"
+    },
+    {
+      "path": "artifacts/reproducibility/g009_finalization_summary.json",
+      "kind": "evidence_artifact",
+      "bytes": 1805,
+      "sha256": "c8bd659e7b5a005f5e3a529f6fd8229765bdf0967cbbb2d15a8dc4ac66a59e48"
     },
     {
       "path": "artifacts/runtime/g007_completion_audit.json",
@@ -336,8 +342,8 @@
     {
       "path": "configs/eval/final_quality_gates.yaml",
       "kind": "configuration",
-      "bytes": 16705,
-      "sha256": "4b752c9df9db06f532f36ce302677e6a557efcb065a3571b15e536466c876160"
+      "bytes": 16261,
+      "sha256": "8920c759cf1c39c4a09af20b90414e4d61135a253a73dfa2dff517ff6b728fec"
     },
     {
       "path": "configs/eval/g003_full_idm_completion.yaml",
@@ -612,8 +618,8 @@
     {
       "path": "docs/reproducibility_runbook.md",
       "kind": "documentation",
-      "bytes": 3489,
-      "sha256": "63712e1c932919d732b5ec8cfdde083730a385f6281c211280ed1499d78b437d"
+      "bytes": 3848,
+      "sha256": "c4689e82832a890de2e42d25bc1de95c473a38ac7351a996a7ad63428142cd67"
     },
     {
       "path": "docs/runtime_sdk_adapter.md",
@@ -672,8 +678,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 13350,
-      "sha256": "8e02cc13efc3705b7a9e1258a9ff4eee3f3a42b3486e531739431f113425af01"
+      "bytes": 13501,
+      "sha256": "6c72a0a8eb46a0b0a3e54356b5e7a435c874f41c7a72eabdbe2879c0b08ecbe8"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -734,6 +740,12 @@
       "kind": "reproduction_script",
       "bytes": 7254,
       "sha256": "8a158af053e37534d5b87022759d92682c717c1f04bc229865a2e0dd362c8e69"
+    },
+    {
+      "path": "scripts/finalize_g009_report_package.py",
+      "kind": "reproduction_script",
+      "bytes": 9288,
+      "sha256": "4407dc5ab4324f2210904acf6035f9c209bed774fcedc77a5badbc961b11b214"
     },
     {
       "path": "scripts/merge_d2e_full_corpus_shards.py",
@@ -1068,8 +1080,8 @@
     {
       "path": "tests/test_final_quality_gates.py",
       "kind": "other",
-      "bytes": 4590,
-      "sha256": "8b7baaad484c98bcbc40f991489b45d8d5bee9e55a6e9a75deb0bd89f25c14ab"
+      "bytes": 5062,
+      "sha256": "757916298f3562c69d431e9c1dde8ca33144a59909b00752ce155f4e84ea3324"
     },
     {
       "path": "tests/test_full_corpus_extraction_contract.py",
@@ -1184,6 +1196,12 @@
       "kind": "other",
       "bytes": 4752,
       "sha256": "8229711486e6445b8bc648e113df4d85b6cab8154e106b1161c4fa77dd3976ce"
+    },
+    {
+      "path": "tests/test_g009_finalization.py",
+      "kind": "other",
+      "bytes": 7657,
+      "sha256": "f33e80e16eb6ac12bae825d589e12b85929d080e394ef6ac9188e13e03f7acb8"
     },
     {
       "path": "tests/test_game_harness_contract.py",
