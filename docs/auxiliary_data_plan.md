@@ -69,6 +69,8 @@ uv run python scripts/materialize_g005_aux_sources.py \
 uv run python scripts/materialize_g005_aux_sources.py \
   --execute \
   --output artifacts/aux/g005_aux_materialization_plan.json
+uv run python scripts/build_g005_aux_archive_inventory.py \
+  --output artifacts/aux/g005_aux_archive_inventory.json
 uv run python scripts/build_g005_eval_manifest_hashes.py \
   --output artifacts/aux/d2e_eval_manifest_hashes.json
 uv run python scripts/build_g005_aux_source_evidence.py \
@@ -97,6 +99,13 @@ train/val/test source-level manifests under each selected `outputs/aux/<dataset_
 namespace. The resulting evidence is still source/provenance evidence only; it
 does not authorize G005 training, G005 checkpointing, or D2E+aux model-quality
 claims.
+
+`build_g005_aux_archive_inventory.py` inspects the materialized `raw/` archives
+after download and records archive/member counts plus heuristic action-label
+member hints. It deliberately does not parse/train from the data; it is a
+loader-implementation artifact so the next G005 lane can write source-specific
+MineRL/Atari/Breakout adapters from observed archive structure rather than
+guessing.
 
 For unattended cluster source staging, start the materializer in the background
 and then run the non-mutating watcher:

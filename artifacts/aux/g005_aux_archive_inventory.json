@@ -1,0 +1,67 @@
+{
+  "schema": "g005_aux_archive_inventory.v1",
+  "status": "blocked",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "namespace_root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux",
+  "selected_source_ids": [
+    "atari_head_zenodo_v4",
+    "minerl_2019_zenodo_v2",
+    "p_doom_atari_breakout_hf"
+  ],
+  "hash_files": false,
+  "max_members_per_list": 200,
+  "aux_sources": [
+    {
+      "id": "atari_head_zenodo_v4",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4",
+      "source_url": "https://zenodo.org/records/3451402",
+      "license_id": "cc-by-4.0",
+      "raw_file_count": 0,
+      "raw_total_bytes": 0,
+      "action_candidate_member_count": 0,
+      "files": []
+    },
+    {
+      "id": "minerl_2019_zenodo_v2",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2",
+      "source_url": "https://zenodo.org/records/12659939",
+      "license_id": "mit-license",
+      "raw_file_count": 0,
+      "raw_total_bytes": 0,
+      "action_candidate_member_count": 0,
+      "files": []
+    },
+    {
+      "id": "p_doom_atari_breakout_hf",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf",
+      "source_url": "https://huggingface.co/datasets/p-doom/atari-breakout-dataset",
+      "license_id": "cc0-1.0",
+      "raw_file_count": 0,
+      "raw_total_bytes": 0,
+      "action_candidate_member_count": 0,
+      "files": []
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "aux_namespace_missing",
+      "source_id": "atari_head_zenodo_v4",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4"
+    },
+    {
+      "severity": "error",
+      "code": "aux_namespace_missing",
+      "source_id": "minerl_2019_zenodo_v2",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2"
+    },
+    {
+      "severity": "error",
+      "code": "aux_namespace_missing",
+      "source_id": "p_doom_atari_breakout_hf",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf"
+    }
+  ],
+  "error_count": 3,
+  "claim_boundary": "Archive inventory only; it helps implement source-specific loaders but does not start G005 training, checkpoint G005, or prove D2E+aux model quality."
+}
