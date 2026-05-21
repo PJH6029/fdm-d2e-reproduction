@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 237,
+  "entry_count": 240,
   "entries": [
     {
       "path": "README.md",
@@ -34,10 +34,16 @@
       "sha256": "9167d52d04afff05d67a13435dc7854fbcfad1a43717186b2880df0f6457a6c0"
     },
     {
+      "path": "artifacts/aux/g005_aux_materialization_plan.json",
+      "kind": "evidence_artifact",
+      "bytes": 2854,
+      "sha256": "ee3ab959aaf8b43494fb39f8f20d05a5588ea22400f561911e3da956468e5c5f"
+    },
+    {
       "path": "artifacts/aux/g005_aux_source_materialization_evidence.json",
       "kind": "evidence_artifact",
-      "bytes": 5567,
-      "sha256": "54fcdff46266f08a1183a6cc13265698edb74b989d2e9ff9465213033186422a"
+      "bytes": 5455,
+      "sha256": "33caa71ae271e192a1eb648f99a9996939fe0b6960076fb363c5694283962cae"
     },
     {
       "path": "artifacts/aux/g005_launch_readiness.json",
@@ -564,8 +570,8 @@
     {
       "path": "docs/auxiliary_data_plan.md",
       "kind": "documentation",
-      "bytes": 9526,
-      "sha256": "a5f732a45fa242df7bf2bce06cd15f17deaf2fe7aabaaa6361f38af1d69433c8"
+      "bytes": 10573,
+      "sha256": "2b498239dd124e5cb4b6f4b3b0c8fd40a3958eb5ec0895c26da846201e41e5ef"
     },
     {
       "path": "docs/baselines_statistics.md",
@@ -756,8 +762,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 15106,
-      "sha256": "abbc69efd10c239f283872b47d55a302d5696ae6635c57e1ccd4bbecc8cc7bd8"
+      "bytes": 15196,
+      "sha256": "8637225937f55effcfa178231ee2114bf13baebec469eb1d91ee8bb67b553a60"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -824,6 +830,12 @@
       "kind": "reproduction_script",
       "bytes": 9288,
       "sha256": "4407dc5ab4324f2210904acf6035f9c209bed774fcedc77a5badbc961b11b214"
+    },
+    {
+      "path": "scripts/materialize_g005_aux_sources.py",
+      "kind": "reproduction_script",
+      "bytes": 14033,
+      "sha256": "50d60569ac40a43011d72884614e5682d55ddddcaf61d10e0bd3123b6f71339b"
     },
     {
       "path": "scripts/merge_d2e_full_corpus_shards.py",
@@ -1292,6 +1304,12 @@
       "kind": "other",
       "bytes": 10220,
       "sha256": "b1f99bc2cf01627eae9322e4aadd9d1d992f11fcf596602cd9cf600068b30bdf"
+    },
+    {
+      "path": "tests/test_g005_aux_materializer.py",
+      "kind": "other",
+      "bytes": 4143,
+      "sha256": "622d02a0d803d2583a3cae5c56e331e743b2aa5122c0787a79d156bfb9aede0a"
     },
     {
       "path": "tests/test_g005_aux_source_evidence_builder.py",

@@ -62,6 +62,13 @@ with schema `g005_aux_namespace_manifest.v1`. The manifest must prove:
 Build the manifest from explicit materialization/eval evidence rather than editing it by hand:
 
 ```bash
+uv run python scripts/materialize_g005_aux_sources.py \
+  --output artifacts/aux/g005_aux_materialization_plan.json
+# Review the plan first. Add --execute only when the selected aux downloads should
+# be materialized into outputs/aux/<dataset_id>/raw plus source split manifests.
+uv run python scripts/materialize_g005_aux_sources.py \
+  --execute \
+  --output artifacts/aux/g005_aux_materialization_plan.json
 uv run python scripts/build_g005_eval_manifest_hashes.py \
   --output artifacts/aux/d2e_eval_manifest_hashes.json
 uv run python scripts/build_g005_aux_source_evidence.py \
@@ -80,6 +87,16 @@ selected sources, hashes materialized files plus source-specific train/val/test
 splits, records action-head namespaces, and writes a combined source-evidence
 file. A `blocked` output is expected before the selected auxiliary datasets are
 actually materialized.
+
+`materialize_g005_aux_sources.py` is the safe entry point for that materialization
+step. Its default mode is plan-only and records provider/namespace/download
+strategy without network transfer. `--execute` currently supports selected Zenodo
+records via their API file links and Hugging Face datasets via
+`huggingface_hub.snapshot_download`, then writes `raw/` files and deterministic
+train/val/test source-level manifests under each selected `outputs/aux/<dataset_id>/`
+namespace. The resulting evidence is still source/provenance evidence only; it
+does not authorize G005 training, G005 checkpointing, or D2E+aux model-quality
+claims.
 
 Before launching any D2E+aux training run, run the fail-closed readiness planner:
 

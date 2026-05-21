@@ -1,0 +1,65 @@
+{
+  "schema": "g005_aux_materialization_plan.v1",
+  "status": "planned",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "execute": false,
+  "namespace_root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux",
+  "selected_source_ids": [
+    "atari_head_zenodo_v4",
+    "minerl_2019_zenodo_v2",
+    "p_doom_atari_breakout_hf"
+  ],
+  "splits": [
+    "train",
+    "val",
+    "test"
+  ],
+  "plans": [
+    {
+      "id": "atari_head_zenodo_v4",
+      "provider": "zenodo",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4",
+      "raw_dir": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw",
+      "source_url": "https://zenodo.org/records/3451402",
+      "metadata_api_url": "https://zenodo.org/api/records/3451402",
+      "license_id": "cc-by-4.0",
+      "expected_size_bytes": 8726806887,
+      "source_revision_or_record": "zenodo_record_3451402_v4",
+      "valid_for_training_now": true,
+      "execute_supported": true
+    },
+    {
+      "id": "minerl_2019_zenodo_v2",
+      "provider": "zenodo",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2",
+      "raw_dir": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2/raw",
+      "source_url": "https://zenodo.org/records/12659939",
+      "metadata_api_url": "https://zenodo.org/api/records/12659939",
+      "license_id": "mit-license",
+      "expected_size_bytes": 8571175338,
+      "source_revision_or_record": "zenodo_record_12659939",
+      "valid_for_training_now": true,
+      "execute_supported": true
+    },
+    {
+      "id": "p_doom_atari_breakout_hf",
+      "provider": "huggingface_dataset",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf",
+      "raw_dir": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf/raw",
+      "source_url": "https://huggingface.co/datasets/p-doom/atari-breakout-dataset",
+      "metadata_api_url": "https://huggingface.co/api/datasets/p-doom/atari-breakout-dataset",
+      "license_id": "cc0-1.0",
+      "expected_size_bytes": 823000000,
+      "source_revision_or_record": "hf_sha_34c60197acabf0011a36affff183cc87c755edc4",
+      "valid_for_training_now": true,
+      "execute_supported": true,
+      "repo_id": "p-doom/atari-breakout-dataset",
+      "repo_type": "dataset",
+      "revision": "34c60197acabf0011a36affff183cc87c755edc4"
+    }
+  ],
+  "executions": [],
+  "findings": [],
+  "error_count": 0,
+  "claim_boundary": "Materializes selected G005 auxiliary source files only; it does not train, checkpoint G005, or prove D2E+aux model quality."
+}
