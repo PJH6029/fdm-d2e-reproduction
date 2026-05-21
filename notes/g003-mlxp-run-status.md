@@ -398,3 +398,25 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
 - Existing G003→G004 chain remains waiting for G003 parent/finalization; G004 has not launched.
 - No story or aggregate checkpoint/completion claim was made.
+
+## 2026-05-22 00:22 KST accel64 path correction and retry hardening snapshot
+
+- Local commit `af22ab0` was pushed to `origin/main`: central D2E downloads now retry bounded transient `URLError`/connection-reset/timeout-style failures and clean partial `.part` files. Local validation: `uv run pytest tests/test_d2e_real_contract.py -q` passed (`10` tests) and `uv run pytest -q` passed (`293` tests).
+- Pod checkout remained at `4015ff7` during this snapshot to avoid disturbing active extraction/training watchers and generated evidence; in-flight Python extractor processes keep their already-loaded code. If shard repair must be relaunched, update the pod code to `af22ab0` first or relaunch from a fresh checkout.
+- Canonical accel64 shard root is **`outputs/data/d2e_full_corpus_shards_accel64`**. Do not use the typo/order variant `outputs/data/d2e_full_corpus_accel64_shards` in health/resume/finalization commands.
+- Correct accel64 health command refreshed `artifacts/idm/g003_accel64_live_health.json`: status `warn_live_health`, stage `extracting`, decoded `371 / 918`, complete shards `0 / 64`, active extractors `63 / 64`, warning only `inactive_incomplete_shards: [29]` because shard 29 is being repaired by an isolated process outside the original accel64 parent process tree.
+- Isolated shard-29 repair was still running from PID `113351` with output dir `outputs/data/d2e_full_corpus_shards_accel64/shard_29`; log showed `4 / 14` selected recordings decoded and no `decode_summary.json` yet.
+- Canonical 16-shard G003 lane remained healthy/running in the previous probe: decoded `270 / 918`, active extractors `16 / 16`, parent PID `9289`; this remains the authoritative lane unless accel64 passes its own audit and is explicitly promoted.
+- `G003-d2e-only-idm` must remain `in_progress`: `artifacts/idm/g003_full_idm_completion_audit.json` still fails because full decode, merged records, IDM checkpoint, predictions, label-quality metrics, and metadata are incomplete.
+
+Recommended next command for accel64 health:
+
+```bash
+uv run python scripts/audit_g003_live_health.py \
+  --shard-root outputs/data/d2e_full_corpus_shards_accel64 \
+  --output artifacts/idm/g003_accel64_live_health.json \
+  --pid-file outputs/cluster/g003_full_compact_accel64.pid \
+  --watcher-pid-file outputs/cluster/g003_accel64_postrun_watcher.pid \
+  --gpu-monitor-pid-file outputs/cluster/g003_accel64_attached_gpu_monitor.pid \
+  --num-shards 64
+```
