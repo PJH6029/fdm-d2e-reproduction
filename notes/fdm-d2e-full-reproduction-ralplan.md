@@ -54,3 +54,21 @@ Each goal has dependencies, outputs, done criteria, block criteria, and verifica
 ```bash
 $ultragoal .omx/plans/ralplan-fdm-d2e-full-reproduction.md
 ```
+
+## Ultragoal ledger created
+
+A fresh local `.omx/ultragoal` aggregate ledger was created from the approved plan after archiving the older bounded Shooter64 ledger and a transient bad 103-goal auto-split.
+
+Current G1-G9 IDs:
+
+1. `G001-data-universe-audit` — data universe audit.
+2. `G002-split-leakage-contract` — split/leakage contract.
+3. `G003-d2e-only-idm` — D2E-only IDM full-corpus training.
+4. `G004-d2e-only-fdm-4xh200` — D2E-only FDM + 4×H200 scaling.
+5. `G005-aux-data-best-model` — auxiliary data integration and best model.
+6. `G006-evaluation-failure-analysis` — expanded evaluation/statistics/failure analysis.
+7. `G007-runtime-sdk-adapter` — reusable inference SDK and game adapter.
+8. `G008-live-game-suite` — live open-source graphical game suite.
+9. `G009-report-repro-package` — final report and reproducibility package.
+
+The aggregate Codex objective is: complete approved full-corpus FDM-D2E ultragoal stories G001-G009 in `.omx/ultragoal/goals.json`, preserving D2E-only hard gates before D2E+aux/runtime claims.
