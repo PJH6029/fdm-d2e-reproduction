@@ -224,3 +224,9 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Pushed commit `1e57022` and fast-forwarded pod checkout to `1e57022`; `scripts/validate_g009_completion.py` and config are present in pod.
 - Parent PID `9289` still running; decoded recording variants `82 / 918`; complete shards `0 / 16`; IDM metrics absent.
 - Pod-local G009 completion audit reports `fail` with `9` expected errors because G003-G008 prerequisites and final regenerated package artifacts are incomplete.
+
+## 2026-05-21 14:31 KST post-G007-audit sync snapshot
+
+- Pushed commit `22717f6` and fast-forwarded pod checkout to `22717f6`; `scripts/validate_g007_completion.py` and config are present in pod.
+- Parent PID `9289` still running; decoded recording variants `83 / 918`; complete shards `0 / 16`; IDM metrics absent.
+- Local committed G007 completion audit reports `pass`. Pod-local G007 audit reports `fail` with `1` error only because `.omx/ultragoal/goals.json` is intentionally not present in the ignored pod checkout; use local worktree for OMX goal-state audits.
