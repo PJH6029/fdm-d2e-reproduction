@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 116,
+  "entry_count": 122,
   "entries": [
     {
       "path": "README.md",
@@ -14,6 +14,12 @@
       "kind": "evidence_artifact",
       "bytes": 90844,
       "sha256": "d02a6477a1add5ad7c4a577ef5aaea82f5f7b967ce37c3444efc5dd13df42d3c"
+    },
+    {
+      "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
+      "kind": "evidence_artifact",
+      "bytes": 1967,
+      "sha256": "6189bba23890fcd113e3ebc96eb091713aea3549303947249c9204a968681129"
     },
     {
       "path": "artifacts/fdm/fdm_bth05_d2e_train_prediction_scale_calibrated_h200/checkpoint_metadata.json",
@@ -216,8 +222,14 @@
     {
       "path": "configs/eval/final_quality_gates.yaml",
       "kind": "configuration",
-      "bytes": 5044,
-      "sha256": "e32268b2f258a4aa27a2ee300c73304a354c130af647c810715142e9e1ab43db"
+      "bytes": 5567,
+      "sha256": "6817aa1efd3f94274f6c7b3cd34e76ed8e860ab2038a3153e58d85954f31c464"
+    },
+    {
+      "path": "configs/eval/g006_evaluation_readiness.yaml",
+      "kind": "configuration",
+      "bytes": 1340,
+      "sha256": "a1ca4cbc353c30fa6bc118095bbcc8529713d83ca567a1e6e3837a97990fd5bc"
     },
     {
       "path": "configs/eval/primary_endpoints.yaml",
@@ -382,6 +394,12 @@
       "sha256": "38292857070cfc43b9b185f1c7192b675da0d85e4fde4db3e77b72f4e07f3ce4"
     },
     {
+      "path": "docs/g006_evaluation_readiness.md",
+      "kind": "documentation",
+      "bytes": 2081,
+      "sha256": "feb73dde269dab66cc87750c8013141c2b0e0668bbf77d59484e4d2729e808c6"
+    },
+    {
       "path": "docs/harness_selection_and_execution.md",
       "kind": "documentation",
       "bytes": 3860,
@@ -444,8 +462,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 8906,
-      "sha256": "bc5d665d3ba6390876a1a08a2a980dcc8bbb9ab356c71c7cd522433e6801ddf7"
+      "bytes": 9210,
+      "sha256": "bdc283b5ebcb7764d3079236e99ff222775d82cf88991c3314bd2856fdb645a0"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -550,6 +568,12 @@
       "sha256": "20ff077940aa26155793f887b224cc3bf9a1deefd0440da59d8b2dd0fcd9db19"
     },
     {
+      "path": "scripts/validate_g006_evaluation_readiness.py",
+      "kind": "reproduction_script",
+      "bytes": 1189,
+      "sha256": "61f859f3860006da57095962c5b2b432518d319ea07dea1fbb2d70f579314ff4"
+    },
+    {
       "path": "scripts/validate_live_game_suite.py",
       "kind": "reproduction_script",
       "bytes": 1869,
@@ -578,6 +602,12 @@
       "kind": "other",
       "bytes": 4273,
       "sha256": "dae838d220bccfdae2296a9f11a804e5fc37380f45a61d47bbfdf6ace764b5f0"
+    },
+    {
+      "path": "src/fdm_d2e/reporting/evaluation_readiness.py",
+      "kind": "other",
+      "bytes": 8049,
+      "sha256": "709f29ac6b37e8efcddcffaf41b74c4fc5f7494f30c97bf04239cbdd0387dfc1"
     },
     {
       "path": "src/fdm_d2e/reporting/quality_gates.py",
@@ -668,6 +698,12 @@
       "kind": "other",
       "bytes": 2953,
       "sha256": "d9812df72fe92b66ffc6a00e9155afb045a3ba354b63a05e619e12ba33f85e84"
+    },
+    {
+      "path": "tests/test_g006_evaluation_readiness.py",
+      "kind": "other",
+      "bytes": 5383,
+      "sha256": "5cb7010c3d9693f586024fe05b1458436efff24e019cfa5812011a6ed4221a80"
     },
     {
       "path": "tests/test_game_harness_contract.py",

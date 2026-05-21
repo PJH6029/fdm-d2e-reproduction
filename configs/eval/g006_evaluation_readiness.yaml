@@ -1,0 +1,43 @@
+{
+  "schema": "g006_evaluation_readiness_config.v1",
+  "goals_path": ".omx/ultragoal/goals.json",
+  "endpoint_statistics_path": "artifacts/eval/final_endpoint_statistics.json",
+  "failure_analysis_path": "artifacts/eval/final_failure_analysis.json",
+  "claim_taxonomy_path": "artifacts/eval/final_claim_taxonomy.json",
+  "output_path": "artifacts/eval/g006_evaluation_readiness_audit.json",
+  "prerequisite_goals": ["G003-d2e-only-idm", "G004-d2e-only-fdm-4xh200"],
+  "required_splits": ["temporal", "heldout_recording", "heldout_game"],
+  "required_endpoints": [
+    "keyboard_accuracy",
+    "mouse_button_accuracy",
+    "mouse_button_precision",
+    "mouse_button_f1",
+    "no_button_false_positive_rate",
+    "mouse_move_pearson",
+    "mouse_move_scale_ratio_distance"
+  ],
+  "required_comparison_fields": [
+    "split",
+    "endpoint",
+    "model",
+    "reference",
+    "candidate_value",
+    "baseline_value",
+    "delta",
+    "p_value",
+    "p_adjusted_holm",
+    "reject_holm_0_05",
+    "artifact_path",
+    "artifact_sha256"
+  ],
+  "required_failure_axes": ["action", "game", "resolution", "source", "calibration"],
+  "required_claim_taxonomy": [
+    "d2e_only_idm",
+    "d2e_only_fdm",
+    "d2e_aux_comparison",
+    "live_open_game_suite",
+    "negative_results"
+  ],
+  "require_non_rejections": true,
+  "require_examples": true
+}

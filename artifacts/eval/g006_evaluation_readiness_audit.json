@@ -1,0 +1,78 @@
+{
+  "schema": "g006_evaluation_readiness_audit.v1",
+  "status": "fail",
+  "goals_path": ".omx/ultragoal/goals.json",
+  "prerequisite_goal_statuses": {
+    "G003-d2e-only-idm": "in_progress",
+    "G004-d2e-only-fdm-4xh200": "pending"
+  },
+  "artifacts": {
+    "endpoint_statistics": {
+      "path": "artifacts/eval/final_endpoint_statistics.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "failure_analysis": {
+      "path": "artifacts/eval/final_failure_analysis.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "claim_taxonomy": {
+      "path": "artifacts/eval/final_claim_taxonomy.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    }
+  },
+  "required_splits": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
+  "required_endpoints": [
+    "keyboard_accuracy",
+    "mouse_button_accuracy",
+    "mouse_button_precision",
+    "mouse_button_f1",
+    "no_button_false_positive_rate",
+    "mouse_move_pearson",
+    "mouse_move_scale_ratio_distance"
+  ],
+  "required_failure_axes": [
+    "action",
+    "game",
+    "resolution",
+    "source",
+    "calibration"
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G003-d2e-only-idm",
+      "actual": "in_progress"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "missing_endpoint_statistics"
+    },
+    {
+      "severity": "error",
+      "code": "missing_failure_analysis"
+    },
+    {
+      "severity": "error",
+      "code": "missing_claim_taxonomy"
+    }
+  ],
+  "error_count": 5,
+  "claim_boundary": "This readiness audit does not complete G006; G006 is complete only after final endpoint statistics, failure analysis, and claim taxonomy pass with G003/G004 prerequisites complete."
+}

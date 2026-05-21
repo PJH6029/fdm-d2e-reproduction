@@ -78,7 +78,25 @@
       "required_paths": [
         "artifacts/eval/final_endpoint_statistics.json",
         "artifacts/eval/final_failure_analysis.json",
+        "artifacts/eval/final_claim_taxonomy.json",
         "docs/failure_analysis.md"
+      ],
+      "json_assertions": [
+        {
+          "path": "artifacts/eval/final_endpoint_statistics.json",
+          "json_path": "status",
+          "equals": "pass"
+        },
+        {
+          "path": "artifacts/eval/final_failure_analysis.json",
+          "json_path": "status",
+          "equals": "pass"
+        },
+        {
+          "path": "artifacts/eval/final_claim_taxonomy.json",
+          "json_path": "status",
+          "equals": "pass"
+        }
       ]
     },
     {
