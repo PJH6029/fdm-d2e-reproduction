@@ -145,6 +145,27 @@ def test_chain_blocks_when_g003_finalization_fails(tmp_path: Path):
     assert plan_calls == []
 
 
+def test_chain_retries_local_finalization_after_stale_existing_g003_finalized_fail(tmp_path: Path):
+    _write_universe(tmp_path)
+    write_json(
+        tmp_path / "artifacts/idm/g003_postrun_watcher_summary.json",
+        {"status": "finalized_fail", "g003_audit_status": "fail", "g003_audit_error_count": 4},
+    )
+    finalized_calls: list[Namespace] = []
+    planned_calls: list[Namespace] = []
+
+    payload = watch_and_maybe_launch(
+        _args(tmp_path),
+        finalize_func=lambda ns: finalized_calls.append(ns) or {"status": "pass", "g003_audit_status": "pass", "g003_audit_error_count": 0},
+        plan_func=lambda ns: planned_calls.append(ns) or {"status": "ready", "error_count": 0},
+    )
+
+    assert payload["status"] == "g004_launch_ready"
+    assert payload["g003_finalization_source"] == "local_finalize_g003"
+    assert len(finalized_calls) == 1
+    assert len(planned_calls) == 1
+
+
 def test_chain_launches_g004_and_watcher_when_enabled(tmp_path: Path):
     _write_universe(tmp_path)
     launches: list[str] = []

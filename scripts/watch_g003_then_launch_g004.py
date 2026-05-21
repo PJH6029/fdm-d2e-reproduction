@@ -149,12 +149,12 @@ def _g003_finalization_from_existing_watcher(args: argparse.Namespace, root: Pat
     if not summary:
         return None
     status = summary.get("status")
-    if status not in {"finalized_pass", "finalized_fail"}:
+    if status != "finalized_pass":
         return None
     return {
         "schema": "g003_finalization_reference.v1",
         "source": args.g003_postrun_summary,
-        "status": "pass" if status == "finalized_pass" else "fail",
+        "status": "pass",
         "watcher_status": status,
         "g003_audit_status": summary.get("g003_audit_status"),
         "g003_audit_error_count": summary.get("g003_audit_error_count"),
