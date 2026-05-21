@@ -57,6 +57,13 @@ is the current MLXP setting for a 128-core H200 production pod.
 - Downstream G004 FDM path after these artifacts exist:
   `docs/d2e_full_fdm_pipeline.md`.
 
+The G003 completion audit is intentionally stricter than artifact existence. It
+must prove the D2E-only universe contains and the decode summary actually covers
+both required D2E sources/resolution tiers: `d2e_480p` / `480p` and
+`d2e_original` / `original_fhd_qhd`, with 459 recording variants from each
+source. A full count of 918 without those source/tier counts is not sufficient
+for checkpointing `G003-d2e-only-idm`.
+
 ## Operational notes from the first MLXP attempt
 
 - Production base image may not include `uv`; install with

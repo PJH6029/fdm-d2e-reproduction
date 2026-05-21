@@ -11,7 +11,24 @@
     "heldout_recording",
     "heldout_game"
   ],
+  "required_source_ids": [
+    "d2e_480p",
+    "d2e_original"
+  ],
+  "required_resolution_tiers": [
+    "480p",
+    "original_fhd_qhd"
+  ],
+  "expected_variants_by_source": {
+    "d2e_480p": 459,
+    "d2e_original": 459
+  },
+  "expected_variants_by_resolution_tier": {
+    "480p": 459,
+    "original_fhd_qhd": 459
+  },
   "paths": {
+    "data_universe": "artifacts/sources/d2e_full_data_universe_manifest.json",
     "decode_summary": "artifacts/sources/d2e_full_corpus_decode_summary.json",
     "train_records": "outputs/data/d2e_full_corpus/train_core.jsonl",
     "target_records": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",

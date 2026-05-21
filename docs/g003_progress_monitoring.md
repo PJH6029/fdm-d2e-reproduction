@@ -90,6 +90,9 @@ Do not checkpoint `G003-d2e-only-idm` complete until all are present and verifie
 - `outputs/idm_streaming_d2e_full_compact/statistical_comparison.json`
 - `artifacts/idm/idm_streaming_d2e_full_compact_summary.json`
 - `artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.json`
+- `artifacts/sources/d2e_full_data_universe_manifest.json` and decode summary
+  evidence showing both required D2E sources/resolution tiers:
+  `d2e_480p`/`480p` and `d2e_original`/`original_fhd_qhd` with 459 variants each.
 
 This monitor is progress evidence only. It is not a completion claim.
 

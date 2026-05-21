@@ -7,6 +7,12 @@
   "expected_recording_variants": 918,
   "expected_shards": 16,
   "artifacts": {
+    "data_universe": {
+      "path": "artifacts/sources/d2e_full_data_universe_manifest.json",
+      "exists": true,
+      "bytes": 1477181,
+      "sha256": "549cd16aa992bc76c3bea9f571100fe5cc721ca706e7d50f2c9e40fd2d21c8f8"
+    },
     "decode_summary": {
       "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
       "exists": false,
@@ -124,6 +130,19 @@
     "decode_train_core": null,
     "decode_target_all_eval": null
   },
+  "data_universe_counts": {
+    "included_recording_variants": 918,
+    "source_ids": {
+      "d2e_480p": 459,
+      "d2e_original": 459
+    },
+    "resolution_tiers": {
+      "480p": 459,
+      "original_fhd_qhd": 459
+    }
+  },
+  "decode_counts_by_source": {},
+  "decode_counts_by_resolution_tier": {},
   "findings": [
     {
       "severity": "error",

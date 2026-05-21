@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from fdm_d2e.reporting.g003_completion import validate_g003_full_idm_completion
 
 def _config() -> dict:
     paths = {
+        "data_universe": "artifacts/sources/universe.json",
         "decode_summary": "artifacts/sources/decode.json",
         "train_records": "outputs/train.jsonl",
         "target_records": "outputs/target.jsonl",
@@ -37,6 +39,10 @@ def _config() -> dict:
         "expected_shards": 2,
         "expected_nproc_per_node": 4,
         "required_target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],
+        "required_source_ids": ["d2e_480p", "d2e_original"],
+        "required_resolution_tiers": ["480p", "original_fhd_qhd"],
+        "expected_variants_by_source": {"d2e_480p": 2, "d2e_original": 1},
+        "expected_variants_by_resolution_tier": {"480p": 2, "original_fhd_qhd": 1},
         "paths": paths,
         "metadata_expectations": {
             "source_namespace": "d2e_full_corpus",
@@ -56,7 +62,53 @@ def _write_jsonl(path: Path, n: int) -> None:
 def _complete_fixture(root: Path) -> None:
     cfg = _config()
     write_json(root / ".omx/ultragoal/goals.json", {"goals": [{"id": "G003", "status": "complete"}]})
-    write_json(root / cfg["paths"]["decode_summary"], {"selected_recording_variants": 3, "num_shards": 2, "failures": [], "counts": {"train_core": 2, "target_all_eval": 2}})
+    recordings = [
+        {
+            "status": "included",
+            "source_id": "d2e_480p",
+            "resolution_tier": "480p",
+            "game": "Game",
+            "recording_id": "rec_0",
+            "cross_resolution_key": "Game/rec_0",
+        },
+        {
+            "status": "included",
+            "source_id": "d2e_480p",
+            "resolution_tier": "480p",
+            "game": "Game",
+            "recording_id": "rec_1",
+            "cross_resolution_key": "Game/rec_1",
+        },
+        {
+            "status": "included",
+            "source_id": "d2e_original",
+            "resolution_tier": "original_fhd_qhd",
+            "game": "Game",
+            "recording_id": "rec_0",
+            "cross_resolution_key": "Game/rec_0",
+        },
+    ]
+    write_json(
+        root / cfg["paths"]["data_universe"],
+        {
+            "schema": "data_universe_manifest.v1",
+            "decision_gates": {"full_success_requires_sources": ["d2e_480p", "d2e_original"]},
+            "recordings": recordings,
+        },
+    )
+    write_json(
+        root / cfg["paths"]["decode_summary"],
+        {
+            "selected_recording_variants": 3,
+            "num_shards": 2,
+            "failures": [],
+            "counts": {"train_core": 2, "target_all_eval": 2},
+            "recordings": [
+                {"universe_row_id": f"{row['source_id']}:{row['cross_resolution_key']}", **row}
+                for row in recordings
+            ],
+        },
+    )
     _write_jsonl(root / cfg["paths"]["train_records"], 2)
     _write_jsonl(root / cfg["paths"]["target_records"], 2)
     _write_jsonl(root / cfg["paths"]["pseudolabels"], 2)
@@ -92,6 +144,8 @@ def test_g003_completion_audit_passes_on_full_fixture(tmp_path: Path):
     assert payload["status"] == "pass"
     assert payload["error_count"] == 0
     assert payload["counts"]["train_records"] == 2
+    assert payload["data_universe_counts"]["source_ids"] == {"d2e_480p": 2, "d2e_original": 1}
+    assert payload["decode_counts_by_resolution_tier"] == {"480p": 2, "original_fhd_qhd": 1}
 
 
 def test_g003_completion_audit_fails_on_partial_counts_and_goal(tmp_path: Path):
@@ -116,3 +170,19 @@ def test_g003_completion_audit_can_run_as_pre_checkpoint_evidence_gate(tmp_path:
     assert payload["goal_status"] == "in_progress"
     assert payload["require_goal_checkpoint_complete"] is False
     assert "goal_not_checkpointed_complete" not in codes
+
+
+def test_g003_completion_audit_requires_both_d2e_resolution_tiers(tmp_path: Path):
+    _complete_fixture(tmp_path)
+    cfg = _config()
+    decode_path = tmp_path / cfg["paths"]["decode_summary"]
+    decode = json.loads(decode_path.read_text())
+    decode["recordings"] = [row for row in decode["recordings"] if row["source_id"] == "d2e_480p"]
+    decode["selected_recording_variants"] = 2
+    write_json(decode_path, decode)
+    payload = validate_g003_full_idm_completion(cfg, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "decode_missing_required_sources" in codes
+    assert "decode_missing_required_resolution_tiers" in codes
+    assert "decode_universe_row_id_mismatch" in codes
