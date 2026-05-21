@@ -72,16 +72,17 @@ Before checkpointing `G006-evaluation-failure-analysis` complete, run:
 uv run python scripts/validate_g006_completion.py
 ```
 
-During upstream G003/G004 execution this may be run with `--allow-fail`, but a
+During upstream G003/G004/G005 execution this may be run with `--allow-fail`, but a
 terminal G006 checkpoint requires `artifacts/eval/g006_completion_audit.json` to
-report `status == pass`. The audit checks G006 goal state, G003/G004 prerequisite
+report `status == pass`. The audit checks G006 goal state, G003/G004/G005 prerequisite
 goals, endpoint statistics, failure analysis, claim taxonomy, readiness audit,
 final artifact-build summary, required splits/endpoints, required failure axes,
-negative examples/non-rejections, and forbidden claim boundaries.
+negative examples/non-rejections, required claim states/evidence paths, and
+forbidden claim boundaries.
 
 ## Final artifact builder
 
-After G003 and G004 have completed with split-aware statistical comparison
+After G003, G004, and G005 have completed with split-aware statistical comparison
 artifacts, build the final G006 evidence files with:
 
 ```bash
@@ -98,8 +99,10 @@ checkpoint G006 complete unless all three generated artifacts report
 
 The builder config is `configs/eval/g006_final_artifacts.yaml`. It requires
 split-aware G003/G004 comparison sources for temporal, heldout-recording, and
-heldout-game splits. It intentionally fails if only aggregate or historical
-bounded-run statistics are available.
+heldout-game splits, plus G005 completion for the D2E+aux comparison claim to
+be `claimable`. It intentionally fails if only aggregate or historical
+bounded-run statistics are available, or if claimable/documented claims lack
+evidence paths.
 
 ## Split-aware comparison builder
 

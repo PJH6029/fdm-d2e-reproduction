@@ -45,7 +45,9 @@ The audit checks, without mutating OMX/Codex goal state:
    temporal, heldout-recording, and heldout-game splits.
 5. G005 aux artifacts exist and remain separated from D2E-only namespaces; `g005_aux_namespace_manifest.completion_ready=true`, byte-identical D2E eval-manifest hashes, source-specific action-head namespaces, `g005_aux_completion_audit.status=pass`, and `d2e_aux_ablation_summary.status=pass` are required before D2E+aux can be primary/best.
 6. G006 final endpoint statistics, failure-analysis, claim-taxonomy, readiness,
-   final artifact-build summary, and `g006_completion_audit` artifacts exist and report `status == pass`.
+   final artifact-build summary, and `g006_completion_audit` artifacts exist and report `status == pass`;
+   G003/G004/G005 must be complete, D2E+aux comparison must be `claimable`, live-suite claims must remain
+   `not_claimed_until_g008`, and claimable/documented claims must carry evidence paths.
 7. G007 runtime SDK adapter evidence remains present and `g007_completion_audit.status=pass`.
 8. G008 live open-source graphical-game evidence validation exists and has
    `quality_gate.status == pass`, and `g008_live_suite_completion_audit.status=pass`; protocol readiness does not count.

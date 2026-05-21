@@ -1,0 +1,68 @@
+{
+  "schema": "final_failure_analysis.v1",
+  "status": "fail",
+  "axes": {
+    "action": [],
+    "game": [
+      "pending_from_full_corpus_metadata"
+    ],
+    "resolution": [
+      "pending_from_full_corpus_metadata"
+    ],
+    "source": [
+      "pending_from_full_corpus_metadata"
+    ],
+    "calibration": [
+      "pending_from_checkpoint_metadata"
+    ]
+  },
+  "axis_counts": {
+    "action": {}
+  },
+  "non_rejections": [],
+  "examples": [],
+  "metadata_sources": [
+    {
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "artifact": {
+        "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+        "exists": false,
+        "bytes": 0,
+        "sha256": null
+      }
+    },
+    {
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "artifact": {
+        "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+        "exists": false,
+        "bytes": 0,
+        "sha256": null
+      }
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "endpoint_statistics_not_pass",
+      "actual": "fail"
+    },
+    {
+      "severity": "error",
+      "code": "missing_failure_axes",
+      "missing": [
+        "action"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "missing_non_rejections"
+    },
+    {
+      "severity": "error",
+      "code": "missing_failure_examples"
+    }
+  ],
+  "error_count": 4,
+  "claim_boundary": "Failure analysis must explicitly report non-rejections and axes before final research claims."
+}

@@ -28,7 +28,7 @@ def _config(root: Path) -> dict:
         "endpoint_statistics_path": "artifacts/eval/final_endpoint_statistics.json",
         "failure_analysis_path": "artifacts/eval/final_failure_analysis.json",
         "claim_taxonomy_path": "artifacts/eval/final_claim_taxonomy.json",
-        "prerequisite_goals": ["G003-d2e-only-idm", "G004-d2e-only-fdm-4xh200"],
+        "prerequisite_goals": ["G003-d2e-only-idm", "G004-d2e-only-fdm-4xh200", "G005-aux-data-best-model"],
         "required_splits": SPLITS,
         "required_endpoints": ENDPOINTS,
         "required_comparison_fields": [
@@ -52,16 +52,36 @@ def _config(root: Path) -> dict:
         "metadata_sources": ["artifacts/eval/idm_metadata.json", "artifacts/eval/fdm_metadata.json"],
         "required_failure_axes": ["action", "game", "resolution", "source", "calibration"],
         "required_claim_taxonomy": ["d2e_only_idm", "d2e_only_fdm", "d2e_aux_comparison", "live_open_game_suite", "negative_results"],
+        "required_claim_states": {
+            "d2e_only_idm": "claimable",
+            "d2e_only_fdm": "claimable",
+            "d2e_aux_comparison": "claimable",
+            "live_open_game_suite": "not_claimed_until_g008",
+            "negative_results": "documented",
+        },
+        "claim_states_requiring_evidence": ["claimable", "documented"],
         "require_non_rejections": True,
         "require_examples": True,
-        "claim_taxonomy": {"evidence_paths": ["artifacts/eval/idm_metadata.json", "artifacts/eval/fdm_metadata.json"]},
+        "claim_taxonomy": {
+            "evidence_paths": [
+                "artifacts/eval/idm_metadata.json",
+                "artifacts/eval/fdm_metadata.json",
+                "artifacts/aux/d2e_aux_ablation_summary.json",
+            ]
+        },
     }
 
 
 def _write_complete_fixture(root: Path) -> None:
     write_json(
         root / ".omx/ultragoal/goals.json",
-        {"goals": [{"id": "G003-d2e-only-idm", "status": "complete"}, {"id": "G004-d2e-only-fdm-4xh200", "status": "complete"}]},
+        {
+            "goals": [
+                {"id": "G003-d2e-only-idm", "status": "complete"},
+                {"id": "G004-d2e-only-fdm-4xh200", "status": "complete"},
+                {"id": "G005-aux-data-best-model", "status": "complete"},
+            ]
+        },
     )
     for split in SPLITS:
         comparisons = []
@@ -104,6 +124,7 @@ def _write_complete_fixture(root: Path) -> None:
             "target_games": ["Apex"],
         },
     )
+    write_json(root / "artifacts/aux/d2e_aux_ablation_summary.json", {"status": "pass"})
 
 
 def test_build_g006_final_artifacts_passes_with_split_coverage_and_non_rejection(tmp_path: Path):
@@ -119,6 +140,9 @@ def test_build_g006_final_artifacts_passes_with_split_coverage_and_non_rejection
     assert failure["non_rejections"]
     assert taxonomy["status"] == "pass"
     assert {claim["id"] for claim in taxonomy["claims"]} >= {"d2e_only_idm", "d2e_only_fdm", "negative_results"}
+    aux_claim = next(claim for claim in taxonomy["claims"] if claim["id"] == "d2e_aux_comparison")
+    assert aux_claim["state"] == "claimable"
+    assert aux_claim["evidence_paths"]
 
 
 def test_build_g006_final_artifacts_fails_without_prereqs_and_split_sources(tmp_path: Path):

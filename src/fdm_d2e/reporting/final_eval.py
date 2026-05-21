@@ -261,6 +261,32 @@ def build_final_claim_taxonomy(config: dict[str, Any], endpoint_statistics: dict
     missing_claims = sorted(set(required) - {claim["id"] for claim in claims})
     if missing_claims:
         findings.append({"severity": "error", "code": "missing_required_claims", "missing": missing_claims})
+    claim_by_id = {claim["id"]: claim for claim in claims}
+    for claim_id, expected_state in dict(config.get("required_claim_states", {})).items():
+        claim = claim_by_id.get(str(claim_id), {})
+        actual_state = claim.get("state")
+        if actual_state != expected_state:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "claim_state_mismatch",
+                    "claim_id": str(claim_id),
+                    "expected": expected_state,
+                    "actual": actual_state,
+                }
+            )
+    states_requiring_evidence = {str(item) for item in config.get("claim_states_requiring_evidence", [])}
+    for claim_id, claim in sorted(claim_by_id.items()):
+        state = str(claim.get("state"))
+        if state in states_requiring_evidence and not claim.get("evidence_paths"):
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "claim_missing_evidence_for_state",
+                    "claim_id": claim_id,
+                    "state": state,
+                }
+            )
     errors = [item for item in findings if item.get("severity") == "error"]
     return {
         "schema": "final_claim_taxonomy.v1",
@@ -306,5 +332,5 @@ def build_g006_final_artifacts(config: dict[str, Any], *, root: str | Path = "."
             "failure_analysis": str(config.get("failure_analysis_path", "artifacts/eval/final_failure_analysis.json")),
             "claim_taxonomy": str(config.get("claim_taxonomy_path", "artifacts/eval/final_claim_taxonomy.json")),
         },
-        "claim_boundary": "Builder output is final G006 evidence only when all statuses pass and prerequisite G003/G004 goals are complete.",
+        "claim_boundary": "Builder output is final G006 evidence only when all statuses pass and prerequisite G003/G004/G005 goals are complete.",
     }

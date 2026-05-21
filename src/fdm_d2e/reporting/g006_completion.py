@@ -109,10 +109,37 @@ def validate_g006_completion(config: dict[str, Any], *, root: str | Path = ".") 
         findings.append({"severity": "error", "code": "failure_analysis_missing_examples"})
 
     required_claims = set(str(item) for item in config.get("required_claim_taxonomy", []))
-    actual_claims = {str(item.get("id")) for item in (taxonomy or {}).get("claims", []) or [] if isinstance(item, dict)}
+    claim_rows = [item for item in (taxonomy or {}).get("claims", []) or [] if isinstance(item, dict)]
+    actual_claims = {str(item.get("id")) for item in claim_rows}
     missing_claims = sorted(required_claims - actual_claims)
     if missing_claims:
         findings.append({"severity": "error", "code": "claim_taxonomy_missing_claims", "missing": missing_claims})
+    claim_by_id = {str(item.get("id")): item for item in claim_rows}
+    for claim_id, expected_state in dict(config.get("required_claim_states", {})).items():
+        claim_row = claim_by_id.get(str(claim_id), {})
+        actual_state = claim_row.get("state")
+        if actual_state != expected_state:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "claim_taxonomy_state_mismatch",
+                    "claim_id": str(claim_id),
+                    "expected": expected_state,
+                    "actual": actual_state,
+                }
+            )
+    states_requiring_evidence = {str(item) for item in config.get("claim_states_requiring_evidence", [])}
+    for claim_id, claim_row in sorted(claim_by_id.items()):
+        state = str(claim_row.get("state"))
+        if state in states_requiring_evidence and not claim_row.get("evidence_paths"):
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "claim_taxonomy_missing_evidence_for_state",
+                    "claim_id": claim_id,
+                    "state": state,
+                }
+            )
     forbidden = set(str(item) for item in (taxonomy or {}).get("forbidden_claims", []) or [])
     required_forbidden = set(str(item) for item in config.get("required_forbidden_claims", []))
     missing_forbidden = sorted(required_forbidden - forbidden)
@@ -130,10 +157,12 @@ def validate_g006_completion(config: dict[str, Any], *, root: str | Path = ".") 
         "required_endpoints": sorted(required_endpoints),
         "required_failure_axes": sorted(required_failure_axes),
         "required_claim_taxonomy": sorted(required_claims),
+        "required_claim_states": dict(config.get("required_claim_states", {})),
+        "claim_states_requiring_evidence": sorted(str(item) for item in config.get("claim_states_requiring_evidence", [])),
         "artifacts": artifacts,
         "findings": findings,
         "error_count": len(errors),
-        "claim_boundary": "This audit is required before checkpointing G006 complete; endpoint statistics, failure analysis, claim taxonomy, readiness, and final artifact build summary must all pass with D2E-only prerequisites complete.",
+        "claim_boundary": "This audit is required before checkpointing G006 complete; endpoint statistics, failure analysis, claim taxonomy, readiness, and final artifact build summary must all pass with G003/G004/G005 prerequisites complete.",
     }
 
 

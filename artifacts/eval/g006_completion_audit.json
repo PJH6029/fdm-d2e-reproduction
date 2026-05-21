@@ -5,7 +5,8 @@
   "goal_status": "pending",
   "prerequisite_goal_statuses": {
     "G003-d2e-only-idm": "in_progress",
-    "G004-d2e-only-fdm-4xh200": "pending"
+    "G004-d2e-only-fdm-4xh200": "pending",
+    "G005-aux-data-best-model": "pending"
   },
   "required_splits": [
     "heldout_game",
@@ -35,36 +36,47 @@
     "live_open_game_suite",
     "negative_results"
   ],
+  "required_claim_states": {
+    "d2e_only_idm": "claimable",
+    "d2e_only_fdm": "claimable",
+    "d2e_aux_comparison": "claimable",
+    "live_open_game_suite": "not_claimed_until_g008",
+    "negative_results": "documented"
+  },
+  "claim_states_requiring_evidence": [
+    "claimable",
+    "documented"
+  ],
   "artifacts": {
     "endpoint_statistics": {
       "path": "artifacts/eval/final_endpoint_statistics.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 5879,
+      "sha256": "80e8254a2d26248e8aca160832afe367be1ee6a2da6cfaf86534a8fb747af017"
     },
     "failure_analysis": {
       "path": "artifacts/eval/final_failure_analysis.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 1569,
+      "sha256": "178c9ab4c156138b0e5dd2cef732239955dd36459a7c6b51450feb7785722845"
     },
     "claim_taxonomy": {
       "path": "artifacts/eval/final_claim_taxonomy.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 2551,
+      "sha256": "159657df156a09c05b1b49e1694e58b317f081300b30a51b08be4ef1a2c5bdc1"
     },
     "readiness_audit": {
       "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
       "exists": true,
-      "bytes": 1967,
-      "sha256": "6189bba23890fcd113e3ebc96eb091713aea3549303947249c9204a968681129"
+      "bytes": 3263,
+      "sha256": "51e047e95259b250cb008de1667cab6d2406dc5d2c75c538f6c20292d660493e"
     },
     "build_summary": {
       "path": "artifacts/eval/g006_final_artifact_build_summary.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 556,
+      "sha256": "aa9266127c89cff20a73ffb43df3c5e76e4bef31e3a69859e88600670944eef3"
     },
     "failure_doc": {
       "path": "docs/failure_analysis.md",
@@ -94,27 +106,9 @@
     },
     {
       "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "endpoint_statistics",
-      "path": "artifacts/eval/final_endpoint_statistics.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "failure_analysis",
-      "path": "artifacts/eval/final_failure_analysis.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "claim_taxonomy",
-      "path": "artifacts/eval/final_claim_taxonomy.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "build_summary",
-      "path": "artifacts/eval/g006_final_artifact_build_summary.json"
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G005-aux-data-best-model",
+      "actual": "pending"
     },
     {
       "severity": "error",
@@ -122,7 +116,7 @@
       "source": "endpoint_statistics",
       "json_path": "status",
       "expected": "pass",
-      "actual": null
+      "actual": "fail"
     },
     {
       "severity": "error",
@@ -130,7 +124,7 @@
       "source": "failure_analysis",
       "json_path": "status",
       "expected": "pass",
-      "actual": null
+      "actual": "fail"
     },
     {
       "severity": "error",
@@ -138,7 +132,7 @@
       "source": "claim_taxonomy",
       "json_path": "status",
       "expected": "pass",
-      "actual": null
+      "actual": "fail"
     },
     {
       "severity": "error",
@@ -154,7 +148,7 @@
       "source": "build_summary",
       "json_path": "status",
       "expected": "pass",
-      "actual": null
+      "actual": "fail"
     },
     {
       "severity": "error",
@@ -162,7 +156,7 @@
       "source": "build_summary",
       "json_path": "statuses.endpoint_statistics",
       "expected": "pass",
-      "actual": null
+      "actual": "fail"
     },
     {
       "severity": "error",
@@ -170,7 +164,7 @@
       "source": "build_summary",
       "json_path": "statuses.failure_analysis",
       "expected": "pass",
-      "actual": null
+      "actual": "fail"
     },
     {
       "severity": "error",
@@ -178,39 +172,13 @@
       "source": "build_summary",
       "json_path": "statuses.claim_taxonomy",
       "expected": "pass",
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "endpoint_statistics_missing_required_splits",
-      "missing": [
-        "heldout_game",
-        "heldout_recording",
-        "temporal"
-      ]
-    },
-    {
-      "severity": "error",
-      "code": "endpoint_statistics_missing_required_endpoints",
-      "missing": [
-        "keyboard_accuracy",
-        "mouse_button_accuracy",
-        "mouse_button_f1",
-        "mouse_button_precision",
-        "mouse_move_pearson",
-        "mouse_move_scale_ratio_distance",
-        "no_button_false_positive_rate"
-      ]
+      "actual": "fail"
     },
     {
       "severity": "error",
       "code": "failure_analysis_missing_axes",
       "missing": [
-        "action",
-        "calibration",
-        "game",
-        "resolution",
-        "source"
+        "action"
       ]
     },
     {
@@ -223,26 +191,33 @@
     },
     {
       "severity": "error",
-      "code": "claim_taxonomy_missing_claims",
-      "missing": [
-        "d2e_aux_comparison",
-        "d2e_only_fdm",
-        "d2e_only_idm",
-        "live_open_game_suite",
-        "negative_results"
-      ]
+      "code": "claim_taxonomy_state_mismatch",
+      "claim_id": "d2e_only_idm",
+      "expected": "claimable",
+      "actual": "pending_prerequisite"
     },
     {
       "severity": "error",
-      "code": "claim_taxonomy_missing_forbidden_claims",
-      "missing": [
-        "car_control_transfer",
-        "commercial_game_control_without_live_open_suite",
-        "fdm1_parity",
-        "robotics_transfer"
-      ]
+      "code": "claim_taxonomy_state_mismatch",
+      "claim_id": "d2e_only_fdm",
+      "expected": "claimable",
+      "actual": "pending_prerequisite"
+    },
+    {
+      "severity": "error",
+      "code": "claim_taxonomy_state_mismatch",
+      "claim_id": "d2e_aux_comparison",
+      "expected": "claimable",
+      "actual": "not_claimed_until_g005"
+    },
+    {
+      "severity": "error",
+      "code": "claim_taxonomy_state_mismatch",
+      "claim_id": "negative_results",
+      "expected": "documented",
+      "actual": "pending_non_rejections"
     }
   ],
-  "error_count": 22,
-  "claim_boundary": "This audit is required before checkpointing G006 complete; endpoint statistics, failure analysis, claim taxonomy, readiness, and final artifact build summary must all pass with D2E-only prerequisites complete."
+  "error_count": 19,
+  "claim_boundary": "This audit is required before checkpointing G006 complete; endpoint statistics, failure analysis, claim taxonomy, readiness, and final artifact build summary must all pass with G003/G004/G005 prerequisites complete."
 }

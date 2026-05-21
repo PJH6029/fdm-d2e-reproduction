@@ -4,7 +4,7 @@
   "endpoint_statistics_path": "artifacts/eval/final_endpoint_statistics.json",
   "failure_analysis_path": "artifacts/eval/final_failure_analysis.json",
   "claim_taxonomy_path": "artifacts/eval/final_claim_taxonomy.json",
-  "prerequisite_goals": ["G003-d2e-only-idm", "G004-d2e-only-fdm-4xh200"],
+  "prerequisite_goals": ["G003-d2e-only-idm", "G004-d2e-only-fdm-4xh200", "G005-aux-data-best-model"],
   "required_splits": ["temporal", "heldout_recording", "heldout_game"],
   "required_endpoints": [
     "keyboard_accuracy",
@@ -73,6 +73,14 @@
   ],
   "required_failure_axes": ["action", "game", "resolution", "source", "calibration"],
   "required_claim_taxonomy": ["d2e_only_idm", "d2e_only_fdm", "d2e_aux_comparison", "live_open_game_suite", "negative_results"],
+  "required_claim_states": {
+    "d2e_only_idm": "claimable",
+    "d2e_only_fdm": "claimable",
+    "d2e_aux_comparison": "claimable",
+    "live_open_game_suite": "not_claimed_until_g008",
+    "negative_results": "documented"
+  },
+  "claim_states_requiring_evidence": ["claimable", "documented"],
   "require_non_rejections": true,
   "require_examples": true,
   "claim_taxonomy": {

@@ -28,11 +28,19 @@ def _config() -> dict:
     return {
         "goals_path": ".omx/ultragoal/goals.json",
         "goal_id": "G006",
-        "prerequisite_goals": ["G003", "G004"],
+        "prerequisite_goals": ["G003", "G004", "G005"],
         "required_splits": SPLITS,
         "required_endpoints": ENDPOINTS,
         "required_failure_axes": AXES,
         "required_claim_taxonomy": CLAIMS,
+        "required_claim_states": {
+            "d2e_only_idm": "claimable",
+            "d2e_only_fdm": "claimable",
+            "d2e_aux_comparison": "claimable",
+            "live_open_game_suite": "not_claimed_until_g008",
+            "negative_results": "documented",
+        },
+        "claim_states_requiring_evidence": ["claimable", "documented"],
         "required_forbidden_claims": FORBIDDEN,
         "paths": {
             "endpoint_statistics": "artifacts/eval/endpoint.json",
@@ -59,7 +67,14 @@ def _complete_fixture(root: Path) -> None:
     cfg = _config()
     write_json(
         root / cfg["goals_path"],
-        {"goals": [{"id": "G003", "status": "complete"}, {"id": "G004", "status": "complete"}, {"id": "G006", "status": "complete"}]},
+        {
+            "goals": [
+                {"id": "G003", "status": "complete"},
+                {"id": "G004", "status": "complete"},
+                {"id": "G005", "status": "complete"},
+                {"id": "G006", "status": "complete"},
+            ]
+        },
     )
     comparisons = []
     for split in SPLITS:
@@ -77,7 +92,17 @@ def _complete_fixture(root: Path) -> None:
     )
     write_json(
         root / cfg["paths"]["claim_taxonomy"],
-        {"status": "pass", "claims": [{"id": claim} for claim in CLAIMS], "forbidden_claims": FORBIDDEN},
+        {
+            "status": "pass",
+            "claims": [
+                {"id": "d2e_only_idm", "state": "claimable", "evidence_paths": ["outputs/idm/metadata.json"]},
+                {"id": "d2e_only_fdm", "state": "claimable", "evidence_paths": ["outputs/fdm/metadata.json"]},
+                {"id": "d2e_aux_comparison", "state": "claimable", "evidence_paths": ["artifacts/aux/ablation.json"]},
+                {"id": "live_open_game_suite", "state": "not_claimed_until_g008"},
+                {"id": "negative_results", "state": "documented", "evidence_paths": ["artifacts/eval/failure.json"]},
+            ],
+            "forbidden_claims": FORBIDDEN,
+        },
     )
     write_json(root / cfg["paths"]["readiness_audit"], {"status": "pass"})
     write_json(root / cfg["paths"]["build_summary"], {"status": "pass", "statuses": {"endpoint_statistics": "pass", "failure_analysis": "pass", "claim_taxonomy": "pass"}})
@@ -91,6 +116,7 @@ def test_g006_completion_audit_passes_on_full_fixture(tmp_path: Path):
     payload = validate_g006_completion(_config(), root=tmp_path)
     assert payload["status"] == "pass"
     assert payload["error_count"] == 0
+    assert payload["required_claim_states"]["d2e_aux_comparison"] == "claimable"
 
 
 def test_g006_completion_audit_fails_on_missing_goal_claims_and_failures(tmp_path: Path):
@@ -99,7 +125,14 @@ def test_g006_completion_audit_fails_on_missing_goal_claims_and_failures(tmp_pat
     write_json(tmp_path / cfg["goals_path"], {"goals": [{"id": "G003", "status": "in_progress"}, {"id": "G006", "status": "pending"}]})
     failure = {"status": "pass", "axes": {"action": ["mouse"]}, "non_rejections": [], "examples": []}
     write_json(tmp_path / cfg["paths"]["failure_analysis"], failure)
-    write_json(tmp_path / cfg["paths"]["claim_taxonomy"], {"status": "pass", "claims": [{"id": "d2e_only_idm"}], "forbidden_claims": ["fdm1_parity"]})
+    write_json(
+        tmp_path / cfg["paths"]["claim_taxonomy"],
+        {
+            "status": "pass",
+            "claims": [{"id": "d2e_only_idm", "state": "claimable", "evidence_paths": []}],
+            "forbidden_claims": ["fdm1_parity"],
+        },
+    )
     payload = validate_g006_completion(cfg, root=tmp_path)
     codes = {item["code"] for item in payload["findings"]}
     assert payload["status"] == "fail"
@@ -109,4 +142,6 @@ def test_g006_completion_audit_fails_on_missing_goal_claims_and_failures(tmp_pat
     assert "failure_analysis_missing_non_rejections" in codes
     assert "failure_analysis_missing_examples" in codes
     assert "claim_taxonomy_missing_claims" in codes
+    assert "claim_taxonomy_state_mismatch" in codes
+    assert "claim_taxonomy_missing_evidence_for_state" in codes
     assert "claim_taxonomy_missing_forbidden_claims" in codes

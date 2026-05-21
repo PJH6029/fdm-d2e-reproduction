@@ -4,26 +4,27 @@
   "goals_path": ".omx/ultragoal/goals.json",
   "prerequisite_goal_statuses": {
     "G003-d2e-only-idm": "in_progress",
-    "G004-d2e-only-fdm-4xh200": "pending"
+    "G004-d2e-only-fdm-4xh200": "pending",
+    "G005-aux-data-best-model": "pending"
   },
   "artifacts": {
     "endpoint_statistics": {
       "path": "artifacts/eval/final_endpoint_statistics.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 5879,
+      "sha256": "80e8254a2d26248e8aca160832afe367be1ee6a2da6cfaf86534a8fb747af017"
     },
     "failure_analysis": {
       "path": "artifacts/eval/final_failure_analysis.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 1569,
+      "sha256": "178c9ab4c156138b0e5dd2cef732239955dd36459a7c6b51450feb7785722845"
     },
     "claim_taxonomy": {
       "path": "artifacts/eval/final_claim_taxonomy.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 2551,
+      "sha256": "159657df156a09c05b1b49e1694e58b317f081300b30a51b08be4ef1a2c5bdc1"
     }
   },
   "required_splits": [
@@ -62,17 +63,60 @@
     },
     {
       "severity": "error",
-      "code": "missing_endpoint_statistics"
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G005-aux-data-best-model",
+      "actual": "pending"
     },
     {
       "severity": "error",
-      "code": "missing_failure_analysis"
+      "code": "endpoint_statistics_not_pass",
+      "actual": "fail"
     },
     {
       "severity": "error",
-      "code": "missing_claim_taxonomy"
+      "code": "endpoint_statistics_no_comparisons"
+    },
+    {
+      "severity": "error",
+      "code": "endpoint_statistics_missing_splits",
+      "missing": [
+        "heldout_game",
+        "heldout_recording",
+        "temporal"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "endpoint_statistics_missing_endpoints",
+      "missing": [
+        "keyboard_accuracy",
+        "mouse_button_accuracy",
+        "mouse_button_f1",
+        "mouse_button_precision",
+        "mouse_move_pearson",
+        "mouse_move_scale_ratio_distance",
+        "no_button_false_positive_rate"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "failure_analysis_not_pass",
+      "actual": "fail"
+    },
+    {
+      "severity": "error",
+      "code": "failure_analysis_missing_non_rejections"
+    },
+    {
+      "severity": "error",
+      "code": "failure_analysis_missing_examples"
+    },
+    {
+      "severity": "error",
+      "code": "claim_taxonomy_not_pass",
+      "actual": "fail"
     }
   ],
-  "error_count": 5,
+  "error_count": 11,
   "claim_boundary": "This readiness audit does not complete G006; G006 is complete only after final endpoint statistics, failure analysis, and claim taxonomy pass with G003/G004 prerequisites complete."
 }

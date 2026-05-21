@@ -1,0 +1,191 @@
+{
+  "schema": "final_endpoint_statistics.v1",
+  "status": "fail",
+  "goals_path": ".omx/ultragoal/goals.json",
+  "prerequisite_goal_statuses": {
+    "G003-d2e-only-idm": "in_progress",
+    "G004-d2e-only-fdm-4xh200": "pending",
+    "G005-aux-data-best-model": "pending"
+  },
+  "required_splits": [
+    "heldout_game",
+    "heldout_recording",
+    "temporal"
+  ],
+  "required_endpoints": [
+    "keyboard_accuracy",
+    "mouse_button_accuracy",
+    "mouse_button_f1",
+    "mouse_button_precision",
+    "mouse_move_pearson",
+    "mouse_move_scale_ratio_distance",
+    "no_button_false_positive_rate"
+  ],
+  "comparisons": [],
+  "comparison_sources": [
+    {
+      "source": {
+        "id": "g003_idm_temporal",
+        "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+        "split": "temporal",
+        "model_namespace": "d2e_only_idm"
+      },
+      "artifact": {
+        "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+        "exists": false,
+        "bytes": 0,
+        "sha256": null
+      },
+      "comparisons": 0
+    },
+    {
+      "source": {
+        "id": "g003_idm_heldout_recording",
+        "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+        "split": "heldout_recording",
+        "model_namespace": "d2e_only_idm"
+      },
+      "artifact": {
+        "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+        "exists": false,
+        "bytes": 0,
+        "sha256": null
+      },
+      "comparisons": 0
+    },
+    {
+      "source": {
+        "id": "g003_idm_heldout_game",
+        "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+        "split": "heldout_game",
+        "model_namespace": "d2e_only_idm"
+      },
+      "artifact": {
+        "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+        "exists": false,
+        "bytes": 0,
+        "sha256": null
+      },
+      "comparisons": 0
+    },
+    {
+      "source": {
+        "id": "g004_fdm_temporal",
+        "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+        "split": "temporal",
+        "model_namespace": "d2e_only_fdm"
+      },
+      "artifact": {
+        "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+        "exists": false,
+        "bytes": 0,
+        "sha256": null
+      },
+      "comparisons": 0
+    },
+    {
+      "source": {
+        "id": "g004_fdm_heldout_recording",
+        "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+        "split": "heldout_recording",
+        "model_namespace": "d2e_only_fdm"
+      },
+      "artifact": {
+        "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+        "exists": false,
+        "bytes": 0,
+        "sha256": null
+      },
+      "comparisons": 0
+    },
+    {
+      "source": {
+        "id": "g004_fdm_heldout_game",
+        "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+        "split": "heldout_game",
+        "model_namespace": "d2e_only_fdm"
+      },
+      "artifact": {
+        "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+        "exists": false,
+        "bytes": 0,
+        "sha256": null
+      },
+      "comparisons": 0
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G003-d2e-only-idm",
+      "actual": "in_progress"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G005-aux-data-best-model",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_splits",
+      "missing": [
+        "heldout_game",
+        "heldout_recording",
+        "temporal"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_endpoints",
+      "missing": [
+        "keyboard_accuracy",
+        "mouse_button_accuracy",
+        "mouse_button_f1",
+        "mouse_button_precision",
+        "mouse_move_pearson",
+        "mouse_move_scale_ratio_distance",
+        "no_button_false_positive_rate"
+      ]
+    }
+  ],
+  "error_count": 11,
+  "claim_boundary": "Endpoint statistics pass only when split-aware G003/G004 comparisons cover all required D2E-only splits/endpoints with artifact hashes."
+}
