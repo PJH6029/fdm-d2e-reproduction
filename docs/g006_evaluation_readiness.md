@@ -62,3 +62,25 @@ report non-rejections/negative results.
 `final_claim_taxonomy.json` must separate D2E-only IDM, D2E-only FDM, D2E+aux
 comparison, live open-game suite, and negative-result claims so report wording
 cannot silently overclaim.
+
+## Final artifact builder
+
+After G003 and G004 have completed with split-aware statistical comparison
+artifacts, build the final G006 evidence files with:
+
+```bash
+uv run python scripts/build_g006_final_eval_artifacts.py
+```
+
+During active work this command may be run with `--allow-fail`, but do not
+checkpoint G006 complete unless all three generated artifacts report
+`status == pass`:
+
+- `artifacts/eval/final_endpoint_statistics.json`
+- `artifacts/eval/final_failure_analysis.json`
+- `artifacts/eval/final_claim_taxonomy.json`
+
+The builder config is `configs/eval/g006_final_artifacts.yaml`. It requires
+split-aware G003/G004 comparison sources for temporal, heldout-recording, and
+heldout-game splits. It intentionally fails if only aggregate or historical
+bounded-run statistics are available.

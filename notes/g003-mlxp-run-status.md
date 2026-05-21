@@ -156,3 +156,11 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Monitor status: `running`; decoded recording variants: `71 / 918`; complete shards: `0 / 16`; long-running active shards: `[8, 9, 13]`; stale shards: `[]`; no-progress shards: `[]`; IDM metrics absent.
 - Observed throughput: `35.94` recording variants/hour; ETA at current rate: `23.57` hours. This remains progress telemetry only.
 - Final quality gate config now asserts G003/G004 provenance and 4×H200 run metadata; current audit fails as expected while artifacts are missing.
+
+
+## 2026-05-21 13:34 KST G006 builder/monitor snapshot
+
+- Pod checkout remained at `9fc1aa8`; extraction parent PID `9289` still running.
+- Monitor status: `running`; decoded recording variants: `73 / 918`; complete shards: `0 / 16`; long-running active shards: `[8, 9, 13]`; stale shards: `[]`; no-progress shards: `[]`; IDM metrics absent.
+- Observed throughput: `35.89` recording variants/hour; ETA at current rate: `23.55` hours. This remains progress telemetry only.
+- Added a G006 final artifact builder in local worktree; it should only pass after G003/G004 split-aware comparison artifacts exist.
