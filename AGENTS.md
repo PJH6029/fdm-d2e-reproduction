@@ -46,27 +46,27 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 20:21 KST.
+Latest known live run snapshot: 2026-05-21 20:33 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout contains finalizer/preflight hardening commits through `1324d44` (`Require G005 aux runtime dependencies before launch`); G003/G004/G005/G006/G008/G009 finalizers, G003 post-run watcher, G004 launch preflight, G005 aux materialization/runtime preflights, split-stat generation, completion audits, and package-manifest updates are present in pod.
+- Pod checkout contains finalizer/preflight hardening commits through `6e6ed94` (`Provision p-doom ArrayRecord runtime dependency`); G003/G004/G005/G006/G008/G009 finalizers, G003 post-run watcher, G004 launch preflight, G005 aux materialization/runtime preflights, split-stat generation, completion audits, and package-manifest updates are present in pod.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
-- Last decoded count: `205 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
+- Last decoded count: `211 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
 - Monitor status was `running`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
 - Parent PID `9289` was still running; G003→G004 chain watcher PID `47480` was running; attached GPU monitor evidence remains pod-owned live output until the parent exits/finalizer runs. Do not commit local stand-ins for live GPU CSV/watcher summaries.
 
 ## Current G005 auxiliary materialization
 
-Latest known live run snapshot: 2026-05-21 20:21 KST.
+Latest known live run snapshot: 2026-05-21 20:33 KST.
 
 - G005 source materializer PID `49075` was still running.
 - G005 materialization watcher was restarted on commit `1324d44`; active Python PID `56862`, PID file `outputs/cluster/g005_aux_materialization_watcher.pid`.
-- `artifacts/aux/g005_aux_materialization_progress.json` reported `status=running`, raw bytes `5,100,304,027`, partial source `atari_head_zenodo_v4`, completed sources `[]`, missing sources `minerl_2019_zenodo_v2` and `p_doom_atari_breakout_hf`, `error_count=0`.
-- The pod runtime preflight at this snapshot reported `artifacts/aux/g005_aux_runtime_env.json` as `status=blocked`, `error_count=1`, missing `array_record.python.array_record_module` for the selected p-doom ArrayRecord adapter. The dependency is package `array-record` in the project `d2e` extra; run `uv sync --extra d2e` in the pod after pulling a dependency commit, then rerun the preflight. If it still blocks, treat it as an explicit G005 launch/completion blocker unless p-doom is removed by audited source-selection change.
+- `artifacts/aux/g005_aux_materialization_progress.json` reported `status=running`, raw bytes `6,061,294,503`, partial source `atari_head_zenodo_v4`, completed sources `[]`, missing sources `minerl_2019_zenodo_v2` and `p_doom_atari_breakout_hf`, `error_count=0`.
+- Pod environment was restored with `uv sync --extra d2e --extra train --extra test` after adding `array-record`; `artifacts/aux/g005_aux_runtime_env.json` now reports `status=pass`, `error_count=0`, and torch `2.12.0+cu130` sees CUDA with 4 devices. Do not rerun a narrower `uv sync --extra d2e` alone in the pod because it removes train/test packages.
 - The materialization watcher now runs integrity, source evidence, auxiliary examples, runtime env preflight, namespace readiness, and launch readiness after the materializer exits. It never starts G005 training or checkpoints OMX/Codex state.
 
 Useful pod monitor command:
