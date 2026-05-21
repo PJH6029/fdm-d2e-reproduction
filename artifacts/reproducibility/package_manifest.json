@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 248,
+  "entry_count": 251,
   "entries": [
     {
       "path": "README.md",
@@ -38,6 +38,12 @@
       "kind": "evidence_artifact",
       "bytes": 1617,
       "sha256": "9167d52d04afff05d67a13435dc7854fbcfad1a43717186b2880df0f6457a6c0"
+    },
+    {
+      "path": "artifacts/aux/g005_aux_materialization_integrity.json",
+      "kind": "evidence_artifact",
+      "bytes": 34051,
+      "sha256": "92d8e4ddcba2d85c1c4bb7fb1413d300c8bf2bc4ff8046ee3c066e6d72f92a7e"
     },
     {
       "path": "artifacts/aux/g005_aux_materialization_plan.json",
@@ -582,8 +588,8 @@
     {
       "path": "docs/auxiliary_data_plan.md",
       "kind": "documentation",
-      "bytes": 12647,
-      "sha256": "a87a917721e6c08b3d9c0444d93c66b6a0a9af52b5a6d6dc68d7fe3607798887"
+      "bytes": 13124,
+      "sha256": "14ac802410c24b67a91606ed78295dd47d85534cd862acd433c7096d88fbb946"
     },
     {
       "path": "docs/baselines_statistics.md",
@@ -780,8 +786,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 15616,
-      "sha256": "f8714425c25e54410452db324e7523d31c129cc733c7d2c9e79702f63691b5c8"
+      "bytes": 15795,
+      "sha256": "09b6a42c93479f9458fcf5c92e8f8b5cedbc35f0c16952d41a1b8d632031a5d6"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -1012,6 +1018,12 @@
       "sha256": "ab0ed19b74c8802114fbc44cc23a7ef4b589ee6adf671d442445ae791ce9a651"
     },
     {
+      "path": "scripts/validate_g005_aux_materialization_integrity.py",
+      "kind": "reproduction_script",
+      "bytes": 15959,
+      "sha256": "1dc2d869e03c43022af68ae444ff25014f32f80f2a3eb2de01a570880fae733e"
+    },
+    {
       "path": "scripts/validate_g006_completion.py",
       "kind": "reproduction_script",
       "bytes": 1115,
@@ -1074,8 +1086,8 @@
     {
       "path": "scripts/watch_g005_aux_materialization.py",
       "kind": "reproduction_script",
-      "bytes": 14895,
-      "sha256": "6b5aef76fac2ffa944883b96a95541ecc0fc4f4bdbfc1a0660eab486abe50f6c"
+      "bytes": 16788,
+      "sha256": "1bcd4550fa8415ca1f8fd6a70ee780fae586b45ec97607349199ebf07eabcd1e"
     },
     {
       "path": "scripts/watch_g005_then_finalize.py",
@@ -1342,6 +1354,12 @@
       "sha256": "b1f99bc2cf01627eae9322e4aadd9d1d992f11fcf596602cd9cf600068b30bdf"
     },
     {
+      "path": "tests/test_g005_aux_materialization_integrity.py",
+      "kind": "other",
+      "bytes": 4901,
+      "sha256": "c51242108761447ee9090ca75d00bead9b4c7e3fd813ba5213e67a7ac09259dc"
+    },
+    {
       "path": "tests/test_g005_aux_materialization_monitor.py",
       "kind": "other",
       "bytes": 3553,
@@ -1350,8 +1368,8 @@
     {
       "path": "tests/test_g005_aux_materialization_watcher.py",
       "kind": "other",
-      "bytes": 5556,
-      "sha256": "4db7788843cb6ce20c0b1951b63fe22f250851c8290797467e82d1f41bafdfb9"
+      "bytes": 6838,
+      "sha256": "7464530c2c65b474c48883a1e1073b0c3decc9b9ae5f54049d5827c3b62fd007"
     },
     {
       "path": "tests/test_g005_aux_materializer.py",

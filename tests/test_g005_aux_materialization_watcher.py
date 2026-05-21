@@ -31,6 +31,7 @@ def _args(root: Path, **overrides) -> Namespace:
         "max_files": None,
         "aux_candidates": "artifacts/sources/aux.json",
         "source_evidence_output": "artifacts/aux/source_evidence.json",
+        "integrity_output": "artifacts/aux/integrity.json",
         "eval_manifest_hashes": "artifacts/aux/eval_hashes.json",
         "namespace_manifest_output": "artifacts/aux/namespace.json",
         "g005_launch_readiness_output": "artifacts/aux/launch.json",
@@ -48,22 +49,27 @@ def test_watcher_waits_while_materializer_runs(tmp_path: Path):
     pid_path = tmp_path / "outputs/cluster/materialize.pid"
     pid_path.parent.mkdir(parents=True, exist_ok=True)
     pid_path.write_text(f"{os.getpid()}\n", encoding="utf-8")
-    calls = {"source": 0, "namespace": 0, "plan": 0}
+    calls = {"integrity": 0, "source": 0, "namespace": 0, "plan": 0}
     payload = watch(
         _args(tmp_path),
+        integrity_func=lambda ns: calls.__setitem__("integrity", calls["integrity"] + 1) or {"status": "pass"},
         source_evidence_func=lambda ns: calls.__setitem__("source", calls["source"] + 1) or {"status": "pass"},
         namespace_func=lambda ns, root: calls.__setitem__("namespace", calls["namespace"] + 1) or {"completion_ready": True},
         plan_func=lambda ns: calls.__setitem__("plan", calls["plan"] + 1) or {"status": "ready"},
     )
     assert payload["status"] == "waiting_active_materialization"
     assert payload["materialization"]["pid_running"] is True
-    assert calls == {"source": 0, "namespace": 0, "plan": 0}
+    assert calls == {"integrity": 0, "source": 0, "namespace": 0, "plan": 0}
     assert not (tmp_path / "outputs/cluster/materialize_watcher.pid").exists()
 
 
 def test_watcher_builds_evidence_then_reports_g005_not_ready(tmp_path: Path):
     write_json(tmp_path / "artifacts/aux/materialize_summary.json", {"status": "pass", "execute": True, "executions": []})
     received: dict[str, Namespace] = {}
+
+    def fake_integrity(ns: Namespace) -> dict:
+        received["integrity"] = ns
+        return {"status": "pass", "error_count": 0}
 
     def fake_source(ns: Namespace) -> dict:
         received["source"] = ns
@@ -77,11 +83,13 @@ def test_watcher_builds_evidence_then_reports_g005_not_ready(tmp_path: Path):
         received["plan"] = ns
         return {"status": "blocked", "findings": [{"code": "prereq"}]}
 
-    payload = watch(_args(tmp_path), source_evidence_func=fake_source, namespace_func=fake_namespace, plan_func=fake_plan)
+    payload = watch(_args(tmp_path), integrity_func=fake_integrity, source_evidence_func=fake_source, namespace_func=fake_namespace, plan_func=fake_plan)
     assert payload["status"] == "g005_launch_not_ready"
+    assert payload["materialization_integrity_status"] == "pass"
     assert payload["source_evidence_status"] == "pass"
     assert payload["namespace_completion_ready"] is True
     assert payload["g005_launch_plan_finding_count"] == 1
+    assert received["integrity"].output == "artifacts/aux/integrity.json"
     assert received["source"].namespace_root == "outputs/aux"
     assert received["plan"].source_evidence == ["artifacts/aux/source_evidence.json"]
     assert received["plan"].eval_manifest_hashes == "artifacts/aux/eval_hashes.json"
@@ -97,10 +105,25 @@ def test_watcher_blocks_when_materialization_summary_is_missing_or_failed(tmp_pa
     assert calls == {"source": 0}
 
 
+def test_watcher_blocks_when_materialization_integrity_fails(tmp_path: Path):
+    write_json(tmp_path / "artifacts/aux/materialize_summary.json", {"status": "pass", "error_count": 0})
+    calls = {"source": 0}
+    payload = watch(
+        _args(tmp_path),
+        integrity_func=lambda ns: {"status": "blocked", "error_count": 3},
+        source_evidence_func=lambda ns: calls.__setitem__("source", calls["source"] + 1) or {"status": "pass"},
+    )
+    assert payload["status"] == "materialization_integrity_not_pass"
+    assert payload["findings"][0]["code"] == "materialization_integrity_not_pass"
+    assert payload["materialization_integrity_error_count"] == 3
+    assert calls == {"source": 0}
+
+
 def test_watcher_blocks_when_source_evidence_fails(tmp_path: Path):
     write_json(tmp_path / "artifacts/aux/materialize_summary.json", {"status": "pass"})
     payload = watch(
         _args(tmp_path),
+        integrity_func=lambda ns: {"status": "pass", "error_count": 0},
         source_evidence_func=lambda ns: {"status": "blocked", "error_count": 2},
         namespace_func=lambda ns, root: {"completion_ready": True},
         plan_func=lambda ns: {"status": "ready"},

@@ -129,13 +129,21 @@ echo $! > outputs/cluster/g005_aux_materialization_watcher.pid
 
 uv run python scripts/monitor_g005_aux_materialization.py \
   --output artifacts/aux/g005_aux_materialization_progress.json
+uv run python scripts/validate_g005_aux_materialization_integrity.py \
+  --output artifacts/aux/g005_aux_materialization_integrity.json \
+  --allow-fail
 ```
 
-The monitor is non-mutating progress telemetry for partial downloads. The watcher
-waits for source materialization, then rebuilds source evidence, namespace-manifest
-readiness, and the fail-closed G005 launch-readiness report. Neither starts G005
-training or checkpoints OMX/Codex state; until G003/G004 D2E-only prerequisites
-pass, the watcher's expected terminal status is `g005_launch_not_ready`.
+The monitor is non-mutating progress telemetry for partial downloads. The
+integrity validator is a fail-closed post-download gate that checks materialized
+raw files against Zenodo size/checksum metadata when available, validates Hugging
+Face summary-listed files, and requires source-level train/val/test manifests
+whose references resolve to real files. The watcher waits for source
+materialization, runs the integrity gate, then rebuilds source evidence,
+namespace-manifest readiness, and the fail-closed G005 launch-readiness report.
+None of these scripts starts G005 training or checkpoints OMX/Codex state; until
+G003/G004 D2E-only prerequisites pass, the watcher's expected terminal status is
+`g005_launch_not_ready`.
 
 Before launching any D2E+aux training run, run the fail-closed readiness planner:
 

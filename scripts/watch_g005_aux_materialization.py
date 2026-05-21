@@ -17,6 +17,7 @@ from fdm_d2e.io_utils import write_json
 from build_g005_aux_namespace_manifest import build_manifest as build_namespace_manifest
 from build_g005_aux_source_evidence import build_evidence as build_source_evidence
 from plan_g005_launch import build_launch_readiness as plan_g005_launch
+from validate_g005_aux_materialization_integrity import build_integrity as build_materialization_integrity
 
 
 DEFAULT_OUTPUT = "artifacts/aux/g005_aux_materialization_watcher_summary.json"
@@ -102,6 +103,19 @@ def _source_evidence_args(args: argparse.Namespace, root: Path) -> Namespace:
     )
 
 
+def _integrity_args(args: argparse.Namespace, root: Path) -> Namespace:
+    return Namespace(
+        root=str(root),
+        aux_candidates=args.aux_candidates,
+        namespace_root=args.namespace_root,
+        materialization_summary=args.materialization_summary,
+        source_id=None,
+        required_splits=list(args.required_splits),
+        output=args.integrity_output,
+        allow_fail=True,
+    )
+
+
 def _plan_args(args: argparse.Namespace, root: Path) -> Namespace:
     return Namespace(
         root=str(root),
@@ -153,6 +167,7 @@ def _call_namespace_builder(args: argparse.Namespace, root: Path) -> dict[str, A
 def watch(
     args: argparse.Namespace,
     *,
+    integrity_func: Callable[[argparse.Namespace], dict[str, Any]] = build_materialization_integrity,
     source_evidence_func: Callable[[argparse.Namespace], dict[str, Any]] = build_source_evidence,
     namespace_func: Callable[[argparse.Namespace, Path], dict[str, Any]] = _call_namespace_builder,
     plan_func: Callable[[argparse.Namespace], dict[str, Any]] = plan_g005_launch,
@@ -219,6 +234,21 @@ def watch(
                 _write_summary(root, args.output, payload)
                 return payload
 
+            integrity = integrity_func(_integrity_args(args, root))
+            write_json(_path(root, args.integrity_output), integrity)
+            if integrity.get("status") != "pass":
+                payload = {
+                    **base,
+                    "status": "materialization_integrity_not_pass",
+                    "elapsed_seconds": elapsed,
+                    "materialization": snapshot,
+                    "materialization_integrity_status": integrity.get("status"),
+                    "materialization_integrity_error_count": integrity.get("error_count"),
+                    "findings": [{"severity": "error", "code": "materialization_integrity_not_pass", "error_count": integrity.get("error_count")}],
+                }
+                _write_summary(root, args.output, payload)
+                return payload
+
             source_evidence = source_evidence_func(_source_evidence_args(args, root))
             write_json(_path(root, args.source_evidence_output), source_evidence)
             if source_evidence.get("status") != "pass":
@@ -227,6 +257,7 @@ def watch(
                     "status": "source_evidence_not_pass",
                     "elapsed_seconds": elapsed,
                     "materialization": snapshot,
+                    "materialization_integrity_status": integrity.get("status"),
                     "source_evidence_status": source_evidence.get("status"),
                     "source_evidence_error_count": source_evidence.get("error_count"),
                     "findings": [{"severity": "error", "code": "source_evidence_not_pass", "error_count": source_evidence.get("error_count")}],
@@ -241,6 +272,7 @@ def watch(
                     "status": "namespace_not_ready",
                     "elapsed_seconds": elapsed,
                     "materialization": snapshot,
+                    "materialization_integrity_status": integrity.get("status"),
                     "source_evidence_status": source_evidence.get("status"),
                     "namespace_completion_ready": namespace_manifest.get("completion_ready"),
                     "findings": [{"severity": "error", "code": "namespace_not_ready", "completion_ready": namespace_manifest.get("completion_ready")}],
@@ -256,6 +288,7 @@ def watch(
                     "status": "g005_launch_not_ready",
                     "elapsed_seconds": elapsed,
                     "materialization": snapshot,
+                    "materialization_integrity_status": integrity.get("status"),
                     "source_evidence_status": source_evidence.get("status"),
                     "namespace_completion_ready": namespace_manifest.get("completion_ready"),
                     "g005_launch_plan_status": plan.get("status"),
@@ -270,6 +303,7 @@ def watch(
                 "status": "g005_launch_ready",
                 "elapsed_seconds": elapsed,
                 "materialization": snapshot,
+                "materialization_integrity_status": integrity.get("status"),
                 "source_evidence_status": source_evidence.get("status"),
                 "namespace_completion_ready": namespace_manifest.get("completion_ready"),
                 "g005_launch_plan_status": plan.get("status"),
@@ -303,6 +337,7 @@ def main() -> int:
     parser.add_argument("--max-files", type=int)
     parser.add_argument("--aux-candidates", default="artifacts/sources/aux_game_action_dataset_candidates.json")
     parser.add_argument("--source-evidence-output", default="artifacts/aux/g005_aux_source_materialization_evidence.json")
+    parser.add_argument("--integrity-output", default="artifacts/aux/g005_aux_materialization_integrity.json")
     parser.add_argument("--eval-manifest-hashes", default="artifacts/aux/d2e_eval_manifest_hashes.json")
     parser.add_argument("--namespace-manifest-output", default="artifacts/aux/g005_aux_namespace_manifest.json")
     parser.add_argument("--g005-launch-readiness-output", default="artifacts/aux/g005_launch_readiness.json")
