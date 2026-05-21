@@ -123,13 +123,16 @@ nohup uv run python scripts/watch_g005_aux_materialization.py \
   --allow-fail \
   > artifacts/aux/g005_aux_materialization_watcher.log 2>&1 &
 echo $! > outputs/cluster/g005_aux_materialization_watcher.pid
+
+uv run python scripts/monitor_g005_aux_materialization.py \
+  --output artifacts/aux/g005_aux_materialization_progress.json
 ```
 
-The watcher waits for source materialization, then rebuilds source evidence,
-namespace-manifest readiness, and the fail-closed G005 launch-readiness report.
-It never starts G005 training or checkpoints OMX/Codex state; until G003/G004
-D2E-only prerequisites pass, its expected terminal status is
-`g005_launch_not_ready`.
+The monitor is non-mutating progress telemetry for partial downloads. The watcher
+waits for source materialization, then rebuilds source evidence, namespace-manifest
+readiness, and the fail-closed G005 launch-readiness report. Neither starts G005
+training or checkpoints OMX/Codex state; until G003/G004 D2E-only prerequisites
+pass, the watcher's expected terminal status is `g005_launch_not_ready`.
 
 Before launching any D2E+aux training run, run the fail-closed readiness planner:
 

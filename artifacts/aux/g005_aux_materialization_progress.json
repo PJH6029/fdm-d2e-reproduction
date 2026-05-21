@@ -1,0 +1,145 @@
+{
+  "schema": "g005_aux_materialization_progress.v1",
+  "status": "blocked",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "pid_file": "outputs/cluster/g005_aux_materialization.pid",
+  "pid": null,
+  "pid_running": false,
+  "materialization_summary_status": null,
+  "watcher_summary_status": null,
+  "selected_source_ids": [
+    "atari_head_zenodo_v4",
+    "minerl_2019_zenodo_v2",
+    "p_doom_atari_breakout_hf"
+  ],
+  "completed_source_ids": [],
+  "partial_source_ids": [],
+  "missing_source_ids": [
+    "atari_head_zenodo_v4",
+    "minerl_2019_zenodo_v2",
+    "p_doom_atari_breakout_hf"
+  ],
+  "raw_total_bytes": 0,
+  "aux_sources": [
+    {
+      "id": "atari_head_zenodo_v4",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4",
+      "source_url": "https://zenodo.org/records/3451402",
+      "license_id": "cc-by-4.0",
+      "expected_size_bytes": 8726806887,
+      "namespace_exists": false,
+      "raw_dir_exists": false,
+      "raw_file_count": 0,
+      "raw_total_bytes": 0,
+      "raw_files": [],
+      "raw_files_truncated": false,
+      "split_manifests_ready": false,
+      "splits": [
+        {
+          "split": "train",
+          "dir_exists": false,
+          "manifest_exists": false,
+          "file_count": 0,
+          "bytes": 0
+        },
+        {
+          "split": "val",
+          "dir_exists": false,
+          "manifest_exists": false,
+          "file_count": 0,
+          "bytes": 0
+        },
+        {
+          "split": "test",
+          "dir_exists": false,
+          "manifest_exists": false,
+          "file_count": 0,
+          "bytes": 0
+        }
+      ]
+    },
+    {
+      "id": "minerl_2019_zenodo_v2",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2",
+      "source_url": "https://zenodo.org/records/12659939",
+      "license_id": "mit-license",
+      "expected_size_bytes": 8571175338,
+      "namespace_exists": false,
+      "raw_dir_exists": false,
+      "raw_file_count": 0,
+      "raw_total_bytes": 0,
+      "raw_files": [],
+      "raw_files_truncated": false,
+      "split_manifests_ready": false,
+      "splits": [
+        {
+          "split": "train",
+          "dir_exists": false,
+          "manifest_exists": false,
+          "file_count": 0,
+          "bytes": 0
+        },
+        {
+          "split": "val",
+          "dir_exists": false,
+          "manifest_exists": false,
+          "file_count": 0,
+          "bytes": 0
+        },
+        {
+          "split": "test",
+          "dir_exists": false,
+          "manifest_exists": false,
+          "file_count": 0,
+          "bytes": 0
+        }
+      ]
+    },
+    {
+      "id": "p_doom_atari_breakout_hf",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf",
+      "source_url": "https://huggingface.co/datasets/p-doom/atari-breakout-dataset",
+      "license_id": "cc0-1.0",
+      "expected_size_bytes": 823000000,
+      "namespace_exists": false,
+      "raw_dir_exists": false,
+      "raw_file_count": 0,
+      "raw_total_bytes": 0,
+      "raw_files": [],
+      "raw_files_truncated": false,
+      "split_manifests_ready": false,
+      "splits": [
+        {
+          "split": "train",
+          "dir_exists": false,
+          "manifest_exists": false,
+          "file_count": 0,
+          "bytes": 0
+        },
+        {
+          "split": "val",
+          "dir_exists": false,
+          "manifest_exists": false,
+          "file_count": 0,
+          "bytes": 0
+        },
+        {
+          "split": "test",
+          "dir_exists": false,
+          "manifest_exists": false,
+          "file_count": 0,
+          "bytes": 0
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "severity": "warning",
+      "code": "materializer_not_running_without_summary",
+      "pid": null
+    }
+  ],
+  "error_count": 0,
+  "claim_boundary": "Progress telemetry only; it does not prove source completeness, start G005 training, checkpoint G005, or support D2E+aux model-quality claims."
+}

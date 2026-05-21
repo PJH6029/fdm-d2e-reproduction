@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 245,
+  "entry_count": 248,
   "entries": [
     {
       "path": "README.md",
@@ -44,6 +44,12 @@
       "kind": "evidence_artifact",
       "bytes": 2854,
       "sha256": "ee3ab959aaf8b43494fb39f8f20d05a5588ea22400f561911e3da956468e5c5f"
+    },
+    {
+      "path": "artifacts/aux/g005_aux_materialization_progress.json",
+      "kind": "evidence_artifact",
+      "bytes": 4123,
+      "sha256": "6062562d39a80afca19a91b23c972846fab662991b1be3eb771875ab82600215"
     },
     {
       "path": "artifacts/aux/g005_aux_source_materialization_evidence.json",
@@ -576,8 +582,8 @@
     {
       "path": "docs/auxiliary_data_plan.md",
       "kind": "documentation",
-      "bytes": 12147,
-      "sha256": "8f47be88bed042e0eec0a9d0858b433ae9c89ebad12c9768c82707d73b2b3bf6"
+      "bytes": 12351,
+      "sha256": "a3b82e13768544e6782154e11307cd7ee1b86dd3cf307d2c6a473f7dab0f66d4"
     },
     {
       "path": "docs/baselines_statistics.md",
@@ -774,8 +780,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 15451,
-      "sha256": "fd70fe6411270373fdc91f9511b9f3ce9fa0c84a087964d921a134c8344408de"
+      "bytes": 15616,
+      "sha256": "f8714425c25e54410452db324e7523d31c129cc733c7d2c9e79702f63691b5c8"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -860,6 +866,12 @@
       "kind": "reproduction_script",
       "bytes": 2102,
       "sha256": "d8d19ee8f570af414d3bd89feb7bebfda3ded4a609dc436b62e89bf84134afbf"
+    },
+    {
+      "path": "scripts/monitor_g005_aux_materialization.py",
+      "kind": "reproduction_script",
+      "bytes": 8712,
+      "sha256": "d0f418be12efd25adcfec603a0845d03c487b357a4b50ed28525b28037ed7b63"
     },
     {
       "path": "scripts/plan_g003_resume.py",
@@ -1328,6 +1340,12 @@
       "kind": "other",
       "bytes": 10220,
       "sha256": "b1f99bc2cf01627eae9322e4aadd9d1d992f11fcf596602cd9cf600068b30bdf"
+    },
+    {
+      "path": "tests/test_g005_aux_materialization_monitor.py",
+      "kind": "other",
+      "bytes": 3553,
+      "sha256": "207f4a2b124a10b14c7d2ba5167500202113864677ceeec24e8a45332252896f"
     },
     {
       "path": "tests/test_g005_aux_materialization_watcher.py",
