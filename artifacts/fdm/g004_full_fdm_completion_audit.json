@@ -34,6 +34,30 @@
       "bytes": 0,
       "sha256": null
     },
+    "source_idm_metadata": {
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "data_universe": {
+      "path": "artifacts/sources/d2e_full_data_universe_manifest.json",
+      "exists": true,
+      "bytes": 1477181,
+      "sha256": "549cd16aa992bc76c3bea9f571100fe5cc721ca706e7d50f2c9e40fd2d21c8f8"
+    },
+    "split_contract": {
+      "path": "artifacts/sources/d2e_full_split_contract.json",
+      "exists": true,
+      "bytes": 466810,
+      "sha256": "e64e90f3745108a2813d4d4f84ee69a08f4cb7e46923371983006c481dadde98"
+    },
+    "g003_completion_audit": {
+      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "exists": true,
+      "bytes": 8633,
+      "sha256": "1858703d2bedb8ead48840c731a9e9730538c523d8a99b9e6594c650984e8567"
+    },
     "resolved_config": {
       "path": "outputs/fdm_streaming_d2e_full_compact/resolved_config.json",
       "exists": false,
@@ -115,6 +139,17 @@
     "split_target": null,
     "split_pairs": null
   },
+  "data_universe_counts": {
+    "included_recording_variants": 918,
+    "source_ids": {
+      "d2e_480p": 459,
+      "d2e_original": 459
+    },
+    "resolution_tiers": {
+      "480p": 459,
+      "original_fhd_qhd": 459
+    }
+  },
   "gpu_monitor_status": {
     "rows": 0,
     "unique_gpu_indices": [],
@@ -151,6 +186,12 @@
       "code": "missing_required_artifact",
       "artifact_key": "checkpoint_metadata",
       "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "source_idm_metadata",
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json"
     },
     {
       "severity": "error",
@@ -226,6 +267,12 @@
     },
     {
       "severity": "error",
+      "code": "g003_completion_audit_not_pass",
+      "status": "fail",
+      "error_count": 23
+    },
+    {
+      "severity": "error",
       "code": "metadata_expectation_mismatch",
       "json_path": "label_source",
       "expected": "idm_pseudolabel",
@@ -289,6 +336,41 @@
     },
     {
       "severity": "error",
+      "code": "source_idm_metadata_expectation_mismatch",
+      "json_path": "source_namespace",
+      "expected": "d2e_full_corpus",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "source_idm_metadata_expectation_mismatch",
+      "json_path": "data_universe.exists",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "source_idm_metadata_expectation_mismatch",
+      "json_path": "split_contract.exists",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "source_idm_metadata_expectation_mismatch",
+      "json_path": "distributed.enabled",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "source_idm_metadata_expectation_mismatch",
+      "json_path": "distributed.world_size",
+      "expected": 4,
+      "actual": null
+    },
+    {
+      "severity": "error",
       "code": "split_summary_expectation_mismatch",
       "json_path": "counts.mode",
       "expected": "explicit_target",
@@ -324,6 +406,48 @@
     },
     {
       "severity": "error",
+      "code": "resolved_config_expectation_mismatch",
+      "json_path": "config.records_path",
+      "expected": "outputs/data/d2e_full_corpus/train_core.jsonl",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "resolved_config_expectation_mismatch",
+      "json_path": "config.target_records_path",
+      "expected": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "resolved_config_expectation_mismatch",
+      "json_path": "config.data_universe",
+      "expected": "artifacts/sources/d2e_full_data_universe_manifest.json",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "resolved_config_expectation_mismatch",
+      "json_path": "config.split_contract",
+      "expected": "artifacts/sources/d2e_full_split_contract.json",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "resolved_config_expectation_mismatch",
+      "json_path": "config.source_idm_metadata",
+      "expected": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "resolved_config_expectation_mismatch",
+      "json_path": "config.source_namespace",
+      "expected": "d2e_full_corpus",
+      "actual": null
+    },
+    {
+      "severity": "error",
       "code": "gpu_monitor_too_few_rows",
       "expected_min": 4,
       "actual": 0
@@ -336,6 +460,6 @@
       "rows": 0
     }
   ],
-  "error_count": 33,
-  "claim_boundary": "This audit is required before checkpointing G004 complete; it proves D2E-only FDM-from-IDM-pseudolabel provenance, split counts, prediction coverage, split stats, convergence evidence, and 4xH200 run evidence."
+  "error_count": 46,
+  "claim_boundary": "This audit is required before checkpointing G004 complete; it proves D2E-only FDM-from-G003-IDM-pseudolabel provenance, full D2E source/tier coverage, split counts, prediction coverage, split stats, convergence evidence, and 4xH200 run evidence."
 }

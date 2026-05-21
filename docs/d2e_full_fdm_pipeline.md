@@ -208,11 +208,16 @@ to report `status == pass`. The repo config runs this audit as a pre-checkpoint
 evidence gate (`require_goal_checkpoint_complete=false`): it still enforces G003
 as a prerequisite but does not fail solely because G004 itself has not yet been
 checkpointed. The final quality gate separately verifies that G004 is complete.
-The audit checks D2E-only FDM-from-IDM-pseudolabel provenance, split
+The audit checks D2E-only FDM-from-G003-IDM-pseudolabel provenance, split
 materialization counts, prediction coverage, explicit train-core →
 target-all-eval split mode, causal FDM feature mode, prior-action context
 provenance, target split tags, convergence-report presence, split statistics,
-and 4×H200 run evidence.
+and 4×H200 run evidence. It is fail-closed on full-corpus provenance: the G004
+checkpoint metadata, resolved config, source G003 IDM metadata, G003 completion
+audit, and D2E universe manifest must all prove both D2E source/resolution
+tiers (`d2e_480p`/`480p` and `d2e_original`/`original_fhd_qhd`) with the
+expected 459+459 recording variants. A G004 artifact that merely has the right
+record counts but is sourced from one D2E tier cannot pass.
 The 4×H200 evidence includes both `nproc_per_node == 4` and GPU-monitor coverage
 for all expected GPU indices.
 

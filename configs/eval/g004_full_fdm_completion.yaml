@@ -8,10 +8,28 @@
   "output_path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
   "expected_nproc_per_node": 4,
   "expected_gpus": 4,
+  "expected_recording_variants": 918,
   "min_gpu_monitor_rows": 4,
   "require_gpu_monitor_covers_expected_gpus": true,
+  "require_g003_completion_audit_pass": true,
   "min_validation_checkpoints": 1,
   "require_convergence_plateau": false,
+  "required_source_ids": [
+    "d2e_480p",
+    "d2e_original"
+  ],
+  "required_resolution_tiers": [
+    "480p",
+    "original_fhd_qhd"
+  ],
+  "expected_variants_by_source": {
+    "d2e_480p": 459,
+    "d2e_original": 459
+  },
+  "expected_variants_by_resolution_tier": {
+    "480p": 459,
+    "original_fhd_qhd": 459
+  },
   "required_target_eval_split_tags": [
     "temporal",
     "heldout_recording",
@@ -22,6 +40,10 @@
     "fdm_target_records": "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl",
     "split_summary": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
     "checkpoint_metadata": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "source_idm_metadata": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "data_universe": "artifacts/sources/d2e_full_data_universe_manifest.json",
+    "split_contract": "artifacts/sources/d2e_full_split_contract.json",
+    "g003_completion_audit": "artifacts/idm/g003_full_idm_completion_audit.json",
     "resolved_config": "outputs/fdm_streaming_d2e_full_compact/resolved_config.json",
     "summary": "outputs/fdm_streaming_d2e_full_compact/summary.json",
     "torch_train_summary": "outputs/fdm_streaming_d2e_full_compact/torch_train_summary.json",
@@ -52,6 +74,21 @@
     "torch_checkpoint_metadata.distributed.enabled": true,
     "torch_checkpoint_metadata.distributed.world_size": 4,
     "torch_checkpoint_metadata.feature_mode": "summary_causal_compact_grid8_time_prior_action"
+  },
+  "source_idm_metadata_expectations": {
+    "source_namespace": "d2e_full_corpus",
+    "data_universe.exists": true,
+    "split_contract.exists": true,
+    "distributed.enabled": true,
+    "distributed.world_size": 4
+  },
+  "resolved_config_expectations": {
+    "config.records_path": "outputs/data/d2e_full_corpus/train_core.jsonl",
+    "config.target_records_path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+    "config.data_universe": "artifacts/sources/d2e_full_data_universe_manifest.json",
+    "config.split_contract": "artifacts/sources/d2e_full_split_contract.json",
+    "config.source_idm_metadata": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "config.source_namespace": "d2e_full_corpus"
   },
   "require_goal_checkpoint_complete": false
 }
