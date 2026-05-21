@@ -46,17 +46,18 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 14:38 KST.
+Latest known live run snapshot: 2026-05-21 14:43 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout was synced to commit `d2e7304` (`Record G007 audit pod sync`); G003/G004/G005/G006/G007/G008/G009 completion audit scripts are present in pod.
+- Pod checkout was synced to commit `f5ed43d` (`Preserve G003 multi-GPU evidence without restarting`); G003/G004/G005/G006/G007/G008/G009 completion audit scripts are present in pod.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
 - Last decoded count: `87 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
-- Monitor status was `running`; long-running active shards `[8, 9, 13]`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
+- Monitor status was `running`; long-running active shards `[0, 2, 5, 6, 7, 8, 10, 11, 13, 14]`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
+- Attached GPU monitor is running as PID `31950` and has begun writing `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv` in the pod. Do not commit/push that live CSV from local until the run exits, because the pod currently owns it as an untracked live output.
 
 Useful pod monitor command:
 
@@ -95,9 +96,8 @@ The current streaming IDM config must carry:
 ### Current-run 4×H200 monitor recovery
 
 The active integrated run predates the dedicated standalone train wrapper, so do
-not restart it just to create GPU-monitor evidence. Use the attached monitor
-path once the commit containing `scripts/attach_g003_gpu_monitor.py` and
-`scripts/build_g003_attached_train_run_summary.py` is pulled in the pod:
+not restart it just to create GPU-monitor evidence. The attached monitor path is
+now installed in the pod and currently running as PID `31950`:
 
 ```bash
 kubectl -n p-production exec prod-rsv-jeonghunpark-20260521-76e25a -- bash -lc '

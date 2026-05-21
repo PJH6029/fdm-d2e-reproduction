@@ -236,3 +236,12 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Pushed commit `d2e7304` and fast-forwarded pod checkout to `d2e7304`.
 - Parent PID `9289` still running; decoded recording variants `87 / 918`; complete shards `0 / 16`; all 16 shard Python processes were still active; IDM metrics absent.
 - The active integrated run may train with 4 ranks, but it was not launched through the dedicated standalone wrapper that writes the final G003 4×H200 monitor summary. Do not kill or restart it for this. Instead, after pulling the next commit, attach `scripts/attach_g003_gpu_monitor.py` to `outputs/cluster/g003_full_compact_parallel.pid`, then run `scripts/build_g003_attached_train_run_summary.py` after the integrated run exits.
+
+## 2026-05-21 14:43 KST attached GPU monitor snapshot
+
+- Pushed commit `f5ed43d` and fast-forwarded pod checkout to `f5ed43d`.
+- Attached `scripts/attach_g003_gpu_monitor.py` to parent PID `9289` without restarting the integrated run. Attached monitor PID is `31950`.
+- `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv` exists in the pod with one header plus four GPU rows at first verification; GPU indices `0..3` were visible.
+- Parent PID `9289` still running at elapsed `03:49:12`; decoded recording variants `87 / 918`; complete shards `0 / 16`; all 16 shard processes active; IDM metrics absent.
+- Monitor status remained `running`; long-running active shards `[0, 2, 5, 6, 7, 8, 10, 11, 13, 14]`; stale/no-progress shards `[]`.
+- Do not commit the live GPU-monitor CSV from local while the pod owns it as an untracked live output. Copy it back and package it after the integrated parent exits and the attached monitor writes its metadata JSON.
