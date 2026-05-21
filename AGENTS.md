@@ -46,18 +46,28 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 17:12 KST.
+Latest known live run snapshot: 2026-05-21 20:21 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout contains finalizer/preflight hardening commits through `1eb1f4b` (`Add non-mutating G003 post-run watcher`); G003/G004/G005/G006/G008/G009 finalizers, G003 post-run watcher, G004 launch preflight, split-stat generation, completion audits, and package-manifest updates are present in pod.
+- Pod checkout contains finalizer/preflight hardening commits through `1324d44` (`Require G005 aux runtime dependencies before launch`); G003/G004/G005/G006/G008/G009 finalizers, G003 post-run watcher, G004 launch preflight, G005 aux materialization/runtime preflights, split-stat generation, completion audits, and package-manifest updates are present in pod.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
-- Last decoded count: `128 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
+- Last decoded count: `205 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
 - Monitor status was `running`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
-- Parent PID `9289` was still running at elapsed `06:14:11`; attached GPU monitor PID `31950` was still running at elapsed `02:25:17`; post-run watcher PID `41388` was running and `artifacts/idm/g003_postrun_watcher_summary.json` reported `waiting_active_parent`. The GPU CSV and watcher summary/log are pod-owned live outputs until the parent exits/finalizer runs; do not commit local stand-ins for them.
+- Parent PID `9289` was still running; G003→G004 chain watcher PID `47480` was running; attached GPU monitor evidence remains pod-owned live output until the parent exits/finalizer runs. Do not commit local stand-ins for live GPU CSV/watcher summaries.
+
+## Current G005 auxiliary materialization
+
+Latest known live run snapshot: 2026-05-21 20:21 KST.
+
+- G005 source materializer PID `49075` was still running.
+- G005 materialization watcher was restarted on commit `1324d44`; active Python PID `56862`, PID file `outputs/cluster/g005_aux_materialization_watcher.pid`.
+- `artifacts/aux/g005_aux_materialization_progress.json` reported `status=running`, raw bytes `5,100,304,027`, partial source `atari_head_zenodo_v4`, completed sources `[]`, missing sources `minerl_2019_zenodo_v2` and `p_doom_atari_breakout_hf`, `error_count=0`.
+- The pod runtime preflight currently reports `artifacts/aux/g005_aux_runtime_env.json` as `status=blocked`, `error_count=1`, missing `array_record.python.array_record_module` for the selected p-doom ArrayRecord adapter. This is an explicit launch/completion blocker unless the dependency is installed in the cluster image or p-doom is removed by audited source-selection change.
+- The materialization watcher now runs integrity, source evidence, auxiliary examples, runtime env preflight, namespace readiness, and launch readiness after the materializer exits. It never starts G005 training or checkpoints OMX/Codex state.
 
 Useful pod monitor command:
 
@@ -219,7 +229,7 @@ without mutating OMX state.
 
 ## G005 completion gate
 
-Do **not** checkpoint `G005-aux-data-best-model` complete until `scripts/validate_g005_aux_completion.py` reports `status=pass` in `artifacts/aux/g005_aux_completion_audit.json`. This audit requires G003/G004 complete, selected aux provenance/storage policy, `artifacts/aux/g005_aux_namespace_manifest.json` with `completion_ready=true`, separated `outputs/aux/<dataset_id>/...` namespaces, source-specific action heads, byte-identical D2E eval-manifest hashes for D2E-only vs D2E+aux, ablation across all required splits, no aux leakage into D2E heldouts, target split tags, prediction coverage, and run evidence. Build that namespace manifest with `scripts/build_g005_aux_namespace_manifest.py` from explicit per-source materialization evidence and D2E eval hash evidence rather than editing it by hand.
+Do **not** checkpoint `G005-aux-data-best-model` complete until `scripts/validate_g005_aux_completion.py` reports `status=pass` in `artifacts/aux/g005_aux_completion_audit.json`. This audit requires G003/G004 complete, selected aux provenance/storage policy, `artifacts/aux/g005_aux_runtime_env.json` with `status=pass`, `artifacts/aux/g005_aux_namespace_manifest.json` with `completion_ready=true`, separated `outputs/aux/<dataset_id>/...` namespaces, source-specific action heads, byte-identical D2E eval-manifest hashes for D2E-only vs D2E+aux, ablation across all required splits, no aux leakage into D2E heldouts, target split tags, prediction coverage, and run evidence. Build that namespace manifest with `scripts/build_g005_aux_namespace_manifest.py` from explicit per-source materialization evidence and D2E eval hash evidence rather than editing it by hand.
 
 Latest G005 finalization helper: use
 `uv run python scripts/finalize_g005_aux_best_model.py --source-evidence <...> --eval-manifest-hashes <...> --completion-ready`
