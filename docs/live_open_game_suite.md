@@ -39,6 +39,23 @@ Sources used for the current candidate metadata:
 - Minetest/Luanti licensing wiki: https://wiki.minetest.org/Licensing
 - Xonotic official site: https://xonotic.org/
 
+
+## G008 completion audit
+
+Before checkpointing `G008-live-game-suite` complete, run:
+
+```bash
+uv run python scripts/validate_g008_live_suite_completion.py
+```
+
+During preparation this may be run with `--allow-fail`, but a terminal G008
+checkpoint requires `artifacts/harness/g008_live_suite_completion_audit.json` to
+report `status == pass`. The audit rejects protocol-only readiness and requires
+completed D2E-only training prerequisites, reusable runtime-adapter evidence,
+trained checkpoint metadata, live evidence validation status `pass`, at least the
+configured games/tasks/episodes, statistical comparison evidence, and hashed
+video/replay/latency/failure artifacts.
+
 ## Evidence required to pass
 
 For each planned game/task/seed episode, the evidence JSON must include:

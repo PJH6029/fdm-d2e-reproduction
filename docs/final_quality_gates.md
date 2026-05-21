@@ -48,7 +48,7 @@ The audit checks, without mutating OMX/Codex goal state:
    final artifact-build summary artifacts exist and report `status == pass`.
 7. G007 runtime SDK adapter evidence remains present.
 8. G008 live open-source graphical-game evidence validation exists and has
-   `quality_gate.status == pass`; protocol readiness does not count.
+   `quality_gate.status == pass`, and `g008_live_suite_completion_audit.status=pass`; protocol readiness does not count.
 9. G009 final report, evidence index, reproducibility runbook, package manifest,
    and claim-boundary audit exist.
 10. Required configured artifacts that already exist are represented in the

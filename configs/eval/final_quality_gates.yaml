@@ -308,12 +308,18 @@
       "required_paths": [
         "configs/harness/g008_live_open_game_suite.yaml",
         "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
+        "artifacts/harness/g008_live_suite_completion_audit.json",
         "docs/live_open_game_suite.md"
       ],
       "json_assertions": [
         {
           "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
           "json_path": "quality_gate.status",
+          "equals": "pass"
+        },
+        {
+          "path": "artifacts/harness/g008_live_suite_completion_audit.json",
+          "json_path": "status",
           "equals": "pass"
         }
       ]

@@ -787,7 +787,7 @@
           "path": "artifacts/aux/g005_aux_completion_audit.json",
           "exists": true,
           "bytes": 6462,
-          "sha256": "d5d760ada287d8f0ece51fb53ca7f386cd08a541d4df51300a0956e8c965c34b"
+          "sha256": "e365bca038fa5117a25b35c6d5c8921bc27beeda9c6a9afa8e2088e4a8f85ba9"
         }
       ],
       "findings": [
@@ -964,10 +964,16 @@
           "sha256": null
         },
         {
+          "path": "artifacts/harness/g008_live_suite_completion_audit.json",
+          "exists": true,
+          "bytes": 3472,
+          "sha256": "baec677863b78aa33df21946a1fb8291ca9445a106e1edfcd20f20fb1a9ad7c2"
+        },
+        {
           "path": "docs/live_open_game_suite.md",
           "exists": true,
-          "bytes": 3705,
-          "sha256": "8965a2e35e13b87a85a1d1a6a0916281c49013c8a5a5b94ad993b82d876cf08e"
+          "bytes": 4381,
+          "sha256": "2a658c7ae58cffe692c2532b45b54a2bb4e201fc06bff3317071b33350885313"
         }
       ],
       "findings": [
@@ -989,6 +995,14 @@
           "code": "json_assertion_file_missing",
           "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
           "json_path": "quality_gate.status"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_mismatch",
+          "path": "artifacts/harness/g008_live_suite_completion_audit.json",
+          "json_path": "status",
+          "expected": "pass",
+          "actual": "fail"
         }
       ]
     },
@@ -1020,8 +1034,8 @@
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 32209,
-          "sha256": "096599ced1b3134b9ae1522f084a44e84fd1856ee1ced95e133c9cdbb2f5f257"
+          "bytes": 33264,
+          "sha256": "b1a8aef7a40cffa292a9c6a405b92876742c42a533348e4805df259045d31e61"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -1044,8 +1058,8 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 32209,
-    "sha256": "096599ced1b3134b9ae1522f084a44e84fd1856ee1ced95e133c9cdbb2f5f257"
+    "bytes": 33264,
+    "sha256": "b1a8aef7a40cffa292a9c6a405b92876742c42a533348e4805df259045d31e61"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -1573,6 +1587,14 @@
     },
     {
       "severity": "error",
+      "code": "json_assertion_mismatch",
+      "path": "artifacts/harness/g008_live_suite_completion_audit.json",
+      "json_path": "status",
+      "expected": "pass",
+      "actual": "fail"
+    },
+    {
+      "severity": "error",
       "code": "goal_status_not_complete",
       "goal_id": "G009-report-repro-package",
       "expected_status": "complete",
@@ -1596,6 +1618,6 @@
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
     }
   ],
-  "error_count": 88,
+  "error_count": 89,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

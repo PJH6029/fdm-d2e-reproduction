@@ -1,0 +1,113 @@
+{
+  "schema": "g008_live_suite_completion_audit.v1",
+  "status": "fail",
+  "goal_id": "G008-live-game-suite",
+  "goal_status": "pending",
+  "prerequisite_goal_statuses": {
+    "G003-d2e-only-idm": "in_progress",
+    "G004-d2e-only-fdm-4xh200": "pending",
+    "G007-runtime-sdk-adapter": "complete"
+  },
+  "artifacts": {
+    "suite_config": {
+      "path": "configs/harness/g008_live_open_game_suite.yaml",
+      "exists": true,
+      "bytes": 3581,
+      "sha256": "9e1676881a3046bb36dc5d69beb1e925d43e268e74299767a8405083d66a46d3"
+    },
+    "evidence_validation": {
+      "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "trained_checkpoint_metadata": {
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "runtime_adapter_contract": {
+      "path": "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
+      "exists": true,
+      "bytes": 3339,
+      "sha256": "716946df0ea0c0ba2a245c1bb5bc172580b113c7e2e4262938f6da9340f30ec2"
+    },
+    "live_suite_doc": {
+      "path": "docs/live_open_game_suite.md",
+      "exists": true,
+      "bytes": 4381,
+      "sha256": "2a658c7ae58cffe692c2532b45b54a2bb4e201fc06bff3317071b33350885313"
+    }
+  },
+  "episode_artifact_paths": [],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "goal_not_checkpointed_complete",
+      "goal_id": "G008-live-game-suite",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G003-d2e-only-idm",
+      "actual": "in_progress"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "evidence_validation",
+      "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "trained_checkpoint_metadata",
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "validation_expectation_mismatch",
+      "json_path": "schema",
+      "expected": "live_game_suite_evidence_validation.v1",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "validation_expectation_mismatch",
+      "json_path": "quality_gate.status",
+      "expected": "pass",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "checkpoint_expectation_mismatch",
+      "json_path": "oracle_ground_truth_control",
+      "expected": false,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "checkpoint_expectation_mismatch",
+      "json_path": "data_universe.exists",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "checkpoint_expectation_mismatch",
+      "json_path": "split_contract.exists",
+      "expected": true,
+      "actual": null
+    }
+  ],
+  "error_count": 10,
+  "claim_boundary": "This audit is required before checkpointing G008 complete; protocol-only or dry-run evidence cannot pass without trained checkpoint metadata and live open-source graphical-game validation evidence."
+}

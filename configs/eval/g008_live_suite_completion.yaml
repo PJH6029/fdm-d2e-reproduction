@@ -1,0 +1,30 @@
+{
+  "schema": "g008_live_suite_completion_config.v1",
+  "goals_path": ".omx/ultragoal/goals.json",
+  "goal_id": "G008-live-game-suite",
+  "prerequisite_goals": ["G003-d2e-only-idm", "G004-d2e-only-fdm-4xh200", "G007-runtime-sdk-adapter"],
+  "output_path": "artifacts/harness/g008_live_suite_completion_audit.json",
+  "thresholds": {
+    "min_games": 3,
+    "min_tasks": 3,
+    "min_episodes": 15
+  },
+  "allowed_checkpoint_namespaces": ["d2e_full_corpus", "d2e_aux"],
+  "require_episode_artifact_hashes": true,
+  "paths": {
+    "suite_config": "configs/harness/g008_live_open_game_suite.yaml",
+    "evidence_validation": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
+    "trained_checkpoint_metadata": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "runtime_adapter_contract": "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
+    "live_suite_doc": "docs/live_open_game_suite.md"
+  },
+  "validation_expectations": {
+    "schema": "live_game_suite_evidence_validation.v1",
+    "quality_gate.status": "pass"
+  },
+  "checkpoint_expectations": {
+    "oracle_ground_truth_control": false,
+    "data_universe.exists": true,
+    "split_contract.exists": true
+  }
+}
