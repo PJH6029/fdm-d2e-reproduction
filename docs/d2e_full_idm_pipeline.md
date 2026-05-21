@@ -35,7 +35,10 @@ defaults to `NUM_SHARDS=16`, matching the primary MLXP setting for a 128-core
 H200 production pod. If an operator launches an explicitly isolated accelerated
 run, the completion gates also permit `NUM_SHARDS=64`; use a separate
 `SHARD_ROOT`/`LOG_DIR`/`OUTPUT_SUFFIX` so accelerated diagnostics do not
-overwrite the primary shard logs before the run is intentionally promoted.
+overwrite the primary shard logs before the run is intentionally promoted. Use
+`scripts/promote_g003_accel64_to_canonical.py` for promotion after the isolated
+accel64 audit passes and the canonical primary parent is inactive; do not
+manually copy accel64 artifacts over canonical G003 paths.
 
 ## Expected outputs
 

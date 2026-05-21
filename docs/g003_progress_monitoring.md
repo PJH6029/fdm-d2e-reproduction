@@ -152,3 +152,29 @@ an accelerated run is launched while another extraction is still active, keep it
 isolated with separate `SHARD_ROOT`, `LOG_DIR`, and `OUTPUT_SUFFIX` values until
 an operator intentionally promotes its merged outputs into the canonical G003
 paths. Do not mix shard roots or overwrite active primary logs.
+
+## Accel64 promotion guardrail
+
+If the isolated 64-shard lane finishes before the canonical 16-shard lane, do
+not manually copy files into canonical paths. First require the isolated audit to
+pass:
+
+```bash
+uv run python scripts/validate_g003_full_idm_completion.py \
+  --config configs/eval/g003_full_idm_completion_accel64.yaml
+```
+
+Then run the guarded promotion script only after the canonical primary parent is
+inactive:
+
+```bash
+uv run python scripts/promote_g003_accel64_to_canonical.py
+```
+
+The script refuses to run while the canonical primary parent PID is live, backs
+up any existing canonical artifacts under
+`artifacts/idm/g003_accel64_promotion_backups/`, promotes accel64 outputs by
+relative symlink, rebuilds the canonical 4×H200 train-run summary, and reruns
+the canonical G003 completion audit. It does **not** checkpoint OMX state; only
+checkpoint `G003-d2e-only-idm` after
+`artifacts/idm/g003_full_idm_completion_audit.json` reports `status=pass`.
