@@ -58,6 +58,20 @@ graphical target candidates for the later G008 live suite:
 These are only target candidates until installation, license/provenance,
 window-focus, video/replay capture, and live closed-loop evidence are collected.
 
+
+## G007 completion audit
+
+Before relying on the completed `G007-runtime-sdk-adapter` story, run:
+
+```bash
+uv run python scripts/validate_g007_completion.py
+```
+
+The audit writes `artifacts/runtime/g007_completion_audit.json` and must report
+`status == pass`. It verifies the deterministic dry-run replay contract, safety
+settings, latency schema, kill-switch/focus-guard presence, demo target claim
+boundaries, and the explicit no-live/no-commercial-game claim boundary.
+
 ## Claim boundary
 
 The SDK proves that trained action streams can be decoded, safety-checked,

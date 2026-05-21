@@ -132,6 +132,10 @@ Do **not** checkpoint `G005-aux-data-best-model` complete until `scripts/validat
 
 Do **not** checkpoint `G006-evaluation-failure-analysis` complete until `scripts/validate_g006_completion.py` reports `status=pass` in `artifacts/eval/g006_completion_audit.json`. This audit requires G003/G004 complete, endpoint statistics, failure analysis, claim taxonomy, readiness audit, final artifact-build summary, required splits/endpoints, required failure axes, documented non-rejections/examples, and forbidden claim boundaries.
 
+## G007 completion gate
+
+Do **not** modify or rely on completed `G007-runtime-sdk-adapter` evidence unless `scripts/validate_g007_completion.py` reports `status=pass` in `artifacts/runtime/g007_completion_audit.json`. This audit preserves G007 as a safe deterministic adapter-contract story only, not G008 live game control or any commercial-game claim.
+
 ## G008 completion gate
 
 Do **not** checkpoint `G008-live-game-suite` complete until `scripts/validate_g008_live_suite_completion.py` reports `status=pass` in `artifacts/harness/g008_live_suite_completion_audit.json`. This audit requires completed D2E-only training prerequisites, G007 runtime-adapter evidence, trained checkpoint metadata, live evidence validation `quality_gate.status=pass`, statistical comparison evidence, and hashed video/replay/latency/failure artifacts. Protocol readiness alone never satisfies G008.
@@ -167,6 +171,7 @@ uv run python scripts/validate_g003_full_idm_completion.py --allow-fail
 uv run python scripts/validate_g004_full_fdm_completion.py --allow-fail
 uv run python scripts/validate_g005_aux_completion.py --allow-fail
 uv run python scripts/validate_g006_completion.py --allow-fail
+uv run python scripts/validate_g007_completion.py
 uv run python scripts/validate_g008_live_suite_completion.py --allow-fail
 uv run python scripts/validate_g009_completion.py --allow-fail
 uv run python scripts/validate_final_quality_gates.py --allow-fail

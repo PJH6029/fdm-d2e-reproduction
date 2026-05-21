@@ -1,0 +1,41 @@
+{
+  "schema": "g007_completion_audit.v1",
+  "status": "pass",
+  "goal_id": "G007-runtime-sdk-adapter",
+  "goal_status": "complete",
+  "artifacts": {
+    "contract_evidence": {
+      "path": "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
+      "exists": true,
+      "bytes": 3339,
+      "sha256": "716946df0ea0c0ba2a245c1bb5bc172580b113c7e2e4262938f6da9340f30ec2"
+    },
+    "fixture_predictions": {
+      "path": "artifacts/runtime/g007_runtime_fixture_predictions.jsonl",
+      "exists": true,
+      "bytes": 244,
+      "sha256": "834c45812c1cb9a722907a5adba8ff6aeea848e74fd3219104d04a65c4e6e26c"
+    },
+    "contract_config": {
+      "path": "configs/runtime/game_adapter_contract_fixture.yaml",
+      "exists": true,
+      "bytes": 906,
+      "sha256": "b12c31ee0de076681357b1de7202028fe8b2a84996ecfcd4b0eeca389d75d730"
+    },
+    "demo_config": {
+      "path": "configs/runtime/game_adapter_demo.yaml",
+      "exists": true,
+      "bytes": 1349,
+      "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+    },
+    "runtime_doc": {
+      "path": "docs/runtime_sdk_adapter.md",
+      "exists": true,
+      "bytes": 3274,
+      "sha256": "3f3c6bbca28a7184ac1254ee133bde1878d374a394456d4e4576d88572432e47"
+    }
+  },
+  "findings": [],
+  "error_count": 0,
+  "claim_boundary": "This audit is required to preserve G007 as a reusable safe adapter contract only; it does not prove G008 live game control or any commercial-game claim."
+}

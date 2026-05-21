@@ -1,0 +1,33 @@
+{
+  "schema": "g007_completion_config.v1",
+  "goals_path": ".omx/ultragoal/goals.json",
+  "goal_id": "G007-runtime-sdk-adapter",
+  "output_path": "artifacts/runtime/g007_completion_audit.json",
+  "allowed_contract_modes": ["deterministic_replay_dry_run"],
+  "expected_blocked_actions": 0,
+  "min_applied_actions": 3,
+  "min_demo_targets": 3,
+  "paths": {
+    "contract_evidence": "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
+    "fixture_predictions": "artifacts/runtime/g007_runtime_fixture_predictions.jsonl",
+    "contract_config": "configs/runtime/game_adapter_contract_fixture.yaml",
+    "demo_config": "configs/runtime/game_adapter_demo.yaml",
+    "runtime_doc": "docs/runtime_sdk_adapter.md"
+  },
+  "contract_expectations": {
+    "schema": "runtime_replay_adapter.v1",
+    "mode": "deterministic_replay_dry_run",
+    "safety.require_focus": true,
+    "latency.schema": "runtime_latency_summary.v1"
+  },
+  "fixture_config_expectations": {
+    "schema": "runtime_replay_adapter_config.v1",
+    "safety.require_focus": true
+  },
+  "demo_config_expectations": {
+    "schema": "runtime_replay_adapter_config.v1",
+    "safety.require_focus": true
+  },
+  "required_contract_note_phrases": ["no OS-level input injection", "commercial-game control"],
+  "required_doc_phrases": ["by itself prove live game control", "No G008 live-suite claim"]
+}

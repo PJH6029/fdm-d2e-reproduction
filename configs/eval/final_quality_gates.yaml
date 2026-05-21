@@ -309,8 +309,16 @@
       "requires_status": "complete",
       "required_paths": [
         "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
+        "artifacts/runtime/g007_completion_audit.json",
         "configs/runtime/game_adapter_demo.yaml",
         "docs/runtime_sdk_adapter.md"
+      ],
+      "json_assertions": [
+        {
+          "path": "artifacts/runtime/g007_completion_audit.json",
+          "json_path": "status",
+          "equals": "pass"
+        }
       ]
     },
     {

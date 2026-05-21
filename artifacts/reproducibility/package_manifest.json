@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 168,
+  "entry_count": 173,
   "entries": [
     {
       "path": "README.md",
@@ -192,8 +192,14 @@
     {
       "path": "artifacts/reproducibility/g009_completion_audit.json",
       "kind": "evidence_artifact",
-      "bytes": 4036,
-      "sha256": "47e1135bd930da1d7cc9f6bcea9671aa8f9bccf8bf121396a0c067e509955752"
+      "bytes": 3783,
+      "sha256": "eea045d59d11f9194cf8c3f8cb2a3d4c6e717046b2f688f46833950bda1ed609"
+    },
+    {
+      "path": "artifacts/runtime/g007_completion_audit.json",
+      "kind": "evidence_artifact",
+      "bytes": 1474,
+      "sha256": "c0a26b7b6479858ac7371bdcbeea55e169372bf8c0a555ae246d7d97b6bd895d"
     },
     {
       "path": "artifacts/runtime/g007_runtime_fixture_predictions.jsonl",
@@ -270,8 +276,8 @@
     {
       "path": "configs/eval/final_quality_gates.yaml",
       "kind": "configuration",
-      "bytes": 14111,
-      "sha256": "6b0a93eb25198c1d325fa765805d3a0e30e6fae2ed8930744637a3a428fd8a5b"
+      "bytes": 14349,
+      "sha256": "3e57c3b0d1d231e84c1c8a272352e1d14e48169a68855248393dc2518f5ad80a"
     },
     {
       "path": "configs/eval/g003_full_idm_completion.yaml",
@@ -320,6 +326,12 @@
       "kind": "configuration",
       "bytes": 3129,
       "sha256": "1da177957dcebf16205063577cf9827f8d4630ebf6497a3ab39889ba403454ff"
+    },
+    {
+      "path": "configs/eval/g007_completion.yaml",
+      "kind": "configuration",
+      "bytes": 1361,
+      "sha256": "34fa4eeb3e29e0f5d6500fa0be3670fbf699c0a0ce6c6b32e49bfdd270ffbd69"
     },
     {
       "path": "configs/eval/g008_live_suite_completion.yaml",
@@ -486,8 +498,8 @@
     {
       "path": "docs/final_quality_gates.md",
       "kind": "documentation",
-      "bytes": 3469,
-      "sha256": "7d11ca900e5630541ab243874966a4b6f698e87ee0eca7ca5aea04d2f62df410"
+      "bytes": 3509,
+      "sha256": "0e4e862a296e1175015214e5f4ac70ba26d5ad111745dba3a4a48c44f4ff709d"
     },
     {
       "path": "docs/final_research_report.md",
@@ -540,8 +552,8 @@
     {
       "path": "docs/runtime_sdk_adapter.md",
       "kind": "documentation",
-      "bytes": 2801,
-      "sha256": "c06816f2af92db3e6830ee6aa1c5d0fb24bcadc1ef7768b56c0e8e7224fa5b07"
+      "bytes": 3274,
+      "sha256": "3f3c6bbca28a7184ac1254ee133bde1878d374a394456d4e4576d88572432e47"
     },
     {
       "path": "docs/source_validation.md",
@@ -576,8 +588,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 11462,
-      "sha256": "775f15fcb1a80631083b34366be5b236e82024dde35c838658063742e0084bd8"
+      "bytes": 11689,
+      "sha256": "13702d0320b443411c7d960c218434d5c972a48b12ad9492eccd7fe75794963f"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -730,6 +742,12 @@
       "sha256": "61f859f3860006da57095962c5b2b432518d319ea07dea1fbb2d70f579314ff4"
     },
     {
+      "path": "scripts/validate_g007_completion.py",
+      "kind": "reproduction_script",
+      "bytes": 1112,
+      "sha256": "a7c1b967407e552c81e3b45f7d0427c507c69985d2ab4543b7e9e2f982344c16"
+    },
+    {
       "path": "scripts/validate_g008_live_suite_completion.py",
       "kind": "reproduction_script",
       "bytes": 1168,
@@ -818,6 +836,12 @@
       "kind": "other",
       "bytes": 8258,
       "sha256": "9c35213b77650a89ae60b7484d40209b1ecec7bd22a8b86ed97b15be75ab8361"
+    },
+    {
+      "path": "src/fdm_d2e/reporting/g007_completion.py",
+      "kind": "other",
+      "bytes": 7520,
+      "sha256": "a24d1c9338696ee966f1417d2dbf9564551ba792e7622a69553606f58c3c4873"
     },
     {
       "path": "src/fdm_d2e/reporting/g008_completion.py",
@@ -962,6 +986,12 @@
       "kind": "other",
       "bytes": 5523,
       "sha256": "f430366e5f04f991ec3efd06f50e1f548dec4c5ad395932c6d2c61b8a511dd34"
+    },
+    {
+      "path": "tests/test_g007_completion_audit.py",
+      "kind": "other",
+      "bytes": 4601,
+      "sha256": "4d72ba332d1e7e9d709800aa6ae2da0bafbef4ac334978df68a3b056c0c05a31"
     },
     {
       "path": "tests/test_g008_live_suite_completion_audit.py",
