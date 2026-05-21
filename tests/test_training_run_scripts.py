@@ -37,3 +37,11 @@ def test_standalone_g003_and_g004_wrappers_fail_closed_on_split_statistics() -> 
         assert "scripts/build_split_statistical_comparisons.py --config \"$SPLIT_STATS_CONFIG\"" in text
         assert "split_stats_summary_exists" in text
         assert "split_stats_status" in text
+
+
+def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
+    text = _script("scripts/run_g004_d2e_full_fdm_4xh200.sh")
+    assert 'PID_FILE="${PID_FILE:-outputs/cluster/g004_d2e_full_fdm_4xh200.pid}"' in text
+    assert 'echo "$$" >"$PID_FILE"' in text
+    assert "cleanup_pid_file" in text
+    assert '"pid_file": "$PID_FILE"' in text

@@ -8,13 +8,15 @@ EXPECTED_GPUS="${EXPECTED_GPUS:-4}"
 LOG_PATH="${LOG_PATH:-artifacts/fdm/g004_d2e_full_fdm_4xh200.log}"
 RUN_SUMMARY="${RUN_SUMMARY:-artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json}"
 GPU_MONITOR_LOG="${GPU_MONITOR_LOG:-artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv}"
+PID_FILE="${PID_FILE:-outputs/cluster/g004_d2e_full_fdm_4xh200.pid}"
 FDM_LABELS="${FDM_LABELS:-outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl}"
 BUILD_SPLIT_STATS="${BUILD_SPLIT_STATS:-1}"
 SPLIT_STATS_CONFIG="${SPLIT_STATS_CONFIG:-configs/eval/g004_split_statistics.yaml}"
 SPLIT_STATS_SUMMARY="${SPLIT_STATS_SUMMARY:-artifacts/eval/g004_split_statistical_comparisons_summary.json}"
 export BUILD_SPLIT_STATS SPLIT_STATS_CONFIG SPLIT_STATS_SUMMARY
 
-mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$RUN_SUMMARY")" "$(dirname "$GPU_MONITOR_LOG")" outputs/cluster
+mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$RUN_SUMMARY")" "$(dirname "$GPU_MONITOR_LOG")" "$(dirname "$PID_FILE")" outputs/cluster
+echo "$$" >"$PID_FILE"
 
 START_EPOCH="$(date +%s)"
 MONITOR_PID=""
@@ -30,9 +32,21 @@ cleanup_monitor() {
   if [[ -n "${MONITOR_PID:-}" ]]; then
     kill "$MONITOR_PID" >/dev/null 2>&1 || true
     wait "$MONITOR_PID" >/dev/null 2>&1 || true
+    MONITOR_PID=""
   fi
 }
-trap cleanup_monitor EXIT
+
+cleanup_pid_file() {
+  if [[ -f "$PID_FILE" ]] && [[ "$(cat "$PID_FILE" 2>/dev/null || true)" == "$$" ]]; then
+    rm -f "$PID_FILE"
+  fi
+}
+
+cleanup_all() {
+  cleanup_monitor
+  cleanup_pid_file
+}
+trap cleanup_all EXIT
 
 set +e
 (
@@ -60,7 +74,6 @@ set +e
 RUN_STATUS="${PIPESTATUS[0]}"
 set -e
 cleanup_monitor
-trap - EXIT
 END_EPOCH="$(date +%s)"
 
 uv run python - <<PY
@@ -118,6 +131,7 @@ payload = {
     "idm_predict_config": "$IDM_PREDICT_CONFIG",
     "log_path": "$LOG_PATH",
     "gpu_monitor_log": "$GPU_MONITOR_LOG",
+    "pid_file": "$PID_FILE",
     "fdm_labels": "$FDM_LABELS",
     "nproc_per_node": int("$NPROC_PER_NODE"),
     "expected_gpus": int("$EXPECTED_GPUS"),

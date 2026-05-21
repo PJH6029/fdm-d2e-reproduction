@@ -126,6 +126,25 @@ the 4×H200 run); a CSV that merely exists is not enough.
 The run summary also records `split_stats_summary_exists` and
 `split_stats_status`. `BUILD_SPLIT_STATS=0` is reserved for local debug/recovery
 only; terminal G004 evidence still requires passing split-stat artifacts.
+The wrapper writes `outputs/cluster/g004_d2e_full_fdm_4xh200.pid` while it is
+active so a separate watcher can safely distinguish "still running" from
+"ready for post-run finalization".
+
+For long unattended cluster runs, start the non-mutating post-run watcher after
+launching the G004 parent:
+
+```bash
+nohup uv run python scripts/watch_g004_then_finalize.py \
+  --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid \
+  --output artifacts/fdm/g004_postrun_watcher_summary.json \
+  > artifacts/fdm/g004_postrun_watcher.log 2>&1 &
+echo $! > outputs/cluster/g004_postrun_watcher.pid
+```
+
+While the G004 parent PID is alive the watcher only writes
+`waiting_active_parent` telemetry. After the parent exits it runs
+`scripts/finalize_g004_d2e_full_fdm.py` and writes a final watcher summary. It
+does not mutate OMX/Codex goal state and cannot complete G004 by itself.
 
 After the 4×H200 run finishes, run the post-run finalizer before checkpointing
 G004:
