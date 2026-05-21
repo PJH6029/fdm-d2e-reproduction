@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import shutil
+import socket
 import subprocess
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
@@ -286,6 +290,8 @@ def download_recording_ref(
     token: str | None = None,
     *,
     kinds: Iterable[str] = ("video", "mcap"),
+    max_attempts: int = 4,
+    retry_backoff_s: float = 1.0,
 ) -> dict[str, str]:
     """Download a paired recording into cache when requested.
 
@@ -303,16 +309,71 @@ def download_recording_ref(
             continue
         out = out_dir / Path(rel_path).name
         if not out.exists():
+            _download_with_retries(
+                url,
+                out,
+                token=token,
+                max_attempts=max_attempts,
+                retry_backoff_s=retry_backoff_s,
+            )
+        results[kind] = str(out)
+    return results
+
+
+def _download_with_retries(
+    url: str,
+    out: Path,
+    *,
+    token: str | None = None,
+    max_attempts: int = 4,
+    retry_backoff_s: float = 1.0,
+) -> None:
+    """Download ``url`` to ``out`` with bounded retries for transient failures."""
+
+    attempts = max(1, int(max_attempts))
+    part = out.with_name(f"{out.name}.part")
+    last_exc: BaseException | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            part.unlink(missing_ok=True)
             headers = {"Authorization": f"Bearer {token}"} if token else {}
             req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=120) as response, out.open("wb") as f:
+            with urllib.request.urlopen(req, timeout=120) as response, part.open("wb") as f:
                 while True:
                     chunk = response.read(1024 * 1024)
                     if not chunk:
                         break
                     f.write(chunk)
-        results[kind] = str(out)
-    return results
+            part.replace(out)
+            return
+        except _TRANSIENT_DOWNLOAD_ERRORS as exc:
+            last_exc = exc
+            part.unlink(missing_ok=True)
+            if attempt >= attempts or not _is_transient_download_error(exc):
+                raise
+            time.sleep(min(retry_backoff_s * (2 ** (attempt - 1)), 30.0))
+        except Exception:
+            part.unlink(missing_ok=True)
+            raise
+    if last_exc is not None:  # defensive; loop either returns or raises.
+        raise last_exc
+
+
+_TRANSIENT_DOWNLOAD_ERRORS = (
+    urllib.error.URLError,
+    TimeoutError,
+    ConnectionError,
+    ConnectionResetError,
+    http.client.IncompleteRead,
+    http.client.RemoteDisconnected,
+    socket.timeout,
+)
+
+
+def _is_transient_download_error(exc: BaseException) -> bool:
+    if isinstance(exc, urllib.error.HTTPError):
+        return exc.code in {408, 425, 429, 500, 502, 503, 504}
+    return isinstance(exc, _TRANSIENT_DOWNLOAD_ERRORS)
 
 
 def _ppm_features(path: str | Path) -> list[float]:

@@ -2,6 +2,8 @@ import tempfile
 import unittest
 from pathlib import Path
 import sys
+import urllib.error
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
@@ -12,6 +14,7 @@ from fdm_d2e.data.d2e_real import (
     build_recording_refs,
     build_window_records,
     choose_action_dense_window_start,
+    download_recording_ref,
     normalize_owa_event,
     normalize_owa_events,
     prepare_real_dataset,
@@ -130,6 +133,63 @@ class D2ERealContractTests(unittest.TestCase):
             self.assertAlmostEqual(features[0], 0.5)
             self.assertAlmostEqual(features[1], 0.0)
             self.assertAlmostEqual(features[2], 0.5)
+
+    def test_download_recording_ref_retries_transient_url_errors(self):
+        ref = D2ERecordingRef(
+            repo_id="open-world-agents/D2E-480p",
+            revision="main",
+            game="Apex_Legends",
+            recording_id="0805_01",
+            video_path="Apex_Legends/0805_01.mkv",
+            mcap_path="Apex_Legends/0805_01.mcap",
+            video_url="https://example.test/0805_01.mkv",
+            mcap_url="https://example.test/0805_01.mcap",
+        )
+
+        class FakeResponse:
+            def __init__(self, chunks):
+                self.chunks = list(chunks)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def read(self, _size):
+                if self.chunks:
+                    return self.chunks.pop(0)
+                return b""
+
+        calls = [
+            urllib.error.URLError(ConnectionResetError("connection reset by peer")),
+            FakeResponse([b"abc", b"def"]),
+        ]
+
+        def fake_urlopen(_req, timeout):
+            self.assertEqual(timeout, 120)
+            item = calls.pop(0)
+            if isinstance(item, BaseException):
+                raise item
+            return item
+
+        with (
+            tempfile.TemporaryDirectory() as td,
+            mock.patch("urllib.request.urlopen", side_effect=fake_urlopen),
+            mock.patch("time.sleep") as sleep,
+        ):
+            result = download_recording_ref(
+                ref,
+                td,
+                kinds=("video",),
+                max_attempts=2,
+                retry_backoff_s=0.0,
+            )
+
+            video_path = Path(result["video"])
+            self.assertEqual(video_path.read_bytes(), b"abcdef")
+            self.assertFalse(video_path.with_name(f"{video_path.name}.part").exists())
+            sleep.assert_called_once()
 
 
 if __name__ == "__main__":
