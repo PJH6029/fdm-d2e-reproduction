@@ -236,6 +236,28 @@ def test_g003_live_health_warns_when_incomplete_shard_has_no_extractor(tmp_path)
     assert report["warnings"][0]["code"] == "low_active_extractor_count"
 
 
+def test_g003_live_health_treats_duplicate_wrapper_processes_as_observation(tmp_path):
+    universe = _universe(tmp_path)
+    _write_pid(tmp_path / "outputs/cluster/g003_full_compact_parallel.pid", 100)
+    _write_pid(tmp_path / "outputs/cluster/g003_postrun_watcher.pid", 200)
+    _write_pid(tmp_path / "outputs/cluster/g003_attached_gpu_monitor.pid", 300)
+    report = build_g003_live_health_report(
+        shard_root=tmp_path / "outputs/data/d2e_full_corpus_shards",
+        log_dir=tmp_path / "artifacts/sources",
+        data_universe=universe,
+        pid_file=tmp_path / "outputs/cluster/g003_full_compact_parallel.pid",
+        watcher_pid_file=tmp_path / "outputs/cluster/g003_postrun_watcher.pid",
+        gpu_monitor_pid_file=tmp_path / "outputs/cluster/g003_attached_gpu_monitor.pid",
+        num_shards=2,
+        process_snapshot=_g003_process_snapshot(extractors=[0, 0, 1, 1]),
+        now=1000.0,
+    )
+    assert report["status"] == "healthy_running"
+    assert report["duplicate_active_shards"] == [0, 1]
+    assert report["warnings"] == []
+    assert report["observations"][0]["code"] == "duplicate_extractor_processes"
+
+
 def test_g003_live_health_does_not_require_extractors_during_idm_training(tmp_path):
     universe = _universe(tmp_path)
     _write_pid(tmp_path / "outputs/cluster/g003_full_compact_parallel.pid", 100)

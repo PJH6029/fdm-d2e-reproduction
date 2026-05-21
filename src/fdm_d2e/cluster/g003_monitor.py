@@ -260,6 +260,7 @@ def build_g003_live_health_report(
         expected_active = len(incomplete_shards) if incomplete_shards and not (train_active or merge_active or finalizer_active) else 0
     warnings: list[dict[str, Any]] = []
     errors: list[dict[str, Any]] = []
+    observations: list[dict[str, Any]] = []
     if parent["running"] and progress.get("status") == "review_stale_shards":
         errors.append({"code": "stale_shards", "shards": progress.get("stale_shards", [])})
     if parent["running"] and expected_active > 0 and len(active_shards) < int(expected_active):
@@ -276,7 +277,13 @@ def build_g003_live_health_report(
     if parent["running"] and not gpu_monitor["running"]:
         warnings.append({"code": "gpu_monitor_not_running", "pid_file": gpu_monitor["pid_file"]})
     if duplicate_active_shards:
-        warnings.append({"code": "duplicate_extractor_processes", "shards": duplicate_active_shards})
+        observations.append(
+            {
+                "code": "duplicate_extractor_processes",
+                "shards": duplicate_active_shards,
+                "note": "Usually expected when both uv wrapper and child Python processes expose the shard commandline.",
+            }
+        )
     if progress.get("status") == "complete":
         stage = "complete_pending_audit"
         status = "complete_pending_audit"
@@ -323,6 +330,7 @@ def build_g003_live_health_report(
         "expected_active_extractors": int(expected_active),
         "warnings": warnings,
         "errors": errors,
+        "observations": observations,
         "progress": {
             "decoded_recording_variants": progress.get("decoded_recording_variants"),
             "expected_recording_variants": progress.get("expected_recording_variants"),

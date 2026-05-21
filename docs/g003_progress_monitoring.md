@@ -35,7 +35,7 @@ uv run python scripts/audit_g003_live_health.py \
 This second command is also non-mutating. It adds best-effort Linux `/proc`
 topology evidence for the parent script, shard extractors, post-run watcher,
 attached GPU monitor, merge/training/finalizer processes, inactive incomplete
-shards, duplicate extractor processes, and low-active-extractor warnings. It is
+shards, duplicate extractor observations, and low-active-extractor warnings. It is
 handoff/recovery evidence only; it must not be treated as a completion or
 quality-gate proof.
 
