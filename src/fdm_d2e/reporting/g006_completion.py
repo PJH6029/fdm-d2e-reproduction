@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from fdm_d2e.io_utils import sha256_file, write_json
+from fdm_d2e.reporting.d2e_audit_gates import validate_d2e_only_completion_audit
 
 
 def _load_json(path: Path) -> dict[str, Any] | None:
@@ -77,12 +78,53 @@ def validate_g006_completion(config: dict[str, Any], *, root: str | Path = ".") 
     taxonomy = _load_json(root_path / paths.get("claim_taxonomy", "")) if paths.get("claim_taxonomy") else None
     readiness = _load_json(root_path / paths.get("readiness_audit", "")) if paths.get("readiness_audit") else None
     build_summary = _load_json(root_path / paths.get("build_summary", "")) if paths.get("build_summary") else None
+    g003_audit = _load_json(root_path / paths.get("g003_completion_audit", "")) if paths.get("g003_completion_audit") else None
+    g004_audit = _load_json(root_path / paths.get("g004_completion_audit", "")) if paths.get("g004_completion_audit") else None
+    g005_audit = _load_json(root_path / paths.get("g005_completion_audit", "")) if paths.get("g005_completion_audit") else None
 
     _assert_expectations(endpoint, dict(config.get("endpoint_expectations", {})), source="endpoint_statistics", findings=findings)
     _assert_expectations(failure, dict(config.get("failure_expectations", {})), source="failure_analysis", findings=findings)
     _assert_expectations(taxonomy, dict(config.get("taxonomy_expectations", {})), source="claim_taxonomy", findings=findings)
     _assert_expectations(readiness, dict(config.get("readiness_expectations", {})), source="readiness_audit", findings=findings)
     _assert_expectations(build_summary, dict(config.get("build_summary_expectations", {})), source="build_summary", findings=findings)
+
+    expected_variants = int(config.get("expected_recording_variants", 918))
+    expected_by_source = {str(key): value for key, value in dict(config.get("expected_variants_by_source", {})).items()}
+    expected_by_tier = {str(key): value for key, value in dict(config.get("expected_variants_by_resolution_tier", {})).items()}
+    d2e_only_audit_report: dict[str, Any] = {}
+    if bool(config.get("require_d2e_only_completion_audits_pass", False)):
+        d2e_only_audit_report = {
+            "g003": validate_d2e_only_completion_audit(
+                g003_audit,
+                audit_key="g003",
+                expected_variants=expected_variants,
+                expected_by_source=expected_by_source,
+                expected_by_tier=expected_by_tier,
+                require_pass=True,
+                findings=findings,
+            ),
+            "g004": validate_d2e_only_completion_audit(
+                g004_audit,
+                audit_key="g004",
+                expected_variants=expected_variants,
+                expected_by_source=expected_by_source,
+                expected_by_tier=expected_by_tier,
+                require_pass=True,
+                findings=findings,
+            ),
+        }
+    if bool(config.get("require_g005_completion_audit_pass", False)):
+        if g005_audit is None:
+            findings.append({"severity": "error", "code": "missing_g005_completion_audit"})
+        elif g005_audit.get("status") != "pass":
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "g005_completion_audit_not_pass",
+                    "status": g005_audit.get("status"),
+                    "error_count": g005_audit.get("error_count"),
+                }
+            )
 
     required_splits = set(str(item) for item in config.get("required_splits", []))
     required_endpoints = set(str(item) for item in config.get("required_endpoints", []))
@@ -162,9 +204,11 @@ def validate_g006_completion(config: dict[str, Any], *, root: str | Path = ".") 
         "required_claim_states": dict(config.get("required_claim_states", {})),
         "claim_states_requiring_evidence": sorted(str(item) for item in config.get("claim_states_requiring_evidence", [])),
         "artifacts": artifacts,
+        "d2e_only_audit_report": d2e_only_audit_report,
+        "g005_audit_status": None if g005_audit is None else g005_audit.get("status"),
         "findings": findings,
         "error_count": len(errors),
-        "claim_boundary": "This audit is required before checkpointing G006 complete; endpoint statistics, failure analysis, claim taxonomy, readiness, and final artifact build summary must all pass with G003/G004/G005 prerequisites complete.",
+        "claim_boundary": "This audit is required before checkpointing G006 complete; endpoint statistics, failure analysis, claim taxonomy, readiness, and final artifact build summary must all pass with G003/G004 D2E-only audits and G005 prerequisite evidence complete.",
     }
 
 

@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 402,
+  "entry_count": 403,
   "entries": [
     {
       "path": "AGENTS.md",
@@ -126,8 +126,8 @@
     {
       "path": "artifacts/eval/g006_completion_audit.json",
       "kind": "evidence_artifact",
-      "bytes": 6048,
-      "sha256": "73798e2bcdda485cee5459c609d795d2120cd2dc6469686fb3c3b5c9c5af5225"
+      "bytes": 8060,
+      "sha256": "56a77a74be1aa94864a6515ff9a9714744c20b5d8bcaf350b27dabf7c60f5f4a"
     },
     {
       "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
@@ -355,19 +355,19 @@
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "kind": "evidence_artifact",
       "bytes": 64475,
-      "sha256": "882ec88092ab5c63e20443b9221464275af025d0b66d25dbb4ea2bde08d3460a"
+      "sha256": "d4044dc77c56279c8f56e8dfe24c416a40db166d069d33f9949210095a999144"
     },
     {
       "path": "artifacts/reproducibility/g009_completion_audit.json",
       "kind": "evidence_artifact",
       "bytes": 4307,
-      "sha256": "1d6b931f0219f51c0cc20f0741eef309f6b5723051f5db442f6b2aaed14e9dd6"
+      "sha256": "525a99ca6d0f9dcd58ce5c741117e84b93577bb97afcf49b4c06735b08134161"
     },
     {
       "path": "artifacts/reproducibility/g009_finalization_summary.json",
       "kind": "evidence_artifact",
       "bytes": 1808,
-      "sha256": "c095d8dade189bb7226d4694fed33b19317dc04b31d894f0ea8ba74f1509b16e"
+      "sha256": "5fe27e8dd54dc44057e1363e1911d307b099fd5cda5e7ba2f9961cbb028571e3"
     },
     {
       "path": "artifacts/reproducibility/g009_readiness_plan.json",
@@ -546,8 +546,8 @@
     {
       "path": "configs/eval/g006_completion.yaml",
       "kind": "configuration",
-      "bytes": 2332,
-      "sha256": "86702115b5491d763aad31312bbd52467859e15a0cfc0703f737a6dd30906846"
+      "bytes": 2887,
+      "sha256": "0b1822fda8f6dfb465774c4feff46c874b71aab58840a2ad4b6e0ec1a0198db7"
     },
     {
       "path": "configs/eval/g006_evaluation_readiness.yaml",
@@ -972,8 +972,8 @@
     {
       "path": "docs/g006_evaluation_readiness.md",
       "kind": "documentation",
-      "bytes": 6262,
-      "sha256": "aa6d88c44c463d48ffd010fbb1da3a6548eecda23aa970440045f22c2d8ed85c"
+      "bytes": 6465,
+      "sha256": "929b90a40034a5d1d6b803a5bc94f2fbd5015a04405313db579e66cff41e3360"
     },
     {
       "path": "docs/harness_selection_and_execution.md",
@@ -1816,6 +1816,12 @@
       "sha256": "dae838d220bccfdae2296a9f11a804e5fc37380f45a61d47bbfdf6ace764b5f0"
     },
     {
+      "path": "src/fdm_d2e/reporting/d2e_audit_gates.py",
+      "kind": "other",
+      "bytes": 4760,
+      "sha256": "e93c18cb2b5eb9781965e7beacd32822771e2a39bb7142556c8b0798bbefb1b2"
+    },
+    {
       "path": "src/fdm_d2e/reporting/evaluation_readiness.py",
       "kind": "other",
       "bytes": 8049,
@@ -1842,14 +1848,14 @@
     {
       "path": "src/fdm_d2e/reporting/g005_completion.py",
       "kind": "other",
-      "bytes": 32367,
-      "sha256": "71b23a71e71d5a22cf19066ce85779890c1569fe3bf8fd11132ad80d29b55447"
+      "bytes": 28250,
+      "sha256": "a005df9e3e7ebf693edee066f81cfc43ffabdd2b04dbd29ae4f095044be594ca"
     },
     {
       "path": "src/fdm_d2e/reporting/g006_completion.py",
       "kind": "other",
-      "bytes": 9893,
-      "sha256": "b11291dc50afd81131f607aab12fd54085a20b6ad8f7bfae13f9bcf72c6275a9"
+      "bytes": 12291,
+      "sha256": "c428bf97b8be9ba02f2ff793f913ffe196e31a790411df810847078fea43e44b"
     },
     {
       "path": "src/fdm_d2e/reporting/g007_completion.py",
@@ -1860,8 +1866,8 @@
     {
       "path": "src/fdm_d2e/reporting/g008_completion.py",
       "kind": "other",
-      "bytes": 19231,
-      "sha256": "731caf52f2c1652b0f1c130b5b192b8d0ea370062d8db1be49f57be71b3ca2cd"
+      "bytes": 15005,
+      "sha256": "f5ad15d902499437d06cb338b4740ade872314b53cc68442c87983d761022d18"
     },
     {
       "path": "src/fdm_d2e/reporting/g009_completion.py",
@@ -2256,8 +2262,8 @@
     {
       "path": "tests/test_g006_completion_audit.py",
       "kind": "other",
-      "bytes": 6388,
-      "sha256": "82e95bce2401581126f91df5eb7e0fc55abf5d7479aafe6bfadf7227e405f068"
+      "bytes": 9235,
+      "sha256": "81d622815a54e9b3e80b38634eb7022bdfa6a53869b2b76575f2707698ac7a40"
     },
     {
       "path": "tests/test_g006_evaluation_readiness.py",
@@ -2274,8 +2280,8 @@
     {
       "path": "tests/test_g006_finalization.py",
       "kind": "other",
-      "bytes": 10220,
-      "sha256": "3b3b844089411004f258b5f22bc9a366b82df185feb86d6a4bf1e75b94daac9c"
+      "bytes": 11757,
+      "sha256": "8cf2a1faf5656950a16a43871c609a1c111db5c5a3427d5cb0c99ccae34ef0e1"
     },
     {
       "path": "tests/test_g006_postrun_watcher.py",

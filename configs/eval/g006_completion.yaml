@@ -8,6 +8,17 @@
     "G005-aux-data-best-model"
   ],
   "output_path": "artifacts/eval/g006_completion_audit.json",
+  "expected_recording_variants": 918,
+  "require_d2e_only_completion_audits_pass": true,
+  "require_g005_completion_audit_pass": true,
+  "expected_variants_by_source": {
+    "d2e_480p": 459,
+    "d2e_original": 459
+  },
+  "expected_variants_by_resolution_tier": {
+    "480p": 459,
+    "original_fhd_qhd": 459
+  },
   "required_splits": [
     "temporal",
     "heldout_recording",
@@ -61,6 +72,9 @@
     "claim_taxonomy": "artifacts/eval/final_claim_taxonomy.json",
     "readiness_audit": "artifacts/eval/g006_evaluation_readiness_audit.json",
     "build_summary": "artifacts/eval/g006_final_artifact_build_summary.json",
+    "g003_completion_audit": "artifacts/idm/g003_full_idm_completion_audit.json",
+    "g004_completion_audit": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+    "g005_completion_audit": "artifacts/aux/g005_aux_completion_audit.json",
     "failure_doc": "docs/failure_analysis.md"
   },
   "endpoint_expectations": {

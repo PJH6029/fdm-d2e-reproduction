@@ -79,6 +79,24 @@
       "bytes": 556,
       "sha256": "aa9266127c89cff20a73ffb43df3c5e76e4bef31e3a69859e88600670944eef3"
     },
+    "g003_completion_audit": {
+      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "exists": true,
+      "bytes": 9361,
+      "sha256": "07e0ab6c11e647d4739614c31e8b343b5678d9d870d3941c5bfcb62a88fa6ed8"
+    },
+    "g004_completion_audit": {
+      "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+      "exists": true,
+      "bytes": 14059,
+      "sha256": "e0bec9eec0b0cfbe1e52210c4a0910c5d9bff8ea6ed16d220d32eec4f01020e8"
+    },
+    "g005_completion_audit": {
+      "path": "artifacts/aux/g005_aux_completion_audit.json",
+      "exists": true,
+      "bytes": 14739,
+      "sha256": "385f0d603fca26f8c53ebb6c243b53478f9299f08815c309f1f4a2cd14f2ac46"
+    },
     "failure_doc": {
       "path": "docs/failure_analysis.md",
       "exists": true,
@@ -86,6 +104,41 @@
       "sha256": "cd77f696656010ae78060083a601644ee3eba1a8ea798ac065c9971f6b3e7cbe"
     }
   },
+  "d2e_only_audit_report": {
+    "g003": {
+      "audit_key": "g003",
+      "status": "fail",
+      "error_count": 26,
+      "included_recording_variants": 918,
+      "source_ids": {
+        "d2e_480p": 459,
+        "d2e_original": 459
+      },
+      "resolution_tiers": {
+        "480p": 459,
+        "original_fhd_qhd": 459
+      },
+      "decode_source_ids": {},
+      "decode_resolution_tiers": {}
+    },
+    "g004": {
+      "audit_key": "g004",
+      "status": "fail",
+      "error_count": 46,
+      "included_recording_variants": 918,
+      "source_ids": {
+        "d2e_480p": 459,
+        "d2e_original": 459
+      },
+      "resolution_tiers": {
+        "480p": 459,
+        "original_fhd_qhd": 459
+      },
+      "decode_source_ids": {},
+      "decode_resolution_tiers": {}
+    }
+  },
+  "g005_audit_status": "fail",
   "findings": [
     {
       "severity": "error",
@@ -171,6 +224,26 @@
     },
     {
       "severity": "error",
+      "code": "d2e_only_completion_audit_not_pass",
+      "audit_key": "g003",
+      "status": "fail",
+      "error_count": 26
+    },
+    {
+      "severity": "error",
+      "code": "d2e_only_completion_audit_not_pass",
+      "audit_key": "g004",
+      "status": "fail",
+      "error_count": 46
+    },
+    {
+      "severity": "error",
+      "code": "g005_completion_audit_not_pass",
+      "status": "fail",
+      "error_count": 51
+    },
+    {
+      "severity": "error",
       "code": "failure_analysis_missing_axes",
       "missing": [
         "action"
@@ -213,6 +286,6 @@
       "actual": "pending_non_rejections"
     }
   ],
-  "error_count": 18,
-  "claim_boundary": "This audit is required before checkpointing G006 complete; endpoint statistics, failure analysis, claim taxonomy, readiness, and final artifact build summary must all pass with G003/G004/G005 prerequisites complete."
+  "error_count": 21,
+  "claim_boundary": "This audit is required before checkpointing G006 complete; endpoint statistics, failure analysis, claim taxonomy, readiness, and final artifact build summary must all pass with G003/G004 D2E-only audits and G005 prerequisite evidence complete."
 }

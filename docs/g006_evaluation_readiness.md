@@ -88,9 +88,12 @@ uv run python scripts/validate_g006_completion.py
 
 During upstream G003/G004/G005 execution this may be run with `--allow-fail`, but a
 terminal G006 checkpoint requires `artifacts/eval/g006_completion_audit.json` to
-report `status == pass`. The audit checks G006 goal state, G003/G004/G005 prerequisite
-goals, endpoint statistics, failure analysis, claim taxonomy, readiness audit,
-final artifact-build summary, required splits/endpoints, required failure axes,
+report `status == pass`. The audit checks G006 goal state, G003/G004/G005
+prerequisite goals, passing G003/G004 D2E-only completion audits with full D2E
+source/resolution tier counts (`d2e_480p=459`, `d2e_original=459`, `480p=459`,
+`original_fhd_qhd=459`), passing G005 completion-audit evidence, endpoint
+statistics, failure analysis, claim taxonomy, readiness audit, final
+artifact-build summary, required splits/endpoints, required failure axes,
 negative examples/non-rejections, required claim states/evidence paths, and
 forbidden claim boundaries.
 

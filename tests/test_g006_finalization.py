@@ -130,6 +130,11 @@ def _completion_config() -> dict:
         "goal_id": "G006-evaluation-failure-analysis",
         "prerequisite_goals": ["G003-d2e-only-idm", "G004-d2e-only-fdm-4xh200", "G005-aux-data-best-model"],
         "require_goal_checkpoint_complete": False,
+        "expected_recording_variants": 3,
+        "require_d2e_only_completion_audits_pass": True,
+        "require_g005_completion_audit_pass": True,
+        "expected_variants_by_source": {"d2e_480p": 2, "d2e_original": 1},
+        "expected_variants_by_resolution_tier": {"480p": 2, "original_fhd_qhd": 1},
         "required_splits": SPLITS,
         "required_endpoints": ENDPOINTS,
         "required_failure_axes": AXES,
@@ -149,6 +154,9 @@ def _completion_config() -> dict:
             "claim_taxonomy": "artifacts/eval/final_claim_taxonomy.json",
             "readiness_audit": "artifacts/eval/g006_readiness_audit.json",
             "build_summary": "artifacts/eval/g006_build_summary.json",
+            "g003_completion_audit": "artifacts/idm/g003_audit.json",
+            "g004_completion_audit": "artifacts/fdm/g004_audit.json",
+            "g005_completion_audit": "artifacts/aux/g005_audit.json",
             "failure_doc": "docs/failure.md",
         },
         "endpoint_expectations": {"status": "pass"},
@@ -228,6 +236,32 @@ def _write_complete_fixture(root: Path) -> None:
         },
     )
     write_json(root / "artifacts/aux/d2e_aux_ablation_summary.json", {"status": "pass"})
+    d2e_audit_counts = {
+        "included_recording_variants": 3,
+        "source_ids": {"d2e_480p": 2, "d2e_original": 1},
+        "resolution_tiers": {"480p": 2, "original_fhd_qhd": 1},
+    }
+    write_json(
+        root / "artifacts/idm/g003_audit.json",
+        {
+            "schema": "g003_full_idm_completion_audit.v1",
+            "status": "pass",
+            "error_count": 0,
+            "data_universe_counts": d2e_audit_counts,
+            "decode_counts_by_source": {"d2e_480p": 2, "d2e_original": 1},
+            "decode_counts_by_resolution_tier": {"480p": 2, "original_fhd_qhd": 1},
+        },
+    )
+    write_json(
+        root / "artifacts/fdm/g004_audit.json",
+        {
+            "schema": "g004_full_fdm_completion_audit.v1",
+            "status": "pass",
+            "error_count": 0,
+            "data_universe_counts": d2e_audit_counts,
+        },
+    )
+    write_json(root / "artifacts/aux/g005_audit.json", {"schema": "g005_aux_completion_audit.v1", "status": "pass", "error_count": 0})
 
 
 def test_finalize_g006_builds_readiness_and_completion_audits(tmp_path: Path):
