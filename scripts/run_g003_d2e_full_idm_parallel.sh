@@ -2,8 +2,9 @@
 set -euo pipefail
 
 OUTPUT_SUFFIX="${OUTPUT_SUFFIX:-full_compact_parallel}"
-NUM_SHARDS="${NUM_SHARDS:-8}"
+NUM_SHARDS="${NUM_SHARDS:-16}"
 SHARD_ROOT="${SHARD_ROOT:-outputs/data/d2e_full_corpus_shards}"
+LOG_DIR="${LOG_DIR:-artifacts/sources}"
 DATA_OUTPUT_DIR="${DATA_OUTPUT_DIR:-outputs/data/d2e_full_corpus}"
 DECODE_SUMMARY="${DECODE_SUMMARY:-artifacts/sources/d2e_full_corpus_decode_summary.json}"
 IDM_CONFIG="${IDM_CONFIG:-configs/model/idm_streaming_d2e_full_compact.yaml}"
@@ -14,7 +15,7 @@ SPLIT_STATS_CONFIG="${SPLIT_STATS_CONFIG:-configs/eval/g003_split_statistics.yam
 SPLIT_STATS_SUMMARY="${SPLIT_STATS_SUMMARY:-artifacts/eval/g003_split_statistical_comparisons_summary.json}"
 export BUILD_SPLIT_STATS SPLIT_STATS_CONFIG SPLIT_STATS_SUMMARY
 
-mkdir -p artifacts/sources artifacts/idm artifacts/mlxp outputs/cluster "${SHARD_ROOT}" "${DATA_OUTPUT_DIR}"
+mkdir -p "${LOG_DIR}" artifacts/sources artifacts/idm artifacts/mlxp outputs/cluster "${SHARD_ROOT}" "${DATA_OUTPUT_DIR}"
 
 uv run python scripts/cluster_gpu_smoke.py \
   --expected-gpus "${EXPECTED_GPUS:-4}" \
@@ -24,7 +25,7 @@ echo "Launching ${NUM_SHARDS} full-corpus extraction shards"
 pids=()
 for shard_index in $(seq 0 $((NUM_SHARDS - 1))); do
   shard_dir="${SHARD_ROOT}/shard_${shard_index}"
-  mkdir -p "${shard_dir}" artifacts/sources
+  mkdir -p "${shard_dir}" "${LOG_DIR}"
   (
     uv run python scripts/extract_d2e_full_corpus.py \
       --config configs/data/d2e_full_corpus.yaml \
@@ -39,7 +40,7 @@ for shard_index in $(seq 0 $((NUM_SHARDS - 1))); do
       --frame-fps "${FRAME_FPS:-20}" \
       --image-size "${IMAGE_SIZE:-64}" \
       --video-mode "${VIDEO_MODE:-download}"
-  ) > "artifacts/sources/d2e_full_corpus_shard_${shard_index}.log" 2>&1 &
+  ) > "${LOG_DIR}/d2e_full_corpus_shard_${shard_index}.log" 2>&1 &
   pids+=("$!")
 done
 

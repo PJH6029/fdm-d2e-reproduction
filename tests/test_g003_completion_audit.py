@@ -239,3 +239,17 @@ def test_g003_completion_audit_rejects_partial_gpu_monitor(tmp_path: Path):
     assert "gpu_monitor_too_few_rows" in codes
     assert "gpu_monitor_does_not_cover_expected_gpus" in codes
     assert "run_summary_gpu_monitor_missing_expected_gpus" in codes
+
+
+def test_g003_completion_audit_allows_configured_accelerated_shard_count(tmp_path: Path):
+    _complete_fixture(tmp_path)
+    cfg = _config()
+    cfg["allowed_shard_counts"] = [2, 4]
+    decode_path = tmp_path / cfg["paths"]["decode_summary"]
+    decode = json.loads(decode_path.read_text())
+    decode["num_shards"] = 4
+    write_json(decode_path, decode)
+
+    payload = validate_g003_full_idm_completion(cfg, root=tmp_path)
+    assert payload["status"] == "pass"
+    assert payload["allowed_shard_counts"] == [2, 4]

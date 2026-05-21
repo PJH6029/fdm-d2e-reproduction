@@ -142,3 +142,13 @@ passing `--allow-active-parent` for an operator-reviewed recovery.
 The per-recording cache layout makes these shard reruns resumable: existing
 `by_recording/.../all_records.jsonl` and `decode_summary.json` files are reused,
 while each shard aggregate JSONL is rebuilt from per-recording records.
+
+## Shard count and isolated acceleration
+
+The primary full-corpus path defaults to 16 extraction shards. The completion
+audit and final quality gate also allow an explicitly isolated 64-shard run,
+because shard count is an execution strategy rather than a scientific claim. If
+an accelerated run is launched while another extraction is still active, keep it
+isolated with separate `SHARD_ROOT`, `LOG_DIR`, and `OUTPUT_SUFFIX` values until
+an operator intentionally promotes its merged outputs into the canonical G003
+paths. Do not mix shard roots or overwrite active primary logs.

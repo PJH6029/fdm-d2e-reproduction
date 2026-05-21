@@ -81,6 +81,21 @@ def _expected_count_mismatches(actual: dict[str, int], expected: dict[str, Any],
     return findings
 
 
+def _allowed_ints(config: dict[str, Any], *, plural_key: str, fallback_key: str) -> list[int]:
+    values = config.get(plural_key)
+    if values is None:
+        values = [config.get(fallback_key)]
+    if not isinstance(values, list):
+        values = [values]
+    allowed: list[int] = []
+    for value in values:
+        try:
+            allowed.append(int(value))
+        except (TypeError, ValueError):
+            continue
+    return sorted(set(allowed))
+
+
 def _gpu_monitor_status(path: Path, expected_gpus: int) -> dict[str, Any]:
     status: dict[str, Any] = {
         "rows": 0,
@@ -124,6 +139,7 @@ def validate_g003_full_idm_completion(config: dict[str, Any], *, root: str | Pat
 
     expected_variants = int(config.get("expected_recording_variants", 918))
     expected_shards = int(config.get("expected_shards", 16))
+    allowed_shard_counts = _allowed_ints(config, plural_key="allowed_shard_counts", fallback_key="expected_shards")
     paths = {key: str(value) for key, value in dict(config.get("paths", {})).items()}
     artifacts = {key: _file_status(root_path / rel_path, rel_path) for key, rel_path in paths.items()}
     for key, evidence in artifacts.items():
@@ -184,8 +200,12 @@ def validate_g003_full_idm_completion(config: dict[str, Any], *, root: str | Pat
         selected = int(decode.get("selected_recording_variants", -1))
         if selected != expected_variants:
             findings.append({"severity": "error", "code": "decode_selected_variants_mismatch", "expected": expected_variants, "actual": selected})
-        if int(decode.get("num_shards", -1)) != expected_shards:
-            findings.append({"severity": "error", "code": "decode_num_shards_mismatch", "expected": expected_shards, "actual": decode.get("num_shards")})
+        try:
+            actual_shards = int(decode.get("num_shards", -1))
+        except (TypeError, ValueError):
+            actual_shards = -1
+        if actual_shards not in allowed_shard_counts:
+            findings.append({"severity": "error", "code": "decode_num_shards_mismatch", "expected": allowed_shard_counts, "actual": decode.get("num_shards")})
         failures = decode.get("failures") or []
         if failures:
             findings.append({"severity": "error", "code": "decode_failures_present", "count": len(failures)})
@@ -299,6 +319,7 @@ def validate_g003_full_idm_completion(config: dict[str, Any], *, root: str | Pat
         "require_goal_checkpoint_complete": require_goal_checkpoint,
         "expected_recording_variants": expected_variants,
         "expected_shards": expected_shards,
+        "allowed_shard_counts": allowed_shard_counts,
         "expected_gpus": expected_gpus,
         "artifacts": artifacts,
         "counts": count_report,

@@ -21,7 +21,7 @@ From the MLXP PVC checkout:
 cd /root/work/code/continuous-gui-poc/fdm-d2e-reproduction
 git pull --ff-only origin main
 uv sync --frozen --extra d2e --extra test --extra train
-NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh
+bash scripts/run_g003_d2e_full_idm_parallel.sh
 ```
 
 The parallel script launches disjoint recording-variant extraction shards,
@@ -30,8 +30,12 @@ windows into GPU memory, builds the preregistered split-specific statistical
 comparisons, and writes a run evidence JSON under `artifacts/idm/`.
 
 Use the sequential `scripts/run_g003_d2e_full_idm.sh` only for debugging. The
-uncapped full 480p+original corpus should use parallel shards; `NUM_SHARDS=16`
-is the current MLXP setting for a 128-core H200 production pod.
+uncapped full 480p+original corpus should use parallel shards; the script
+defaults to `NUM_SHARDS=16`, matching the primary MLXP setting for a 128-core
+H200 production pod. If an operator launches an explicitly isolated accelerated
+run, the completion gates also permit `NUM_SHARDS=64`; use a separate
+`SHARD_ROOT`/`LOG_DIR`/`OUTPUT_SUFFIX` so accelerated diagnostics do not
+overwrite the primary shard logs before the run is intentionally promoted.
 
 ## Expected outputs
 

@@ -84,6 +84,19 @@ def test_final_quality_gate_enforces_json_assertion_values(tmp_path):
     assert mismatches[0]["actual"] == "protocol_ready"
 
 
+def test_final_quality_gate_enforces_allowed_json_assertion_values(tmp_path):
+    _complete_fixture(tmp_path)
+    config = _config()
+    config["goal_gates"][1]["json_assertions"].append(
+        {"path": "artifacts/harness/live_validation.json", "json_path": "decode.num_shards", "in": [16, 64]}
+    )
+    write_json(tmp_path / "artifacts/harness/live_validation.json", {"quality_gate": {"status": "pass"}, "decode": {"num_shards": 32}})
+    payload = validate_final_quality_gates(config, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "json_assertion_not_in_allowed_values" in codes
+
+
 def test_final_quality_gate_writes_output_without_requiring_self_reference(tmp_path):
     _complete_fixture(tmp_path)
     config = {**_config(), "output_path": "artifacts/reproducibility/final_quality_gate_audit.json"}

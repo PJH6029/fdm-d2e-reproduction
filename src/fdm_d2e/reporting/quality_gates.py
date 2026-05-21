@@ -68,6 +68,19 @@ def _check_json_assertions(root: Path, assertions: list[dict[str, Any]]) -> list
                     "actual": actual,
                 }
             )
+        if "in" in assertion:
+            allowed = list(assertion.get("in") or [])
+            if actual not in allowed:
+                findings.append(
+                    {
+                        "severity": "error",
+                        "code": "json_assertion_not_in_allowed_values",
+                        "path": path_text,
+                        "json_path": json_path,
+                        "allowed": allowed,
+                        "actual": actual,
+                    }
+                )
         if assertion.get("truthy") and not actual:
             findings.append({"severity": "error", "code": "json_assertion_not_truthy", "path": path_text, "json_path": json_path, "actual": actual})
     return findings
