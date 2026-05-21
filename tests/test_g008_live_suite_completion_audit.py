@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -98,6 +99,17 @@ def _complete_fixture(root: Path) -> None:
             },
             "episode_results": episode_results,
             "statistical_comparison_artifact": {"path": stats_path, "exists": True},
+            "statistical_comparison_summary": {
+                "method": "paired_bootstrap_holm",
+                "baseline_name": "random_or_noop_smoke_baseline",
+                "adjusted_p_value": 0.01,
+                "effect_size": 0.25,
+                "agent_mean_score": 10.0,
+                "baseline_mean_score": 1.0,
+                "mean_score_delta": 9.0,
+                "episode_count": 15,
+                "holm_adjusted_p_lt_0_05": True,
+            },
             "findings": [],
         },
     )
@@ -125,3 +137,17 @@ def test_g008_completion_audit_rejects_protocol_only_and_missing_prereq(tmp_path
     assert "validation_schema_not_live_evidence" in codes
     assert "live_suite_quality_gate_not_pass" in codes
     assert "live_suite_evidence_mode_not_allowed" in codes
+
+
+def test_g008_completion_audit_rejects_missing_strong_stats_summary(tmp_path: Path):
+    _complete_fixture(tmp_path)
+    cfg = _config()
+    validation_path = tmp_path / cfg["paths"]["evidence_validation"]
+    payload = json.loads(validation_path.read_text())
+    payload.pop("statistical_comparison_summary")
+    write_json(validation_path, payload)
+    audit = validate_g008_live_suite_completion(cfg, root=tmp_path)
+    codes = {item["code"] for item in audit["findings"]}
+    assert audit["status"] == "fail"
+    assert "missing_live_suite_strong_statistical_bar" in codes
+    assert "live_suite_adjusted_p_value_not_significant" in codes

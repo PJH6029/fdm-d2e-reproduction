@@ -62,6 +62,38 @@ def _numeric(value: Any, default: float = 0.0) -> float:
         return default
 
 
+def _optional_numeric(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _load_json_artifact(path_text: str | None, *, root: Path) -> dict[str, Any] | None:
+    if not path_text:
+        return None
+    path = root / path_text
+    if not path.exists() or not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {"schema": "invalid_json"}
+    return payload if isinstance(payload, dict) else {"schema": "invalid_json", "actual_type": type(payload).__name__}
+
+
+def _first_value(*sources: dict[str, Any] | None, keys: tuple[str, ...]) -> Any:
+    for source in sources:
+        if not isinstance(source, dict):
+            continue
+        for key in keys:
+            if key in source:
+                return source[key]
+    return None
+
+
 def planned_open_source_games(config: dict[str, Any]) -> list[dict[str, Any]]:
     """Return enabled open-source graphical/offline games from a suite config."""
 
@@ -139,6 +171,8 @@ def live_suite_thresholds(config: dict[str, Any]) -> dict[str, Any]:
         "require_runtime_metadata": bool(thresholds.get("require_runtime_metadata", True)),
         "require_window_title_match": bool(thresholds.get("require_window_title_match", True)),
         "min_action_count_per_episode": int(thresholds.get("min_action_count_per_episode", 1)),
+        "max_adjusted_p_value": float(thresholds.get("max_adjusted_p_value", 0.05)),
+        "min_effect_size": float(thresholds.get("min_effect_size", 0.0)),
     }
 
 
@@ -269,6 +303,95 @@ def _runtime_metadata_status(
     )
 
 
+def _statistical_comparison_status(
+    statistical_comparison: dict[str, Any],
+    *,
+    stats_file: dict[str, Any],
+    stats_payload: dict[str, Any] | None,
+    thresholds: dict[str, Any],
+    observed_episodes: int,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    findings: list[dict[str, Any]] = []
+    artifact_payload = stats_payload if isinstance(stats_payload, dict) else None
+    if stats_file["exists"] and (not artifact_payload or artifact_payload.get("schema") == "invalid_json"):
+        findings.append(
+            {
+                "severity": "error",
+                "code": "invalid_or_empty_statistical_comparison_artifact",
+                "path": stats_file["path"],
+            }
+        )
+    method = _first_value(artifact_payload, statistical_comparison, keys=("method", "test_name", "statistical_test"))
+    baseline_name = _first_value(artifact_payload, statistical_comparison, keys=("baseline_name", "baseline"))
+    adjusted_p = _optional_numeric(
+        _first_value(
+            artifact_payload,
+            statistical_comparison,
+            keys=("adjusted_p_value", "holm_adjusted_p_value", "p_value_adjusted"),
+        )
+    )
+    effect_size = _optional_numeric(_first_value(artifact_payload, statistical_comparison, keys=("effect_size", "mean_effect_size", "cohens_d")))
+    agent_mean = _optional_numeric(_first_value(artifact_payload, statistical_comparison, keys=("agent_mean_score", "model_mean_score", "trained_mean_score")))
+    baseline_mean = _optional_numeric(_first_value(artifact_payload, statistical_comparison, keys=("baseline_mean_score", "smoke_baseline_mean_score", "random_baseline_mean_score")))
+    mean_delta = _optional_numeric(_first_value(artifact_payload, statistical_comparison, keys=("mean_score_delta", "agent_baseline_delta", "delta_mean")))
+    episode_count = _optional_numeric(_first_value(artifact_payload, statistical_comparison, keys=("episode_count", "episodes_observed", "n_episodes", "n")))
+    strong_bar = _first_value(artifact_payload, statistical_comparison, keys=("holm_adjusted_p_lt_0_05", "strong_statistical_bar"))
+
+    if not method:
+        findings.append({"severity": "error", "code": "missing_statistical_method"})
+    if not baseline_name:
+        findings.append({"severity": "error", "code": "missing_statistical_baseline_name"})
+    if strong_bar is not True:
+        findings.append({"severity": "error", "code": "missing_strong_statistical_bar"})
+    if adjusted_p is None or adjusted_p > thresholds["max_adjusted_p_value"]:
+        findings.append(
+            {
+                "severity": "error",
+                "code": "adjusted_p_value_not_significant",
+                "max_adjusted_p_value": thresholds["max_adjusted_p_value"],
+                "actual": adjusted_p,
+            }
+        )
+    if effect_size is None or effect_size <= thresholds["min_effect_size"]:
+        findings.append(
+            {
+                "severity": "error",
+                "code": "effect_size_not_positive",
+                "min_effect_size": thresholds["min_effect_size"],
+                "actual": effect_size,
+            }
+        )
+    if mean_delta is None and agent_mean is not None and baseline_mean is not None:
+        mean_delta = agent_mean - baseline_mean
+    if mean_delta is None or mean_delta <= 0.0:
+        findings.append({"severity": "error", "code": "agent_not_above_baseline", "mean_score_delta": mean_delta})
+    if episode_count is None or episode_count < observed_episodes:
+        findings.append(
+            {
+                "severity": "error",
+                "code": "statistical_comparison_episode_count_too_low",
+                "expected_min": observed_episodes,
+                "actual": episode_count,
+            }
+        )
+    summary = {
+        "path": stats_file["path"],
+        "exists": stats_file["exists"],
+        "method": method,
+        "baseline_name": baseline_name,
+        "adjusted_p_value": adjusted_p,
+        "max_adjusted_p_value": thresholds["max_adjusted_p_value"],
+        "effect_size": effect_size,
+        "min_effect_size": thresholds["min_effect_size"],
+        "agent_mean_score": agent_mean,
+        "baseline_mean_score": baseline_mean,
+        "mean_score_delta": mean_delta,
+        "episode_count": episode_count,
+        "holm_adjusted_p_lt_0_05": strong_bar,
+    }
+    return summary, findings
+
+
 def validate_live_suite_evidence(config: dict[str, Any], evidence: dict[str, Any], *, root: str | Path = ".") -> dict[str, Any]:
     """Validate live open-source graphical game evidence for the G008 gate.
 
@@ -391,13 +514,29 @@ def validate_live_suite_evidence(config: dict[str, Any], evidence: dict[str, Any
             }
         )
 
-    statistical_comparison = evidence.get("statistical_comparison") or {}
+    statistical_comparison_raw = evidence.get("statistical_comparison") or {}
+    statistical_comparison = statistical_comparison_raw if isinstance(statistical_comparison_raw, dict) else {}
+    if statistical_comparison_raw and not isinstance(statistical_comparison_raw, dict):
+        findings.append(
+            {
+                "severity": "error",
+                "code": "invalid_statistical_comparison_metadata",
+                "actual_type": type(statistical_comparison_raw).__name__,
+            }
+        )
     stats_file = _file_status(statistical_comparison.get("path"), root=root_path)
+    stats_payload = _load_json_artifact(statistical_comparison.get("path"), root=root_path)
+    stats_summary, stats_findings = _statistical_comparison_status(
+        statistical_comparison,
+        stats_file=stats_file,
+        stats_payload=stats_payload,
+        thresholds=thresholds,
+        observed_episodes=len(episode_results),
+    )
     if thresholds["require_statistical_comparison"]:
         if not stats_file["exists"]:
             findings.append({"severity": "error", "code": "missing_statistical_comparison_artifact"})
-        if statistical_comparison.get("holm_adjusted_p_lt_0_05") is not True:
-            findings.append({"severity": "error", "code": "missing_strong_statistical_bar"})
+        findings.extend(stats_findings)
 
     passed_game_ids = {game_id for game_id, rows in by_game.items() if any(row["passed"] for row in rows)}
     task_pass_rate = len(passed_tasks) / max(1, len(task_defs))
@@ -435,6 +574,7 @@ def validate_live_suite_evidence(config: dict[str, Any], evidence: dict[str, Any
         "task_summaries": task_summaries,
         "episode_results": episode_results,
         "statistical_comparison_artifact": stats_file,
+        "statistical_comparison_summary": stats_summary,
         "findings": findings,
     }
 

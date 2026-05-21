@@ -18,6 +18,20 @@ def _rel_file(root: Path, rel_path: str, text: str = "evidence") -> str:
     return rel_path
 
 
+def _stats_payload() -> dict:
+    return {
+        "schema": "live_suite_statistical_comparison.v1",
+        "method": "paired_bootstrap_holm",
+        "baseline_name": "random_or_noop_smoke_baseline",
+        "adjusted_p_value": 0.01,
+        "effect_size": 0.2,
+        "agent_mean_score": 2.0,
+        "baseline_mean_score": 1.0,
+        "episode_count": 1,
+        "holm_adjusted_p_lt_0_05": True,
+    }
+
+
 def _write_config(root: Path) -> Path:
     config_path = root / "suite.json"
     write_json(
@@ -97,7 +111,7 @@ def _write_evidence(root: Path, *, evidence_mode: str = "live_desktop_control") 
                 }
             ],
             "statistical_comparison": {
-                "path": _rel_file(root, "artifacts/statistical_comparison.json", "{}"),
+                "path": _rel_file(root, "artifacts/statistical_comparison.json", json.dumps(_stats_payload())),
                 "holm_adjusted_p_lt_0_05": True,
             },
         },

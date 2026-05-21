@@ -28,6 +28,15 @@ def _get(data: dict[str, Any] | None, dotted: str) -> Any:
     return cur
 
 
+def _numeric(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _goal_statuses(root: Path, goals_path: str) -> dict[str, str]:
     payload = _load_json(root / goals_path) or {}
     return {str(goal.get("id")): str(goal.get("status")) for goal in payload.get("goals", [])}
@@ -109,6 +118,44 @@ def validate_g008_live_suite_completion(config: dict[str, Any], *, root: str | P
             findings.append({"severity": "error", "code": "live_suite_validation_findings_present", "actual": gate.get("findings_count")})
         if _get(validation, "statistical_comparison_artifact.exists") is not True:
             findings.append({"severity": "error", "code": "missing_live_suite_statistical_comparison_artifact"})
+        stats_summary = validation.get("statistical_comparison_summary") if isinstance(validation.get("statistical_comparison_summary"), dict) else {}
+        max_adjusted_p = float(thresholds.get("max_adjusted_p_value", 0.05))
+        min_effect_size = float(thresholds.get("min_effect_size", 0.0))
+        adjusted_p = _numeric(stats_summary.get("adjusted_p_value"))
+        effect_size = _numeric(stats_summary.get("effect_size"))
+        episode_count = _numeric(stats_summary.get("episode_count"))
+        mean_delta = _numeric(stats_summary.get("mean_score_delta"))
+        if stats_summary.get("holm_adjusted_p_lt_0_05") is not True:
+            findings.append({"severity": "error", "code": "missing_live_suite_strong_statistical_bar"})
+        if adjusted_p is None or adjusted_p > max_adjusted_p:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "live_suite_adjusted_p_value_not_significant",
+                    "max_adjusted_p_value": max_adjusted_p,
+                    "actual": adjusted_p,
+                }
+            )
+        if effect_size is None or effect_size <= min_effect_size:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "live_suite_effect_size_not_positive",
+                    "min_effect_size": min_effect_size,
+                    "actual": effect_size,
+                }
+            )
+        if mean_delta is None or mean_delta <= 0.0:
+            findings.append({"severity": "error", "code": "live_suite_agent_not_above_baseline", "mean_score_delta": mean_delta})
+        if episode_count is None or episode_count < min_episodes:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "live_suite_statistical_episode_count_too_low",
+                    "expected_min": min_episodes,
+                    "actual": episode_count,
+                }
+            )
         allowed_modes = {str(item).lower() for item in config.get("allowed_evidence_modes", ["live_desktop_control", "live_graphical_game_control"])}
         evidence_mode = validation.get("evidence_mode")
         if str(evidence_mode).lower() not in allowed_modes:

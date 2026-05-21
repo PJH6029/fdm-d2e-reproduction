@@ -104,7 +104,9 @@ For each planned game/task/seed episode, the evidence JSON must include:
 - Existing `video_path`, `replay_path`, `latency_log_path`, and `failure_log_path`.
 
 The suite also requires a statistical-comparison artifact and an explicit strong
-statistical bar field:
+statistical bar. The artifact must be parseable JSON with the baseline name,
+method, adjusted p-value, positive effect size, score delta, and episode count;
+an empty artifact plus a boolean is rejected.
 
 ```json
 {
@@ -112,6 +114,22 @@ statistical bar field:
     "path": "artifacts/harness/<run>/statistical_comparison.json",
     "holm_adjusted_p_lt_0_05": true
   }
+}
+```
+
+The referenced `statistical_comparison.json` should include at least:
+
+```json
+{
+  "schema": "live_suite_statistical_comparison.v1",
+  "method": "paired_bootstrap_holm",
+  "baseline_name": "random_or_noop_smoke_baseline",
+  "adjusted_p_value": 0.01,
+  "effect_size": 0.25,
+  "agent_mean_score": 10.0,
+  "baseline_mean_score": 1.0,
+  "episode_count": 15,
+  "holm_adjusted_p_lt_0_05": true
 }
 ```
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -30,6 +31,20 @@ def _write(path: Path, text: str = "evidence") -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text)
     return str(path)
+
+
+def _stats_payload(episode_count: int = 15) -> dict:
+    return {
+        "schema": "live_suite_statistical_comparison.v1",
+        "method": "paired_bootstrap_holm",
+        "baseline_name": "random_or_noop_smoke_baseline",
+        "adjusted_p_value": 0.01,
+        "effect_size": 0.25,
+        "agent_mean_score": 10.0,
+        "baseline_mean_score": 1.0,
+        "episode_count": episode_count,
+        "holm_adjusted_p_lt_0_05": True,
+    }
 
 
 def _passing_evidence(tmp_path: Path, config: dict) -> dict:
@@ -66,7 +81,7 @@ def _passing_evidence(tmp_path: Path, config: dict) -> dict:
                         "failure_log_path": _write(prefix / "failures.jsonl", "[]"),
                     }
                 )
-    stats = _write(tmp_path / "evidence" / "statistical_comparison.json", "{}")
+    stats = _write(tmp_path / "evidence" / "statistical_comparison.json", json.dumps(_stats_payload(len(episodes))))
     return {
         "schema": "live_game_suite_evidence.v1",
         "evidence_mode": "live_desktop_control",
@@ -83,7 +98,29 @@ def test_live_suite_evidence_passes_only_with_videos_replays_latency_failures_an
     assert result["quality_gate"]["passed_tasks"] == 3
     assert result["quality_gate"]["episodes_observed"] == 15
     assert result["statistical_comparison_artifact"]["exists"] is True
+    assert result["statistical_comparison_summary"]["adjusted_p_value"] == 0.01
     assert not result["findings"]
+
+
+def test_live_suite_rejects_empty_statistical_comparison_artifact(tmp_path):
+    config = load_config(CONFIG_PATH)
+    evidence = _passing_evidence(tmp_path, config)
+    Path(evidence["statistical_comparison"]["path"]).write_text("{}")
+    result = validate_live_suite_evidence(config, evidence)
+    codes = {item["code"] for item in result["findings"]}
+    assert result["quality_gate"]["status"] == "fail"
+    assert "invalid_or_empty_statistical_comparison_artifact" in codes
+    assert "adjusted_p_value_not_significant" in codes
+
+
+def test_live_suite_rejects_non_object_statistical_metadata(tmp_path):
+    config = load_config(CONFIG_PATH)
+    evidence = _passing_evidence(tmp_path, config)
+    evidence["statistical_comparison"] = "not-a-dict"
+    result = validate_live_suite_evidence(config, evidence)
+    codes = {item["code"] for item in result["findings"]}
+    assert result["quality_gate"]["status"] == "fail"
+    assert "invalid_statistical_comparison_metadata" in codes
 
 
 def test_live_suite_rejects_dry_run_or_game_adjacent_evidence(tmp_path):

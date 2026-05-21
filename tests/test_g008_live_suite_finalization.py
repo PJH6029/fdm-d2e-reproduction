@@ -39,6 +39,20 @@ def _write_text(root: Path, rel_path: str, text: str = "evidence") -> str:
     return rel_path
 
 
+def _stats_payload(episode_count: int) -> dict:
+    return {
+        "schema": "live_suite_statistical_comparison.v1",
+        "method": "paired_bootstrap_holm",
+        "baseline_name": "random_or_noop_smoke_baseline",
+        "adjusted_p_value": 0.01,
+        "effect_size": 0.25,
+        "agent_mean_score": 10.0,
+        "baseline_mean_score": 1.0,
+        "episode_count": episode_count,
+        "holm_adjusted_p_lt_0_05": True,
+    }
+
+
 def _suite_config() -> dict:
     return {
         "schema": "live_game_suite_config.v1",
@@ -165,7 +179,7 @@ def _write_passing_evidence(root: Path) -> str:
                     "failure_log_path": _write_text(root, f"{prefix}/failures.jsonl", "[]\n"),
                 }
             )
-    stats_path = _write_text(root, "artifacts/harness/live/statistical_comparison.json", "{}")
+    stats_path = _write_text(root, "artifacts/harness/live/statistical_comparison.json", json.dumps(_stats_payload(len(episodes))))
     evidence_path = "artifacts/harness/live/evidence.json"
     write_json(
         root / evidence_path,
