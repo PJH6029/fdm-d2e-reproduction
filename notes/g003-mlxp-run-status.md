@@ -420,3 +420,13 @@ uv run python scripts/audit_g003_live_health.py \
   --gpu-monitor-pid-file outputs/cluster/g003_accel64_attached_gpu_monitor.pid \
   --num-shards 64
 ```
+
+## 2026-05-22 00:34 KST repair-aware monitor deployment snapshot
+
+- Pushed commit `62b4104` and fast-forwarded the pod checkout from `f028633` to `62b4104` without reducing generated evidence/status lines (`85`).
+- `scripts/monitor_g003_progress.py` and `scripts/audit_g003_live_health.py` now account for lane-scoped isolated repair PID files. For accel64, the default repair glob is `outputs/cluster/g003_accel64_shard_*_repair.pid`; for canonical G003 it remains lane-isolated as `outputs/cluster/g003_shard_*_repair.pid`.
+- Pod validation after pull: `uv run pytest tests/test_g003_monitor.py -q` passed (`19` tests).
+- Corrected accel64 live health now reports `healthy_running` instead of a false low-active warning: decoded `388 / 918`, active extractor shards `64 / 64`, inactive incomplete shards `[]`, repair pid evidence `outputs/cluster/g003_accel64_shard_29_repair.pid -> 113351` running for shard `29`.
+- Canonical 16-shard lane remains healthy/running: decoded `274 / 918`, active extractor shards `16 / 16`, inactive incomplete shards `[]`.
+- Shard 29 repair has not completed yet: `outputs/data/d2e_full_corpus_shards_accel64/shard_29/decode_summary.json` was still absent at this snapshot.
+- `G003-d2e-only-idm` remains `in_progress`; local completion audit still fails with missing full decode/merge/IDM artifacts. Do not checkpoint G003 complete.
