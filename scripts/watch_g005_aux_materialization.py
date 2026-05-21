@@ -194,6 +194,29 @@ def _write_summary(root: Path, output: str | Path, payload: dict[str, Any]) -> N
     write_json(_path(root, output), payload)
 
 
+def _write_phase_summary(
+    args: argparse.Namespace,
+    root: Path,
+    base: dict[str, Any],
+    *,
+    started_at: float,
+    now: float,
+    status: str,
+    materialization: dict[str, Any],
+    **fields: Any,
+) -> dict[str, Any]:
+    payload = {
+        **base,
+        "status": status,
+        "elapsed_seconds": max(0.0, now - started_at),
+        "materialization": materialization,
+        "findings": [],
+        **fields,
+    }
+    _write_summary(root, args.output, payload)
+    return payload
+
+
 def _call_namespace_builder(args: argparse.Namespace, root: Path) -> dict[str, Any]:
     payload = build_namespace_manifest(
         aux_candidates_path=str(_path(root, args.aux_candidates)),
@@ -278,6 +301,7 @@ def watch(
                 _write_summary(root, args.output, payload)
                 return payload
 
+            _write_phase_summary(args, root, base, started_at=started, now=time_func(), status="building_materialization_integrity", materialization=snapshot)
             integrity = integrity_func(_integrity_args(args, root))
             write_json(_path(root, args.integrity_output), integrity)
             if integrity.get("status") != "pass":
@@ -293,6 +317,16 @@ def watch(
                 _write_summary(root, args.output, payload)
                 return payload
 
+            _write_phase_summary(
+                args,
+                root,
+                base,
+                started_at=started,
+                now=time_func(),
+                status="building_source_evidence",
+                materialization=snapshot,
+                materialization_integrity_status=integrity.get("status"),
+            )
             source_evidence = source_evidence_func(_source_evidence_args(args, root))
             write_json(_path(root, args.source_evidence_output), source_evidence)
             if source_evidence.get("status") != "pass":
@@ -309,6 +343,17 @@ def watch(
                 _write_summary(root, args.output, payload)
                 return payload
 
+            _write_phase_summary(
+                args,
+                root,
+                base,
+                started_at=started,
+                now=time_func(),
+                status="building_aux_examples",
+                materialization=snapshot,
+                materialization_integrity_status=integrity.get("status"),
+                source_evidence_status=source_evidence.get("status"),
+            )
             aux_examples = aux_examples_func(_aux_examples_args(args, root))
             write_json(_path(root, args.aux_examples_output), aux_examples)
             if aux_examples.get("status") != "pass":
@@ -326,6 +371,18 @@ def watch(
                 _write_summary(root, args.output, payload)
                 return payload
 
+            _write_phase_summary(
+                args,
+                root,
+                base,
+                started_at=started,
+                now=time_func(),
+                status="validating_runtime_env",
+                materialization=snapshot,
+                materialization_integrity_status=integrity.get("status"),
+                source_evidence_status=source_evidence.get("status"),
+                aux_examples_status=aux_examples.get("status"),
+            )
             runtime_env = runtime_env_func(_runtime_env_args(args, root))
             write_json(_path(root, args.runtime_env_output), runtime_env)
             if runtime_env.get("status") != "pass":
@@ -344,6 +401,19 @@ def watch(
                 _write_summary(root, args.output, payload)
                 return payload
 
+            _write_phase_summary(
+                args,
+                root,
+                base,
+                started_at=started,
+                now=time_func(),
+                status="building_namespace_manifest",
+                materialization=snapshot,
+                materialization_integrity_status=integrity.get("status"),
+                source_evidence_status=source_evidence.get("status"),
+                aux_examples_status=aux_examples.get("status"),
+                runtime_env_status=runtime_env.get("status"),
+            )
             namespace_manifest = namespace_func(args, root)
             if namespace_manifest.get("completion_ready") is not True:
                 payload = {
@@ -361,6 +431,20 @@ def watch(
                 _write_summary(root, args.output, payload)
                 return payload
 
+            _write_phase_summary(
+                args,
+                root,
+                base,
+                started_at=started,
+                now=time_func(),
+                status="planning_g005_launch",
+                materialization=snapshot,
+                materialization_integrity_status=integrity.get("status"),
+                source_evidence_status=source_evidence.get("status"),
+                aux_examples_status=aux_examples.get("status"),
+                runtime_env_status=runtime_env.get("status"),
+                namespace_completion_ready=namespace_manifest.get("completion_ready"),
+            )
             plan = plan_func(_plan_args(args, root))
             write_json(_path(root, args.g005_launch_readiness_output), plan)
             if plan.get("status") != "ready":

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -172,6 +173,28 @@ def test_watcher_blocks_when_aux_examples_fail(tmp_path: Path):
     )
     assert payload["status"] == "aux_examples_not_pass"
     assert payload["aux_examples_error_count"] == 4
+
+
+def test_watcher_writes_aux_example_phase_before_expensive_builder(tmp_path: Path):
+    write_json(tmp_path / "artifacts/aux/materialize_summary.json", {"status": "pass"})
+    phase_seen: dict[str, str] = {}
+
+    def fake_aux(ns: Namespace) -> dict:
+        phase_seen["status"] = json.loads((tmp_path / "artifacts/aux/watcher.json").read_text(encoding="utf-8"))["status"]
+        return {"status": "blocked", "error_count": 4}
+
+    payload = watch(
+        _args(tmp_path),
+        integrity_func=lambda ns: {"status": "pass", "error_count": 0},
+        source_evidence_func=lambda ns: {"status": "pass", "error_count": 0},
+        aux_examples_func=fake_aux,
+        runtime_env_func=lambda ns: {"status": "pass", "error_count": 0},
+        namespace_func=lambda ns, root: {"completion_ready": True},
+        plan_func=lambda ns: {"status": "ready"},
+    )
+
+    assert phase_seen["status"] == "building_aux_examples"
+    assert payload["status"] == "aux_examples_not_pass"
 
 
 def test_watcher_blocks_when_runtime_env_fails(tmp_path: Path):
