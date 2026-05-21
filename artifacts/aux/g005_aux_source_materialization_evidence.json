@@ -1,0 +1,183 @@
+{
+  "schema": "g005_aux_source_materialization_evidence.v1",
+  "status": "blocked",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "namespace_root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux",
+  "required_splits": [
+    "train",
+    "val",
+    "test"
+  ],
+  "selected_aux_source_ids": [
+    "atari_head_zenodo_v4",
+    "minerl_2019_zenodo_v2",
+    "p_doom_atari_breakout_hf"
+  ],
+  "materialized_source_ids": [],
+  "total_bytes": 0,
+  "aux_sources": [
+    {
+      "id": "atari_head_zenodo_v4",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4",
+      "source_url": "https://zenodo.org/records/3451402",
+      "license_id": "cc-by-4.0",
+      "provenance_sha256": null,
+      "source_manifest_sha256": null,
+      "action_head": {
+        "type": "atari_discrete",
+        "namespace": "atari_head_zenodo_v4"
+      },
+      "d2e_heldout_overlap_count": null,
+      "d2e_heldout_overlap_recording_ids": [],
+      "d2e_heldout_overlap_basis": null,
+      "materialized": false,
+      "template_only": true,
+      "file_count": 0,
+      "total_bytes": 0,
+      "files": [],
+      "files_truncated": false,
+      "split_hashes": {
+        "train": {
+          "split": "train",
+          "file_count": 0,
+          "bytes": 0,
+          "sha256": null,
+          "paths": [],
+          "truncated_paths": false
+        },
+        "val": {
+          "split": "val",
+          "file_count": 0,
+          "bytes": 0,
+          "sha256": null,
+          "paths": [],
+          "truncated_paths": false
+        },
+        "test": {
+          "split": "test",
+          "file_count": 0,
+          "bytes": 0,
+          "sha256": null,
+          "paths": [],
+          "truncated_paths": false
+        }
+      }
+    },
+    {
+      "id": "minerl_2019_zenodo_v2",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2",
+      "source_url": "https://zenodo.org/records/12659939",
+      "license_id": "mit-license",
+      "provenance_sha256": null,
+      "source_manifest_sha256": null,
+      "action_head": {
+        "type": "minecraft_keyboard_mouse",
+        "namespace": "minerl_2019_zenodo_v2"
+      },
+      "d2e_heldout_overlap_count": null,
+      "d2e_heldout_overlap_recording_ids": [],
+      "d2e_heldout_overlap_basis": null,
+      "materialized": false,
+      "template_only": true,
+      "file_count": 0,
+      "total_bytes": 0,
+      "files": [],
+      "files_truncated": false,
+      "split_hashes": {
+        "train": {
+          "split": "train",
+          "file_count": 0,
+          "bytes": 0,
+          "sha256": null,
+          "paths": [],
+          "truncated_paths": false
+        },
+        "val": {
+          "split": "val",
+          "file_count": 0,
+          "bytes": 0,
+          "sha256": null,
+          "paths": [],
+          "truncated_paths": false
+        },
+        "test": {
+          "split": "test",
+          "file_count": 0,
+          "bytes": 0,
+          "sha256": null,
+          "paths": [],
+          "truncated_paths": false
+        }
+      }
+    },
+    {
+      "id": "p_doom_atari_breakout_hf",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf",
+      "source_url": "https://huggingface.co/datasets/p-doom/atari-breakout-dataset",
+      "license_id": "cc0-1.0",
+      "provenance_sha256": null,
+      "source_manifest_sha256": null,
+      "action_head": {
+        "type": "atari_discrete",
+        "namespace": "p_doom_atari_breakout_hf"
+      },
+      "d2e_heldout_overlap_count": null,
+      "d2e_heldout_overlap_recording_ids": [],
+      "d2e_heldout_overlap_basis": null,
+      "materialized": false,
+      "template_only": true,
+      "file_count": 0,
+      "total_bytes": 0,
+      "files": [],
+      "files_truncated": false,
+      "split_hashes": {
+        "train": {
+          "split": "train",
+          "file_count": 0,
+          "bytes": 0,
+          "sha256": null,
+          "paths": [],
+          "truncated_paths": false
+        },
+        "val": {
+          "split": "val",
+          "file_count": 0,
+          "bytes": 0,
+          "sha256": null,
+          "paths": [],
+          "truncated_paths": false
+        },
+        "test": {
+          "split": "test",
+          "file_count": 0,
+          "bytes": 0,
+          "sha256": null,
+          "paths": [],
+          "truncated_paths": false
+        }
+      }
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "aux_namespace_missing",
+      "source_id": "atari_head_zenodo_v4",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4"
+    },
+    {
+      "severity": "error",
+      "code": "aux_namespace_missing",
+      "source_id": "minerl_2019_zenodo_v2",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2"
+    },
+    {
+      "severity": "error",
+      "code": "aux_namespace_missing",
+      "source_id": "p_doom_atari_breakout_hf",
+      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf"
+    }
+  ],
+  "error_count": 3,
+  "claim_boundary": "Aux source materialization evidence only; it does not start G005 training, checkpoint G005, or prove D2E+aux model quality."
+}

@@ -144,6 +144,11 @@ def _completion_ready(sources: list[dict[str, Any]], eval_hashes: dict[str, dict
             overlap_count = -1
         if overlap_count != 0:
             return False
+        split_hashes = row.get("split_hashes")
+        if not isinstance(split_hashes, dict) or not split_hashes:
+            return False
+        if not all(isinstance(value, dict) and value.get("sha256") for value in split_hashes.values()):
+            return False
         action_head = row.get("action_head")
         if not isinstance(action_head, dict) or action_head.get("namespace") != row.get("id") or not action_head.get("type"):
             return False

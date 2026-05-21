@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 234,
+  "entry_count": 237,
   "entries": [
     {
       "path": "README.md",
@@ -32,6 +32,12 @@
       "kind": "evidence_artifact",
       "bytes": 1617,
       "sha256": "9167d52d04afff05d67a13435dc7854fbcfad1a43717186b2880df0f6457a6c0"
+    },
+    {
+      "path": "artifacts/aux/g005_aux_source_materialization_evidence.json",
+      "kind": "evidence_artifact",
+      "bytes": 5455,
+      "sha256": "33caa71ae271e192a1eb648f99a9996939fe0b6960076fb363c5694283962cae"
     },
     {
       "path": "artifacts/aux/g005_launch_readiness.json",
@@ -558,8 +564,8 @@
     {
       "path": "docs/auxiliary_data_plan.md",
       "kind": "documentation",
-      "bytes": 9058,
-      "sha256": "64d78f0e7f2226fa1da17e6865bd70036cd0bdc37aea5683df4cc5f69c2000a6"
+      "bytes": 9526,
+      "sha256": "a5f732a45fa242df7bf2bce06cd15f17deaf2fe7aabaaa6361f38af1d69433c8"
     },
     {
       "path": "docs/baselines_statistics.md",
@@ -726,8 +732,14 @@
     {
       "path": "scripts/build_g005_aux_namespace_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 10625,
-      "sha256": "0a24c97c723792d452001a635ef54d47a3e907a58c44280267355c6e47046799"
+      "bytes": 10893,
+      "sha256": "768ae2fc144d28c4b1040c866d30b4b5be33142c9156258afb385985f0580c11"
+    },
+    {
+      "path": "scripts/build_g005_aux_source_evidence.py",
+      "kind": "reproduction_script",
+      "bytes": 9263,
+      "sha256": "7770c5fbc239b67a20fddc528f283258998ddfee8e152c6e8dca8f42bee323ee"
     },
     {
       "path": "scripts/build_g005_eval_manifest_hashes.py",
@@ -744,8 +756,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 14936,
-      "sha256": "1043690a376731b91169d789108373d48e121b61a654a7e4d497a04d4fc4d8f8"
+      "bytes": 15106,
+      "sha256": "abbc69efd10c239f283872b47d55a302d5696ae6635c57e1ccd4bbecc8cc7bd8"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -1282,6 +1294,12 @@
       "sha256": "b1f99bc2cf01627eae9322e4aadd9d1d992f11fcf596602cd9cf600068b30bdf"
     },
     {
+      "path": "tests/test_g005_aux_source_evidence_builder.py",
+      "kind": "other",
+      "bytes": 4043,
+      "sha256": "b1b938447f6454969ceb3d4670b56eeb10125939e274e8e4a8f618b913613ece"
+    },
+    {
       "path": "tests/test_g005_eval_manifest_hash_builder.py",
       "kind": "other",
       "bytes": 3903,
@@ -1290,14 +1308,14 @@
     {
       "path": "tests/test_g005_finalization.py",
       "kind": "other",
-      "bytes": 8870,
-      "sha256": "084c470dddb554364d016033276dce8b01409b2f591461715e009782cdbb6d19"
+      "bytes": 9007,
+      "sha256": "fb5a1d9cedea587266a59d6fcce092b8e8a91c89a5db5409cacdbce252a2763c"
     },
     {
       "path": "tests/test_g005_namespace_manifest_builder.py",
       "kind": "other",
-      "bytes": 5437,
-      "sha256": "90571d06dd54e04dabf99fbcb4c4a372400f23ed5275089df5bb776bc8b14d42"
+      "bytes": 5574,
+      "sha256": "c454aee0fe719799796f832d7bd7c90ff05933ffee170360f8de3df36cbda351"
     },
     {
       "path": "tests/test_g006_completion_audit.py",

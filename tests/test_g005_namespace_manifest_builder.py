@@ -81,6 +81,7 @@ def test_g005_namespace_builder_completion_ready_requires_materialized_sources_a
                     "action_head": {"type": "minecraft_keyboard_mouse", "namespace": "aux_a"},
                     "d2e_heldout_overlap_count": 0,
                     "d2e_heldout_overlap_recording_ids": [],
+                    "split_hashes": {"train": {"sha256": "train-hash"}, "val": {"sha256": "val-hash"}, "test": {"sha256": "test-hash"}},
                 }
             ]
         },
