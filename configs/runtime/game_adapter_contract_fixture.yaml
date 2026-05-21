@@ -1,0 +1,38 @@
+{
+  "schema": "runtime_replay_adapter_config.v1",
+  "predictions_path": "artifacts/runtime/g007_runtime_fixture_predictions.jsonl",
+  "output_path": "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
+  "action_limit": 3,
+  "safety": {
+    "require_focus": true,
+    "allowed_window_title_patterns": [
+      "fdm-adapter-demo",
+      "open-source",
+      "offline"
+    ],
+    "kill_switch_path": "outputs/runtime/KILL_SWITCH",
+    "max_actions_per_second": 60.0,
+    "max_mouse_delta_per_frame": 50.0,
+    "allowed_keys": [
+      "32",
+      "65",
+      "68",
+      "69",
+      "70",
+      "83",
+      "87"
+    ],
+    "allowed_mouse_buttons": [
+      "MOUSE_LEFT",
+      "MOUSE_RIGHT",
+      "MOUSE_MIDDLE"
+    ]
+  },
+  "adapter_targets": [
+    {
+      "id": "dry_run_contract_fixture",
+      "input_mode": "keyboard_mouse",
+      "claim_boundary": "deterministic_sdk_contract_only"
+    }
+  ]
+}

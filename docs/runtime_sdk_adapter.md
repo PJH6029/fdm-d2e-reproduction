@@ -19,7 +19,19 @@ input-injection tool.
 
 ## Demo command
 
-After a trained FDM predictions artifact exists:
+The deterministic contract fixture can be run without waiting for G004:
+
+```bash
+uv run python scripts/run_runtime_replay_adapter.py \
+  --config configs/runtime/game_adapter_contract_fixture.yaml \
+  --focus-title "fdm-adapter-demo open-source offline"
+```
+
+This writes `artifacts/runtime/g007_runtime_replay_adapter_contract.json` and
+proves decode, focus-guard allow path, rate-limit allow path, dry-run backend,
+and p50/p95 latency schema on a tiny keyboard/mouse/click action stream.
+
+After a trained FDM predictions artifact exists, use the full demo config:
 
 ```bash
 uv run python scripts/run_runtime_replay_adapter.py \
