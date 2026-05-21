@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import shlex
 import time
 from collections import Counter
@@ -10,18 +9,11 @@ from typing import Any
 
 from fdm_d2e.data.full_corpus import included_universe_rows, universe_row_id
 from fdm_d2e.io_utils import read_json, write_json
+from fdm_d2e.process_liveness import pid_running
 
 
 def _pid_running(pid: int) -> bool:
-    if pid <= 0:
-        return False
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
+    return pid_running(pid)
 
 
 def _read_pid(path: Path) -> int | None:

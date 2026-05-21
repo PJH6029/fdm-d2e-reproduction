@@ -11,6 +11,10 @@ import time
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from fdm_d2e.process_liveness import pid_running
+
 QUERY_FIELDS = [
     "timestamp",
     "index",
@@ -24,15 +28,7 @@ QUERY_FIELDS = [
 
 
 def _pid_running(pid: int) -> bool:
-    if pid <= 0:
-        return False
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
+    return pid_running(pid)
 
 
 def _read_pid(pid_file: Path) -> int | None:

@@ -11,6 +11,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.io_utils import write_json
+from fdm_d2e.process_liveness import pid_running
 
 
 DEFAULT_OUTPUT = "artifacts/aux/g005_aux_materialization_progress.json"
@@ -47,27 +48,7 @@ def _read_pid(path: Path) -> int | None:
 
 
 def _pid_running(pid: int | None) -> bool:
-    if pid is None or pid <= 0:
-        return False
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return not _pid_is_zombie(pid)
-
-
-def _pid_is_zombie(pid: int) -> bool:
-    try:
-        stat = Path(f"/proc/{pid}/stat").read_text(encoding="utf-8", errors="ignore")
-    except (FileNotFoundError, ProcessLookupError, PermissionError, OSError):
-        return False
-    try:
-        tail = stat.rsplit(")", 1)[1].strip().split()
-    except IndexError:
-        return False
-    return bool(tail and tail[0] == "Z")
+    return pid_running(pid)
 
 
 def _selected_candidates(payload: dict[str, Any] | None) -> dict[str, dict[str, Any]]:

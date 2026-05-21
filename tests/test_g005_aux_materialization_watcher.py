@@ -219,6 +219,5 @@ def test_watcher_tree_status_tolerates_files_removed_during_download_scan(tmp_pa
 
 
 def test_watcher_pid_running_treats_zombie_as_exited(monkeypatch):
-    monkeypatch.setattr("watch_g005_aux_materialization.os.kill", lambda pid, sig: None)
-    monkeypatch.setattr("watch_g005_aux_materialization._pid_is_zombie", lambda pid: True)
+    monkeypatch.setattr("watch_g005_aux_materialization.pid_running", lambda pid: False)
     assert _pid_running(12345) is False

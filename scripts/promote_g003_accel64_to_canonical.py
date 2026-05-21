@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_g003_attached_train_run_summary import build_summary as build_g003_train_summary
 from fdm_d2e.config import load_config
 from fdm_d2e.io_utils import write_json
+from fdm_d2e.process_liveness import pid_running
 from fdm_d2e.reporting.g003_completion import write_g003_full_idm_completion_audit
 
 
@@ -46,15 +47,7 @@ def _read_pid(path: Path) -> int | None:
 
 
 def _pid_running(pid: int | None) -> bool:
-    if pid is None or pid <= 0:
-        return False
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
+    return pid_running(pid)
 
 
 def _pid_status(root: Path, pid_file: str) -> dict[str, Any]:

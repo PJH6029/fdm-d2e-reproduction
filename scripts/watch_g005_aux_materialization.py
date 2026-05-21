@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from fdm_d2e.io_utils import write_json
+from fdm_d2e.process_liveness import pid_running
 from build_g005_aux_examples import build_examples as build_aux_examples
 from build_g005_aux_namespace_manifest import build_manifest as build_namespace_manifest
 from build_g005_aux_source_evidence import build_evidence as build_source_evidence
@@ -40,27 +41,7 @@ def _read_pid(path: Path) -> int | None:
 
 
 def _pid_running(pid: int | None) -> bool:
-    if pid is None or pid <= 0:
-        return False
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return not _pid_is_zombie(pid)
-
-
-def _pid_is_zombie(pid: int) -> bool:
-    try:
-        stat = Path(f"/proc/{pid}/stat").read_text(encoding="utf-8", errors="ignore")
-    except (FileNotFoundError, ProcessLookupError, PermissionError, OSError):
-        return False
-    try:
-        tail = stat.rsplit(")", 1)[1].strip().split()
-    except IndexError:
-        return False
-    return bool(tail and tail[0] == "Z")
+    return pid_running(pid)
 
 
 def _load_json(path: Path) -> dict[str, Any] | None:

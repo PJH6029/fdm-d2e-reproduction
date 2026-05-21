@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from fdm_d2e.cluster.g003_monitor import build_g003_progress_report
 from fdm_d2e.io_utils import write_json
+from fdm_d2e.process_liveness import pid_running
 from finalize_g003_integrated_run import finalize as finalize_g003
 from plan_g004_launch import plan_launch as plan_g004_launch
 
@@ -37,15 +38,7 @@ def _read_pid(path: Path) -> int | None:
 
 
 def _pid_running(pid: int | None) -> bool:
-    if pid is None or pid <= 0:
-        return False
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
+    return pid_running(pid)
 
 
 def _load_json(path: Path) -> dict[str, Any] | None:
