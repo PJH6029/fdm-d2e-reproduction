@@ -46,18 +46,18 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 15:15 KST.
+Latest known live run snapshot: 2026-05-21 15:58 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout was synced to commit `875f46f` (`Harden aux namespace gates before G005 claims`); G003/G004/G005/G006/G007/G008/G009 completion audit scripts are present in pod.
+- Pod checkout was synced to commit `6974f38` (`Keep D2E training evidence statistically gated`); G003/G004 split-stat generation, G005/G006/G007/G008/G009 completion audit scripts, and package-manifest updates are present in pod.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
-- Last decoded count: `94 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
+- Last decoded count: `109 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
 - Monitor status was `running`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
-- Attached GPU monitor is running as PID `31950` and has begun writing `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv` in the pod. Do not commit/push that live CSV from local until the run exits, because the pod currently owns it as an untracked live output.
+- Parent PID `9289` was still running at elapsed `05:03:34`; attached GPU monitor PID `31950` was still running at elapsed `01:14:40` and writing `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv` in the pod. Do not commit/push that live CSV from local until the run exits, because the pod currently owns it as an untracked live output.
 
 Useful pod monitor command:
 
@@ -173,6 +173,15 @@ features.
 `scripts/run_g004_d2e_full_fdm_4xh200.sh` auto-generates the train-core
 pseudo-labels with `scripts/predict_idm_streaming.py` after G003 checkpoint
 artifacts exist.
+
+Latest script hardening: commit `6974f38` makes future G003/G004 run wrappers
+build split-specific statistical comparisons automatically after successful
+training. The already-running G003 parent PID `9289` was launched before this
+commit, so do not assume it will emit
+`artifacts/eval/g003_split_statistical_comparisons_summary.json`; after the
+parent exits and IDM predictions exist, run
+`uv run python scripts/build_split_statistical_comparisons.py --config configs/eval/g003_split_statistics.yaml`
+manually if the split-stat summary is absent before auditing/checkpointing G003.
 
 ## G005 completion gate
 
