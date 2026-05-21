@@ -125,3 +125,11 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - `scripts/monitor_g003_progress.py` artifact was copied back to `artifacts/idm/g003_full_compact_parallel_progress.json`.
 - Monitor status: `review_stale_shards`; decoded recording variants: `62 / 918`; complete shards: `0 / 16`; stale shards: `[8, 9, 13]`; no-progress shards: `[]`; parent PID running: `true`; IDM metrics absent.
 - Follow-up process inspection showed the stale-shard child Python processes still alive, so this is a watch/review condition rather than a confirmed extraction failure. Continue monitoring before any resume/recovery action.
+
+
+## 2026-05-21 13:21 KST process-aware monitor snapshot
+
+- Pod checkout fast-forwarded to `057bd86` with process-aware G003 monitoring.
+- Parallel extraction parent PID `9289` remained running; elapsed at monitor was ~2h19m.
+- Monitor status: `running`; decoded recording variants: `67 / 918`; complete shards: `0 / 16`; stale shards: `[]`; long-running active shards: `[8, 9, 11, 13]`; no-progress shards: `[]`; active shard processes: `0..15`; IDM metrics absent.
+- `artifacts/idm/g003_full_compact_parallel_progress.json` was refreshed from the pod. The previous stale-shard condition is now represented as long-running active shard evidence, not a recovery trigger.
