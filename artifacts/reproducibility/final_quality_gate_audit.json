@@ -774,14 +774,20 @@
         {
           "path": "docs/auxiliary_data_plan.md",
           "exists": true,
-          "bytes": 3713,
-          "sha256": "07e816cac42ca52de9e897142160e09373afe992256a8e85176f181708dee4ae"
+          "bytes": 4346,
+          "sha256": "088f482dcd540ced4b060fd61ecd4bddae3de7aba44ca9fd3cf18fc873c9f391"
         },
         {
           "path": "artifacts/aux/d2e_aux_ablation_summary.json",
           "exists": false,
           "bytes": 0,
           "sha256": null
+        },
+        {
+          "path": "artifacts/aux/g005_aux_completion_audit.json",
+          "exists": true,
+          "bytes": 6462,
+          "sha256": "d5d760ada287d8f0ece51fb53ca7f386cd08a541d4df51300a0956e8c965c34b"
         }
       ],
       "findings": [
@@ -797,6 +803,20 @@
           "code": "missing_required_artifact",
           "goal_id": "G005-aux-data-best-model",
           "path": "artifacts/aux/d2e_aux_ablation_summary.json"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "artifacts/aux/d2e_aux_ablation_summary.json",
+          "json_path": "status"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_mismatch",
+          "path": "artifacts/aux/g005_aux_completion_audit.json",
+          "json_path": "status",
+          "expected": "pass",
+          "actual": "fail"
         }
       ]
     },
@@ -1000,8 +1020,8 @@
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 31186,
-          "sha256": "6b3ce2ba5c1b25d9a98279dfc67f9cd77aa66deb7fc075ff6402832709603dba"
+          "bytes": 32209,
+          "sha256": "096599ced1b3134b9ae1522f084a44e84fd1856ee1ced95e133c9cdbb2f5f257"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -1024,8 +1044,8 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 31186,
-    "sha256": "6b3ce2ba5c1b25d9a98279dfc67f9cd77aa66deb7fc075ff6402832709603dba"
+    "bytes": 32209,
+    "sha256": "096599ced1b3134b9ae1522f084a44e84fd1856ee1ced95e133c9cdbb2f5f257"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -1465,6 +1485,20 @@
     },
     {
       "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "artifacts/aux/d2e_aux_ablation_summary.json",
+      "json_path": "status"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_mismatch",
+      "path": "artifacts/aux/g005_aux_completion_audit.json",
+      "json_path": "status",
+      "expected": "pass",
+      "actual": "fail"
+    },
+    {
+      "severity": "error",
       "code": "goal_status_not_complete",
       "goal_id": "G006-evaluation-failure-analysis",
       "expected_status": "complete",
@@ -1562,6 +1596,6 @@
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
     }
   ],
-  "error_count": 86,
+  "error_count": 88,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

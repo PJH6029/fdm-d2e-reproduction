@@ -1,0 +1,42 @@
+{
+  "schema": "g005_aux_completion_config.v1",
+  "goals_path": ".omx/ultragoal/goals.json",
+  "goal_id": "G005-aux-data-best-model",
+  "prerequisite_goals": ["G003-d2e-only-idm", "G004-d2e-only-fdm-4xh200"],
+  "output_path": "artifacts/aux/g005_aux_completion_audit.json",
+  "expected_gpus": 4,
+  "required_splits": ["temporal", "heldout_recording", "heldout_game"],
+  "required_target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],
+  "require_d2e_only_baseline": true,
+  "require_d2e_aux_candidate": true,
+  "paths": {
+    "aux_candidates": "artifacts/sources/aux_game_action_dataset_candidates.json",
+    "aux_plan_doc": "docs/auxiliary_data_plan.md",
+    "ablation_summary": "artifacts/aux/d2e_aux_ablation_summary.json",
+    "checkpoint_metadata": "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json",
+    "resolved_config": "outputs/fdm_aux/d2e_aux_best/resolved_config.json",
+    "checkpoint": "outputs/fdm_aux/d2e_aux_best/checkpoint.pt",
+    "target_records": "outputs/fdm_aux/d2e_aux_best/d2e_target_records.jsonl",
+    "predictions": "outputs/fdm_aux/d2e_aux_best/predictions.jsonl",
+    "metrics": "outputs/fdm_aux/d2e_aux_best/metrics.json",
+    "statistical_comparison": "outputs/fdm_aux/d2e_aux_best/statistical_comparison.json",
+    "run_summary": "artifacts/aux/g005_d2e_aux_train_run.json"
+  },
+  "aux_candidate_expectations": {
+    "user_decision.d2e_aux_may_be_primary": true,
+    "claim_boundary.no_d2e_aux_claim_before_d2e_only_gates": true,
+    "storage_policy.fits_cap_with_selected_candidates": true
+  },
+  "ablation_expectations": {
+    "status": "pass",
+    "same_d2e_eval_manifests": true,
+    "no_aux_in_d2e_heldout": true,
+    "claim_boundary.d2e_only_separately_reported": true
+  },
+  "metadata_expectations": {
+    "source_namespace": "d2e_aux",
+    "d2e_eval_split_contract.exists": true,
+    "data_universe.exists": true,
+    "claim_boundary.no_aux_in_d2e_heldout": true
+  }
+}

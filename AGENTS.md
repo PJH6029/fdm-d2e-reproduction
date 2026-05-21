@@ -124,6 +124,10 @@ Required separation:
 
 Do **not** checkpoint `G004-d2e-only-fdm-4xh200` complete until `scripts/validate_g004_full_fdm_completion.py` reports `status=pass` in `artifacts/fdm/g004_full_fdm_completion_audit.json`. This audit requires G003 complete, D2E-only FDM-from-IDM-pseudolabel provenance, split count consistency, prediction coverage, convergence-report evidence, split-stat summaries, and 4×H200 run metadata.
 
+## G005 completion gate
+
+Do **not** checkpoint `G005-aux-data-best-model` complete until `scripts/validate_g005_aux_completion.py` reports `status=pass` in `artifacts/aux/g005_aux_completion_audit.json`. This audit requires G003/G004 complete, selected aux provenance/storage policy, separated aux namespaces, D2E-only vs D2E+aux ablation across all required splits, no aux leakage into D2E heldouts, target split tags, prediction coverage, and run evidence.
+
 ## Runtime and harness boundary
 
 Current adapter-contract evidence is not live commercial-game control. Future live evidence must use open-source graphical games/tasks and include:
@@ -149,6 +153,7 @@ uv run python scripts/audit_claim_boundaries.py --output artifacts/reproducibili
 uv run python scripts/build_repro_package_manifest.py --output artifacts/reproducibility/package_manifest.json
 uv run python scripts/validate_g003_full_idm_completion.py --allow-fail
 uv run python scripts/validate_g004_full_fdm_completion.py --allow-fail
+uv run python scripts/validate_g005_aux_completion.py --allow-fail
 uv run python scripts/validate_final_quality_gates.py --allow-fail
 ```
 

@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 148,
+  "entry_count": 153,
   "entries": [
     {
       "path": "README.md",
@@ -14,6 +14,12 @@
       "kind": "evidence_artifact",
       "bytes": 90844,
       "sha256": "d02a6477a1add5ad7c4a577ef5aaea82f5f7b967ce37c3444efc5dd13df42d3c"
+    },
+    {
+      "path": "artifacts/aux/g005_aux_completion_audit.json",
+      "kind": "evidence_artifact",
+      "bytes": 6462,
+      "sha256": "d5d760ada287d8f0ece51fb53ca7f386cd08a541d4df51300a0956e8c965c34b"
     },
     {
       "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
@@ -246,8 +252,8 @@
     {
       "path": "configs/eval/final_quality_gates.yaml",
       "kind": "configuration",
-      "bytes": 12869,
-      "sha256": "a22dbc6915cb70acb4031c8bbc0e4b097a94c75a61a40889325a0f059f6fa5d9"
+      "bytes": 13253,
+      "sha256": "5f74817f2c3f942af06678c1909bf990384b86cde3eb9db75a96d3d85bb36d55"
     },
     {
       "path": "configs/eval/g003_full_idm_completion.yaml",
@@ -272,6 +278,12 @@
       "kind": "configuration",
       "bytes": 746,
       "sha256": "d2f55260333aa1070e289d4e8e0474e5698211de4da29296e3c6bd0971f3b443"
+    },
+    {
+      "path": "configs/eval/g005_aux_completion.yaml",
+      "kind": "configuration",
+      "bytes": 1935,
+      "sha256": "2ca4f631c08befd806f17ed0827bc2c07e00b6b79459af560b00ac72a77044eb"
     },
     {
       "path": "configs/eval/g006_evaluation_readiness.yaml",
@@ -372,8 +384,8 @@
     {
       "path": "docs/auxiliary_data_plan.md",
       "kind": "documentation",
-      "bytes": 3713,
-      "sha256": "07e816cac42ca52de9e897142160e09373afe992256a8e85176f181708dee4ae"
+      "bytes": 4346,
+      "sha256": "088f482dcd540ced4b060fd61ecd4bddae3de7aba44ca9fd3cf18fc873c9f391"
     },
     {
       "path": "docs/baselines_statistics.md",
@@ -438,8 +450,8 @@
     {
       "path": "docs/final_quality_gates.md",
       "kind": "documentation",
-      "bytes": 3212,
-      "sha256": "98d7ff3be78a550c77e6a674c6e0ccb858a3242d9fb16ea9e061b49359cf20c6"
+      "bytes": 3344,
+      "sha256": "dda6228a8670818340b8385d2bc092a62de3ddd591f561348d37ef4a51d6589d"
     },
     {
       "path": "docs/final_research_report.md",
@@ -528,8 +540,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 10493,
-      "sha256": "44dbb17be7a1552c957d0fd73bfe9d82d8f1d1c0ae703a92669106d500ff46cc"
+      "bytes": 10732,
+      "sha256": "857b685610b001f6a848bc146c695c8a9e0cfc289e855eb3aff1b49bde103101"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -664,6 +676,12 @@
       "sha256": "17ca10ee230f8ddd98219337beb9f8acf71633b324a23b8d5aaf7995c3933c00"
     },
     {
+      "path": "scripts/validate_g005_aux_completion.py",
+      "kind": "reproduction_script",
+      "bytes": 1137,
+      "sha256": "ab0ed19b74c8802114fbc44cc23a7ef4b589ee6adf671d442445ae791ce9a651"
+    },
+    {
       "path": "scripts/validate_g006_evaluation_readiness.py",
       "kind": "reproduction_script",
       "bytes": 1189,
@@ -734,6 +752,12 @@
       "kind": "other",
       "bytes": 9575,
       "sha256": "053f3c886a1b04e0732208b76e0910cfcc22e3f801a5568236888597ff5334a2"
+    },
+    {
+      "path": "src/fdm_d2e/reporting/g005_completion.py",
+      "kind": "other",
+      "bytes": 8638,
+      "sha256": "64e92a51e748207372f77ae185f6784dd6a58738e9f0fa62f6fec0524fe9840e"
     },
     {
       "path": "src/fdm_d2e/reporting/quality_gates.py",
@@ -842,6 +866,12 @@
       "kind": "other",
       "bytes": 5343,
       "sha256": "aec3f39350cf736afe2387c3baeda97f1939f27ee4bfe2f65ed8cf3a2d3d325a"
+    },
+    {
+      "path": "tests/test_g005_aux_completion_audit.py",
+      "kind": "other",
+      "bytes": 5649,
+      "sha256": "9faf158a4b67519f2c0c694c09b867427e109bb3bcebfa81d8e33fddc019d7b3"
     },
     {
       "path": "tests/test_g006_evaluation_readiness.py",

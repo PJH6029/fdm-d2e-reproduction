@@ -1,0 +1,228 @@
+{
+  "schema": "g005_aux_completion_audit.v1",
+  "status": "fail",
+  "goal_id": "G005-aux-data-best-model",
+  "goal_status": "pending",
+  "prerequisite_goal_statuses": {
+    "G003-d2e-only-idm": "in_progress",
+    "G004-d2e-only-fdm-4xh200": "pending"
+  },
+  "required_splits": [
+    "heldout_game",
+    "heldout_recording",
+    "temporal"
+  ],
+  "ablation_splits": [],
+  "artifacts": {
+    "aux_candidates": {
+      "path": "artifacts/sources/aux_game_action_dataset_candidates.json",
+      "exists": true,
+      "bytes": 10749,
+      "sha256": "3f7a80a8511f52c0ac3cef4dfab4d1a1ae268bf67e14b32fde899345c10a7bf7"
+    },
+    "aux_plan_doc": {
+      "path": "docs/auxiliary_data_plan.md",
+      "exists": true,
+      "bytes": 4346,
+      "sha256": "088f482dcd540ced4b060fd61ecd4bddae3de7aba44ca9fd3cf18fc873c9f391"
+    },
+    "ablation_summary": {
+      "path": "artifacts/aux/d2e_aux_ablation_summary.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "checkpoint_metadata": {
+      "path": "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "resolved_config": {
+      "path": "outputs/fdm_aux/d2e_aux_best/resolved_config.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "checkpoint": {
+      "path": "outputs/fdm_aux/d2e_aux_best/checkpoint.pt",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "target_records": {
+      "path": "outputs/fdm_aux/d2e_aux_best/d2e_target_records.jsonl",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "predictions": {
+      "path": "outputs/fdm_aux/d2e_aux_best/predictions.jsonl",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "metrics": {
+      "path": "outputs/fdm_aux/d2e_aux_best/metrics.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "statistical_comparison": {
+      "path": "outputs/fdm_aux/d2e_aux_best/statistical_comparison.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "run_summary": {
+      "path": "artifacts/aux/g005_d2e_aux_train_run.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    }
+  },
+  "counts": {
+    "target_records": null,
+    "predictions": null
+  },
+  "findings": [
+    {
+      "severity": "error",
+      "code": "goal_not_checkpointed_complete",
+      "goal_id": "G005-aux-data-best-model",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G003-d2e-only-idm",
+      "actual": "in_progress"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "ablation_summary",
+      "path": "artifacts/aux/d2e_aux_ablation_summary.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "checkpoint_metadata",
+      "path": "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "resolved_config",
+      "path": "outputs/fdm_aux/d2e_aux_best/resolved_config.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "checkpoint",
+      "path": "outputs/fdm_aux/d2e_aux_best/checkpoint.pt"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "target_records",
+      "path": "outputs/fdm_aux/d2e_aux_best/d2e_target_records.jsonl"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "predictions",
+      "path": "outputs/fdm_aux/d2e_aux_best/predictions.jsonl"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "metrics",
+      "path": "outputs/fdm_aux/d2e_aux_best/metrics.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "statistical_comparison",
+      "path": "outputs/fdm_aux/d2e_aux_best/statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "run_summary",
+      "path": "artifacts/aux/g005_d2e_aux_train_run.json"
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "ablation_summary",
+      "json_path": "status",
+      "expected": "pass",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "ablation_summary",
+      "json_path": "same_d2e_eval_manifests",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "ablation_summary",
+      "json_path": "no_aux_in_d2e_heldout",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "ablation_summary",
+      "json_path": "claim_boundary.d2e_only_separately_reported",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "checkpoint_metadata",
+      "json_path": "source_namespace",
+      "expected": "d2e_aux",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "checkpoint_metadata",
+      "json_path": "d2e_eval_split_contract.exists",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "checkpoint_metadata",
+      "json_path": "data_universe.exists",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "checkpoint_metadata",
+      "json_path": "claim_boundary.no_aux_in_d2e_heldout",
+      "expected": true,
+      "actual": null
+    }
+  ],
+  "error_count": 20,
+  "claim_boundary": "This audit is required before checkpointing G005 complete; it proves D2E-only prerequisites, aux provenance/storage policy, separated namespaces, D2E-only vs D2E+aux ablations, target split tags, and run evidence."
+}

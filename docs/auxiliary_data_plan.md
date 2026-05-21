@@ -45,6 +45,23 @@ Machine-readable artifact: `artifacts/sources/aux_game_action_dataset_candidates
 5. If VPT/BASALT license review passes, treat it as the highest-transfer Minecraft
    candidate; otherwise keep it excluded.
 
+
+## G005 completion audit
+
+Before checkpointing `G005-aux-data-best-model` complete, run:
+
+```bash
+uv run python scripts/validate_g005_aux_completion.py
+```
+
+During preparation this may be run with `--allow-fail`, but a terminal G005
+checkpoint requires `artifacts/aux/g005_aux_completion_audit.json` to report
+`status == pass`. The audit checks G003/G004 prerequisite goal state, selected
+aux provenance/storage policy, separated aux namespaces, D2E-only vs D2E+aux
+ablation coverage on temporal/heldout-recording/heldout-game splits, no aux
+leakage into D2E heldout data, target split tags, prediction coverage, and run
+evidence.
+
 ## Source evidence summary
 
 - MineRL 2019 Zenodo: backup of human Minecraft demonstrations with video feed and actions;
