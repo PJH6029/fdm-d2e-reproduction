@@ -82,10 +82,16 @@ uv run python scripts/validate_g008_live_suite_completion.py
 During preparation this may be run with `--allow-fail`, but a terminal G008
 checkpoint requires `artifacts/harness/g008_live_suite_completion_audit.json` to
 report `status == pass`. The audit rejects protocol-only readiness and requires
-completed D2E-only training prerequisites, reusable runtime-adapter evidence,
-trained checkpoint metadata, live evidence validation status `pass`, at least the
-configured games/tasks/episodes, statistical comparison evidence, and hashed
-video/replay/latency/failure artifacts.
+completed D2E-only training prerequisites, passing G003/G004 completion audits
+with full D2E source/resolution tier counts (`d2e_480p=459`,
+`d2e_original=459`, `480p=459`, `original_fhd_qhd=459`), reusable
+runtime-adapter evidence, trained checkpoint metadata, live evidence validation
+status `pass`, at least the configured games/tasks/episodes, statistical
+comparison evidence, and hashed video/replay/latency/failure artifacts. If the
+trained checkpoint uses `source_namespace=d2e_aux`, the audit additionally
+requires `G005-aux-data-best-model` to be complete and
+`g005_aux_completion_audit.status == pass`; D2E+aux cannot be used to satisfy a
+live control claim before the D2E-only vs D2E+aux gate is proven.
 
 ## Evidence required to pass
 

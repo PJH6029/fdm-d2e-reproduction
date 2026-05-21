@@ -99,6 +99,12 @@ def _completion_config() -> dict:
         "goal_id": "G008",
         "prerequisite_goals": ["G003", "G004", "G007"],
         "thresholds": SPLITS,
+        "expected_recording_variants": 3,
+        "require_d2e_only_completion_audits_pass": True,
+        "require_g005_for_aux_checkpoint": True,
+        "g005_goal_id": "G005",
+        "expected_variants_by_source": {"d2e_480p": 2, "d2e_original": 1},
+        "expected_variants_by_resolution_tier": {"480p": 2, "original_fhd_qhd": 1},
         "allowed_checkpoint_namespaces": ["d2e_full_corpus", "d2e_aux"],
         "allowed_evidence_modes": ["live_desktop_control", "live_graphical_game_control"],
         "require_goal_checkpoint_complete": False,
@@ -106,6 +112,9 @@ def _completion_config() -> dict:
             "suite_config": "configs/harness/g008_suite.json",
             "evidence_validation": "artifacts/harness/g008_validation.json",
             "trained_checkpoint_metadata": "outputs/fdm/checkpoint_metadata.json",
+            "g003_completion_audit": "artifacts/idm/g003_audit.json",
+            "g004_completion_audit": "artifacts/fdm/g004_audit.json",
+            "g005_completion_audit": "artifacts/aux/g005_audit.json",
             "runtime_adapter_contract": "artifacts/runtime/contract.json",
             "live_suite_doc": "docs/live.md",
         },
@@ -134,6 +143,32 @@ def _write_base_fixture(root: Path) -> None:
     )
     write_json(root / "artifacts/runtime/contract.json", {"status": "pass"})
     _write_text(root, "docs/live.md", "live suite doc")
+    d2e_audit_counts = {
+        "included_recording_variants": 3,
+        "source_ids": {"d2e_480p": 2, "d2e_original": 1},
+        "resolution_tiers": {"480p": 2, "original_fhd_qhd": 1},
+    }
+    write_json(
+        root / "artifacts/idm/g003_audit.json",
+        {
+            "schema": "g003_full_idm_completion_audit.v1",
+            "status": "pass",
+            "error_count": 0,
+            "data_universe_counts": d2e_audit_counts,
+            "decode_counts_by_source": {"d2e_480p": 2, "d2e_original": 1},
+            "decode_counts_by_resolution_tier": {"480p": 2, "original_fhd_qhd": 1},
+        },
+    )
+    write_json(
+        root / "artifacts/fdm/g004_audit.json",
+        {
+            "schema": "g004_full_fdm_completion_audit.v1",
+            "status": "pass",
+            "error_count": 0,
+            "data_universe_counts": d2e_audit_counts,
+        },
+    )
+    write_json(root / "artifacts/aux/g005_audit.json", {"schema": "g005_aux_completion_audit.v1", "status": "pass", "error_count": 0})
     write_json(
         root / "outputs/fdm/checkpoint_metadata.json",
         {

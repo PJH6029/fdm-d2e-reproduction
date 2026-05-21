@@ -19,12 +19,21 @@ def _config() -> dict:
         "goal_id": "G008",
         "prerequisite_goals": ["G003", "G004", "G007"],
         "thresholds": {"min_games": 3, "min_tasks": 3, "min_episodes": 15},
+        "expected_recording_variants": 3,
+        "require_d2e_only_completion_audits_pass": True,
+        "require_g005_for_aux_checkpoint": True,
+        "g005_goal_id": "G005",
+        "expected_variants_by_source": {"d2e_480p": 2, "d2e_original": 1},
+        "expected_variants_by_resolution_tier": {"480p": 2, "original_fhd_qhd": 1},
         "allowed_checkpoint_namespaces": ["d2e_full_corpus", "d2e_aux"],
         "allowed_evidence_modes": ["live_desktop_control", "live_graphical_game_control"],
         "paths": {
             "suite_config": "configs/harness/suite.yaml",
             "evidence_validation": "artifacts/harness/validation.json",
             "trained_checkpoint_metadata": "outputs/fdm/checkpoint_metadata.json",
+            "g003_completion_audit": "artifacts/idm/g003_audit.json",
+            "g004_completion_audit": "artifacts/fdm/g004_audit.json",
+            "g005_completion_audit": "artifacts/aux/g005_audit.json",
             "runtime_adapter_contract": "artifacts/runtime/contract.json",
             "live_suite_doc": "docs/live.md",
         },
@@ -48,6 +57,32 @@ def _complete_fixture(root: Path) -> None:
     write_json(root / cfg["paths"]["suite_config"], {"schema": "live_game_suite_config.v1"})
     _write_file(root / cfg["paths"]["live_suite_doc"], "live suite doc")
     write_json(root / cfg["paths"]["runtime_adapter_contract"], {"status": "pass"})
+    d2e_audit_counts = {
+        "included_recording_variants": 3,
+        "source_ids": {"d2e_480p": 2, "d2e_original": 1},
+        "resolution_tiers": {"480p": 2, "original_fhd_qhd": 1},
+    }
+    write_json(
+        root / cfg["paths"]["g003_completion_audit"],
+        {
+            "schema": "g003_full_idm_completion_audit.v1",
+            "status": "pass",
+            "error_count": 0,
+            "data_universe_counts": d2e_audit_counts,
+            "decode_counts_by_source": {"d2e_480p": 2, "d2e_original": 1},
+            "decode_counts_by_resolution_tier": {"480p": 2, "original_fhd_qhd": 1},
+        },
+    )
+    write_json(
+        root / cfg["paths"]["g004_completion_audit"],
+        {
+            "schema": "g004_full_fdm_completion_audit.v1",
+            "status": "pass",
+            "error_count": 0,
+            "data_universe_counts": d2e_audit_counts,
+        },
+    )
+    write_json(root / cfg["paths"]["g005_completion_audit"], {"schema": "g005_aux_completion_audit.v1", "status": "pass", "error_count": 0})
     write_json(
         root / cfg["paths"]["trained_checkpoint_metadata"],
         {
@@ -151,3 +186,49 @@ def test_g008_completion_audit_rejects_missing_strong_stats_summary(tmp_path: Pa
     assert audit["status"] == "fail"
     assert "missing_live_suite_strong_statistical_bar" in codes
     assert "live_suite_adjusted_p_value_not_significant" in codes
+
+
+def test_g008_completion_audit_requires_passing_d2e_only_audits(tmp_path: Path):
+    _complete_fixture(tmp_path)
+    cfg = _config()
+    g003_path = tmp_path / cfg["paths"]["g003_completion_audit"]
+    g003 = json.loads(g003_path.read_text())
+    g003["status"] = "fail"
+    g003["error_count"] = 2
+    g003["data_universe_counts"]["source_ids"] = {"d2e_480p": 3}
+    g003["decode_counts_by_resolution_tier"] = {"480p": 3}
+    write_json(g003_path, g003)
+    g004_path = tmp_path / cfg["paths"]["g004_completion_audit"]
+    g004 = json.loads(g004_path.read_text())
+    g004["data_universe_counts"]["included_recording_variants"] = 2
+    g004["data_universe_counts"]["resolution_tiers"] = {"480p": 2}
+    write_json(g004_path, g004)
+
+    payload = validate_g008_live_suite_completion(cfg, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "d2e_only_completion_audit_not_pass" in codes
+    assert "d2e_only_audit_included_variants_mismatch" in codes
+    assert "d2e_only_audit_source_count_mismatch" in codes
+    assert "d2e_only_audit_resolution_tier_count_mismatch" in codes
+    assert "d2e_only_audit_decode_resolution_tier_count_mismatch" in codes
+    assert payload["d2e_only_audit_report"]["g003"]["status"] == "fail"
+
+
+def test_g008_completion_audit_requires_g005_for_aux_checkpoint(tmp_path: Path):
+    _complete_fixture(tmp_path)
+    cfg = _config()
+    goals = json.loads((tmp_path / cfg["goals_path"]).read_text())
+    goals["goals"].append({"id": "G005", "status": "pending"})
+    write_json(tmp_path / cfg["goals_path"], goals)
+    metadata_path = tmp_path / cfg["paths"]["trained_checkpoint_metadata"]
+    metadata = json.loads(metadata_path.read_text())
+    metadata["source_namespace"] = "d2e_aux"
+    write_json(metadata_path, metadata)
+    write_json(tmp_path / cfg["paths"]["g005_completion_audit"], {"schema": "g005_aux_completion_audit.v1", "status": "fail", "error_count": 4})
+
+    payload = validate_g008_live_suite_completion(cfg, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "aux_checkpoint_requires_g005_complete" in codes
+    assert "g005_completion_audit_not_pass_for_aux_checkpoint" in codes

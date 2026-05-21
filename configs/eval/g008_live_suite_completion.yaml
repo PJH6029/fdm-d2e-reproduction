@@ -15,6 +15,18 @@
     "max_adjusted_p_value": 0.05,
     "min_effect_size": 0.0
   },
+  "expected_recording_variants": 918,
+  "require_d2e_only_completion_audits_pass": true,
+  "require_g005_for_aux_checkpoint": true,
+  "g005_goal_id": "G005-aux-data-best-model",
+  "expected_variants_by_source": {
+    "d2e_480p": 459,
+    "d2e_original": 459
+  },
+  "expected_variants_by_resolution_tier": {
+    "480p": 459,
+    "original_fhd_qhd": 459
+  },
   "allowed_checkpoint_namespaces": [
     "d2e_full_corpus",
     "d2e_aux"
@@ -29,6 +41,9 @@
     "suite_config": "configs/harness/g008_live_open_game_suite.yaml",
     "evidence_validation": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
     "trained_checkpoint_metadata": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "g003_completion_audit": "artifacts/idm/g003_full_idm_completion_audit.json",
+    "g004_completion_audit": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+    "g005_completion_audit": "artifacts/aux/g005_aux_completion_audit.json",
     "runtime_adapter_contract": "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
     "live_suite_doc": "docs/live_open_game_suite.md"
   },

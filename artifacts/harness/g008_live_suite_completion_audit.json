@@ -9,12 +9,47 @@
     "G004-d2e-only-fdm-4xh200": "pending",
     "G007-runtime-sdk-adapter": "complete"
   },
+  "d2e_only_audit_report": {
+    "g003": {
+      "audit_key": "g003",
+      "status": "fail",
+      "error_count": 26,
+      "included_recording_variants": 918,
+      "source_ids": {
+        "d2e_480p": 459,
+        "d2e_original": 459
+      },
+      "resolution_tiers": {
+        "480p": 459,
+        "original_fhd_qhd": 459
+      },
+      "decode_source_ids": {},
+      "decode_resolution_tiers": {}
+    },
+    "g004": {
+      "audit_key": "g004",
+      "status": "fail",
+      "error_count": 46,
+      "included_recording_variants": 918,
+      "source_ids": {
+        "d2e_480p": 459,
+        "d2e_original": 459
+      },
+      "resolution_tiers": {
+        "480p": 459,
+        "original_fhd_qhd": 459
+      },
+      "decode_source_ids": {},
+      "decode_resolution_tiers": {}
+    }
+  },
+  "g005_audit_status": "fail",
   "artifacts": {
     "suite_config": {
       "path": "configs/harness/g008_live_open_game_suite.yaml",
       "exists": true,
-      "bytes": 3916,
-      "sha256": "96cce555c60ae082bd7c548855995dc3880e1a9a2cd57982651feb30be9c3129"
+      "bytes": 3978,
+      "sha256": "56b2c052017e9e376a48ae1c8d81775e7cac0d5f71302e4c22bf5914cffb13a1"
     },
     "evidence_validation": {
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
@@ -28,6 +63,24 @@
       "bytes": 0,
       "sha256": null
     },
+    "g003_completion_audit": {
+      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "exists": true,
+      "bytes": 9361,
+      "sha256": "07e0ab6c11e647d4739614c31e8b343b5678d9d870d3941c5bfcb62a88fa6ed8"
+    },
+    "g004_completion_audit": {
+      "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+      "exists": true,
+      "bytes": 14059,
+      "sha256": "e0bec9eec0b0cfbe1e52210c4a0910c5d9bff8ea6ed16d220d32eec4f01020e8"
+    },
+    "g005_completion_audit": {
+      "path": "artifacts/aux/g005_aux_completion_audit.json",
+      "exists": true,
+      "bytes": 14739,
+      "sha256": "385f0d603fca26f8c53ebb6c243b53478f9299f08815c309f1f4a2cd14f2ac46"
+    },
     "runtime_adapter_contract": {
       "path": "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
       "exists": true,
@@ -37,8 +90,8 @@
     "live_suite_doc": {
       "path": "docs/live_open_game_suite.md",
       "exists": true,
-      "bytes": 5735,
-      "sha256": "bfaedfeb3e2f69f6cb8165c606d0fab4f8c9f6c740e86d1fbd772d641ac7f014"
+      "bytes": 8024,
+      "sha256": "0e38a66ca5c0c3110df7d7317cc69e54f6a88a797b9e9882a8845992cc012595"
     }
   },
   "episode_artifact_paths": [],
@@ -66,6 +119,20 @@
       "code": "missing_required_artifact",
       "artifact_key": "trained_checkpoint_metadata",
       "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "d2e_only_completion_audit_not_pass",
+      "audit_key": "g003",
+      "status": "fail",
+      "error_count": 26
+    },
+    {
+      "severity": "error",
+      "code": "d2e_only_completion_audit_not_pass",
+      "audit_key": "g004",
+      "status": "fail",
+      "error_count": 46
     },
     {
       "severity": "error",
@@ -103,6 +170,6 @@
       "actual": null
     }
   ],
-  "error_count": 9,
-  "claim_boundary": "This audit is required before checkpointing G008 complete; protocol-only or dry-run evidence cannot pass without trained checkpoint metadata and live open-source graphical-game validation evidence."
+  "error_count": 11,
+  "claim_boundary": "This audit is required before checkpointing G008 complete; protocol-only or dry-run evidence cannot pass without passing full-corpus D2E-only G003/G004 audits, trained checkpoint metadata, and live open-source graphical-game validation evidence. D2E+aux checkpoints additionally require passing G005 evidence."
 }
