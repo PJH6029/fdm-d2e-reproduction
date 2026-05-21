@@ -511,3 +511,10 @@ uv run python scripts/audit_g003_live_health.py \
 
 - After stopping canonical, accel64 continued to advance under the same parent `135996`: `484 -> 494 -> 503 -> 515 / 918` over the 02:33-02:49 KST monitor window. Status remained `running` with no stale/no-progress shards; merged JSONLs and IDM metrics had not appeared yet, so extraction was still active.
 - Live process sampling still showed extraction workers only (no merge/train/torchrun yet). Continue waiting on accel64 extraction; promotion/G004 handoff remains pending.
+
+### 2026-05-22 02:56 KST local evidence-path hardening while accel64 keeps running
+
+- Fresh pod probe on checkout `b568f0b` showed accel64 still healthy and extracting: monitor `528 / 918`, live health `healthy_running`, active extractors `64 / 64`, parent PID `135996`, watcher status `waiting_active_parent`. No merged full-corpus JSONLs, IDM metrics/checkpoint, finalization summary, or completion audit existed yet.
+- Local commit `ea8ed9d` hardens future G003 evidence generation by exporting lane-specific `IDM_SUMMARY` defaults, including the accel64 summary path `artifacts/idm/idm_streaming_d2e_full_compact_accel64_summary.json`. Local validation passed: `uv run pytest tests/test_training_run_scripts.py tests/test_g003_accel64_isolation.py` and full `uv run pytest` (`301` tests).
+- Important deployment note: `ea8ed9d` was pushed to origin but intentionally **not pulled into the active pod checkout** because the pod is running the accel64 parent shell from `b568f0b`. The current active run can still pass because the postrun finalizer/watcher already uses explicit accel64 paths for completion auditing; deploy `ea8ed9d` only after the active accel64 parent exits, or if a future restart is needed.
+- G003 remains non-terminal. Do not checkpoint complete until accel64 finishes extraction, merge, IDM training/eval, split stats, finalization audit, promotion to canonical paths, and canonical `g003_full_idm_completion_audit.json` reports `pass`.
