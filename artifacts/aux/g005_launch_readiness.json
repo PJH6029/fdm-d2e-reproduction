@@ -48,16 +48,34 @@
     "aux_plan_doc": {
       "path": "docs/auxiliary_data_plan.md",
       "exists": true,
-      "bytes": 7443
+      "bytes": 15183
     }
   },
-  "source_evidence": [],
-  "eval_manifest_hashes": null,
+  "source_evidence": [
+    {
+      "path": "artifacts/aux/g005_aux_source_materialization_evidence.json",
+      "exists": true,
+      "bytes": 5455
+    }
+  ],
+  "eval_manifest_hashes": {
+    "path": "artifacts/aux/d2e_eval_manifest_hashes.json",
+    "exists": true,
+    "bytes": 2429
+  },
   "namespace_manifest": {
     "path": "artifacts/aux/g005_aux_namespace_manifest.json",
     "exists": false,
     "bytes": 0,
     "completion_ready": null
+  },
+  "aux_examples": {
+    "path": "artifacts/aux/g005_aux_examples_summary.json",
+    "exists": true,
+    "bytes": 2939,
+    "status": "blocked",
+    "error_count": 3,
+    "total_examples": 0
   },
   "run_summary": {
     "path": "artifacts/aux/g005_d2e_aux_train_run.json",
@@ -70,6 +88,10 @@
       "run",
       "python",
       "scripts/build_g005_aux_namespace_manifest.py",
+      "--source-evidence",
+      "artifacts/aux/g005_aux_source_materialization_evidence.json",
+      "--eval-manifest-hashes",
+      "artifacts/aux/d2e_eval_manifest_hashes.json",
       "--completion-ready"
     ],
     "postrun_watcher": [
@@ -81,6 +103,10 @@
       "outputs/cluster/g005_d2e_aux_best.pid",
       "--output",
       "artifacts/aux/g005_postrun_watcher_summary.json",
+      "--source-evidence",
+      "artifacts/aux/g005_aux_source_materialization_evidence.json",
+      "--eval-manifest-hashes",
+      "artifacts/aux/d2e_eval_manifest_hashes.json",
       "--completion-ready"
     ],
     "finalize_after_run": [
@@ -88,6 +114,10 @@
       "run",
       "python",
       "scripts/finalize_g005_aux_best_model.py",
+      "--source-evidence",
+      "artifacts/aux/g005_aux_source_materialization_evidence.json",
+      "--eval-manifest-hashes",
+      "artifacts/aux/d2e_eval_manifest_hashes.json",
       "--completion-ready"
     ]
   },
@@ -119,14 +149,21 @@
       "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
       "status": "fail",
       "error_count": 33
-    }
-  ],
-  "warnings": [
+    },
     {
-      "severity": "warning",
-      "code": "namespace_manifest_not_built_yet",
-      "path": "artifacts/aux/g005_aux_namespace_manifest.json"
+      "severity": "error",
+      "code": "namespace_manifest_not_completion_ready",
+      "path": "artifacts/aux/g005_aux_namespace_manifest.json",
+      "completion_ready": null
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_not_pass",
+      "path": "artifacts/aux/g005_aux_examples_summary.json",
+      "status": "blocked",
+      "error_count": 3
     }
   ],
+  "warnings": [],
   "claim_boundary": "G005 launch readiness is a preflight only; it does not train, checkpoint G005, or weaken G003/G004 D2E-only prerequisites."
 }

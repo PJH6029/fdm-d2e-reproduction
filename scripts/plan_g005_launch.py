@@ -140,6 +140,29 @@ def build_launch_readiness(args: argparse.Namespace) -> dict[str, Any]:
     elif not namespace_status["exists"]:
         warnings.append({"severity": "warning", "code": "namespace_manifest_not_built_yet", "path": namespace_path})
 
+    aux_examples_path = paths.get("aux_examples_summary")
+    aux_examples_status = None
+    if aux_examples_path:
+        aux_examples = _load_json(_path(root, aux_examples_path))
+        aux_examples_status = {
+            **_file_status(root, aux_examples_path),
+            "status": aux_examples.get("status") if isinstance(aux_examples, dict) else None,
+            "error_count": aux_examples.get("error_count") if isinstance(aux_examples, dict) else None,
+            "total_examples": aux_examples.get("total_examples") if isinstance(aux_examples, dict) else None,
+        }
+        if not aux_examples_status["exists"]:
+            findings.append({"severity": "error", "code": "missing_aux_examples_summary", "path": aux_examples_path})
+        elif aux_examples_status["status"] != "pass":
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "aux_examples_not_pass",
+                    "path": aux_examples_path,
+                    "status": aux_examples_status["status"],
+                    "error_count": aux_examples_status["error_count"],
+                }
+            )
+
     run_summary_path = paths.get("run_summary", "artifacts/aux/g005_d2e_aux_train_run.json")
     run_summary_status = _file_status(root, run_summary_path)
     if run_summary_status["exists"] and not args.allow_overwrite:
@@ -178,6 +201,7 @@ def build_launch_readiness(args: argparse.Namespace) -> dict[str, Any]:
         "source_evidence": source_evidence,
         "eval_manifest_hashes": eval_hashes,
         "namespace_manifest": namespace_status,
+        "aux_examples": aux_examples_status,
         "run_summary": run_summary_status,
         "commands": {
             "build_namespace_manifest": namespace_command,

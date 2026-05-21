@@ -177,7 +177,8 @@ raw files against Zenodo size/checksum metadata when available, validates Huggin
 Face summary-listed files, and requires source-level train/val/test manifests
 whose references resolve to real files. The watcher waits for source
 materialization, runs the integrity gate, then rebuilds source evidence,
-namespace-manifest readiness, and the fail-closed G005 launch-readiness report.
+source-specific auxiliary example manifests, namespace-manifest readiness, and
+the fail-closed G005 launch-readiness report.
 None of these scripts starts G005 training or checkpoints OMX/Codex state; until
 G003/G004 D2E-only prerequisites pass, the watcher's expected terminal status is
 `g005_launch_not_ready`.

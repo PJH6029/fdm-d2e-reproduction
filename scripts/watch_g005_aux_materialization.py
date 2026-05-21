@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from fdm_d2e.io_utils import write_json
+from build_g005_aux_examples import build_examples as build_aux_examples
 from build_g005_aux_namespace_manifest import build_manifest as build_namespace_manifest
 from build_g005_aux_source_evidence import build_evidence as build_source_evidence
 from plan_g005_launch import build_launch_readiness as plan_g005_launch
@@ -134,6 +135,21 @@ def _plan_args(args: argparse.Namespace, root: Path) -> Namespace:
     )
 
 
+def _aux_examples_args(args: argparse.Namespace, root: Path) -> Namespace:
+    return Namespace(
+        root=str(root),
+        action_registry=args.action_registry,
+        namespace_root=args.namespace_root,
+        examples_root=args.examples_root,
+        source_id=None,
+        required_splits=list(args.required_splits),
+        max_examples_per_source=args.max_examples_per_source,
+        allow_incomplete_raw=False,
+        output=args.aux_examples_output,
+        allow_fail=True,
+    )
+
+
 def _base_payload(args: argparse.Namespace, root: Path, *, started_at: float) -> dict[str, Any]:
     return {
         "schema": "g005_aux_materialization_watcher.v1",
@@ -169,6 +185,7 @@ def watch(
     *,
     integrity_func: Callable[[argparse.Namespace], dict[str, Any]] = build_materialization_integrity,
     source_evidence_func: Callable[[argparse.Namespace], dict[str, Any]] = build_source_evidence,
+    aux_examples_func: Callable[[argparse.Namespace], dict[str, Any]] = build_aux_examples,
     namespace_func: Callable[[argparse.Namespace, Path], dict[str, Any]] = _call_namespace_builder,
     plan_func: Callable[[argparse.Namespace], dict[str, Any]] = plan_g005_launch,
     sleep_func: Callable[[float], None] = time.sleep,
@@ -265,6 +282,23 @@ def watch(
                 _write_summary(root, args.output, payload)
                 return payload
 
+            aux_examples = aux_examples_func(_aux_examples_args(args, root))
+            write_json(_path(root, args.aux_examples_output), aux_examples)
+            if aux_examples.get("status") != "pass":
+                payload = {
+                    **base,
+                    "status": "aux_examples_not_pass",
+                    "elapsed_seconds": elapsed,
+                    "materialization": snapshot,
+                    "materialization_integrity_status": integrity.get("status"),
+                    "source_evidence_status": source_evidence.get("status"),
+                    "aux_examples_status": aux_examples.get("status"),
+                    "aux_examples_error_count": aux_examples.get("error_count"),
+                    "findings": [{"severity": "error", "code": "aux_examples_not_pass", "error_count": aux_examples.get("error_count")}],
+                }
+                _write_summary(root, args.output, payload)
+                return payload
+
             namespace_manifest = namespace_func(args, root)
             if namespace_manifest.get("completion_ready") is not True:
                 payload = {
@@ -274,6 +308,7 @@ def watch(
                     "materialization": snapshot,
                     "materialization_integrity_status": integrity.get("status"),
                     "source_evidence_status": source_evidence.get("status"),
+                    "aux_examples_status": aux_examples.get("status"),
                     "namespace_completion_ready": namespace_manifest.get("completion_ready"),
                     "findings": [{"severity": "error", "code": "namespace_not_ready", "completion_ready": namespace_manifest.get("completion_ready")}],
                 }
@@ -290,6 +325,7 @@ def watch(
                     "materialization": snapshot,
                     "materialization_integrity_status": integrity.get("status"),
                     "source_evidence_status": source_evidence.get("status"),
+                    "aux_examples_status": aux_examples.get("status"),
                     "namespace_completion_ready": namespace_manifest.get("completion_ready"),
                     "g005_launch_plan_status": plan.get("status"),
                     "g005_launch_plan_finding_count": len(plan.get("findings", [])),
@@ -305,6 +341,7 @@ def watch(
                 "materialization": snapshot,
                 "materialization_integrity_status": integrity.get("status"),
                 "source_evidence_status": source_evidence.get("status"),
+                "aux_examples_status": aux_examples.get("status"),
                 "namespace_completion_ready": namespace_manifest.get("completion_ready"),
                 "g005_launch_plan_status": plan.get("status"),
                 "findings": [],
@@ -333,11 +370,15 @@ def main() -> int:
     parser.add_argument("--materialization-summary", default="artifacts/aux/g005_aux_materialization_execute_summary.json")
     parser.add_argument("--materialization-log", default="artifacts/aux/g005_aux_materialization_execute.log")
     parser.add_argument("--namespace-root", default="outputs/aux")
+    parser.add_argument("--examples-root", default="outputs/aux_examples")
     parser.add_argument("--required-splits", nargs="*", default=["train", "val", "test"])
     parser.add_argument("--max-files", type=int)
+    parser.add_argument("--max-examples-per-source", type=int)
     parser.add_argument("--aux-candidates", default="artifacts/sources/aux_game_action_dataset_candidates.json")
+    parser.add_argument("--action-registry", default="artifacts/aux/g005_aux_action_registry.json")
     parser.add_argument("--source-evidence-output", default="artifacts/aux/g005_aux_source_materialization_evidence.json")
     parser.add_argument("--integrity-output", default="artifacts/aux/g005_aux_materialization_integrity.json")
+    parser.add_argument("--aux-examples-output", default="artifacts/aux/g005_aux_examples_summary.json")
     parser.add_argument("--eval-manifest-hashes", default="artifacts/aux/d2e_eval_manifest_hashes.json")
     parser.add_argument("--namespace-manifest-output", default="artifacts/aux/g005_aux_namespace_manifest.json")
     parser.add_argument("--g005-launch-readiness-output", default="artifacts/aux/g005_launch_readiness.json")
