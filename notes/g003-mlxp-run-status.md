@@ -285,3 +285,9 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Pushed commit `22c66c1` and fast-forwarded pod checkout to `22c66c1`; `artifacts/eval/g006_final_artifact_build_summary.json` is now included in the package manifest, removing the remaining configured-artifact manifest coverage finding from the final quality audit.
 - Parent PID `9289` still running at elapsed `05:11:17`; attached GPU monitor PID `31950` still running at elapsed `01:22:23`.
 - Monitor status remained `running`; decoded recording variants `111 / 918`; complete shards `0 / 16`; stale/no-progress shards `[]`; merged train/eval and IDM metrics absent.
+
+## 2026-05-21 16:11 KST pre-checkpoint audit sync snapshot
+
+- Pushed commit `58251dd` and fast-forwarded pod checkout to `58251dd`; story-level completion audits now support pre-checkpoint evidence gating via `require_goal_checkpoint_complete=false`, with final quality gates retaining the hard requirement that all stories are checkpointed complete.
+- Parent PID `9289` still running at elapsed `05:16:24`; attached GPU monitor PID `31950` still running at elapsed `01:27:30`.
+- Monitor status remained `running`; decoded recording variants `113 / 918`; complete shards `0 / 16`; stale/no-progress shards `[]`; merged train/eval and IDM metrics absent.
