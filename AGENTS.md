@@ -46,18 +46,18 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 20:33 KST.
+Latest known live run snapshot: 2026-05-21 20:34 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout contains finalizer/preflight hardening commits through `6e6ed94` (`Provision p-doom ArrayRecord runtime dependency`); G003/G004/G005/G006/G008/G009 finalizers, G003 post-run watcher, G004 launch preflight, G005 aux materialization/runtime preflights, split-stat generation, completion audits, and package-manifest updates are present in pod.
+- Pod checkout contains finalizer/preflight hardening commits through `b58433e` (`Record restored pod runtime environment`); G003/G004/G005/G006/G008/G009 finalizers, G003 post-run watcher, G004 launch preflight, G005 aux materialization/runtime preflights, split-stat generation, completion audits, and package-manifest updates are present in pod.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
 - Last decoded count: `211 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
 - Monitor status was `running`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
-- Parent PID `9289` was still running; G003→G004 chain watcher PID `47480` was running; attached GPU monitor evidence remains pod-owned live output until the parent exits/finalizer runs. Do not commit local stand-ins for live GPU CSV/watcher summaries.
+- Parent PID `9289` was still running; G003→G004 chain watcher was restarted on commit `b58433e` and active Python PID `58603` reported `waiting_g003_parent` with `211 / 918` decoded. Attached GPU monitor evidence remains pod-owned live output until the parent exits/finalizer runs. Do not commit local stand-ins for live GPU CSV/watcher summaries.
 
 ## Current G005 auxiliary materialization
 
