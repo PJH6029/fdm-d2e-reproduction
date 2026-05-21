@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import shutil
 import sys
 import urllib.parse
@@ -85,6 +87,61 @@ def _zenodo_files_from_metadata(metadata: dict[str, Any]) -> list[dict[str, Any]
     return rows
 
 
+def _parse_checksum(value: Any) -> tuple[str, str] | None:
+    if not value:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    if ":" in text:
+        algorithm, digest = text.split(":", 1)
+        algorithm = algorithm.lower().strip()
+        digest = digest.lower().strip()
+    else:
+        digest = text.lower()
+        algorithm = "sha256" if len(digest) == 64 else "md5" if len(digest) == 32 else ""
+    if algorithm not in {"md5", "sha1", "sha256", "sha512"} or not digest:
+        return None
+    return algorithm, digest
+
+
+def _hash_file(path: Path, algorithm: str) -> str:
+    h = hashlib.new(algorithm)
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _download_validation(path: Path, *, expected_size: int | None, checksum: Any) -> dict[str, Any]:
+    findings: list[dict[str, Any]] = []
+    actual_size = path.stat().st_size if path.exists() and path.is_file() else None
+    if expected_size is not None and actual_size != int(expected_size):
+        findings.append(
+            {
+                "severity": "error",
+                "code": "download_size_mismatch",
+                "expected_size_bytes": int(expected_size),
+                "actual_size_bytes": actual_size,
+            }
+        )
+    parsed_checksum = _parse_checksum(checksum)
+    checksum_report: dict[str, Any] | None = None
+    if parsed_checksum is not None and path.exists() and path.is_file():
+        algorithm, expected_digest = parsed_checksum
+        actual_digest = _hash_file(path, algorithm)
+        checksum_report = {"algorithm": algorithm, "expected": expected_digest, "actual": actual_digest}
+        if actual_digest.lower() != expected_digest.lower():
+            findings.append({"severity": "error", "code": "download_checksum_mismatch", **checksum_report})
+    return {
+        "valid": not any(item.get("severity") == "error" for item in findings),
+        "expected_size_bytes": expected_size,
+        "actual_size_bytes": actual_size,
+        "checksum": checksum_report,
+        "findings": findings,
+    }
+
+
 def _candidate_plan(source_id: str, candidate: dict[str, Any], namespace_root: Path) -> dict[str, Any]:
     provider = _provider(candidate)
     namespace = namespace_root / source_id
@@ -106,18 +163,66 @@ def _candidate_plan(source_id: str, candidate: dict[str, Any], namespace_root: P
     return plan
 
 
-def _download_url(url: str, dest: Path) -> dict[str, Any]:
+def _invalid_backup_path(dest: Path) -> Path:
+    suffix = f".invalid-{os.getpid()}"
+    candidate = dest.with_name(dest.name + suffix)
+    counter = 0
+    while candidate.exists():
+        counter += 1
+        candidate = dest.with_name(dest.name + f"{suffix}-{counter}")
+    return candidate
+
+
+def _download_url(url: str, dest: Path, *, expected_size: int | None = None, checksum: Any = None) -> dict[str, Any]:
     dest.parent.mkdir(parents=True, exist_ok=True)
     if dest.exists() and dest.is_file() and dest.stat().st_size > 0:
-        return {"path": str(dest), "status": "existing", "bytes": dest.stat().st_size, "sha256": sha256_file(dest)}
+        validation = _download_validation(dest, expected_size=expected_size, checksum=checksum)
+        if validation["valid"]:
+            return {
+                "path": str(dest),
+                "status": "existing",
+                "bytes": dest.stat().st_size,
+                "sha256": sha256_file(dest),
+                "validation": validation,
+                "findings": [],
+            }
+        backup = _invalid_backup_path(dest)
+        dest.replace(backup)
+        replaced_invalid_existing = str(backup)
+    else:
+        replaced_invalid_existing = None
     parsed = urllib.parse.urlparse(url)
+    tmp = dest.with_name(dest.name + f".part-{os.getpid()}")
+    if tmp.exists():
+        tmp.unlink()
     if parsed.scheme == "file":
         src = Path(urllib.request.url2pathname(parsed.path))
-        shutil.copyfile(src, dest)
+        shutil.copyfile(src, tmp)
     else:
-        with urllib.request.urlopen(url, timeout=120) as response, dest.open("wb") as handle:  # noqa: S310 - explicit dataset URLs only
+        with urllib.request.urlopen(url, timeout=120) as response, tmp.open("wb") as handle:  # noqa: S310 - explicit dataset URLs only
             shutil.copyfileobj(response, handle, length=1024 * 1024)
-    return {"path": str(dest), "status": "downloaded", "bytes": dest.stat().st_size, "sha256": sha256_file(dest)}
+    validation = _download_validation(tmp, expected_size=expected_size, checksum=checksum)
+    if validation["valid"]:
+        tmp.replace(dest)
+        return {
+            "path": str(dest),
+            "status": "downloaded",
+            "bytes": dest.stat().st_size,
+            "sha256": sha256_file(dest),
+            "validation": validation,
+            "replaced_invalid_existing": replaced_invalid_existing,
+            "findings": [],
+        }
+    return {
+        "path": str(dest),
+        "status": "invalid_download",
+        "tmp_path": str(tmp),
+        "bytes": tmp.stat().st_size if tmp.exists() else 0,
+        "sha256": sha256_file(tmp) if tmp.exists() else None,
+        "validation": validation,
+        "replaced_invalid_existing": replaced_invalid_existing,
+        "findings": [{"severity": "error", "code": "download_validation_failed", "path": str(dest), "url": url, "validation": validation}],
+    }
 
 
 def _write_split_manifests(namespace: Path, files: list[dict[str, Any]], splits: tuple[str, ...]) -> dict[str, Any]:
@@ -159,16 +264,25 @@ def _execute_zenodo(source_id: str, candidate: dict[str, Any], namespace_root: P
             findings.append({"severity": "warning", "code": "max_bytes_skipped_file", "filename": row.get("filename"), "size_bytes": size})
             continue
         total_requested += size
-        downloads.append(_download_url(str(row["url"]), raw_dir / Path(str(row["filename"])).name))
-    split_manifests = _write_split_manifests(namespace, downloads, splits) if downloads else {}
+        download = _download_url(
+            str(row["url"]),
+            raw_dir / Path(str(row["filename"])).name,
+            expected_size=size if size > 0 else None,
+            checksum=row.get("checksum"),
+        )
+        downloads.append(download)
+        findings.extend(download.get("findings", []))
+    valid_downloads = [item for item in downloads if item.get("status") != "invalid_download"]
+    split_manifests = _write_split_manifests(namespace, valid_downloads, splits) if valid_downloads else {}
     errors = [item for item in findings if item.get("severity") == "error"]
     summary = {
         "id": source_id,
         "provider": "zenodo",
-        "status": "pass" if downloads and not errors else "blocked",
+        "status": "pass" if valid_downloads and not errors else "blocked",
         "namespace": str(namespace),
-        "download_count": len(downloads),
-        "downloaded_bytes": sum(int(item.get("bytes") or 0) for item in downloads),
+        "download_count": len(valid_downloads),
+        "attempted_download_count": len(downloads),
+        "downloaded_bytes": sum(int(item.get("bytes") or 0) for item in valid_downloads),
         "downloads": downloads,
         "split_manifests": split_manifests,
         "metadata_record_id": metadata.get("id") if isinstance(metadata, dict) else None,

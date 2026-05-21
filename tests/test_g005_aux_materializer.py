@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import sys
 from argparse import Namespace
 from pathlib import Path
@@ -90,6 +91,76 @@ def test_materializer_executes_file_url_zenodo_fixture_and_writes_split_manifest
     for split in ["train", "val", "test"]:
         assert (namespace / split / "manifest.json").exists()
     assert (namespace / "materialization_summary.json").exists()
+
+
+def test_materializer_replaces_invalid_existing_zenodo_file_using_size_and_checksum(tmp_path: Path):
+    source_file = tmp_path / "remote/source.zip"
+    source_file.parent.mkdir(parents=True, exist_ok=True)
+    source_file.write_text("fixture-data", encoding="utf-8")
+    digest = hashlib.md5(source_file.read_bytes()).hexdigest()  # noqa: S324 - validates upstream Zenodo md5 format in tests
+    metadata = tmp_path / "remote/metadata.json"
+    metadata.write_text(
+        json.dumps(
+            {
+                "id": 1,
+                "files": [
+                    {
+                        "key": "source.zip",
+                        "size": source_file.stat().st_size,
+                        "checksum": f"md5:{digest}",
+                        "links": {"self": source_file.as_uri()},
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    _write_candidates(tmp_path, metadata_url=metadata.as_uri())
+    existing = tmp_path / "outputs/aux/zenodo_aux/raw/source.zip"
+    existing.parent.mkdir(parents=True, exist_ok=True)
+    existing.write_text("partial", encoding="utf-8")
+
+    payload = build_or_execute(_args(tmp_path, source_id=["zenodo_aux"], execute=True))
+
+    assert payload["status"] == "pass"
+    download = payload["executions"][0]["downloads"][0]
+    assert download["status"] == "downloaded"
+    assert download["replaced_invalid_existing"]
+    assert download["validation"]["valid"] is True
+    assert existing.read_text(encoding="utf-8") == "fixture-data"
+    assert list(existing.parent.glob("source.zip.invalid-*"))
+
+
+def test_materializer_blocks_bad_zenodo_checksum_without_split_manifests(tmp_path: Path):
+    source_file = tmp_path / "remote/source.zip"
+    source_file.parent.mkdir(parents=True, exist_ok=True)
+    source_file.write_text("fixture-data", encoding="utf-8")
+    metadata = tmp_path / "remote/metadata.json"
+    metadata.write_text(
+        json.dumps(
+            {
+                "id": 1,
+                "files": [
+                    {
+                        "key": "source.zip",
+                        "size": source_file.stat().st_size,
+                        "checksum": "md5:00000000000000000000000000000000",
+                        "links": {"self": source_file.as_uri()},
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    _write_candidates(tmp_path, metadata_url=metadata.as_uri())
+
+    payload = build_or_execute(_args(tmp_path, source_id=["zenodo_aux"], execute=True))
+
+    assert payload["status"] == "blocked"
+    assert any(item["code"] == "download_validation_failed" for item in payload["findings"])
+    namespace = tmp_path / "outputs/aux/zenodo_aux"
+    assert not (namespace / "train/manifest.json").exists()
+    assert list((namespace / "raw").glob("source.zip.part-*"))
 
 
 def test_materializer_blocks_unsupported_manual_provider(tmp_path: Path):

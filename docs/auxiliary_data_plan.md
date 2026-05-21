@@ -98,7 +98,10 @@ records via their API file links and Hugging Face datasets via
 train/val/test source-level manifests under each selected `outputs/aux/<dataset_id>/`
 namespace. The resulting evidence is still source/provenance evidence only; it
 does not authorize G005 training, G005 checkpointing, or D2E+aux model-quality
-claims.
+claims. Zenodo downloads are written through `.part-<pid>` files, verified against
+published size/checksum metadata when available, and only then atomically moved
+into `raw/`; invalid existing files are preserved as `.invalid-*` backups and
+redownloaded rather than silently accepted as source evidence.
 
 `build_g005_aux_archive_inventory.py` inspects the materialized `raw/` archives
 after download and records archive/member counts plus heuristic action-label
