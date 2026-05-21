@@ -96,6 +96,7 @@ def suite_protocol_report(config: dict[str, Any]) -> dict[str, Any]:
         "requires_replay": thresholds["require_replay"],
         "requires_latency_log": thresholds["require_latency_log"],
         "requires_failure_log": thresholds["require_failure_log"],
+        "allowed_evidence_modes": sorted(allowed_live_evidence_modes(config)),
     }
     return {
         "schema": "live_game_suite_protocol.v1",
@@ -123,6 +124,13 @@ def live_suite_thresholds(config: dict[str, Any]) -> dict[str, Any]:
         "require_failure_log": bool(thresholds.get("require_failure_log", True)),
         "require_statistical_comparison": bool(thresholds.get("require_statistical_comparison", True)),
     }
+
+
+def allowed_live_evidence_modes(config: dict[str, Any]) -> set[str]:
+    modes = config.get("allowed_evidence_modes") or ["live_desktop_control", "live_graphical_game_control"]
+    if not isinstance(modes, list):
+        raise LiveSuiteValidationError("allowed_evidence_modes must be a list")
+    return {str(mode).lower() for mode in modes}
 
 
 def _task_lookup(config: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
@@ -162,6 +170,7 @@ def validate_live_suite_evidence(config: dict[str, Any], evidence: dict[str, Any
 
     root_path = Path(root)
     thresholds = live_suite_thresholds(config)
+    allowed_modes = allowed_live_evidence_modes(config)
     task_defs = _task_lookup(config)
     episodes = _as_list(evidence.get("episodes"))
     findings: list[dict[str, Any]] = []
@@ -169,8 +178,18 @@ def validate_live_suite_evidence(config: dict[str, Any], evidence: dict[str, Any
     by_task: dict[tuple[str, str], list[dict[str, Any]]] = {}
     by_game: dict[str, list[dict[str, Any]]] = {}
 
-    if str(evidence.get("evidence_mode", "")).lower() in {"dry_run", "deterministic_replay", "game_adjacent"}:
+    evidence_mode = str(evidence.get("evidence_mode", "")).lower()
+    if evidence_mode in {"dry_run", "deterministic_replay", "game_adjacent"}:
         findings.append({"severity": "error", "code": "non_live_evidence_mode", "detail": evidence.get("evidence_mode")})
+    if evidence_mode not in allowed_modes:
+        findings.append(
+            {
+                "severity": "error",
+                "code": "evidence_mode_not_allowed",
+                "allowed": sorted(allowed_modes),
+                "actual": evidence.get("evidence_mode"),
+            }
+        )
 
     for key, info in task_defs.items():
         game_id, task_id = key
@@ -295,6 +314,7 @@ def validate_live_suite_evidence(config: dict[str, Any], evidence: dict[str, Any
     return {
         "schema": "live_game_suite_evidence_validation.v1",
         "suite_id": str(config.get("suite_id", "g008_live_open_game_suite")),
+        "evidence_mode": evidence.get("evidence_mode"),
         "claim_boundary": "Pass here is required before any G008 live open-source graphical-game claim; deterministic game-adjacent harnesses cannot satisfy this gate.",
         "quality_gate": quality_gate,
         "task_summaries": task_summaries,

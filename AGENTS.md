@@ -195,6 +195,7 @@ Do **not** checkpoint `G008-live-game-suite` complete until `scripts/validate_g0
 Current adapter-contract evidence is not live commercial-game control. Future live evidence must use open-source graphical games/tasks and include:
 
 - target game/version/config/map/task protocol,
+- explicit `evidence_mode` of `live_desktop_control` or `live_graphical_game_control`,
 - screen capture + frame → inference → action → next-frame closed loop,
 - OS/input adapter focus guard, kill switch, and rate limits,
 - latency/FPS/dropped-frame/input logs,

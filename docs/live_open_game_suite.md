@@ -60,7 +60,8 @@ video/replay/latency/failure artifacts.
 
 For each planned game/task/seed episode, the evidence JSON must include:
 
-- `evidence_mode: live_desktop_control` or another non-dry-run live mode.
+- `evidence_mode: live_desktop_control` or `live_graphical_game_control`; dry-run,
+  deterministic replay, game-adjacent, or missing modes are rejected.
 - `status` indicating pass/success/completion.
 - `score` and `baseline_score` for baseline win-rate checks.
 - `latency.p95_ms` at or below the configured threshold.

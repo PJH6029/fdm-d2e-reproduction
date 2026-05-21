@@ -22,6 +22,7 @@ def test_live_open_game_suite_protocol_requires_three_graphical_games():
     assert report["quality_gate"]["planned_games"] == 3
     assert report["quality_gate"]["planned_tasks"] == 3
     assert report["quality_gate"]["planned_seeded_episodes"] == 15
+    assert "live_desktop_control" in report["quality_gate"]["allowed_evidence_modes"]
     assert "not live harness success" in report["claim_boundary"]
 
 
@@ -79,6 +80,16 @@ def test_live_suite_rejects_dry_run_or_game_adjacent_evidence(tmp_path):
     result = validate_live_suite_evidence(config, evidence)
     assert result["quality_gate"]["status"] == "fail"
     assert any(item["code"] == "non_live_evidence_mode" for item in result["findings"])
+    assert any(item["code"] == "evidence_mode_not_allowed" for item in result["findings"])
+
+
+def test_live_suite_requires_explicit_allowed_live_evidence_mode(tmp_path):
+    config = load_config(CONFIG_PATH)
+    evidence = _passing_evidence(tmp_path, config)
+    evidence.pop("evidence_mode")
+    result = validate_live_suite_evidence(config, evidence)
+    assert result["quality_gate"]["status"] == "fail"
+    assert any(item["code"] == "evidence_mode_not_allowed" for item in result["findings"])
 
 
 def test_live_suite_rejects_missing_required_video(tmp_path):

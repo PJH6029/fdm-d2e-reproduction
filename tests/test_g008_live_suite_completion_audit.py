@@ -19,6 +19,7 @@ def _config() -> dict:
         "prerequisite_goals": ["G003", "G004", "G007"],
         "thresholds": {"min_games": 3, "min_tasks": 3, "min_episodes": 15},
         "allowed_checkpoint_namespaces": ["d2e_full_corpus", "d2e_aux"],
+        "allowed_evidence_modes": ["live_desktop_control", "live_graphical_game_control"],
         "paths": {
             "suite_config": "configs/harness/suite.yaml",
             "evidence_validation": "artifacts/harness/validation.json",
@@ -79,6 +80,7 @@ def _complete_fixture(root: Path) -> None:
         root / cfg["paths"]["evidence_validation"],
         {
             "schema": "live_game_suite_evidence_validation.v1",
+            "evidence_mode": "live_desktop_control",
             "quality_gate": {
                 "status": "pass",
                 "games_with_passed_episode": 3,
@@ -114,3 +116,4 @@ def test_g008_completion_audit_rejects_protocol_only_and_missing_prereq(tmp_path
     assert "prerequisite_goal_not_complete" in codes
     assert "validation_schema_not_live_evidence" in codes
     assert "live_suite_quality_gate_not_pass" in codes
+    assert "live_suite_evidence_mode_not_allowed" in codes

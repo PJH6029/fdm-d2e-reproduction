@@ -102,6 +102,17 @@ def validate_g008_live_suite_completion(config: dict[str, Any], *, root: str | P
             findings.append({"severity": "error", "code": "live_suite_validation_findings_present", "actual": gate.get("findings_count")})
         if _get(validation, "statistical_comparison_artifact.exists") is not True:
             findings.append({"severity": "error", "code": "missing_live_suite_statistical_comparison_artifact"})
+        allowed_modes = {str(item).lower() for item in config.get("allowed_evidence_modes", ["live_desktop_control", "live_graphical_game_control"])}
+        evidence_mode = validation.get("evidence_mode")
+        if str(evidence_mode).lower() not in allowed_modes:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "live_suite_evidence_mode_not_allowed",
+                    "allowed": sorted(allowed_modes),
+                    "actual": evidence_mode,
+                }
+            )
         if config.get("require_episode_artifact_hashes", True):
             missing_hashes = [path for path in _episode_artifact_paths(validation) if not _file_status(root_path / path, path)["sha256"]]
             if missing_hashes:
