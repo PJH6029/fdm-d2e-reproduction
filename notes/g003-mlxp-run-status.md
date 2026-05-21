@@ -252,3 +252,10 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Parent PID `9289` still running; decoded recording variants `90 / 918`; complete shards `0 / 16`; merged train/eval and IDM metrics absent.
 - G003 monitor status remained `running`; stale/no-progress shards `[]`.
 - G004 completion now requires prediction-only G003 IDM pseudo-labels on `train_core.jsonl` and FDM evaluation on untouched `target_all_eval.jsonl`; the older target-all-eval recording-tail FDM mode is rejected for completion evidence.
+
+## 2026-05-21 15:04 KST causal G004 sync snapshot
+
+- Pushed commit `bf16ac4` and fast-forwarded pod checkout to `bf16ac4`; G004 FDM config now requires `summary_causal_compact_grid8_time_prior_action`.
+- Parent PID `9289` still running; decoded recording variants `92 / 918`; complete shards `0 / 16`; merged train/eval and IDM metrics absent.
+- G003 monitor status remained `running`; stale/no-progress shards `[]`.
+- G004 completion gate now rejects next-frame inverse-dynamics features for FDM and requires prior-action context provenance in the split summary.
