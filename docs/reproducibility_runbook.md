@@ -104,6 +104,11 @@ quality audit presence.
 uv run python scripts/build_repro_package_manifest.py --output artifacts/reproducibility/package_manifest.json
 ```
 
+The default manifest patterns intentionally include the full repo-native
+reproduction surface (`AGENTS.md`, docs, notes, configs, schemas, scripts, src,
+tests, `pyproject.toml`, and `uv.lock`) in addition to evidence artifacts, so a
+final package cannot silently omit a newly added code/test/config file.
+
 ## MLXP/PVC path
 
 Cluster execution uses the PVC repo path:

@@ -8,9 +8,19 @@ from pathlib import Path
 from typing import Iterable
 
 DEFAULT_PATTERNS = [
+    "AGENTS.md",
     "README.md",
     "pyproject.toml",
     "uv.lock",
+    "docs/*.md",
+    "notes/*.md",
+    "configs/**/*.json",
+    "configs/**/*.yaml",
+    "schemas/*.json",
+    "scripts/*.py",
+    "scripts/*.sh",
+    "src/fdm_d2e/**/*.py",
+    "tests/test_*.py",
     "docs/d2e_full_data_universe.md",
     "docs/d2e_full_split_contract.md",
     "docs/d2e_full_idm_pipeline.md",
