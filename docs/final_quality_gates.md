@@ -45,6 +45,11 @@ The audit checks, without mutating OMX/Codex goal state:
    recording variants, distributed world-size/run-exit evidence, GPU-monitor
    coverage for all expected H200 indices, and per-split statistical summaries
    for temporal, heldout-recording, and heldout-game splits.
+   The aggregate final-quality audit repeats the critical D2E tier checks rather
+   than trusting only artifact presence: G003/G004 audits must expose
+   `d2e_480p=459`, `d2e_original=459`, `480p=459`, and
+   `original_fhd_qhd=459`, and the G004 checkpoint metadata must link back to
+   the G003 IDM metadata path.
 5. G005 aux artifacts exist and remain separated from D2E-only namespaces; `g005_aux_namespace_manifest.completion_ready=true`, byte-identical D2E eval-manifest hashes, source-specific action-head namespaces, `g005_aux_completion_audit.status=pass`, and `d2e_aux_ablation_summary.status=pass` are required before D2E+aux can be primary/best.
 6. G006 final endpoint statistics, failure-analysis, claim-taxonomy, readiness,
    final artifact-build summary, and `g006_completion_audit` artifacts exist and report `status == pass`;

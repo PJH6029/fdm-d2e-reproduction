@@ -4,8 +4,8 @@
   "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
   "claim_audit_status": "pass",
   "final_quality_status": "fail",
-  "final_quality_error_count": 97,
-  "package_manifest_entry_count": 207,
+  "final_quality_error_count": 104,
+  "package_manifest_entry_count": 402,
   "g009_audit_status": "fail",
   "g009_audit_error_count": 6,
   "actions": [
@@ -17,13 +17,13 @@
     {
       "name": "package_manifest_bootstrap",
       "output": "artifacts/reproducibility/package_manifest.json",
-      "entry_count": 207
+      "entry_count": 402
     },
     {
       "name": "final_quality_gate_audit",
       "output": "artifacts/reproducibility/final_quality_gate_audit.json",
       "status": "fail",
-      "error_count": 97
+      "error_count": 104
     },
     {
       "name": "g009_completion_audit_pre_final_manifest",
@@ -34,7 +34,7 @@
     {
       "name": "package_manifest_final",
       "output": "artifacts/reproducibility/package_manifest.json",
-      "entry_count": 207
+      "entry_count": 402
     },
     {
       "name": "g009_completion_audit",
@@ -47,7 +47,7 @@
     {
       "severity": "error",
       "code": "final_quality_gate_audit_not_pass",
-      "error_count": 97
+      "error_count": 104
     },
     {
       "severity": "error",

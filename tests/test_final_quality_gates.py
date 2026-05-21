@@ -104,3 +104,18 @@ def test_final_quality_config_does_not_require_self_referential_g009_artifacts()
     g009_section = g009_section[: g009_section.index("\n    }") + 6]
     assert "artifacts/reproducibility/final_quality_gate_audit.json" not in g009_section
     assert "artifacts/reproducibility/g009_completion_audit.json" not in g009_section
+
+
+def test_final_quality_config_preserves_full_d2e_source_tier_gates():
+    text = Path("configs/eval/final_quality_gates.yaml").read_text()
+    assert '"json_path": "data_universe_counts.source_ids"' in text
+    assert '"json_path": "data_universe_counts.resolution_tiers"' in text
+    assert '"json_path": "decode_counts_by_source"' in text
+    assert '"json_path": "decode_counts_by_resolution_tier"' in text
+    assert '"json_path": "source_idm_metadata.path"' in text
+    assert '"json_path": "source_ids"' in text
+    assert '"json_path": "target_source_ids"' in text
+    assert '"d2e_480p": 459' in text
+    assert '"d2e_original": 459' in text
+    assert '"480p": 459' in text
+    assert '"original_fhd_qhd": 459' in text

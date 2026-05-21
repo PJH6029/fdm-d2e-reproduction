@@ -134,6 +134,38 @@
           "path": "artifacts/idm/g003_full_idm_completion_audit.json",
           "json_path": "status",
           "equals": "pass"
+        },
+        {
+          "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+          "json_path": "data_universe_counts.source_ids",
+          "equals": {
+            "d2e_480p": 459,
+            "d2e_original": 459
+          }
+        },
+        {
+          "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+          "json_path": "data_universe_counts.resolution_tiers",
+          "equals": {
+            "480p": 459,
+            "original_fhd_qhd": 459
+          }
+        },
+        {
+          "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+          "json_path": "decode_counts_by_source",
+          "equals": {
+            "d2e_480p": 459,
+            "d2e_original": 459
+          }
+        },
+        {
+          "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+          "json_path": "decode_counts_by_resolution_tier",
+          "equals": {
+            "480p": 459,
+            "original_fhd_qhd": 459
+          }
         }
       ]
     },
@@ -186,6 +218,11 @@
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "source_idm_metadata.path",
+          "equals": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json"
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
           "json_path": "data_universe.exists",
           "equals": true
         },
@@ -193,6 +230,38 @@
           "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
           "json_path": "split_contract.exists",
           "equals": true
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "source_ids",
+          "equals": [
+            "d2e_480p",
+            "d2e_original"
+          ]
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "target_source_ids",
+          "equals": [
+            "d2e_480p",
+            "d2e_original"
+          ]
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "resolution_tiers",
+          "equals": [
+            "480p",
+            "original_fhd_qhd"
+          ]
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "target_resolution_tiers",
+          "equals": [
+            "480p",
+            "original_fhd_qhd"
+          ]
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
@@ -253,6 +322,22 @@
           "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
           "json_path": "status",
           "equals": "pass"
+        },
+        {
+          "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+          "json_path": "data_universe_counts.source_ids",
+          "equals": {
+            "d2e_480p": 459,
+            "d2e_original": 459
+          }
+        },
+        {
+          "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+          "json_path": "data_universe_counts.resolution_tiers",
+          "equals": {
+            "480p": 459,
+            "original_fhd_qhd": 459
+          }
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",

@@ -212,8 +212,8 @@
         {
           "path": "artifacts/idm/g003_full_idm_completion_audit.json",
           "exists": true,
-          "bytes": 8097,
-          "sha256": "fe7ff40d251d0f3fe8a686465c33ede6fb7ec22ec88ec6e9097cc42a9fade794"
+          "bytes": 8633,
+          "sha256": "1858703d2bedb8ead48840c731a9e9730538c523d8a99b9e6594c650984e8567"
         }
       ],
       "findings": [
@@ -431,6 +431,28 @@
           "json_path": "status",
           "expected": "pass",
           "actual": "fail"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_mismatch",
+          "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+          "json_path": "decode_counts_by_source",
+          "expected": {
+            "d2e_480p": 459,
+            "d2e_original": 459
+          },
+          "actual": {}
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_mismatch",
+          "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+          "json_path": "decode_counts_by_resolution_tier",
+          "expected": {
+            "480p": 459,
+            "original_fhd_qhd": 459
+          },
+          "actual": {}
         }
       ]
     },
@@ -558,8 +580,8 @@
         {
           "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
           "exists": true,
-          "bytes": 10279,
-          "sha256": "f05355712f76d3887500cdad928b5bb5cd608f7e24914a04b70132aad7866257"
+          "bytes": 14059,
+          "sha256": "e0bec9eec0b0cfbe1e52210c4a0910c5d9bff8ea6ed16d220d32eec4f01020e8"
         }
       ],
       "findings": [
@@ -712,6 +734,12 @@
           "severity": "error",
           "code": "json_assertion_file_missing",
           "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "source_idm_metadata.path"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
           "json_path": "data_universe.exists"
         },
         {
@@ -719,6 +747,30 @@
           "code": "json_assertion_file_missing",
           "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
           "json_path": "split_contract.exists"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "source_ids"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "target_source_ids"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "resolution_tiers"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "target_resolution_tiers"
         },
         {
           "severity": "error",
@@ -830,8 +882,8 @@
         {
           "path": "docs/auxiliary_data_plan.md",
           "exists": true,
-          "bytes": 6157,
-          "sha256": "3578f99f7e8548e89cffb2d9ee1071b814cb45e544560a6807767114fa23f492"
+          "bytes": 16267,
+          "sha256": "d143066d36436adeda0a73b46a4554fb8d7c4081c5dafb34ab74bd38b0e277c7"
         },
         {
           "path": "artifacts/aux/g005_aux_namespace_manifest.json",
@@ -848,8 +900,8 @@
         {
           "path": "artifacts/aux/g005_aux_completion_audit.json",
           "exists": true,
-          "bytes": 8469,
-          "sha256": "7c8e9068c5b4eb809bbbdc077e1ab18039258865801361af82bca033be39b58f"
+          "bytes": 13126,
+          "sha256": "27dc2595265c7c950d9a32e9a38f4fbce26add128563e694defe07dbf1e0ba05"
         }
       ],
       "findings": [
@@ -1052,8 +1104,8 @@
         {
           "path": "configs/harness/g008_live_open_game_suite.yaml",
           "exists": true,
-          "bytes": 3666,
-          "sha256": "cb8eb2fd6118909dbbe13ba6f51784e03f96e436c8260e4890128b0504a71cde"
+          "bytes": 3978,
+          "sha256": "56b2c052017e9e376a48ae1c8d81775e7cac0d5f71302e4c22bf5914cffb13a1"
         },
         {
           "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
@@ -1065,13 +1117,13 @@
           "path": "artifacts/harness/g008_live_suite_completion_audit.json",
           "exists": true,
           "bytes": 3361,
-          "sha256": "4298f45ce5732688eac2caed19208bba65815c78426e4e72151671f95231c9c4"
+          "sha256": "5b9205b006a630115be2941f0f25844b9dcdff115d80951d5b95c66f72e8c829"
         },
         {
           "path": "docs/live_open_game_suite.md",
           "exists": true,
-          "bytes": 5181,
-          "sha256": "04d3264da11ca9801bcc2e2a889ca38a3c319461c67da2287f95364a1c7e7026"
+          "bytes": 7587,
+          "sha256": "607bd2c6222a68c16817f7964833fa67316971035a3e149fa4dc962eed9bd280"
         }
       ],
       "findings": [
@@ -1126,20 +1178,20 @@
         {
           "path": "docs/reproducibility_runbook.md",
           "exists": true,
-          "bytes": 3848,
-          "sha256": "c4689e82832a890de2e42d25bc1de95c473a38ac7351a996a7ad63428142cd67"
+          "bytes": 4621,
+          "sha256": "b0d8551b9a2823323d8862b58d60c8be0d9943796b3c9385449de9b453f5801b"
         },
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 43408,
-          "sha256": "e5ca61d71693f13339efa7e4fe16792d1b240403187bc09e1595d29389d163e9"
+          "bytes": 82464,
+          "sha256": "8a759973d8e9e68062b3623906cd8a15e284225bdf4270505d8da80763b9d41f"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
           "exists": true,
           "bytes": 850,
-          "sha256": "23d9ee62c70743703bf7991d1570ffec09e2a38520ecac03199c2959ed36bd71"
+          "sha256": "4a6c1aac5b059592e37b4454dbd121405b2fb0941d5bb1fac613071db4c70bb1"
         }
       ],
       "findings": [
@@ -1156,8 +1208,8 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 43408,
-    "sha256": "e5ca61d71693f13339efa7e4fe16792d1b240403187bc09e1595d29389d163e9"
+    "bytes": 82464,
+    "sha256": "8a759973d8e9e68062b3623906cd8a15e284225bdf4270505d8da80763b9d41f"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -1379,6 +1431,28 @@
     },
     {
       "severity": "error",
+      "code": "json_assertion_mismatch",
+      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "json_path": "decode_counts_by_source",
+      "expected": {
+        "d2e_480p": 459,
+        "d2e_original": 459
+      },
+      "actual": {}
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_mismatch",
+      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "json_path": "decode_counts_by_resolution_tier",
+      "expected": {
+        "480p": 459,
+        "original_fhd_qhd": 459
+      },
+      "actual": {}
+    },
+    {
+      "severity": "error",
       "code": "goal_status_not_complete",
       "goal_id": "G004-d2e-only-fdm-4xh200",
       "expected_status": "complete",
@@ -1526,6 +1600,12 @@
       "severity": "error",
       "code": "json_assertion_file_missing",
       "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "json_path": "source_idm_metadata.path"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
       "json_path": "data_universe.exists"
     },
     {
@@ -1533,6 +1613,30 @@
       "code": "json_assertion_file_missing",
       "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
       "json_path": "split_contract.exists"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "json_path": "source_ids"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "json_path": "target_source_ids"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "json_path": "resolution_tiers"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "json_path": "target_resolution_tiers"
     },
     {
       "severity": "error",
@@ -1778,6 +1882,6 @@
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
     }
   ],
-  "error_count": 97,
+  "error_count": 104,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }
