@@ -1,0 +1,43 @@
+{
+  "schema": "g005_postrun_watcher.v1",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "started_at_unix": 1779353210.376014,
+  "output": "artifacts/aux/g005_postrun_watcher_summary.json",
+  "pid_file": "outputs/cluster/g005_d2e_aux_best.pid",
+  "watcher_pid_file": "outputs/cluster/g005_postrun_watcher.pid",
+  "poll_seconds": 60.0,
+  "max_wait_seconds": -1.0,
+  "claim_boundary": "Watches for the G005 parent to exit and then runs local finalization only; it never checkpoints G005 or mutates OMX/Codex goal state.",
+  "status": "finalized_fail",
+  "elapsed_seconds": 0.00014543533325195312,
+  "run": {
+    "pid": null,
+    "pid_running": false,
+    "run_summary_exists": false,
+    "run_summary_status": null,
+    "run_summary": null,
+    "artifacts": {
+      "run_summary": {
+        "path": "artifacts/aux/g005_d2e_aux_train_run.json",
+        "exists": false,
+        "bytes": 0
+      },
+      "log": {
+        "path": "artifacts/aux/g005_d2e_aux_train_run.log",
+        "exists": false,
+        "bytes": 0
+      }
+    }
+  },
+  "g005_finalization_summary": "artifacts/aux/g005_aux_finalization_summary.json",
+  "g005_finalization_status": "fail",
+  "g005_audit_status": "fail",
+  "g005_audit_error_count": 27,
+  "findings": [
+    {
+      "severity": "error",
+      "code": "g005_finalization_not_pass",
+      "status": "fail"
+    }
+  ]
+}

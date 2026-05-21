@@ -65,6 +65,36 @@ Build the manifest from explicit materialization/eval evidence rather than editi
 uv run python scripts/build_g005_aux_namespace_manifest.py   --source-evidence artifacts/aux/<source>_materialization.json   --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json   --completion-ready
 ```
 
+Before launching any D2E+aux training run, run the fail-closed readiness planner:
+
+```bash
+uv run python scripts/plan_g005_launch.py \
+  --source-evidence artifacts/aux/<source>_materialization.json \
+  --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json \
+  --require-eval-manifest-hashes
+```
+
+The planner requires completed G003/G004 D2E-only goal checkpoints and passing
+G003/G004 audits by default. `--allow-precheckpoint` is diagnostic-only and must
+not be used as launch authorization or claim evidence.
+
+For long unattended G005 cluster runs, write the training parent PID to
+`outputs/cluster/g005_d2e_aux_best.pid` and start the non-mutating watcher:
+
+```bash
+nohup uv run python scripts/watch_g005_then_finalize.py \
+  --pid-file outputs/cluster/g005_d2e_aux_best.pid \
+  --source-evidence artifacts/aux/<source>_materialization.json \
+  --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json \
+  --completion-ready \
+  > artifacts/aux/g005_postrun_watcher.log 2>&1 &
+echo $! > outputs/cluster/g005_postrun_watcher.pid
+```
+
+While the parent is alive the watcher only writes `waiting_active_parent`
+telemetry. After the parent exits it runs the non-mutating G005 finalizer. It
+does not mutate OMX/Codex goal state and cannot complete G005 by itself.
+
 After the D2E+aux training/ablation run finishes, run the G005 finalizer before
 checkpointing:
 

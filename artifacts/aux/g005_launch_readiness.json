@@ -1,0 +1,132 @@
+{
+  "schema": "g005_launch_readiness.v1",
+  "status": "blocked",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "allow_precheckpoint": false,
+  "goal_statuses": {
+    "G001-data-universe-audit": "complete",
+    "G002-split-leakage-contract": "complete",
+    "G003-d2e-only-idm": "in_progress",
+    "G004-d2e-only-fdm-4xh200": "pending",
+    "G005-aux-data-best-model": "pending",
+    "G006-evaluation-failure-analysis": "pending",
+    "G007-runtime-sdk-adapter": "complete",
+    "G008-live-game-suite": "pending",
+    "G009-report-repro-package": "pending"
+  },
+  "prerequisite_goal_statuses": {
+    "G003-d2e-only-idm": "in_progress",
+    "G004-d2e-only-fdm-4xh200": "pending"
+  },
+  "d2e_only_audits": {
+    "g003": {
+      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "exists": true,
+      "bytes": 8097,
+      "status": "fail",
+      "error_count": 23
+    },
+    "g004": {
+      "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+      "exists": true,
+      "bytes": 10279,
+      "status": "fail",
+      "error_count": 33
+    }
+  },
+  "selected_aux_candidate_ids": [
+    "minerl_2019_zenodo_v2",
+    "atari_head_zenodo_v4",
+    "p_doom_atari_breakout_hf"
+  ],
+  "input_artifacts": {
+    "aux_candidates": {
+      "path": "artifacts/sources/aux_game_action_dataset_candidates.json",
+      "exists": true,
+      "bytes": 11458
+    },
+    "aux_plan_doc": {
+      "path": "docs/auxiliary_data_plan.md",
+      "exists": true,
+      "bytes": 7443
+    }
+  },
+  "source_evidence": [],
+  "eval_manifest_hashes": null,
+  "namespace_manifest": {
+    "path": "artifacts/aux/g005_aux_namespace_manifest.json",
+    "exists": false,
+    "bytes": 0,
+    "completion_ready": null
+  },
+  "run_summary": {
+    "path": "artifacts/aux/g005_d2e_aux_train_run.json",
+    "exists": false,
+    "bytes": 0
+  },
+  "commands": {
+    "build_namespace_manifest": [
+      "uv",
+      "run",
+      "python",
+      "scripts/build_g005_aux_namespace_manifest.py",
+      "--completion-ready"
+    ],
+    "postrun_watcher": [
+      "uv",
+      "run",
+      "python",
+      "scripts/watch_g005_then_finalize.py",
+      "--pid-file",
+      "outputs/cluster/g005_d2e_aux_best.pid",
+      "--output",
+      "artifacts/aux/g005_postrun_watcher_summary.json",
+      "--completion-ready"
+    ],
+    "finalize_after_run": [
+      "uv",
+      "run",
+      "python",
+      "scripts/finalize_g005_aux_best_model.py",
+      "--completion-ready"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G003-d2e-only-idm",
+      "actual": "in_progress"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "d2e_only_audit_not_pass",
+      "audit": "g003",
+      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "status": "fail",
+      "error_count": 23
+    },
+    {
+      "severity": "error",
+      "code": "d2e_only_audit_not_pass",
+      "audit": "g004",
+      "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+      "status": "fail",
+      "error_count": 33
+    }
+  ],
+  "warnings": [
+    {
+      "severity": "warning",
+      "code": "namespace_manifest_not_built_yet",
+      "path": "artifacts/aux/g005_aux_namespace_manifest.json"
+    }
+  ],
+  "claim_boundary": "G005 launch readiness is a preflight only; it does not train, checkpoint G005, or weaken G003/G004 D2E-only prerequisites."
+}
