@@ -8,6 +8,7 @@ Machine-readable files:
 
 - Config: `configs/eval/g006_evaluation_readiness.yaml`
 - Validator: `scripts/validate_g006_evaluation_readiness.py`
+- Finalizer: `scripts/finalize_g006_evaluation.py`
 - Module: `src/fdm_d2e/reporting/evaluation_readiness.py`
 - Current audit: `artifacts/eval/g006_evaluation_readiness_audit.json`
 
@@ -103,6 +104,20 @@ heldout-game splits, plus G005 completion for the D2E+aux comparison claim to
 be `claimable`. It intentionally fails if only aggregate or historical
 bounded-run statistics are available, or if claimable/documented claims lack
 evidence paths.
+
+After G003/G004/G005 are complete and the split-stat artifacts exist, prefer the
+fail-closed finalizer:
+
+```bash
+uv run python scripts/finalize_g006_evaluation.py
+```
+
+The finalizer rebuilds final endpoint statistics, failure analysis, and claim
+taxonomy, writes `artifacts/eval/g006_final_artifact_build_summary.json`, runs
+the readiness audit, runs the G006 completion audit, and writes
+`artifacts/eval/g006_finalization_summary.json`. It does not mutate OMX state;
+checkpoint `G006-evaluation-failure-analysis` only after the finalizer and
+`artifacts/eval/g006_completion_audit.json` report pass.
 
 ## Split-aware comparison builder
 

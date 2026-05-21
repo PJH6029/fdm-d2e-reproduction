@@ -217,6 +217,12 @@ the G005 completion audit, and does not mutate OMX state.
 
 Do **not** checkpoint `G006-evaluation-failure-analysis` complete until `scripts/validate_g006_completion.py` reports `status=pass` in `artifacts/eval/g006_completion_audit.json`. This audit requires G003/G004/G005 complete, endpoint statistics, failure analysis, claim taxonomy, readiness audit, final artifact-build summary, required splits/endpoints, required failure axes, documented non-rejections/examples, required claim states with evidence paths for claimable/documented claims, and forbidden claim boundaries.
 
+Latest G006 finalization helper: after G003/G004/G005 are complete and split-stat
+artifacts exist, run `uv run python scripts/finalize_g006_evaluation.py`. It
+rebuilds final endpoint statistics, failure analysis, and claim taxonomy, runs
+readiness plus completion audits, writes a finalization summary, and does not
+mutate OMX state.
+
 ## G007 completion gate
 
 Do **not** modify or rely on completed `G007-runtime-sdk-adapter` evidence unless `scripts/validate_g007_completion.py` reports `status=pass` in `artifacts/runtime/g007_completion_audit.json`. This audit preserves G007 as a safe deterministic adapter-contract story only, not G008 live game control or any commercial-game claim.

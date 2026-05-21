@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 198,
+  "entry_count": 201,
   "entries": [
     {
       "path": "README.md",
@@ -62,6 +62,12 @@
       "kind": "evidence_artifact",
       "bytes": 556,
       "sha256": "aa9266127c89cff20a73ffb43df3c5e76e4bef31e3a69859e88600670944eef3"
+    },
+    {
+      "path": "artifacts/eval/g006_finalization_summary.json",
+      "kind": "evidence_artifact",
+      "bytes": 1803,
+      "sha256": "08de6c5c1c99bc3483e0f31c0d106df950b4f3ab94aec24eca57bc3c6347e73b"
     },
     {
       "path": "artifacts/fdm/fdm_bth05_d2e_train_prediction_scale_calibrated_h200/checkpoint_metadata.json",
@@ -235,13 +241,13 @@
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "kind": "evidence_artifact",
       "bytes": 61910,
-      "sha256": "68f96032703944985642feed88825c3247b706a4a29107e6cb6fc0f6e07beb2f"
+      "sha256": "fc91d9ddc50615a047edb09bda34459336dfd4728f881e5ae64ca098179e30bd"
     },
     {
       "path": "artifacts/reproducibility/g009_completion_audit.json",
       "kind": "evidence_artifact",
       "bytes": 3901,
-      "sha256": "a50a981da8a4fbc9366ef2fa7c045a850e3833c41382fd79a926245d71f16f62"
+      "sha256": "8052ad6b1123304e586f7f73ee76c1ddcef6f420b459fe362a1aa06eb5d5609e"
     },
     {
       "path": "artifacts/runtime/g007_completion_audit.json",
@@ -570,8 +576,8 @@
     {
       "path": "docs/g006_evaluation_readiness.md",
       "kind": "documentation",
-      "bytes": 4490,
-      "sha256": "542e16690426cde5732ba91963199d99c85cba1e6c78f57ed68c63c48f047c7e"
+      "bytes": 5142,
+      "sha256": "d3e521312e0f78c77fae96d53937e950d64898acd0f15b2c2679adbc81ac902e"
     },
     {
       "path": "docs/harness_selection_and_execution.md",
@@ -660,8 +666,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 13089,
-      "sha256": "a3f406ab4fa51a0d3b1ac47764beb0a928f4b0eba587f940e627dc4d78e1b484"
+      "bytes": 13225,
+      "sha256": "5d762e33d00b11b8c2105b609713efb96f6d081e3a480536088d7a93bd7c745f"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -710,6 +716,12 @@
       "kind": "reproduction_script",
       "bytes": 7389,
       "sha256": "7066123e846a97e65b1301eecf4cf2a5f485e0f84b09741d8d67e7d4e7c66b4d"
+    },
+    {
+      "path": "scripts/finalize_g006_evaluation.py",
+      "kind": "reproduction_script",
+      "bytes": 6368,
+      "sha256": "f21a5c6d3a15c4b4e31ff839412bf7e8b841bfaf9b7c28d115f93928172c809b"
     },
     {
       "path": "scripts/finalize_g008_live_suite.py",
@@ -1124,6 +1136,12 @@
       "kind": "other",
       "bytes": 6453,
       "sha256": "20473db53f90498cf7bb0b22f9a6caba122efee19f1d07ce041f67e3e87578d8"
+    },
+    {
+      "path": "tests/test_g006_finalization.py",
+      "kind": "other",
+      "bytes": 10220,
+      "sha256": "3b3b844089411004f258b5f22bc9a366b82df185feb86d6a4bf1e75b94daac9c"
     },
     {
       "path": "tests/test_g007_completion_audit.py",

@@ -1,0 +1,62 @@
+{
+  "schema": "g006_evaluation_finalization.v1",
+  "status": "fail",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "build_summary_status": "fail",
+  "build_summary_statuses": {
+    "endpoint_statistics": "fail",
+    "failure_analysis": "fail",
+    "claim_taxonomy": "fail"
+  },
+  "readiness_status": "fail",
+  "readiness_error_count": 11,
+  "g006_audit_status": "fail",
+  "g006_audit_error_count": 18,
+  "actions": [
+    {
+      "name": "g006_final_artifact_build",
+      "status": "fail",
+      "output": "artifacts/eval/g006_final_artifact_build_summary.json",
+      "statuses": {
+        "endpoint_statistics": "fail",
+        "failure_analysis": "fail",
+        "claim_taxonomy": "fail"
+      }
+    },
+    {
+      "name": "g006_evaluation_readiness",
+      "output": "artifacts/eval/g006_evaluation_readiness_audit.json",
+      "status": "fail",
+      "error_count": 11
+    },
+    {
+      "name": "g006_completion_audit",
+      "output": "artifacts/eval/g006_completion_audit.json",
+      "status": "fail",
+      "error_count": 18
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "g006_final_artifact_build_not_pass",
+      "status": "fail",
+      "statuses": {
+        "endpoint_statistics": "fail",
+        "failure_analysis": "fail",
+        "claim_taxonomy": "fail"
+      }
+    },
+    {
+      "severity": "error",
+      "code": "g006_evaluation_readiness_not_pass",
+      "error_count": 11
+    },
+    {
+      "severity": "error",
+      "code": "g006_completion_audit_not_pass",
+      "error_count": 18
+    }
+  ],
+  "claim_boundary": "Finalizes G006 endpoint statistics, failure analysis, claim taxonomy, readiness, and completion audits from completed G003/G004/G005 evidence; it does not checkpoint G006 or weaken prerequisite goals."
+}
