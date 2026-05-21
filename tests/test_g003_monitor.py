@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.cluster.g003_monitor import (
+    _detect_active_shard_processes,
     build_g003_live_health_report,
     build_g003_progress_report,
     write_g003_live_health_report,
@@ -102,6 +103,23 @@ def test_g003_progress_treats_stale_active_process_as_long_recording(tmp_path):
     assert report["shards"][0]["status"] == "running_long_recording"
     assert report["quiet_active_shards"][0]["shard_index"] == 0
     assert report["recommendation"]["code"] == "continue_monitor_long_recordings"
+
+
+def test_g003_progress_active_process_scan_scopes_to_pid_file(tmp_path, monkeypatch):
+    pid_file = tmp_path / "outputs/cluster/g003_full_compact_parallel.pid"
+    _write_pid(pid_file, 100)
+    monkeypatch.setattr(
+        "fdm_d2e.cluster.g003_monitor._detect_g003_processes",
+        lambda: [
+            {"pid": 100, "ppid": 1, "role": "parent", "shard_index": None},
+            {"pid": 101, "ppid": 100, "role": "extractor", "shard_index": 0},
+            {"pid": 900, "ppid": 1, "role": "parent", "shard_index": None},
+            {"pid": 901, "ppid": 900, "role": "extractor", "shard_index": 0},
+            {"pid": 902, "ppid": 900, "role": "extractor", "shard_index": 63},
+        ],
+    )
+    assert _detect_active_shard_processes(pid_file=pid_file) == {0}
+    assert _detect_active_shard_processes(pid_file=tmp_path / "missing.pid") == set()
 
 
 def test_g003_progress_reports_rate_and_eta_from_log_mtime(tmp_path):

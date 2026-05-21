@@ -263,14 +263,34 @@ def _detect_g003_processes() -> list[dict[str, Any]]:
     return sorted(processes, key=lambda row: (str(row.get("role")), int(row.get("pid", 0))))
 
 
-def _detect_active_shard_processes() -> set[int]:
-    """Best-effort Linux /proc scan for active full-corpus extraction shards."""
+def _detect_active_shard_processes(*, pid_file: Path | None = None) -> set[int]:
+    """Best-effort Linux /proc scan for active full-corpus extraction shards.
 
-    return {
-        int(row["shard_index"])
-        for row in _detect_g003_processes()
-        if row.get("role") == "extractor" and row.get("shard_index") is not None
-    }
+    When a pid file is supplied, only count extractor descendants of that
+    parent process. This prevents concurrent canonical/fallback G003 lanes from
+    making an unrelated progress report look live.
+    """
+
+    processes = _detect_g003_processes()
+    scoped_pids: set[int] | None = None
+    if pid_file is not None:
+        parent_pid = _read_pid(pid_file)
+        if parent_pid is None:
+            return set()
+        scoped_pids = _descendant_pids(processes, parent_pid)
+    out: set[int] = set()
+    for row in processes:
+        if row.get("role") != "extractor" or row.get("shard_index") is None:
+            continue
+        try:
+            pid = int(row["pid"])
+            shard_index = int(row["shard_index"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if scoped_pids is not None and pid not in scoped_pids:
+            continue
+        out.add(shard_index)
+    return out
 
 
 def _pid_running_in_snapshot(processes: list[dict[str, Any]], pid: int | None) -> bool:
@@ -715,7 +735,11 @@ def build_g003_progress_report(
     shard_root_path = Path(shard_root)
     log_dir_path = Path(log_dir)
     expected = _expected_by_shard(Path(data_universe), num_shards=int(num_shards))
-    active_processes = set(int(idx) for idx in active_shard_processes) if active_shard_processes is not None else _detect_active_shard_processes()
+    active_processes = (
+        set(int(idx) for idx in active_shard_processes)
+        if active_shard_processes is not None
+        else _detect_active_shard_processes(pid_file=Path(pid_file))
+    )
     shards = [
         _shard_report(
             index=idx,
