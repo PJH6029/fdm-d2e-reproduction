@@ -128,7 +128,10 @@ the expected `outputs/aux_examples/<dataset_id>/{train,val,test}.jsonl` outputs
 and required loader fields for real G005 auxiliary pretraining.
 
 For unattended cluster source staging, start the materializer in the background
-and then run the non-mutating watcher:
+and then run the non-mutating watcher. Watcher scripts self-write their Python
+PID to `--watcher-pid-file`; do **not** overwrite that file with shell `$!`
+from `uv run`, because `$!` may be the uv wrapper PID and can create false
+duplicate-watch errors on restart.
 
 ```bash
 nohup uv run python scripts/materialize_g005_aux_sources.py \
@@ -142,7 +145,6 @@ nohup uv run python scripts/watch_g005_aux_materialization.py \
   --output artifacts/aux/g005_aux_materialization_watcher_summary.json \
   --allow-fail \
   > artifacts/aux/g005_aux_materialization_watcher.log 2>&1 &
-echo $! > outputs/cluster/g005_aux_materialization_watcher.pid
 
 uv run python scripts/monitor_g005_aux_materialization.py \
   --output artifacts/aux/g005_aux_materialization_progress.json
@@ -185,12 +187,12 @@ nohup uv run python scripts/watch_g005_then_finalize.py \
   --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json \
   --completion-ready \
   > artifacts/aux/g005_postrun_watcher.log 2>&1 &
-echo $! > outputs/cluster/g005_postrun_watcher.pid
 ```
 
 While the parent is alive the watcher only writes `waiting_active_parent`
 telemetry. After the parent exits it runs the non-mutating G005 finalizer. It
-does not mutate OMX/Codex goal state and cannot complete G005 by itself.
+does not mutate OMX/Codex goal state and cannot complete G005 by itself. The
+watcher writes `outputs/cluster/g005_postrun_watcher.pid` while active.
 
 To avoid losing time after a long D2E-only G004 run, a separate fail-closed
 readiness chain can be started after launching G004:
@@ -203,7 +205,6 @@ nohup uv run python scripts/watch_g004_then_plan_g005.py \
   --require-namespace-ready \
   --output artifacts/aux/g004_to_g005_readiness_chain_summary.json \
   > artifacts/aux/g004_to_g005_readiness_chain.log 2>&1 &
-echo $! > outputs/cluster/g004_to_g005_readiness_chain.pid
 ```
 
 This chain watches the G004 parent, reuses the G004 post-run watcher when it
@@ -212,7 +213,8 @@ requires `g004_audit_status == pass`, and then runs `scripts/plan_g005_launch.py
 It **does not** launch G005 training by default because the aux runner/source
 materialization must remain source-specific and evidence-backed. A `g005_launch_ready`
 status only means G005 can be handed to an explicit aux training lane without
-weakening G003/G004 D2E-only gates.
+weakening G003/G004 D2E-only gates. The chain writes
+`outputs/cluster/g004_to_g005_readiness_chain.pid` while active.
 
 After the D2E+aux training/ablation run finishes, run the G005 finalizer before
 checkpointing:

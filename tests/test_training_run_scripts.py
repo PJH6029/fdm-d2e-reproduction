@@ -45,3 +45,25 @@ def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
     assert 'echo "$$" >"$PID_FILE"' in text
     assert "cleanup_pid_file" in text
     assert '"pid_file": "$PID_FILE"' in text
+
+
+def test_runbooks_do_not_overwrite_self_written_watcher_pids() -> None:
+    doc_text = "\n".join(
+        path.read_text()
+        for directory in ("docs", "notes")
+        for path in sorted((ROOT / directory).glob("*.md"))
+    )
+    self_written_pid_files = [
+        "outputs/cluster/g003_postrun_watcher.pid",
+        "outputs/cluster/g003_to_g004_chain_watcher.pid",
+        "outputs/cluster/g004_postrun_watcher.pid",
+        "outputs/cluster/g004_to_g005_readiness_chain.pid",
+        "outputs/cluster/g005_aux_materialization_watcher.pid",
+        "outputs/cluster/g005_postrun_watcher.pid",
+    ]
+
+    for pid_file in self_written_pid_files:
+        assert f"echo $! > {pid_file}" not in doc_text
+
+    # Parent/background job PID files that are not self-written watchers remain valid.
+    assert "echo $! > outputs/cluster/g005_aux_materialization.pid" in doc_text

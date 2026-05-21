@@ -57,18 +57,20 @@ No live production reservation is created by these scripts; the MLXP reservation
 For the active full-corpus run, keep the G003 parent alive and let fail-closed
 watchers handle post-run handoff:
 
+Watcher scripts self-write their Python PID to their `--watcher-pid-file`.
+Do **not** overwrite those files with shell `$!` from `uv run`; `$!` may be a uv
+wrapper PID rather than the long-lived watcher process.
+
 ```bash
 nohup uv run python scripts/watch_g003_then_finalize.py \
   --output artifacts/idm/g003_postrun_watcher_summary.json \
   > artifacts/idm/g003_postrun_watcher.log 2>&1 &
-echo $! > outputs/cluster/g003_postrun_watcher.pid
 
 nohup uv run python scripts/watch_g003_then_launch_g004.py \
   --launch \
   --start-g004-watcher \
   --output artifacts/fdm/g003_to_g004_chain_summary.json \
   > artifacts/fdm/g003_to_g004_chain.log 2>&1 &
-echo $! > outputs/cluster/g003_to_g004_chain_watcher.pid
 ```
 
 The chain watcher never checkpoints OMX/Codex state. It launches G004 only after
@@ -87,7 +89,6 @@ nohup uv run python scripts/watch_g004_then_plan_g005.py \
   --require-namespace-ready \
   --output artifacts/aux/g004_to_g005_readiness_chain_summary.json \
   > artifacts/aux/g004_to_g005_readiness_chain.log 2>&1 &
-echo $! > outputs/cluster/g004_to_g005_readiness_chain.pid
 ```
 
 It waits for G004 finalization/audit pass, then records whether G005 is

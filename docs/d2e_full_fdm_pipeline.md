@@ -131,14 +131,15 @@ active so a separate watcher can safely distinguish "still running" from
 "ready for post-run finalization".
 
 For long unattended cluster runs, start the non-mutating post-run watcher after
-launching the G004 parent:
+launching the G004 parent. The watcher self-writes its Python PID to
+`outputs/cluster/g004_postrun_watcher.pid`; do **not** overwrite it with shell
+`$!` from `uv run`.
 
 ```bash
 nohup uv run python scripts/watch_g004_then_finalize.py \
   --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid \
   --output artifacts/fdm/g004_postrun_watcher_summary.json \
   > artifacts/fdm/g004_postrun_watcher.log 2>&1 &
-echo $! > outputs/cluster/g004_postrun_watcher.pid
 ```
 
 While the G004 parent PID is alive the watcher only writes
@@ -156,13 +157,13 @@ nohup uv run python scripts/watch_g003_then_launch_g004.py \
   --start-g004-watcher \
   --output artifacts/fdm/g003_to_g004_chain_summary.json \
   > artifacts/fdm/g003_to_g004_chain.log 2>&1 &
-echo $! > outputs/cluster/g003_to_g004_chain_watcher.pid
 ```
 
 This chain watcher waits for the G003 parent to exit, reuses the G003 post-run
 watcher summary when it already reports `finalized_pass`, otherwise runs the
 non-mutating G003 finalizer, requires the G003 completion audit to pass, runs
 `scripts/plan_g004_launch.py`, and launches G004 only when that plan is ready.
+It self-writes `outputs/cluster/g003_to_g004_chain_watcher.pid` while active.
 By default it does not require a separate OMX checkpoint for `G003-d2e-only-idm`
 because the chain itself never mutates OMX/Codex state; pass
 `--require-g003-goal-checkpoint` if an operator wants to force administrative
