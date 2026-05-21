@@ -491,3 +491,9 @@ uv run python scripts/audit_g003_live_health.py \
 - Follow-up probe at `2026-05-22 01:22 KST`: canonical progress still `277 / 918`, accel64 progress still `181 / 918` by per-recording summary count while many cached rows replayed; active extractor coverage remained canonical `16 / 16` and accel64 `64 / 64`.
 - Streaming path evidence appeared in live accel64 logs: e.g. shard `41` logged `extract_frames_done` with `73,851` frame features in `216.817s`, then `annotate_records_done`; shard `20` logged `extract_frames_done` with `25,150` frame features in `126.021s`; shard `44` logged `extract_frames_done` with `64,756` frame features in `264.498s`. These are throughput/liveness observations, not G003 completion evidence.
 - Per-recording summary counts had not yet increased beyond canonical `277` / accel64 `181` at the probe because current new long recordings were between extract/build/JSON write/summary stages. Continue monitoring lane-local logs and summary counts; do not checkpoint G003 until the completion audit passes.
+
+### 2026-05-22 01:26 KST streaming follow-up
+
+- Follow-up monitor after the streaming restart showed accel64 progress increasing again: monitor decoded `186 / 918`, filesystem per-recording summaries `187`; canonical stayed `277 / 918`. Both lanes remained `running` with no stale/long-running shard warnings.
+- Grep over current canonical and accel64 shard logs found no `Traceback`, `CalledProcessError`, `RuntimeError`, `No space left`, or killed-process fatal lines at this probe.
+- G003 remains non-terminal; continue monitoring until full decode, merge, IDM training/eval, and completion audit pass.
