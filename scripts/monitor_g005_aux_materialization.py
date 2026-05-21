@@ -87,6 +87,22 @@ def _split_status(namespace: Path, split: str) -> dict[str, Any]:
     }
 
 
+def _expected_size_bytes(candidate: dict[str, Any]) -> int | None:
+    raw = candidate.get("size_bytes")
+    if raw is not None:
+        try:
+            return int(raw)
+        except (TypeError, ValueError):
+            return None
+    gib = candidate.get("estimated_size_gib")
+    if gib is not None:
+        try:
+            return int(float(gib) * 1024 * 1024 * 1024)
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
 def _source_row(source_id: str, candidate: dict[str, Any], namespace_root: Path, splits: tuple[str, ...], max_files: int) -> dict[str, Any]:
     namespace = namespace_root / source_id
     raw_dir = namespace / "raw"
@@ -99,20 +115,59 @@ def _source_row(source_id: str, candidate: dict[str, Any], namespace_root: Path,
         for path in raw_files[:max_files]
     ]
     split_rows = [_split_status(namespace, split) for split in splits]
+    raw_total_bytes = sum(path.stat().st_size for path in raw_files)
+    expected_size_bytes = _expected_size_bytes(candidate)
+    remaining_expected_bytes = max(0, expected_size_bytes - raw_total_bytes) if expected_size_bytes is not None else None
     return {
         "id": source_id,
         "namespace": str(namespace),
         "source_url": candidate.get("source_url"),
         "license_id": candidate.get("license_id"),
-        "expected_size_bytes": candidate.get("size_bytes") or candidate.get("estimated_size_gib"),
+        "expected_size_bytes": expected_size_bytes,
         "namespace_exists": namespace.exists() and namespace.is_dir(),
         "raw_dir_exists": raw_dir.exists() and raw_dir.is_dir(),
         "raw_file_count": len(raw_files),
-        "raw_total_bytes": sum(path.stat().st_size for path in raw_files),
+        "raw_total_bytes": raw_total_bytes,
+        "raw_completion_ratio": raw_total_bytes / expected_size_bytes if expected_size_bytes else None,
+        "raw_remaining_expected_bytes": remaining_expected_bytes,
         "raw_files": raw_rows,
         "raw_files_truncated": len(raw_files) > max_files,
         "split_manifests_ready": all(row["manifest_exists"] for row in split_rows),
         "splits": split_rows,
+    }
+
+
+def _recommendation(*, running: bool, materialization_summary: dict[str, Any] | None, errors: list[dict[str, Any]], partial_sources: list[str], missing_sources: list[str]) -> dict[str, Any]:
+    if errors:
+        return {
+            "code": "inspect_materialization_errors",
+            "severity": "error",
+            "next_actions": ["Inspect materialization summary/logs before rerunning downloads.", "Do not launch G005 training from blocked materialization evidence."],
+        }
+    if running:
+        return {
+            "code": "continue_materialization",
+            "severity": "info",
+            "next_actions": ["Keep the active materializer and watcher running.", "Use raw_completion_ratio and source lists only as download progress telemetry."],
+        }
+    if materialization_summary and materialization_summary.get("status") == "pass":
+        return {
+            "code": "run_integrity_and_namespace_gates",
+            "severity": "info",
+            "next_actions": ["Run/inspect the G005 materialization watcher outputs for integrity, source evidence, examples, runtime env, and namespace manifest.", "Do not claim D2E+aux model quality before G003/G004 hard gates and G005 completion audit pass."],
+        }
+    if partial_sources or missing_sources:
+        return {
+            "code": "plan_or_resume_materialization",
+            "severity": "warning",
+            "partial_source_ids": partial_sources,
+            "missing_source_ids": missing_sources,
+            "next_actions": ["If no materializer PID is active, resume selected-source materialization before building G005 evidence artifacts."],
+        }
+    return {
+        "code": "start_materialization",
+        "severity": "warning",
+        "next_actions": ["No active materializer or passing summary was found; start the approved G005 aux materialization flow if still needed."],
     }
 
 
@@ -134,6 +189,8 @@ def build_progress(args: argparse.Namespace) -> dict[str, Any]:
     sources = [_source_row(source_id, candidate, namespace_root, splits, int(args.max_files)) for source_id, candidate in sorted(candidates.items())]
 
     total_raw_bytes = sum(int(row.get("raw_total_bytes") or 0) for row in sources)
+    total_expected_raw_bytes = sum(int(row.get("expected_size_bytes") or 0) for row in sources)
+    raw_remaining_expected_bytes = max(0, total_expected_raw_bytes - total_raw_bytes) if total_expected_raw_bytes else None
     completed_sources = [row["id"] for row in sources if row.get("raw_file_count", 0) > 0 and row.get("split_manifests_ready")]
     partial_sources = [row["id"] for row in sources if row.get("raw_file_count", 0) > 0 and not row.get("split_manifests_ready")]
     missing_sources = [row["id"] for row in sources if not row.get("raw_file_count", 0)]
@@ -146,6 +203,13 @@ def build_progress(args: argparse.Namespace) -> dict[str, Any]:
         findings.append({"severity": "warning", "code": "materializer_not_running_without_summary", "pid": pid})
     status = "running" if running else ("pass" if materialization_summary and materialization_summary.get("status") == "pass" else "blocked")
     errors = [item for item in findings if item.get("severity") == "error"]
+    recommendation = _recommendation(
+        running=running,
+        materialization_summary=materialization_summary,
+        errors=errors,
+        partial_sources=sorted(partial_sources),
+        missing_sources=sorted(missing_sources),
+    )
     return {
         "schema": "g005_aux_materialization_progress.v1",
         "status": "blocked" if errors else status,
@@ -160,6 +224,10 @@ def build_progress(args: argparse.Namespace) -> dict[str, Any]:
         "partial_source_ids": sorted(partial_sources),
         "missing_source_ids": sorted(missing_sources),
         "raw_total_bytes": total_raw_bytes,
+        "expected_raw_total_bytes": total_expected_raw_bytes,
+        "raw_completion_ratio": total_raw_bytes / total_expected_raw_bytes if total_expected_raw_bytes else None,
+        "raw_remaining_expected_bytes": raw_remaining_expected_bytes,
+        "recommendation": recommendation,
         "aux_sources": sources,
         "findings": findings,
         "error_count": len(errors),
@@ -186,6 +254,7 @@ def main() -> int:
     print(
         "g005 aux materialization progress: "
         f"status={payload['status']} raw_bytes={payload['raw_total_bytes']} "
+        f"raw_ratio={payload['raw_completion_ratio']} "
         f"partial={payload['partial_source_ids']} complete={payload['completed_source_ids']} output={args.output}"
     )
     return 0 if payload["status"] in {"running", "pass"} or args.allow_fail else 2

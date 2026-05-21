@@ -183,11 +183,16 @@ uv run python scripts/validate_g005_aux_materialization_integrity.py \
   --allow-fail
 ```
 
-The monitor is non-mutating progress telemetry for partial downloads. The
-integrity validator is a fail-closed post-download gate that checks materialized
-raw files against Zenodo size/checksum metadata when available, validates Hugging
-Face summary-listed files, and requires source-level train/val/test manifests
-whose references resolve to real files. The watcher waits for source
+The monitor is non-mutating progress telemetry for partial downloads. It reports
+per-source and aggregate raw byte ratios against candidate `size_bytes` /
+`estimated_size_gib`, source buckets (`missing`, `partial`, `complete`), and a
+`recommendation.code` such as `continue_materialization` or
+`run_integrity_and_namespace_gates`. These fields are download telemetry only and
+must not be treated as source completeness, G005 model quality, or permission to
+make D2E+aux claims. The integrity validator is a fail-closed post-download gate
+that checks materialized raw files against Zenodo size/checksum metadata when
+available, validates Hugging Face summary-listed files, and requires source-level
+train/val/test manifests whose references resolve to real files. The watcher waits for source
 materialization, runs the integrity gate, then rebuilds source evidence,
 source-specific auxiliary example manifests, runtime dependency readiness,
 namespace-manifest readiness, and the fail-closed G005 launch-readiness report.
