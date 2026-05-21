@@ -430,3 +430,13 @@ uv run python scripts/audit_g003_live_health.py \
 - Canonical 16-shard lane remains healthy/running: decoded `274 / 918`, active extractor shards `16 / 16`, inactive incomplete shards `[]`.
 - Shard 29 repair has not completed yet: `outputs/data/d2e_full_corpus_shards_accel64/shard_29/decode_summary.json` was still absent at this snapshot.
 - `G003-d2e-only-idm` remains `in_progress`; local completion audit still fails with missing full decode/merge/IDM artifacts. Do not checkpoint G003 complete.
+
+## 2026-05-22 00:44 KST accel64 log-lane correction and watcher restart
+
+- Pushed and deployed commit `111a2be`, then replaced the accel64 postrun watcher with the current repair-aware watcher. The active extraction parents were not killed or restarted. New accel64 watcher Python PID at deployment: `122848`; it includes `--repair-pid-glob outputs/cluster/g003_accel64_shard_*_repair.pid`.
+- Pushed and deployed commit `c9a9e57` so G003 progress/live-health/resume planning infer `artifacts/sources/g003_accel64` whenever accel64 shard or pid paths are used and `--log-dir` is omitted. This prevents canonical `artifacts/sources` logs from inflating accel64 progress telemetry.
+- Important correction: earlier accel64 decoded counts such as `388/918`, `392/918`, and `397/918` were mixed-log telemetry from accel64 shard roots plus canonical log dir defaults. Treat those as invalid for accel64 progress. Lane-local accel64 evidence at this snapshot is `169 / 918` decoded, `0 / 64` complete shards, status `running`.
+- Pod validation after `c9a9e57`: `uv run pytest tests/test_g003_monitor.py -q` passed (`21` tests).
+- Accel64 live health with lane-local logs remains healthy: status `healthy_running`, active extractor shards `64 / 64`, inactive incomplete shards `[]`, repair pid evidence `outputs/cluster/g003_accel64_shard_29_repair.pid -> 113351` running.
+- Accel64 resume plan now writes shard repair logs under `artifacts/sources/g003_accel64/...`; current plan status is `defer_active_parent`, as expected while the accel64 parent is running.
+- Canonical G003 remains the D2E-only authoritative lane unless accel64 later passes its own audit and is explicitly promoted. `G003-d2e-only-idm` remains incomplete; do not checkpoint until the completion audit passes.
