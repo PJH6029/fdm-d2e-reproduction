@@ -220,6 +220,34 @@ def test_g003_progress_write_report(tmp_path):
     assert payload["expected_recording_variants"] == 4
 
 
+def test_g003_progress_infers_accel64_log_dir_from_lane_paths(tmp_path):
+    universe = _universe(tmp_path)
+    canonical_log_dir = tmp_path / "artifacts/sources"
+    accel_log_dir = canonical_log_dir / "g003_accel64"
+    canonical_log_dir.mkdir(parents=True, exist_ok=True)
+    accel_log_dir.mkdir(parents=True)
+    (canonical_log_dir / "d2e_full_corpus_shard_0.log").write_text(
+        '{"decoded": 2, "total_selected": 2, "universe_row_id": "d2e_480p:Game/rec_2"}\n'
+    )
+    (accel_log_dir / "d2e_full_corpus_shard_0.log").write_text(
+        '{"decoded": 1, "total_selected": 2, "universe_row_id": "d2e_480p:Game/rec_0"}\n'
+    )
+
+    report = build_g003_progress_report(
+        shard_root=tmp_path / "outputs/data/d2e_full_corpus_shards_accel64",
+        log_dir=canonical_log_dir,
+        data_universe=universe,
+        pid_file=tmp_path / "outputs/cluster/g003_full_compact_accel64.pid",
+        num_shards=2,
+        active_shard_processes=set(),
+        now=1000.0,
+    )
+
+    assert report["log_dir"].endswith("artifacts/sources/g003_accel64")
+    assert report["decoded_recording_variants"] == 1
+    assert report["shards"][0]["log_path"].endswith("artifacts/sources/g003_accel64/d2e_full_corpus_shard_0.log")
+
+
 def _write_pid(path: Path, pid: int) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(f"{pid}\n", encoding="utf-8")
@@ -527,6 +555,33 @@ def test_g003_resume_plan_ready_when_parent_is_not_running():
     assert plan["incomplete_shards"] == [1]
     assert plan["shard_commands"][0]["argv"][0] == "/root/.local/bin/uv"
     assert "merge_d2e_full_corpus_shards.py" in plan["followup_commands_after_all_shards_complete"]["merge"]["shell"]
+
+
+def test_g003_resume_plan_uses_accel64_log_dir_for_accel64_lane():
+    progress = {
+        "status": "not_running_partial",
+        "pid_running": False,
+        "decoded_recording_variants": 1,
+        "expected_recording_variants": 4,
+        "complete_shards": 1,
+        "num_shards": 2,
+        "stale_shards": [],
+        "no_progress_shards": [],
+        "shards": [
+            {"shard_index": 0, "status": "complete"},
+            {"shard_index": 1, "status": "running_or_pending"},
+        ],
+    }
+    plan = build_g003_resume_plan(
+        progress_report=progress,
+        num_shards=2,
+        shard_root="outputs/data/d2e_full_corpus_shards_accel64",
+        pid_file="outputs/cluster/g003_full_compact_accel64.pid",
+    )
+
+    assert plan["log_dir"] == "artifacts/sources/g003_accel64"
+    assert plan["shard_commands"][0]["log_path"] == "artifacts/sources/g003_accel64/d2e_full_corpus_shard_1.log"
+    assert "artifacts/sources/g003_accel64" in plan["shard_commands"][0]["shell"]
 
 
 def test_g003_resume_plan_noop_when_all_shards_complete():

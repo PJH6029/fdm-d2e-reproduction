@@ -68,6 +68,24 @@ def _safe_mtime(path: Path) -> float | None:
     return path.stat().st_mtime
 
 
+def _resolve_log_dir_for_lane(log_dir: str | Path, *, shard_root: str | Path, pid_file: str | Path) -> Path:
+    """Resolve default G003 log dir to a lane-specific directory when obvious.
+
+    Accel64 fallback runs intentionally keep shard outputs under
+    ``..._shards_accel64`` and logs under ``artifacts/sources/g003_accel64``.
+    Forgetting ``--log-dir`` while passing accel64 shard/pid paths otherwise
+    mixes canonical 16-shard logs into accel64 progress evidence.
+    """
+
+    path = Path(log_dir)
+    if path.name != "sources" or path.parent.name != "artifacts":
+        return path
+    lane_text = f"{shard_root} {pid_file}"
+    if "accel64" in lane_text:
+        return path / "g003_accel64"
+    return path
+
+
 def _proc_cmdline_parts(entry: Path) -> list[str]:
     try:
         raw = (entry / "cmdline").read_bytes()
@@ -832,7 +850,7 @@ def build_g003_progress_report(
 ) -> dict[str, Any]:
     now_value = time.time() if now is None else float(now)
     shard_root_path = Path(shard_root)
-    log_dir_path = Path(log_dir)
+    log_dir_path = _resolve_log_dir_for_lane(log_dir, shard_root=shard_root, pid_file=pid_file)
     expected = _expected_by_shard(Path(data_universe), num_shards=int(num_shards))
     active_processes = (
         set(int(idx) for idx in active_shard_processes)
@@ -898,6 +916,7 @@ def build_g003_progress_report(
         "pid_file": str(pid_file),
         "pid": pid,
         "pid_running": running,
+        "log_dir": str(log_dir_path),
         "repair_pid_glob": _repair_pid_glob_for_parent(Path(pid_file), repair_pid_glob),
         "num_shards": int(num_shards),
         "complete_shards": complete_shards,
@@ -939,6 +958,7 @@ def _extract_command(
     shard_index: int,
     num_shards: int,
     shard_root: str,
+    log_dir: str,
     cache_dir: str,
     uv_bin: str,
     bin_ms: int,
@@ -947,7 +967,6 @@ def _extract_command(
     video_mode: str,
 ) -> dict[str, Any]:
     shard_dir = f"{shard_root}/shard_{shard_index}"
-    log_path = f"artifacts/sources/d2e_full_corpus_shard_{shard_index}.log"
     argv = [
         uv_bin,
         "run",
@@ -978,12 +997,13 @@ def _extract_command(
         "--video-mode",
         video_mode,
     ]
+    log_path = f"{log_dir.rstrip('/')}/d2e_full_corpus_shard_{shard_index}.log"
     return {
         "shard_index": shard_index,
         "shard_dir": shard_dir,
         "log_path": log_path,
         "argv": argv,
-        "shell": f"mkdir -p {shard_dir} artifacts/sources && {_shell_join(argv)} > {log_path} 2>&1",
+        "shell": f"mkdir -p {shard_dir} {log_dir} && {_shell_join(argv)} > {log_path} 2>&1",
     }
 
 
@@ -1005,14 +1025,17 @@ def build_g003_resume_plan(
     frame_fps: int = 20,
     image_size: int = 64,
     video_mode: str = "download",
+    repair_pid_glob: str | None = None,
 ) -> dict[str, Any]:
+    resolved_log_dir = _resolve_log_dir_for_lane(log_dir, shard_root=shard_root, pid_file=pid_file)
     report = progress_report or build_g003_progress_report(
         shard_root=shard_root,
-        log_dir=log_dir,
+        log_dir=resolved_log_dir,
         data_universe=data_universe,
         output_dir=output_dir,
         idm_output_dir=idm_output_dir,
         pid_file=pid_file,
+        repair_pid_glob=repair_pid_glob,
         num_shards=num_shards,
         stale_seconds=stale_seconds,
     )
@@ -1022,6 +1045,7 @@ def build_g003_resume_plan(
             shard_index=int(index),
             num_shards=int(report.get("num_shards", num_shards)),
             shard_root=str(shard_root),
+            log_dir=str(resolved_log_dir),
             cache_dir=cache_dir,
             uv_bin=uv_bin,
             bin_ms=bin_ms,
@@ -1065,6 +1089,8 @@ def build_g003_resume_plan(
         "reason": "Do not run shard resume commands while the original parent PID is active unless an operator intentionally sets allow_active_parent.",
         "progress_status": report.get("status"),
         "pid_running": pid_running,
+        "log_dir": str(resolved_log_dir),
+        "repair_pid_glob": _repair_pid_glob_for_parent(Path(pid_file), repair_pid_glob),
         "decoded_recording_variants": report.get("decoded_recording_variants"),
         "expected_recording_variants": report.get("expected_recording_variants"),
         "complete_shards": report.get("complete_shards"),
