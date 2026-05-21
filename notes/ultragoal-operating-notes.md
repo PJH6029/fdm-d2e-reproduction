@@ -25,6 +25,7 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Current completed gates:
   - `G001-data-universe-audit`: full D2E-480p + D2E-Original universe manifest and storage/license report.
   - `G002-split-leakage-contract`: temporal, heldout-recording, and heldout-game split/leakage contract.
+  - `G007-runtime-sdk-adapter`: reusable SDK/action decoder/safety adapter/latency logger/deterministic replay contract only; this is not G008 live-game success.
 - Current active gate:
   - `G003-d2e-only-idm`: full-corpus D2E-only IDM extraction/training/evaluation.
 - Pending gates:
@@ -50,4 +51,5 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Current reservation/pod: `rsv-jeonghunpark-20260521-76e25a` / `prod-rsv-jeonghunpark-20260521-76e25a` in namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current G003 full-corpus IDM run path: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
+- Runtime adapter contract evidence: `artifacts/runtime/g007_runtime_replay_adapter_contract.json`; commits `34cddb7` and `e858114`; OMX checkpointed `G007-runtime-sdk-adapter` complete locally.
 - Do not checkpoint `G003-d2e-only-idm` complete until all 918 source variants are decoded/merged, streaming IDM training finishes, reports/metrics are validated, and evidence summaries are committed.
