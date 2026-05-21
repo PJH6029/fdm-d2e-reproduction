@@ -298,3 +298,10 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Parent PID `9289` still running at elapsed `05:23:20`; attached GPU monitor PID `31950` still running at elapsed `01:34:26`.
 - Monitor status remained `running`; decoded recording variants `115 / 918`; complete shards `0 / 16`; stale/no-progress shards `[]`; merged train/eval and IDM metrics absent.
 - After PID `9289` exits, run `uv run python scripts/finalize_g003_integrated_run.py` before any G003 checkpoint. It builds missing split stats, synthesizes attached 4×H200 train evidence, and runs the G003 audit without mutating OMX state.
+
+## 2026-05-21 16:23 KST G004 finalizer sync snapshot
+
+- Pushed commit `65b5d24` and fast-forwarded pod checkout to `65b5d24`; `scripts/finalize_g004_d2e_full_fdm.py` is present and executable in the pod.
+- Parent PID `9289` still running at elapsed `05:28:24`; attached GPU monitor PID `31950` still running at elapsed `01:39:30`.
+- Monitor status remained `running`; decoded recording variants `116 / 918`; complete shards `0 / 16`; stale/no-progress shards `[]`; merged train/eval and IDM metrics absent.
+- After the future G004 4×H200 run exits, run `uv run python scripts/finalize_g004_d2e_full_fdm.py` before any G004 checkpoint. It requires the run summary, builds missing split stats, and runs the G004 audit without mutating OMX state.
