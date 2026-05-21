@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import time
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -71,34 +73,276 @@ def _safe_mtime(path: Path) -> float | None:
     return path.stat().st_mtime
 
 
-def _detect_active_shard_processes() -> set[int]:
-    """Best-effort Linux /proc scan for active full-corpus extraction shards."""
+def _proc_cmdline_parts(entry: Path) -> list[str]:
+    try:
+        raw = (entry / "cmdline").read_bytes()
+    except (FileNotFoundError, ProcessLookupError, PermissionError, OSError):
+        return []
+    if not raw:
+        return []
+    return [part.decode("utf-8", errors="ignore") for part in raw.split(b"\0") if part]
 
-    active: set[int] = set()
+
+def _proc_ppid(entry: Path) -> int | None:
+    try:
+        stat = (entry / "stat").read_text(encoding="utf-8", errors="ignore")
+    except (FileNotFoundError, ProcessLookupError, PermissionError, OSError):
+        return None
+    # /proc/<pid>/stat uses "pid (comm) state ppid ..." where comm may contain
+    # spaces. Split after the final ")" to avoid corrupting the ppid field.
+    try:
+        tail = stat.rsplit(")", 1)[1].strip().split()
+        return int(tail[1]) if len(tail) > 1 else None
+    except (IndexError, ValueError):
+        return None
+
+
+def _arg_value(parts: list[str], flag: str) -> str | None:
+    if flag not in parts:
+        return None
+    try:
+        return parts[parts.index(flag) + 1]
+    except IndexError:
+        return None
+
+
+def _classify_g003_process(parts: list[str]) -> tuple[str | None, int | None]:
+    joined = " ".join(parts)
+    if "scripts/extract_d2e_full_corpus.py" in joined or "extract_d2e_full_corpus.py" in joined:
+        shard_raw = _arg_value(parts, "--shard-index")
+        try:
+            return "extractor", int(shard_raw) if shard_raw is not None else None
+        except ValueError:
+            return "extractor", None
+    if "run_g003_d2e_full_idm_parallel.sh" in joined:
+        return "parent", None
+    if "scripts/watch_g003_then_finalize.py" in joined or "watch_g003_then_finalize.py" in joined:
+        return "postrun_watcher", None
+    if "scripts/attach_g003_gpu_monitor.py" in joined or "attach_g003_gpu_monitor.py" in joined:
+        return "gpu_monitor", None
+    if "scripts/merge_d2e_full_corpus_shards.py" in joined or "merge_d2e_full_corpus_shards.py" in joined:
+        return "merge", None
+    if "scripts/train_idm_streaming.py" in joined or "train_idm_streaming.py" in joined or "torchrun" in joined:
+        return "idm_train", None
+    if "scripts/finalize_g003_integrated_run.py" in joined or "finalize_g003_integrated_run.py" in joined:
+        return "finalizer", None
+    return None, None
+
+
+def _process_summary(row: dict[str, Any]) -> dict[str, Any]:
+    parts_raw = row.get("cmdline", [])
+    if isinstance(parts_raw, str):
+        parts = shlex.split(parts_raw)
+        cmdline = parts_raw
+    else:
+        parts = [str(part) for part in parts_raw]
+        cmdline = " ".join(parts)
+    role = row.get("role")
+    shard_index = row.get("shard_index")
+    if role is None:
+        role, parsed_shard = _classify_g003_process(parts)
+        shard_index = parsed_shard if shard_index is None else shard_index
+    try:
+        shard_index = int(shard_index) if shard_index is not None else None
+    except (TypeError, ValueError):
+        shard_index = None
+    return {
+        "pid": int(row["pid"]),
+        "ppid": int(row["ppid"]) if row.get("ppid") is not None else None,
+        "role": role,
+        "shard_index": shard_index,
+        "cmdline": cmdline,
+    }
+
+
+def _detect_g003_processes() -> list[dict[str, Any]]:
+    """Best-effort Linux /proc scan for live G003-related processes."""
+
     proc = Path("/proc")
     if not proc.exists():
-        return active
+        return []
+    processes: list[dict[str, Any]] = []
     for entry in proc.iterdir():
         if not entry.name.isdigit():
             continue
-        try:
-            raw = (entry / "cmdline").read_bytes()
-        except (FileNotFoundError, ProcessLookupError, PermissionError, OSError):
+        parts = _proc_cmdline_parts(entry)
+        if not parts:
             continue
-        if not raw:
+        role, shard_index = _classify_g003_process(parts)
+        if role is None:
             continue
-        parts = [part.decode("utf-8", errors="ignore") for part in raw.split(b"\0") if part]
-        joined = " ".join(parts)
-        if "scripts/extract_d2e_full_corpus.py" not in joined and "extract_d2e_full_corpus.py" not in joined:
-            continue
-        if "--shard-index" not in parts:
-            continue
-        try:
-            idx_pos = parts.index("--shard-index") + 1
-            active.add(int(parts[idx_pos]))
-        except (IndexError, ValueError):
-            continue
-    return active
+        processes.append(
+            {
+                "pid": int(entry.name),
+                "ppid": _proc_ppid(entry),
+                "role": role,
+                "shard_index": shard_index,
+                "cmdline": " ".join(parts),
+            }
+        )
+    return sorted(processes, key=lambda row: (str(row.get("role")), int(row.get("pid", 0))))
+
+
+def _detect_active_shard_processes() -> set[int]:
+    """Best-effort Linux /proc scan for active full-corpus extraction shards."""
+
+    return {
+        int(row["shard_index"])
+        for row in _detect_g003_processes()
+        if row.get("role") == "extractor" and row.get("shard_index") is not None
+    }
+
+
+def _pid_running_in_snapshot(processes: list[dict[str, Any]], pid: int | None) -> bool:
+    if pid is None or pid <= 0:
+        return False
+    return any(int(row.get("pid", -1)) == pid for row in processes)
+
+
+def _pid_file_status(path: Path, processes: list[dict[str, Any]], *, from_snapshot: bool) -> dict[str, Any]:
+    pid = _read_pid(path)
+    running = _pid_running_in_snapshot(processes, pid) if from_snapshot else _pid_running(pid) if pid is not None else False
+    return {"pid_file": str(path), "pid": pid, "running": bool(running)}
+
+
+def _processes_by_role(processes: list[dict[str, Any]], role: str) -> list[dict[str, Any]]:
+    return [row for row in processes if row.get("role") == role]
+
+
+def build_g003_live_health_report(
+    *,
+    shard_root: str | Path = "outputs/data/d2e_full_corpus_shards",
+    log_dir: str | Path = "artifacts/sources",
+    data_universe: str | Path = "artifacts/sources/d2e_full_data_universe_manifest.json",
+    output_dir: str | Path = "outputs/data/d2e_full_corpus",
+    idm_output_dir: str | Path = "outputs/idm_streaming_d2e_full_compact",
+    pid_file: str | Path = "outputs/cluster/g003_full_compact_parallel.pid",
+    watcher_pid_file: str | Path = "outputs/cluster/g003_postrun_watcher.pid",
+    gpu_monitor_pid_file: str | Path = "outputs/cluster/g003_attached_gpu_monitor.pid",
+    num_shards: int = 16,
+    stale_seconds: float = 3600.0,
+    min_active_extractors: int | None = None,
+    now: float | None = None,
+    process_snapshot: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Build a non-mutating live process-topology report for a G003 integrated run."""
+
+    now_value = time.time() if now is None else float(now)
+    from_snapshot = process_snapshot is not None
+    processes = [_process_summary(row) for row in process_snapshot] if process_snapshot is not None else _detect_g003_processes()
+    extractors = _processes_by_role(processes, "extractor")
+    active_shards = sorted({int(row["shard_index"]) for row in extractors if row.get("shard_index") is not None})
+    progress = build_g003_progress_report(
+        shard_root=shard_root,
+        log_dir=log_dir,
+        data_universe=data_universe,
+        output_dir=output_dir,
+        idm_output_dir=idm_output_dir,
+        pid_file=pid_file,
+        num_shards=num_shards,
+        stale_seconds=stale_seconds,
+        now=now_value,
+        active_shard_processes=set(active_shards),
+    )
+    parent = _pid_file_status(Path(pid_file), processes, from_snapshot=from_snapshot)
+    watcher = _pid_file_status(Path(watcher_pid_file), processes, from_snapshot=from_snapshot)
+    gpu_monitor = _pid_file_status(Path(gpu_monitor_pid_file), processes, from_snapshot=from_snapshot)
+    active_roles = sorted({str(row["role"]) for row in processes if row.get("role")})
+    train_active = bool(_processes_by_role(processes, "idm_train"))
+    merge_active = bool(_processes_by_role(processes, "merge"))
+    finalizer_active = bool(_processes_by_role(processes, "finalizer"))
+    incomplete_shards = [int(row["shard_index"]) for row in progress.get("shards", []) if row.get("status") != "complete"]
+    inactive_incomplete_shards = sorted(set(incomplete_shards) - set(active_shards))
+    shard_counts = Counter(int(row["shard_index"]) for row in extractors if row.get("shard_index") is not None)
+    duplicate_active_shards = sorted(index for index, count in shard_counts.items() if count > 1)
+    expected_active = min_active_extractors
+    if expected_active is None:
+        expected_active = len(incomplete_shards) if incomplete_shards and not (train_active or merge_active or finalizer_active) else 0
+    warnings: list[dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
+    if parent["running"] and progress.get("status") == "review_stale_shards":
+        errors.append({"code": "stale_shards", "shards": progress.get("stale_shards", [])})
+    if parent["running"] and expected_active > 0 and len(active_shards) < int(expected_active):
+        warnings.append(
+            {
+                "code": "low_active_extractor_count",
+                "active_count": len(active_shards),
+                "expected_active_extractors": int(expected_active),
+                "inactive_incomplete_shards": inactive_incomplete_shards,
+            }
+        )
+    if parent["running"] and not watcher["running"]:
+        warnings.append({"code": "postrun_watcher_not_running", "pid_file": watcher["pid_file"]})
+    if parent["running"] and not gpu_monitor["running"]:
+        warnings.append({"code": "gpu_monitor_not_running", "pid_file": gpu_monitor["pid_file"]})
+    if duplicate_active_shards:
+        warnings.append({"code": "duplicate_extractor_processes", "shards": duplicate_active_shards})
+    if progress.get("status") == "complete":
+        stage = "complete_pending_audit"
+        status = "complete_pending_audit"
+    elif errors:
+        stage = "needs_operator_review"
+        status = "blocked_live_health"
+    elif train_active:
+        stage = "idm_training"
+        status = "healthy_running" if parent["running"] else "parent_not_running"
+    elif merge_active:
+        stage = "merge"
+        status = "healthy_running" if parent["running"] else "parent_not_running"
+    elif finalizer_active:
+        stage = "postrun_finalization"
+        status = "postrun_finalizing"
+    elif extractors:
+        stage = "extracting"
+        status = "warn_live_health" if warnings else "healthy_running"
+    elif parent["running"]:
+        stage = "parent_running_no_known_worker"
+        status = "warn_live_health"
+        if not warnings:
+            warnings.append({"code": "parent_running_no_known_worker", "active_roles": active_roles})
+    elif progress.get("decoded_recording_variants", 0) > 0:
+        stage = "interrupted_or_between_stages"
+        status = "parent_not_running_partial"
+    else:
+        stage = "not_started_or_unknown"
+        status = "not_started_or_unknown"
+    return {
+        "schema": "g003_live_health_report.v1",
+        "generated_at_unix": now_value,
+        "status": status,
+        "stage": stage,
+        "progress_status": progress.get("status"),
+        "parent": parent,
+        "postrun_watcher": watcher,
+        "gpu_monitor": gpu_monitor,
+        "process_roles": active_roles,
+        "processes": processes,
+        "active_extractor_shards": active_shards,
+        "duplicate_active_shards": duplicate_active_shards,
+        "inactive_incomplete_shards": inactive_incomplete_shards,
+        "expected_active_extractors": int(expected_active),
+        "warnings": warnings,
+        "errors": errors,
+        "progress": {
+            "decoded_recording_variants": progress.get("decoded_recording_variants"),
+            "expected_recording_variants": progress.get("expected_recording_variants"),
+            "completion_ratio": progress.get("completion_ratio"),
+            "complete_shards": progress.get("complete_shards"),
+            "num_shards": progress.get("num_shards"),
+            "stale_shards": progress.get("stale_shards", []),
+            "long_running_shards": progress.get("long_running_shards", []),
+            "no_progress_shards": progress.get("no_progress_shards", []),
+            "decoded_recording_variants_per_hour": progress.get("decoded_recording_variants_per_hour"),
+            "eta_seconds_at_current_rate": progress.get("eta_seconds_at_current_rate"),
+        },
+        "claim_boundary": "Live health report only; it does not mutate the G003 run and does not prove G003 completion or quality-gate passage.",
+    }
+
+
+def write_g003_live_health_report(output: str | Path, **kwargs: Any) -> dict[str, Any]:
+    payload = build_g003_live_health_report(**kwargs)
+    write_json(output, payload)
+    return payload
 
 
 def _shard_report(

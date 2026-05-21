@@ -24,6 +24,21 @@ The command writes `artifacts/idm/g003_full_compact_parallel_progress.json` with
 - no-progress/stale-log shard lists
 - merged train/eval and IDM metrics existence checks
 
+For a richer live supervision snapshot, also run:
+
+```bash
+uv run python scripts/audit_g003_live_health.py \
+  --stale-seconds 7200 \
+  --output artifacts/idm/g003_live_health_report.json
+```
+
+This second command is also non-mutating. It adds best-effort Linux `/proc`
+topology evidence for the parent script, shard extractors, post-run watcher,
+attached GPU monitor, merge/training/finalizer processes, inactive incomplete
+shards, duplicate extractor processes, and low-active-extractor warnings. It is
+handoff/recovery evidence only; it must not be treated as a completion or
+quality-gate proof.
+
 ## Interpretation
 
 - `status=running`: parent PID exists, progress is not stale, and G003 remains in
@@ -36,6 +51,18 @@ The command writes `artifacts/idm/g003_full_compact_parallel_progress.json` with
   OMX checkpoint before the story is complete.
 - `status=not_running_partial`: decoded artifacts exist but the parent PID is no
   longer running; inspect logs and resume/relaunch safely.
+
+For `g003_live_health_report.json`, key statuses are:
+
+- `healthy_running`: the current stage has the expected live process topology
+  for extraction, merge, or IDM training.
+- `warn_live_health`: the parent is still alive but supervision evidence needs
+  review, for example an incomplete shard has no active extractor or a monitor
+  PID file is not live.
+- `blocked_live_health`: stale-shard evidence requires operator review before
+  resume/relaunch decisions.
+- `complete_pending_audit`: progress artifacts look complete, but the full G003
+  completion audit and OMX checkpoint are still required.
 
 ## Current G003 completion checklist
 

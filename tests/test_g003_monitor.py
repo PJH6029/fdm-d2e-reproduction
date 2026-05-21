@@ -7,7 +7,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from fdm_d2e.cluster.g003_monitor import build_g003_progress_report, write_g003_progress_report
+from fdm_d2e.cluster.g003_monitor import (
+    build_g003_live_health_report,
+    build_g003_progress_report,
+    write_g003_live_health_report,
+    write_g003_progress_report,
+)
 from fdm_d2e.io_utils import write_json
 
 
@@ -148,6 +153,131 @@ def test_g003_progress_write_report(tmp_path):
     loaded = json.loads(output.read_text())
     assert loaded["schema"] == "g003_progress_report.v1"
     assert payload["expected_recording_variants"] == 4
+
+
+def _write_pid(path: Path, pid: int) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(f"{pid}\n", encoding="utf-8")
+
+
+def _g003_process_snapshot(*, extractors: list[int] | None = None, include_train: bool = False) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = [
+        {"pid": 100, "ppid": 1, "cmdline": ["bash", "scripts/run_g003_d2e_full_idm_parallel.sh"]},
+        {"pid": 200, "ppid": 1, "cmdline": ["python", "scripts/watch_g003_then_finalize.py"]},
+        {"pid": 300, "ppid": 1, "cmdline": ["python", "scripts/attach_g003_gpu_monitor.py"]},
+    ]
+    for offset, shard_index in enumerate(extractors or []):
+        rows.append(
+            {
+                "pid": 1000 + offset,
+                "ppid": 100,
+                "cmdline": [
+                    "python",
+                    "scripts/extract_d2e_full_corpus.py",
+                    "--shard-index",
+                    str(shard_index),
+                    "--num-shards",
+                    "2",
+                ],
+            }
+        )
+    if include_train:
+        rows.append({"pid": 400, "ppid": 100, "cmdline": ["torchrun", "scripts/train_idm_streaming.py"]})
+    return rows
+
+
+def test_g003_live_health_reports_healthy_full_extractor_topology(tmp_path):
+    universe = _universe(tmp_path)
+    _write_pid(tmp_path / "outputs/cluster/g003_full_compact_parallel.pid", 100)
+    _write_pid(tmp_path / "outputs/cluster/g003_postrun_watcher.pid", 200)
+    _write_pid(tmp_path / "outputs/cluster/g003_attached_gpu_monitor.pid", 300)
+    log_dir = tmp_path / "artifacts/sources"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    (log_dir / "d2e_full_corpus_shard_0.log").write_text('{"decoded": 1, "universe_row_id": "d2e_480p:Game/rec_0"}\n')
+    (log_dir / "d2e_full_corpus_shard_1.log").write_text('{"decoded": 1, "universe_row_id": "d2e_480p:Game/rec_1"}\n')
+    report = build_g003_live_health_report(
+        shard_root=tmp_path / "outputs/data/d2e_full_corpus_shards",
+        log_dir=log_dir,
+        data_universe=universe,
+        pid_file=tmp_path / "outputs/cluster/g003_full_compact_parallel.pid",
+        watcher_pid_file=tmp_path / "outputs/cluster/g003_postrun_watcher.pid",
+        gpu_monitor_pid_file=tmp_path / "outputs/cluster/g003_attached_gpu_monitor.pid",
+        num_shards=2,
+        process_snapshot=_g003_process_snapshot(extractors=[0, 1]),
+        now=1000.0,
+    )
+    assert report["status"] == "healthy_running"
+    assert report["stage"] == "extracting"
+    assert report["parent"]["running"] is True
+    assert report["postrun_watcher"]["running"] is True
+    assert report["gpu_monitor"]["running"] is True
+    assert report["active_extractor_shards"] == [0, 1]
+    assert report["warnings"] == []
+
+
+def test_g003_live_health_warns_when_incomplete_shard_has_no_extractor(tmp_path):
+    universe = _universe(tmp_path)
+    _write_pid(tmp_path / "outputs/cluster/g003_full_compact_parallel.pid", 100)
+    _write_pid(tmp_path / "outputs/cluster/g003_postrun_watcher.pid", 200)
+    _write_pid(tmp_path / "outputs/cluster/g003_attached_gpu_monitor.pid", 300)
+    report = build_g003_live_health_report(
+        shard_root=tmp_path / "outputs/data/d2e_full_corpus_shards",
+        log_dir=tmp_path / "artifacts/sources",
+        data_universe=universe,
+        pid_file=tmp_path / "outputs/cluster/g003_full_compact_parallel.pid",
+        watcher_pid_file=tmp_path / "outputs/cluster/g003_postrun_watcher.pid",
+        gpu_monitor_pid_file=tmp_path / "outputs/cluster/g003_attached_gpu_monitor.pid",
+        num_shards=2,
+        process_snapshot=_g003_process_snapshot(extractors=[0]),
+        now=1000.0,
+    )
+    assert report["status"] == "warn_live_health"
+    assert report["inactive_incomplete_shards"] == [1]
+    assert report["warnings"][0]["code"] == "low_active_extractor_count"
+
+
+def test_g003_live_health_does_not_require_extractors_during_idm_training(tmp_path):
+    universe = _universe(tmp_path)
+    _write_pid(tmp_path / "outputs/cluster/g003_full_compact_parallel.pid", 100)
+    _write_pid(tmp_path / "outputs/cluster/g003_postrun_watcher.pid", 200)
+    _write_pid(tmp_path / "outputs/cluster/g003_attached_gpu_monitor.pid", 300)
+    shard_root = tmp_path / "outputs/data/d2e_full_corpus_shards"
+    for shard in range(2):
+        write_json(shard_root / f"shard_{shard}/decode_summary.json", {"selected_recording_variants": 2})
+    report = build_g003_live_health_report(
+        shard_root=shard_root,
+        log_dir=tmp_path / "artifacts/sources",
+        data_universe=universe,
+        pid_file=tmp_path / "outputs/cluster/g003_full_compact_parallel.pid",
+        watcher_pid_file=tmp_path / "outputs/cluster/g003_postrun_watcher.pid",
+        gpu_monitor_pid_file=tmp_path / "outputs/cluster/g003_attached_gpu_monitor.pid",
+        num_shards=2,
+        process_snapshot=_g003_process_snapshot(extractors=[], include_train=True),
+        now=1000.0,
+    )
+    assert report["status"] == "healthy_running"
+    assert report["stage"] == "idm_training"
+    assert report["expected_active_extractors"] == 0
+    assert not any(warning["code"] == "low_active_extractor_count" for warning in report["warnings"])
+
+
+def test_g003_live_health_write_report(tmp_path):
+    universe = _universe(tmp_path)
+    output = tmp_path / "health.json"
+    payload = write_g003_live_health_report(
+        output,
+        data_universe=universe,
+        shard_root=tmp_path / "shards",
+        log_dir=tmp_path / "logs",
+        pid_file=tmp_path / "missing.pid",
+        watcher_pid_file=tmp_path / "missing-watcher.pid",
+        gpu_monitor_pid_file=tmp_path / "missing-monitor.pid",
+        num_shards=2,
+        process_snapshot=[],
+    )
+    loaded = json.loads(output.read_text())
+    assert loaded["schema"] == "g003_live_health_report.v1"
+    assert payload["claim_boundary"].startswith("Live health report only")
 
 from fdm_d2e.cluster.g003_monitor import build_g003_resume_plan
 
