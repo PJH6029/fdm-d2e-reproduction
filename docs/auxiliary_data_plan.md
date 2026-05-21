@@ -95,6 +95,28 @@ While the parent is alive the watcher only writes `waiting_active_parent`
 telemetry. After the parent exits it runs the non-mutating G005 finalizer. It
 does not mutate OMX/Codex goal state and cannot complete G005 by itself.
 
+To avoid losing time after a long D2E-only G004 run, a separate fail-closed
+readiness chain can be started after launching G004:
+
+```bash
+nohup uv run python scripts/watch_g004_then_plan_g005.py \
+  --source-evidence artifacts/aux/<source>_materialization.json \
+  --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json \
+  --require-eval-manifest-hashes \
+  --require-namespace-ready \
+  --output artifacts/aux/g004_to_g005_readiness_chain_summary.json \
+  > artifacts/aux/g004_to_g005_readiness_chain.log 2>&1 &
+echo $! > outputs/cluster/g004_to_g005_readiness_chain.pid
+```
+
+This chain watches the G004 parent, reuses the G004 post-run watcher when it
+already reports `finalized_pass`, otherwise runs the non-mutating G004 finalizer,
+requires `g004_audit_status == pass`, and then runs `scripts/plan_g005_launch.py`.
+It **does not** launch G005 training by default because the aux runner/source
+materialization must remain source-specific and evidence-backed. A `g005_launch_ready`
+status only means G005 can be handed to an explicit aux training lane without
+weakening G003/G004 D2E-only gates.
+
 After the D2E+aux training/ablation run finishes, run the G005 finalizer before
 checkpointing:
 

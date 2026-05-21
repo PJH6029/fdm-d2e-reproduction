@@ -75,3 +75,20 @@ The chain watcher never checkpoints OMX/Codex state. It launches G004 only after
 G003 finalization and the G003 audit pass, then starts the G004 post-run watcher.
 If G003 finalization/audit fails, it records a blocker instead of launching FDM
 training.
+
+After G004 has launched, use the G004→G005 readiness chain to prepare the aux
+handoff without starting an unsafe default aux run:
+
+```bash
+nohup uv run python scripts/watch_g004_then_plan_g005.py \
+  --source-evidence artifacts/aux/<source>_materialization.json \
+  --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json \
+  --require-eval-manifest-hashes \
+  --require-namespace-ready \
+  --output artifacts/aux/g004_to_g005_readiness_chain_summary.json \
+  > artifacts/aux/g004_to_g005_readiness_chain.log 2>&1 &
+echo $! > outputs/cluster/g004_to_g005_readiness_chain.pid
+```
+
+It waits for G004 finalization/audit pass, then records whether G005 is
+launch-ready. It does not launch G005 training or checkpoint any story.
