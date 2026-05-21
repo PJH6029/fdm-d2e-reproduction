@@ -117,6 +117,20 @@ The run summary also records `split_stats_summary_exists` and
 `split_stats_status`. `BUILD_SPLIT_STATS=0` is reserved for local debug/recovery
 only; terminal G004 evidence still requires passing split-stat artifacts.
 
+After the 4×H200 run finishes, run the post-run finalizer before checkpointing
+G004:
+
+```bash
+uv run python scripts/finalize_g004_d2e_full_fdm.py
+```
+
+The finalizer requires the G004 run summary to exist, builds missing
+split-statistical comparisons if inputs are ready, runs the G004 completion
+audit, and writes
+`artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json`. It does not mutate
+OMX state; checkpoint `G004-d2e-only-fdm-4xh200` only after the finalizer and
+`artifacts/fdm/g004_full_fdm_completion_audit.json` report pass.
+
 `configs/model/fdm_streaming_d2e_full_compact.yaml` enables per-epoch
 validation checkpoints and a preregistered plateau rule:
 
