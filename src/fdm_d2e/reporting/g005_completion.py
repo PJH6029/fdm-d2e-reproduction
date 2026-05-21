@@ -420,6 +420,7 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
     aux_candidates = _load_json(root_path / paths.get("aux_candidates", "")) if paths.get("aux_candidates") else None
     namespace_manifest = _load_json(root_path / paths.get("namespace_manifest", "")) if paths.get("namespace_manifest") else None
     action_registry = _load_json(root_path / paths.get("action_registry", "")) if paths.get("action_registry") else None
+    runtime_env = _load_json(root_path / paths.get("runtime_env", "")) if paths.get("runtime_env") else None
     aux_examples = _load_json(root_path / paths.get("aux_examples_summary", "")) if paths.get("aux_examples_summary") else None
     ablation = _load_json(root_path / paths.get("ablation_summary", "")) if paths.get("ablation_summary") else None
     metadata = _load_json(root_path / paths.get("checkpoint_metadata", "")) if paths.get("checkpoint_metadata") else None
@@ -428,6 +429,7 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
     _assert_json_expectations(aux_candidates, dict(config.get("aux_candidate_expectations", {})), source_name="aux_candidates", findings=findings)
     _assert_json_expectations(namespace_manifest, dict(config.get("namespace_manifest_expectations", {})), source_name="namespace_manifest", findings=findings)
     _assert_json_expectations(action_registry, dict(config.get("action_registry_expectations", {})), source_name="action_registry", findings=findings)
+    _assert_json_expectations(runtime_env, dict(config.get("runtime_env_expectations", {})), source_name="runtime_env", findings=findings)
     _assert_json_expectations(ablation, dict(config.get("ablation_expectations", {})), source_name="ablation_summary", findings=findings)
     _assert_json_expectations(metadata, dict(config.get("metadata_expectations", {})), source_name="checkpoint_metadata", findings=findings)
 

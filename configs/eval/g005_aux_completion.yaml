@@ -29,6 +29,7 @@
     "aux_candidates": "artifacts/sources/aux_game_action_dataset_candidates.json",
     "aux_plan_doc": "docs/auxiliary_data_plan.md",
     "action_registry": "artifacts/aux/g005_aux_action_registry.json",
+    "runtime_env": "artifacts/aux/g005_aux_runtime_env.json",
     "aux_examples_summary": "artifacts/aux/g005_aux_examples_summary.json",
     "namespace_manifest": "artifacts/aux/g005_aux_namespace_manifest.json",
     "ablation_summary": "artifacts/aux/d2e_aux_ablation_summary.json",
@@ -73,6 +74,10 @@
     "source_specific_action_heads": true,
     "no_cross_source_action_collapse": true,
     "d2e_endpoint_claim_boundary.no_aux_source_directly_claims_d2e_keyboard_mouse": true
+  },
+  "runtime_env_expectations": {
+    "schema": "g005_aux_runtime_env.v1",
+    "status": "pass"
   },
   "require_goal_checkpoint_complete": false
 }

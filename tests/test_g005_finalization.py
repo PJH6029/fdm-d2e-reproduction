@@ -138,6 +138,7 @@ def _write_fixture(root: Path) -> None:
                 "aux_candidates": "artifacts/sources/aux.json",
                 "aux_plan_doc": "docs/aux.md",
                 "aux_examples_summary": "artifacts/aux/examples.json",
+                "runtime_env": "artifacts/aux/runtime_env.json",
                 "namespace_manifest": "artifacts/aux/namespace.json",
                 "ablation_summary": "artifacts/aux/ablation.json",
                 "checkpoint_metadata": "outputs/fdm_aux/best/checkpoint_metadata.json",
@@ -175,9 +176,14 @@ def _write_fixture(root: Path) -> None:
                 "training_policy.source_specific_action_heads": True,
                 "d2e_eval_manifests.same_as_d2e_only": True,
             },
+            "runtime_env_expectations": {
+                "schema": "g005_aux_runtime_env.v1",
+                "status": "pass",
+            },
             "required_aux_example_splits": ["train", "val", "test"],
         },
     )
+    write_json(root / "artifacts/aux/runtime_env.json", {"schema": "g005_aux_runtime_env.v1", "status": "pass", "error_count": 0})
     write_json(
         root / "artifacts/aux/examples.json",
         {

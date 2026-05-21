@@ -17,6 +17,7 @@ def _config() -> dict:
         "aux_candidates": "artifacts/sources/aux.json",
         "aux_plan_doc": "docs/aux.md",
         "action_registry": "artifacts/aux/action_registry.json",
+        "runtime_env": "artifacts/aux/runtime_env.json",
         "aux_examples_summary": "artifacts/aux/examples.json",
         "namespace_manifest": "artifacts/aux/namespace.json",
         "ablation_summary": "artifacts/aux/ablation.json",
@@ -71,6 +72,7 @@ def _config() -> dict:
             "no_cross_source_action_collapse": True,
             "d2e_endpoint_claim_boundary.no_aux_source_directly_claims_d2e_keyboard_mouse": True,
         },
+        "runtime_env_expectations": {"schema": "g005_aux_runtime_env.v1", "status": "pass"},
     }
 
 
@@ -143,6 +145,7 @@ def _complete_fixture(root: Path) -> None:
             "action_heads": [{"id": "aux_a", "namespace": "aux_a", "type": "discrete", "d2e_endpoint_claims_allowed": []}],
         },
     )
+    write_json(root / cfg["paths"]["runtime_env"], {"schema": "g005_aux_runtime_env.v1", "status": "pass", "error_count": 0})
     write_json(
         root / cfg["paths"]["aux_examples_summary"],
         {

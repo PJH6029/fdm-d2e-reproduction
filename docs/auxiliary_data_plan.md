@@ -137,9 +137,19 @@ remains fail-closed. The G005 completion audit requires a passing
 `artifacts/aux/g005_aux_examples_summary.json` before any D2E+aux completion
 claim.
 
+`validate_g005_aux_runtime_env.py` is the matching dependency preflight for the
+selected auxiliary adapter registry. It writes
+`artifacts/aux/g005_aux_runtime_env.json` and blocks G005 launch/completion if a
+selected source needs an unavailable optional runtime (currently
+`array_record.python.array_record_module.ArrayRecordReader` for p-doom
+ArrayRecord streams). This is only environment readiness evidence; it does not
+materialize aux data, train, checkpoint goals, or justify any D2E+aux quality
+claim.
+
 Example source-specific invocation after integrity passes:
 
 ```bash
+uv run python scripts/validate_g005_aux_runtime_env.py --allow-fail
 uv run python scripts/build_g005_aux_examples.py \
   --source-id atari_head_zenodo_v4 \
   --output artifacts/aux/g005_aux_examples_summary.json
@@ -177,8 +187,8 @@ raw files against Zenodo size/checksum metadata when available, validates Huggin
 Face summary-listed files, and requires source-level train/val/test manifests
 whose references resolve to real files. The watcher waits for source
 materialization, runs the integrity gate, then rebuilds source evidence,
-source-specific auxiliary example manifests, namespace-manifest readiness, and
-the fail-closed G005 launch-readiness report.
+source-specific auxiliary example manifests, runtime dependency readiness,
+namespace-manifest readiness, and the fail-closed G005 launch-readiness report.
 None of these scripts starts G005 training or checkpoints OMX/Codex state; until
 G003/G004 D2E-only prerequisites pass, the watcher's expected terminal status is
 `g005_launch_not_ready`.

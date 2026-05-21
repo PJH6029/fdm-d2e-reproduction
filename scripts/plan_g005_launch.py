@@ -140,6 +140,26 @@ def build_launch_readiness(args: argparse.Namespace) -> dict[str, Any]:
     elif not namespace_status["exists"]:
         warnings.append({"severity": "warning", "code": "namespace_manifest_not_built_yet", "path": namespace_path})
 
+    runtime_env_path = paths.get("runtime_env", "artifacts/aux/g005_aux_runtime_env.json")
+    runtime_env = _load_json(_path(root, runtime_env_path))
+    runtime_env_status = {
+        **_file_status(root, runtime_env_path),
+        "status": runtime_env.get("status") if isinstance(runtime_env, dict) else None,
+        "error_count": runtime_env.get("error_count") if isinstance(runtime_env, dict) else None,
+    }
+    if not runtime_env_status["exists"]:
+        findings.append({"severity": "error", "code": "missing_aux_runtime_env", "path": runtime_env_path})
+    elif runtime_env_status["status"] != "pass":
+        findings.append(
+            {
+                "severity": "error",
+                "code": "aux_runtime_env_not_pass",
+                "path": runtime_env_path,
+                "status": runtime_env_status["status"],
+                "error_count": runtime_env_status["error_count"],
+            }
+        )
+
     aux_examples_path = paths.get("aux_examples_summary")
     aux_examples_status = None
     if aux_examples_path:
@@ -174,6 +194,7 @@ def build_launch_readiness(args: argparse.Namespace) -> dict[str, Any]:
     if args.eval_manifest_hashes:
         namespace_args += ["--eval-manifest-hashes", args.eval_manifest_hashes]
     namespace_command = ["uv", "run", "python", "scripts/build_g005_aux_namespace_manifest.py", *namespace_args, "--completion-ready"]
+    runtime_env_command = ["uv", "run", "python", "scripts/validate_g005_aux_runtime_env.py"]
     finalizer_command = ["uv", "run", "python", "scripts/finalize_g005_aux_best_model.py", *namespace_args, "--completion-ready"]
     watcher_command = [
         "uv",
@@ -201,10 +222,12 @@ def build_launch_readiness(args: argparse.Namespace) -> dict[str, Any]:
         "source_evidence": source_evidence,
         "eval_manifest_hashes": eval_hashes,
         "namespace_manifest": namespace_status,
+        "runtime_env": runtime_env_status,
         "aux_examples": aux_examples_status,
         "run_summary": run_summary_status,
         "commands": {
             "build_namespace_manifest": namespace_command,
+            "validate_runtime_env": runtime_env_command,
             "postrun_watcher": watcher_command,
             "finalize_after_run": finalizer_command,
         },

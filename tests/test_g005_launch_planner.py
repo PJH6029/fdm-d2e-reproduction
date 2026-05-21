@@ -56,6 +56,7 @@ def _write_ready_fixture(root: Path) -> None:
     aux_doc = root / "docs/aux.md"
     aux_doc.parent.mkdir(parents=True, exist_ok=True)
     aux_doc.write_text("aux plan", encoding="utf-8")
+    write_json(root / "artifacts/aux/g005_aux_runtime_env.json", {"schema": "g005_aux_runtime_env.v1", "status": "pass", "error_count": 0})
     write_json(
         root / "configs/eval/g005_completion.json",
         {
@@ -84,6 +85,8 @@ def test_g005_launch_readiness_passes_after_d2e_only_gates(tmp_path: Path):
     assert payload["selected_aux_candidate_ids"] == ["aux_a"]
     assert payload["findings"] == []
     assert any(item["code"] == "namespace_manifest_not_built_yet" for item in payload["warnings"])
+    assert payload["runtime_env"]["status"] == "pass"
+    assert payload["commands"]["validate_runtime_env"] == ["uv", "run", "python", "scripts/validate_g005_aux_runtime_env.py"]
     assert payload["commands"]["postrun_watcher"][0:3] == ["uv", "run", "python"]
 
 
@@ -120,3 +123,11 @@ def test_g005_launch_readiness_blocks_existing_run_summary(tmp_path: Path):
     payload = build_launch_readiness(_args(tmp_path))
     assert payload["status"] == "blocked"
     assert any(item["code"] == "run_summary_already_exists" for item in payload["findings"])
+
+
+def test_g005_launch_readiness_requires_runtime_env_pass(tmp_path: Path):
+    _write_ready_fixture(tmp_path)
+    write_json(tmp_path / "artifacts/aux/g005_aux_runtime_env.json", {"status": "blocked", "error_count": 1})
+    payload = build_launch_readiness(_args(tmp_path))
+    assert payload["status"] == "blocked"
+    assert any(item["code"] == "aux_runtime_env_not_pass" for item in payload["findings"])

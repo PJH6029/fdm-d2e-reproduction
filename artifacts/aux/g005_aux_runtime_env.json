@@ -1,0 +1,67 @@
+{
+  "schema": "g005_aux_runtime_env.v1",
+  "status": "blocked",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "python_executable": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/.venv/bin/python3",
+  "action_registry": "artifacts/aux/g005_aux_action_registry.json",
+  "selected_adapters": {
+    "atari_head_zip_csv_action_adapter": [
+      "atari_head_zenodo_v4"
+    ],
+    "minerl_action_dict_adapter": [
+      "minerl_2019_zenodo_v2"
+    ],
+    "p_doom_array_record_action_adapter": [
+      "p_doom_atari_breakout_hf"
+    ]
+  },
+  "checks": [
+    {
+      "module": "huggingface_hub",
+      "symbol": null,
+      "package_hint": "huggingface_hub",
+      "reason": "G005 materialization can pull selected Hugging Face dataset sources.",
+      "available": true,
+      "version": "1.15.0",
+      "error": null
+    },
+    {
+      "module": "torch",
+      "symbol": null,
+      "package_hint": "torch",
+      "reason": "G005 D2E+aux pretraining/finetuning uses the torch training stack.",
+      "available": true,
+      "version": "2.12.0+cu130",
+      "error": null
+    },
+    {
+      "module": "array_record.python.array_record_module",
+      "symbol": "ArrayRecordReader",
+      "package_hint": "array-record",
+      "reason": "p-doom Atari Breakout files are ArrayRecord streams containing pickled raw_video/actions records.",
+      "required_by_adapter": "p_doom_array_record_action_adapter",
+      "required_by_source_ids": [
+        "p_doom_atari_breakout_hf"
+      ],
+      "available": false,
+      "version": null,
+      "error": "ModuleNotFoundError: No module named 'array_record'"
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "missing_runtime_dependency",
+      "module": "array_record.python.array_record_module",
+      "symbol": "ArrayRecordReader",
+      "package_hint": "array-record",
+      "required_by_adapter": "p_doom_array_record_action_adapter",
+      "required_by_source_ids": [
+        "p_doom_atari_breakout_hf"
+      ],
+      "error": "ModuleNotFoundError: No module named 'array_record'"
+    }
+  ],
+  "error_count": 1,
+  "claim_boundary": "Runtime dependency preflight only; it does not materialize aux data, launch G005 training, checkpoint goals, or prove D2E+aux quality."
+}
