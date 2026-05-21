@@ -1,0 +1,27 @@
+{
+  "schema": "g003_to_g004_chain.v1",
+  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
+  "started_at_unix": 1779355602.5578458,
+  "output": "artifacts/fdm/g003_to_g004_chain_summary.json",
+  "watcher_pid_file": "outputs/cluster/g003_to_g004_chain_watcher.pid",
+  "poll_seconds": 120.0,
+  "max_wait_seconds": -1.0,
+  "launch_enabled": true,
+  "start_g004_watcher": true,
+  "require_g003_goal_checkpoint": false,
+  "claim_boundary": "Fail-closed chain from G003 finalization to G004 D2E-only FDM launch; it never checkpoints G003/G004 and never launches G004 unless G003 finalization plus audit pass and G004 launch readiness is ready.",
+  "status": "waiting_g003_parent",
+  "elapsed_seconds": 0.0014333724975585938,
+  "g003_progress": {
+    "status": "running",
+    "pid": 9289,
+    "pid_running": true,
+    "decoded_recording_variants": 161,
+    "expected_recording_variants": 918,
+    "complete_shards": 0,
+    "num_shards": 16,
+    "stale_shards": [],
+    "no_progress_shards": []
+  },
+  "findings": []
+}

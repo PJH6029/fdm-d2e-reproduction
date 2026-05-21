@@ -361,3 +361,12 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - G003 parent remained live; progress monitor status `running`, decoded recording variants `152 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`, long-running active shards `[0, 5, 12, 13, 14, 15]`.
 - Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
 - No story or aggregate checkpoint/completion claim was made.
+
+## 2026-05-21 18:27 KST G003→G004 chain watcher sync snapshot
+
+- Pushed commit `a269f3c` and fast-forwarded pod checkout to `a269f3c`; `scripts/watch_g003_then_launch_g004.py` is present and running in the pod.
+- Chain watcher PID: `47480` (`outputs/cluster/g003_to_g004_chain_watcher.pid`); command includes `--launch --start-g004-watcher --poll-seconds 120` and writes `artifacts/fdm/g003_to_g004_chain_summary.json` plus `artifacts/fdm/g003_to_g004_chain.log`.
+- Chain watcher status is `waiting_g003_parent`: it will not launch G004 until G003 parent PID exits, G003 finalization/audit pass, and `scripts/plan_g004_launch.py` reports ready. It never checkpoints OMX/Codex state.
+- G003 parent remained live; progress monitor status `running`, decoded recording variants `161 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`, long-running active shards `[0, 5, 12, 13, 14, 15]`.
+- Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
+- No story or aggregate checkpoint/completion claim was made.
