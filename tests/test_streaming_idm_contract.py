@@ -56,6 +56,7 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
             "target_records": str(target_path),
             "output_dir": str(tmp_path / "idm"),
             "summary_out": str(tmp_path / "summary.json"),
+            "endpoints": "configs/eval/primary_endpoints.yaml",
             "feature_mode": "summary_compact_grid8_shift_surface_time",
             "hidden_dim": 8,
             "depth": 1,
@@ -72,3 +73,8 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
     assert summary["metadata"]["target_records"] == 4
     assert Path(summary["metadata"]["checkpoint_path"]).exists()
     assert Path(summary["metadata"]["pseudo_label_path"]).exists()
+    assert Path(summary["metadata"]["label_quality_report_path"]).exists()
+    assert summary["label_quality_report"]["baseline_metrics"]["noop"]["num_examples"] == 4
+    assert "game:Apex" in summary["label_quality_report"]["groups_by_model"]["tiny_streaming_idm"]
+    assert Path(summary["metadata"]["statistical_comparison_path"]).exists()
+    assert summary["statistical_comparison"]["schema"] == "stat_comparison.v1"

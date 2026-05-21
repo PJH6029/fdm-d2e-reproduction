@@ -3,6 +3,8 @@
   "model_name": "streaming_compact_idm_d2e_full",
   "train_records": "outputs/data/d2e_full_corpus/train_core.jsonl",
   "target_records": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+  "endpoints": "configs/eval/primary_endpoints.yaml",
+  "baseline_names": ["noop", "global_majority", "last_seen_train"],
   "output_dir": "outputs/idm_streaming_d2e_full_compact",
   "summary_out": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
   "feature_mode": "summary_compact_grid8_shift_surface_time",

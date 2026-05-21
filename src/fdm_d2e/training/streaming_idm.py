@@ -3,9 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
 
+from fdm_d2e.config import load_config
+from fdm_d2e.eval.statistics import cluster_bootstrap_delta, endpoint_value, holm_bonferroni
 from fdm_d2e.io_utils import ensure_dir, read_json, stable_hash_json, write_json, write_jsonl
 from fdm_d2e.schema import validate_named
 from fdm_d2e.training.neural_idm import record_features, target_mouse_delta
@@ -43,11 +46,18 @@ def _is_category_token(token: str) -> bool:
     )
 
 
+def _tokens(row: dict[str, Any]) -> list[str]:
+    return list(row.get("ground_truth_tokens") or ["NOOP"])
+
+
 def scan_streaming_idm_stats(train_records: str | Path, *, feature_mode: str, categorical_min_count: int = 1) -> dict[str, Any]:
     count = 0
     mean: list[float] = []
     m2: list[float] = []
     category_counts: dict[str, int] = {}
+    sequence_counts: Counter[tuple[str, ...]] = Counter()
+    last_tokens_by_recording: dict[str, list[str]] = {}
+    last_tokens_by_game: dict[str, list[str]] = {}
     fingerprint = hashlib.sha256()
     for row in iter_jsonl(train_records):
         features = [float(value) for value in record_features(row, feature_mode=feature_mode)]
@@ -65,6 +75,10 @@ def scan_streaming_idm_stats(train_records: str | Path, *, feature_mode: str, ca
             token = str(token)
             if _is_category_token(token):
                 category_counts[token] = category_counts.get(token, 0) + 1
+        tokens = _tokens(row)
+        sequence_counts[tuple(tokens)] += 1
+        last_tokens_by_recording[str(row.get("recording_id", ""))] = tokens
+        last_tokens_by_game[str(row.get("game", "unknown"))] = tokens
         fingerprint.update(
             json.dumps(
                 {
@@ -90,6 +104,9 @@ def scan_streaming_idm_stats(train_records: str | Path, *, feature_mode: str, ca
         "std": std,
         "category_vocab": _category_vocab_from_counts(category_counts, categorical_min_count),
         "category_counts": category_counts,
+        "global_majority_tokens": list(sequence_counts.most_common(1)[0][0]) if sequence_counts else ["NOOP"],
+        "last_tokens_by_recording": last_tokens_by_recording,
+        "last_tokens_by_game": last_tokens_by_game,
         "dataset_fingerprint": fingerprint.hexdigest(),
     }
 
@@ -340,6 +357,105 @@ class StreamingActionMetrics:
         return metrics
 
 
+def _group_keys(row: dict[str, Any]) -> list[str]:
+    keys = ["all"]
+    for tag in row.get("eval_split_tags", []) or []:
+        keys.append(f"eval_tag:{tag}")
+    for field in ("game", "resolution_tier", "source_id"):
+        value = row.get(field)
+        if value is not None:
+            keys.append(f"{field}:{value}")
+    for field in ("split_temporal", "split_heldout_recording", "split_heldout_game"):
+        value = row.get(field)
+        if value is not None:
+            keys.append(f"{field}:{value}")
+    return keys
+
+
+def _ensure_metric(metrics: dict[str, StreamingActionMetrics], key: str) -> StreamingActionMetrics:
+    if key not in metrics:
+        metrics[key] = StreamingActionMetrics()
+    return metrics[key]
+
+
+def _baseline_tokens(name: str, row: dict[str, Any], stats: dict[str, Any]) -> list[str]:
+    if name == "noop":
+        return ["NOOP"]
+    majority = list(stats.get("global_majority_tokens") or ["NOOP"])
+    if name == "global_majority":
+        return majority
+    if name == "last_seen_train":
+        by_recording = stats.get("last_tokens_by_recording", {})
+        by_game = stats.get("last_tokens_by_game", {})
+        return list(
+            by_recording.get(str(row.get("recording_id", "")))
+            or by_game.get(str(row.get("game", "unknown")))
+            or majority
+        )
+    raise ValueError(f"unsupported streaming baseline: {name}")
+
+
+def _metric_payloads(metrics: dict[str, StreamingActionMetrics]) -> dict[str, Any]:
+    return {name: metric.payload() for name, metric in sorted(metrics.items())}
+
+
+def _streaming_statistical_comparison(
+    metrics_by_model_cluster: dict[str, dict[str, StreamingActionMetrics]],
+    endpoints_config: dict[str, Any],
+) -> dict[str, Any]:
+    default_reference_name = str(endpoints_config.get("reference_baseline", "noop"))
+    bootstrap_cfg = dict(endpoints_config.get("bootstrap", {}))
+    comparisons: list[dict[str, Any]] = []
+    payload_by_model_cluster = {
+        model: {cluster: metric.payload() for cluster, metric in cluster_metrics.items()}
+        for model, cluster_metrics in metrics_by_model_cluster.items()
+    }
+    for endpoint in endpoints_config.get("endpoints", []):
+        reference_name = str(endpoint.get("reference_baseline", default_reference_name))
+        if reference_name not in payload_by_model_cluster:
+            continue
+        reference_values = {
+            cluster: value
+            for cluster, metrics in payload_by_model_cluster[reference_name].items()
+            if (value := endpoint_value(metrics, endpoint)) is not None
+        }
+        for name, cluster_payloads in payload_by_model_cluster.items():
+            if name == reference_name:
+                continue
+            candidate_values = {
+                cluster: value
+                for cluster, metrics in cluster_payloads.items()
+                if (value := endpoint_value(metrics, endpoint)) is not None
+            }
+            stats = cluster_bootstrap_delta(
+                candidate_values,
+                reference_values,
+                direction=str(endpoint.get("direction", "higher")),
+                n_resamples=int(bootstrap_cfg.get("n_resamples", 2000)),
+                confidence=float(bootstrap_cfg.get("confidence", 0.95)),
+                seed=int(bootstrap_cfg.get("seed", 0)) + len(comparisons),
+            )
+            comparisons.append(
+                {
+                    "model": name,
+                    "reference": reference_name,
+                    "endpoint": endpoint["name"],
+                    "direction": endpoint.get("direction", "higher"),
+                    "min_effect": endpoint.get("min_effect"),
+                    **stats,
+                }
+            )
+    payload = {
+        "schema": "stat_comparison.v1",
+        "reference_baseline": default_reference_name,
+        "correction": str(endpoints_config.get("correction", "holm_bonferroni")),
+        "cluster_key": str(endpoints_config.get("cluster_key", "recording_id")),
+        "comparisons": holm_bonferroni(comparisons),
+    }
+    validate_named(payload, "stat_comparison.schema.json")
+    return payload
+
+
 def _predict_stream(
     torch,
     model,
@@ -353,17 +469,24 @@ def _predict_stream(
     checkpoint_path: Path,
     output_dir: Path,
 ) -> dict[str, Any]:
-    predictions = []
-    pseudo_rows = []
-    metrics = StreamingActionMetrics()
+    model_name = str(config.get("model_name", "streaming_compact_idm"))
+    baseline_names = [str(name) for name in config.get("baseline_names", ["noop", "global_majority", "last_seen_train"])]
+    all_model_names = [model_name, *baseline_names]
+    metrics_by_model = {name: StreamingActionMetrics() for name in all_model_names}
+    group_metrics_by_model: dict[str, dict[str, StreamingActionMetrics]] = {name: {} for name in all_model_names}
+    cluster_metrics_by_model: dict[str, dict[str, StreamingActionMetrics]] = {name: {} for name in all_model_names}
     category_threshold = float(config.get("category_threshold", 0.35))
     category_thresholds = {token: category_threshold for token in category_vocab}
     mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
     batch_size = int(config.get("eval_batch_size", config.get("batch_size", 2048)))
     max_target_examples = config.get("max_target_examples")
     model.eval()
+    target_count = 0
     sequence_fingerprint = hashlib.sha256()
-    with torch.no_grad():
+    pseudo_path = output_dir / "pseudolabels.jsonl"
+    predictions_path = output_dir / "predictions.jsonl"
+    pseudo_path.parent.mkdir(parents=True, exist_ok=True)
+    with pseudo_path.open("w") as pseudo_f, predictions_path.open("w") as pred_f, torch.no_grad():
         for rows in _iter_batches(target_records, batch_size, max_target_examples):
             x = _batch_features(torch, rows, feature_mode=str(stats["feature_mode"]), mean=stats["mean"], std=stats["std"], device=device)
             outputs = model(x).detach().cpu().tolist()
@@ -390,7 +513,7 @@ def _predict_stream(
                     "predicted_tokens": tokens,
                     "label_source": "idm_generated",
                     "confidence": confidence,
-                    "model": str(config.get("model_name", "streaming_compact_idm")),
+                    "model": model_name,
                     "training_split_hash": str(stats["dataset_fingerprint"]),
                     "input_window": {"frame_ref": row.get("frame", {}).get("path", ""), "frame_index": int(row.get("frame", {}).get("index", 0))},
                 }
@@ -403,24 +526,56 @@ def _predict_stream(
                     "timestamp_ns": row["timestamp_ns"],
                     "predicted_tokens": tokens,
                 }
-                pseudo_rows.append(pseudo)
-                predictions.append(pred)
-                metrics.update(tokens, row)
+                pseudo_f.write(json.dumps(pseudo, ensure_ascii=False, sort_keys=True) + "\n")
+                pred_f.write(json.dumps(pred, ensure_ascii=False, sort_keys=True) + "\n")
+                model_tokens = {model_name: tokens}
+                for baseline_name in baseline_names:
+                    model_tokens[baseline_name] = _baseline_tokens(baseline_name, row, stats)
+                cluster = str(row.get("recording_id") or row.get("cross_resolution_key") or row.get("sequence_id"))
+                for name, pred_tokens in model_tokens.items():
+                    metrics_by_model[name].update(pred_tokens, row)
+                    _ensure_metric(cluster_metrics_by_model[name], cluster).update(pred_tokens, row)
+                    for group_key in _group_keys(row):
+                        _ensure_metric(group_metrics_by_model[name], group_key).update(pred_tokens, row)
                 sequence_fingerprint.update(json.dumps({"id": row["sequence_id"], "tokens": tokens}, sort_keys=True).encode("utf-8"))
                 sequence_fingerprint.update(b"\n")
-    pseudo_path = output_dir / "pseudolabels.jsonl"
-    predictions_path = output_dir / "predictions.jsonl"
+                target_count += 1
     metrics_path = output_dir / "metrics.json"
-    write_jsonl(pseudo_path, pseudo_rows)
-    write_jsonl(predictions_path, predictions)
-    metrics_payload = metrics.payload()
+    metrics_payload = metrics_by_model[model_name].payload()
     write_json(metrics_path, metrics_payload)
+    label_quality_report = {
+        "schema": "idm_label_quality_report.v1",
+        "model": model_name,
+        "target_records": target_count,
+        "model_metrics": metrics_payload,
+        "baseline_metrics": {name: metrics_by_model[name].payload() for name in baseline_names},
+        "groups_by_model": {
+            name: _metric_payloads(group_metrics)
+            for name, group_metrics in group_metrics_by_model.items()
+        },
+        "cluster_count": len(cluster_metrics_by_model[model_name]),
+    }
+    label_quality_report_path = output_dir / "label_quality_report.json"
+    write_json(label_quality_report_path, label_quality_report)
+    statistical_comparison = None
+    statistical_comparison_path = None
+    if config.get("endpoints"):
+        statistical_comparison = _streaming_statistical_comparison(
+            cluster_metrics_by_model,
+            load_config(config["endpoints"]),
+        )
+        statistical_comparison_path = output_dir / "statistical_comparison.json"
+        write_json(statistical_comparison_path, statistical_comparison)
     return {
         "pseudo_label_path": str(pseudo_path),
         "predictions_path": str(predictions_path),
         "metrics_path": str(metrics_path),
         "metrics": metrics_payload,
-        "target_records": len(predictions),
+        "label_quality_report_path": str(label_quality_report_path),
+        "label_quality_report": label_quality_report,
+        "statistical_comparison_path": str(statistical_comparison_path) if statistical_comparison_path else None,
+        "statistical_comparison": statistical_comparison,
+        "target_records": target_count,
         "prediction_fingerprint": sequence_fingerprint.hexdigest(),
         "checkpoint_path": str(checkpoint_path),
     }
@@ -527,6 +682,8 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "filtered_pseudo_label_path": prediction["pseudo_label_path"],
         "checkpoint_path": str(checkpoint_path),
         "metrics_path": prediction["metrics_path"],
+        "label_quality_report_path": prediction["label_quality_report_path"],
+        "statistical_comparison_path": prediction["statistical_comparison_path"],
         "calibration": {
             "mode": "global_threshold_streaming",
             "category_threshold": float(config.get("category_threshold", 0.35)),
@@ -545,6 +702,8 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "schema": "streaming_idm_train_summary.v1",
         "metadata": metadata,
         "metrics": prediction["metrics"],
+        "label_quality_report": prediction["label_quality_report"],
+        "statistical_comparison": prediction["statistical_comparison"],
         "history_tail": history[-5:],
         "device": device,
         "stats_path": str(stats_path),
