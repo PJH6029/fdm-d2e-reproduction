@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from fdm_d2e.io_utils import write_json
-from monitor_g005_aux_materialization import build_progress
+from monitor_g005_aux_materialization import _pid_running, build_progress
 
 
 def _args(root: Path, **overrides) -> Namespace:
@@ -135,3 +135,9 @@ def test_monitor_tolerates_files_removed_during_download_scan(tmp_path: Path, mo
     assert source["raw_total_bytes"] == 7
     assert source["raw_file_count"] == 1
     assert source["raw_transient_missing_file_count"] == 1
+
+
+def test_monitor_pid_running_treats_zombie_as_exited(monkeypatch):
+    monkeypatch.setattr("monitor_g005_aux_materialization.os.kill", lambda pid, sig: None)
+    monkeypatch.setattr("monitor_g005_aux_materialization._pid_is_zombie", lambda pid: True)
+    assert _pid_running(12345) is False

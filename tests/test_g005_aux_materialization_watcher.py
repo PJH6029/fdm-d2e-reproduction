@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from fdm_d2e.io_utils import write_json
-from watch_g005_aux_materialization import _tree_status, watch
+from watch_g005_aux_materialization import _pid_running, _tree_status, watch
 
 
 def _args(root: Path, **overrides) -> Namespace:
@@ -216,3 +216,9 @@ def test_watcher_tree_status_tolerates_files_removed_during_download_scan(tmp_pa
     assert payload["file_count"] == 1
     assert payload["bytes"] == 9
     assert payload["transient_missing_file_count"] == 1
+
+
+def test_watcher_pid_running_treats_zombie_as_exited(monkeypatch):
+    monkeypatch.setattr("watch_g005_aux_materialization.os.kill", lambda pid, sig: None)
+    monkeypatch.setattr("watch_g005_aux_materialization._pid_is_zombie", lambda pid: True)
+    assert _pid_running(12345) is False

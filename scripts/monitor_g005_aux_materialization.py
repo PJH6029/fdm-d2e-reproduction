@@ -55,7 +55,19 @@ def _pid_running(pid: int | None) -> bool:
         return False
     except PermissionError:
         return True
-    return True
+    return not _pid_is_zombie(pid)
+
+
+def _pid_is_zombie(pid: int) -> bool:
+    try:
+        stat = Path(f"/proc/{pid}/stat").read_text(encoding="utf-8", errors="ignore")
+    except (FileNotFoundError, ProcessLookupError, PermissionError, OSError):
+        return False
+    try:
+        tail = stat.rsplit(")", 1)[1].strip().split()
+    except IndexError:
+        return False
+    return bool(tail and tail[0] == "Z")
 
 
 def _selected_candidates(payload: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
