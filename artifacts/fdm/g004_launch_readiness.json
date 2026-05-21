@@ -1,0 +1,113 @@
+{
+  "schema": "g004_launch_readiness.v1",
+  "status": "blocked",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "recommended_command": "CONFIG=configs/model/fdm_streaming_d2e_full_compact.yaml IDM_PREDICT_CONFIG=configs/model/idm_streaming_d2e_full_compact_predict_fdm_train.yaml NPROC_PER_NODE=4 EXPECTED_GPUS=4 bash scripts/run_g004_d2e_full_fdm_4xh200.sh",
+  "claim_boundary": "This planner only proves whether launching G004 is safe; it does not launch training, checkpoint G003/G004, or prove G004 completion.",
+  "g003_goal_status": "in_progress",
+  "g003_audit_status": "fail",
+  "g003_audit_error_count": 23,
+  "allow_precheckpoint": false,
+  "pseudolabel_mode": "generate_with_trained_g003_idm",
+  "artifacts": {
+    "fdm_config": {
+      "path": "configs/model/fdm_streaming_d2e_full_compact.yaml",
+      "exists": true,
+      "bytes": 1834,
+      "sha256": "665e28e4acc2929f1ff09f9b8054bcbf973ee772a259114b7a4b9e0f43b7fdb6"
+    },
+    "idm_predict_config": {
+      "path": "configs/model/idm_streaming_d2e_full_compact_predict_fdm_train.yaml",
+      "exists": true,
+      "bytes": 846,
+      "sha256": "b2c351ca61a8d8333609a012b106849dcf2681cc6d33e6d8c2d19b6ded2cca0a"
+    },
+    "g004_run_script": {
+      "path": "scripts/run_g004_d2e_full_fdm_4xh200.sh",
+      "exists": true,
+      "bytes": 6531,
+      "sha256": "53646bb7fbe4e8cdadf67b77cee651feb373fea76d7fc83403c81839a8200bfa"
+    },
+    "labels_path": {
+      "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "required_inputs": {
+      "source_idm_metadata": {
+        "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+        "exists": false,
+        "bytes": 0,
+        "sha256": null
+      },
+      "records_path": {
+        "path": "outputs/data/d2e_full_corpus/train_core.jsonl",
+        "exists": false,
+        "bytes": 0,
+        "sha256": null
+      },
+      "target_records_path": {
+        "path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+        "exists": false,
+        "bytes": 0,
+        "sha256": null
+      },
+      "data_universe": {
+        "path": "artifacts/sources/d2e_full_data_universe_manifest.json",
+        "exists": true,
+        "bytes": 1477181,
+        "sha256": "549cd16aa992bc76c3bea9f571100fe5cc721ca706e7d50f2c9e40fd2d21c8f8"
+      },
+      "split_contract": {
+        "path": "artifacts/sources/d2e_full_split_contract.json",
+        "exists": true,
+        "bytes": 466810,
+        "sha256": "e64e90f3745108a2813d4d4f84ee69a08f4cb7e46923371983006c481dadde98"
+      }
+    },
+    "g004_run_summary": {
+      "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    }
+  },
+  "gpu": {
+    "checked": false,
+    "expected": 4
+  },
+  "findings": [
+    {
+      "severity": "error",
+      "code": "g003_audit_not_pass",
+      "status": "fail",
+      "error_count": 23
+    },
+    {
+      "severity": "error",
+      "code": "g003_goal_not_checkpointed_complete",
+      "goal_id": "G003-d2e-only-idm",
+      "actual": "in_progress"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_g004_input",
+      "input": "source_idm_metadata",
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_g004_input",
+      "input": "records_path",
+      "path": "outputs/data/d2e_full_corpus/train_core.jsonl"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_g004_input",
+      "input": "target_records_path",
+      "path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl"
+    }
+  ],
+  "error_count": 5
+}

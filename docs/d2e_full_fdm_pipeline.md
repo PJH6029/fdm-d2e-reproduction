@@ -83,8 +83,18 @@ After G003 has completed and the pod checkout has the latest code:
 cd /root/work/code/continuous-gui-poc/fdm-d2e-reproduction
 git pull --ff-only origin main
 uv sync --frozen --extra d2e --extra test --extra train
+uv run python scripts/plan_g004_launch.py --check-gpus
 NPROC_PER_NODE=4 EXPECTED_GPUS=4 bash scripts/run_g004_d2e_full_fdm_4xh200.sh
 ```
+
+The launch planner is a fail-closed preflight. It refreshes or reads the G003
+completion audit, requires the G003 OMX checkpoint by default, verifies the D2E
+train/target JSONLs and G003 IDM metadata needed by the FDM config, reports
+whether existing train-core pseudo-labels will be reused or generated from the
+trained G003 IDM, and writes `artifacts/fdm/g004_launch_readiness.json`. It
+does not launch training or mutate OMX state. If used before the G003 checkpoint
+only for diagnostics, pass `--allow-precheckpoint`; do not treat that as a
+terminal handoff state.
 
 The script runs a GPU smoke check, launches the streaming action trainer through
 `torchrun`, builds split-specific statistical comparisons for the preregistered

@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 201,
+  "entry_count": 204,
   "entries": [
     {
       "path": "README.md",
@@ -148,6 +148,12 @@
       "sha256": "f05355712f76d3887500cdad928b5bb5cd608f7e24914a04b70132aad7866257"
     },
     {
+      "path": "artifacts/fdm/g004_launch_readiness.json",
+      "kind": "evidence_artifact",
+      "bytes": 3788,
+      "sha256": "71610e0c29d5091ab388bad3a55cd29bd16ff572d4f75bc7efec30f781d31256"
+    },
+    {
       "path": "artifacts/harness/g008_game_harness_eval.json",
       "kind": "evidence_artifact",
       "bytes": 13111,
@@ -241,13 +247,13 @@
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "kind": "evidence_artifact",
       "bytes": 61910,
-      "sha256": "fc91d9ddc50615a047edb09bda34459336dfd4728f881e5ae64ca098179e30bd"
+      "sha256": "75b44edd9c928a0ad0dde71dadaff1e49cea48b7dc58ccc80a3b3f4cf6ffaefc"
     },
     {
       "path": "artifacts/reproducibility/g009_completion_audit.json",
       "kind": "evidence_artifact",
       "bytes": 3901,
-      "sha256": "8052ad6b1123304e586f7f73ee76c1ddcef6f420b459fe362a1aa06eb5d5609e"
+      "sha256": "346b361f9a0102cee6ab15ed3fe690febc30ae7a8840976d8df29e719cbcb90b"
     },
     {
       "path": "artifacts/runtime/g007_completion_audit.json",
@@ -516,8 +522,8 @@
     {
       "path": "docs/d2e_full_fdm_pipeline.md",
       "kind": "documentation",
-      "bytes": 8448,
-      "sha256": "964ddf4af634538c9ac34e0fc3a38b7c98a8443d8f305b5dacf110daae8a9f60"
+      "bytes": 9073,
+      "sha256": "6ac99f3038796b2b2a93110d2ff2c8929ebf094f4372addbc5a422058c4df945"
     },
     {
       "path": "docs/d2e_full_idm_pipeline.md",
@@ -666,8 +672,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 13225,
-      "sha256": "5d762e33d00b11b8c2105b609713efb96f6d081e3a480536088d7a93bd7c745f"
+      "bytes": 13350,
+      "sha256": "8e02cc13efc3705b7a9e1258a9ff4eee3f3a42b3486e531739431f113425af01"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -746,6 +752,12 @@
       "kind": "reproduction_script",
       "bytes": 2930,
       "sha256": "c414e4d68c5434553b0d4f18599d29063d310e8100b0aedecc4a7274cd210e35"
+    },
+    {
+      "path": "scripts/plan_g004_launch.py",
+      "kind": "reproduction_script",
+      "bytes": 9813,
+      "sha256": "af2daf0faf04b1fda7cef0af7b97efd83f32a8eebd29b792ee026347ccdfdaaa"
     },
     {
       "path": "scripts/predict_idm_streaming.py",
@@ -1100,6 +1112,12 @@
       "kind": "other",
       "bytes": 8749,
       "sha256": "f704408374d47dd58c2d53d0bbfbe3a59598b80515bf7d8b7ab76a16c80b4bcf"
+    },
+    {
+      "path": "tests/test_g004_launch_planner.py",
+      "kind": "other",
+      "bytes": 4464,
+      "sha256": "d9c7af8229eb98c4aa6e60f16870f6ac3639f26daac12198ff012fd3b93edae8"
     },
     {
       "path": "tests/test_g005_aux_completion_audit.py",

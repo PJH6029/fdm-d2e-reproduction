@@ -174,6 +174,14 @@ features.
 pseudo-labels with `scripts/predict_idm_streaming.py` after G003 checkpoint
 artifacts exist.
 
+Latest G004 launch preflight: run
+`uv run python scripts/plan_g004_launch.py --check-gpus` in the pod before
+starting the G004 4×H200 command. It requires G003 audit pass plus G003 OMX
+checkpoint complete by default, verifies FDM input artifacts, records whether
+train-core pseudo-labels already exist or will be generated, writes
+`artifacts/fdm/g004_launch_readiness.json`, and does not launch training or
+mutate OMX state.
+
 Latest script hardening: commit `6974f38` makes future G003/G004 run wrappers
 build split-specific statistical comparisons automatically after successful
 training. The already-running G003 parent PID `9289` was launched before this
