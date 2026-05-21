@@ -1,0 +1,65 @@
+{
+  "schema": "g003_full_idm_completion_config.v1",
+  "goals_path": ".omx/ultragoal/goals.json",
+  "goal_id": "G003-d2e-only-idm",
+  "output_path": "artifacts/idm/g003_full_idm_completion_accel64_audit.json",
+  "expected_recording_variants": 918,
+  "expected_shards": 64,
+  "allowed_shard_counts": [
+    64
+  ],
+  "expected_nproc_per_node": 4,
+  "expected_gpus": 4,
+  "min_gpu_monitor_rows": 4,
+  "require_gpu_monitor_covers_expected_gpus": true,
+  "required_target_eval_split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
+  "required_source_ids": [
+    "d2e_480p",
+    "d2e_original"
+  ],
+  "required_resolution_tiers": [
+    "480p",
+    "original_fhd_qhd"
+  ],
+  "expected_variants_by_source": {
+    "d2e_480p": 459,
+    "d2e_original": 459
+  },
+  "expected_variants_by_resolution_tier": {
+    "480p": 459,
+    "original_fhd_qhd": 459
+  },
+  "paths": {
+    "data_universe": "artifacts/sources/d2e_full_data_universe_manifest.json",
+    "decode_summary": "artifacts/sources/d2e_full_corpus_decode_summary_accel64.json",
+    "train_records": "outputs/data/d2e_full_corpus_accel64/train_core.jsonl",
+    "target_records": "outputs/data/d2e_full_corpus_accel64/target_all_eval.jsonl",
+    "checkpoint": "outputs/idm_streaming_d2e_full_compact_accel64/checkpoint.pt",
+    "checkpoint_metadata": "outputs/idm_streaming_d2e_full_compact_accel64/checkpoint_metadata.json",
+    "resolved_config": "outputs/idm_streaming_d2e_full_compact_accel64/resolved_config.json",
+    "streaming_stats": "outputs/idm_streaming_d2e_full_compact_accel64/streaming_stats.json",
+    "train_history": "outputs/idm_streaming_d2e_full_compact_accel64/train_history.json",
+    "convergence_report": "outputs/idm_streaming_d2e_full_compact_accel64/convergence_report.json",
+    "pseudolabels": "outputs/idm_streaming_d2e_full_compact_accel64/pseudolabels.jsonl",
+    "predictions": "outputs/idm_streaming_d2e_full_compact_accel64/predictions.jsonl",
+    "metrics": "outputs/idm_streaming_d2e_full_compact_accel64/metrics.json",
+    "label_quality_report": "outputs/idm_streaming_d2e_full_compact_accel64/label_quality_report.json",
+    "statistical_comparison": "outputs/idm_streaming_d2e_full_compact_accel64/statistical_comparison.json",
+    "summary": "artifacts/idm/idm_streaming_d2e_full_compact_accel64_summary.json",
+    "run_summary": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run_accel64.json",
+    "gpu_monitor": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv",
+    "split_stats_summary": "artifacts/eval/g003_split_statistical_comparisons_accel64_summary.json"
+  },
+  "metadata_expectations": {
+    "source_namespace": "d2e_full_corpus",
+    "data_universe.exists": true,
+    "split_contract.exists": true,
+    "distributed.enabled": true,
+    "distributed.world_size": 4
+  },
+  "require_goal_checkpoint_complete": false
+}

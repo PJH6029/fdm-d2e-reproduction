@@ -241,3 +241,23 @@ evidence includes `nproc_per_node == 4`, `expected_gpus == 4`, embedded
 `run_summary.gpu_monitor_status.covers_expected_gpus == true`, and a GPU
 monitor CSV with rows covering all four GPU indices. A run summary or CSV that
 merely exists is not enough for terminal G003 completion.
+
+## Isolated 64-shard fallback
+
+If an accelerated run is launched while another extraction is still active, keep it
+isolated with separate `SHARD_ROOT`, `LOG_DIR`, `DATA_OUTPUT_DIR`, `IDM_CONFIG`,
+`CACHE_DIR`, and `OUTPUT_SUFFIX` values until an operator intentionally promotes
+its merged outputs into the canonical G003 paths. Do not mix shard roots or
+overwrite active primary logs. The tracked isolated fallback launcher is:
+
+```bash
+nohup bash scripts/launch_g003_accel64_isolated.sh > artifacts/idm/g003_accel64_launch.log 2>&1 &
+```
+
+This launcher uses 64 shards, a separate D2E cache
+(`/root/work/data/d2e/cache_accel64`), separate merged records
+(`outputs/data/d2e_full_corpus_accel64`), separate IDM outputs
+(`outputs/idm_streaming_d2e_full_compact_accel64`), and a separate completion
+audit (`artifacts/idm/g003_full_idm_completion_accel64_audit.json`). It is a
+fallback/acceleration path only; it does not checkpoint G003 or overwrite the
+canonical G003 artifacts.
