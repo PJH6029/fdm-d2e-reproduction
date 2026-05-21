@@ -1,0 +1,241 @@
+{
+  "schema": "g009_readiness_plan.v1",
+  "status": "blocked",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "allow_precheckpoint": false,
+  "require_existing_final_outputs": false,
+  "goal_statuses": {
+    "G001-data-universe-audit": "complete",
+    "G002-split-leakage-contract": "complete",
+    "G003-d2e-only-idm": "in_progress",
+    "G004-d2e-only-fdm-4xh200": "pending",
+    "G005-aux-data-best-model": "pending",
+    "G006-evaluation-failure-analysis": "pending",
+    "G007-runtime-sdk-adapter": "complete",
+    "G008-live-game-suite": "pending",
+    "G009-report-repro-package": "pending"
+  },
+  "prerequisite_goal_statuses": {
+    "G001-data-universe-audit": "complete",
+    "G002-split-leakage-contract": "complete",
+    "G003-d2e-only-idm": "in_progress",
+    "G004-d2e-only-fdm-4xh200": "pending",
+    "G005-aux-data-best-model": "pending",
+    "G006-evaluation-failure-analysis": "pending",
+    "G007-runtime-sdk-adapter": "complete",
+    "G008-live-game-suite": "pending"
+  },
+  "required_docs": {
+    "final_report": {
+      "path": "docs/final_research_report.md",
+      "exists": true,
+      "bytes": 6862,
+      "sha256": "38292857070cfc43b9b185f1c7192b675da0d85e4fde4db3e77b72f4e07f3ce4"
+    },
+    "evidence_index": {
+      "path": "docs/evidence_index.md",
+      "exists": true,
+      "bytes": 4843,
+      "sha256": "784fe6cb8a5896dfba9ee01afa3a6b1908f7e0baa7cb6796e9f1ab8925d9f17a"
+    },
+    "reproducibility_runbook": {
+      "path": "docs/reproducibility_runbook.md",
+      "exists": true,
+      "bytes": 4315,
+      "sha256": "e1bed682b25fd1df2b8ce6bc46b00c6741b732ba09c5d59c8dabc2156ecb1630"
+    },
+    "failure_analysis_doc": {
+      "path": "docs/failure_analysis.md",
+      "exists": true,
+      "bytes": 2210,
+      "sha256": "cd77f696656010ae78060083a601644ee3eba1a8ea798ac065c9971f6b3e7cbe"
+    },
+    "final_quality_doc": {
+      "path": "docs/final_quality_gates.md",
+      "exists": true,
+      "bytes": 4279,
+      "sha256": "d58dbabb54b6cb318c4342655fa45a1eda6b92c4299a56025edc23095ea34947"
+    }
+  },
+  "refreshable_outputs": {
+    "claim_boundary_audit": {
+      "path": "artifacts/reproducibility/claim_boundary_audit.json",
+      "exists": true,
+      "bytes": 850,
+      "sha256": "23d9ee62c70743703bf7991d1570ffec09e2a38520ecac03199c2959ed36bd71",
+      "schema": "claim_boundary_audit.v1",
+      "status": "pass",
+      "error_count": null,
+      "entry_count": null
+    },
+    "final_quality_audit": {
+      "path": "artifacts/reproducibility/final_quality_gate_audit.json",
+      "exists": true,
+      "bytes": 60454,
+      "sha256": "425e035b73d55776c67277a320a0f4f27d2c71cccc3811572caa2b1047a02a56",
+      "schema": "final_quality_gate_audit.v1",
+      "status": "fail",
+      "error_count": 97,
+      "entry_count": null
+    },
+    "package_manifest": {
+      "path": "artifacts/reproducibility/package_manifest.json",
+      "exists": true,
+      "bytes": 47330,
+      "sha256": "b01931b99df735673cd2d21355fcaa44b37cd690703c186d4eb2343e16668149",
+      "schema": "repro_package_manifest.v1",
+      "status": null,
+      "error_count": null,
+      "entry_count": 226
+    }
+  },
+  "current_g009_audit": {
+    "path": "artifacts/reproducibility/g009_completion_audit.json",
+    "exists": true,
+    "bytes": 3901,
+    "sha256": "8500774b3e75cacf0b971088ddf1c52140623ebdfdb54ba27aeb95b7e8d602c7",
+    "schema": "g009_completion_audit.v1",
+    "status": "fail",
+    "error_count": 6,
+    "entry_count": null
+  },
+  "current_finalization_summary": {
+    "path": "artifacts/reproducibility/g009_finalization_summary.json",
+    "exists": true,
+    "bytes": 1805,
+    "sha256": "c8bd659e7b5a005f5e3a529f6fd8229765bdf0967cbbb2d15a8dc4ac66a59e48",
+    "schema": "g009_report_package_finalization.v1",
+    "status": "fail",
+    "error_count": null,
+    "entry_count": null
+  },
+  "manifest_required_paths": [
+    {
+      "path": "docs/final_research_report.md",
+      "in_manifest": true,
+      "file_exists": true,
+      "manifest_sha256": "38292857070cfc43b9b185f1c7192b675da0d85e4fde4db3e77b72f4e07f3ce4",
+      "actual_sha256": "38292857070cfc43b9b185f1c7192b675da0d85e4fde4db3e77b72f4e07f3ce4",
+      "hash_matches": true
+    },
+    {
+      "path": "docs/evidence_index.md",
+      "in_manifest": true,
+      "file_exists": true,
+      "manifest_sha256": "784fe6cb8a5896dfba9ee01afa3a6b1908f7e0baa7cb6796e9f1ab8925d9f17a",
+      "actual_sha256": "784fe6cb8a5896dfba9ee01afa3a6b1908f7e0baa7cb6796e9f1ab8925d9f17a",
+      "hash_matches": true
+    },
+    {
+      "path": "docs/reproducibility_runbook.md",
+      "in_manifest": true,
+      "file_exists": true,
+      "manifest_sha256": "e1bed682b25fd1df2b8ce6bc46b00c6741b732ba09c5d59c8dabc2156ecb1630",
+      "actual_sha256": "e1bed682b25fd1df2b8ce6bc46b00c6741b732ba09c5d59c8dabc2156ecb1630",
+      "hash_matches": true
+    },
+    {
+      "path": "docs/failure_analysis.md",
+      "in_manifest": true,
+      "file_exists": true,
+      "manifest_sha256": "cd77f696656010ae78060083a601644ee3eba1a8ea798ac065c9971f6b3e7cbe",
+      "actual_sha256": "cd77f696656010ae78060083a601644ee3eba1a8ea798ac065c9971f6b3e7cbe",
+      "hash_matches": true
+    },
+    {
+      "path": "docs/final_quality_gates.md",
+      "in_manifest": true,
+      "file_exists": true,
+      "manifest_sha256": "d58dbabb54b6cb318c4342655fa45a1eda6b92c4299a56025edc23095ea34947",
+      "actual_sha256": "d58dbabb54b6cb318c4342655fa45a1eda6b92c4299a56025edc23095ea34947",
+      "hash_matches": true
+    },
+    {
+      "path": "artifacts/reproducibility/claim_boundary_audit.json",
+      "in_manifest": true,
+      "file_exists": true,
+      "manifest_sha256": "23d9ee62c70743703bf7991d1570ffec09e2a38520ecac03199c2959ed36bd71",
+      "actual_sha256": "23d9ee62c70743703bf7991d1570ffec09e2a38520ecac03199c2959ed36bd71",
+      "hash_matches": true
+    },
+    {
+      "path": "artifacts/reproducibility/final_quality_gate_audit.json",
+      "in_manifest": true,
+      "file_exists": true,
+      "manifest_sha256": "425e035b73d55776c67277a320a0f4f27d2c71cccc3811572caa2b1047a02a56",
+      "actual_sha256": "425e035b73d55776c67277a320a0f4f27d2c71cccc3811572caa2b1047a02a56",
+      "hash_matches": true
+    }
+  ],
+  "completion_projection_status": "fail",
+  "completion_projection_error_count": 6,
+  "commands": {
+    "finalize": [
+      "uv",
+      "run",
+      "python",
+      "scripts/finalize_g009_report_package.py"
+    ],
+    "finalize_allow_fail": [
+      "uv",
+      "run",
+      "python",
+      "scripts/finalize_g009_report_package.py",
+      "--allow-fail"
+    ],
+    "validate_completion": [
+      "uv",
+      "run",
+      "python",
+      "scripts/validate_g009_completion.py"
+    ],
+    "build_package_manifest": [
+      "uv",
+      "run",
+      "python",
+      "scripts/build_repro_package_manifest.py",
+      "--output",
+      "artifacts/reproducibility/package_manifest.json"
+    ],
+    "validate_final_quality": [
+      "uv",
+      "run",
+      "python",
+      "scripts/validate_final_quality_gates.py"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G003-d2e-only-idm",
+      "actual": "in_progress"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G005-aux-data-best-model",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G006-evaluation-failure-analysis",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G008-live-game-suite",
+      "actual": "pending"
+    }
+  ],
+  "warnings": [],
+  "claim_boundary": "G009 readiness planning is read-only; it does not refresh audits, rebuild the package, checkpoint G009, or complete the aggregate goal."
+}

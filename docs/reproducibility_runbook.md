@@ -60,7 +60,19 @@ uv run python scripts/run_game_harness_eval.py --config configs/harness/g008_gam
 
 ## G009 completion audit
 
-Before checkpointing `G009-report-repro-package` complete, run:
+Before checkpointing `G009-report-repro-package` complete, first inspect the
+read-only readiness plan:
+
+```bash
+uv run python scripts/plan_g009_readiness.py --allow-fail
+```
+
+It writes `artifacts/reproducibility/g009_readiness_plan.json` and checks
+G001-G008 prerequisite statuses, final-report documentation, current refreshable
+audit/package outputs, and manifest coverage without modifying artifacts or OMX
+state. A blocked plan is expected until upstream G003-G008 are complete.
+
+Then run the terminal audit/finalization flow:
 
 ```bash
 uv run python scripts/audit_claim_boundaries.py --output artifacts/reproducibility/claim_boundary_audit.json
