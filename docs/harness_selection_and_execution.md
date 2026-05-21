@@ -1,5 +1,11 @@
 # G7 Harness Selection and Execution
 
+> Current G007 runtime SDK work is documented in
+> `docs/runtime_sdk_adapter.md`. The deterministic game-adjacent harness below
+> remains useful as a replay/stability contract, but the renewed G008 success
+> bar requires live open-source/offline graphical games with seeds, videos,
+> latency/failure logs, and statistical baseline comparisons.
+
 This milestone evaluates trained FDM prediction tokens in deterministic repo-local game/game-adjacent harnesses. It is not a commercial-game benchmark or FDM-1 parity claim; it is a bounded stability/progress gate for action-sequence execution before heavier desktop/game integrations.
 
 ## Candidate catalog

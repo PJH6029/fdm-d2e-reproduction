@@ -1,0 +1,56 @@
+# Runtime SDK and Safe Game Adapter
+
+This is the G007 reusable inference/runtime adapter surface. It is designed so
+trained IDM/FDM artifacts can later be connected to open-source/offline
+graphical game targets without turning the research code into an unsafe generic
+input-injection tool.
+
+## Implemented SDK pieces
+
+- `ActionDecoder`: converts D2E/FDM action tokens into keyboard, mouse-motion,
+  and mouse-button commands.
+- `RuntimeSafetyConfig`: declares focus guard, kill switch, key/button allow
+  lists, action-rate limit, and per-frame mouse-delta clamp.
+- `SafeActionAdapter`: wraps a backend with focus guard, kill switch, and
+  rate-limiting checks before any action is applied.
+- `DryRunInputBackend`: deterministic replay backend used for tests and
+  artifact validation; it performs no OS-level injection.
+- `LatencyLogger`: records per-action latency rows and p50/p95/max summaries.
+
+## Demo command
+
+After a trained FDM predictions artifact exists:
+
+```bash
+uv run python scripts/run_runtime_replay_adapter.py \
+  --config configs/runtime/game_adapter_demo.yaml \
+  --focus-title "fdm-adapter-demo open-source offline"
+```
+
+Expected output:
+
+- `artifacts/runtime/g007_runtime_replay_adapter_demo.json`
+- action replay log with applied/blocked counts
+- latency summary with p50/p95/max fields
+- safety config echo including focus, kill-switch, rate, and mouse clamp
+
+## Open-source/offline target candidates
+
+`configs/runtime/game_adapter_demo.yaml` records three open-source/offline
+graphical target candidates for the later G008 live suite:
+
+- `supertuxkart_local_offline`
+- `minetest_local_offline`
+- `xonotic_local_offline_botmatch`
+
+These are only target candidates until installation, license/provenance,
+window-focus, video/replay capture, and live closed-loop evidence are collected.
+
+## Claim boundary
+
+The SDK proves that trained action streams can be decoded, safety-checked,
+rate-limited, replayed, and logged through a game-ready adapter interface. It
+does **not** by itself prove live game control and it does not support any
+commercial-game claim. G008 must still run multiple open-source/offline
+graphical games with seeds/episodes, latency/failure logs, replay/video hashes,
+and statistical baseline comparisons.

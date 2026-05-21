@@ -1,0 +1,51 @@
+{
+  "schema": "runtime_replay_adapter_config.v1",
+  "predictions_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+  "output_path": "artifacts/runtime/g007_runtime_replay_adapter_demo.json",
+  "action_limit": 256,
+  "safety": {
+    "require_focus": true,
+    "allowed_window_title_patterns": [
+      "fdm-adapter-demo",
+      "open-source",
+      "offline"
+    ],
+    "kill_switch_path": "outputs/runtime/KILL_SWITCH",
+    "max_actions_per_second": 60.0,
+    "max_mouse_delta_per_frame": 50.0,
+    "allowed_keys": [
+      "32",
+      "65",
+      "68",
+      "69",
+      "70",
+      "83",
+      "87"
+    ],
+    "allowed_mouse_buttons": [
+      "MOUSE_LEFT",
+      "MOUSE_RIGHT",
+      "MOUSE_MIDDLE"
+    ]
+  },
+  "adapter_targets": [
+    {
+      "id": "supertuxkart_local_offline",
+      "license_probe_required": true,
+      "input_mode": "keyboard_mouse",
+      "claim_boundary": "open_source_offline_target_candidate"
+    },
+    {
+      "id": "minetest_local_offline",
+      "license_probe_required": true,
+      "input_mode": "keyboard_mouse",
+      "claim_boundary": "open_source_offline_target_candidate"
+    },
+    {
+      "id": "xonotic_local_offline_botmatch",
+      "license_probe_required": true,
+      "input_mode": "keyboard_mouse",
+      "claim_boundary": "open_source_offline_target_candidate"
+    }
+  ]
+}
