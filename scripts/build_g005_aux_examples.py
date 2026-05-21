@@ -544,40 +544,58 @@ def _iter_pdoom_array_record_rows(
     emitted = 0
     rel = _rel(root, array_record_path)
     reader = reader_cls(str(array_record_path))
-    record_idx = 0
-    while True:
-        raw = reader.read()
-        if raw is None:
-            break
-        record = pickle.loads(raw)
-        seq_len = int(record.get("sequence_length") or 0)
-        actions = _flatten_actions(record.get("actions"))
-        usable = min(seq_len, len(actions))
-        for frame_idx in range(usable):
-            action_id = _maybe_int(actions[frame_idx])
-            yield {
-                "source_id": source_id,
-                "source_sequence_id": f"{Path(rel).stem}:record_{record_idx:06d}",
-                "frame_or_state_ref": f"array-record://{rel}#record={record_idx}&frame={frame_idx}",
-                "action": {
-                    "type": "atari_discrete",
-                    "action_id": action_id,
-                    "raw_action": actions[frame_idx],
-                    "action_enum": PDOOM_BREAKOUT_ACTION_MEANINGS.get(action_id) if action_id is not None else None,
-                },
-                "action_head_namespace": action_head_namespace,
-                "split": split,
-                "provenance": {
-                    "array_record": rel,
-                    "record_index": record_idx,
-                    "frame_index": frame_idx,
-                    "sequence_length": seq_len,
-                },
-            }
-            emitted += 1
-            if max_examples is not None and emitted >= max_examples:
-                return
-        record_idx += 1
+    try:
+        try:
+            num_records = int(reader.num_records()) if hasattr(reader, "num_records") else None
+        except (TypeError, ValueError, RuntimeError, OSError, AttributeError):
+            num_records = None
+        record_idx = 0
+        while num_records is None or record_idx < num_records:
+            try:
+                raw = reader.read()
+            except IndexError:
+                # The array-record Python reader raises IndexError at EOF for
+                # sequential reads. Treat EOF as normal once the reader has
+                # consumed its advertised record count, or when no record count
+                # API is available.
+                if num_records is None or record_idx >= num_records:
+                    break
+                raise
+            if raw is None:
+                break
+            record = pickle.loads(raw)
+            seq_len = int(record.get("sequence_length") or 0)
+            actions = _flatten_actions(record.get("actions"))
+            usable = min(seq_len, len(actions))
+            for frame_idx in range(usable):
+                action_id = _maybe_int(actions[frame_idx])
+                yield {
+                    "source_id": source_id,
+                    "source_sequence_id": f"{Path(rel).stem}:record_{record_idx:06d}",
+                    "frame_or_state_ref": f"array-record://{rel}#record={record_idx}&frame={frame_idx}",
+                    "action": {
+                        "type": "atari_discrete",
+                        "action_id": action_id,
+                        "raw_action": actions[frame_idx],
+                        "action_enum": PDOOM_BREAKOUT_ACTION_MEANINGS.get(action_id) if action_id is not None else None,
+                    },
+                    "action_head_namespace": action_head_namespace,
+                    "split": split,
+                    "provenance": {
+                        "array_record": rel,
+                        "record_index": record_idx,
+                        "frame_index": frame_idx,
+                        "sequence_length": seq_len,
+                    },
+                }
+                emitted += 1
+                if max_examples is not None and emitted >= max_examples:
+                    return
+            record_idx += 1
+    finally:
+        close = getattr(reader, "close", None)
+        if callable(close):
+            close()
 
 
 def _split_from_pdoom_path(raw_dir: Path, path: Path, splits: tuple[str, ...]) -> str:
@@ -659,7 +677,7 @@ def _build_pdoom_examples(
                     rows += 1
                     if max_examples is not None and sum(split_counts.values()) >= max_examples:
                         break
-            except (OSError, RuntimeError, pickle.PickleError, ValueError, KeyError) as exc:
+            except (OSError, RuntimeError, pickle.PickleError, ValueError, KeyError, IndexError) as exc:
                 findings.append({"severity": "error", "code": "pdoom_array_record_parse_failed", "source_id": source_id, "path": report["path"], "error": str(exc)})
             report["example_rows"] = rows
             report["split"] = split

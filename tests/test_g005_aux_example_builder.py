@@ -139,12 +139,17 @@ def _install_fake_array_record(monkeypatch, tmp_path: Path) -> None:
         "    def __init__(self, path):\n"
         "        self.records = pickle.loads(open(path, 'rb').read())\n"
         "        self.index = 0\n"
+        "        self.closed = False\n"
+        "    def num_records(self):\n"
+        "        return len(self.records)\n"
         "    def read(self):\n"
         "        if self.index >= len(self.records):\n"
-        "            return None\n"
+        "            raise IndexError(f'Out of range of num_records: {len(self.records)}')\n"
         "        record = self.records[self.index]\n"
         "        self.index += 1\n"
         "        return pickle.dumps(record)\n"
+        "    def close(self):\n"
+        "        self.closed = True\n"
     )
     monkeypatch.syspath_prepend(str(package_root))
     for name in list(sys.modules):
