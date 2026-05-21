@@ -128,6 +128,10 @@ Do **not** checkpoint `G004-d2e-only-fdm-4xh200` complete until `scripts/validat
 
 Do **not** checkpoint `G005-aux-data-best-model` complete until `scripts/validate_g005_aux_completion.py` reports `status=pass` in `artifacts/aux/g005_aux_completion_audit.json`. This audit requires G003/G004 complete, selected aux provenance/storage policy, separated aux namespaces, D2E-only vs D2E+aux ablation across all required splits, no aux leakage into D2E heldouts, target split tags, prediction coverage, and run evidence.
 
+## G006 completion gate
+
+Do **not** checkpoint `G006-evaluation-failure-analysis` complete until `scripts/validate_g006_completion.py` reports `status=pass` in `artifacts/eval/g006_completion_audit.json`. This audit requires G003/G004 complete, endpoint statistics, failure analysis, claim taxonomy, readiness audit, final artifact-build summary, required splits/endpoints, required failure axes, documented non-rejections/examples, and forbidden claim boundaries.
+
 ## G008 completion gate
 
 Do **not** checkpoint `G008-live-game-suite` complete until `scripts/validate_g008_live_suite_completion.py` reports `status=pass` in `artifacts/harness/g008_live_suite_completion_audit.json`. This audit requires completed D2E-only training prerequisites, G007 runtime-adapter evidence, trained checkpoint metadata, live evidence validation `quality_gate.status=pass`, statistical comparison evidence, and hashed video/replay/latency/failure artifacts. Protocol readiness alone never satisfies G008.
@@ -158,6 +162,7 @@ uv run python scripts/build_repro_package_manifest.py --output artifacts/reprodu
 uv run python scripts/validate_g003_full_idm_completion.py --allow-fail
 uv run python scripts/validate_g004_full_fdm_completion.py --allow-fail
 uv run python scripts/validate_g005_aux_completion.py --allow-fail
+uv run python scripts/validate_g006_completion.py --allow-fail
 uv run python scripts/validate_g008_live_suite_completion.py --allow-fail
 uv run python scripts/validate_final_quality_gates.py --allow-fail
 ```

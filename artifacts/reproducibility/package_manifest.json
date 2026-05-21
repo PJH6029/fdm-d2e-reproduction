@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 158,
+  "entry_count": 163,
   "entries": [
     {
       "path": "README.md",
@@ -20,6 +20,12 @@
       "kind": "evidence_artifact",
       "bytes": 6462,
       "sha256": "e365bca038fa5117a25b35c6d5c8921bc27beeda9c6a9afa8e2088e4a8f85ba9"
+    },
+    {
+      "path": "artifacts/eval/g006_completion_audit.json",
+      "kind": "evidence_artifact",
+      "bytes": 6515,
+      "sha256": "4f012746972f5b30c435f418705b6ec52cc0d97f9b2611445f569031a404711b"
     },
     {
       "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
@@ -121,7 +127,7 @@
       "path": "artifacts/harness/g008_live_suite_completion_audit.json",
       "kind": "evidence_artifact",
       "bytes": 3472,
-      "sha256": "baec677863b78aa33df21946a1fb8291ca9445a106e1edfcd20f20fb1a9ad7c2"
+      "sha256": "70ca3ec10b97f56b5aa5100fe17f22af60cd824f04f036acf4bb1c2b2caf5485"
     },
     {
       "path": "artifacts/idm/g003_full_compact_parallel_progress.json",
@@ -258,8 +264,8 @@
     {
       "path": "configs/eval/final_quality_gates.yaml",
       "kind": "configuration",
-      "bytes": 13478,
-      "sha256": "6b5cbcbd6a7e103e8dd0ab3583a66bfbdb8deaa9f749b49446644f0a5e1d0b68"
+      "bytes": 13892,
+      "sha256": "f647e20f7afd146e493d261ffd0b0ac608733bbfe14f4732afdba47b3ae6d16e"
     },
     {
       "path": "configs/eval/g003_full_idm_completion.yaml",
@@ -290,6 +296,12 @@
       "kind": "configuration",
       "bytes": 1935,
       "sha256": "2ca4f631c08befd806f17ed0827bc2c07e00b6b79459af560b00ac72a77044eb"
+    },
+    {
+      "path": "configs/eval/g006_completion.yaml",
+      "kind": "configuration",
+      "bytes": 1851,
+      "sha256": "77657b5c753a782c3af9105827157007f0227f625868b9bd894b69fc7aae8a02"
     },
     {
       "path": "configs/eval/g006_evaluation_readiness.yaml",
@@ -462,8 +474,8 @@
     {
       "path": "docs/final_quality_gates.md",
       "kind": "documentation",
-      "bytes": 3396,
-      "sha256": "d9c66288e1bc498328426937e0d4957497c28fa483673577e88b2922346a18b0"
+      "bytes": 3432,
+      "sha256": "697bf864bc15eb9b748787d230e9b289ef1785c37334ca19da7c0fde0c33424c"
     },
     {
       "path": "docs/final_research_report.md",
@@ -480,8 +492,8 @@
     {
       "path": "docs/g006_evaluation_readiness.md",
       "kind": "documentation",
-      "bytes": 3677,
-      "sha256": "db8ee55a7a80efff4c3fa938ab3b1538469aaaa2832ffefdbd76791d19c26c77"
+      "bytes": 4307,
+      "sha256": "8915269243fb62ed320132a1ab877f125b0ab1f75b08a550020f5317cac44c2d"
     },
     {
       "path": "docs/harness_selection_and_execution.md",
@@ -552,8 +564,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 11003,
-      "sha256": "4d4acc100610f3bf875abd08f318ed3f636149b6905ea13608fcfa6e118b13a7"
+      "bytes": 11227,
+      "sha256": "649410bbbdce17b64bc14ed8dfe0b025f82dabff8caa5a0c06188191f27629e4"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -694,6 +706,12 @@
       "sha256": "ab0ed19b74c8802114fbc44cc23a7ef4b589ee6adf671d442445ae791ce9a651"
     },
     {
+      "path": "scripts/validate_g006_completion.py",
+      "kind": "reproduction_script",
+      "bytes": 1115,
+      "sha256": "c721174ad7b5c69364a7190ff32f9bec07ef959aa859ee08a131f5de1e68ff9a"
+    },
+    {
       "path": "scripts/validate_g006_evaluation_readiness.py",
       "kind": "reproduction_script",
       "bytes": 1189,
@@ -776,6 +794,12 @@
       "kind": "other",
       "bytes": 8638,
       "sha256": "64e92a51e748207372f77ae185f6784dd6a58738e9f0fa62f6fec0524fe9840e"
+    },
+    {
+      "path": "src/fdm_d2e/reporting/g006_completion.py",
+      "kind": "other",
+      "bytes": 8258,
+      "sha256": "9c35213b77650a89ae60b7484d40209b1ecec7bd22a8b86ed97b15be75ab8361"
     },
     {
       "path": "src/fdm_d2e/reporting/g008_completion.py",
@@ -896,6 +920,12 @@
       "kind": "other",
       "bytes": 5649,
       "sha256": "9faf158a4b67519f2c0c694c09b867427e109bb3bcebfa81d8e33fddc019d7b3"
+    },
+    {
+      "path": "tests/test_g006_completion_audit.py",
+      "kind": "other",
+      "bytes": 5006,
+      "sha256": "9bdd53a3016b0ab803be4a97e117b3812067893974f6246979f2a457de6fe91f"
     },
     {
       "path": "tests/test_g006_evaluation_readiness.py",

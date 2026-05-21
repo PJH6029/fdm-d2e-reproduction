@@ -852,10 +852,22 @@
           "sha256": "cd77f696656010ae78060083a601644ee3eba1a8ea798ac065c9971f6b3e7cbe"
         },
         {
+          "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
+          "exists": true,
+          "bytes": 1967,
+          "sha256": "6189bba23890fcd113e3ebc96eb091713aea3549303947249c9204a968681129"
+        },
+        {
           "path": "artifacts/eval/g006_final_artifact_build_summary.json",
           "exists": false,
           "bytes": 0,
           "sha256": null
+        },
+        {
+          "path": "artifacts/eval/g006_completion_audit.json",
+          "exists": true,
+          "bytes": 6515,
+          "sha256": "4f012746972f5b30c435f418705b6ec52cc0d97f9b2611445f569031a404711b"
         }
       ],
       "findings": [
@@ -910,9 +922,25 @@
         },
         {
           "severity": "error",
+          "code": "json_assertion_mismatch",
+          "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
+          "json_path": "status",
+          "expected": "pass",
+          "actual": "fail"
+        },
+        {
+          "severity": "error",
           "code": "json_assertion_file_missing",
           "path": "artifacts/eval/g006_final_artifact_build_summary.json",
           "json_path": "status"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_mismatch",
+          "path": "artifacts/eval/g006_completion_audit.json",
+          "json_path": "status",
+          "expected": "pass",
+          "actual": "fail"
         }
       ]
     },
@@ -967,7 +995,7 @@
           "path": "artifacts/harness/g008_live_suite_completion_audit.json",
           "exists": true,
           "bytes": 3472,
-          "sha256": "baec677863b78aa33df21946a1fb8291ca9445a106e1edfcd20f20fb1a9ad7c2"
+          "sha256": "70ca3ec10b97f56b5aa5100fe17f22af60cd824f04f036acf4bb1c2b2caf5485"
         },
         {
           "path": "docs/live_open_game_suite.md",
@@ -1034,8 +1062,8 @@
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 33264,
-          "sha256": "b1a8aef7a40cffa292a9c6a405b92876742c42a533348e4805df259045d31e61"
+          "bytes": 34272,
+          "sha256": "04ecb9a4a13c9baaf2fa2ade24c0918a4e12cdeb21c27e8a923bb4dea345ebaa"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -1058,8 +1086,8 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 33264,
-    "sha256": "b1a8aef7a40cffa292a9c6a405b92876742c42a533348e4805df259045d31e61"
+    "bytes": 34272,
+    "sha256": "04ecb9a4a13c9baaf2fa2ade24c0918a4e12cdeb21c27e8a923bb4dea345ebaa"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -1562,9 +1590,25 @@
     },
     {
       "severity": "error",
+      "code": "json_assertion_mismatch",
+      "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
+      "json_path": "status",
+      "expected": "pass",
+      "actual": "fail"
+    },
+    {
+      "severity": "error",
       "code": "json_assertion_file_missing",
       "path": "artifacts/eval/g006_final_artifact_build_summary.json",
       "json_path": "status"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_mismatch",
+      "path": "artifacts/eval/g006_completion_audit.json",
+      "json_path": "status",
+      "expected": "pass",
+      "actual": "fail"
     },
     {
       "severity": "error",
@@ -1618,6 +1662,6 @@
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
     }
   ],
-  "error_count": 89,
+  "error_count": 91,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

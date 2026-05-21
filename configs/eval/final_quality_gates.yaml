@@ -266,7 +266,9 @@
         "artifacts/eval/final_failure_analysis.json",
         "artifacts/eval/final_claim_taxonomy.json",
         "docs/failure_analysis.md",
-        "artifacts/eval/g006_final_artifact_build_summary.json"
+        "artifacts/eval/g006_evaluation_readiness_audit.json",
+        "artifacts/eval/g006_final_artifact_build_summary.json",
+        "artifacts/eval/g006_completion_audit.json"
       ],
       "json_assertions": [
         {
@@ -285,7 +287,17 @@
           "equals": "pass"
         },
         {
+          "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
+          "json_path": "status",
+          "equals": "pass"
+        },
+        {
           "path": "artifacts/eval/g006_final_artifact_build_summary.json",
+          "json_path": "status",
+          "equals": "pass"
+        },
+        {
+          "path": "artifacts/eval/g006_completion_audit.json",
           "json_path": "status",
           "equals": "pass"
         }
