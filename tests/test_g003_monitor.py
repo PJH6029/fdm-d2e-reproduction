@@ -274,6 +274,68 @@ def test_g003_live_health_treats_duplicate_wrapper_processes_as_observation(tmp_
     assert report["observations"][0]["code"] == "duplicate_extractor_processes"
 
 
+def test_g003_live_health_scopes_extractors_to_requested_parent_pid(tmp_path):
+    universe = _universe(tmp_path)
+    _write_pid(tmp_path / "outputs/cluster/g003_full_compact_parallel.pid", 100)
+    _write_pid(tmp_path / "outputs/cluster/g003_postrun_watcher.pid", 200)
+    _write_pid(tmp_path / "outputs/cluster/g003_attached_gpu_monitor.pid", 300)
+    snapshot = _g003_process_snapshot(extractors=[0, 1])
+    snapshot.extend(
+        [
+            {"pid": 900, "ppid": 1, "cmdline": ["bash", "scripts/run_g003_d2e_full_idm_parallel.sh"]},
+            {
+                "pid": 901,
+                "ppid": 900,
+                "state": "R",
+                "cpu_ticks": 999,
+                "cmdline": [
+                    "python",
+                    "scripts/extract_d2e_full_corpus.py",
+                    "--shard-index",
+                    "0",
+                    "--num-shards",
+                    "64",
+                    "--output-dir",
+                    "outputs/data/d2e_full_corpus_shards_accel64/shard_0",
+                ],
+            },
+            {
+                "pid": 902,
+                "ppid": 900,
+                "state": "R",
+                "cpu_ticks": 999,
+                "cmdline": [
+                    "python",
+                    "scripts/extract_d2e_full_corpus.py",
+                    "--shard-index",
+                    "63",
+                    "--num-shards",
+                    "64",
+                    "--output-dir",
+                    "outputs/data/d2e_full_corpus_shards_accel64/shard_63",
+                ],
+            },
+        ]
+    )
+    report = build_g003_live_health_report(
+        shard_root=tmp_path / "outputs/data/d2e_full_corpus_shards",
+        log_dir=tmp_path / "artifacts/sources",
+        data_universe=universe,
+        pid_file=tmp_path / "outputs/cluster/g003_full_compact_parallel.pid",
+        watcher_pid_file=tmp_path / "outputs/cluster/g003_postrun_watcher.pid",
+        gpu_monitor_pid_file=tmp_path / "outputs/cluster/g003_attached_gpu_monitor.pid",
+        num_shards=2,
+        process_snapshot=snapshot,
+        now=1000.0,
+    )
+    assert report["status"] == "healthy_running"
+    assert report["active_extractor_shards"] == [0, 1]
+    assert report["duplicate_active_shards"] == []
+    assert report["process_resource_summary"]["by_role"]["extractor"]["count"] == 2
+    assert report["process_scope"]["mode"] == "pid_file_process_tree"
+    assert report["process_scope"]["excluded_process_count"] == 3
+
+
 def test_g003_live_health_does_not_require_extractors_during_idm_training(tmp_path):
     universe = _universe(tmp_path)
     _write_pid(tmp_path / "outputs/cluster/g003_full_compact_parallel.pid", 100)

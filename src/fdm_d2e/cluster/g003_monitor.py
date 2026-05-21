@@ -289,6 +289,101 @@ def _processes_by_role(processes: list[dict[str, Any]], role: str) -> list[dict[
     return [row for row in processes if row.get("role") == role]
 
 
+def _descendant_pids(processes: list[dict[str, Any]], root_pid: int | None) -> set[int]:
+    """Return G003-classified process pids beneath a run parent pid.
+
+    The live /proc scanner intentionally only records G003-related processes, so
+    this is a best-effort scoped tree rather than a complete OS process tree.
+    It is sufficient for uv/python extractor wrappers because both expose the
+    extraction script in their command line and therefore appear in `processes`.
+    """
+
+    if root_pid is None or root_pid <= 0:
+        return set()
+    children_by_parent: dict[int, list[int]] = {}
+    known_pids: set[int] = set()
+    for row in processes:
+        try:
+            pid = int(row["pid"])
+            known_pids.add(pid)
+        except (KeyError, TypeError, ValueError):
+            continue
+        try:
+            ppid = int(row["ppid"]) if row.get("ppid") is not None else None
+        except (TypeError, ValueError):
+            ppid = None
+        if ppid is not None:
+            children_by_parent.setdefault(ppid, []).append(pid)
+
+    scoped: set[int] = {int(root_pid)} if int(root_pid) in known_pids else set()
+    stack = list(children_by_parent.get(int(root_pid), []))
+    while stack:
+        pid = stack.pop()
+        if pid in scoped:
+            continue
+        scoped.add(pid)
+        stack.extend(children_by_parent.get(pid, []))
+    return scoped
+
+
+def _scope_processes_to_pid_files(
+    processes: list[dict[str, Any]],
+    *,
+    pid_file: Path,
+    watcher_pid_file: Path,
+    gpu_monitor_pid_file: Path,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Scope live G003 processes to one integrated run.
+
+    Multiple G003 lanes may run concurrently (for example canonical 16-shard and
+    isolated accel64 fallback). Shard indices overlap across lanes, so
+    `active_extractor_shards` must be anchored by the requested parent pid file
+    instead of counting every live `extract_d2e_full_corpus.py` process.
+    """
+
+    parent_pid = _read_pid(pid_file)
+    watcher_pid = _read_pid(watcher_pid_file)
+    gpu_monitor_pid = _read_pid(gpu_monitor_pid_file)
+    exact_pids = {pid for pid in [parent_pid, watcher_pid, gpu_monitor_pid] if pid is not None and pid > 0}
+    scoped_tree_pids = _descendant_pids(processes, parent_pid)
+    if parent_pid is None:
+        return processes, {
+            "mode": "unscoped_missing_parent_pid",
+            "parent_pid": None,
+            "watcher_pid": watcher_pid,
+            "gpu_monitor_pid": gpu_monitor_pid,
+            "included_process_count": len(processes),
+            "excluded_process_count": 0,
+        }
+
+    worker_roles = {"extractor", "merge", "idm_train", "finalizer"}
+    scoped: list[dict[str, Any]] = []
+    for row in processes:
+        try:
+            pid = int(row["pid"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        role = str(row.get("role")) if row.get("role") else None
+        if pid in exact_pids:
+            scoped.append(row)
+            continue
+        if role in worker_roles and pid in scoped_tree_pids:
+            scoped.append(row)
+
+    scoped_pids = {int(row["pid"]) for row in scoped if row.get("pid") is not None}
+    scope = {
+        "mode": "pid_file_process_tree",
+        "parent_pid": parent_pid,
+        "watcher_pid": watcher_pid,
+        "gpu_monitor_pid": gpu_monitor_pid,
+        "descendant_process_count": max(0, len(scoped_tree_pids - ({parent_pid} if parent_pid else set()))),
+        "included_process_count": len(scoped),
+        "excluded_process_count": len([row for row in processes if int(row.get("pid", -1)) not in scoped_pids]),
+        "claim_boundary": "Process scoping prevents concurrent G003 lanes from contaminating active-shard evidence; it is still point-in-time liveness evidence.",
+    }
+    return sorted(scoped, key=lambda row: (str(row.get("role")), int(row.get("pid", 0)))), scope
+
+
 def build_g003_live_health_report(
     *,
     shard_root: str | Path = "outputs/data/d2e_full_corpus_shards",
@@ -309,7 +404,13 @@ def build_g003_live_health_report(
 
     now_value = time.time() if now is None else float(now)
     from_snapshot = process_snapshot is not None
-    processes = [_process_summary(row) for row in process_snapshot] if process_snapshot is not None else _detect_g003_processes()
+    unscoped_processes = [_process_summary(row) for row in process_snapshot] if process_snapshot is not None else _detect_g003_processes()
+    processes, process_scope = _scope_processes_to_pid_files(
+        unscoped_processes,
+        pid_file=Path(pid_file),
+        watcher_pid_file=Path(watcher_pid_file),
+        gpu_monitor_pid_file=Path(gpu_monitor_pid_file),
+    )
     extractors = _processes_by_role(processes, "extractor")
     active_shards = sorted({int(row["shard_index"]) for row in extractors if row.get("shard_index") is not None})
     progress = build_g003_progress_report(
@@ -403,6 +504,7 @@ def build_g003_live_health_report(
         "postrun_watcher": watcher,
         "gpu_monitor": gpu_monitor,
         "process_roles": active_roles,
+        "process_scope": process_scope,
         "processes": processes,
         "process_resource_summary": _process_resource_summary(processes),
         "active_extractor_shards": active_shards,
