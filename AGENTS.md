@@ -206,7 +206,7 @@ Commercial-game plug-and-play should be treated as an artifact/API compatibility
 
 ## G009 completion gate
 
-Do **not** checkpoint `G009-report-repro-package` complete until `scripts/validate_g009_completion.py` reports `status=pass` in `artifacts/reproducibility/g009_completion_audit.json`. This audit requires G001-G008 complete, final report/evidence/runbook docs, claim-boundary audit pass, package-manifest coverage with matching hashes, and final quality audit presence.
+Do **not** checkpoint `G009-report-repro-package` complete until `scripts/validate_g009_completion.py` reports `status=pass` in `artifacts/reproducibility/g009_completion_audit.json`. This audit requires G001-G008 complete, final report/evidence/runbook docs, claim-boundary audit pass, final quality audit `status=pass`, and package-manifest coverage with matching hashes for the final quality audit and other required report artifacts.
 
 ## Verification commands
 

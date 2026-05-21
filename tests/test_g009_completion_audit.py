@@ -41,8 +41,8 @@ def _config() -> dict:
         "required_docs": ["final_report", "evidence_index", "reproducibility_runbook", "failure_analysis_doc", "final_quality_doc"],
         "manifest_expectations": {"schema": "repro_package_manifest.v1"},
         "claim_boundary_expectations": {"status": "pass"},
-        "final_quality_expectations": {"schema": "final_quality_gate_audit.v1"},
-        "required_manifest_paths": [rel for key, rel in paths.items() if key not in {"package_manifest", "final_quality_audit"}],
+        "final_quality_expectations": {"schema": "final_quality_gate_audit.v1", "status": "pass"},
+        "required_manifest_paths": [rel for key, rel in paths.items() if key != "package_manifest"],
     }
 
 
@@ -86,3 +86,23 @@ def test_g009_completion_audit_fails_on_prereq_claim_and_manifest_hash(tmp_path:
     assert "prerequisite_goal_not_complete" in codes
     assert "claim_boundary_expectation_mismatch" in codes
     assert "package_manifest_hash_mismatch" in codes
+
+
+def test_g009_completion_audit_requires_final_quality_pass_and_manifest_entry(tmp_path: Path):
+    _write_complete_fixture(tmp_path)
+    cfg = _config()
+    write_json(tmp_path / cfg["paths"]["final_quality_audit"], {"schema": "final_quality_gate_audit.v1", "status": "fail"})
+    manifest = {
+        "schema": "repro_package_manifest.v1",
+        "entries": [
+            {"path": rel, "sha256": sha256_file(tmp_path / rel), "bytes": (tmp_path / rel).stat().st_size}
+            for rel in cfg["required_manifest_paths"]
+            if rel != cfg["paths"]["final_quality_audit"]
+        ],
+    }
+    write_json(tmp_path / cfg["paths"]["package_manifest"], manifest)
+    payload = validate_g009_completion(cfg, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "final_quality_expectation_mismatch" in codes
+    assert "package_manifest_missing_required_paths" in codes

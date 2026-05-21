@@ -41,14 +41,14 @@
     "final_quality_doc": {
       "path": "docs/final_quality_gates.md",
       "exists": true,
-      "bytes": 3469,
-      "sha256": "7d11ca900e5630541ab243874966a4b6f698e87ee0eca7ca5aea04d2f62df410"
+      "bytes": 3884,
+      "sha256": "80a5e37408d8c55a310238a5d16bc97ae456b5f19a7155d0f9f3a62a57433c24"
     },
     "package_manifest": {
       "path": "artifacts/reproducibility/package_manifest.json",
       "exists": true,
-      "bytes": 35291,
-      "sha256": "2aa159b314422cdabd2f20aa2d6948d103ef12b6c7ae3436edc759bf73546f75"
+      "bytes": 38854,
+      "sha256": "7ffd4bd763b74a8a4ddb07518d60bad8b5353e7093a350031d2c39810ca17d55"
     },
     "claim_boundary_audit": {
       "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -59,8 +59,8 @@
     "final_quality_audit": {
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "exists": true,
-      "bytes": 56637,
-      "sha256": "75937e2a399fb367395d5ff392ccbd261177bea073f7d2aca80b2d149a4ea07f"
+      "bytes": 62819,
+      "sha256": "8b1b5a3baecf580ce6644bea3bf06dd9954aa8a9f8069887373179d0ec98c5eb"
     }
   },
   "required_manifest_paths": [
@@ -69,9 +69,10 @@
     "docs/reproducibility_runbook.md",
     "docs/failure_analysis.md",
     "docs/final_quality_gates.md",
-    "artifacts/reproducibility/claim_boundary_audit.json"
+    "artifacts/reproducibility/claim_boundary_audit.json",
+    "artifacts/reproducibility/final_quality_gate_audit.json"
   ],
-  "manifest_entry_count": 168,
+  "manifest_entry_count": 185,
   "findings": [
     {
       "severity": "error",
@@ -108,8 +109,33 @@
       "code": "prerequisite_goal_not_complete",
       "goal_id": "G008-live-game-suite",
       "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "final_quality_expectation_mismatch",
+      "json_path": "status",
+      "expected": "pass",
+      "actual": "fail"
+    },
+    {
+      "severity": "error",
+      "code": "package_manifest_missing_required_paths",
+      "missing": [
+        "artifacts/reproducibility/final_quality_gate_audit.json"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "package_manifest_hash_mismatch",
+      "mismatches": [
+        {
+          "path": "docs/final_quality_gates.md",
+          "manifest_sha256": "31e4492e7b56fa1613d792e6f871956090b9f827bd0edd1877349a4484923774",
+          "actual_sha256": "80a5e37408d8c55a310238a5d16bc97ae456b5f19a7155d0f9f3a62a57433c24"
+        }
+      ]
     }
   ],
-  "error_count": 6,
+  "error_count": 9,
   "claim_boundary": "This audit is required before checkpointing G009 complete; final report, evidence index, runbook, package manifest, claim-boundary audit, manifest hashes, and prerequisite goal statuses must all be current."
 }
