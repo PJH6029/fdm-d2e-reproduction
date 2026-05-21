@@ -197,6 +197,36 @@ def test_watcher_writes_aux_example_phase_before_expensive_builder(tmp_path: Pat
     assert payload["status"] == "aux_examples_not_pass"
 
 
+def test_watcher_reuses_existing_pass_aux_examples(tmp_path: Path):
+    write_json(tmp_path / "artifacts/aux/materialize_summary.json", {"status": "pass"})
+    write_json(
+        tmp_path / "artifacts/aux/examples.json",
+        {
+            "status": "pass",
+            "root": str(tmp_path.resolve()),
+            "total_examples": 3,
+            "sources": [
+                {"source_id": "aux_a", "status": "pass", "split_counts": {"train": 1, "val": 1, "test": 1}},
+            ],
+        },
+    )
+    calls = {"aux": 0}
+
+    payload = watch(
+        _args(tmp_path),
+        integrity_func=lambda ns: {"status": "pass", "error_count": 0},
+        source_evidence_func=lambda ns: {"status": "pass", "error_count": 0},
+        aux_examples_func=lambda ns: calls.__setitem__("aux", calls["aux"] + 1) or {"status": "blocked", "error_count": 99},
+        runtime_env_func=lambda ns: {"status": "pass", "error_count": 0},
+        namespace_func=lambda ns, root: {"completion_ready": True},
+        plan_func=lambda ns: {"status": "blocked", "findings": [{"code": "prereq"}]},
+    )
+
+    assert calls["aux"] == 0
+    assert payload["status"] == "g005_launch_not_ready"
+    assert payload["aux_examples_status"] == "pass"
+
+
 def test_watcher_blocks_when_runtime_env_fails(tmp_path: Path):
     write_json(tmp_path / "artifacts/aux/materialize_summary.json", {"status": "pass"})
     payload = watch(

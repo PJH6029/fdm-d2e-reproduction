@@ -167,6 +167,32 @@ def _aux_examples_args(args: argparse.Namespace, root: Path) -> Namespace:
     )
 
 
+def _existing_aux_examples(args: argparse.Namespace, root: Path) -> dict[str, Any] | None:
+    payload = _load_json(_path(root, args.aux_examples_output))
+    if not isinstance(payload, dict) or payload.get("status") != "pass":
+        return None
+    if payload.get("root") != str(root):
+        return None
+    sources = payload.get("sources")
+    if not isinstance(sources, list) or not sources:
+        return None
+    required_splits = tuple(args.required_splits or [])
+    for row in sources:
+        if not isinstance(row, dict) or row.get("status") != "pass":
+            return None
+        split_counts = row.get("split_counts")
+        if not isinstance(split_counts, dict):
+            return None
+        for split in required_splits:
+            try:
+                count = int(split_counts.get(split, 0))
+            except (TypeError, ValueError):
+                return None
+            if count <= 0:
+                return None
+    return payload
+
+
 def _runtime_env_args(args: argparse.Namespace, root: Path) -> Namespace:
     return Namespace(
         root=str(root),
@@ -354,8 +380,10 @@ def watch(
                 materialization_integrity_status=integrity.get("status"),
                 source_evidence_status=source_evidence.get("status"),
             )
-            aux_examples = aux_examples_func(_aux_examples_args(args, root))
-            write_json(_path(root, args.aux_examples_output), aux_examples)
+            aux_examples = _existing_aux_examples(args, root)
+            if aux_examples is None:
+                aux_examples = aux_examples_func(_aux_examples_args(args, root))
+                write_json(_path(root, args.aux_examples_output), aux_examples)
             if aux_examples.get("status") != "pass":
                 payload = {
                     **base,
@@ -371,6 +399,13 @@ def watch(
                 _write_summary(root, args.output, payload)
                 return payload
 
+            # Re-stabilize prerequisite evidence before downstream manifest
+            # builders. A code sync or git reset during expensive example
+            # generation can otherwise restore stale tracked JSON over the
+            # freshly generated source/integrity evidence.
+            write_json(_path(root, args.integrity_output), integrity)
+            write_json(_path(root, args.source_evidence_output), source_evidence)
+            write_json(_path(root, args.aux_examples_output), aux_examples)
             _write_phase_summary(
                 args,
                 root,
@@ -401,6 +436,10 @@ def watch(
                 _write_summary(root, args.output, payload)
                 return payload
 
+            write_json(_path(root, args.integrity_output), integrity)
+            write_json(_path(root, args.source_evidence_output), source_evidence)
+            write_json(_path(root, args.aux_examples_output), aux_examples)
+            write_json(_path(root, args.runtime_env_output), runtime_env)
             _write_phase_summary(
                 args,
                 root,
