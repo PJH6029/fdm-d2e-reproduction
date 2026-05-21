@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from contextlib import nullcontext
 from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
@@ -180,6 +181,8 @@ def _train_one_epoch(
     category_vocab: list[str],
     cat_pos_weight,
     mouse_axis_classes: list[str],
+    rank: int = 0,
+    world_size: int = 1,
 ) -> dict[str, Any]:
     batch_size = int(config.get("batch_size", 2048))
     feature_mode = str(stats["feature_mode"])
@@ -187,7 +190,10 @@ def _train_one_epoch(
     losses: list[float] = []
     batches = 0
     examples = 0
-    for rows in _iter_batches(train_records, batch_size, config.get("max_train_examples")):
+    loss_sum = 0.0
+    for batch_idx, rows in enumerate(_iter_batches(train_records, batch_size, config.get("max_train_examples"))):
+        if world_size > 1 and (batch_idx % world_size) != rank:
+            continue
         x = _batch_features(torch, rows, feature_mode=feature_mode, mean=stats["mean"], std=stats["std"], device=device)
         mouse_y = _mouse_targets(torch, rows, device=device)
         cat_y = _category_targets(torch, rows, category_vocab, device=device)
@@ -218,11 +224,14 @@ def _train_one_epoch(
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), float(config.get("grad_clip", 1.0)))
         opt.step()
-        losses.append(float(loss.detach().cpu()))
+        loss_value = float(loss.detach().cpu())
+        losses.append(loss_value)
+        loss_sum += loss_value * len(rows)
         batches += 1
         examples += len(rows)
     return {
         "loss": sum(losses) / len(losses) if losses else None,
+        "loss_sum": loss_sum,
         "batches": batches,
         "examples": examples,
     }
@@ -456,6 +465,67 @@ def _streaming_statistical_comparison(
     return payload
 
 
+def _distributed_runtime(torch, config: dict[str, Any]) -> dict[str, Any]:
+    world_size = int(os.environ.get("WORLD_SIZE", "1"))
+    rank = int(os.environ.get("RANK", "0"))
+    local_rank = int(os.environ.get("LOCAL_RANK", str(rank)))
+    force_cpu = bool(config.get("force_cpu", False))
+    enabled = world_size > 1
+    backend = None
+    if enabled:
+        if not torch.distributed.is_available():
+            raise RuntimeError("torch.distributed is required for WORLD_SIZE>1 streaming training")
+        backend = str(config.get("distributed_backend") or ("nccl" if torch.cuda.is_available() and not force_cpu else "gloo"))
+        if backend == "nccl" and not torch.cuda.is_available():
+            raise RuntimeError("distributed_backend=nccl requires CUDA")
+        if torch.cuda.is_available() and not force_cpu:
+            torch.cuda.set_device(local_rank)
+        if not torch.distributed.is_initialized():
+            torch.distributed.init_process_group(backend=backend)
+    if torch.cuda.is_available() and not force_cpu:
+        device = f"cuda:{local_rank}" if enabled else "cuda"
+    else:
+        device = "cpu"
+    return {
+        "enabled": enabled,
+        "world_size": world_size,
+        "rank": rank,
+        "local_rank": local_rank,
+        "is_rank0": rank == 0,
+        "backend": backend,
+        "device": device,
+    }
+
+
+def _barrier(torch, dist: dict[str, Any]) -> None:
+    if dist["enabled"] and torch.distributed.is_initialized():
+        torch.distributed.barrier()
+
+
+def _aggregate_epoch_stats(torch, stats: dict[str, Any], *, device: str, dist: dict[str, Any]) -> dict[str, Any]:
+    if not dist["enabled"]:
+        return stats
+    tensor = torch.tensor(
+        [
+            float(stats.get("loss_sum") or 0.0),
+            float(stats.get("examples") or 0),
+            float(stats.get("batches") or 0),
+        ],
+        dtype=torch.float64,
+        device=device,
+    )
+    torch.distributed.all_reduce(tensor, op=torch.distributed.ReduceOp.SUM)
+    loss_sum = float(tensor[0].item())
+    examples = int(tensor[1].item())
+    batches = int(tensor[2].item())
+    return {
+        "loss": loss_sum / examples if examples else None,
+        "loss_sum": loss_sum,
+        "batches": batches,
+        "examples": examples,
+    }
+
+
 def _predict_stream(
     torch,
     model,
@@ -582,30 +652,31 @@ def _predict_stream(
 
 
 def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
-    os_world_size = os.environ.get("WORLD_SIZE", "1")
-    if int(os_world_size) > 1:
-        raise RuntimeError(
-            f"streaming IDM trainer is single-process for G003; got WORLD_SIZE={os_world_size}. "
-            "Use one H200 for IDM, reserve 4×H200 for the FDM scaling story."
-        )
     torch = require_torch()
+    dist = _distributed_runtime(torch, config)
     seed = int(config.get("seed", 0))
     torch.manual_seed(seed)
-    device = "cuda" if torch.cuda.is_available() and not bool(config.get("force_cpu", False)) else "cpu"
+    device = str(dist["device"])
     train_records = Path(config["train_records"])
     target_records = Path(config["target_records"])
     feature_mode = str(config.get("feature_mode", "summary_compact_grid8_shift_surface_time"))
     out_dir = ensure_dir(config.get("output_dir", "outputs/idm_streaming_full"))
     stats_path = out_dir / "streaming_stats.json"
-    if stats_path.exists() and not bool(config.get("rescan_stats", False)):
+    if dist["enabled"] and not dist["is_rank0"]:
+        _barrier(torch, dist)
         stats = read_json(stats_path)
     else:
-        stats = scan_streaming_idm_stats(
-            train_records,
-            feature_mode=feature_mode,
-            categorical_min_count=int(config.get("categorical_min_count", 1)),
-        )
-        write_json(stats_path, stats)
+        if stats_path.exists() and not bool(config.get("rescan_stats", False)):
+            stats = read_json(stats_path)
+        else:
+            stats = scan_streaming_idm_stats(
+                train_records,
+                feature_mode=feature_mode,
+                categorical_min_count=int(config.get("categorical_min_count", 1)),
+            )
+            write_json(stats_path, stats)
+        if dist["enabled"]:
+            _barrier(torch, dist)
     category_vocab = [str(token) for token in stats.get("category_vocab", [])]
     mouse_axis_classes = [str(value) for value in config.get("mouse_axis_classes", MOUSE_AXIS_CLASSES)]
     mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
@@ -622,7 +693,11 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         config=config,
         feature_mode=feature_mode,
     ).to(device)
-    opt = torch.optim.AdamW(model.parameters(), lr=float(config.get("lr", 3e-4)), weight_decay=float(config.get("weight_decay", 1e-4)))
+    train_model = model
+    if dist["enabled"]:
+        ddp_kwargs = {"device_ids": [int(dist["local_rank"])]} if str(device).startswith("cuda") else {}
+        train_model = torch.nn.parallel.DistributedDataParallel(model, **ddp_kwargs)
+    opt = torch.optim.AdamW(train_model.parameters(), lr=float(config.get("lr", 3e-4)), weight_decay=float(config.get("weight_decay", 1e-4)))
     cat_pos_weight = _soft_pos_weight(
         torch,
         {str(k): int(v) for k, v in stats.get("category_counts", {}).items()},
@@ -633,20 +708,34 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     )
     history = []
     for epoch in range(int(config.get("epochs", 3))):
-        epoch_stats = _train_one_epoch(
-            torch,
-            model,
-            opt,
-            train_records=train_records,
-            stats=stats,
-            config=config,
-            device=device,
-            category_vocab=category_vocab,
-            cat_pos_weight=cat_pos_weight,
-            mouse_axis_classes=mouse_axis_classes,
-        )
-        history.append({"epoch": epoch + 1, **epoch_stats})
-        write_json(out_dir / "train_history.json", {"schema": "streaming_idm_train_history.v1", "history": history})
+        join_context = train_model.join() if dist["enabled"] else nullcontext()
+        with join_context:
+            epoch_stats = _train_one_epoch(
+                torch,
+                train_model,
+                opt,
+                train_records=train_records,
+                stats=stats,
+                config=config,
+                device=device,
+                category_vocab=category_vocab,
+                cat_pos_weight=cat_pos_weight,
+                mouse_axis_classes=mouse_axis_classes,
+                rank=int(dist["rank"]),
+                world_size=int(dist["world_size"]),
+            )
+        epoch_stats = _aggregate_epoch_stats(torch, epoch_stats, device=device, dist=dist)
+        if dist["is_rank0"]:
+            history.append({"epoch": epoch + 1, **epoch_stats})
+            write_json(out_dir / "train_history.json", {"schema": "streaming_idm_train_history.v1", "history": history})
+    if not dist["is_rank0"]:
+        _barrier(torch, dist)
+        return {
+            "schema": "streaming_idm_worker_summary.v1",
+            "rank": int(dist["rank"]),
+            "world_size": int(dist["world_size"]),
+            "status": "worker_complete",
+        }
     checkpoint_path = out_dir / "checkpoint.pt"
     torch.save(
         {
@@ -695,6 +784,12 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "categorical_vocab": category_vocab,
         "mouse_head_mode": mouse_head_mode,
         "mouse_axis_classes": mouse_axis_classes if mouse_head_mode == "axis_softmax" else [],
+        "distributed": {
+            "enabled": bool(dist["enabled"]),
+            "world_size": int(dist["world_size"]),
+            "backend": dist["backend"],
+            "rank0_device": device,
+        },
     }
     validate_named(metadata, "idm_checkpoint_metadata.schema.json")
     write_json(out_dir / "checkpoint_metadata.json", metadata)
@@ -710,4 +805,5 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "predictions_path": prediction["predictions_path"],
     }
     write_json(config.get("summary_out", out_dir / "summary.json"), summary)
+    _barrier(torch, dist)
     return summary

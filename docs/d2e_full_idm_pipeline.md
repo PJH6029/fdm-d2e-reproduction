@@ -49,6 +49,8 @@ is the current MLXP setting for a 128-core H200 production pod.
 - `artifacts/idm/g003_d2e_full_idm_run_full_compact.json`
 - `artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.json` for the
   parallel run path.
+- Downstream G004 FDM path after these artifacts exist:
+  `docs/d2e_full_fdm_pipeline.md`.
 
 ## Operational notes from the first MLXP attempt
 

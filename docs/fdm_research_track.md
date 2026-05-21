@@ -1,6 +1,11 @@
 # FDM Research Track
 
-G5 now has a real-D2E, H200-backed FDM path that trains from IDM pseudo-labels, evaluates on heldout D2E windows, and clears all four predeclared FDM primary endpoints after Holm correction for the selected calibrated branch.
+> Current full-corpus G004 work supersedes the historical bounded Shooter64
+> notes below. Use `docs/d2e_full_fdm_pipeline.md` for the active D2E-only
+> full-corpus FDM path, and keep the Shooter64 evidence only as prior
+> ablation/failure-analysis context.
+
+Historical bounded G5 evidence had a real-D2E, H200-backed FDM path that trains from IDM pseudo-labels, evaluates on heldout D2E windows, and clears all four predeclared FDM primary endpoints after Holm correction for the selected calibrated branch.
 
 ## Data and training signal
 
