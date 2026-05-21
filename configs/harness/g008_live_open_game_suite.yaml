@@ -1,0 +1,85 @@
+{
+  "schema": "live_game_suite_config.v1",
+  "suite_id": "g008_live_open_game_suite_v1",
+  "output_path": "artifacts/harness/g008_live_open_game_suite_protocol.json",
+  "claim_boundary": "This config is a protocol for future live open-source/offline graphical-game evidence. It does not by itself satisfy G008.",
+  "thresholds": {
+    "min_games": 3,
+    "min_tasks": 3,
+    "min_seeds_per_task": 5,
+    "min_episode_pass_rate": 0.60,
+    "min_task_pass_rate": 0.67,
+    "max_p95_latency_ms": 250,
+    "min_baseline_win_rate": 0.50,
+    "require_video": true,
+    "require_replay": true,
+    "require_latency_log": true,
+    "require_failure_log": true,
+    "require_statistical_comparison": true
+  },
+  "games": [
+    {
+      "id": "supertuxkart",
+      "name": "SuperTuxKart",
+      "open_source": true,
+      "graphical": true,
+      "offline_capable": true,
+      "license": "GPLv3 code; assets under GPL/CC/free licenses per project packaging",
+      "source_url": "https://www.supertuxkart.net/",
+      "evidence_basis": "Official site provides Linux/Windows/macOS/Android downloads; official add-ons/about pages describe STK as a free 3D kart racing game.",
+      "launch_command_template": "supertuxkart --fullscreen=false --resolution=1280x720",
+      "window_title_pattern": "SuperTuxKart",
+      "input_profile": "keyboard_racing",
+      "tasks": [
+        {
+          "id": "time_trial_finish_lap",
+          "deed": "finish a deterministic time-trial lap without crash/kill-switch",
+          "success_metric": "lap_progress_or_finish_time beats no-op/random baseline",
+          "seeds": [0, 1, 2, 3, 4]
+        }
+      ]
+    },
+    {
+      "id": "luanti_minetest",
+      "name": "Luanti / Minetest Game",
+      "open_source": true,
+      "graphical": true,
+      "offline_capable": true,
+      "license": "LGPL-2.1-or-later for engine and Minetest Game per project licensing wiki",
+      "source_url": "https://www.luanti.org/en/",
+      "evidence_basis": "Official Luanti site describes an open-source voxel game creation platform playable solo; licensing wiki reports LGPL 2.1+ for engine/game.",
+      "launch_command_template": "luanti --go --name fdm_agent --address 127.0.0.1 --worldname fdm_g008_world",
+      "window_title_pattern": "Luanti|Minetest",
+      "input_profile": "keyboard_mouse_first_person",
+      "tasks": [
+        {
+          "id": "navigate_and_collect_block",
+          "deed": "spawn offline, look around, move to target marker, and mine/interact with one block",
+          "success_metric": "target interaction count and path progress beat no-op/random baseline",
+          "seeds": [0, 1, 2, 3, 4]
+        }
+      ]
+    },
+    {
+      "id": "xonotic",
+      "name": "Xonotic",
+      "open_source": true,
+      "graphical": true,
+      "offline_capable": true,
+      "license": "GPLv3+ per official project page",
+      "source_url": "https://xonotic.org/",
+      "evidence_basis": "Official page describes a free arena shooter for Linux/Windows/macOS and says it is free to play/modify under GPLv3+.",
+      "launch_command_template": "xonotic-sdl +map courtfun +bot_number 0 +vid_width 1280 +vid_height 720",
+      "window_title_pattern": "Xonotic",
+      "input_profile": "keyboard_mouse_fps",
+      "tasks": [
+        {
+          "id": "aim_move_and_fire_range",
+          "deed": "offline map movement, aim sweep, and controlled fire at static target/marker",
+          "success_metric": "target hit/progress score and stable action rate beat no-op/random baseline",
+          "seeds": [0, 1, 2, 3, 4]
+        }
+      ]
+    }
+  ]
+}

@@ -8,6 +8,18 @@
 
 This milestone evaluates trained FDM prediction tokens in deterministic repo-local game/game-adjacent harnesses. It is not a commercial-game benchmark or FDM-1 parity claim; it is a bounded stability/progress gate for action-sequence execution before heavier desktop/game integrations.
 
+
+## Renewed live-suite gate
+
+The renewed G008 requirement is stricter than this historical deterministic
+harness. Use `docs/live_open_game_suite.md`,
+`configs/harness/g008_live_open_game_suite.yaml`, and
+`scripts/validate_live_game_suite.py` for the live open-source/offline graphical
+game evidence contract. That gate requires at least three graphical games, at
+least three tasks, five seeds per task, video/replay artifacts, latency/failure
+logs, and statistical comparison. This deterministic harness must not be used as
+live-suite completion evidence.
+
 ## Candidate catalog
 
 `src/fdm_d2e/rollout/game_harness.py` defines five dependency-free candidates:

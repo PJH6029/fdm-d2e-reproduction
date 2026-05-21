@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 104,
+  "entry_count": 110,
   "entries": [
     {
       "path": "README.md",
@@ -92,6 +92,12 @@
       "kind": "evidence_artifact",
       "bytes": 13111,
       "sha256": "7092f3a21525240b0575cfb20ea3c6a7b0fd192cdabfc060e7eb26757880c9f7"
+    },
+    {
+      "path": "artifacts/harness/g008_live_open_game_suite_protocol.json",
+      "kind": "evidence_artifact",
+      "bytes": 1364,
+      "sha256": "f96a733012a1ef089f6aed18fd5f9868870fa9366e9df6d7cabf01ca6658d817"
     },
     {
       "path": "artifacts/idm/idm_torch_shooter64_surface_motion_sweep_h200.json",
@@ -218,6 +224,12 @@
       "kind": "configuration",
       "bytes": 1521,
       "sha256": "31548f26f4563dc27d9d602ac7bd52708282250d02c85dbd1aab1101bdb48b97"
+    },
+    {
+      "path": "configs/harness/g008_live_open_game_suite.yaml",
+      "kind": "configuration",
+      "bytes": 3581,
+      "sha256": "9e1676881a3046bb36dc5d69beb1e925d43e268e74299767a8405083d66a46d3"
     },
     {
       "path": "configs/model/fdm_bth05_d2e_train_prediction_scale_calibrated.yaml",
@@ -354,14 +366,20 @@
     {
       "path": "docs/harness_selection_and_execution.md",
       "kind": "documentation",
-      "bytes": 3303,
-      "sha256": "0c586e763abeb21f4e0d0e1ff490b6fffea0d65b85ac2110a6ae4a9bc083d346"
+      "bytes": 3860,
+      "sha256": "a28453688a1ca44f1cb6031094ae6d0d9427ec180deeecf71e1e3d1341cf2faf"
     },
     {
       "path": "docs/idm_research_track.md",
       "kind": "documentation",
       "bytes": 18202,
       "sha256": "e87e7efa085f823ff591ed930c91d26049471a3b13b6477f904351cce72efe5e"
+    },
+    {
+      "path": "docs/live_open_game_suite.md",
+      "kind": "documentation",
+      "bytes": 3705,
+      "sha256": "8965a2e35e13b87a85a1d1a6a0916281c49013c8a5a5b94ad993b82d876cf08e"
     },
     {
       "path": "docs/mlxp_resource_plan.md",
@@ -408,8 +426,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 7912,
-      "sha256": "1c3b83f807e3bb73a50c9574c1ac7e072f5f5196a801be3739d54b98b5e3d348"
+      "bytes": 8197,
+      "sha256": "6993d56682661c24110c13a6333b5fb246add1c08d7234c01be073c355c5a6c0"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -508,6 +526,12 @@
       "sha256": "0582dc0241445d895f6f9344d05f2c39b2f853369b51ab0ceeb5c2300b8360e2"
     },
     {
+      "path": "scripts/validate_live_game_suite.py",
+      "kind": "reproduction_script",
+      "bytes": 1869,
+      "sha256": "2f51041899a4140b48c6696a747681cdf2c98494001905d44cca33bf8582a4f9"
+    },
+    {
       "path": "src/fdm_d2e/data/full_corpus.py",
       "kind": "other",
       "bytes": 6632,
@@ -536,6 +560,12 @@
       "kind": "other",
       "bytes": 18150,
       "sha256": "c2ffb944b2e40b20a699e31bf155eb4cf5c7d4cd676e2c5887d3912ab585bc7c"
+    },
+    {
+      "path": "src/fdm_d2e/rollout/live_suite.py",
+      "kind": "other",
+      "bytes": 15177,
+      "sha256": "116177121513c4d5393872be4be3c2a163525322b885e9c2ad5e1f0c0280c8db"
     },
     {
       "path": "src/fdm_d2e/runtime/sdk.py",
@@ -608,6 +638,12 @@
       "kind": "other",
       "bytes": 3213,
       "sha256": "b8472ecad7e2cf213c11132e89178164c6f7dd7e60a76627197be6570d9ef6f5"
+    },
+    {
+      "path": "tests/test_live_game_suite_contract.py",
+      "kind": "other",
+      "bytes": 4002,
+      "sha256": "8f59f4179473e32c466e99272f6d100df75b3fb49b755bd74047bc85f7ae6ac4"
     },
     {
       "path": "tests/test_runtime_sdk_adapter.py",

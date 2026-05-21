@@ -26,6 +26,7 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
   - `G001-data-universe-audit`: full D2E-480p + D2E-Original universe manifest and storage/license report.
   - `G002-split-leakage-contract`: temporal, heldout-recording, and heldout-game split/leakage contract.
   - `G007-runtime-sdk-adapter`: reusable SDK/action decoder/safety adapter/latency logger/deterministic replay contract only; this is not G008 live-game success.
+- G008 live-suite protocol exists (`docs/live_open_game_suite.md`, `configs/harness/g008_live_open_game_suite.yaml`, `scripts/validate_live_game_suite.py`) and requires >=3 open-source graphical games, >=3 tasks, 5 seeds/task, video/replay/latency/failure logs, and statistical comparison; protocol readiness is not G008 completion.
 - Current active gate:
   - `G003-d2e-only-idm`: full-corpus D2E-only IDM extraction/training/evaluation.
 - Pending gates:

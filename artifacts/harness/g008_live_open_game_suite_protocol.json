@@ -1,0 +1,48 @@
+{
+  "schema": "live_game_suite_protocol.v1",
+  "suite_id": "g008_live_open_game_suite_v1",
+  "status": "protocol_ready",
+  "claim_boundary": "Protocol readiness is not live harness success; final G008 requires validated live evidence.",
+  "games": [
+    {
+      "id": "supertuxkart",
+      "name": "SuperTuxKart",
+      "license": "GPLv3 code; assets under GPL/CC/free licenses per project packaging",
+      "source_url": "https://www.supertuxkart.net/",
+      "tasks": [
+        "time_trial_finish_lap"
+      ]
+    },
+    {
+      "id": "luanti_minetest",
+      "name": "Luanti / Minetest Game",
+      "license": "LGPL-2.1-or-later for engine and Minetest Game per project licensing wiki",
+      "source_url": "https://www.luanti.org/en/",
+      "tasks": [
+        "navigate_and_collect_block"
+      ]
+    },
+    {
+      "id": "xonotic",
+      "name": "Xonotic",
+      "license": "GPLv3+ per official project page",
+      "source_url": "https://xonotic.org/",
+      "tasks": [
+        "aim_move_and_fire_range"
+      ]
+    }
+  ],
+  "quality_gate": {
+    "status": "protocol_ready",
+    "planned_games": 3,
+    "min_games": 3,
+    "planned_tasks": 3,
+    "min_tasks": 3,
+    "planned_seeded_episodes": 15,
+    "min_seeds_per_task": 5,
+    "requires_video": true,
+    "requires_replay": true,
+    "requires_latency_log": true,
+    "requires_failure_log": true
+  }
+}
