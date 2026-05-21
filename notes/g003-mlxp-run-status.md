@@ -379,3 +379,12 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - G003 parent remained live; progress monitor status `running`, decoded recording variants `162 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`, long-running active shards `[0, 5, 12, 13, 14, 15]`.
 - Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
 - No story or aggregate checkpoint/completion claim was made.
+
+## 2026-05-21 18:39 KST G005 eval-manifest hash evidence sync snapshot
+
+- Pushed commit `dedfe53` and fast-forwarded pod checkout to `dedfe53`; `scripts/build_g005_eval_manifest_hashes.py` is present and ran in the pod.
+- `artifacts/aux/d2e_eval_manifest_hashes.json` reports `status=pass`, `same_d2e_eval_manifests=true`, and `same_hash=true` for temporal, heldout-recording, and heldout-game split manifests. This is G005 namespace/readiness evidence only; it does not materialize aux sources or start G005 training.
+- G003 parent remained live; progress monitor status `running`, decoded recording variants `164 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`, long-running active shards `[0, 5, 12, 13, 14]`.
+- Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
+- Existing G003→G004 chain remains waiting for G003 parent/finalization; G004 has not launched.
+- No story or aggregate checkpoint/completion claim was made.
