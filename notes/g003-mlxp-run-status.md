@@ -133,3 +133,11 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Parallel extraction parent PID `9289` remained running; elapsed at monitor was ~2h19m.
 - Monitor status: `running`; decoded recording variants: `67 / 918`; complete shards: `0 / 16`; stale shards: `[]`; long-running active shards: `[8, 9, 11, 13]`; no-progress shards: `[]`; active shard processes: `0..15`; IDM metrics absent.
 - `artifacts/idm/g003_full_compact_parallel_progress.json` was refreshed from the pod. The previous stale-shard condition is now represented as long-running active shard evidence, not a recovery trigger.
+
+
+## 2026-05-21 13:18 KST ETA monitor snapshot
+
+- Pod checkout fast-forwarded to `d00990f` with throughput/ETA fields in the G003 monitor.
+- Parallel extraction parent PID `9289` remained running; elapsed at monitor was ~2h23m.
+- Monitor status: `running`; decoded recording variants: `69 / 918`; complete shards: `0 / 16`; long-running active shards: `[8, 9, 13]`; stale shards: `[]`; no-progress shards: `[]`; IDM metrics absent.
+- Observed throughput: `37.74` recording variants/hour; ETA at current rate: `22.49` hours. This is telemetry only, not a G003 completion claim.
