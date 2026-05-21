@@ -59,6 +59,10 @@ def scan_streaming_idm_stats(train_records: str | Path, *, feature_mode: str, ca
     sequence_counts: Counter[tuple[str, ...]] = Counter()
     last_tokens_by_recording: dict[str, list[str]] = {}
     last_tokens_by_game: dict[str, list[str]] = {}
+    source_ids: set[str] = set()
+    resolution_tiers: set[str] = set()
+    split_names: set[str] = set()
+    eval_split_tags: set[str] = set()
     fingerprint = hashlib.sha256()
     for row in iter_jsonl(train_records):
         features = [float(value) for value in record_features(row, feature_mode=feature_mode)]
@@ -80,6 +84,14 @@ def scan_streaming_idm_stats(train_records: str | Path, *, feature_mode: str, ca
         sequence_counts[tuple(tokens)] += 1
         last_tokens_by_recording[str(row.get("recording_id", ""))] = tokens
         last_tokens_by_game[str(row.get("game", "unknown"))] = tokens
+        if row.get("source_id") is not None:
+            source_ids.add(str(row["source_id"]))
+        if row.get("resolution_tier") is not None:
+            resolution_tiers.add(str(row["resolution_tier"]))
+        if row.get("split") is not None:
+            split_names.add(str(row["split"]))
+        for tag in row.get("eval_split_tags", []) or []:
+            eval_split_tags.add(str(tag))
         fingerprint.update(
             json.dumps(
                 {
@@ -108,6 +120,10 @@ def scan_streaming_idm_stats(train_records: str | Path, *, feature_mode: str, ca
         "global_majority_tokens": list(sequence_counts.most_common(1)[0][0]) if sequence_counts else ["NOOP"],
         "last_tokens_by_recording": last_tokens_by_recording,
         "last_tokens_by_game": last_tokens_by_game,
+        "source_ids": sorted(source_ids),
+        "resolution_tiers": sorted(resolution_tiers),
+        "split_names": sorted(split_names),
+        "eval_split_tags": sorted(eval_split_tags),
         "dataset_fingerprint": fingerprint.hexdigest(),
     }
 
@@ -563,6 +579,33 @@ def _metric_path_value(metrics: dict[str, Any], path: str) -> float | None:
     return float(current)
 
 
+def _file_artifact_metadata(path_text: str | Path | None) -> dict[str, Any] | None:
+    if not path_text:
+        return None
+    path = Path(path_text)
+    if not path.exists() or not path.is_file():
+        return {"path": str(path), "exists": False, "sha256": None, "bytes": 0}
+    return {
+        "path": str(path),
+        "exists": True,
+        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "bytes": path.stat().st_size,
+    }
+
+
+def _json_fingerprint(path_text: str | Path | None) -> str | None:
+    if not path_text:
+        return None
+    path = Path(path_text)
+    if not path.exists() or not path.is_file():
+        return None
+    try:
+        payload = read_json(path)
+        return str(payload.get("dataset_fingerprint") or payload.get("split_contract_fingerprint") or stable_hash_json(payload))
+    except Exception:
+        return None
+
+
 def _convergence_score(metrics: dict[str, Any], mode: str) -> dict[str, Any]:
     if mode and mode != "composite_primary":
         value = _metric_path_value(metrics, mode)
@@ -685,6 +728,9 @@ def _predict_stream(
     max_target_examples = config.get("max_target_examples")
     model.eval()
     target_count = 0
+    target_source_ids: set[str] = set()
+    target_resolution_tiers: set[str] = set()
+    target_eval_split_tags: set[str] = set()
     sequence_fingerprint = hashlib.sha256()
     pseudo_path = output_dir / "pseudolabels.jsonl"
     predictions_path = output_dir / "predictions.jsonl"
@@ -694,6 +740,12 @@ def _predict_stream(
             x = _batch_features(torch, rows, feature_mode=str(stats["feature_mode"]), mean=stats["mean"], std=stats["std"], device=device)
             outputs = model(x).detach().cpu().tolist()
             for row, output in zip(rows, outputs):
+                if row.get("source_id") is not None:
+                    target_source_ids.add(str(row["source_id"]))
+                if row.get("resolution_tier") is not None:
+                    target_resolution_tiers.add(str(row["resolution_tier"]))
+                for tag in row.get("eval_split_tags", []) or []:
+                    target_eval_split_tags.add(str(tag))
                 tokens = _predicted_tokens_from_output(
                     output,
                     config=config,
@@ -773,6 +825,9 @@ def _predict_stream(
         "target_records": target_count,
         "prediction_fingerprint": sequence_fingerprint.hexdigest(),
         "checkpoint_path": str(checkpoint_path),
+        "target_source_ids": sorted(target_source_ids),
+        "target_resolution_tiers": sorted(target_resolution_tiers),
+        "target_eval_split_tags": sorted(target_eval_split_tags),
     }
 
 
@@ -915,12 +970,43 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         checkpoint_path=checkpoint_path,
         output_dir=out_dir,
     )
+    config_fingerprint = stable_hash_json(config)
+    resolved_config_path = out_dir / "resolved_config.json"
+    write_json(
+        resolved_config_path,
+        {
+            "schema": "streaming_idm_resolved_config.v1",
+            "model": str(config.get("model_name", "streaming_compact_idm")),
+            "config": config,
+            "config_fingerprint": config_fingerprint,
+        },
+    )
+    data_universe_path = config.get("data_universe")
+    split_contract_path = config.get("split_contract")
     metadata = {
         "schema": "idm_checkpoint_metadata.v1",
         "model": str(config.get("model_name", "streaming_compact_idm")),
         "dataset_fingerprint": str(stats["dataset_fingerprint"]),
+        "config_fingerprint": config_fingerprint,
+        "config_path": str(config.get("config_path", "")),
+        "resolved_config_path": str(resolved_config_path),
         "train_records": int(stats["num_examples"]),
         "target_records": int(prediction["target_records"]),
+        "train_records_path": str(train_records),
+        "target_records_path": str(target_records),
+        "data_universe": _file_artifact_metadata(data_universe_path),
+        "data_universe_fingerprint": _json_fingerprint(data_universe_path),
+        "split_contract": _file_artifact_metadata(split_contract_path),
+        "split_contract_fingerprint": _json_fingerprint(split_contract_path),
+        "split_id": str(config.get("split_id") or _json_fingerprint(split_contract_path) or "d2e_full_split_contract"),
+        "source_namespace": str(config.get("source_namespace", "d2e_full_corpus")),
+        "source_ids": list(stats.get("source_ids", [])),
+        "resolution_tiers": list(stats.get("resolution_tiers", [])),
+        "target_source_ids": list(prediction.get("target_source_ids", [])),
+        "target_resolution_tiers": list(prediction.get("target_resolution_tiers", [])),
+        "split_names": list(stats.get("split_names", [])),
+        "eval_split_tags": list(stats.get("eval_split_tags", [])),
+        "target_eval_split_tags": list(prediction.get("target_eval_split_tags", [])),
         "pseudo_label_path": prediction["pseudo_label_path"],
         "filtered_pseudo_label_path": prediction["pseudo_label_path"],
         "checkpoint_path": str(checkpoint_path),

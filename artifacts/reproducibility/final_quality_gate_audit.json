@@ -108,6 +108,36 @@
           "sha256": null
         },
         {
+          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/resolved_config.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/streaming_stats.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/train_history.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/convergence_report.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
           "path": "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
           "exists": false,
           "bytes": 0,
@@ -175,6 +205,36 @@
           "code": "missing_required_artifact",
           "goal_id": "G003-d2e-only-idm",
           "path": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G003-d2e-only-idm",
+          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G003-d2e-only-idm",
+          "path": "outputs/idm_streaming_d2e_full_compact/resolved_config.json"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G003-d2e-only-idm",
+          "path": "outputs/idm_streaming_d2e_full_compact/streaming_stats.json"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G003-d2e-only-idm",
+          "path": "outputs/idm_streaming_d2e_full_compact/train_history.json"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G003-d2e-only-idm",
+          "path": "outputs/idm_streaming_d2e_full_compact/convergence_report.json"
         },
         {
           "severity": "error",
@@ -529,7 +589,7 @@
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
           "bytes": 27305,
-          "sha256": "d3887660e5359a438a1d9ca88a2e367c5e219d344807e345cfba4ac3c08f2840"
+          "sha256": "3093bb03ba478aca96f0dc323d2d8fbba6df8af81a8be87548c1173d311befca"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -553,7 +613,7 @@
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
     "bytes": 27305,
-    "sha256": "d3887660e5359a438a1d9ca88a2e367c5e219d344807e345cfba4ac3c08f2840"
+    "sha256": "3093bb03ba478aca96f0dc323d2d8fbba6df8af81a8be87548c1173d311befca"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -588,6 +648,36 @@
       "code": "missing_required_artifact",
       "goal_id": "G003-d2e-only-idm",
       "path": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G003-d2e-only-idm",
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G003-d2e-only-idm",
+      "path": "outputs/idm_streaming_d2e_full_compact/resolved_config.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G003-d2e-only-idm",
+      "path": "outputs/idm_streaming_d2e_full_compact/streaming_stats.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G003-d2e-only-idm",
+      "path": "outputs/idm_streaming_d2e_full_compact/train_history.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G003-d2e-only-idm",
+      "path": "outputs/idm_streaming_d2e_full_compact/convergence_report.json"
     },
     {
       "severity": "error",
@@ -768,6 +858,6 @@
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
     }
   ],
-  "error_count": 33,
+  "error_count": 38,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

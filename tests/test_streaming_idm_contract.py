@@ -17,7 +17,10 @@ def _record(idx: int, split: str) -> dict:
         "recording_id": "d2e_480p:Apex/rec",
         "cross_resolution_key": "Apex/rec",
         "game": "Apex",
+        "source_id": "d2e_480p",
+        "resolution_tier": "480p",
         "split": split,
+        "eval_split_tags": ["temporal"] if split == "eval" else [],
         "timestamp_ns": idx,
         "bin_index": idx,
         "frame": {
@@ -56,6 +59,8 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
             "target_records": str(target_path),
             "output_dir": str(tmp_path / "idm"),
             "summary_out": str(tmp_path / "summary.json"),
+            "config_path": "test_inline_config",
+            "source_namespace": "unit_d2e_stream",
             "endpoints": "configs/eval/primary_endpoints.yaml",
             "feature_mode": "summary_compact_grid8_shift_surface_time",
             "hidden_dim": 8,
@@ -72,6 +77,18 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
 
     assert summary["metadata"]["train_records"] == 8
     assert summary["metadata"]["target_records"] == 4
+    assert summary["metadata"]["config_fingerprint"]
+    assert summary["metadata"]["config_path"] == "test_inline_config"
+    assert summary["metadata"]["source_namespace"] == "unit_d2e_stream"
+    assert summary["metadata"]["source_ids"] == ["d2e_480p"]
+    assert summary["metadata"]["resolution_tiers"] == ["480p"]
+    assert summary["metadata"]["target_source_ids"] == ["d2e_480p"]
+    assert summary["metadata"]["target_resolution_tiers"] == ["480p"]
+    assert summary["metadata"]["split_names"] == ["train_core"]
+    assert summary["metadata"]["target_eval_split_tags"] == ["temporal"]
+    assert Path(summary["metadata"]["resolved_config_path"]).exists()
+    assert Path(summary["metadata"]["train_records_path"]).exists()
+    assert Path(summary["metadata"]["target_records_path"]).exists()
     assert Path(summary["metadata"]["checkpoint_path"]).exists()
     assert Path(summary["metadata"]["pseudo_label_path"]).exists()
     assert Path(summary["metadata"]["label_quality_report_path"]).exists()

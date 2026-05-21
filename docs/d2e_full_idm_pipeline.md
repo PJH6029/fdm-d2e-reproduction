@@ -86,3 +86,21 @@ uv run python scripts/monitor_g003_progress.py \
 The monitor summarizes decoded/expected recording variants, completed shards,
 stale/no-progress shards, parent PID state, and whether merged train/eval plus
 IDM metrics exist. It is progress evidence only and does not complete G003.
+
+
+## G003 checkpoint metadata contract
+
+The streaming IDM training step writes `outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json`
+and `resolved_config.json`. These artifacts must carry explicit provenance for
+G003 checkpointing:
+
+- config fingerprint and originating config path,
+- train/target JSONL paths,
+- D2E data-universe path/hash/fingerprint,
+- split-contract path/hash/fingerprint and split id,
+- source namespace (`d2e_full_corpus`), source ids, resolution tiers, and target
+  eval split tags,
+- pseudolabel/prediction/metrics/label-quality/statistical-comparison paths.
+
+This metadata is required so later FDM and report stages can prove they used the
+D2E-only full-corpus split rather than historical bounded or auxiliary data.

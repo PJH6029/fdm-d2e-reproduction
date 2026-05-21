@@ -23,7 +23,9 @@ def main() -> int:
             raise SystemExit(msg)
         print(msg)
         return 0
-    summary = train_streaming_idm(load_config(args.config))
+    config = load_config(args.config)
+    config.setdefault("config_path", args.config)
+    summary = train_streaming_idm(config)
     print(
         "trained streaming IDM: "
         f"model={summary['metadata']['model']} device={summary['device']} "

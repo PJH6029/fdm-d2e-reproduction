@@ -98,6 +98,15 @@ kubectl -n p-production exec prod-rsv-jeonghunpark-20260521-76e25a -- bash -lc '
 - Merged train/eval and IDM metrics are still absent, so this is progress evidence only.
 - Resume plan artifact `artifacts/idm/g003_resume_plan.json` currently reports `defer_active_parent` because the original parent PID is still active; do not run resume shard commands unless the parent exits or an operator intentionally reviews `--allow-active-parent`.
 
+
+## 2026-05-21 13:07 KST progress and metadata patch snapshot
+
+- Parallel extraction command still running from PID `9289`.
+- Pod checkout at snapshot: `7f5f8b1` before the metadata patch commit below is synced.
+- Elapsed at snapshot: ~2h05m.
+- Decoded per-recording summaries: `59 / 918`; shard summaries: `0 / 16`; IDM metrics not yet produced.
+- Streaming IDM metadata path was patched locally so the later training stage records config fingerprint/path, train/target paths, data-universe hash/fingerprint, split-contract hash/fingerprint/split id, source namespace, source ids/resolution tiers, and target eval tags.
+
 Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts exist:
 
 - full decode summary covering all 918 D2E recording variants or audited exclusions with retry logs/reasons/impact,

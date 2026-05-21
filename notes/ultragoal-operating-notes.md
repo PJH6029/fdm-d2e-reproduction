@@ -59,3 +59,4 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - G003 resume planner exists (`scripts/plan_g003_resume.py`, `artifacts/idm/g003_resume_plan.json`) and defers while the original parent PID is active; use only for operator-reviewed recovery if G003 stops before all shard summaries exist.
 - Runtime adapter contract evidence: `artifacts/runtime/g007_runtime_replay_adapter_contract.json`; commits `34cddb7` and `e858114`; OMX checkpointed `G007-runtime-sdk-adapter` complete locally.
 - Do not checkpoint `G003-d2e-only-idm` complete until all 918 source variants are decoded/merged, streaming IDM training finishes, reports/metrics are validated, and evidence summaries are committed.
+- Streaming IDM metadata now records config/data/split/source provenance (`checkpoint_metadata.json`, `resolved_config.json`); ensure the pod checkout includes this before the G003 extraction reaches training.
