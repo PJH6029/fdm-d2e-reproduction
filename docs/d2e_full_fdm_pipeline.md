@@ -6,8 +6,10 @@ an FDM-1 parity claim.
 
 ## Inputs
 
-- D2E records: `outputs/data/d2e_full_corpus/target_all_eval.jsonl`
-- IDM pseudo-labels: `outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl`
+- D2E FDM-train records: `outputs/data/d2e_full_corpus/train_core.jsonl`
+- D2E heldout target records: `outputs/data/d2e_full_corpus/target_all_eval.jsonl`
+- IDM pseudo-labels for FDM training:
+  `outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl`
 - FDM config: `configs/model/fdm_streaming_d2e_full_compact.yaml`
 - Endpoints: `configs/eval/primary_endpoints.yaml`
 - G003 IDM metadata: `outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json`
@@ -15,10 +17,12 @@ an FDM-1 parity claim.
   `artifacts/sources/d2e_full_data_universe_manifest.json` and
   `artifacts/sources/d2e_full_split_contract.json`
 
-The pseudo-label and record JSONLs are order-joined by `sequence_id`. This is
-intentional: the G003 IDM predictor writes pseudo-labels while streaming the
-same target record file, so G004 can build FDM train/eval files with O(1)
-memory. A sequence mismatch fails the run instead of silently mixing artifacts.
+The pseudo-label and record JSONLs are order-joined by `sequence_id`. G004 now
+uses a prediction-only G003 IDM pass over `train_core.jsonl` to create the FDM
+training labels, then evaluates on the untouched `target_all_eval.jsonl`. This
+preserves heldout-recording and heldout-game target namespaces instead of
+training the FDM on earlier windows from those heldout recordings/games. A
+sequence mismatch fails the run instead of silently mixing artifacts.
 
 ## Training/evaluation split
 
@@ -34,7 +38,17 @@ memory. A sequence mismatch fails the run instead of silently mixing artifacts.
   source IDM metadata/hash, D2E universe/split-contract metadata, source
   namespace, source ids, resolution tiers, split names, and target eval tags.
 
-Default split is per-recording temporal tail:
+Default full-corpus split is explicit train/target:
+
+- train: `train_core.jsonl` with G003 IDM pseudo-labels;
+- target: `target_all_eval.jsonl` with real D2E labels and temporal,
+  heldout-recording, and heldout-game tags.
+
+The older per-recording temporal tail mode remains available for local
+debugging if no `target_records_path` is supplied, but the G004 completion audit
+requires `counts.mode == explicit_target`.
+
+The local-debug tail split defaults are:
 
 - `fdm_train_fraction=0.75`
 - `min_target_per_recording=1`
@@ -56,6 +70,8 @@ NPROC_PER_NODE=4 EXPECTED_GPUS=4 bash scripts/run_g004_d2e_full_fdm_4xh200.sh
 The script runs a GPU smoke check, launches the streaming action trainer through
 `torchrun`, and writes:
 
+- `outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl`
+- `artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json`
 - `outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json`
 - `outputs/fdm_streaming_d2e_full_compact/resolved_config.json`
 - `outputs/fdm_streaming_d2e_full_compact/summary.json`
@@ -92,8 +108,8 @@ During upstream G003/G004 execution this may be run with `--allow-fail`, but a
 terminal G004 checkpoint requires `artifacts/fdm/g004_full_fdm_completion_audit.json`
 to report `status == pass`. The audit checks G003/G004 goal state, D2E-only
 FDM-from-IDM-pseudolabel provenance, split materialization counts, prediction
-coverage, target split tags, convergence-report presence, split statistics, and
-4×H200 run evidence.
+coverage, explicit train-core → target-all-eval split mode, target split tags,
+convergence-report presence, split statistics, and 4×H200 run evidence.
 
 ## Claim boundary
 

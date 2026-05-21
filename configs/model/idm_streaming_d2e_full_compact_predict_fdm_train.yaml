@@ -1,0 +1,13 @@
+{
+  "schema": "streaming_idm_predict_config.v1",
+  "checkpoint_path": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt",
+  "checkpoint_metadata_path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+  "records_path": "outputs/data/d2e_full_corpus/train_core.jsonl",
+  "output_dir": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels",
+  "summary_out": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json",
+  "model_name": "streaming_compact_idm_d2e_full",
+  "endpoints": "configs/eval/primary_endpoints.yaml",
+  "baseline_names": ["noop", "global_majority", "last_seen_train"],
+  "eval_batch_size": 4096,
+  "claim_boundary": "Prediction-only pseudo-label generation for G004 FDM training on D2E train_core; does not alter G003 target-eval pseudolabels or checkpoint."
+}

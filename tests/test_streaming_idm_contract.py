@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from fdm_d2e.training.streaming_idm import train_streaming_idm
+from fdm_d2e.training.streaming_idm import predict_streaming_idm_checkpoint, train_streaming_idm
 from fdm_d2e.training.torch_idm import torch_available
 
 
@@ -99,3 +99,57 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
     assert "game:Apex" in summary["label_quality_report"]["groups_by_model"]["tiny_streaming_idm"]
     assert Path(summary["metadata"]["statistical_comparison_path"]).exists()
     assert summary["statistical_comparison"]["schema"] == "stat_comparison.v1"
+
+
+def test_streaming_idm_predicts_train_core_pseudolabels_without_retraining(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    train_path = tmp_path / "train.jsonl"
+    target_path = tmp_path / "target.jsonl"
+    fdm_train_path = tmp_path / "fdm_train_core.jsonl"
+    _write_jsonl(train_path, [_record(idx, "train_core") for idx in range(8)])
+    _write_jsonl(target_path, [_record(idx + 8, "eval") for idx in range(4)])
+    _write_jsonl(fdm_train_path, [_record(idx + 20, "train_core") for idx in range(5)])
+    idm_out = tmp_path / "idm"
+
+    train_summary = train_streaming_idm(
+        {
+            "model_name": "tiny_streaming_idm_predict_only",
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(idm_out),
+            "summary_out": str(tmp_path / "summary.json"),
+            "config_path": "test_inline_config",
+            "source_namespace": "unit_d2e_stream",
+            "feature_mode": "summary_compact_grid8_shift_surface_time",
+            "hidden_dim": 8,
+            "depth": 1,
+            "epochs": 1,
+            "eval_interval_epochs": 1,
+            "batch_size": 4,
+            "categorical_min_count": 1,
+            "mouse_head_mode": "axis_softmax",
+            "seed": 11,
+            "force_cpu": True,
+        }
+    )
+
+    pred_summary = predict_streaming_idm_checkpoint(
+        {
+            "checkpoint_path": train_summary["metadata"]["checkpoint_path"],
+            "checkpoint_metadata_path": str(idm_out / "checkpoint_metadata.json"),
+            "records_path": str(fdm_train_path),
+            "output_dir": str(tmp_path / "fdm_train_core_pseudolabels"),
+            "summary_out": str(tmp_path / "fdm_train_core_summary.json"),
+            "force_cpu": True,
+            "eval_batch_size": 2,
+        }
+    )
+
+    assert pred_summary["schema"] == "streaming_idm_predict_summary.v1"
+    assert pred_summary["records"] == 5
+    assert pred_summary["source_checkpoint_artifact"]["exists"] is True
+    assert pred_summary["source_checkpoint_metadata"]["exists"] is True
+    assert Path(pred_summary["pseudo_label_path"]).exists()
+    assert Path(pred_summary["predictions_path"]).exists()
+    assert Path(tmp_path / "fdm_train_core_summary.json").exists()

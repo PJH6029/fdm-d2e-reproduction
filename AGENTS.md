@@ -158,6 +158,16 @@ Required separation:
 
 Do **not** checkpoint `G004-d2e-only-fdm-4xh200` complete until `scripts/validate_g004_full_fdm_completion.py` reports `status=pass` in `artifacts/fdm/g004_full_fdm_completion_audit.json`. This audit requires G003 complete, D2E-only FDM-from-IDM-pseudolabel provenance, split count consistency, prediction coverage, convergence-report evidence, split-stat summaries, and 4×H200 run metadata.
 
+Current G004 hardening: FDM training must use G003 IDM prediction-only
+pseudo-labels over `outputs/data/d2e_full_corpus/train_core.jsonl`, written to
+`outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl`,
+then evaluate against untouched `outputs/data/d2e_full_corpus/target_all_eval.jsonl`.
+The old recording-tail split over `target_all_eval` is local-debug only and is
+rejected by the G004 completion audit via `counts.mode == explicit_target`.
+`scripts/run_g004_d2e_full_fdm_4xh200.sh` auto-generates the train-core
+pseudo-labels with `scripts/predict_idm_streaming.py` after G003 checkpoint
+artifacts exist.
+
 ## G005 completion gate
 
 Do **not** checkpoint `G005-aux-data-best-model` complete until `scripts/validate_g005_aux_completion.py` reports `status=pass` in `artifacts/aux/g005_aux_completion_audit.json`. This audit requires G003/G004 complete, selected aux provenance/storage policy, separated aux namespaces, D2E-only vs D2E+aux ablation across all required splits, no aux leakage into D2E heldouts, target split tags, prediction coverage, and run evidence.

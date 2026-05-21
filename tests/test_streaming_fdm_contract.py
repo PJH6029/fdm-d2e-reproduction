@@ -88,6 +88,45 @@ def test_streaming_fdm_materializes_pseudolabel_train_and_ground_truth_eval(tmp_
     assert target_rows[0]["ground_truth_tokens"] == records[3]["ground_truth_tokens"]
 
 
+def test_streaming_fdm_explicit_target_preserves_heldout_eval_namespace(tmp_path: Path):
+    train_records = [_record(idx, "d2e_480p:Apex/train_rec") for idx in range(4)]
+    target_records = [_record(idx + 10, "d2e_original:Celeste/heldout_rec") for idx in range(3)]
+    for row in target_records:
+        row["source_id"] = "d2e_original"
+        row["resolution_tier"] = "original"
+        row["split"] = "heldout_game"
+        row["eval_split_tags"] = ["heldout_game"]
+    labels = [_label(row, idx) for idx, row in enumerate(train_records)]
+    records_path = tmp_path / "train_core.jsonl"
+    labels_path = tmp_path / "train_core_labels.jsonl"
+    target_path = tmp_path / "target_all_eval.jsonl"
+    out = tmp_path / "fdm"
+    _write_jsonl(records_path, train_records)
+    _write_jsonl(labels_path, labels)
+    _write_jsonl(target_path, target_records)
+
+    summary = materialize_fdm_streaming_splits(
+        {
+            "records_path": str(records_path),
+            "labels_path": str(labels_path),
+            "target_records_path": str(target_path),
+            "output_dir": str(out),
+            "fdm_train_fraction": 0.5,
+        }
+    )
+
+    train_rows = read_jsonl(summary["train_records_path"])
+    target_rows = read_jsonl(summary["target_records_path"])
+    assert summary["counts"]["mode"] == "explicit_target"
+    assert summary["counts"]["train"] == 4
+    assert summary["counts"]["target"] == 3
+    assert summary["records_path"] == str(records_path)
+    assert summary["target_records_source_path"] == str(target_path)
+    assert {row["source_id"] for row in train_rows} == {"d2e_480p"}
+    assert {row["source_id"] for row in target_rows} == {"d2e_original"}
+    assert summary["counts"]["target_eval_split_tags"] == {"heldout_game": 3}
+
+
 def test_streaming_fdm_rejects_misaligned_labels(tmp_path: Path):
     records = [_record(idx) for idx in range(2)]
     labels = [_label(row, idx) for idx, row in enumerate(records)]

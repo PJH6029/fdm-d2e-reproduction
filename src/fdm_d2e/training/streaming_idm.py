@@ -831,6 +831,101 @@ def _predict_stream(
     }
 
 
+def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
+    """Run a trained streaming IDM checkpoint over an arbitrary record JSONL.
+
+    G003 trains/evaluates the IDM on the predeclared D2E target split.  G004
+    also needs IDM pseudo-labels for the D2E train-core records so the FDM can
+    train on train-core pseudo-actions while evaluating on heldout target
+    records.  This prediction-only path preserves the original checkpoint,
+    writes a separate pseudo-label artifact, and avoids retraining or
+    overwriting the G003 target-eval pseudo-labels.
+    """
+
+    torch = require_torch()
+    checkpoint_path = Path(config["checkpoint_path"])
+    records_path = Path(config["records_path"])
+    output_dir = ensure_dir(config.get("output_dir", checkpoint_path.parent / "prediction"))
+    force_cpu = bool(config.get("force_cpu", False))
+    device = "cuda" if torch.cuda.is_available() and not force_cpu else "cpu"
+    try:
+        checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    except TypeError:  # pragma: no cover - older torch releases.
+        checkpoint = torch.load(checkpoint_path, map_location=device)
+    checkpoint_config = dict(checkpoint.get("config", {}))
+    prediction_config = dict(checkpoint_config)
+    for key, value in config.get("prediction_overrides", {}).items():
+        prediction_config[key] = value
+    for key in (
+        "model_name",
+        "endpoints",
+        "baseline_names",
+        "eval_batch_size",
+        "batch_size",
+        "max_target_examples",
+        "category_threshold",
+        "mouse_axis_decode_mode",
+        "mouse_axis_temperature",
+        "mouse_output_gain",
+        "force_cpu",
+    ):
+        if key in config:
+            prediction_config[key] = config[key]
+    stats = dict(checkpoint["stats"])
+    category_vocab = [str(token) for token in checkpoint.get("category_vocab", [])]
+    mouse_head_mode = str(checkpoint.get("mouse_head_mode", prediction_config.get("mouse_head_mode", "axis_softmax")))
+    mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", prediction_config.get("mouse_axis_classes", MOUSE_AXIS_CLASSES))]
+    prediction_config["mouse_head_mode"] = mouse_head_mode
+    model = _build_model(
+        torch,
+        input_dim=int(stats["input_dim"]),
+        output_dim=2 + len(category_vocab) + (2 * len(mouse_axis_classes) if mouse_head_mode == "axis_softmax" else 0),
+        hidden_dim=int(checkpoint_config.get("hidden_dim", prediction_config.get("hidden_dim", 512))),
+        depth=int(checkpoint_config.get("depth", prediction_config.get("depth", 3))),
+        dropout=float(checkpoint_config.get("dropout", prediction_config.get("dropout", 0.05))),
+        config=prediction_config,
+        feature_mode=str(stats["feature_mode"]),
+    ).to(device)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    prediction = _predict_stream(
+        torch,
+        model,
+        target_records=records_path,
+        stats=stats,
+        config=prediction_config,
+        device=device,
+        category_vocab=category_vocab,
+        mouse_axis_classes=mouse_axis_classes,
+        checkpoint_path=checkpoint_path,
+        output_dir=output_dir,
+    )
+    summary = {
+        "schema": "streaming_idm_predict_summary.v1",
+        "source_checkpoint_path": str(checkpoint_path),
+        "source_checkpoint_artifact": _file_artifact_metadata(checkpoint_path),
+        "source_checkpoint_metadata": _file_artifact_metadata(config.get("checkpoint_metadata_path")),
+        "records_path": str(records_path),
+        "output_dir": str(output_dir),
+        "prediction_config": prediction_config,
+        "records": int(prediction["target_records"]),
+        "pseudo_label_path": prediction["pseudo_label_path"],
+        "predictions_path": prediction["predictions_path"],
+        "metrics_path": prediction["metrics_path"],
+        "label_quality_report_path": prediction["label_quality_report_path"],
+        "statistical_comparison_path": prediction["statistical_comparison_path"],
+        "target_source_ids": prediction["target_source_ids"],
+        "target_resolution_tiers": prediction["target_resolution_tiers"],
+        "target_eval_split_tags": prediction["target_eval_split_tags"],
+        "prediction_fingerprint": prediction["prediction_fingerprint"],
+        "claim_boundary": "Prediction-only IDM pseudo-label artifact; it does not retrain or modify the source G003 checkpoint.",
+    }
+    if config.get("summary_out"):
+        write_json(config["summary_out"], summary)
+    else:
+        write_json(output_dir / "summary.json", summary)
+    return summary
+
+
 def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     torch = require_torch()
     dist = _distributed_runtime(torch, config)

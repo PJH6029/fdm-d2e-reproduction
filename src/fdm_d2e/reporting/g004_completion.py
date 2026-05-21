@@ -96,6 +96,11 @@ def validate_g004_full_fdm_completion(config: dict[str, Any], *, root: str | Pat
         actual = _get(metadata, dotted)
         if actual != expected:
             findings.append({"severity": "error", "code": "metadata_expectation_mismatch", "json_path": dotted, "expected": expected, "actual": actual})
+    split_summary_expectations = dict(config.get("split_summary_expectations", {}))
+    for dotted, expected in split_summary_expectations.items():
+        actual = _get(split_summary, dotted)
+        if actual != expected:
+            findings.append({"severity": "error", "code": "split_summary_expectation_mismatch", "json_path": dotted, "expected": expected, "actual": actual})
     if metadata is not None:
         if train_count is not None and metadata.get("num_training_examples") != train_count:
             findings.append({"severity": "error", "code": "metadata_train_examples_mismatch", "expected": train_count, "actual": metadata.get("num_training_examples")})

@@ -442,6 +442,18 @@
       "status": "fail",
       "artifacts": [
         {
+          "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
           "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
           "exists": false,
           "bytes": 0,
@@ -546,8 +558,8 @@
         {
           "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
           "exists": true,
-          "bytes": 8630,
-          "sha256": "cf1077f90723959e3ff3e3c7bf581b67e63cabc63430c7d2f16748267c640b76"
+          "bytes": 9263,
+          "sha256": "f295d6e00664c895b9da080ecc2c150e6a7b9b288ca63828a79601d81b8937b7"
         }
       ],
       "findings": [
@@ -557,6 +569,18 @@
           "goal_id": "G004-d2e-only-fdm-4xh200",
           "expected_status": "complete",
           "actual_status": "pending"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G004-d2e-only-fdm-4xh200",
+          "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G004-d2e-only-fdm-4xh200",
+          "path": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json"
         },
         {
           "severity": "error",
@@ -701,6 +725,24 @@
           "code": "json_assertion_file_missing",
           "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
           "json_path": "torch_checkpoint_metadata.distributed.world_size"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+          "json_path": "counts.mode"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+          "json_path": "records_path"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+          "json_path": "target_records_source_path"
         },
         {
           "severity": "error",
@@ -1058,8 +1100,8 @@
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 37360,
-          "sha256": "0a06708cd325707b2dbb836a4df47376d7631eb24d238a6e1814cfcd5d42a783"
+          "bytes": 37795,
+          "sha256": "08c89663494a88e5a41f569f1b82f2f90f465671f79305fd16c6a21fad21802a"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -1096,8 +1138,8 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 37360,
-    "sha256": "0a06708cd325707b2dbb836a4df47376d7631eb24d238a6e1814cfcd5d42a783"
+    "bytes": 37795,
+    "sha256": "08c89663494a88e5a41f569f1b82f2f90f465671f79305fd16c6a21fad21802a"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -1328,6 +1370,18 @@
       "severity": "error",
       "code": "missing_required_artifact",
       "goal_id": "G004-d2e-only-fdm-4xh200",
+      "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "path": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
       "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
     },
     {
@@ -1467,6 +1521,24 @@
       "code": "json_assertion_file_missing",
       "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
       "json_path": "torch_checkpoint_metadata.distributed.world_size"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+      "json_path": "counts.mode"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+      "json_path": "records_path"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+      "json_path": "target_records_source_path"
     },
     {
       "severity": "error",
@@ -1670,6 +1742,6 @@
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
     }
   ],
-  "error_count": 90,
+  "error_count": 95,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

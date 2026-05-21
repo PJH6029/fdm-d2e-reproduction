@@ -2,11 +2,13 @@
 set -euo pipefail
 
 CONFIG="${CONFIG:-configs/model/fdm_streaming_d2e_full_compact.yaml}"
+IDM_PREDICT_CONFIG="${IDM_PREDICT_CONFIG:-configs/model/idm_streaming_d2e_full_compact_predict_fdm_train.yaml}"
 NPROC_PER_NODE="${NPROC_PER_NODE:-4}"
 EXPECTED_GPUS="${EXPECTED_GPUS:-4}"
 LOG_PATH="${LOG_PATH:-artifacts/fdm/g004_d2e_full_fdm_4xh200.log}"
 RUN_SUMMARY="${RUN_SUMMARY:-artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json}"
 GPU_MONITOR_LOG="${GPU_MONITOR_LOG:-artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv}"
+FDM_LABELS="${FDM_LABELS:-outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl}"
 
 mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$RUN_SUMMARY")" "$(dirname "$GPU_MONITOR_LOG")" outputs/cluster
 
@@ -33,9 +35,14 @@ set +e
   echo "started_at=$(date -Iseconds)"
   echo "git_head=$(git rev-parse HEAD)"
   echo "config=$CONFIG"
+  echo "idm_predict_config=$IDM_PREDICT_CONFIG"
   echo "nproc_per_node=$NPROC_PER_NODE"
   echo "gpu_monitor_log=$GPU_MONITOR_LOG"
   uv run python scripts/cluster_gpu_smoke.py --expected-gpus "$EXPECTED_GPUS"
+  if [[ ! -s "$FDM_LABELS" ]]; then
+    echo "missing FDM train-core pseudo-labels at $FDM_LABELS; generating with trained G003 IDM checkpoint"
+    uv run python scripts/predict_idm_streaming.py --config "$IDM_PREDICT_CONFIG"
+  fi
   uv run torchrun --standalone --nproc-per-node="$NPROC_PER_NODE" scripts/train_fdm_streaming.py --config "$CONFIG"
   echo "finished_at=$(date -Iseconds)"
 } 2>&1 | tee "$LOG_PATH"
@@ -56,8 +63,10 @@ summary_path = Path("outputs/fdm_streaming_d2e_full_compact/summary.json")
 payload = {
     "schema": "g004_fdm_4xh200_run.v1",
     "config": "$CONFIG",
+    "idm_predict_config": "$IDM_PREDICT_CONFIG",
     "log_path": "$LOG_PATH",
     "gpu_monitor_log": "$GPU_MONITOR_LOG",
+    "fdm_labels": "$FDM_LABELS",
     "nproc_per_node": int("$NPROC_PER_NODE"),
     "expected_gpus": int("$EXPECTED_GPUS"),
     "exit_code": int("$RUN_STATUS"),

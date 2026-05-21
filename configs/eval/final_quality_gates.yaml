@@ -142,6 +142,8 @@
       "title": "D2E-only FDM + 4xH200 scaling",
       "requires_status": "complete",
       "required_paths": [
+        "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+        "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json",
         "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
         "outputs/fdm_streaming_d2e_full_compact/resolved_config.json",
         "outputs/fdm_streaming_d2e_full_compact/summary.json",
@@ -196,6 +198,21 @@
           "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
           "json_path": "torch_checkpoint_metadata.distributed.world_size",
           "equals": 4
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+          "json_path": "counts.mode",
+          "equals": "explicit_target"
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+          "json_path": "records_path",
+          "equals": "outputs/data/d2e_full_corpus/train_core.jsonl"
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+          "json_path": "target_records_source_path",
+          "equals": "outputs/data/d2e_full_corpus/target_all_eval.jsonl"
         },
         {
           "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",

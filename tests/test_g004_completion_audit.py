@@ -47,6 +47,11 @@ def _config() -> dict:
             "torch_checkpoint_metadata.distributed.enabled": True,
             "torch_checkpoint_metadata.distributed.world_size": 4,
         },
+        "split_summary_expectations": {
+            "counts.mode": "explicit_target",
+            "records_path": paths["fdm_train_records"],
+            "target_records_source_path": paths["fdm_target_records"],
+        },
     }
 
 
@@ -61,7 +66,14 @@ def _complete_fixture(root: Path) -> None:
     _write_jsonl(root / cfg["paths"]["fdm_train_records"], 3)
     _write_jsonl(root / cfg["paths"]["fdm_target_records"], 2)
     _write_jsonl(root / cfg["paths"]["predictions"], 2)
-    write_json(root / cfg["paths"]["split_summary"], {"counts": {"pairs": 3, "train": 3, "target": 2}})
+    write_json(
+        root / cfg["paths"]["split_summary"],
+        {
+            "records_path": cfg["paths"]["fdm_train_records"],
+            "target_records_source_path": cfg["paths"]["fdm_target_records"],
+            "counts": {"pairs": 3, "train": 3, "target": 2, "mode": "explicit_target"},
+        },
+    )
     checkpoint = root / cfg["paths"]["checkpoint"]
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
     checkpoint.write_bytes(b"pt")
@@ -111,3 +123,20 @@ def test_g004_completion_audit_fails_on_prereq_and_prediction_count(tmp_path: Pa
     assert "goal_not_checkpointed_complete" in codes
     assert "prerequisite_goal_not_complete" in codes
     assert "predictions_count_mismatch" in codes
+
+
+def test_g004_completion_audit_rejects_recording_tail_split_mode(tmp_path: Path):
+    _complete_fixture(tmp_path)
+    cfg = _config()
+    write_json(
+        tmp_path / cfg["paths"]["split_summary"],
+        {
+            "records_path": cfg["paths"]["fdm_target_records"],
+            "target_records_source_path": cfg["paths"]["fdm_target_records"],
+            "counts": {"pairs": 3, "train": 3, "target": 2, "mode": "recording_tail"},
+        },
+    )
+    payload = validate_g004_full_fdm_completion(cfg, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "split_summary_expectation_mismatch" in codes
