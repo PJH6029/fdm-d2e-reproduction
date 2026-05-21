@@ -22,6 +22,24 @@
       "min_effect": 0.05
     },
     {
+      "name": "mouse_button_precision",
+      "metric_path": ["mouse_button", "precision"],
+      "direction": "higher",
+      "min_effect": 0.05
+    },
+    {
+      "name": "mouse_button_f1",
+      "metric_path": ["mouse_button", "f1"],
+      "direction": "higher",
+      "min_effect": 0.05
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "metric_path": ["mouse_button", "no_button_false_positive_rate"],
+      "direction": "lower",
+      "min_effect": 0.05
+    },
+    {
       "name": "mouse_move_pearson",
       "reference_baseline": "last_seen_train",
       "metric_path": ["mouse_move", "pearson"],

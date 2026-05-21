@@ -164,3 +164,11 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Monitor status: `running`; decoded recording variants: `73 / 918`; complete shards: `0 / 16`; long-running active shards: `[8, 9, 13]`; stale shards: `[]`; no-progress shards: `[]`; IDM metrics absent.
 - Observed throughput: `35.89` recording variants/hour; ETA at current rate: `23.55` hours. This remains progress telemetry only.
 - Added a G006 final artifact builder in local worktree; it should only pass after G003/G004 split-aware comparison artifacts exist.
+
+
+## 2026-05-21 13:40 KST split-stat builder/monitor snapshot
+
+- Pod checkout remained at `8032fa8`; extraction parent PID `9289` still running.
+- Monitor status: `running`; decoded recording variants: `74 / 918`; complete shards: `0 / 16`; long-running active shards: `[4, 8, 9, 13]`; stale shards: `[]`; no-progress shards: `[]`; IDM metrics absent.
+- Observed throughput: `34.52` recording variants/hour; ETA at current rate: `24.45` hours. This remains progress telemetry only.
+- Added a split-aware statistical comparison builder in local worktree; it should run after G003/G004 predictions exist and before the G006 final artifact builder.

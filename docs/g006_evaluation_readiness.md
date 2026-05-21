@@ -84,3 +84,20 @@ The builder config is `configs/eval/g006_final_artifacts.yaml`. It requires
 split-aware G003/G004 comparison sources for temporal, heldout-recording, and
 heldout-game splits. It intentionally fails if only aggregate or historical
 bounded-run statistics are available.
+
+## Split-aware comparison builder
+
+Before running the final G006 artifact builder, create per-split statistical
+comparison files from completed G003/G004 predictions:
+
+```bash
+uv run python scripts/build_split_statistical_comparisons.py --config configs/eval/g003_split_statistics.yaml
+uv run python scripts/build_split_statistical_comparisons.py --config configs/eval/g004_split_statistics.yaml
+```
+
+These commands write `split_temporal_statistical_comparison.json`,
+`split_heldout_recording_statistical_comparison.json`, and
+`split_heldout_game_statistical_comparison.json` under each model output
+directory, plus summaries under `artifacts/eval/`. The primary endpoint config
+includes the seven G006-required endpoints, including mouse-button precision/F1
+and no-button false-positive rate.

@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 133,
+  "entry_count": 138,
   "entries": [
     {
       "path": "README.md",
@@ -108,8 +108,8 @@
     {
       "path": "artifacts/idm/g003_full_compact_parallel_progress.json",
       "kind": "evidence_artifact",
-      "bytes": 16737,
-      "sha256": "9d584a428748a41cb6e81938d1b52f5185ad49b19da3a2d7d314c01c539e5ba5"
+      "bytes": 16760,
+      "sha256": "65e5af230d9c13a7fa3f02d6a758442af6570754f89ce7212c152f04193f1afe"
     },
     {
       "path": "artifacts/idm/g003_resume_plan.json",
@@ -238,6 +238,18 @@
       "sha256": "943f18c1ff7c0e5f91c9dc43d86a52d8fa96780dc9641ad18e282cf358e6b728"
     },
     {
+      "path": "configs/eval/g003_split_statistics.yaml",
+      "kind": "configuration",
+      "bytes": 677,
+      "sha256": "711cf6af0a7d1917e639cda2038497d2299019f1c09d17b6f25d719621b3629e"
+    },
+    {
+      "path": "configs/eval/g004_split_statistics.yaml",
+      "kind": "configuration",
+      "bytes": 746,
+      "sha256": "d2f55260333aa1070e289d4e8e0474e5698211de4da29296e3c6bd0971f3b443"
+    },
+    {
       "path": "configs/eval/g006_evaluation_readiness.yaml",
       "kind": "configuration",
       "bytes": 1340,
@@ -252,8 +264,8 @@
     {
       "path": "configs/eval/primary_endpoints.yaml",
       "kind": "configuration",
-      "bytes": 1009,
-      "sha256": "10bd00cc2e516c20d4a1d8028ebef41451d848a665440ffd05c1734e6a2f39d1"
+      "bytes": 1498,
+      "sha256": "51db98b540ba8bbe41bea682715d319c76afb9e21afaeca93471994e54f0a6fe"
     },
     {
       "path": "configs/harness/g008_game_harness.yaml",
@@ -420,8 +432,8 @@
     {
       "path": "docs/g006_evaluation_readiness.md",
       "kind": "documentation",
-      "bytes": 2882,
-      "sha256": "232f88cd0b6130e245fb11997e5cae3d12866934b5082153159d7e2f754161dc"
+      "bytes": 3677,
+      "sha256": "db8ee55a7a80efff4c3fa938ab3b1538469aaaa2832ffefdbd76791d19c26c77"
     },
     {
       "path": "docs/harness_selection_and_execution.md",
@@ -492,14 +504,20 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 9690,
-      "sha256": "e096b101e6a645a1c811f5c240359dd7e36e40a0b798e02721a9cca7c2859661"
+      "bytes": 9993,
+      "sha256": "0fefad6d57750cf76b3acbf2443aaef711233315af14ad0ff0a8da119913da9d"
     },
     {
       "path": "scripts/build_split_contract.py",
       "kind": "reproduction_script",
       "bytes": 4118,
       "sha256": "10505c6fbd6935273981937170077ace15a8e494955bdcb359996fd1dd895b47"
+    },
+    {
+      "path": "scripts/build_split_statistical_comparisons.py",
+      "kind": "reproduction_script",
+      "bytes": 983,
+      "sha256": "53d76e5ce5b07f5734d62b677541eb20488f97479a445491c75a99d3fdb0c250"
     },
     {
       "path": "scripts/calibrate_fdm_predictions.py",
@@ -638,6 +656,12 @@
       "kind": "other",
       "bytes": 5718,
       "sha256": "eb52e794a66549040f99582a031c082db20a903def491170fe03b701abec4036"
+    },
+    {
+      "path": "src/fdm_d2e/eval/split_statistics.py",
+      "kind": "other",
+      "bytes": 9357,
+      "sha256": "d02a31ac8860fd9223984d203974c41046867e2ca3d4d721f084d1c7be5d0219"
     },
     {
       "path": "src/fdm_d2e/eval/statistics.py",
@@ -788,6 +812,12 @@
       "kind": "other",
       "bytes": 3170,
       "sha256": "7dd1b9dd9b9656a15913ee62df81a97dcf6beb4882e877dca6929a528e43cabe"
+    },
+    {
+      "path": "tests/test_split_statistics.py",
+      "kind": "other",
+      "bytes": 3403,
+      "sha256": "1f4877e879b54bea91bcb82e05b7df01339f106f73e7cb270338bb7d6270c7bc"
     },
     {
       "path": "tests/test_streaming_fdm_contract.py",

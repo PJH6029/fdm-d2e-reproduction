@@ -1,0 +1,12 @@
+{
+  "schema": "split_statistical_comparison_builder_config.v1",
+  "model_name": "streaming_fdm_d2e_full_compact",
+  "predictions_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+  "ground_truth_path": "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl",
+  "train_records_path": "outputs/fdm_streaming_d2e_full_compact/fdm_train_pseudolabeled_records.jsonl",
+  "output_dir": "outputs/fdm_streaming_d2e_full_compact",
+  "summary_out": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
+  "endpoints": "configs/eval/primary_endpoints.yaml",
+  "baseline_names": ["noop", "global_majority", "last_seen_train"],
+  "split_tags": ["temporal", "heldout_recording", "heldout_game"]
+}
