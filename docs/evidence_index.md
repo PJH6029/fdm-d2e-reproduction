@@ -1,5 +1,9 @@
 # Evidence Index
 
+> Current full-corpus ultragoal is not complete. This index includes
+> historical bounded Shooter64 evidence plus current setup artifacts; final
+> G001–G009 evidence must be regenerated after G003–G008 complete.
+
 This index records smoke-contract evidence plus the real-D2E H200 IDM/FDM, ablation, harness, and final package artifacts. It is not an FDM-1 parity claim.
 
 D2E-derived artifacts remain non-commercial unless separate rights are provided.

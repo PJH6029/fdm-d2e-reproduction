@@ -1,5 +1,9 @@
 # Reproducibility Runbook
 
+> Current full-corpus ultragoal is not complete. The Shooter64 commands below
+> are historical bounded evidence; use `docs/d2e_full_idm_pipeline.md` and
+> `docs/d2e_full_fdm_pipeline.md` for the active full-corpus path.
+
 ## Local setup
 
 Prefer `uv`.

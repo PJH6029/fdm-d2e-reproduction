@@ -63,6 +63,6 @@ window-focus, video/replay capture, and live closed-loop evidence are collected.
 The SDK proves that trained action streams can be decoded, safety-checked,
 rate-limited, replayed, and logged through a game-ready adapter interface. It
 does **not** by itself prove live game control and it does not support any
-commercial-game claim. G008 must still run multiple open-source/offline
+commercial-game claim. No G008 live-suite claim is made here. G008 must still run multiple open-source/offline
 graphical games with seeds/episodes, latency/failure logs, replay/video hashes,
 and statistical baseline comparisons.

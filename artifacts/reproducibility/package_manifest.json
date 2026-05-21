@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 61,
+  "entry_count": 73,
   "entries": [
     {
       "path": "README.md",
@@ -124,10 +124,28 @@
       "sha256": "717e5b752de5b6ea34817c7ea51082642d9b085d64b4ad3635e0d4ae3220a48c"
     },
     {
+      "path": "artifacts/reproducibility/claim_boundary_audit.json",
+      "kind": "evidence_artifact",
+      "bytes": 850,
+      "sha256": "23d9ee62c70743703bf7991d1570ffec09e2a38520ecac03199c2959ed36bd71"
+    },
+    {
       "path": "artifacts/reproducibility/final_cleanup_review.md",
       "kind": "evidence_artifact",
       "bytes": 2171,
       "sha256": "83700affd42811904cde86505d797aeaa464a3db2c452c32b4a5f7e10e714dce"
+    },
+    {
+      "path": "artifacts/runtime/g007_runtime_fixture_predictions.jsonl",
+      "kind": "evidence_artifact",
+      "bytes": 244,
+      "sha256": "834c45812c1cb9a722907a5adba8ff6aeea848e74fd3219104d04a65c4e6e26c"
+    },
+    {
+      "path": "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
+      "kind": "evidence_artifact",
+      "bytes": 3339,
+      "sha256": "716946df0ea0c0ba2a245c1bb5bc172580b113c7e2e4262938f6da9340f30ec2"
     },
     {
       "path": "artifacts/sources/d2e_multi_decode_shooter64_summary.json",
@@ -190,6 +208,18 @@
       "sha256": "ad270e6691cc1ffc97aebca0c2e556e0a912edafdb7662aa54f6a3206e0ab20c"
     },
     {
+      "path": "configs/runtime/game_adapter_contract_fixture.yaml",
+      "kind": "configuration",
+      "bytes": 906,
+      "sha256": "b12c31ee0de076681357b1de7202028fe8b2a84996ecfcd4b0eeca389d75d730"
+    },
+    {
+      "path": "configs/runtime/game_adapter_demo.yaml",
+      "kind": "configuration",
+      "bytes": 1349,
+      "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+    },
+    {
       "path": "docs/ablation_scaling.md",
       "kind": "documentation",
       "bytes": 2732,
@@ -222,20 +252,20 @@
     {
       "path": "docs/fdm_research_track.md",
       "kind": "documentation",
-      "bytes": 5357,
-      "sha256": "1176d210c8a0a6c14e0d119bce3c11163768a7e6218c30e88b5cf7ce31adf1dd"
+      "bytes": 5640,
+      "sha256": "ac1e7d012f1a7547c65adf002c178447a78da0f6f8862c9599bd06d977aeece7"
     },
     {
       "path": "docs/final_research_report.md",
       "kind": "documentation",
-      "bytes": 6671,
-      "sha256": "ab4331c29638cec8fac14b9caeddc10e52391aff490b48be8ed7d082cf40d2ba"
+      "bytes": 6862,
+      "sha256": "38292857070cfc43b9b185f1c7192b675da0d85e4fde4db3e77b72f4e07f3ce4"
     },
     {
       "path": "docs/harness_selection_and_execution.md",
       "kind": "documentation",
-      "bytes": 2958,
-      "sha256": "dbb9c90dbebf732dbdebe246abb44554bfe0aee84daa4cbf2a73b86ac27f326e"
+      "bytes": 3303,
+      "sha256": "0c586e763abeb21f4e0d0e1ff490b6fffea0d65b85ac2110a6ae4a9bc083d346"
     },
     {
       "path": "docs/idm_research_track.md",
@@ -252,8 +282,14 @@
     {
       "path": "docs/reproducibility_runbook.md",
       "kind": "documentation",
-      "bytes": 2505,
-      "sha256": "98d25125f82b23956abdcea5577f5d26b151b4dbd67c631e7b12cde0b6284d3e"
+      "bytes": 2726,
+      "sha256": "181cfd855aab9406bddf85b33e35ac70a762eff3f367e21336a3ff18f3d96214"
+    },
+    {
+      "path": "docs/runtime_sdk_adapter.md",
+      "kind": "documentation",
+      "bytes": 2801,
+      "sha256": "c06816f2af92db3e6830ee6aa1c5d0fb24bcadc1ef7768b56c0e8e7224fa5b07"
     },
     {
       "path": "docs/source_validation.md",
@@ -262,10 +298,16 @@
       "sha256": "05753ff9b1247f4b450dec502157301edb469e1d474167011248908ac6d5c899"
     },
     {
+      "path": "scripts/audit_claim_boundaries.py",
+      "kind": "reproduction_script",
+      "bytes": 1060,
+      "sha256": "15ef0f7563e29b03e954743f8676f0ef97cb28c5574504cc2adc4eb3c8e1180b"
+    },
+    {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 5856,
-      "sha256": "39055a6004a5db44debfd3616b34d545ad7fa8cdf30ce6ab2f5bda34c7257e38"
+      "bytes": 6432,
+      "sha256": "047aa85d33bea448abcec6f57ab6cc242714d5333364d9dd0afc798d86cfedca"
     },
     {
       "path": "scripts/calibrate_fdm_predictions.py",
@@ -298,6 +340,12 @@
       "sha256": "7bd0f3a3b785469197556d6da04867377530e083691be19623ebbf6e1e3a0e2a"
     },
     {
+      "path": "scripts/run_runtime_replay_adapter.py",
+      "kind": "reproduction_script",
+      "bytes": 1159,
+      "sha256": "ddb34a4a3820ab22b540991a1d93a6fb676a8434cbc6e2e7a315439ccf207ddd"
+    },
+    {
       "path": "scripts/summarize_ablation_scaling.py",
       "kind": "reproduction_script",
       "bytes": 16758,
@@ -328,10 +376,22 @@
       "sha256": "a589c9acdecfe1652842e354d945039f1075ce2ea2e4f09f7602720c50db5bf4"
     },
     {
+      "path": "src/fdm_d2e/reporting/claim_audit.py",
+      "kind": "other",
+      "bytes": 4273,
+      "sha256": "dae838d220bccfdae2296a9f11a804e5fc37380f45a61d47bbfdf6ace764b5f0"
+    },
+    {
       "path": "src/fdm_d2e/rollout/game_harness.py",
       "kind": "other",
       "bytes": 18150,
       "sha256": "c2ffb944b2e40b20a699e31bf155eb4cf5c7d4cd676e2c5887d3912ab585bc7c"
+    },
+    {
+      "path": "src/fdm_d2e/runtime/sdk.py",
+      "kind": "other",
+      "bytes": 11932,
+      "sha256": "ad64cb17613cd3c1d1177901f190babeef2e41d313f52d9415aedef5e7ba26d3"
     },
     {
       "path": "src/fdm_d2e/training/calibrated_fdm.py",
@@ -358,6 +418,12 @@
       "sha256": "5872d1a97f3dbd3e3ecdfe2895878b45f28c17f66aa70d586cd5adb95f6e3547"
     },
     {
+      "path": "tests/test_claim_boundary_audit.py",
+      "kind": "other",
+      "bytes": 3553,
+      "sha256": "86263c6744268a8af351e528456de1bf5fa75bd685541d7025c2dc7d4332d811"
+    },
+    {
       "path": "tests/test_eval_statistics.py",
       "kind": "other",
       "bytes": 3451,
@@ -368,6 +434,12 @@
       "kind": "other",
       "bytes": 3213,
       "sha256": "b8472ecad7e2cf213c11132e89178164c6f7dd7e60a76627197be6570d9ef6f5"
+    },
+    {
+      "path": "tests/test_runtime_sdk_adapter.py",
+      "kind": "other",
+      "bytes": 3170,
+      "sha256": "7dd1b9dd9b9656a15913ee62df81a97dcf6beb4882e877dca6929a528e43cabe"
     }
   ],
   "notes": [

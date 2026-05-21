@@ -1,5 +1,9 @@
 # D2E-based FDM-1 Recipe Reproduction Report
 
+> Current full-corpus ultragoal is not complete. This is historical bounded
+> Shooter64 evidence from the earlier lane and must not be treated as the final
+> G001–G009 full-corpus report.
+
 ## Executive summary
 
 This repository now contains a serious, non-smoke D2E reproduction pipeline for the **recipe shape** of FDM-1: real D2E decoding, neural IDM training, IDM pseudo-label generation, FDM training, baseline/statistical evaluation, ablation/scaling summaries, and bounded game-harness replay. This is **not** a parity claim for the closed-source FDM-1 system and does not claim internet-scale data, non-game domain transfer, robotics, or car-control transfer.
