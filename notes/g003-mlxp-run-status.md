@@ -2,7 +2,7 @@
 
 Updated: 2026-05-21 KST
 
-- Latest pushed commit pulled in pod: `b3c8450` (G004 convergence/scaling evidence support and G007 runtime adapter claim-boundary updates are present in the checkout; running G003 shard Python processes may have been launched before later pulls and continue with their loaded code).
+- Latest pushed commit pulled in pod: `7fe6b3f` (G004 convergence/scaling evidence support and G007 runtime adapter claim-boundary updates are present in the checkout; running G003 shard Python processes may have been launched before later pulls and continue with their loaded code).
 - MLXP reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a` in namespace `p-production`.
 - Reservation window: 2026-05-21 10:00+09:00 to 2026-05-24 09:00+09:00.
@@ -116,3 +116,12 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - label-quality/statistical comparison reports,
 - run evidence JSON,
 - validation evidence and committed artifact summaries.
+
+
+## 2026-05-21 13:06 KST pod sync and monitor snapshot
+
+- Pod checkout fast-forwarded to `7fe6b3f` (`Preserve G003 provenance in streaming IDM metadata`) while extraction was still running.
+- Parallel extraction parent PID `9289` was still running; elapsed at sync was ~2h10m.
+- `scripts/monitor_g003_progress.py` artifact was copied back to `artifacts/idm/g003_full_compact_parallel_progress.json`.
+- Monitor status: `review_stale_shards`; decoded recording variants: `62 / 918`; complete shards: `0 / 16`; stale shards: `[8, 9, 13]`; no-progress shards: `[]`; parent PID running: `true`; IDM metrics absent.
+- Follow-up process inspection showed the stale-shard child Python processes still alive, so this is a watch/review condition rather than a confirmed extraction failure. Continue monitoring before any resume/recovery action.

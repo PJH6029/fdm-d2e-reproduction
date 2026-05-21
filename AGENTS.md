@@ -1,226 +1,168 @@
-# AGENTS.md — D2E/FDM Reproduction Handoff Guide
+# AGENTS.md — Full-Corpus D2E/FDM Research Handoff
 
-This repository is a serious research reproduction of the **recipe shape** of FDM-1 on public D2E data. It is not a smoke demo and must not be presented as closed-source FDM-1 parity.
+This repository is a serious research reproduction of the **publicly inferable recipe shape** of FDM-1 for game-control data using D2E. It is not a smoke demo and must never be presented as closed-source FDM-1 parity.
 
 These instructions apply to this repository and all child paths unless a deeper `AGENTS.md` overrides them.
 
-## Operating principles
+## Non-negotiable research contract
 
-- Prefer `uv` for dependency sync, Python execution, tests, training scripts, and cluster launch wrappers.
-- Commit regularly after coherent, verified milestones. Do not batch substantial work into one huge commit.
-- Use the Lore commit protocol for commits: intent-first subject plus useful trailers such as `Tested:`, `Not-tested:`, `Confidence:`, and `Scope-risk:`.
-- Preserve artifacts, configs, hashes, dataset fingerprints, prediction files, and reports. Future agents should be able to resume from files, not chat context.
-- Do not introduce new dependencies unless the research/verification need is clear and recorded.
-- Keep claims evidence-bound. If a metric or harness claim is not supported by a committed artifact, phrase it as future work.
+- **No FDM-1 parity claim.** We can reproduce/approximate method ideas, not claim equivalence to the closed-source system.
+- **No non-game, robotics, or car-transfer claims.** Keep scope to game/desktop control.
+- **No weak smoke-only success.** Final success requires real D2E training/evaluation, not tiny subsets or dry-run paths.
+- **Full D2E gate:** consume D2E 480p plus available original/FHD/QHD sources where required by the active plan. Audited exclusions are allowed only with retry logs, reasons, and impact analysis.
+- **D2E-only gates before broader claims:** D2E-only IDM/FDM results, metrics, ablations, and failure analysis must be separately reported before D2E+aux or runtime success claims.
+- **D2E+aux may be final best/primary** only after D2E-only hard gates are complete and D2E-only vs D2E+aux ablations are reported.
+- **Live evidence target:** open-source graphical games/tasks with closed-loop control evidence, latency/failure logs, replay/video evidence, and statistical improvement. Do not claim live commercial-game control from current artifacts.
+- **Reusable artifacts target:** trained checkpoints plus inference SDK/game-ready adapter demo suitable for later plug-and-play integration.
 
-## Non-negotiable claim boundaries
+## Operating rules for coding agents
 
-Do **not** claim any of the following unless new evidence explicitly supports it:
+- Prefer `uv` for dependency sync, Python execution, tests, and training/cluster commands.
+- Commit regularly after coherent, verified milestones. Do not accumulate one huge commit.
+- Use the Lore commit protocol for every commit: intent-first subject plus meaningful trailers (`Constraint:`, `Rejected:`, `Confidence:`, `Scope-risk:`, `Directive:`, `Tested:`, `Not-tested:`). Include `Co-authored-by: OmX <omx@oh-my-codex.dev>` when appropriate.
+- Preserve configs, manifests, hashes, dataset fingerprints, split contracts, checkpoints, predictions, metrics, reports, and monitor artifacts. Future agents should resume from committed files, not chat history.
+- Keep claims evidence-bound. If a metric/harness claim lacks committed evidence, phrase it as pending/future work.
+- Do not commit secrets, tokens, kubeconfigs, private reservation payloads, or unredacted sensitive MLXP data.
 
-- FDM-1 parity or equivalence to the closed-source FDM-1 system.
-- Full D2E-scale training. Current primary training used a bounded Shooter64 subset, not the full corpus.
-- Non-game-domain, robotics, or car-control transfer.
-- Live commercial-game control. Current harness evidence is deterministic repo-local game-adjacent replay.
-- Pure target-free/non-transductive all-endpoint FDM scale success. The selected all-endpoint branch has an important calibration caveat below.
+## Current ultragoal state (2026-05-21 KST)
 
-## Current completed state
+Active aggregate Codex objective:
 
-The OMX ultragoal is complete as of commit `322758a`:
+> Complete approved full-corpus FDM-D2E ultragoal stories G001-G009 in `.omx/ultragoal/goals.json`, preserving D2E-only hard gates before D2E+aux/runtime claims.
 
-- `G001` source/resource prerequisite validation — complete.
-- `G002` real D2E ingestion/contracts — complete.
-- `G003` training platform / Docker / cluster path — complete.
-- `G004` baselines/statistical evaluation — complete.
-- `G005` IDM research track — complete.
-- `G006` FDM research track — complete.
-- `G007` ablation/scaling experiments — complete.
-- `G008` harness selection/execution — complete.
-- `G009` report/reproducibility package — complete.
+Current `.omx/ultragoal/goals.json` status:
 
-Durable state/evidence:
+- `G001-data-universe-audit` — complete.
+- `G002-split-leakage-contract` — complete.
+- `G003-d2e-only-idm` — **in_progress** and active.
+- `G004-d2e-only-fdm-4xh200` — pending.
+- `G005-aux-data-best-model` — pending.
+- `G006-evaluation-failure-analysis` — pending.
+- `G007-runtime-sdk-adapter` — complete for the adapter-contract slice only.
+- `G008-live-game-suite` — pending.
+- `G009-report-repro-package` — pending.
 
-- `.omx/ultragoal/goals.json` and `.omx/ultragoal/ledger.jsonl`
-- `docs/final_research_report.md`
-- `docs/failure_analysis.md`
-- `docs/reproducibility_runbook.md`
-- `docs/evidence_index.md`
-- `artifacts/reproducibility/package_manifest.json`
+Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 are all complete and final quality gates pass.
 
-## Dataset and training scale actually used
+## Current G003 MLXP run
 
-Current primary evidence does **not** consume all of D2E.
+Latest known live run snapshot: 2026-05-21 13:06 KST.
 
-- Public D2E-480p inventory: `459` paired recordings, `29` games, about `267h` according to upstream source validation.
-- Primary selected subset: Shooter64 / `real_multi_shooter64`.
-- Primary subset scale: `64` recordings, `7` games, `6,144` binned windows.
-- Split: `4,608` train windows and `1,536` within-recording temporal heldout windows.
-- Per-recording cap: `96` windows, 50ms bins, 64×64 feature path.
-- This is a bounded real-D2E training/evaluation subset, not full-corpus training and not heldout-recording or heldout-game generalization.
+- Reservation: `rsv-jeonghunpark-20260521-76e25a`.
+- Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
+- Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
+- Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
+- Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
+- Pod checkout was synced to commit `7fe6b3f` (`Preserve G003 provenance in streaming IDM metadata`).
+- Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
+- Last decoded count: `62 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
+- Monitor status was `review_stale_shards` for shards `[8, 9, 13]`, but child extraction processes were still alive. Treat as review/watch evidence, not G003 failure, unless the parent exits or shard logs/processes stop progressing.
 
-Key source artifacts:
-
-- `configs/data/d2e_real_multi_shooter64.yaml`
-- `artifacts/sources/d2e_multi_decode_shooter64_summary.json`
-- `outputs/data/real_multi_shooter64/train.jsonl` on the MLXP/PVC training path when regenerated
-- `outputs/data/real_multi_shooter64/heldout.jsonl` on the MLXP/PVC training path when regenerated
-
-## Selected IDM evidence
-
-Selected IDM artifact:
-
-- `artifacts/idm/shooter64_surface_motion_selected/`
-
-Important facts:
-
-- Train records: `4,608`; target/eval records: `1,536`.
-- Model family: torch MLP IDM with surface-motion features, focal categorical loss, exact-set/softmax button calibration, axis-softmax mouse head.
-- It clears Holm-corrected keyboard, mouse-button, and mouse-move Pearson endpoints.
-- Mouse scale-ratio distance remains non-significant and is a recorded limitation.
-- Mouse-button claims must report precision/F1 and no-button false-positive rate, not just positive-class accuracy.
-
-## Selected FDM evidence and caveat
-
-Selected all-endpoint FDM artifact:
-
-- `artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/summary.json`
-- `artifacts/fdm/fdm_bth05_d2e_train_scale_calibrated_h200/checkpoint_metadata.json`
-- `configs/model/fdm_bth05_d2e_train_scale_calibrated.yaml`
-
-Important facts:
-
-- FDM label source: IDM pseudo-labels.
-- Training examples: `4,608`; target/eval examples: `1,536`.
-- It beats predeclared baselines on keyboard, mouse-button, mouse-move Pearson, and mouse scale-ratio distance after Holm correction.
-- The endpoint-winning branch uses D2E train-split ground-truth motion-scale calibration and a heldout target-prediction distribution denominator.
-- Metadata flags for the selected branch:
-  - `calibration_uses_target_ground_truth=false`
-  - `calibration_uses_target_prediction_distribution=true`
-- Therefore phrase it as a **transductive no-heldout-label target-prediction normalization result**, not as pure IDM-pseudo-label scale success or novel-recording scale generalization.
-
-Strict comparison branch:
-
-- `artifacts/fdm/fdm_bth05_d2e_train_prediction_scale_calibrated_h200/summary.json`
-- `configs/model/fdm_bth05_d2e_train_prediction_scale_calibrated.yaml`
-- This avoids target prediction-distribution normalization and remains a documented `3/4` endpoint result.
-
-## Evaluation/statistics contract
-
-Primary endpoint config:
-
-- `configs/eval/primary_endpoints.yaml`
-
-Use the existing repo-native metrics/statistics pipeline:
-
-- `src/fdm_d2e/eval/baselines.py`
-- `src/fdm_d2e/eval/statistics.py`
-- recording-cluster bootstrap
-- Holm-Bonferroni correction
-
-Primary endpoints:
-
-1. `keyboard_accuracy` vs `noop`.
-2. `mouse_button_accuracy` vs `noop`.
-3. `mouse_move_pearson` vs `last_seen_train`.
-4. `mouse_move_scale_ratio_distance` vs `last_seen_train`.
-
-For new model claims, include:
-
-- raw metric values,
-- baseline/reference,
-- delta,
-- Holm-adjusted p-value,
-- reject/non-reject status,
-- recording/game split details,
-- exact artifact paths and hashes.
-
-## Ablation/scaling evidence
-
-Ablation/scaling artifacts:
-
-- `artifacts/ablation_scaling/g007_ablation_scaling_summary.json`
-- `docs/ablation_scaling.md`
-- `scripts/summarize_ablation_scaling.py`
-
-Current summary includes:
-
-- FDM branch/calibration axis: 6 points.
-- FDM sweep axes: 84 runs across neural button weighting, neural decode/recall, and KNN retrieval.
-- IDM scaling axis: Apex8/Apex16/Apex36/Shooter32/Shooter64.
-
-Future scaling work should prioritize:
-
-- full D2E or much larger multi-game data consumption,
-- heldout-recording and heldout-game splits,
-- stronger pure-pseudo/self-supervised mouse-scale estimation,
-- multi-GPU training that improves throughput rather than only launching dry-run-compatible commands.
-
-## Harness evidence and live-game boundary
-
-Current harness artifact:
-
-- `artifacts/harness/g008_game_harness_eval.json`
-- `docs/harness_selection_and_execution.md`
-- `configs/harness/g008_game_harness.yaml`
-- `src/fdm_d2e/rollout/game_harness.py`
-
-Current result:
-
-- Five deterministic game-adjacent candidates.
-- Five install/control probes passing.
-- Trained FDM prediction replay passes five tasks across five repo-local environments.
-
-This proves bounded action-sequence stability for D2E-shaped keyboard/mouse token streams. It does **not** prove live commercial-game play.
-
-To upgrade to live commercial-game evidence, future agents need at minimum:
-
-- an explicit target game/version/config/map/task protocol,
-- OS-level keyboard/mouse input adapter with focus guard, kill switch, and rate limits,
-- live screen capture and closed-loop frame → inference → action → next-frame control,
-- latency/FPS/dropped-frame/input logs,
-- video plus MCAP-like trace capture,
-- baseline comparisons across multiple episodes/seeds,
-- offline/single-player or otherwise permissioned environments only; avoid public multiplayer/anti-cheat contexts.
-
-Suggested future files:
-
-- `src/fdm_d2e/rollout/screen_capture.py`
-- `src/fdm_d2e/rollout/os_input.py`
-- `src/fdm_d2e/rollout/live_game_harness.py`
-- `configs/harness/live_<game>.yaml`
-- `scripts/run_live_game_harness.py`
-
-## Reproducibility commands
-
-Prefer these commands before claiming completion after edits:
+Useful pod monitor command:
 
 ```bash
-uv run python -m py_compile scripts/build_repro_package_manifest.py scripts/summarize_ablation_scaling.py scripts/run_game_harness_eval.py src/fdm_d2e/rollout/game_harness.py src/fdm_d2e/training/calibrated_fdm.py
-uv run pytest -q
-uv run python scripts/summarize_ablation_scaling.py --output-json artifacts/ablation_scaling/g007_ablation_scaling_summary.json --output-md docs/ablation_scaling.md
-uv run python scripts/run_game_harness_eval.py --config configs/harness/g008_game_harness.yaml
-uv run python scripts/build_repro_package_manifest.py --output artifacts/reproducibility/package_manifest.json
+kubectl -n p-production exec prod-rsv-jeonghunpark-20260521-76e25a -- bash -lc '
+  cd /root/work/code/continuous-gui-poc/fdm-d2e-reproduction
+  export PATH="$HOME/.local/bin:$PATH"
+  echo HEAD=$(git rev-parse --short HEAD)
+  ps -p $(cat outputs/cluster/g003_full_compact_parallel.pid) -o pid,stat,etime,cmd || true
+  /root/.local/bin/uv run python scripts/monitor_g003_progress.py --output /tmp/g003_progress.json
+  cat /tmp/g003_progress.json
+'
 ```
 
-Use narrower targeted commands first for small edits, then run the broader suite before committing research claims.
+`kubectl exec` is flaky with `connect: cannot assign requested address`; retry with a short sleep. Non-login pod shells may not include `uv` on `PATH`, so use `/root/.local/bin/uv` or export `$HOME/.local/bin`.
 
-## Cluster / MLXP handoff
+## G003 completion gate
 
-- Use the `mlxp-reservation-api` skill for SNUPI MLXP reservation workflows.
-- GPU scheduling may be planned autonomously with up to 4× H200 when useful.
-- Cluster workflow: edit locally, push, then pull inside the pod PVC path:
-  - `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`
-- Docker registry username: `pjh6029`; auth has been configured previously.
-- Do not commit secrets, tokens, kubeconfigs, or live reservation payloads containing sensitive data.
-- Current/sensitive MLXP snapshots should stay ignored; only safe redacted summaries belong in artifacts.
+Do **not** checkpoint `G003-d2e-only-idm` complete until all of these exist and are validated:
+
+- full decode summary covering all expected D2E recording variants, or audited exclusions with retry logs/reasons/impact,
+- merged `outputs/data/d2e_full_corpus/train_core.jsonl` and `target_all_eval.jsonl`,
+- streaming IDM checkpoint and metadata under `outputs/idm_streaming_d2e_full_compact/`,
+- `checkpoint_metadata.json` and `resolved_config.json` proving config/data-universe/split/source provenance,
+- pseudolabels, predictions, metrics, label-quality report, statistical comparison report, train history, convergence report,
+- committed run evidence and monitor/evaluation summaries.
+
+The current streaming IDM config must carry:
+
+- `data_universe: artifacts/sources/d2e_full_data_universe_manifest.json`,
+- `split_contract: artifacts/sources/d2e_full_split_contract.json`,
+- `source_namespace: d2e_full_corpus`.
+
+## Dataset and split artifacts
+
+Primary source/split artifacts:
+
+- `artifacts/sources/d2e_full_data_universe_manifest.json`
+- `artifacts/sources/d2e_full_split_contract.json`
+- `docs/d2e_full_data_universe.md`
+- `docs/d2e_full_split_contract.md`
+- `configs/data/d2e_full_corpus.yaml`
+
+Generalization split requirements include within-recording temporal heldout, heldout-recording, and heldout-game reporting. Avoid mixing auxiliary data into D2E heldout namespaces.
+
+## Auxiliary-data policy
+
+Auxiliary game/action datasets may be used within the 5TiB storage envelope and may become the final best/primary model **only after** D2E-only hard gates and ablations are complete.
+
+Current planning artifacts:
+
+- `docs/auxiliary_data_plan.md`
+- `artifacts/sources/aux_game_action_dataset_candidates.json`
+
+Required separation:
+
+- source-specific namespaces under `outputs/aux/<dataset_id>/...`,
+- clear license/provenance/storage accounting,
+- D2E-only vs D2E+aux metrics on the same D2E eval split,
+- no auxiliary leakage into D2E heldout recordings/games.
+
+## Runtime and harness boundary
+
+Current adapter-contract evidence is not live commercial-game control. Future live evidence must use open-source graphical games/tasks and include:
+
+- target game/version/config/map/task protocol,
+- screen capture + frame → inference → action → next-frame closed loop,
+- OS/input adapter focus guard, kill switch, and rate limits,
+- latency/FPS/dropped-frame/input logs,
+- video/replay/trace evidence,
+- multiple episodes/seeds and baseline comparison.
+
+Commercial-game plug-and-play should be treated as an artifact/API compatibility target, not a current empirical claim.
+
+## Verification commands
+
+Run targeted checks first for the files you changed, then broader gates before committing claims.
+
+Common checks:
+
+```bash
+uv run pytest -q
+uv run python scripts/audit_claim_boundaries.py --output artifacts/reproducibility/claim_boundary_audit.json
+uv run python scripts/build_repro_package_manifest.py --output artifacts/reproducibility/package_manifest.json
+uv run python scripts/validate_final_quality_gates.py --allow-fail
+```
+
+Expected while G003-G009 remain incomplete: `validate_final_quality_gates.py --allow-fail` reports missing-artifact errors. This is not a blocker unless a completed goal is missing required evidence.
+
+For streaming IDM edits:
+
+```bash
+uv run python -m py_compile src/fdm_d2e/training/streaming_idm.py scripts/train_idm_streaming.py
+uv run pytest tests/test_streaming_idm_contract.py -q
+```
 
 ## Documentation map
 
-Read these before changing claims:
+Read/update these when changing claims or handoff state:
 
-- `docs/final_research_report.md` — top-level results and limitations.
-- `docs/failure_analysis.md` — failed approaches and why selected caveats remain.
-- `docs/reproducibility_runbook.md` — rerun commands and cluster path.
-- `docs/evidence_index.md` — hashes and package artifacts.
-- `notes/ultragoal-operating-notes.md` — persistent user preferences.
+- `notes/ultragoal-operating-notes.md` — persistent constraints, decisions, and active-run reminders.
+- `notes/g003-mlxp-run-status.md` — MLXP pod/run snapshots.
+- `notes/fdm-d2e-full-reproduction-deep-interview.md` — clarified requirements.
+- `notes/fdm-d2e-full-reproduction-ralplan.md` — approved plan.
+- `docs/d2e_full_idm_pipeline.md` — G003 pipeline and checkpoint metadata contract.
+- `docs/final_quality_gates.md` and `configs/eval/final_quality_gates.yaml` — completion gate definitions.
+- `.omx/ultragoal/goals.json` and `.omx/ultragoal/ledger.jsonl` — workflow state and checkpoint ledger.
 
-When extending the project, update the relevant docs and regenerate `artifacts/reproducibility/package_manifest.json` so the evidence package remains reproducible.
+Regenerate `artifacts/reproducibility/package_manifest.json` after changing durable docs/artifacts so hashes stay current.
