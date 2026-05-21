@@ -21,12 +21,16 @@ From the MLXP PVC checkout:
 cd /root/work/code/continuous-gui-poc/fdm-d2e-reproduction
 git pull --ff-only origin main
 uv sync --frozen --extra d2e --extra test --extra train
-bash scripts/run_g003_d2e_full_idm.sh
+NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh
 ```
 
-The script decodes compact frame features, materializes split-aware JSONL files,
-trains a streaming IDM without loading all D2E windows into GPU memory, and
-writes a run evidence JSON under `artifacts/idm/`.
+The parallel script launches disjoint recording-variant extraction shards,
+merges split-aware JSONL files, trains a streaming IDM without loading all D2E
+windows into GPU memory, and writes a run evidence JSON under `artifacts/idm/`.
+
+Use the sequential `scripts/run_g003_d2e_full_idm.sh` only for debugging. The
+uncapped full 480p+original corpus should use parallel shards; `NUM_SHARDS=16`
+is the current MLXP setting for a 128-core H200 production pod.
 
 ## Expected outputs
 
@@ -43,6 +47,20 @@ writes a run evidence JSON under `artifacts/idm/`.
 - `outputs/idm_streaming_d2e_full_compact/metrics.json`
 - `artifacts/idm/idm_streaming_d2e_full_compact_summary.json`
 - `artifacts/idm/g003_d2e_full_idm_run_full_compact.json`
+- `artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.json` for the
+  parallel run path.
+
+## Operational notes from the first MLXP attempt
+
+- Production base image may not include `uv`; install with
+  `python3 -m pip install --user uv` and export `PATH="$HOME/.local/bin:$PATH"`.
+- Production base image may not include `ffmpeg`; install with
+  `apt-get update -y && apt-get install -y ffmpeg`.
+- Keep the D2E cache source-namespaced (`.../cache/d2e_480p`,
+  `.../cache/d2e_original`) because the two Hugging Face repos share
+  game/recording filenames.
+- The first sequential uncapped attempt decoded one 480p recording in about
+  nine minutes; do not rely on the sequential script for the full corpus.
 
 ## Claim boundary
 
