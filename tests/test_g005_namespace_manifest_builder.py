@@ -142,3 +142,25 @@ def test_g005_namespace_builder_rejects_unselected_source_evidence(tmp_path: Pat
 
     assert result.returncode != 0
     assert "not selected" in result.stderr or "not selected" in result.stdout
+
+
+def test_g005_namespace_builder_rejects_candidate_plan_without_selected_sources(tmp_path: Path):
+    candidates = tmp_path / "aux_candidates.json"
+    _write_json(candidates, {"candidates": [{"id": "aux_review", "selection_status": "review_required"}]})
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/build_g005_aux_namespace_manifest.py",
+            "--aux-candidates",
+            str(candidates),
+            "--allow-template",
+            "--output",
+            str(tmp_path / "namespace.json"),
+        ],
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode != 0
+    assert "no selected auxiliary sources" in result.stderr

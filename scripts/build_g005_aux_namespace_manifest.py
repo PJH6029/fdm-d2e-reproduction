@@ -163,6 +163,8 @@ def build_manifest(
 ) -> dict[str, Any]:
     aux_candidates = _load_json(aux_candidates_path)
     selected = _selected_candidates(aux_candidates)
+    if not selected:
+        raise SystemExit("candidate plan has no selected auxiliary sources")
     source_evidence = _load_source_evidence(source_evidence_paths)
     missing = sorted(set(selected) - set(source_evidence))
     extra = sorted(set(source_evidence) - set(selected))
