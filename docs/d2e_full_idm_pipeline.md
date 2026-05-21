@@ -128,6 +128,21 @@ covering all four GPU indices exist. Until then it writes
 `artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json` with `exit_code=2` and
 explicit findings so the final gate remains fail-closed.
 
+For the active integrated run that predates automatic split-stat generation, use
+the post-run finalizer once the parent PID has exited:
+
+```bash
+uv run python scripts/finalize_g003_integrated_run.py
+```
+
+The finalizer is safe by default: if the parent PID is still running, it writes
+`artifacts/idm/g003_integrated_finalization_summary.json` with
+`status=blocked_active_parent` and does not build downstream artifacts. After
+the run exits, it builds missing G003 split-stat comparisons, synthesizes the
+attached 4×H200 train-run summary, and runs the G003 completion audit. It does
+not checkpoint OMX state; checkpoint `G003-d2e-only-idm` only after the
+finalizer and `artifacts/idm/g003_full_idm_completion_audit.json` report pass.
+
 ## Distributed IDM training
 
 `scripts/run_g003_d2e_full_idm_parallel.sh` defaults to

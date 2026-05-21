@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 188,
+  "entry_count": 190,
   "entries": [
     {
       "path": "README.md",
@@ -223,13 +223,13 @@
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "kind": "evidence_artifact",
       "bytes": 61910,
-      "sha256": "3310de1189303ffe0f9894a64c0a01f893db658cff2594b2b3deebc6cc11a373"
+      "sha256": "66c395976b785fee14e05fd9141342dc1182ad5314919be3e2bf1358c6d7c025"
     },
     {
       "path": "artifacts/reproducibility/g009_completion_audit.json",
       "kind": "evidence_artifact",
       "bytes": 3901,
-      "sha256": "c867352c0c032bfacff4f0b940cfd64b7c87e0e74ee4e7db27c22e71953f778f"
+      "sha256": "cc3ccb0f4890b092ae5076e96658c6d04aaa7be0943578c1d9de206e8cd0e704"
     },
     {
       "path": "artifacts/runtime/g007_completion_audit.json",
@@ -504,8 +504,8 @@
     {
       "path": "docs/d2e_full_idm_pipeline.md",
       "kind": "documentation",
-      "bytes": 9152,
-      "sha256": "6c659d3826e1e80098bbe73fd96101ced110ecbea8bfa2ecc6ad3dd2d92d5829"
+      "bytes": 9887,
+      "sha256": "34ee54a39d2d6f0b17fe7331edd9c831bbbb2295a7a9ebaf6eef52ee8abebfe1"
     },
     {
       "path": "docs/d2e_full_split_contract.md",
@@ -648,8 +648,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 12464,
-      "sha256": "f702ac6f9b51d89553422d9d78a490f569a8687db8c1872f4746ceb1d9bc1b27"
+      "bytes": 12625,
+      "sha256": "c30aea3a6601b4df932c97a2a6203eaf49ddda04d611b4c0fc384e0c50cff404"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -680,6 +680,12 @@
       "kind": "reproduction_script",
       "bytes": 4431,
       "sha256": "30112c927038b5b0925c88759d4f8f095928b86bbd1edd1e19ca4242334dd080"
+    },
+    {
+      "path": "scripts/finalize_g003_integrated_run.py",
+      "kind": "reproduction_script",
+      "bytes": 10924,
+      "sha256": "4d50dc4e213ff7ce0f607cba322b8be4660ba804c593d785ff1d31b0842aea07"
     },
     {
       "path": "scripts/merge_d2e_full_corpus_shards.py",
@@ -1028,6 +1034,12 @@
       "kind": "other",
       "bytes": 5309,
       "sha256": "9db8eb9001e2e1f1ab91f624f736d7caa57b707adb0ef53e3f8a1073f7988829"
+    },
+    {
+      "path": "tests/test_g003_integrated_finalization.py",
+      "kind": "other",
+      "bytes": 9433,
+      "sha256": "8b1954989f23d3051cc2c60ded05045243bf70cc836fcecafcdc29b9a41c9c47"
     },
     {
       "path": "tests/test_g003_monitor.py",
