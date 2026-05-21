@@ -127,13 +127,13 @@ contract. It remains `blocked` until downloads and integrity pass, then defines
 the expected `outputs/aux_examples/<dataset_id>/{train,val,test}.jsonl` outputs
 and required loader fields for real G005 auxiliary pretraining.
 
-`build_g005_aux_examples.py` is the first concrete source-specific example
-builder. It currently supports the `atari_head_zip_csv_action_adapter` by
-streaming action CSV members from Atari HEAD Zenodo raw zip archives and writing
-per-source train/val/test JSONL manifests with nested frame references and
-Atari-discrete action ids. Unsupported source layouts such as MineRL zip payloads
-and p-doom ArrayRecord files remain fail-closed until source-specific adapters
-are implemented; the G005 completion audit requires a passing
+`build_g005_aux_examples.py` is the concrete source-specific example builder.
+It supports the `atari_head_zip_csv_action_adapter`, `minerl_action_dict_adapter`,
+and `p_doom_array_record_action_adapter` layouts by writing per-source
+train/val/test JSONL manifests with nested raw-data references and source-native
+action payloads. The p-doom adapter intentionally requires the optional
+`array_record` runtime package in the cluster image; without it the source
+remains fail-closed. The G005 completion audit requires a passing
 `artifacts/aux/g005_aux_examples_summary.json` before any D2E+aux completion
 claim.
 

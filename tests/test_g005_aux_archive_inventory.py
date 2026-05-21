@@ -80,6 +80,17 @@ def test_archive_inventory_hashes_files_when_requested(tmp_path: Path):
     assert payload["aux_sources"][0]["files"][0]["sha256"]
 
 
+def test_archive_inventory_treats_array_records_as_action_candidates(tmp_path: Path):
+    _write_candidates(tmp_path)
+    raw = tmp_path / "outputs/aux/zip_aux/raw/train"
+    raw.mkdir(parents=True)
+    (raw / "data_0000.array_record").write_bytes(b"array-record-placeholder")
+    payload = build_inventory(_args(tmp_path, source_id=["zip_aux"]))
+    assert payload["status"] == "pass"
+    assert payload["aux_sources"][0]["action_candidate_member_count"] == 1
+    assert payload["aux_sources"][0]["files"][0]["action_candidate_members"][0]["path"] == "data_0000.array_record"
+
+
 def test_archive_inventory_blocks_when_selected_namespace_is_missing(tmp_path: Path):
     _write_candidates(tmp_path)
     payload = build_inventory(_args(tmp_path))

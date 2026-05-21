@@ -58,6 +58,8 @@ def _raw_files(namespace: Path) -> list[Path]:
 
 def _is_action_candidate(name: str) -> bool:
     lower = name.lower()
+    if lower.endswith(".array_record"):
+        return True
     return any(hint in lower for hint in ACTION_HINTS)
 
 

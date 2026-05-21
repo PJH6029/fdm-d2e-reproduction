@@ -16,7 +16,9 @@
     "p_doom_atari_breakout_hf"
   ],
   "supported_adapters": [
-    "atari_head_zip_csv_action_adapter"
+    "atari_head_zip_csv_action_adapter",
+    "minerl_action_dict_adapter",
+    "p_doom_array_record_action_adapter"
   ],
   "sources": [
     {
@@ -33,8 +35,8 @@
         {
           "severity": "error",
           "code": "aux_raw_dir_missing",
-          "source_id": "atari_head_zenodo_v4",
-          "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw"
+          "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw",
+          "source_id": "atari_head_zenodo_v4"
         }
       ]
     },
@@ -42,6 +44,7 @@
       "source_id": "minerl_2019_zenodo_v2",
       "adapter": "minerl_action_dict_adapter",
       "status": "blocked",
+      "raw_dir": "outputs/aux/minerl_2019_zenodo_v2/raw",
       "split_counts": {
         "train": 0,
         "val": 0,
@@ -50,8 +53,9 @@
       "findings": [
         {
           "severity": "error",
-          "code": "unsupported_aux_example_adapter",
-          "adapter": "minerl_action_dict_adapter"
+          "code": "aux_raw_dir_missing",
+          "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2/raw",
+          "source_id": "minerl_2019_zenodo_v2"
         }
       ]
     },
@@ -59,6 +63,7 @@
       "source_id": "p_doom_atari_breakout_hf",
       "adapter": "p_doom_array_record_action_adapter",
       "status": "blocked",
+      "raw_dir": "outputs/aux/p_doom_atari_breakout_hf/raw",
       "split_counts": {
         "train": 0,
         "val": 0,
@@ -67,8 +72,9 @@
       "findings": [
         {
           "severity": "error",
-          "code": "unsupported_aux_example_adapter",
-          "adapter": "p_doom_array_record_action_adapter"
+          "code": "aux_raw_dir_missing",
+          "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf/raw",
+          "source_id": "p_doom_atari_breakout_hf"
         }
       ]
     }
@@ -78,20 +84,20 @@
     {
       "severity": "error",
       "code": "aux_raw_dir_missing",
-      "source_id": "atari_head_zenodo_v4",
-      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw"
+      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw",
+      "source_id": "atari_head_zenodo_v4"
     },
     {
       "severity": "error",
-      "code": "unsupported_aux_example_adapter",
-      "source_id": "minerl_2019_zenodo_v2",
-      "adapter": "minerl_action_dict_adapter"
+      "code": "aux_raw_dir_missing",
+      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2/raw",
+      "source_id": "minerl_2019_zenodo_v2"
     },
     {
       "severity": "error",
-      "code": "unsupported_aux_example_adapter",
-      "source_id": "p_doom_atari_breakout_hf",
-      "adapter": "p_doom_array_record_action_adapter"
+      "code": "aux_raw_dir_missing",
+      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf/raw",
+      "source_id": "p_doom_atari_breakout_hf"
     }
   ],
   "error_count": 3,

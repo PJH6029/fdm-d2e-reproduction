@@ -6,6 +6,7 @@ import csv
 import hashlib
 import io
 import json
+import pickle
 import sys
 import zipfile
 from pathlib import Path
@@ -21,7 +22,12 @@ DEFAULT_ACTION_REGISTRY = "artifacts/aux/g005_aux_action_registry.json"
 DEFAULT_NAMESPACE_ROOT = "outputs/aux"
 DEFAULT_EXAMPLES_ROOT = "outputs/aux_examples"
 DEFAULT_SPLITS = ("train", "val", "test")
-SUPPORTED_ADAPTERS = {"atari_head_zip_csv_action_adapter"}
+SUPPORTED_ADAPTERS = {
+    "atari_head_zip_csv_action_adapter",
+    "minerl_action_dict_adapter",
+    "p_doom_array_record_action_adapter",
+}
+PDOOM_BREAKOUT_ACTION_MEANINGS = {0: "NOOP", 1: "FIRE", 2: "RIGHT", 3: "LEFT"}
 
 
 def _path(root: Path, value: str | Path) -> Path:
@@ -72,6 +78,10 @@ def _file_report(path: Path, root: Path) -> dict[str, Any]:
     }
 
 
+def _rel(root: Path, path: Path) -> str:
+    return str(path.relative_to(root)) if path.is_relative_to(root) else str(path)
+
+
 def _maybe_int(value: Any) -> int | None:
     try:
         if value is None or value == "":
@@ -102,6 +112,80 @@ def _load_atari_action_enums(raw_dir: Path) -> dict[str, str]:
         action_id = str(_maybe_int(left.strip()) if _maybe_int(left.strip()) is not None else left.strip())
         enums[action_id] = right.strip()
     return enums
+
+
+def _zero_split_counts(splits: tuple[str, ...]) -> dict[str, int]:
+    return {split: 0 for split in splits}
+
+
+def _blocked_source(
+    *,
+    root: Path,
+    source_id: str,
+    adapter: str | None,
+    raw_dir: Path,
+    splits: tuple[str, ...],
+    finding: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "source_id": source_id,
+        "adapter": adapter,
+        "status": "blocked",
+        "raw_dir": _rel(root, raw_dir),
+        "split_counts": _zero_split_counts(splits),
+        "findings": [{**finding, "source_id": source_id}],
+    }
+
+
+def _open_split_handles(out_dir: Path, splits: tuple[str, ...]):
+    return {split: _jsonl_writer(out_dir / f"{split}.jsonl") for split in splits}
+
+
+def _write_example(handles: dict[str, Any], split_counts: dict[str, int], example: dict[str, Any]) -> None:
+    handles[example["split"]].write(json.dumps(example, ensure_ascii=False, sort_keys=True) + "\n")
+    split_counts[example["split"]] += 1
+
+
+def _split_file_report(root: Path, out_dir: Path, split_counts: dict[str, int], splits: tuple[str, ...]) -> dict[str, dict[str, Any]]:
+    split_files = {split: _file_report(out_dir / f"{split}.jsonl", root) for split in splits}
+    for split, count in split_counts.items():
+        split_files[split]["rows"] = count
+    return split_files
+
+
+def _finish_source_row(
+    *,
+    root: Path,
+    source_id: str,
+    adapter: str | None,
+    raw_dir: Path,
+    out_dir: Path,
+    split_counts: dict[str, int],
+    split_files: dict[str, dict[str, Any]],
+    findings: list[dict[str, Any]],
+    extra: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    if sum(split_counts.values()) == 0:
+        findings.append({"severity": "error", "code": "aux_examples_empty", "source_id": source_id})
+    for split, count in split_counts.items():
+        if count <= 0:
+            findings.append({"severity": "error", "code": "aux_examples_split_empty", "source_id": source_id, "split": split})
+    errors = [item for item in findings if item.get("severity") == "error"]
+    row = {
+        "source_id": source_id,
+        "adapter": adapter,
+        "status": "pass" if not errors else "blocked",
+        "raw_dir": _rel(root, raw_dir),
+        "output_namespace": _rel(root, out_dir),
+        "split_counts": split_counts,
+        "split_files": split_files,
+        "max_examples_per_source": extra.pop("max_examples_per_source", None) if extra else None,
+        "manifest_fingerprint": stable_hash_json({"source_id": source_id, "split_counts": split_counts, "split_files": split_files}),
+        "findings": findings,
+    }
+    if extra:
+        row.update(extra)
+    return row
 
 
 def _matching_tar_member(txt_member: str, members: set[str]) -> str | None:
@@ -183,27 +267,27 @@ def _build_atari_examples(
     out_dir = examples_root / source_id
     findings: list[dict[str, Any]] = []
     if not raw_dir.exists() or not raw_dir.is_dir():
-        return {
-            "source_id": source_id,
-            "adapter": head.get("adapter"),
-            "status": "blocked",
-            "raw_dir": str(raw_dir.relative_to(root)) if raw_dir.is_relative_to(root) else str(raw_dir),
-            "split_counts": {split: 0 for split in splits},
-            "findings": [{"severity": "error", "code": "aux_raw_dir_missing", "source_id": source_id, "path": str(raw_dir)}],
-        }
+        return _blocked_source(
+            root=root,
+            source_id=source_id,
+            adapter=head.get("adapter"),
+            raw_dir=raw_dir,
+            splits=splits,
+            finding={"severity": "error", "code": "aux_raw_dir_missing", "path": str(raw_dir)},
+        )
     zip_paths = sorted(path for path in raw_dir.glob("*.zip") if path.is_file() and ".part-" not in path.name and ".invalid-" not in path.name)
     if not zip_paths:
-        return {
-            "source_id": source_id,
-            "adapter": head.get("adapter"),
-            "status": "blocked",
-            "raw_dir": str(raw_dir.relative_to(root)) if raw_dir.is_relative_to(root) else str(raw_dir),
-            "split_counts": {split: 0 for split in splits},
-            "findings": [{"severity": "error", "code": "aux_raw_zip_missing", "source_id": source_id, "path": str(raw_dir)}],
-        }
+        return _blocked_source(
+            root=root,
+            source_id=source_id,
+            adapter=head.get("adapter"),
+            raw_dir=raw_dir,
+            splits=splits,
+            finding={"severity": "error", "code": "aux_raw_zip_missing", "path": str(raw_dir)},
+        )
 
-    handles = {split: _jsonl_writer(out_dir / f"{split}.jsonl") for split in splits}
-    split_counts = {split: 0 for split in splits}
+    handles = _open_split_handles(out_dir, splits)
+    split_counts = _zero_split_counts(splits)
     zip_reports: list[dict[str, Any]] = []
     try:
         action_enums = _load_atari_action_enums(raw_dir)
@@ -222,8 +306,7 @@ def _build_atari_examples(
                     splits=splits,
                     max_examples=None if max_examples is None else max(0, max_examples - sum(split_counts.values())),
                 ):
-                    handles[example["split"]].write(json.dumps(example, ensure_ascii=False, sort_keys=True) + "\n")
-                    split_counts[example["split"]] += 1
+                    _write_example(handles, split_counts, example)
                     zip_rows += 1
                     if max_examples is not None and sum(split_counts.values()) >= max_examples:
                         break
@@ -239,26 +322,372 @@ def _build_atari_examples(
         for handle in handles.values():
             handle.close()
 
-    split_files = {split: _file_report(out_dir / f"{split}.jsonl", root) for split in splits}
-    for split, count in split_counts.items():
-        split_files[split]["rows"] = count
-    if sum(split_counts.values()) == 0:
-        findings.append({"severity": "error", "code": "aux_examples_empty", "source_id": source_id})
-    errors = [item for item in findings if item.get("severity") == "error"]
-    return {
-        "source_id": source_id,
-        "adapter": head.get("adapter"),
-        "status": "pass" if not errors else "blocked",
-        "raw_dir": str(raw_dir.relative_to(root)) if raw_dir.is_relative_to(root) else str(raw_dir),
-        "output_namespace": str(out_dir.relative_to(root)) if out_dir.is_relative_to(root) else str(out_dir),
-        "split_counts": split_counts,
-        "split_files": split_files,
-        "raw_zip_files": zip_reports,
-        "action_enum_count": len(action_enums),
-        "max_examples_per_source": max_examples,
-        "manifest_fingerprint": stable_hash_json({"source_id": source_id, "split_counts": split_counts, "split_files": split_files}),
-        "findings": findings,
-    }
+    split_files = _split_file_report(root, out_dir, split_counts, splits)
+    return _finish_source_row(
+        root=root,
+        source_id=source_id,
+        adapter=head.get("adapter"),
+        raw_dir=raw_dir,
+        out_dir=out_dir,
+        split_counts=split_counts,
+        split_files=split_files,
+        findings=findings,
+        extra={"raw_zip_files": zip_reports, "action_enum_count": len(action_enums), "max_examples_per_source": max_examples},
+    )
+
+
+def _iter_minerl_action_payloads(payload: Any, *, member_path: str, sequence_id: str) -> Iterable[tuple[int, Any, dict[str, Any]]]:
+    """Yield action payloads from common MineRL JSON trajectory layouts.
+
+    MineRL releases have appeared as trajectory JSON sidecars and API-friendly
+    structured dictionaries.  This keeps the adapter source-specific while
+    remaining conservative: only explicit action/action-list fields are emitted.
+    """
+
+    def walk(value: Any, path: str) -> Iterable[tuple[int, Any, dict[str, Any]]]:
+        if isinstance(value, dict):
+            if "actions" in value and isinstance(value["actions"], list):
+                for idx, action in enumerate(value["actions"]):
+                    yield idx, action, {"json_path": f"{path}.actions[{idx}]", "member_path": member_path}
+                return
+            if "action" in value:
+                idx = _maybe_int(value.get("timestep") or value.get("step") or value.get("frame") or value.get("index")) or 0
+                yield idx, value["action"], {"json_path": path, "member_path": member_path}
+                return
+            for key in ("steps", "records", "trajectory", "trajectories", "data", "events", "timesteps"):
+                nested = value.get(key)
+                if isinstance(nested, (list, dict)):
+                    yield from walk(nested, f"{path}.{key}")
+        elif isinstance(value, list):
+            for idx, item in enumerate(value):
+                if isinstance(item, dict) and "action" in item:
+                    yield idx, item["action"], {"json_path": f"{path}[{idx}]", "member_path": member_path}
+                else:
+                    yield from walk(item, f"{path}[{idx}]")
+
+    emitted = False
+    for idx, action, provenance in walk(payload, "$"):
+        emitted = True
+        yield idx, action, provenance
+    if not emitted and isinstance(payload, dict) and any(key in payload for key in ("camera", "buttons", "keyboard")):
+        yield 0, payload, {"json_path": "$", "member_path": member_path}
+
+
+def _iter_minerl_zip_rows(
+    *,
+    root: Path,
+    zip_path: Path,
+    source_id: str,
+    action_head_namespace: str,
+    splits: tuple[str, ...],
+    max_examples: int | None,
+) -> Iterable[dict[str, Any]]:
+    emitted = 0
+    zip_rel = _rel(root, zip_path)
+    with zipfile.ZipFile(zip_path) as archive:
+        members = sorted(
+            name
+            for name in archive.namelist()
+            if name.lower().endswith((".json", ".jsonl")) and not name.endswith("/")
+        )
+        for member in members:
+            sequence_id = str(Path(member).with_suffix(""))
+            split = _split_for_sequence(f"{zip_path.name}:{sequence_id}", splits)
+            with archive.open(member) as raw:
+                if member.lower().endswith(".jsonl"):
+                    rows = []
+                    for line_no, line in enumerate(io.TextIOWrapper(raw, encoding="utf-8", errors="replace"), 1):
+                        text = line.strip()
+                        if not text:
+                            continue
+                        parsed = json.loads(text)
+                        rows.append({"line_no": line_no, "action": parsed.get("action") if isinstance(parsed, dict) else parsed})
+                    payload: Any = {"actions": [row["action"] for row in rows if row.get("action") is not None]}
+                else:
+                    payload = json.loads(raw.read().decode("utf-8", errors="replace"))
+            for row_idx, action, provenance in _iter_minerl_action_payloads(payload, member_path=member, sequence_id=sequence_id):
+                yield {
+                    "source_id": source_id,
+                    "source_sequence_id": sequence_id,
+                    "frame_or_state_ref": f"zip-json://{zip_rel}!{member}#step={row_idx}",
+                    "action": {"type": "minecraft_keyboard_mouse", "raw_action": action},
+                    "action_head_namespace": action_head_namespace,
+                    "split": split,
+                    "provenance": {
+                        "raw_zip": zip_rel,
+                        "json_member": member,
+                        "row_number": row_idx,
+                        **provenance,
+                    },
+                }
+                emitted += 1
+                if max_examples is not None and emitted >= max_examples:
+                    return
+
+
+def _build_minerl_examples(
+    *,
+    root: Path,
+    head: dict[str, Any],
+    namespace_root: Path,
+    examples_root: Path,
+    splits: tuple[str, ...],
+    max_examples: int | None,
+    allow_incomplete_raw: bool,
+) -> dict[str, Any]:
+    source_id = str(head["id"])
+    raw_dir = namespace_root / source_id / "raw"
+    out_dir = examples_root / source_id
+    findings: list[dict[str, Any]] = []
+    if not raw_dir.exists() or not raw_dir.is_dir():
+        return _blocked_source(
+            root=root,
+            source_id=source_id,
+            adapter=head.get("adapter"),
+            raw_dir=raw_dir,
+            splits=splits,
+            finding={"severity": "error", "code": "aux_raw_dir_missing", "path": str(raw_dir)},
+        )
+    zip_paths = sorted(path for path in raw_dir.glob("*.zip") if path.is_file() and ".part-" not in path.name and ".invalid-" not in path.name)
+    if not zip_paths:
+        return _blocked_source(
+            root=root,
+            source_id=source_id,
+            adapter=head.get("adapter"),
+            raw_dir=raw_dir,
+            splits=splits,
+            finding={"severity": "error", "code": "minerl_raw_zip_missing", "path": str(raw_dir)},
+        )
+
+    handles = _open_split_handles(out_dir, splits)
+    split_counts = _zero_split_counts(splits)
+    zip_reports: list[dict[str, Any]] = []
+    json_member_count = 0
+    try:
+        for zip_path in zip_paths:
+            report = _file_report(zip_path, root)
+            try:
+                with zipfile.ZipFile(zip_path) as archive:
+                    report["json_member_count"] = len([name for name in archive.namelist() if name.lower().endswith((".json", ".jsonl"))])
+                    json_member_count += int(report["json_member_count"])
+                rows = 0
+                for example in _iter_minerl_zip_rows(
+                    root=root,
+                    zip_path=zip_path,
+                    source_id=source_id,
+                    action_head_namespace=str(head.get("namespace") or source_id),
+                    splits=splits,
+                    max_examples=None if max_examples is None else max(0, max_examples - sum(split_counts.values())),
+                ):
+                    _write_example(handles, split_counts, example)
+                    rows += 1
+                    if max_examples is not None and sum(split_counts.values()) >= max_examples:
+                        break
+                report["example_rows"] = rows
+            except (zipfile.BadZipFile, json.JSONDecodeError, UnicodeDecodeError) as exc:
+                severity = "warning" if allow_incomplete_raw else "error"
+                findings.append({"severity": severity, "code": "minerl_zip_parse_failed", "source_id": source_id, "path": report["path"], "error": str(exc)})
+            zip_reports.append(report)
+            if max_examples is not None and sum(split_counts.values()) >= max_examples:
+                break
+    finally:
+        for handle in handles.values():
+            handle.close()
+    if json_member_count == 0:
+        findings.append({"severity": "error", "code": "minerl_action_json_missing", "source_id": source_id})
+    split_files = _split_file_report(root, out_dir, split_counts, splits)
+    return _finish_source_row(
+        root=root,
+        source_id=source_id,
+        adapter=head.get("adapter"),
+        raw_dir=raw_dir,
+        out_dir=out_dir,
+        split_counts=split_counts,
+        split_files=split_files,
+        findings=findings,
+        extra={"raw_zip_files": zip_reports, "json_member_count": json_member_count, "max_examples_per_source": max_examples},
+    )
+
+
+def _load_array_record_reader():
+    try:
+        from array_record.python.array_record_module import ArrayRecordReader
+    except Exception as exc:  # pragma: no cover - depends on optional runtime package
+        return None, exc
+    return ArrayRecordReader, None
+
+
+def _flatten_actions(actions: Any) -> list[Any]:
+    if actions is None:
+        return []
+    if hasattr(actions, "tolist"):
+        actions = actions.tolist()
+    if isinstance(actions, tuple):
+        actions = list(actions)
+    if not isinstance(actions, list):
+        return [actions]
+    if actions and all(isinstance(item, list) and len(item) == 1 for item in actions):
+        return [item[0] for item in actions]
+    return actions
+
+
+def _iter_pdoom_array_record_rows(
+    *,
+    root: Path,
+    array_record_path: Path,
+    split: str,
+    source_id: str,
+    action_head_namespace: str,
+    reader_cls: Any,
+    max_examples: int | None,
+) -> Iterable[dict[str, Any]]:
+    emitted = 0
+    rel = _rel(root, array_record_path)
+    reader = reader_cls(str(array_record_path))
+    record_idx = 0
+    while True:
+        raw = reader.read()
+        if raw is None:
+            break
+        record = pickle.loads(raw)
+        seq_len = int(record.get("sequence_length") or 0)
+        actions = _flatten_actions(record.get("actions"))
+        usable = min(seq_len, len(actions))
+        for frame_idx in range(usable):
+            action_id = _maybe_int(actions[frame_idx])
+            yield {
+                "source_id": source_id,
+                "source_sequence_id": f"{Path(rel).stem}:record_{record_idx:06d}",
+                "frame_or_state_ref": f"array-record://{rel}#record={record_idx}&frame={frame_idx}",
+                "action": {
+                    "type": "atari_discrete",
+                    "action_id": action_id,
+                    "raw_action": actions[frame_idx],
+                    "action_enum": PDOOM_BREAKOUT_ACTION_MEANINGS.get(action_id) if action_id is not None else None,
+                },
+                "action_head_namespace": action_head_namespace,
+                "split": split,
+                "provenance": {
+                    "array_record": rel,
+                    "record_index": record_idx,
+                    "frame_index": frame_idx,
+                    "sequence_length": seq_len,
+                },
+            }
+            emitted += 1
+            if max_examples is not None and emitted >= max_examples:
+                return
+        record_idx += 1
+
+
+def _split_from_pdoom_path(raw_dir: Path, path: Path, splits: tuple[str, ...]) -> str:
+    try:
+        first = path.relative_to(raw_dir).parts[0]
+    except ValueError:
+        first = ""
+    return first if first in splits else _split_for_sequence(str(path), splits)
+
+
+def _build_pdoom_examples(
+    *,
+    root: Path,
+    head: dict[str, Any],
+    namespace_root: Path,
+    examples_root: Path,
+    splits: tuple[str, ...],
+    max_examples: int | None,
+) -> dict[str, Any]:
+    source_id = str(head["id"])
+    raw_dir = namespace_root / source_id / "raw"
+    out_dir = examples_root / source_id
+    findings: list[dict[str, Any]] = []
+    if not raw_dir.exists() or not raw_dir.is_dir():
+        return _blocked_source(
+            root=root,
+            source_id=source_id,
+            adapter=head.get("adapter"),
+            raw_dir=raw_dir,
+            splits=splits,
+            finding={"severity": "error", "code": "aux_raw_dir_missing", "path": str(raw_dir)},
+        )
+    array_records = sorted(path for path in raw_dir.rglob("*.array_record") if path.is_file() and ".part-" not in path.name and ".invalid-" not in path.name)
+    if not array_records:
+        return _blocked_source(
+            root=root,
+            source_id=source_id,
+            adapter=head.get("adapter"),
+            raw_dir=raw_dir,
+            splits=splits,
+            finding={"severity": "error", "code": "pdoom_array_record_files_missing", "path": str(raw_dir)},
+        )
+    reader_cls, reader_exc = _load_array_record_reader()
+    if reader_cls is None:
+        return _blocked_source(
+            root=root,
+            source_id=source_id,
+            adapter=head.get("adapter"),
+            raw_dir=raw_dir,
+            splits=splits,
+            finding={
+                "severity": "error",
+                "code": "array_record_dependency_missing",
+                "path": str(raw_dir),
+                "error": str(reader_exc),
+                "install_hint": "Install array_record in the cluster image before building p-doom ArrayRecord examples.",
+            },
+        )
+
+    handles = _open_split_handles(out_dir, splits)
+    split_counts = _zero_split_counts(splits)
+    file_reports: list[dict[str, Any]] = []
+    try:
+        for array_record_path in array_records:
+            split = _split_from_pdoom_path(raw_dir, array_record_path, splits)
+            report = _file_report(array_record_path, root)
+            rows = 0
+            try:
+                for example in _iter_pdoom_array_record_rows(
+                    root=root,
+                    array_record_path=array_record_path,
+                    split=split,
+                    source_id=source_id,
+                    action_head_namespace=str(head.get("namespace") or source_id),
+                    reader_cls=reader_cls,
+                    max_examples=None if max_examples is None else max(0, max_examples - sum(split_counts.values())),
+                ):
+                    _write_example(handles, split_counts, example)
+                    rows += 1
+                    if max_examples is not None and sum(split_counts.values()) >= max_examples:
+                        break
+            except (OSError, RuntimeError, pickle.PickleError, ValueError, KeyError) as exc:
+                findings.append({"severity": "error", "code": "pdoom_array_record_parse_failed", "source_id": source_id, "path": report["path"], "error": str(exc)})
+            report["example_rows"] = rows
+            report["split"] = split
+            file_reports.append(report)
+            if max_examples is not None and sum(split_counts.values()) >= max_examples:
+                break
+    finally:
+        for handle in handles.values():
+            handle.close()
+
+    split_files = _split_file_report(root, out_dir, split_counts, splits)
+    metadata = _load_json(raw_dir / "metadata.json") if (raw_dir / "metadata.json").exists() else None
+    return _finish_source_row(
+        root=root,
+        source_id=source_id,
+        adapter=head.get("adapter"),
+        raw_dir=raw_dir,
+        out_dir=out_dir,
+        split_counts=split_counts,
+        split_files=split_files,
+        findings=findings,
+        extra={
+            "array_record_files": file_reports,
+            "metadata": {"path": _rel(root, raw_dir / "metadata.json"), "num_actions": (metadata or {}).get("num_actions")} if isinstance(metadata, dict) else None,
+            "action_meanings": PDOOM_BREAKOUT_ACTION_MEANINGS,
+            "max_examples_per_source": max_examples,
+        },
+    )
 
 
 def build_examples(args: argparse.Namespace) -> dict[str, Any]:
@@ -288,6 +717,31 @@ def build_examples(args: argparse.Namespace) -> dict[str, Any]:
                 splits=splits,
                 max_examples=args.max_examples_per_source,
                 allow_incomplete_raw=bool(args.allow_incomplete_raw),
+            )
+            sources.append(row)
+            findings.extend({**item, "source_id": item.get("source_id", source_id)} for item in row.get("findings", []))
+            continue
+        if adapter == "minerl_action_dict_adapter":
+            row = _build_minerl_examples(
+                root=root,
+                head=head,
+                namespace_root=namespace_root,
+                examples_root=examples_root,
+                splits=splits,
+                max_examples=args.max_examples_per_source,
+                allow_incomplete_raw=bool(args.allow_incomplete_raw),
+            )
+            sources.append(row)
+            findings.extend({**item, "source_id": item.get("source_id", source_id)} for item in row.get("findings", []))
+            continue
+        if adapter == "p_doom_array_record_action_adapter":
+            row = _build_pdoom_examples(
+                root=root,
+                head=head,
+                namespace_root=namespace_root,
+                examples_root=examples_root,
+                splits=splits,
+                max_examples=args.max_examples_per_source,
             )
             sources.append(row)
             findings.extend({**item, "source_id": item.get("source_id", source_id)} for item in row.get("findings", []))
