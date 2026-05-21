@@ -66,6 +66,11 @@ For each planned game/task/seed episode, the evidence JSON must include:
 - `status` indicating pass/success/completion.
 - `score` and `baseline_score` for baseline win-rate checks.
 - `latency.p95_ms` at or below the configured threshold.
+- `runtime` metadata proving the policy was attached to a live graphical
+  process rather than a replay: allowed `control_backend`, trained-policy
+  `agent_mode`, `process_name`, `window_title` matching the suite config,
+  existing `checkpoint_path`, existing `adapter_config_path`, action count, and
+  start/end timestamps.
 - Existing `video_path`, `replay_path`, `latency_log_path`, and `failure_log_path`.
 
 The suite also requires a statistical-comparison artifact and an explicit strong
@@ -79,6 +84,10 @@ statistical bar field:
   }
 }
 ```
+
+The G008 completion audit hashes the episode video/replay/latency/failure
+artifacts plus runtime checkpoint and adapter-config artifacts. A precomputed
+validation JSON that omits these runtime artifact hashes is not sufficient.
 
 After collecting live evidence, prefer the fail-closed finalizer rather than
 manually chaining validators:

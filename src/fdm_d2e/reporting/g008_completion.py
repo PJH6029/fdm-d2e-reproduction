@@ -42,10 +42,16 @@ def _episode_artifact_paths(validation: dict[str, Any] | None) -> list[str]:
         for evidence in artifacts.values():
             if isinstance(evidence, dict) and evidence.get("path"):
                 paths.append(str(evidence["path"]))
+        runtime = episode.get("runtime", {}) if isinstance(episode, dict) else {}
+        if isinstance(runtime, dict):
+            for key in ["checkpoint", "adapter_config"]:
+                evidence = runtime.get(key)
+                if isinstance(evidence, dict) and evidence.get("path"):
+                    paths.append(str(evidence["path"]))
     stats_path = _get(validation, "statistical_comparison_artifact.path")
     if stats_path:
         paths.append(str(stats_path))
-    return paths
+    return list(dict.fromkeys(paths))
 
 
 def validate_g008_live_suite_completion(config: dict[str, Any], *, root: str | Path = ".") -> dict[str, Any]:
@@ -118,6 +124,18 @@ def validate_g008_live_suite_completion(config: dict[str, Any], *, root: str | P
             missing_hashes = [path for path in _episode_artifact_paths(validation) if not _file_status(root_path / path, path)["sha256"]]
             if missing_hashes:
                 findings.append({"severity": "error", "code": "missing_episode_artifact_hashes", "paths": missing_hashes})
+        if config.get("require_runtime_artifact_hashes", True):
+            runtime_missing: list[dict[str, Any]] = []
+            for idx, episode in enumerate(validation.get("episode_results", []) or []):
+                runtime = episode.get("runtime", {}) if isinstance(episode, dict) else {}
+                for key in ["checkpoint", "adapter_config"]:
+                    evidence = runtime.get(key) if isinstance(runtime, dict) else None
+                    path = evidence.get("path") if isinstance(evidence, dict) else None
+                    status = _file_status(root_path / str(path), str(path)) if path else {"exists": False, "sha256": None}
+                    if not status["exists"] or not status["sha256"]:
+                        runtime_missing.append({"episode_index": idx, "artifact": key, "path": path})
+            if runtime_missing:
+                findings.append({"severity": "error", "code": "missing_runtime_artifact_hashes", "artifacts": runtime_missing})
 
     if checkpoint_metadata is not None:
         allowed_namespaces = set(str(item) for item in config.get("allowed_checkpoint_namespaces", ["d2e_full_corpus", "d2e_aux"]))

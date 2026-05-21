@@ -34,6 +34,8 @@ def _write(path: Path, text: str = "evidence") -> str:
 
 def _passing_evidence(tmp_path: Path, config: dict) -> dict:
     episodes = []
+    checkpoint = _write(tmp_path / "evidence" / "trained_fdm_checkpoint.pt", "checkpoint")
+    adapter_config = _write(tmp_path / "evidence" / "runtime_adapter.yaml", "adapter")
     for game in planned_open_source_games(config):
         for task in game["tasks"]:
             for seed in task["seeds"]:
@@ -47,6 +49,17 @@ def _passing_evidence(tmp_path: Path, config: dict) -> dict:
                         "score": 10.0 + seed,
                         "baseline_score": 1.0,
                         "latency": {"p50_ms": 18.0, "p95_ms": 42.0},
+                        "runtime": {
+                            "control_backend": "xdotool",
+                            "agent_mode": "trained_fdm_policy",
+                            "process_name": game["id"],
+                            "window_title": game["name"],
+                            "checkpoint_path": checkpoint,
+                            "adapter_config_path": adapter_config,
+                            "action_count": 12,
+                            "started_at_unix": 1000.0 + seed,
+                            "ended_at_unix": 1010.0 + seed,
+                        },
                         "video_path": _write(prefix / "episode.mp4", "video"),
                         "replay_path": _write(prefix / "replay.jsonl", "replay"),
                         "latency_log_path": _write(prefix / "latency.jsonl", "latency"),
@@ -100,3 +113,27 @@ def test_live_suite_rejects_missing_required_video(tmp_path):
     result = validate_live_suite_evidence(config, evidence)
     assert result["quality_gate"]["status"] == "fail"
     assert any(item["code"] == "missing_episode_artifact" and item["artifact"] == "video_path" for item in result["findings"])
+
+
+def test_live_suite_requires_live_runtime_metadata(tmp_path):
+    config = load_config(CONFIG_PATH)
+    evidence = _passing_evidence(tmp_path, config)
+    first = evidence["episodes"][0]
+    first.pop("runtime")
+    result = validate_live_suite_evidence(config, evidence)
+    codes = {item["code"] for item in result["findings"]}
+    assert result["quality_gate"]["status"] == "fail"
+    assert "missing_episode_runtime_metadata" in codes
+    assert "control_backend_not_allowed" in codes
+    assert "missing_runtime_checkpoint_artifact" in codes
+
+
+def test_live_suite_rejects_replay_control_backend(tmp_path):
+    config = load_config(CONFIG_PATH)
+    evidence = _passing_evidence(tmp_path, config)
+    evidence["episodes"][0]["runtime"]["control_backend"] = "deterministic_replay"
+    result = validate_live_suite_evidence(config, evidence)
+    codes = {item["code"] for item in result["findings"]}
+    assert result["quality_gate"]["status"] == "fail"
+    assert "non_live_control_backend" in codes
+    assert "control_backend_not_allowed" in codes

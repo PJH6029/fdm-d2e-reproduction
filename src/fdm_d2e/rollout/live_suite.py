@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,18 @@ from fdm_d2e.io_utils import write_json
 
 PASS_STATUSES = {"pass", "success", "completed"}
 FAIL_STATUSES = {"fail", "failed", "crash", "timeout", "blocked", "error"}
+DISALLOWED_CONTROL_BACKENDS = {"dry_run", "deterministic_replay", "replay", "noop", "none", "simulated"}
+DEFAULT_ALLOWED_CONTROL_BACKENDS = {
+    "evdev_uinput",
+    "macos_quartz",
+    "native_os_input",
+    "os_input",
+    "pyautogui_os_input",
+    "uinput",
+    "win32_sendinput",
+    "xdotool",
+    "ydotool",
+}
 
 
 class LiveSuiteValidationError(ValueError):
@@ -123,6 +136,9 @@ def live_suite_thresholds(config: dict[str, Any]) -> dict[str, Any]:
         "require_latency_log": bool(thresholds.get("require_latency_log", True)),
         "require_failure_log": bool(thresholds.get("require_failure_log", True)),
         "require_statistical_comparison": bool(thresholds.get("require_statistical_comparison", True)),
+        "require_runtime_metadata": bool(thresholds.get("require_runtime_metadata", True)),
+        "require_window_title_match": bool(thresholds.get("require_window_title_match", True)),
+        "min_action_count_per_episode": int(thresholds.get("min_action_count_per_episode", 1)),
     }
 
 
@@ -142,6 +158,13 @@ def _task_lookup(config: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]
     return lookup
 
 
+def _allowed_control_backends(config: dict[str, Any]) -> set[str]:
+    values = config.get("allowed_control_backends") or sorted(DEFAULT_ALLOWED_CONTROL_BACKENDS)
+    if not isinstance(values, list):
+        raise LiveSuiteValidationError("allowed_control_backends must be a list")
+    return {str(value).lower() for value in values}
+
+
 def _episode_artifact_status(episode: dict[str, Any], *, root: Path, thresholds: dict[str, Any]) -> dict[str, Any]:
     video = _file_status(episode.get("video_path"), root=root)
     replay = _file_status(episode.get("replay_path"), root=root)
@@ -157,6 +180,93 @@ def _episode_artifact_status(episode: dict[str, Any], *, root: Path, thresholds:
     if thresholds["require_failure_log"] and not failure["exists"]:
         missing.append("failure_log_path")
     return {"video": video, "replay": replay, "latency_log": latency, "failure_log": failure, "missing_required_artifacts": missing}
+
+
+def _window_title_matches(pattern: str | None, title: str) -> bool:
+    if not pattern:
+        return bool(title.strip())
+    try:
+        return re.search(pattern, title, flags=re.IGNORECASE) is not None
+    except re.error:
+        return False
+
+
+def _runtime_metadata_status(
+    episode: dict[str, Any],
+    *,
+    root: Path,
+    info: dict[str, Any],
+    config: dict[str, Any],
+    thresholds: dict[str, Any],
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    runtime = episode.get("runtime") if isinstance(episode.get("runtime"), dict) else {}
+    findings: list[dict[str, Any]] = []
+    allowed_backends = _allowed_control_backends(config)
+    control_backend = str(runtime.get("control_backend", "")).lower()
+    if thresholds["require_runtime_metadata"] and not runtime:
+        findings.append({"severity": "error", "code": "missing_episode_runtime_metadata"})
+    if control_backend in DISALLOWED_CONTROL_BACKENDS:
+        findings.append({"severity": "error", "code": "non_live_control_backend", "control_backend": runtime.get("control_backend")})
+    if control_backend not in allowed_backends:
+        findings.append(
+            {
+                "severity": "error",
+                "code": "control_backend_not_allowed",
+                "allowed": sorted(allowed_backends),
+                "actual": runtime.get("control_backend"),
+            }
+        )
+    agent_mode = str(runtime.get("agent_mode", "")).lower()
+    if agent_mode not in {"trained_fdm_policy", "trained_idm_fdm_policy", "fdm_policy"}:
+        findings.append({"severity": "error", "code": "agent_mode_not_trained_policy", "actual": runtime.get("agent_mode")})
+    checkpoint = _file_status(runtime.get("checkpoint_path"), root=root)
+    if not checkpoint["exists"]:
+        findings.append({"severity": "error", "code": "missing_runtime_checkpoint_artifact", "path": runtime.get("checkpoint_path")})
+    adapter_config = _file_status(runtime.get("adapter_config_path"), root=root)
+    if not adapter_config["exists"]:
+        findings.append({"severity": "error", "code": "missing_runtime_adapter_config_artifact", "path": runtime.get("adapter_config_path")})
+    game = info["game"]
+    window_title = str(runtime.get("window_title", ""))
+    if thresholds["require_window_title_match"] and not _window_title_matches(game.get("window_title_pattern"), window_title):
+        findings.append(
+            {
+                "severity": "error",
+                "code": "window_title_mismatch",
+                "expected_pattern": game.get("window_title_pattern"),
+                "actual": runtime.get("window_title"),
+            }
+        )
+    process_name = str(runtime.get("process_name", "")).strip()
+    if thresholds["require_runtime_metadata"] and not process_name:
+        findings.append({"severity": "error", "code": "missing_game_process_name"})
+    action_count = int(_numeric(runtime.get("action_count"), default=0.0))
+    if action_count < thresholds["min_action_count_per_episode"]:
+        findings.append(
+            {
+                "severity": "error",
+                "code": "too_few_live_actions",
+                "expected_min": thresholds["min_action_count_per_episode"],
+                "actual": action_count,
+            }
+        )
+    start = _numeric(runtime.get("started_at_unix"), default=0.0)
+    end = _numeric(runtime.get("ended_at_unix"), default=0.0)
+    if thresholds["require_runtime_metadata"] and (start <= 0.0 or end <= start):
+        findings.append({"severity": "error", "code": "invalid_episode_runtime_window", "started_at_unix": start, "ended_at_unix": end})
+    return (
+        {
+            "control_backend": runtime.get("control_backend"),
+            "agent_mode": runtime.get("agent_mode"),
+            "process_name": runtime.get("process_name"),
+            "window_title": runtime.get("window_title"),
+            "action_count": action_count,
+            "started_at_unix": runtime.get("started_at_unix"),
+            "ended_at_unix": runtime.get("ended_at_unix"),
+            "checkpoint": checkpoint,
+            "adapter_config": adapter_config,
+        },
+        findings,
+    )
 
 
 def validate_live_suite_evidence(config: dict[str, Any], evidence: dict[str, Any], *, root: str | Path = ".") -> dict[str, Any]:
@@ -212,6 +322,9 @@ def validate_live_suite_evidence(config: dict[str, Any], evidence: dict[str, Any
         artifacts = _episode_artifact_status(episode, root=root_path, thresholds=thresholds)
         for missing in artifacts["missing_required_artifacts"]:
             findings.append({"severity": "error", "code": "missing_episode_artifact", "episode_index": idx, "artifact": missing})
+        runtime, runtime_findings = _runtime_metadata_status(episode, root=root_path, info=info, config=config, thresholds=thresholds)
+        for finding in runtime_findings:
+            findings.append({"episode_index": idx, "game_id": game_id, "task_id": task_id, **finding})
         p95_latency_ms = _numeric(episode.get("latency", {}).get("p95_ms"), default=float("inf"))
         if p95_latency_ms > thresholds["max_p95_latency_ms"]:
             findings.append(
@@ -224,7 +337,8 @@ def validate_live_suite_evidence(config: dict[str, Any], evidence: dict[str, Any
                 }
             )
         status = str(episode.get("status", "")).lower()
-        passed = status in PASS_STATUSES and not artifacts["missing_required_artifacts"] and p95_latency_ms <= thresholds["max_p95_latency_ms"]
+        runtime_passed = not [item for item in runtime_findings if item.get("severity") == "error"]
+        passed = status in PASS_STATUSES and not artifacts["missing_required_artifacts"] and runtime_passed and p95_latency_ms <= thresholds["max_p95_latency_ms"]
         result = {
             "episode_index": idx,
             "game_id": game_id,
@@ -236,6 +350,7 @@ def validate_live_suite_evidence(config: dict[str, Any], evidence: dict[str, Any
             "baseline_score": _numeric(episode.get("baseline_score"), default=0.0),
             "p95_latency_ms": p95_latency_ms,
             "artifacts": artifacts,
+            "runtime": runtime,
         }
         episode_results.append(result)
         by_task.setdefault(key, []).append(result)

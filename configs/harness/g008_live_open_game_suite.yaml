@@ -4,6 +4,7 @@
   "output_path": "artifacts/harness/g008_live_open_game_suite_protocol.json",
   "claim_boundary": "This config is a protocol for future live open-source/offline graphical-game evidence. It does not by itself satisfy G008.",
   "allowed_evidence_modes": ["live_desktop_control", "live_graphical_game_control"],
+  "allowed_control_backends": ["evdev_uinput", "native_os_input", "os_input", "pyautogui_os_input", "uinput", "xdotool", "ydotool"],
   "thresholds": {
     "min_games": 3,
     "min_tasks": 3,
@@ -12,11 +13,14 @@
     "min_task_pass_rate": 0.67,
     "max_p95_latency_ms": 250,
     "min_baseline_win_rate": 0.50,
+    "min_action_count_per_episode": 1,
     "require_video": true,
     "require_replay": true,
     "require_latency_log": true,
     "require_failure_log": true,
-    "require_statistical_comparison": true
+    "require_statistical_comparison": true,
+    "require_runtime_metadata": true,
+    "require_window_title_match": true
   },
   "games": [
     {

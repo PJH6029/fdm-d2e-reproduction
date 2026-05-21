@@ -57,6 +57,8 @@ def _complete_fixture(root: Path) -> None:
         },
     )
     episode_results = []
+    checkpoint_path = _write_file(root / "artifacts/harness/live/trained_fdm_checkpoint.pt", "checkpoint")
+    adapter_config_path = _write_file(root / "artifacts/harness/live/runtime_adapter.yaml", "adapter")
     for game in GAMES:
         task_id = f"{game}_task"
         for seed in range(5):
@@ -67,6 +69,12 @@ def _complete_fixture(root: Path) -> None:
                     "task_id": task_id,
                     "seed": seed,
                     "passed": True,
+                    "runtime": {
+                        "control_backend": "xdotool",
+                        "agent_mode": "trained_fdm_policy",
+                        "checkpoint": {"path": checkpoint_path, "exists": True},
+                        "adapter_config": {"path": adapter_config_path, "exists": True},
+                    },
                     "artifacts": {
                         "video": {"path": _write_file(prefix / "episode.mp4")},
                         "replay": {"path": _write_file(prefix / "replay.jsonl")},
@@ -100,7 +108,7 @@ def test_g008_completion_audit_passes_on_live_fixture(tmp_path: Path):
     payload = validate_g008_live_suite_completion(_config(), root=tmp_path)
     assert payload["status"] == "pass"
     assert payload["error_count"] == 0
-    assert len(payload["episode_artifact_paths"]) == 61  # 15 * 4 episode artifacts + statistical comparison
+    assert len(payload["episode_artifact_paths"]) == 63  # 15 * 4 episode artifacts + checkpoint + adapter + stats
 
 
 def test_g008_completion_audit_rejects_protocol_only_and_missing_prereq(tmp_path: Path):

@@ -53,11 +53,14 @@ def _suite_config() -> dict:
             "min_task_pass_rate": 0.67,
             "max_p95_latency_ms": 250,
             "min_baseline_win_rate": 0.50,
+            "min_action_count_per_episode": 1,
             "require_video": True,
             "require_replay": True,
             "require_latency_log": True,
             "require_failure_log": True,
             "require_statistical_comparison": True,
+            "require_runtime_metadata": True,
+            "require_window_title_match": True,
         },
         "games": [
             {
@@ -68,6 +71,7 @@ def _suite_config() -> dict:
                 "offline_capable": True,
                 "license": "open",
                 "source_url": f"https://example.invalid/{game}",
+                "window_title_pattern": game,
                 "tasks": [{"id": f"{game}_task", "seeds": [0, 1, 2, 3, 4]}],
             }
             for game in GAMES
@@ -129,6 +133,8 @@ def _write_base_fixture(root: Path) -> None:
 
 def _write_passing_evidence(root: Path) -> str:
     episodes = []
+    checkpoint = _write_text(root, "artifacts/harness/live/trained_fdm_checkpoint.pt", "checkpoint")
+    adapter_config = _write_text(root, "artifacts/harness/live/runtime_adapter.yaml", "adapter")
     for game in GAMES:
         task_id = f"{game}_task"
         for seed in range(5):
@@ -142,6 +148,17 @@ def _write_passing_evidence(root: Path) -> str:
                     "score": 10.0 + seed,
                     "baseline_score": 1.0,
                     "latency": {"p50_ms": 20.0, "p95_ms": 45.0},
+                    "runtime": {
+                        "control_backend": "xdotool",
+                        "agent_mode": "trained_fdm_policy",
+                        "process_name": game,
+                        "window_title": game,
+                        "checkpoint_path": checkpoint,
+                        "adapter_config_path": adapter_config,
+                        "action_count": 8,
+                        "started_at_unix": 2000.0 + seed,
+                        "ended_at_unix": 2010.0 + seed,
+                    },
                     "video_path": _write_text(root, f"{prefix}/episode.mp4", "video"),
                     "replay_path": _write_text(root, f"{prefix}/replay.jsonl", "{}\n"),
                     "latency_log_path": _write_text(root, f"{prefix}/latency.jsonl", "{}\n"),
