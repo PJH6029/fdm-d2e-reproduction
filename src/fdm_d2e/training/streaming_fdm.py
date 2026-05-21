@@ -8,7 +8,7 @@ from typing import Any, Iterable
 from fdm_d2e.config import load_config
 from fdm_d2e.io_utils import ensure_dir, read_json, sha256_file, stable_hash_json, write_json
 from fdm_d2e.schema import validate_named
-from fdm_d2e.training.streaming_idm import iter_jsonl, train_streaming_idm
+from fdm_d2e.training.streaming_idm import _file_artifact_metadata, _json_fingerprint, iter_jsonl, train_streaming_idm
 from fdm_d2e.training.torch_idm import require_torch
 
 
@@ -128,16 +128,36 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
         "target": 0,
         "recordings": 0,
         "games": {},
+        "target_games": {},
+        "source_ids": {},
+        "resolution_tiers": {},
+        "split_names": {},
         "eval_split_tags": {},
+        "target_source_ids": {},
+        "target_resolution_tiers": {},
+        "target_split_names": {},
+        "target_eval_split_tags": {},
         "mode": "explicit_target" if explicit_target_records_path is not None else "recording_tail",
     }
 
-    def observe_record(record: dict[str, Any]) -> None:
+    def bump(mapping_name: str, value: Any) -> None:
+        if value is None:
+            return
+        key = str(value)
+        if not key:
+            return
+        mapping = counts[mapping_name]
+        mapping[key] = int(mapping.get(key, 0)) + 1
+
+    def observe_record(record: dict[str, Any], *, target: bool = False) -> None:
         game = str(record.get("game", "unknown"))
-        counts["games"][game] = int(counts["games"].get(game, 0)) + 1
+        game_mapping = counts["target_games" if target else "games"]
+        game_mapping[game] = int(game_mapping.get(game, 0)) + 1
+        bump("target_source_ids" if target else "source_ids", record.get("source_id"))
+        bump("target_resolution_tiers" if target else "resolution_tiers", record.get("resolution_tier"))
+        bump("target_split_names" if target else "split_names", record.get("split"))
         for tag in record.get("eval_split_tags", []) or []:
-            tag = str(tag)
-            counts["eval_split_tags"][tag] = int(counts["eval_split_tags"].get(tag, 0)) + 1
+            bump("target_eval_split_tags" if target else "eval_split_tags", tag)
 
     with train_records_path.open("w") as train_f, target_records_path.open("w") as target_f:
         if explicit_target_records_path is not None:
@@ -151,6 +171,7 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
             for line_no, record in enumerate(iter_jsonl(explicit_target_records_path), 1):
                 _write_jsonl_row(target_f, record)
                 counts["target"] = line_no
+                observe_record(record, target=True)
             counts["recordings"] = len(seen_recordings)
         else:
             current_recording: str | None = None
@@ -170,6 +191,7 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
                 for record in target_records:
                     _write_jsonl_row(target_f, record)
                     counts["target"] += 1
+                    observe_record(record, target=True)
                 counts["recordings"] += 1
 
             for record, label in iter_ordered_record_label_pairs(records_path, labels_path):
@@ -263,12 +285,48 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
             "status": "worker_complete",
         }
     label_hash = str(split_summary["labels_sha256"])
+    config_fingerprint = stable_hash_json(config)
+    resolved_config_path = output_dir / "resolved_config.json"
+    write_json(
+        resolved_config_path,
+        {
+            "schema": "streaming_fdm_resolved_config.v1",
+            "model": model_name,
+            "config": config,
+            "config_fingerprint": config_fingerprint,
+        },
+    )
+    labels_path = Path(config["labels_path"])
+    source_idm_metadata_path = config.get("source_idm_metadata") or str(labels_path.parent / "checkpoint_metadata.json")
+    data_universe_path = config.get("data_universe")
+    split_contract_path = config.get("split_contract")
+    split_counts = split_summary.get("counts", {})
     checkpoint = {
         "schema": "fdm_checkpoint_metadata.v1",
         "model": model_name,
         "label_source": "idm_pseudolabel",
         "source_label_artifact": str(config["labels_path"]),
         "source_label_sha256": label_hash,
+        "source_idm_metadata": _file_artifact_metadata(source_idm_metadata_path),
+        "source_idm_fingerprint": _json_fingerprint(source_idm_metadata_path),
+        "config_fingerprint": config_fingerprint,
+        "config_path": str(config.get("config_path", "")),
+        "resolved_config_path": str(resolved_config_path),
+        "data_universe": _file_artifact_metadata(data_universe_path),
+        "data_universe_fingerprint": _json_fingerprint(data_universe_path),
+        "split_contract": _file_artifact_metadata(split_contract_path),
+        "split_contract_fingerprint": _json_fingerprint(split_contract_path),
+        "split_id": str(config.get("split_id") or _json_fingerprint(split_contract_path) or "d2e_full_split_contract"),
+        "source_namespace": str(config.get("source_namespace", "d2e_full_corpus")),
+        "source_ids": sorted((split_counts.get("source_ids") or {}).keys()),
+        "resolution_tiers": sorted((split_counts.get("resolution_tiers") or {}).keys()),
+        "split_names": sorted((split_counts.get("split_names") or {}).keys()),
+        "eval_split_tags": sorted((split_counts.get("eval_split_tags") or {}).keys()),
+        "target_source_ids": sorted((split_counts.get("target_source_ids") or {}).keys()),
+        "target_resolution_tiers": sorted((split_counts.get("target_resolution_tiers") or {}).keys()),
+        "target_split_names": sorted((split_counts.get("target_split_names") or {}).keys()),
+        "target_games": sorted((split_counts.get("target_games") or {}).keys()),
+        "target_eval_split_tags": sorted((split_counts.get("target_eval_split_tags") or {}).keys()),
         "predictions_path": str(torch_summary["predictions_path"]),
         "num_training_examples": int(split_summary["counts"]["train"]),
         "oracle_ground_truth_control": False,

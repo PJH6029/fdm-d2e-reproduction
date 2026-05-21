@@ -15,7 +15,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Train/evaluate a streaming FDM from IDM pseudo-labels.")
     parser.add_argument("--config", default="configs/model/fdm_streaming_d2e_full_compact.yaml")
     args = parser.parse_args()
-    summary = train_streaming_fdm(load_config(args.config))
+    config = load_config(args.config)
+    config.setdefault("config_path", args.config)
+    summary = train_streaming_fdm(config)
     if summary.get("schema") == "streaming_fdm_worker_summary.v1":
         print(
             "streaming fdm worker complete: "

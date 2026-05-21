@@ -10,6 +10,10 @@ an FDM-1 parity claim.
 - IDM pseudo-labels: `outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl`
 - FDM config: `configs/model/fdm_streaming_d2e_full_compact.yaml`
 - Endpoints: `configs/eval/primary_endpoints.yaml`
+- G003 IDM metadata: `outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json`
+- D2E universe/split provenance:
+  `artifacts/sources/d2e_full_data_universe_manifest.json` and
+  `artifacts/sources/d2e_full_split_contract.json`
 
 The pseudo-label and record JSONLs are order-joined by `sequence_id`. This is
 intentional: the G003 IDM predictor writes pseudo-labels while streaming the
@@ -26,6 +30,9 @@ memory. A sequence mismatch fails the run instead of silently mixing artifacts.
   retain real D2E ground-truth tokens for evaluation.
 - `fdm_streaming_split_summary.json`: counts, input hashes, and split
   fingerprint.
+- `resolved_config.json` and `checkpoint_metadata.json`: config fingerprint,
+  source IDM metadata/hash, D2E universe/split-contract metadata, source
+  namespace, source ids, resolution tiers, split names, and target eval tags.
 
 Default split is per-recording temporal tail:
 
@@ -50,7 +57,10 @@ The script runs a GPU smoke check, launches the streaming action trainer through
 `torchrun`, and writes:
 
 - `outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json`
+- `outputs/fdm_streaming_d2e_full_compact/resolved_config.json`
 - `outputs/fdm_streaming_d2e_full_compact/summary.json`
+- `outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json`
+- `outputs/fdm_streaming_d2e_full_compact/torch_train_summary.json`
 - `outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt`
 - `outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json`
 - `outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl`

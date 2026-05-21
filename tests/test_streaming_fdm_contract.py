@@ -18,6 +18,8 @@ def _record(idx: int, recording_id: str = "d2e_480p:Apex/rec") -> dict:
         "recording_id": recording_id,
         "cross_resolution_key": "Apex/rec",
         "game": "Apex",
+        "source_id": "d2e_480p",
+        "resolution_tier": "480p",
         "split": "eval",
         "timestamp_ns": idx,
         "bin_index": idx,
@@ -133,6 +135,8 @@ def test_streaming_fdm_trains_tiny_checkpoint(tmp_path: Path):
             "labels_path": str(labels_path),
             "output_dir": str(out),
             "endpoints": str(endpoints),
+            "config_path": "test_fdm_inline_config",
+            "source_namespace": "unit_d2e_fdm",
             "fdm_train_fraction": 0.75,
             "torch_idm_config": {
                 "feature_mode": "summary_compact_grid8_shift_surface_time",
@@ -152,6 +156,18 @@ def test_streaming_fdm_trains_tiny_checkpoint(tmp_path: Path):
     checkpoint = summary["checkpoint"]
     assert checkpoint["label_source"] == "idm_pseudolabel"
     assert checkpoint["oracle_ground_truth_control"] is False
+    assert checkpoint["config_fingerprint"]
+    assert checkpoint["config_path"] == "test_fdm_inline_config"
+    assert checkpoint["source_namespace"] == "unit_d2e_fdm"
+    assert checkpoint["source_ids"] == ["d2e_480p"]
+    assert checkpoint["resolution_tiers"] == ["480p"]
+    assert checkpoint["target_source_ids"] == ["d2e_480p"]
+    assert checkpoint["target_resolution_tiers"] == ["480p"]
+    assert checkpoint["split_names"] == ["eval"]
+    assert checkpoint["target_split_names"] == ["eval"]
+    assert checkpoint["target_games"] == ["Apex"]
+    assert checkpoint["target_eval_split_tags"] == ["temporal"]
+    assert Path(checkpoint["resolved_config_path"]).exists()
     assert checkpoint["num_training_examples"] == 6
     assert checkpoint["target_examples"] == 2
     assert checkpoint["convergence_report_path"]
