@@ -273,3 +273,9 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Parent PID `9289` still running at elapsed `05:03:34`; attached GPU monitor PID `31950` still running at elapsed `01:14:40`.
 - Monitor status remained `running`; decoded recording variants `109 / 918`; complete shards `0 / 16`; stale/no-progress shards `[]`; merged train/eval and IDM metrics absent.
 - The active G003 parent was launched before commit `6974f38`, so do not assume it will run the newly added split-stat builder. If `artifacts/eval/g003_split_statistical_comparisons_summary.json` is absent after IDM predictions exist, run `uv run python scripts/build_split_statistical_comparisons.py --config configs/eval/g003_split_statistics.yaml` manually before `scripts/validate_g003_full_idm_completion.py`.
+
+## 2026-05-21 16:01 KST manifest coverage sync snapshot
+
+- Pushed commit `2c4c3fc` and fast-forwarded pod checkout to `2c4c3fc`; `artifacts/reproducibility/final_quality_gate_audit.json` is now included in the package manifest, removing the fixable G009 manifest-coverage blocker.
+- Parent PID `9289` still running at elapsed `05:06:51`; attached GPU monitor PID `31950` still running at elapsed `01:17:57`.
+- Monitor status remained `running`; decoded recording variants `111 / 918`; complete shards `0 / 16`; stale/no-progress shards `[]`; merged train/eval and IDM metrics absent.
