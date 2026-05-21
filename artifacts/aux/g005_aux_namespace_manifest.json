@@ -1,24 +1,64 @@
 {
-  "schema": "g005_aux_source_materialization_evidence.v1",
-  "status": "pass",
-  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
-  "namespace_root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux",
-  "required_splits": [
-    "train",
-    "val",
-    "test"
-  ],
+  "schema": "g005_aux_namespace_manifest.v1",
+  "source_namespace": "d2e_aux",
+  "completion_ready": true,
   "selected_aux_source_ids": [
     "atari_head_zenodo_v4",
     "minerl_2019_zenodo_v2",
     "p_doom_atari_breakout_hf"
   ],
-  "materialized_source_ids": [
-    "atari_head_zenodo_v4",
-    "minerl_2019_zenodo_v2",
-    "p_doom_atari_breakout_hf"
-  ],
-  "total_bytes": 18121955650,
+  "claim_boundary": {
+    "no_aux_in_d2e_heldout": true,
+    "no_d2e_aux_claim_before_d2e_only_gates": true,
+    "summary": "This manifest only supports G005 completion when completion_ready=true and validate_g005_aux_completion.py passes."
+  },
+  "training_policy": {
+    "source_specific_action_heads": true,
+    "namespace_rule": "All selected aux examples stay under outputs/aux/<dataset_id>/... and use source-specific action heads before D2E finetuning."
+  },
+  "d2e_eval_manifests": {
+    "same_as_d2e_only": true,
+    "required_splits": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ],
+    "splits": {
+      "temporal": {
+        "split": "temporal",
+        "sha256": "0a11aeb5a529c5d2309544f34ec17b621ff22fcd7d2a112af4462e221a23ff45",
+        "d2e_only_manifest_path": "artifacts/sources/d2e_full_temporal_split_manifest.json",
+        "d2e_only_manifest_bytes": 283305,
+        "d2e_only_manifest_sha256": "0a11aeb5a529c5d2309544f34ec17b621ff22fcd7d2a112af4462e221a23ff45",
+        "d2e_aux_manifest_path": "artifacts/sources/d2e_full_temporal_split_manifest.json",
+        "d2e_aux_manifest_bytes": 283305,
+        "d2e_aux_manifest_sha256": "0a11aeb5a529c5d2309544f34ec17b621ff22fcd7d2a112af4462e221a23ff45",
+        "same_hash": true
+      },
+      "heldout_recording": {
+        "split": "heldout_recording",
+        "sha256": "5120cf7abcb78c005407479f52643748bcd3e125388daf8c8ddd79f28cdd08c3",
+        "d2e_only_manifest_path": "artifacts/sources/d2e_full_heldout_recording_split_manifest.json",
+        "d2e_only_manifest_bytes": 72346,
+        "d2e_only_manifest_sha256": "5120cf7abcb78c005407479f52643748bcd3e125388daf8c8ddd79f28cdd08c3",
+        "d2e_aux_manifest_path": "artifacts/sources/d2e_full_heldout_recording_split_manifest.json",
+        "d2e_aux_manifest_bytes": 72346,
+        "d2e_aux_manifest_sha256": "5120cf7abcb78c005407479f52643748bcd3e125388daf8c8ddd79f28cdd08c3",
+        "same_hash": true
+      },
+      "heldout_game": {
+        "split": "heldout_game",
+        "sha256": "16bca1616ab35f23f6ac1d028889def00cc271b8f48808dcddb8579e277d6b11",
+        "d2e_only_manifest_path": "artifacts/sources/d2e_full_heldout_game_split_manifest.json",
+        "d2e_only_manifest_bytes": 66791,
+        "d2e_only_manifest_sha256": "16bca1616ab35f23f6ac1d028889def00cc271b8f48808dcddb8579e277d6b11",
+        "d2e_aux_manifest_path": "artifacts/sources/d2e_full_heldout_game_split_manifest.json",
+        "d2e_aux_manifest_bytes": 66791,
+        "d2e_aux_manifest_sha256": "16bca1616ab35f23f6ac1d028889def00cc271b8f48808dcddb8579e277d6b11",
+        "same_hash": true
+      }
+    }
+  },
   "aux_sources": [
     {
       "id": "atari_head_zenodo_v4",
@@ -8002,8 +8042,5 @@
         }
       }
     }
-  ],
-  "findings": [],
-  "error_count": 0,
-  "claim_boundary": "Aux source materialization evidence only; it does not start G005 training, checkpoint G005, or prove D2E+aux model quality."
+  ]
 }

@@ -1,7 +1,7 @@
 {
   "schema": "g005_launch_readiness.v1",
   "status": "blocked",
-  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
   "allow_precheckpoint": false,
   "goal_statuses": {
     "G001-data-universe-audit": "complete",
@@ -22,16 +22,16 @@
     "g003": {
       "path": "artifacts/idm/g003_full_idm_completion_audit.json",
       "exists": true,
-      "bytes": 8097,
+      "bytes": 9409,
       "status": "fail",
-      "error_count": 23
+      "error_count": 26
     },
     "g004": {
       "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
       "exists": true,
-      "bytes": 10279,
+      "bytes": 14059,
       "status": "fail",
-      "error_count": 33
+      "error_count": 46
     }
   },
   "selected_aux_candidate_ids": [
@@ -48,14 +48,14 @@
     "aux_plan_doc": {
       "path": "docs/auxiliary_data_plan.md",
       "exists": true,
-      "bytes": 15859
+      "bytes": 16430
     }
   },
   "source_evidence": [
     {
       "path": "artifacts/aux/g005_aux_source_materialization_evidence.json",
       "exists": true,
-      "bytes": 5455
+      "bytes": 327911
     }
   ],
   "eval_manifest_hashes": {
@@ -65,24 +65,24 @@
   },
   "namespace_manifest": {
     "path": "artifacts/aux/g005_aux_namespace_manifest.json",
-    "exists": false,
-    "bytes": 0,
-    "completion_ready": null
+    "exists": true,
+    "bytes": 329970,
+    "completion_ready": true
   },
   "runtime_env": {
     "path": "artifacts/aux/g005_aux_runtime_env.json",
     "exists": true,
-    "bytes": 1795,
+    "bytes": 1823,
     "status": "pass",
     "error_count": 0
   },
   "aux_examples": {
     "path": "artifacts/aux/g005_aux_examples_summary.json",
     "exists": true,
-    "bytes": 3459,
-    "status": "blocked",
-    "error_count": 3,
-    "total_examples": 0
+    "bytes": 250387,
+    "status": "pass",
+    "error_count": 0,
+    "total_examples": 23064579
   },
   "run_summary": {
     "path": "artifacts/aux/g005_d2e_aux_train_run.json",
@@ -153,7 +153,7 @@
       "audit": "g003",
       "path": "artifacts/idm/g003_full_idm_completion_audit.json",
       "status": "fail",
-      "error_count": 23
+      "error_count": 26
     },
     {
       "severity": "error",
@@ -161,20 +161,7 @@
       "audit": "g004",
       "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
       "status": "fail",
-      "error_count": 33
-    },
-    {
-      "severity": "error",
-      "code": "namespace_manifest_not_completion_ready",
-      "path": "artifacts/aux/g005_aux_namespace_manifest.json",
-      "completion_ready": null
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_not_pass",
-      "path": "artifacts/aux/g005_aux_examples_summary.json",
-      "status": "blocked",
-      "error_count": 3
+      "error_count": 46
     }
   ],
   "warnings": [],

@@ -1,145 +1,475 @@
 {
   "schema": "g005_aux_materialization_progress.v1",
-  "status": "blocked",
-  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "status": "pass",
+  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
   "pid_file": "outputs/cluster/g005_aux_materialization.pid",
-  "pid": null,
+  "pid": 49075,
   "pid_running": false,
-  "materialization_summary_status": null,
-  "watcher_summary_status": null,
+  "materialization_summary_status": "pass",
+  "watcher_summary_status": "g005_launch_not_ready",
   "selected_source_ids": [
     "atari_head_zenodo_v4",
     "minerl_2019_zenodo_v2",
     "p_doom_atari_breakout_hf"
   ],
-  "completed_source_ids": [],
-  "partial_source_ids": [],
-  "missing_source_ids": [
+  "completed_source_ids": [
     "atari_head_zenodo_v4",
     "minerl_2019_zenodo_v2",
     "p_doom_atari_breakout_hf"
   ],
-  "raw_total_bytes": 0,
+  "partial_source_ids": [],
+  "missing_source_ids": [],
+  "raw_total_bytes": 18121045120,
+  "expected_raw_total_bytes": 18120982225,
+  "raw_completion_ratio": 1.0000034708383474,
+  "raw_remaining_expected_bytes": 0,
+  "recommendation": {
+    "code": "run_integrity_and_namespace_gates",
+    "severity": "info",
+    "next_actions": [
+      "Run/inspect the G005 materialization watcher outputs for integrity, source evidence, examples, runtime env, and namespace manifest.",
+      "Do not claim D2E+aux model quality before G003/G004 hard gates and G005 completion audit pass."
+    ]
+  },
   "aux_sources": [
     {
       "id": "atari_head_zenodo_v4",
-      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4",
+      "namespace": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4",
       "source_url": "https://zenodo.org/records/3451402",
       "license_id": "cc-by-4.0",
       "expected_size_bytes": 8726806887,
-      "namespace_exists": false,
-      "raw_dir_exists": false,
-      "raw_file_count": 0,
-      "raw_total_bytes": 0,
-      "raw_files": [],
+      "namespace_exists": true,
+      "raw_dir_exists": true,
+      "raw_file_count": 22,
+      "raw_total_bytes": 8726806887,
+      "raw_completion_ratio": 1.0,
+      "raw_remaining_expected_bytes": 0,
+      "raw_files": [
+        {
+          "path": "raw/action_enums.txt",
+          "bytes": 536
+        },
+        {
+          "path": "raw/alien.zip",
+          "bytes": 470579689
+        },
+        {
+          "path": "raw/asterix.zip",
+          "bytes": 347234485
+        },
+        {
+          "path": "raw/bank_heist.zip",
+          "bytes": 486306748
+        },
+        {
+          "path": "raw/berzerk.zip",
+          "bytes": 295369620
+        },
+        {
+          "path": "raw/breakout.zip",
+          "bytes": 132535076
+        },
+        {
+          "path": "raw/centipede.zip",
+          "bytes": 317946171
+        },
+        {
+          "path": "raw/demon_attack.zip",
+          "bytes": 309525927
+        },
+        {
+          "path": "raw/enduro.zip",
+          "bytes": 780819126
+        },
+        {
+          "path": "raw/freeway.zip",
+          "bytes": 285507811
+        },
+        {
+          "path": "raw/frostbite.zip",
+          "bytes": 657154358
+        },
+        {
+          "path": "raw/hero.zip",
+          "bytes": 591889110
+        },
+        {
+          "path": "raw/meta_data.csv",
+          "bytes": 31512
+        },
+        {
+          "path": "raw/montezuma_revenge.zip",
+          "bytes": 431325203
+        },
+        {
+          "path": "raw/ms_pacman.zip",
+          "bytes": 534037347
+        },
+        {
+          "path": "raw/name_this_game.zip",
+          "bytes": 455714478
+        },
+        {
+          "path": "raw/phoenix.zip",
+          "bytes": 361300357
+        },
+        {
+          "path": "raw/riverraid.zip",
+          "bytes": 618258582
+        },
+        {
+          "path": "raw/road_runner.zip",
+          "bytes": 494513324
+        },
+        {
+          "path": "raw/seaquest.zip",
+          "bytes": 521276129
+        },
+        {
+          "path": "raw/space_invaders.zip",
+          "bytes": 355863450
+        },
+        {
+          "path": "raw/venture.zip",
+          "bytes": 279617848
+        }
+      ],
       "raw_files_truncated": false,
-      "split_manifests_ready": false,
+      "raw_transient_missing_file_count": 0,
+      "split_manifests_ready": true,
       "splits": [
         {
           "split": "train",
-          "dir_exists": false,
-          "manifest_exists": false,
-          "file_count": 0,
-          "bytes": 0
+          "dir_exists": true,
+          "manifest_exists": true,
+          "file_count": 1,
+          "bytes": 6764,
+          "transient_missing_file_count": 0
         },
         {
           "split": "val",
-          "dir_exists": false,
-          "manifest_exists": false,
-          "file_count": 0,
-          "bytes": 0
+          "dir_exists": true,
+          "manifest_exists": true,
+          "file_count": 1,
+          "bytes": 6762,
+          "transient_missing_file_count": 0
         },
         {
           "split": "test",
-          "dir_exists": false,
-          "manifest_exists": false,
-          "file_count": 0,
-          "bytes": 0
+          "dir_exists": true,
+          "manifest_exists": true,
+          "file_count": 1,
+          "bytes": 6763,
+          "transient_missing_file_count": 0
         }
       ]
     },
     {
       "id": "minerl_2019_zenodo_v2",
-      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2",
+      "namespace": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2",
       "source_url": "https://zenodo.org/records/12659939",
       "license_id": "mit-license",
       "expected_size_bytes": 8571175338,
-      "namespace_exists": false,
-      "raw_dir_exists": false,
-      "raw_file_count": 0,
-      "raw_total_bytes": 0,
-      "raw_files": [],
+      "namespace_exists": true,
+      "raw_dir_exists": true,
+      "raw_file_count": 4,
+      "raw_total_bytes": 8571175338,
+      "raw_completion_ratio": 1.0,
+      "raw_remaining_expected_bytes": 0,
+      "raw_files": [
+        {
+          "path": "raw/MineRLNavigate-v0.zip",
+          "bytes": 629872606
+        },
+        {
+          "path": "raw/MineRLObtainDiamond-v0.zip",
+          "bytes": 3648852478
+        },
+        {
+          "path": "raw/MineRLObtainIronPickaxe-v0.zip",
+          "bytes": 2782119155
+        },
+        {
+          "path": "raw/MineRLTreechop-v0.zip",
+          "bytes": 1510331099
+        }
+      ],
       "raw_files_truncated": false,
-      "split_manifests_ready": false,
+      "raw_transient_missing_file_count": 0,
+      "split_manifests_ready": true,
       "splits": [
         {
           "split": "train",
-          "dir_exists": false,
-          "manifest_exists": false,
-          "file_count": 0,
-          "bytes": 0
+          "dir_exists": true,
+          "manifest_exists": true,
+          "file_count": 1,
+          "bytes": 1478,
+          "transient_missing_file_count": 0
         },
         {
           "split": "val",
-          "dir_exists": false,
-          "manifest_exists": false,
-          "file_count": 0,
-          "bytes": 0
+          "dir_exists": true,
+          "manifest_exists": true,
+          "file_count": 1,
+          "bytes": 1476,
+          "transient_missing_file_count": 0
         },
         {
           "split": "test",
-          "dir_exists": false,
-          "manifest_exists": false,
-          "file_count": 0,
-          "bytes": 0
+          "dir_exists": true,
+          "manifest_exists": true,
+          "file_count": 1,
+          "bytes": 1477,
+          "transient_missing_file_count": 0
         }
       ]
     },
     {
       "id": "p_doom_atari_breakout_hf",
-      "namespace": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf",
+      "namespace": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf",
       "source_url": "https://huggingface.co/datasets/p-doom/atari-breakout-dataset",
       "license_id": "cc0-1.0",
       "expected_size_bytes": 823000000,
-      "namespace_exists": false,
-      "raw_dir_exists": false,
-      "raw_file_count": 0,
-      "raw_total_bytes": 0,
-      "raw_files": [],
-      "raw_files_truncated": false,
-      "split_manifests_ready": false,
+      "namespace_exists": true,
+      "raw_dir_exists": true,
+      "raw_file_count": 1526,
+      "raw_total_bytes": 823062895,
+      "raw_completion_ratio": 1.0000764216281897,
+      "raw_remaining_expected_bytes": 0,
+      "raw_files": [
+        {
+          "path": "raw/.cache/huggingface/.gitignore",
+          "bytes": 1
+        },
+        {
+          "path": "raw/.cache/huggingface/CACHEDIR.TAG",
+          "bytes": 191
+        },
+        {
+          "path": "raw/.cache/huggingface/download/.gitattributes.metadata",
+          "bytes": 101
+        },
+        {
+          "path": "raw/.cache/huggingface/download/README.md.metadata",
+          "bytes": 101
+        },
+        {
+          "path": "raw/.cache/huggingface/download/metadata.json.metadata",
+          "bytes": 101
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0000.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0001.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0002.array_record.metadata",
+          "bytes": 124
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0003.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0004.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0005.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0006.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0007.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0008.array_record.metadata",
+          "bytes": 124
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0009.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0010.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0011.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0012.array_record.metadata",
+          "bytes": 124
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0013.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0014.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0015.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0016.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0017.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0018.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0019.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0020.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0021.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0022.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0023.array_record.metadata",
+          "bytes": 123
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0024.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0025.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0026.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0027.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0028.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0029.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0030.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0031.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/test/data_0032.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0000.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0001.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0002.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0003.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0004.array_record.metadata",
+          "bytes": 123
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0005.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0006.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0007.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0008.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0009.array_record.metadata",
+          "bytes": 124
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0010.array_record.metadata",
+          "bytes": 125
+        },
+        {
+          "path": "raw/.cache/huggingface/download/train/data_0011.array_record.metadata",
+          "bytes": 125
+        }
+      ],
+      "raw_files_truncated": true,
+      "raw_transient_missing_file_count": 0,
+      "split_manifests_ready": true,
       "splits": [
         {
           "split": "train",
-          "dir_exists": false,
-          "manifest_exists": false,
-          "file_count": 0,
-          "bytes": 0
+          "dir_exists": true,
+          "manifest_exists": true,
+          "file_count": 1,
+          "bytes": 278178,
+          "transient_missing_file_count": 0
         },
         {
           "split": "val",
-          "dir_exists": false,
-          "manifest_exists": false,
-          "file_count": 0,
-          "bytes": 0
+          "dir_exists": true,
+          "manifest_exists": true,
+          "file_count": 1,
+          "bytes": 278176,
+          "transient_missing_file_count": 0
         },
         {
           "split": "test",
-          "dir_exists": false,
-          "manifest_exists": false,
-          "file_count": 0,
-          "bytes": 0
+          "dir_exists": true,
+          "manifest_exists": true,
+          "file_count": 1,
+          "bytes": 278177,
+          "transient_missing_file_count": 0
         }
       ]
     }
   ],
-  "findings": [
-    {
-      "severity": "warning",
-      "code": "materializer_not_running_without_summary",
-      "pid": null
-    }
-  ],
+  "findings": [],
   "error_count": 0,
   "claim_boundary": "Progress telemetry only; it does not prove source completeness, start G005 training, checkpoint G005, or support D2E+aux model-quality claims."
 }

@@ -1,0 +1,1363 @@
+{
+  "schema": "g005_aux_materialization_watcher.v1",
+  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
+  "started_at_unix": 1779375382.462575,
+  "output": "artifacts/aux/g005_aux_materialization_watcher_summary.json",
+  "pid_file": "outputs/cluster/g005_aux_materialization.pid",
+  "watcher_pid_file": "outputs/cluster/g005_aux_materialization_watcher.pid",
+  "poll_seconds": 1.0,
+  "max_wait_seconds": 0.0,
+  "claim_boundary": "Watches selected auxiliary source materialization and builds provenance/readiness artifacts only; it never launches G005 training, checkpoints goals, or weakens G003/G004 D2E-only prerequisites.",
+  "status": "g005_launch_not_ready",
+  "elapsed_seconds": 0.0018596649169921875,
+  "materialization": {
+    "pid": 49075,
+    "pid_running": false,
+    "materialization_summary": {
+      "schema": "g005_aux_materialization_plan.v1",
+      "status": "pass",
+      "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
+      "execute": true,
+      "namespace_root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux",
+      "selected_source_ids": [
+        "atari_head_zenodo_v4",
+        "minerl_2019_zenodo_v2",
+        "p_doom_atari_breakout_hf"
+      ],
+      "splits": [
+        "train",
+        "val",
+        "test"
+      ],
+      "plans": [
+        {
+          "id": "atari_head_zenodo_v4",
+          "provider": "zenodo",
+          "namespace": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4",
+          "raw_dir": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw",
+          "source_url": "https://zenodo.org/records/3451402",
+          "metadata_api_url": "https://zenodo.org/api/records/3451402",
+          "license_id": "cc-by-4.0",
+          "expected_size_bytes": 8726806887,
+          "source_revision_or_record": "zenodo_record_3451402_v4",
+          "valid_for_training_now": true,
+          "execute_supported": true
+        },
+        {
+          "id": "minerl_2019_zenodo_v2",
+          "provider": "zenodo",
+          "namespace": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2",
+          "raw_dir": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2/raw",
+          "source_url": "https://zenodo.org/records/12659939",
+          "metadata_api_url": "https://zenodo.org/api/records/12659939",
+          "license_id": "mit-license",
+          "expected_size_bytes": 8571175338,
+          "source_revision_or_record": "zenodo_record_12659939",
+          "valid_for_training_now": true,
+          "execute_supported": true
+        },
+        {
+          "id": "p_doom_atari_breakout_hf",
+          "provider": "huggingface_dataset",
+          "namespace": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf",
+          "raw_dir": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf/raw",
+          "source_url": "https://huggingface.co/datasets/p-doom/atari-breakout-dataset",
+          "metadata_api_url": "https://huggingface.co/api/datasets/p-doom/atari-breakout-dataset",
+          "license_id": "cc0-1.0",
+          "expected_size_bytes": 823000000,
+          "source_revision_or_record": "hf_sha_34c60197acabf0011a36affff183cc87c755edc4",
+          "valid_for_training_now": true,
+          "execute_supported": true,
+          "repo_id": "p-doom/atari-breakout-dataset",
+          "repo_type": "dataset",
+          "revision": "34c60197acabf0011a36affff183cc87c755edc4"
+        }
+      ],
+      "executions": [
+        {
+          "id": "atari_head_zenodo_v4",
+          "provider": "zenodo",
+          "status": "pass",
+          "namespace": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4",
+          "download_count": 22,
+          "downloaded_bytes": 8726806887,
+          "downloads": [
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/hero.zip",
+              "status": "downloaded",
+              "bytes": 591889110,
+              "sha256": "44955e7f37c0dad855dbe09a69fda6b3be4f717cc2047a1300d6dedd535566d2"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/ms_pacman.zip",
+              "status": "downloaded",
+              "bytes": 534037347,
+              "sha256": "2a95b8f07c1364f5b5665937dcfb76c3bf077a8fad647cb9cad759fc05968e9d"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/bank_heist.zip",
+              "status": "downloaded",
+              "bytes": 486306748,
+              "sha256": "48fce53b921121a380b11767aff7ef0c9acbc1f3beeb80b025717c0ff6b39bfb"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/demon_attack.zip",
+              "status": "downloaded",
+              "bytes": 309525927,
+              "sha256": "cbb7c6670b849e0db4a0a3e916dd98c00969d6cb33c982ede6cb8d01216ffeab"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/enduro.zip",
+              "status": "downloaded",
+              "bytes": 780819126,
+              "sha256": "dd7fe50558864624d282c285d7f336c0e628df8ef778f1ce90822c8a357ed31b"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/centipede.zip",
+              "status": "downloaded",
+              "bytes": 317946171,
+              "sha256": "5fad38972df7678cdd1e7a6bb039d9ea7a2e8ecebdba370c9cac91e5ddcd2dde"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/road_runner.zip",
+              "status": "downloaded",
+              "bytes": 494513324,
+              "sha256": "2e953d05e79d48e85a977f5f111a001d5c427dbcfaab359cbdb9e99c3814057b"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/frostbite.zip",
+              "status": "downloaded",
+              "bytes": 657154358,
+              "sha256": "91e62fa02c06cbf142a60052033e2a4652b381607f26ea35d623ffd591434900"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/berzerk.zip",
+              "status": "downloaded",
+              "bytes": 295369620,
+              "sha256": "524cd1bfbddb732274aaf9c4c389f101f40017ca1222ebf72588969048c76b61"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/asterix.zip",
+              "status": "downloaded",
+              "bytes": 347234485,
+              "sha256": "5f159a4a616b9d6f08aea16d27c3682118950f297d87ffe4541f68308cbdb839"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/freeway.zip",
+              "status": "downloaded",
+              "bytes": 285507811,
+              "sha256": "f33f42afee63e71417a8c6263876e32d849d4010c02bfbcb9da9d72cb3a6c88f"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/seaquest.zip",
+              "status": "downloaded",
+              "bytes": 521276129,
+              "sha256": "5a2568eb4f7a71450db9d7e693f271d217883ef02294582e35c7020a960ad5c0"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/action_enums.txt",
+              "status": "downloaded",
+              "bytes": 536,
+              "sha256": "d04ec1e780a20be514f3a5e75ed4a14675c5bfe75fc657f09106636482adf884"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/montezuma_revenge.zip",
+              "status": "downloaded",
+              "bytes": 431325203,
+              "sha256": "e7e87321412bc1fc235374a0ccfc82a24c5ada1a830fb6aaa5391a0d0971a19e"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/space_invaders.zip",
+              "status": "downloaded",
+              "bytes": 355863450,
+              "sha256": "c113ae2f74df4b47f388da137abc5971d9935329d35b4ea3363e2be170d65751"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/breakout.zip",
+              "status": "downloaded",
+              "bytes": 132535076,
+              "sha256": "a0ffd8267537296c9de33927881ea8a46044f924b6bf5369ad48ca7ec3202496"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/name_this_game.zip",
+              "status": "downloaded",
+              "bytes": 455714478,
+              "sha256": "b1d13d39f1295c4a660559c624cc45001f7b7a5b25915bdb3e2d4842b3ec7d1d"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/venture.zip",
+              "status": "downloaded",
+              "bytes": 279617848,
+              "sha256": "ab3a5372b3e0089a3aa2fd10e8d20dd63a1fad107b6d398907d6aa7301640685"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/phoenix.zip",
+              "status": "downloaded",
+              "bytes": 361300357,
+              "sha256": "7e4e574461513cf9f1ed645d50e589de09083bdb654df2444e5168e4d930626c"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/riverraid.zip",
+              "status": "downloaded",
+              "bytes": 618258582,
+              "sha256": "f50e057b2a2100c3baad61397b4c05fba12787a64eb1cbe8cf5b9626a0a0707d"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/meta_data.csv",
+              "status": "downloaded",
+              "bytes": 31512,
+              "sha256": "a392e03746d5d95a6e049c60455cc4bfb25d2d1e8a86d89338395f61e9dfcaf8"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw/alien.zip",
+              "status": "downloaded",
+              "bytes": 470579689,
+              "sha256": "8301879f5a3d15e01c3c2022c3feea802499ae2750b1d28f8e2769dd12912b94"
+            }
+          ],
+          "split_manifests": {
+            "train": {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/train/manifest.json",
+              "bytes": 6764,
+              "sha256": "309bdfe19d25731869fe8c7106fb52adfadd421ae051246f13685346706cd3af"
+            },
+            "val": {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/val/manifest.json",
+              "bytes": 6762,
+              "sha256": "628812e0775b9c470aee1b5ee8ddb37bde2dd053b38510f489603385fcf147bc"
+            },
+            "test": {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/test/manifest.json",
+              "bytes": 6763,
+              "sha256": "b77a92977c0a7b0fd6c8551a37796294c8a5fb7d0dd94b426cb55b5f9a9e7297"
+            }
+          },
+          "metadata_record_id": 3451402,
+          "findings": []
+        },
+        {
+          "id": "minerl_2019_zenodo_v2",
+          "provider": "zenodo",
+          "status": "pass",
+          "namespace": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2",
+          "download_count": 4,
+          "downloaded_bytes": 8571175338,
+          "downloads": [
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2/raw/MineRLTreechop-v0.zip",
+              "status": "downloaded",
+              "bytes": 1510331099,
+              "sha256": "16fe94679d3f8d7d95ba0d851f8e860f545c9fc2a52df4537eb01aae64198c2b"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2/raw/MineRLObtainDiamond-v0.zip",
+              "status": "downloaded",
+              "bytes": 3648852478,
+              "sha256": "680c8b86c7c29870b0b4072623a0e0e8236bce00a8e56cbb52653fbbf94ce3ac"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2/raw/MineRLNavigate-v0.zip",
+              "status": "downloaded",
+              "bytes": 629872606,
+              "sha256": "71c577c0fdc204156001cb796f654704f09188621119abd060cc90ed57914325"
+            },
+            {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2/raw/MineRLObtainIronPickaxe-v0.zip",
+              "status": "downloaded",
+              "bytes": 2782119155,
+              "sha256": "806e1575666fc4757b3a51896a6e027da1f955973ce1868e8c242065b8ba6640"
+            }
+          ],
+          "split_manifests": {
+            "train": {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2/train/manifest.json",
+              "bytes": 1478,
+              "sha256": "3bb6f97b426a29866cd189be3d5e314760fc50150f0ecf732a07382252f4aaea"
+            },
+            "val": {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2/val/manifest.json",
+              "bytes": 1476,
+              "sha256": "fd8601fb26bc3822181762c9a1229825878c8f25c17b49b88966e20e96e14d16"
+            },
+            "test": {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2/test/manifest.json",
+              "bytes": 1477,
+              "sha256": "57927f8712d707b48fb20b1580e0b8485b53505c7c6bfb854460698539157f82"
+            }
+          },
+          "metadata_record_id": 12659939,
+          "findings": []
+        },
+        {
+          "id": "p_doom_atari_breakout_hf",
+          "provider": "huggingface_dataset",
+          "status": "pass",
+          "namespace": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf",
+          "repo_id": "p-doom/atari-breakout-dataset",
+          "revision": "34c60197acabf0011a36affff183cc87c755edc4",
+          "resolved_sha": "34c60197acabf0011a36affff183cc87c755edc4",
+          "local_dir": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf/raw",
+          "file_count": 1526,
+          "downloaded_bytes": 823062895,
+          "files": [
+            {
+              "path": ".cache/huggingface/.gitignore",
+              "bytes": 1,
+              "sha256": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1"
+            },
+            {
+              "path": ".cache/huggingface/CACHEDIR.TAG",
+              "bytes": 191,
+              "sha256": "f6572428f6d5e1575e73a1502895a8731f10757dfbb634909c6e154b849af91d"
+            },
+            {
+              "path": ".cache/huggingface/download/.gitattributes.metadata",
+              "bytes": 101,
+              "sha256": "b3c78e7fc03028bda259b84f43302c0b6de49b433ced1afa7db7063a02645e9e"
+            },
+            {
+              "path": ".cache/huggingface/download/README.md.metadata",
+              "bytes": 101,
+              "sha256": "7a41c25efb2e5709f5e660c104634b88194e0b9bb7c6353d29ec6b34227d5eb1"
+            },
+            {
+              "path": ".cache/huggingface/download/metadata.json.metadata",
+              "bytes": 101,
+              "sha256": "aa8741f52a9ef8cb0e657dcc200f21081299531fca95381d9a22519e60a6ffb7"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0000.array_record.metadata",
+              "bytes": 125,
+              "sha256": "7db4c56835cd444b33e6056cc5571fcffd7fe48cd3267fcb7a8e423418087888"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0001.array_record.metadata",
+              "bytes": 125,
+              "sha256": "504164a72c8fc5a5066fb36b76af685f7f79442709223d99054a5a9fe960d970"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0002.array_record.metadata",
+              "bytes": 124,
+              "sha256": "3df0dab6946926cf97b2103e102b5a5b1e24f5d98338ab69193bfcf474478ac9"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0003.array_record.metadata",
+              "bytes": 125,
+              "sha256": "184de5bf6562556ae4f27917951fc53fb773254bff7caf62e9ff681a5fd09002"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0004.array_record.metadata",
+              "bytes": 125,
+              "sha256": "e559cc7b460c872f55081ef9fb706346b62b24e88f5ab537f839e2be37a5681b"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0005.array_record.metadata",
+              "bytes": 125,
+              "sha256": "e9f0cbcda9275192f53952deecabeb0df26259471443dcbe5128ab92cff2845a"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0006.array_record.metadata",
+              "bytes": 125,
+              "sha256": "8d8f6aa54faa2c6e0e49810f6a6352b8a829c07f52e79a049b3967a3ab56a887"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0007.array_record.metadata",
+              "bytes": 125,
+              "sha256": "cc02225a6b3d79da27c10c9e1cd55125c6ad20d98bafac267d313e2067d8cc99"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0008.array_record.metadata",
+              "bytes": 124,
+              "sha256": "96956f38e605764d6bc99db7baf9659ebb6213ee1466db8264126532bf2142d3"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0009.array_record.metadata",
+              "bytes": 125,
+              "sha256": "b6f1d2f0fc49c64e7e377dc907d9f4c6c9a4d3b3f54dd6b38fff5a360a561d82"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0010.array_record.metadata",
+              "bytes": 125,
+              "sha256": "3a310d63c9fb242edffe8f9bef091517091e24db8a3238cae4b20e22968cd140"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0011.array_record.metadata",
+              "bytes": 125,
+              "sha256": "fbcf73fe1e0476b493f5025e9d9ff36c885f3a3826eca857d92234683666e86e"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0012.array_record.metadata",
+              "bytes": 124,
+              "sha256": "34850617ca39c7535a7d30d7b0a751dbc4603bfd986ece70e599063defeb5b15"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0013.array_record.metadata",
+              "bytes": 125,
+              "sha256": "54cb06a63801305153243e6a8c150fb349caa674e3fb0727931404fb3db4749d"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0014.array_record.metadata",
+              "bytes": 125,
+              "sha256": "d57244891cb40d91032cfecba34c7394e496f40d33c0abd5a6ea0c18ea9e1518"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0015.array_record.metadata",
+              "bytes": 125,
+              "sha256": "a73387bde2432c1ae8a1952c97724c857fe4f5fe01a402e842a97e7dae057ccd"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0016.array_record.metadata",
+              "bytes": 125,
+              "sha256": "1a16851a2ac75606fa3f911301b58673865038cf6221d8ea905e0149514757a6"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0017.array_record.metadata",
+              "bytes": 125,
+              "sha256": "9c98f4d5ba300d0f72722b03d4f565e2d87c0ce812d30dbb81c2640830ccf630"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0018.array_record.metadata",
+              "bytes": 125,
+              "sha256": "847e21afa0287fa80c31e27b66cdedba6f63b73adf3eabd67fcb33dd8b55a20f"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0019.array_record.metadata",
+              "bytes": 125,
+              "sha256": "61effc85d64b4df1046729fe70f5417f19126139ecf47d68da262c517c471e3c"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0020.array_record.metadata",
+              "bytes": 125,
+              "sha256": "8e7b9d40a193377334fc8bb23d9ef56345bcadb41a14c91b093c309a8482bc38"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0021.array_record.metadata",
+              "bytes": 125,
+              "sha256": "885a5e883283d68fbc1060d5ea01c31ee858c5055e3ef053888878f21a155f95"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0022.array_record.metadata",
+              "bytes": 125,
+              "sha256": "33b041a4d641104bdb7f8c2b6001d1824481ba3444a6150e039c0d45cdbdedbe"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0023.array_record.metadata",
+              "bytes": 123,
+              "sha256": "44de3268bd654fda762f663437ed4035d6667cc956bf2dbdcefc64ea2cb2a11c"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0024.array_record.metadata",
+              "bytes": 125,
+              "sha256": "a4fae60c5d8884ec610c02c373ca1e37b5d4eac5da7e338c08bccd657edd6f98"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0025.array_record.metadata",
+              "bytes": 125,
+              "sha256": "a35ceea1c90ce1b90875eb393624e9af569a22135acd3c648e3b9ab59dbc159e"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0026.array_record.metadata",
+              "bytes": 125,
+              "sha256": "df7d702772572b7ba58dcf0f4c09c9d7d6f63782ccffef4d3902e7239a3b54f0"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0027.array_record.metadata",
+              "bytes": 125,
+              "sha256": "fdb9ad8400d17d9df575e04f2dd0224cb17d566dfbb2b7fac06bc87f514b116e"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0028.array_record.metadata",
+              "bytes": 125,
+              "sha256": "07c97832bd7b5b24ce7fd3e4d997e39708a163627a951c0c75c4dc7df9bc9d4b"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0029.array_record.metadata",
+              "bytes": 125,
+              "sha256": "8652ec0f3126b21cb535ab503f7c3993fd94ec2eaeaf11723d3ddcc9ae4f9090"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0030.array_record.metadata",
+              "bytes": 125,
+              "sha256": "aa8474a518ba4aeaefcf810e67cfcdad0996d57ce6622643202515a81650bc78"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0031.array_record.metadata",
+              "bytes": 125,
+              "sha256": "39b1cb39f18f8c36a19854b147331f41e23f30d3f411c00c2ffd383b28b473b8"
+            },
+            {
+              "path": ".cache/huggingface/download/test/data_0032.array_record.metadata",
+              "bytes": 125,
+              "sha256": "1565b0ca134e35411f2f7b17ff0d622e6795261283b54e5d4c5b35a4cdac9631"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0000.array_record.metadata",
+              "bytes": 125,
+              "sha256": "f41cb8e90209004ea0966f30f8879f8ca48d9ee737d5926692a33fbfa7da360b"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0001.array_record.metadata",
+              "bytes": 125,
+              "sha256": "b1a823a7ea38e546c7c5e19ff38cc0103bbe5b2e9fa3fb230caa470b31650468"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0002.array_record.metadata",
+              "bytes": 125,
+              "sha256": "8ae0c33f050b07688b9ea032d9355aa6c955b4914f4d72ca6a0f2f0ecb46c621"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0003.array_record.metadata",
+              "bytes": 125,
+              "sha256": "67663abc97a2b4ce766c06ce8a503b571fe45e11c3c36507faa7cbb2b6fb09ad"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0004.array_record.metadata",
+              "bytes": 123,
+              "sha256": "47f3f0a47d913fafe2324d4f7925a64c7ae84672a624255922edc5aa5f40104e"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0005.array_record.metadata",
+              "bytes": 125,
+              "sha256": "d0846e690ab633c8d120cb4e5c47e5bc20d7d76b3c986736fe42802053a6f6fb"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0006.array_record.metadata",
+              "bytes": 125,
+              "sha256": "3d3621053a45cee2bf3b3b2861a38ff9b068708dfb30136b9854dde052ae6cfe"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0007.array_record.metadata",
+              "bytes": 125,
+              "sha256": "5eb16e53112fa8e23520d1375a9356200a86e78515c770a32aab2e65168f36cd"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0008.array_record.metadata",
+              "bytes": 125,
+              "sha256": "eda97a0c0f3444cdbca3363c486c0b833fbb31fec641c5ac58a6c854e875a1f1"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0009.array_record.metadata",
+              "bytes": 124,
+              "sha256": "4d08e9b5d42562c5228ec688b7d64bed88535d330f4e81991d3fce795864066a"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0010.array_record.metadata",
+              "bytes": 125,
+              "sha256": "b193c00b094861e3996c9a00a67589902a9530c37a1608dcc788a1e734779423"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0011.array_record.metadata",
+              "bytes": 125,
+              "sha256": "e1de6420d2e9d3b9a616389c82683b1c4285855460aeb14a402b3f81068b541f"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0012.array_record.metadata",
+              "bytes": 124,
+              "sha256": "01f203e813be9f5a6d3311df7f345be2423e6a6fed187633464fc92fdbf335ae"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0013.array_record.metadata",
+              "bytes": 125,
+              "sha256": "3252d878d48cd9b88c20c8b18b11f72f2ca1a6f60f78af3dbc5e89f0451a11c3"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0014.array_record.metadata",
+              "bytes": 125,
+              "sha256": "e0557e3d2da9c34d63d5f15ae6d511696acb156cb676fd9fcc3819e25a41b50e"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0015.array_record.metadata",
+              "bytes": 125,
+              "sha256": "ce25d454cddf2019000c2da483c6d1b2e440d8206b0737f9776f5c5d221c07b4"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0016.array_record.metadata",
+              "bytes": 125,
+              "sha256": "09cfc39862794cea0f03424ce05cd062ecb5f19ca75d63db21a7f197f7d853db"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0017.array_record.metadata",
+              "bytes": 124,
+              "sha256": "08da3c3f102cfc98a2ebbe71abf6e0bd6843a6a2d9c4f418a499e568149f3704"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0018.array_record.metadata",
+              "bytes": 125,
+              "sha256": "59b48535065d07e5be2e2938076e11f54a90a948b1ef9f72c5ecd435e7f71383"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0019.array_record.metadata",
+              "bytes": 124,
+              "sha256": "7da778a15d6100bd7c5ee0447bfa9e812e3d84c713588487bb3c14efd24fb479"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0020.array_record.metadata",
+              "bytes": 125,
+              "sha256": "ae3373974f781d490c729b3cf5c59207585866babd62b0677c768f87f68a84d1"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0021.array_record.metadata",
+              "bytes": 125,
+              "sha256": "5aa758609337ad3367c29f7fc7c627f9741da4a039735eb35c4d0b2783ed08bd"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0022.array_record.metadata",
+              "bytes": 125,
+              "sha256": "3dbf56048fc5113712f885894569337cdbe7f57bc8afb892cbb48563fd605757"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0023.array_record.metadata",
+              "bytes": 125,
+              "sha256": "207fd1347d0938b6738ec4f152b6a665273d5a55793fb2265c4a401fcec2b50c"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0024.array_record.metadata",
+              "bytes": 124,
+              "sha256": "5dfa230b2c7540020c0ddc8f964162e627ea0668c62827fa62c95aa4eca53fa7"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0025.array_record.metadata",
+              "bytes": 125,
+              "sha256": "d0a1b54cd6ebadc732c20b117113e41848fb2c9ad1c2af3137b53e081a6a1d09"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0026.array_record.metadata",
+              "bytes": 124,
+              "sha256": "e9f0479799c9601f35031b5248b6803cb8f7810ed6fa3ac459b28aed36180614"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0027.array_record.metadata",
+              "bytes": 125,
+              "sha256": "3022ca4a243c0745dbc0fd7f2f7cab04fd2b2ca71f6a89745b1a5dcf94881a04"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0028.array_record.metadata",
+              "bytes": 125,
+              "sha256": "1f5bb79e7d9fb925179c9614dd3ca82e6f96055c308b47fda169733fe4822ba0"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0029.array_record.metadata",
+              "bytes": 125,
+              "sha256": "19be14b3495c881d4642578db8666f5c84300c1c5f85535d1f0e2c35966cf006"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0030.array_record.metadata",
+              "bytes": 124,
+              "sha256": "9768e3d9c6b0bdadcf73ab2b8fdc1f1e8ef2555e2989255cda5a069d1571173f"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0031.array_record.metadata",
+              "bytes": 125,
+              "sha256": "a38eb93a68b52f5a10737baf8733f61c6a9c341678d871745d078aea41678b5b"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0032.array_record.metadata",
+              "bytes": 125,
+              "sha256": "0807467c425c855049b143ab7c01af9d2335d3a81982540080e2cfc4a17d6ba7"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0033.array_record.metadata",
+              "bytes": 125,
+              "sha256": "9f272deda403b48edb2a54964d1849a7575815e918729c678d109a9db6034c62"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0034.array_record.metadata",
+              "bytes": 125,
+              "sha256": "68656067ea815cfc7786e4085687bb479864083943797cfe43db3736f14df50b"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0035.array_record.metadata",
+              "bytes": 124,
+              "sha256": "3913274188dbac91927fa8bab575ee96a6d00aa15f3f95b1ce54c703c9ca1a06"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0036.array_record.metadata",
+              "bytes": 125,
+              "sha256": "24be283a1a78985ab3933d9863ad37bafc903fd9d5495eb69790840c51bc3cd4"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0037.array_record.metadata",
+              "bytes": 125,
+              "sha256": "625d6da9aa485fcf8b7b748f652c8562e7a315af9defec2bfae97bc09063aa0a"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0038.array_record.metadata",
+              "bytes": 125,
+              "sha256": "2f2047c366ebf39f1687b90af2aa1e4738b8dd17d30f20f82d6b2dc84f7c872f"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0039.array_record.metadata",
+              "bytes": 125,
+              "sha256": "9be78a46d10e204f6c48dd28e8c8f8be79d7796fc9907dbfabe161edf33f6ba7"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0040.array_record.metadata",
+              "bytes": 125,
+              "sha256": "e48f115b35e19cb333e79dbc6102207c55533ec4d1062c4b96c936d7efb86342"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0041.array_record.metadata",
+              "bytes": 125,
+              "sha256": "dd0054a603b4e7a4344e381b1a88fca46b9a24643ad08f803e3f09881848a4f7"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0042.array_record.metadata",
+              "bytes": 125,
+              "sha256": "f76b59af52746d362a5674ce0bc83b88e60821b1526015fdbc87662bd61ba01b"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0043.array_record.metadata",
+              "bytes": 125,
+              "sha256": "2ef2c991519c8d084f17e36e170f6a046983619c5bbe4029ac6d9009b5de9d0b"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0044.array_record.metadata",
+              "bytes": 124,
+              "sha256": "e94a9e8b1107b242dadd2a04f07896350f8f0f8c688eab6a4802379ad69ef153"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0045.array_record.metadata",
+              "bytes": 125,
+              "sha256": "5d169fe44cdcb2a8201daad8430907e8ee830b517ae356e245dae08f083e8d30"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0046.array_record.metadata",
+              "bytes": 125,
+              "sha256": "6c4f5b9b27ab074651406bc7598adefa90707de6abbdc2fb342f8b2afe82c1e0"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0047.array_record.metadata",
+              "bytes": 125,
+              "sha256": "2a3c919f48f877ea356b1e9145819a57f30a37730ff4c56f55fa1b6109ec29fb"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0048.array_record.metadata",
+              "bytes": 125,
+              "sha256": "5ecc74745a020bb411d0d6f65cb09b974d40310d4409a7e836d9a6d154013358"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0049.array_record.metadata",
+              "bytes": 124,
+              "sha256": "d741b2c7c0f0b4134a1dd6b78849868c2dc1704b3d951c60be007a6e99a2e53e"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0050.array_record.metadata",
+              "bytes": 123,
+              "sha256": "65d569e166ee7768fa0271bb7fdc7503300b70573d3c9b03683ff751cb70a3bf"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0051.array_record.metadata",
+              "bytes": 125,
+              "sha256": "3d96850e2140e9c6a4379738075c60894daeeedf5a77e51b187698cf8bf16b5a"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0052.array_record.metadata",
+              "bytes": 123,
+              "sha256": "79f08ed3261a505f6303210852f7c35e60890db4d7d42ef6744fca3cd70ea66c"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0053.array_record.metadata",
+              "bytes": 125,
+              "sha256": "b343a55e2e610a30d857e51f8740fdcd325f1c354d4fb94b9cfa4e60322dab72"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0054.array_record.metadata",
+              "bytes": 125,
+              "sha256": "d5bd89e93f83ea24a24124066cdecb45f2b5be9f88dd14f237191c6066846754"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0055.array_record.metadata",
+              "bytes": 125,
+              "sha256": "3a7fef8a04a7975c17267e19938c59638940be65c0668f32e417caddcdfcc660"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0056.array_record.metadata",
+              "bytes": 125,
+              "sha256": "9abb134a4e6cdc40d54991e8e53352499b1d758f20ec82d66e02de6464e18afa"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0057.array_record.metadata",
+              "bytes": 125,
+              "sha256": "4dc739ecba2bf197779f67f5ce818ce99d9fc667005a7d4c39729264785ebc7b"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0058.array_record.metadata",
+              "bytes": 124,
+              "sha256": "94f5a972640896f1e317569c5ddd3a59c6b483e6b344f8ffeee4507adc6ac47d"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0059.array_record.metadata",
+              "bytes": 125,
+              "sha256": "ee7fb00f10575963e51307774585ce138ac340b72912504651cac27802988704"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0060.array_record.metadata",
+              "bytes": 125,
+              "sha256": "3780322d960a0fd3c40503519e7be9dccb0d990baad2493c1d13e9893c670a63"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0061.array_record.metadata",
+              "bytes": 124,
+              "sha256": "e5d9d1cdae149a608f6556270e1bdc02bb5d5a7a890242e1baf794df708bc92d"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0062.array_record.metadata",
+              "bytes": 125,
+              "sha256": "ae581b076bce0e193419f08c6610aaac0595a0860b15f225aa72da0113b38eeb"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0063.array_record.metadata",
+              "bytes": 125,
+              "sha256": "2557c60a657e6ef6a0c25581cf77a98e03eb679c29ab8a718ef7ef7bca7ac444"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0064.array_record.metadata",
+              "bytes": 125,
+              "sha256": "0ce650b89809a4f88cccfce4d49309d181207e6a4f66668a56b52e148eca1c4f"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0065.array_record.metadata",
+              "bytes": 125,
+              "sha256": "1d4ad5e2c35c64f2a41a37120c6aea1a3c13146dd773df6d752cb538f6905eb5"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0066.array_record.metadata",
+              "bytes": 125,
+              "sha256": "5da4b57dfeab665cbf7339556c501a4f3e72fc87a22079dd89fb50fa19e08c5a"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0067.array_record.metadata",
+              "bytes": 125,
+              "sha256": "ad09931fbec45fc1ab0455bac5ddc40a0a46812d7d7459aa10a75abe489dd516"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0068.array_record.metadata",
+              "bytes": 125,
+              "sha256": "a02d106bf740c18cabe5d449ae0e19378d93f19f7ce4525b916131bfd5c95f6d"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0069.array_record.metadata",
+              "bytes": 125,
+              "sha256": "6c71915ae2693e23d28fa29a8446e0795b35c4de785393e77271c4f9fe1dc420"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0070.array_record.metadata",
+              "bytes": 125,
+              "sha256": "065b8ad88afa36a3fbbaaa4e7a5f2d14a35b0e6a0c54f485a9d928041bf82e4f"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0071.array_record.metadata",
+              "bytes": 124,
+              "sha256": "455f00898c9f2319984e24c4d2ff8237f1cf3627217f4c21eaf023769ae97fcf"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0072.array_record.metadata",
+              "bytes": 125,
+              "sha256": "c49c0047a69a89b0fff04bba00e72f4c0de4ddc7ef1a7d24cf271ab039540b07"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0073.array_record.metadata",
+              "bytes": 125,
+              "sha256": "570a6e4dd3d5ced286529810a9c9b1a620eb99ce8a928d61123886ea7a00cc62"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0074.array_record.metadata",
+              "bytes": 124,
+              "sha256": "f74cee7e42c1f9eb51adeed07038520a8ca489490017b3681626631434d9b82f"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0075.array_record.metadata",
+              "bytes": 125,
+              "sha256": "32faf506faae5975cf969eb09ebee18f9b064232a36a4b766022a453415f9c34"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0076.array_record.metadata",
+              "bytes": 125,
+              "sha256": "e368a0cee36aa72b20290b5c29bbde8abc5c0680d93e87204bab43d2054f13f2"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0077.array_record.metadata",
+              "bytes": 125,
+              "sha256": "c11d9aed812996bbbe50a6e75950f1423cf0dfe2197f283bec4bd55d9a43ecb8"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0078.array_record.metadata",
+              "bytes": 124,
+              "sha256": "4b3624421fc9deb7af584b9f318cbc64e81a571bcaa916de2c4c1ca3e32fa693"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0079.array_record.metadata",
+              "bytes": 125,
+              "sha256": "3f4b62185a1c0f6576f8e7a270f20cef35d1cda09f4c38f1fb0df5e2d5d7fa21"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0080.array_record.metadata",
+              "bytes": 124,
+              "sha256": "56872f3de087b3da70bd08b334ba87dcf5292b890edfc211062c1ec8da912850"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0081.array_record.metadata",
+              "bytes": 125,
+              "sha256": "a5410353d54e67eaa3212c25137f07463b9cfcb0fd15793ae774b3ef51b5a17a"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0082.array_record.metadata",
+              "bytes": 124,
+              "sha256": "7ea42c3b290ba26ebb64f420ce889f7b29a84b13c432f806be728e56cc26bbaa"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0083.array_record.metadata",
+              "bytes": 125,
+              "sha256": "1d2587f95f993e83438af3f332347e5ccfb1eb351d2a8a8c66d9cfaf8a4b7750"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0084.array_record.metadata",
+              "bytes": 125,
+              "sha256": "e9e6259e9f39dd9f060558519fc39283e5f40c4211965e3f5a7b66e2b8d0a29a"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0085.array_record.metadata",
+              "bytes": 125,
+              "sha256": "2de4a7feb9f6564f49fc47767ce35b9cf1520949b2a6cd8e36ea0ea8a1ab7561"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0086.array_record.metadata",
+              "bytes": 125,
+              "sha256": "1ac7f27a0c9244865fffc08bb90304bcb1f925d2baffe7a7099b670e5de75a57"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0087.array_record.metadata",
+              "bytes": 125,
+              "sha256": "4d4ec3b49b6ca40beeaef06a1044a49042e215de97bc70131ad1b4d304c3e2b9"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0088.array_record.metadata",
+              "bytes": 125,
+              "sha256": "c78d54ab3ba23391ddd47d3b12ecd7cffb952a0a1858e423ce2964e2c4b7cabc"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0089.array_record.metadata",
+              "bytes": 125,
+              "sha256": "303ceaf31b34266346769c1c0ea2170941ed0dc2b04cdcb1fb39d864349b3fef"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0090.array_record.metadata",
+              "bytes": 125,
+              "sha256": "8a2a8b48412ef025099a755cacd969cbcd335502d1d773fd92d13b1c4a578b99"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0091.array_record.metadata",
+              "bytes": 124,
+              "sha256": "2a41bcabdd64e6ce348178b1ec6a2c5febd5146b99a60acb5ddc456c2f245df7"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0092.array_record.metadata",
+              "bytes": 125,
+              "sha256": "5d66eb326e86669dcb0910a217aee4d1e604a8a3907e79dd5310f7aaf03686d8"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0093.array_record.metadata",
+              "bytes": 125,
+              "sha256": "802fa2b439158f2fcf5ba783c07b696c8e6a38caba1f4adfe405499e5e8ff5bf"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0094.array_record.metadata",
+              "bytes": 125,
+              "sha256": "0eeb283ddfe730d99f231b95ac84b14e881317de3222ca87417aa88af3c920df"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0095.array_record.metadata",
+              "bytes": 125,
+              "sha256": "3aa264e5aa855fe677126cbb758a09051dfe8c6a23f8fb20f80b5343aa6d7587"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0096.array_record.metadata",
+              "bytes": 124,
+              "sha256": "bb1369f167cb94f8955522aa21620460340f8494aa2137233cad048ac181bc50"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0097.array_record.metadata",
+              "bytes": 125,
+              "sha256": "816cb65cdd904484a7ca04de0a024c0ed2e1850cfe92bd2be4b6ff466d7407af"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0098.array_record.metadata",
+              "bytes": 125,
+              "sha256": "ff390f702c0880cdf290889dffbe221f4bf8a9926f810512258c0a746693d928"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0099.array_record.metadata",
+              "bytes": 124,
+              "sha256": "d81f0fb6b5c1930263519fb274bd806ceb49497995b1aa58d2e642f0a592d31f"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0100.array_record.metadata",
+              "bytes": 125,
+              "sha256": "8861b74cd9ad57d30a487d67603561a605ad9c7317259ca554fee63869f8085f"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0101.array_record.metadata",
+              "bytes": 124,
+              "sha256": "8d2b561c9e6aec934bd69747753a19bb7e99a641230070ee8f4627324c8e4740"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0102.array_record.metadata",
+              "bytes": 125,
+              "sha256": "e841b61205d217de7b62e4b80e5a3fe56c89230e35b894df122f8f37ab5a5e6e"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0103.array_record.metadata",
+              "bytes": 124,
+              "sha256": "bb4677cdd5ebbc9faec626669f1933f15b84ad1d56704ce825bc48f69be4ff26"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0104.array_record.metadata",
+              "bytes": 125,
+              "sha256": "62d8d4c4673e9ecddc4ccceb86228c4596c69b5d615a93ca8d155f838826d2c8"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0105.array_record.metadata",
+              "bytes": 125,
+              "sha256": "27076263d4302d747ae9a22448feae6bad2aa32560a8c6ba2e00284aab089603"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0106.array_record.metadata",
+              "bytes": 125,
+              "sha256": "183eb0615e04be08610f48ddfde224b197d7e81aecfa4007e30fa7ed7133ee13"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0107.array_record.metadata",
+              "bytes": 125,
+              "sha256": "5b2af8b3ef5be075b00eb3ba25a085353ddf1f998c16e0158072e79010602374"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0108.array_record.metadata",
+              "bytes": 125,
+              "sha256": "fb40033d4482a00aac38713e37ee6c5c2def07ae44ff88a1188cc1362a41055e"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0109.array_record.metadata",
+              "bytes": 125,
+              "sha256": "2d85c53ab4209d814ca9249fbf3a9200666353c4899b35524eb41b00ed0f258e"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0110.array_record.metadata",
+              "bytes": 124,
+              "sha256": "87ec6e5a935ce80c38df38fa47d9e96c3c87b84274fa2769fa5a854b2d51db0b"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0111.array_record.metadata",
+              "bytes": 125,
+              "sha256": "1a4b87d165a8453696bb369e2c71eda1e307f1ee31d0ebf9df38e09cd6cbe16f"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0112.array_record.metadata",
+              "bytes": 125,
+              "sha256": "79d1e5a28e71b69d47ea3bde845066b09eb41ae6b2257c1c1e139d7a9c0ac431"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0113.array_record.metadata",
+              "bytes": 125,
+              "sha256": "2b341797d0b3ba4f2069824b36928eb95958c41cccd8e417bcf3725ea1478613"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0114.array_record.metadata",
+              "bytes": 123,
+              "sha256": "0ec501f06f2bf2568c44c7a066c6fe7faa810f6570baa2e63331d71226c27fd6"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0115.array_record.metadata",
+              "bytes": 125,
+              "sha256": "7128acd04b8f324cd30a55f95fe7f540bc3b8c381d2293842f38d47f0b7e02d2"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0116.array_record.metadata",
+              "bytes": 125,
+              "sha256": "7899b84a85d102710e63da3d7e6ade366d88adcb6cbb5130ca721dc9f34fcc92"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0117.array_record.metadata",
+              "bytes": 124,
+              "sha256": "76b0ef5a1b6b58db00f6dcc2d4cb9493288e26f20c57ad538c9caf13d8cc2dc0"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0118.array_record.metadata",
+              "bytes": 124,
+              "sha256": "d3c7d195bc2263ca1c683690b714d89d5b57891973bdf788eeddaf5a484836c8"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0119.array_record.metadata",
+              "bytes": 124,
+              "sha256": "5a79a80abced3cf60740eab344d0b50bf132c4bf6e715bd343c7d39ac59bd5c9"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0120.array_record.metadata",
+              "bytes": 125,
+              "sha256": "273c2f9cedb334d7cbe5d18674cdd7970ea20ba35c69b9a0a547ed129fb3c182"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0121.array_record.metadata",
+              "bytes": 124,
+              "sha256": "b7b53bd7467a5918c9826fd06ef2de902c87cfbc9e579f3aecd3a58a51df8f94"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0122.array_record.metadata",
+              "bytes": 125,
+              "sha256": "834f3d12c2023fee300fdcf9121151ec26ba33adb61de52eae16eb3ef80a82b5"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0123.array_record.metadata",
+              "bytes": 125,
+              "sha256": "62cece78091146554b3499b61506d1347f523221af4f02a2372ce9911b011337"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0124.array_record.metadata",
+              "bytes": 125,
+              "sha256": "8569abf13ab45a111357c8e5d78dd64f2eca9ab6d05541ed2c8514add30e6c0f"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0125.array_record.metadata",
+              "bytes": 125,
+              "sha256": "49cb3db3c7450831526e9cf43edaca598fd56299615cb172e6e53c8dac63f93c"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0126.array_record.metadata",
+              "bytes": 125,
+              "sha256": "5c3b261ba87ad45cc41ddce9b0c3d9f152f2691db89e0ed4d4d784887cb0cd69"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0127.array_record.metadata",
+              "bytes": 124,
+              "sha256": "86bd32d53d61cb7a7c4d8bc88250fc7bf333338e10adb31585e54a703699f0ad"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0128.array_record.metadata",
+              "bytes": 125,
+              "sha256": "8bc6e22fa6f89d2e78350c05cb67595f48642f63bf0c9ea5abd78658824b1968"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0129.array_record.metadata",
+              "bytes": 125,
+              "sha256": "c23c3ee9368062e12ff3fe59459c87ccaee4ef9b768573453887da907e8c35b2"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0130.array_record.metadata",
+              "bytes": 125,
+              "sha256": "b2dd7d70acafdf998a42dd44e8c8b60105ff4b95c085159a914b121f69a6b4e1"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0131.array_record.metadata",
+              "bytes": 125,
+              "sha256": "41b421a4095b62cb4c573b45c52b097b309a4c51ca82b9a528a7ed2acca1cf6d"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0132.array_record.metadata",
+              "bytes": 124,
+              "sha256": "453ffd75fe359ed0d62fc068666977011cc4e968a6462abd03f9797759712bc1"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0133.array_record.metadata",
+              "bytes": 125,
+              "sha256": "b8adc5be6fe50b9e346119b569fcd0ddcfd88b1ae8773512f4ebc41b3a440b59"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0134.array_record.metadata",
+              "bytes": 125,
+              "sha256": "333c7773f30e208dc3c1c407325e83d0ba6a74991cea3771c1d69eb8941816f3"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0135.array_record.metadata",
+              "bytes": 125,
+              "sha256": "9a3bc2c4670aa7feb3ec6558ab895fc0dc9916149ab843ae6a049eebe11ad038"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0136.array_record.metadata",
+              "bytes": 124,
+              "sha256": "8ae82b4787e4132385753b62ebcc78d50e14354d431b29c2e9b848703d5e5081"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0137.array_record.metadata",
+              "bytes": 125,
+              "sha256": "8ba08123942b4ef07c48b3ba27b49b2d91702a6f2f41d9929d83b8c665fc9101"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0138.array_record.metadata",
+              "bytes": 124,
+              "sha256": "3bbc27390f61b406a2a8565a8e15534f26859e6f1c2b9548fee6aa21bb3623e1"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0139.array_record.metadata",
+              "bytes": 125,
+              "sha256": "cbfd62ff11955df2e99091f2a62f796bbc004c192f39a797124612fd89582457"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0140.array_record.metadata",
+              "bytes": 125,
+              "sha256": "e76131123bb62e2aa641fd0c34fd61ea83879d272db591b3a0b4342b86151567"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0141.array_record.metadata",
+              "bytes": 124,
+              "sha256": "c3a8d720bf0d198d46b95248ce011c66677010c5342ef0f4cbcc5664ea444463"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0142.array_record.metadata",
+              "bytes": 125,
+              "sha256": "da4ebc2803681324d5a94d8d26f3772bc87b1d4fa384da234361490d0a806f5e"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0143.array_record.metadata",
+              "bytes": 125,
+              "sha256": "bd25097024fb805481e5a02aaa99a522e1d8225223b371886796a12975d4c4c8"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0144.array_record.metadata",
+              "bytes": 125,
+              "sha256": "32010d5de3fc5742d61ad3fb22ebc7ac48170ddbb00c0457d493461bf555c7d9"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0145.array_record.metadata",
+              "bytes": 125,
+              "sha256": "d3ea8e6ea23613409aeb7d3657afba3fe167c2c44c0ba95b9f165e4befeb4d80"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0146.array_record.metadata",
+              "bytes": 125,
+              "sha256": "4ddab11c3dd8f66a543836dd38b3adfe8c3a54e7c5d088b12ef5916a75ecd5e8"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0147.array_record.metadata",
+              "bytes": 125,
+              "sha256": "a27681eff4b6247199d4f736f4e32eb9a484c53cda37dce8db04372b2010e629"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0148.array_record.metadata",
+              "bytes": 124,
+              "sha256": "f21770fbd1b50bc2cf788b3de4cdc219b56d6bcc9081e454ebd64cdc1497157e"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0149.array_record.metadata",
+              "bytes": 125,
+              "sha256": "1932998962fd503214633c60a562d3bca4ea52d85fa07c21d2ca448560e43d8d"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0150.array_record.metadata",
+              "bytes": 125,
+              "sha256": "4eca1fd66587f452b6666c678dc19c3a2a10ffb7f72933a52ebffab40a31a6c4"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0151.array_record.metadata",
+              "bytes": 125,
+              "sha256": "173a6c1d4d99bd7a676dc57fff44a0309b6cfd1301c2dc57920c93cce9213e2f"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0152.array_record.metadata",
+              "bytes": 125,
+              "sha256": "e3c04dc1d07fc6a1be741fea99252f21a746ab7a947284b8d71749ef8e0d09fa"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0153.array_record.metadata",
+              "bytes": 125,
+              "sha256": "19ee28293d15563e553018ccd0d2fa6d70985a0a9f3f430384064234d7da1704"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0154.array_record.metadata",
+              "bytes": 125,
+              "sha256": "cd5a5965ab3b15d0e06e701bcebf49eef5607aee7b30fb16d46a3a984b26394d"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0155.array_record.metadata",
+              "bytes": 125,
+              "sha256": "236cc29c3e8f5f39463a93688255bafb9e2399316378d96d325970c9b42113b2"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0156.array_record.metadata",
+              "bytes": 125,
+              "sha256": "287982809ad7cc47c84c2519fda1f38f077b69a9a05fb8843a16fc8a8b06dd4b"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0157.array_record.metadata",
+              "bytes": 125,
+              "sha256": "76604ec1a6b2cdc35700b77814e1fd204f3fc873f1c87ab4bbe0178fc8a69525"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0158.array_record.metadata",
+              "bytes": 125,
+              "sha256": "4ce900b22f6a3a57c751a4b49d4d2f81eb65f408b3a671a7fa2c25bf377e1a20"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0159.array_record.metadata",
+              "bytes": 125,
+              "sha256": "ad962bef8350a83b372921979429348e6f6ae0679a123cfdc1cdaac564c85120"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0160.array_record.metadata",
+              "bytes": 125,
+              "sha256": "159b6f7e0d42610c4cfa7a9b31c630e4a676ee9ba05570e82997b169fe3af4d9"
+            },
+            {
+              "path": ".cache/huggingface/download/train/data_0161.array_record.metadata",
+              "bytes": 125,
+              "sha256": "2f9f68dc87551024b7669e851b8632d208abecfdf0755fa8b7c85b9ca1e9df72"
+            }
+          ],
+          "files_truncated": true,
+          "split_manifests": {
+            "train": {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf/train/manifest.json",
+              "bytes": 278178,
+              "sha256": "3db26b29f635c88796fa9f8220dbd31595f2fc27e048e8bb359e70e75cab6a22"
+            },
+            "val": {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf/val/manifest.json",
+              "bytes": 278176,
+              "sha256": "e4819a593bb5950608dd574d031fab822027fb944ad0f75e8ee46532250ae88c"
+            },
+            "test": {
+              "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf/test/manifest.json",
+              "bytes": 278177,
+              "sha256": "b49903ce2f7716104ed1b4d3a48feed2f8520a610f8a936fd06f644fdb1648c0"
+            }
+          },
+          "findings": []
+        }
+      ],
+      "findings": [],
+      "error_count": 0,
+      "claim_boundary": "Materializes selected G005 auxiliary source files only; it does not train, checkpoint G005, or prove D2E+aux model quality."
+    },
+    "artifacts": {
+      "materialization_summary": {
+        "path": "artifacts/aux/g005_aux_materialization_execute_summary.json",
+        "exists": true,
+        "bytes": 59234
+      },
+      "materialization_log": {
+        "path": "artifacts/aux/g005_aux_materialization_execute.log",
+        "exists": true,
+        "bytes": 15492
+      },
+      "namespace_root": {
+        "path": "outputs/aux",
+        "exists": true,
+        "file_count": 1564,
+        "bytes": 18121955650,
+        "transient_missing_file_count": 0
+      }
+    }
+  },
+  "materialization_integrity_status": "pass",
+  "source_evidence_status": "pass",
+  "aux_examples_status": "pass",
+  "runtime_env_status": "pass",
+  "namespace_completion_ready": true,
+  "g005_launch_plan_status": "blocked",
+  "g005_launch_plan_finding_count": 4,
+  "findings": [
+    {
+      "severity": "error",
+      "code": "g005_launch_not_ready",
+      "finding_count": 4
+    }
+  ]
+}
