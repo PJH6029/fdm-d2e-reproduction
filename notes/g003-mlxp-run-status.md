@@ -353,3 +353,11 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - G003 parent remained live; progress monitor status `running`, decoded recording variants `149 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`, long-running active shards `[0, 3, 5, 12, 13, 14, 15]`.
 - Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
 - No G003 or G008 checkpoint/completion claim was made.
+
+## 2026-05-21 18:18 KST G009 readiness sync snapshot
+
+- Pushed commit `fe1ca78` and fast-forwarded pod checkout to `fe1ca78`; `scripts/plan_g009_readiness.py`, its tests/docs, and `artifacts/reproducibility/g009_readiness_plan.json` are present.
+- G009 readiness in the pod is blocked as intended by incomplete upstream prerequisites: `G003-d2e-only-idm=in_progress`, `G004-d2e-only-fdm-4xh200=pending`, `G005-aux-data-best-model=pending`, `G006-evaluation-failure-analysis=pending`, `G008-live-game-suite=pending`; completion projection remains `fail` with 6 errors.
+- G003 parent remained live; progress monitor status `running`, decoded recording variants `152 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`, long-running active shards `[0, 5, 12, 13, 14, 15]`.
+- Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
+- No story or aggregate checkpoint/completion claim was made.
