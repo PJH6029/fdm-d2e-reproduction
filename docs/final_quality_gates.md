@@ -67,3 +67,9 @@ prevents accidental aggregate goal completion.
 
 The aggregate Codex goal should only be completed after this audit passes on
 fresh artifacts and OMX checkpoints for all G001–G009 are complete.
+
+Story-level completion audits are configured as pre-checkpoint evidence gates
+(`require_goal_checkpoint_complete=false`) so they can pass on real artifacts
+before the corresponding OMX checkpoint is written. They still report the
+current story status. The final quality gate is the layer that requires every
+story status to be `complete`.

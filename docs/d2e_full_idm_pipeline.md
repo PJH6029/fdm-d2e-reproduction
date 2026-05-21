@@ -191,7 +191,10 @@ uv run python scripts/validate_g003_full_idm_completion.py
 
 During active extraction/training this may be run with `--allow-fail`, but a
 terminal G003 checkpoint requires `artifacts/idm/g003_full_idm_completion_audit.json`
-to report `status == pass`. The audit checks goal state, full decode coverage,
-merged JSONL counts, pseudolabel/prediction counts, checkpoint metadata
-provenance, required target split tags, split-stat summary status, and 4×H200
-run evidence.
+to report `status == pass`. The repo config runs this audit as a pre-checkpoint
+evidence gate (`require_goal_checkpoint_complete=false`): it reports the current
+OMX goal status but does not fail solely because G003 has not yet been
+checkpointed. The final quality gate separately verifies that G003 is complete.
+The audit checks full decode coverage, merged JSONL counts,
+pseudolabel/prediction counts, checkpoint metadata provenance, required target
+split tags, split-stat summary status, and 4×H200 run evidence.

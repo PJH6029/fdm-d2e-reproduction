@@ -2,11 +2,22 @@
   "schema": "g005_aux_completion_config.v1",
   "goals_path": ".omx/ultragoal/goals.json",
   "goal_id": "G005-aux-data-best-model",
-  "prerequisite_goals": ["G003-d2e-only-idm", "G004-d2e-only-fdm-4xh200"],
+  "prerequisite_goals": [
+    "G003-d2e-only-idm",
+    "G004-d2e-only-fdm-4xh200"
+  ],
   "output_path": "artifacts/aux/g005_aux_completion_audit.json",
   "expected_gpus": 4,
-  "required_splits": ["temporal", "heldout_recording", "heldout_game"],
-  "required_target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],
+  "required_splits": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
+  "required_target_eval_split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
   "require_d2e_only_baseline": true,
   "require_d2e_aux_candidate": true,
   "paths": {
@@ -48,5 +59,6 @@
     "claim_boundary.no_d2e_aux_claim_before_d2e_only_gates": true,
     "training_policy.source_specific_action_heads": true,
     "d2e_eval_manifests.same_as_d2e_only": true
-  }
+  },
+  "require_goal_checkpoint_complete": false
 }

@@ -3,6 +3,7 @@
   "status": "fail",
   "goal_id": "G008-live-game-suite",
   "goal_status": "pending",
+  "require_goal_checkpoint_complete": false,
   "prerequisite_goal_statuses": {
     "G003-d2e-only-idm": "in_progress",
     "G004-d2e-only-fdm-4xh200": "pending",
@@ -42,12 +43,6 @@
   },
   "episode_artifact_paths": [],
   "findings": [
-    {
-      "severity": "error",
-      "code": "goal_not_checkpointed_complete",
-      "goal_id": "G008-live-game-suite",
-      "actual": "pending"
-    },
     {
       "severity": "error",
       "code": "prerequisite_goal_not_complete",
@@ -108,6 +103,6 @@
       "actual": null
     }
   ],
-  "error_count": 10,
+  "error_count": 9,
   "claim_boundary": "This audit is required before checkpointing G008 complete; protocol-only or dry-run evidence cannot pass without trained checkpoint metadata and live open-source graphical-game validation evidence."
 }

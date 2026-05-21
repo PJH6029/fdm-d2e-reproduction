@@ -3,7 +3,9 @@
   "goals_path": ".omx/ultragoal/goals.json",
   "goal_id": "G007-runtime-sdk-adapter",
   "output_path": "artifacts/runtime/g007_completion_audit.json",
-  "allowed_contract_modes": ["deterministic_replay_dry_run"],
+  "allowed_contract_modes": [
+    "deterministic_replay_dry_run"
+  ],
   "expected_blocked_actions": 0,
   "min_applied_actions": 3,
   "min_demo_targets": 3,
@@ -28,6 +30,13 @@
     "schema": "runtime_replay_adapter_config.v1",
     "safety.require_focus": true
   },
-  "required_contract_note_phrases": ["no OS-level input injection", "commercial-game control"],
-  "required_doc_phrases": ["by itself prove live game control", "No G008 live-suite claim"]
+  "required_contract_note_phrases": [
+    "no OS-level input injection",
+    "commercial-game control"
+  ],
+  "required_doc_phrases": [
+    "by itself prove live game control",
+    "No G008 live-suite claim"
+  ],
+  "require_goal_checkpoint_complete": false
 }

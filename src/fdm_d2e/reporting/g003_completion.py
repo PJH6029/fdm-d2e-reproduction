@@ -53,7 +53,8 @@ def validate_g003_full_idm_completion(config: dict[str, Any], *, root: str | Pat
     goals_path = str(config.get("goals_path", ".omx/ultragoal/goals.json"))
     goal_id = str(config.get("goal_id", "G003-d2e-only-idm"))
     goal_status = _goal_status(root_path, goals_path, goal_id)
-    if goal_status != "complete":
+    require_goal_checkpoint = bool(config.get("require_goal_checkpoint_complete", True))
+    if require_goal_checkpoint and goal_status != "complete":
         findings.append({"severity": "error", "code": "goal_not_checkpointed_complete", "goal_id": goal_id, "actual": goal_status})
 
     expected_variants = int(config.get("expected_recording_variants", 918))
@@ -129,6 +130,7 @@ def validate_g003_full_idm_completion(config: dict[str, Any], *, root: str | Pat
         "status": "pass" if not errors else "fail",
         "goal_id": goal_id,
         "goal_status": goal_status,
+        "require_goal_checkpoint_complete": require_goal_checkpoint,
         "expected_recording_variants": expected_variants,
         "expected_shards": expected_shards,
         "artifacts": artifacts,

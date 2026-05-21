@@ -3,6 +3,7 @@
   "status": "fail",
   "goal_id": "G009-report-repro-package",
   "goal_status": "pending",
+  "require_goal_checkpoint_complete": false,
   "prerequisite_goal_statuses": {
     "G001-data-universe-audit": "complete",
     "G002-split-leakage-contract": "complete",
@@ -41,14 +42,14 @@
     "final_quality_doc": {
       "path": "docs/final_quality_gates.md",
       "exists": true,
-      "bytes": 3939,
-      "sha256": "e140355c89bb079eecc98feefb3b01c922c2ce10d1e5519802cfa59789ab0b62"
+      "bytes": 4279,
+      "sha256": "d58dbabb54b6cb318c4342655fa45a1eda6b92c4299a56025edc23095ea34947"
     },
     "package_manifest": {
       "path": "artifacts/reproducibility/package_manifest.json",
       "exists": true,
       "bytes": 39496,
-      "sha256": "a83b0c682038183fcdd4dc5aeb3f3ca127f4ac8020c75678b206e41dba373d2d"
+      "sha256": "924adad5ce517ec54867c01a049b0bfb0421adf99f6621a09a97f1de0f08da97"
     },
     "claim_boundary_audit": {
       "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -60,7 +61,7 @@
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "exists": true,
       "bytes": 61910,
-      "sha256": "05a39570673fa2a2c7c3a7c26c3bb50bbc17a0d8254a13f1093569f17ce151f7"
+      "sha256": "3310de1189303ffe0f9894a64c0a01f893db658cff2594b2b3deebc6cc11a373"
     }
   },
   "required_manifest_paths": [
@@ -74,12 +75,6 @@
   ],
   "manifest_entry_count": 188,
   "findings": [
-    {
-      "severity": "error",
-      "code": "goal_not_checkpointed_complete",
-      "goal_id": "G009-report-repro-package",
-      "actual": "pending"
-    },
     {
       "severity": "error",
       "code": "prerequisite_goal_not_complete",
@@ -118,6 +113,6 @@
       "actual": "fail"
     }
   ],
-  "error_count": 7,
+  "error_count": 6,
   "claim_boundary": "This audit is required before checkpointing G009 complete; final report, evidence index, runbook, package manifest, claim-boundary audit, manifest hashes, and prerequisite goal statuses must all be current."
 }

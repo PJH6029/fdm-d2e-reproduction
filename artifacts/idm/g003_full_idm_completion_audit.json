@@ -3,6 +3,7 @@
   "status": "fail",
   "goal_id": "G003-d2e-only-idm",
   "goal_status": "in_progress",
+  "require_goal_checkpoint_complete": false,
   "expected_recording_variants": 918,
   "expected_shards": 16,
   "artifacts": {
@@ -124,12 +125,6 @@
     "decode_target_all_eval": null
   },
   "findings": [
-    {
-      "severity": "error",
-      "code": "goal_not_checkpointed_complete",
-      "goal_id": "G003-d2e-only-idm",
-      "actual": "in_progress"
-    },
     {
       "severity": "error",
       "code": "missing_required_artifact",
@@ -273,6 +268,6 @@
       "actual": 2
     }
   ],
-  "error_count": 24,
+  "error_count": 23,
   "claim_boundary": "This audit is required before checkpointing G003 complete; it proves full-corpus D2E-only IDM coverage, counts, provenance, split stats, and 4xH200 run evidence."
 }

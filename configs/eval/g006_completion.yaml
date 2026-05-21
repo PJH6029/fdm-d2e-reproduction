@@ -2,9 +2,17 @@
   "schema": "g006_completion_config.v1",
   "goals_path": ".omx/ultragoal/goals.json",
   "goal_id": "G006-evaluation-failure-analysis",
-  "prerequisite_goals": ["G003-d2e-only-idm", "G004-d2e-only-fdm-4xh200", "G005-aux-data-best-model"],
+  "prerequisite_goals": [
+    "G003-d2e-only-idm",
+    "G004-d2e-only-fdm-4xh200",
+    "G005-aux-data-best-model"
+  ],
   "output_path": "artifacts/eval/g006_completion_audit.json",
-  "required_splits": ["temporal", "heldout_recording", "heldout_game"],
+  "required_splits": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
   "required_endpoints": [
     "keyboard_accuracy",
     "mouse_button_accuracy",
@@ -14,8 +22,20 @@
     "mouse_move_pearson",
     "mouse_move_scale_ratio_distance"
   ],
-  "required_failure_axes": ["action", "game", "resolution", "source", "calibration"],
-  "required_claim_taxonomy": ["d2e_only_idm", "d2e_only_fdm", "d2e_aux_comparison", "live_open_game_suite", "negative_results"],
+  "required_failure_axes": [
+    "action",
+    "game",
+    "resolution",
+    "source",
+    "calibration"
+  ],
+  "required_claim_taxonomy": [
+    "d2e_only_idm",
+    "d2e_only_fdm",
+    "d2e_aux_comparison",
+    "live_open_game_suite",
+    "negative_results"
+  ],
   "required_claim_states": {
     "d2e_only_idm": "claimable",
     "d2e_only_fdm": "claimable",
@@ -23,8 +43,16 @@
     "live_open_game_suite": "not_claimed_until_g008",
     "negative_results": "documented"
   },
-  "claim_states_requiring_evidence": ["claimable", "documented"],
-  "required_forbidden_claims": ["fdm1_parity", "commercial_game_control_without_live_open_suite", "robotics_transfer", "car_control_transfer"],
+  "claim_states_requiring_evidence": [
+    "claimable",
+    "documented"
+  ],
+  "required_forbidden_claims": [
+    "fdm1_parity",
+    "commercial_game_control_without_live_open_suite",
+    "robotics_transfer",
+    "car_control_transfer"
+  ],
   "require_non_rejections": true,
   "require_failure_examples": true,
   "paths": {
@@ -52,5 +80,6 @@
     "statuses.endpoint_statistics": "pass",
     "statuses.failure_analysis": "pass",
     "statuses.claim_taxonomy": "pass"
-  }
+  },
+  "require_goal_checkpoint_complete": false
 }

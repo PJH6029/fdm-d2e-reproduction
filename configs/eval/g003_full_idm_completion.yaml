@@ -6,7 +6,11 @@
   "expected_recording_variants": 918,
   "expected_shards": 16,
   "expected_nproc_per_node": 4,
-  "required_target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],
+  "required_target_eval_split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
   "paths": {
     "decode_summary": "artifacts/sources/d2e_full_corpus_decode_summary.json",
     "train_records": "outputs/data/d2e_full_corpus/train_core.jsonl",
@@ -33,5 +37,6 @@
     "split_contract.exists": true,
     "distributed.enabled": true,
     "distributed.world_size": 4
-  }
+  },
+  "require_goal_checkpoint_complete": false
 }

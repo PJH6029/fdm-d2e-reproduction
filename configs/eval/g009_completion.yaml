@@ -24,7 +24,13 @@
     "claim_boundary_audit": "artifacts/reproducibility/claim_boundary_audit.json",
     "final_quality_audit": "artifacts/reproducibility/final_quality_gate_audit.json"
   },
-  "required_docs": ["final_report", "evidence_index", "reproducibility_runbook", "failure_analysis_doc", "final_quality_doc"],
+  "required_docs": [
+    "final_report",
+    "evidence_index",
+    "reproducibility_runbook",
+    "failure_analysis_doc",
+    "final_quality_doc"
+  ],
   "manifest_expectations": {
     "schema": "repro_package_manifest.v1"
   },
@@ -44,5 +50,11 @@
     "artifacts/reproducibility/claim_boundary_audit.json",
     "artifacts/reproducibility/final_quality_gate_audit.json"
   ],
-  "required_forbidden_claims": ["fdm1_parity", "commercial_game_control_without_live_open_suite", "robotics_transfer", "car_control_transfer"]
+  "required_forbidden_claims": [
+    "fdm1_parity",
+    "commercial_game_control_without_live_open_suite",
+    "robotics_transfer",
+    "car_control_transfer"
+  ],
+  "require_goal_checkpoint_complete": false
 }

@@ -103,3 +103,16 @@ def test_g003_completion_audit_fails_on_partial_counts_and_goal(tmp_path: Path):
     assert payload["status"] == "fail"
     assert "goal_not_checkpointed_complete" in codes
     assert "predictions_count_mismatch" in codes
+
+
+def test_g003_completion_audit_can_run_as_pre_checkpoint_evidence_gate(tmp_path: Path):
+    _complete_fixture(tmp_path)
+    write_json(tmp_path / ".omx/ultragoal/goals.json", {"goals": [{"id": "G003", "status": "in_progress"}]})
+    cfg = _config()
+    cfg["require_goal_checkpoint_complete"] = False
+    payload = validate_g003_full_idm_completion(cfg, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "pass"
+    assert payload["goal_status"] == "in_progress"
+    assert payload["require_goal_checkpoint_complete"] is False
+    assert "goal_not_checkpointed_complete" not in codes

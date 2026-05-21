@@ -3,6 +3,7 @@
   "status": "fail",
   "goal_id": "G006-evaluation-failure-analysis",
   "goal_status": "pending",
+  "require_goal_checkpoint_complete": false,
   "prerequisite_goal_statuses": {
     "G003-d2e-only-idm": "in_progress",
     "G004-d2e-only-fdm-4xh200": "pending",
@@ -86,12 +87,6 @@
     }
   },
   "findings": [
-    {
-      "severity": "error",
-      "code": "goal_not_checkpointed_complete",
-      "goal_id": "G006-evaluation-failure-analysis",
-      "actual": "pending"
-    },
     {
       "severity": "error",
       "code": "prerequisite_goal_not_complete",
@@ -218,6 +213,6 @@
       "actual": "pending_non_rejections"
     }
   ],
-  "error_count": 19,
+  "error_count": 18,
   "claim_boundary": "This audit is required before checkpointing G006 complete; endpoint statistics, failure analysis, claim taxonomy, readiness, and final artifact build summary must all pass with G003/G004/G005 prerequisites complete."
 }

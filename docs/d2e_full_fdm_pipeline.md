@@ -137,11 +137,15 @@ uv run python scripts/validate_g004_full_fdm_completion.py
 
 During upstream G003/G004 execution this may be run with `--allow-fail`, but a
 terminal G004 checkpoint requires `artifacts/fdm/g004_full_fdm_completion_audit.json`
-to report `status == pass`. The audit checks G003/G004 goal state, D2E-only
-FDM-from-IDM-pseudolabel provenance, split materialization counts, prediction
-coverage, explicit train-core → target-all-eval split mode, causal FDM feature
-mode, prior-action context provenance, target split tags, convergence-report
-presence, split statistics, and 4×H200 run evidence.
+to report `status == pass`. The repo config runs this audit as a pre-checkpoint
+evidence gate (`require_goal_checkpoint_complete=false`): it still enforces G003
+as a prerequisite but does not fail solely because G004 itself has not yet been
+checkpointed. The final quality gate separately verifies that G004 is complete.
+The audit checks D2E-only FDM-from-IDM-pseudolabel provenance, split
+materialization counts, prediction coverage, explicit train-core →
+target-all-eval split mode, causal FDM feature mode, prior-action context
+provenance, target split tags, convergence-report presence, split statistics,
+and 4×H200 run evidence.
 The 4×H200 evidence includes both `nproc_per_node == 4` and GPU-monitor coverage
 for all expected GPU indices.
 

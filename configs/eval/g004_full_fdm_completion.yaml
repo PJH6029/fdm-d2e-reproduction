@@ -2,7 +2,9 @@
   "schema": "g004_full_fdm_completion_config.v1",
   "goals_path": ".omx/ultragoal/goals.json",
   "goal_id": "G004-d2e-only-fdm-4xh200",
-  "prerequisite_goals": ["G003-d2e-only-idm"],
+  "prerequisite_goals": [
+    "G003-d2e-only-idm"
+  ],
   "output_path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
   "expected_nproc_per_node": 4,
   "expected_gpus": 4,
@@ -10,7 +12,11 @@
   "require_gpu_monitor_covers_expected_gpus": true,
   "min_validation_checkpoints": 1,
   "require_convergence_plateau": false,
-  "required_target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],
+  "required_target_eval_split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
   "paths": {
     "fdm_train_records": "outputs/fdm_streaming_d2e_full_compact/fdm_train_pseudolabeled_records.jsonl",
     "fdm_target_records": "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl",
@@ -46,5 +52,6 @@
     "torch_checkpoint_metadata.distributed.enabled": true,
     "torch_checkpoint_metadata.distributed.world_size": 4,
     "torch_checkpoint_metadata.feature_mode": "summary_causal_compact_grid8_time_prior_action"
-  }
+  },
+  "require_goal_checkpoint_complete": false
 }

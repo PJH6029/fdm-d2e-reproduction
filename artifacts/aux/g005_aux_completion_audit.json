@@ -3,6 +3,7 @@
   "status": "fail",
   "goal_id": "G005-aux-data-best-model",
   "goal_status": "pending",
+  "require_goal_checkpoint_complete": false,
   "prerequisite_goal_statuses": {
     "G003-d2e-only-idm": "in_progress",
     "G004-d2e-only-fdm-4xh200": "pending"
@@ -101,12 +102,6 @@
     "predictions": null
   },
   "findings": [
-    {
-      "severity": "error",
-      "code": "goal_not_checkpointed_complete",
-      "goal_id": "G005-aux-data-best-model",
-      "actual": "pending"
-    },
     {
       "severity": "error",
       "code": "prerequisite_goal_not_complete",
@@ -300,6 +295,6 @@
       "actual": null
     }
   ],
-  "error_count": 28,
+  "error_count": 27,
   "claim_boundary": "This audit is required before checkpointing G005 complete; it proves D2E-only prerequisites, aux provenance/storage policy, separated namespaces, D2E-only vs D2E+aux ablations, target split tags, and run evidence."
 }

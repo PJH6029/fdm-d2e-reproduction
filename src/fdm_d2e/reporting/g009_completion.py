@@ -46,7 +46,8 @@ def validate_g009_completion(config: dict[str, Any], *, root: str | Path = ".") 
     goal_id = str(config.get("goal_id", "G009-report-repro-package"))
     statuses = _goal_statuses(root_path, goals_path)
     goal_status = statuses.get(goal_id, "missing")
-    if goal_status != "complete":
+    require_goal_checkpoint = bool(config.get("require_goal_checkpoint_complete", True))
+    if require_goal_checkpoint and goal_status != "complete":
         findings.append({"severity": "error", "code": "goal_not_checkpointed_complete", "goal_id": goal_id, "actual": goal_status})
     prereq_report = {}
     for prereq in config.get("prerequisite_goals", []):
@@ -122,6 +123,7 @@ def validate_g009_completion(config: dict[str, Any], *, root: str | Path = ".") 
         "status": "pass" if not errors else "fail",
         "goal_id": goal_id,
         "goal_status": goal_status,
+        "require_goal_checkpoint_complete": require_goal_checkpoint,
         "prerequisite_goal_statuses": prereq_report,
         "artifacts": artifacts,
         "required_manifest_paths": required_manifest_paths,

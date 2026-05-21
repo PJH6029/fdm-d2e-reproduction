@@ -56,7 +56,8 @@ def validate_g007_completion(config: dict[str, Any], *, root: str | Path = ".") 
     goal_id = str(config.get("goal_id", "G007-runtime-sdk-adapter"))
     statuses = _goal_statuses(root_path, goals_path)
     goal_status = statuses.get(goal_id, "missing")
-    if goal_status != "complete":
+    require_goal_checkpoint = bool(config.get("require_goal_checkpoint_complete", True))
+    if require_goal_checkpoint and goal_status != "complete":
         findings.append({"severity": "error", "code": "goal_not_checkpointed_complete", "goal_id": goal_id, "actual": goal_status})
 
     paths = {key: str(value) for key, value in dict(config.get("paths", {})).items()}
@@ -118,6 +119,7 @@ def validate_g007_completion(config: dict[str, Any], *, root: str | Path = ".") 
         "status": "pass" if not errors else "fail",
         "goal_id": goal_id,
         "goal_status": goal_status,
+        "require_goal_checkpoint_complete": require_goal_checkpoint,
         "artifacts": artifacts,
         "findings": findings,
         "error_count": len(errors),
