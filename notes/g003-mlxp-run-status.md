@@ -497,3 +497,12 @@ uv run python scripts/audit_g003_live_health.py \
 - Follow-up monitor after the streaming restart showed accel64 progress increasing again: monitor decoded `186 / 918`, filesystem per-recording summaries `187`; canonical stayed `277 / 918`. Both lanes remained `running` with no stale/long-running shard warnings.
 - Grep over current canonical and accel64 shard logs found no `Traceback`, `CalledProcessError`, `RuntimeError`, `No space left`, or killed-process fatal lines at this probe.
 - G003 remains non-terminal; continue monitoring until full decode, merge, IDM training/eval, and completion audit pass.
+
+## 2026-05-22 02:32 KST accel64-focused execution snapshot
+
+- After accel64 had become the clearly faster full-corpus lane, canonical 16-shard extraction was stopped to reduce CPU contention and to leave the primary parent inactive for a future audited accel64 promotion. Canonical per-recording summaries were preserved (`287` summaries at stop time) and can still be resumed if accel64 fails.
+- Pod-local stop evidence was written under `artifacts/idm/g003_canonical_stop_20260521T171444Z.json`. Killed process roots included canonical parent `135989`, canonical postrun watcher `136019`, canonical attached GPU monitor, and G003→G004 chain watcher `136017`. Accel64 parent `135996` and accel64 watcher `136023` stayed alive.
+- Accel64 remained healthy immediately after the canonical stop: monitor `439 / 918`, live health `healthy_running`, active extractors `64 / 64`.
+- Follow-up monitor at `2026-05-22 02:32 KST` showed accel64 continuing to progress: monitor `482 / 918`, live-health progress `484 / 918`, filesystem per-recording summaries `484`, status `running`, no stale/no-progress shard lists, live health `healthy_running`.
+- Stage diagnosis showed the remaining workload dominated by `extract_frames_start` on original/high-resolution recordings and some `download_video_start`; active extractor processes were consuming CPU rather than idle. No fatal lines were found in current accel64 logs. A broad `du -sh` over cache was terminated after it ran too long; `df -h` still showed the mounted PVC at `140T` total, `120T` used, `21T` available (`86%`).
+- G003 remains non-terminal: accel64 has not yet produced merged full-corpus JSONLs, IDM metrics/checkpoints, split-statistics, or a passing accel64/canonical completion audit. Do not checkpoint G003 until accel64 finishes, passes its own audit, is promoted to canonical paths, and canonical `artifacts/idm/g003_full_idm_completion_audit.json` reports `pass`.
