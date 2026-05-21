@@ -388,3 +388,13 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
 - Existing G003→G004 chain remains waiting for G003 parent/finalization; G004 has not launched.
 - No story or aggregate checkpoint/completion claim was made.
+
+## 2026-05-21 18:45 KST G005 aux-source materialization gate sync snapshot
+
+- Pushed commit `1b71dc5` and fast-forwarded pod checkout to `1b71dc5`; `scripts/build_g005_aux_source_evidence.py` is present and ran in the pod.
+- `artifacts/aux/g005_aux_source_materialization_evidence.json` currently reports `status=blocked`, `materialized_source_ids=[]`, and findings `aux_namespace_missing` for the three selected auxiliary sources. This is expected until selected aux files are materialized under `outputs/aux/<dataset_id>/train|val|test`.
+- G005 namespace completion readiness now requires source-specific split hashes in addition to provenance/action-head/overlap fields.
+- G003 parent remained live; progress monitor status `running`, decoded recording variants `164 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`, long-running active shards `[0, 5, 7, 12, 13, 14]`.
+- Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
+- Existing G003→G004 chain remains waiting for G003 parent/finalization; G004 has not launched.
+- No story or aggregate checkpoint/completion claim was made.
