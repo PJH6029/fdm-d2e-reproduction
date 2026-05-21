@@ -146,6 +146,29 @@ While the G004 parent PID is alive the watcher only writes
 `scripts/finalize_g004_d2e_full_fdm.py` and writes a final watcher summary. It
 does not mutate OMX/Codex goal state and cannot complete G004 by itself.
 
+If G003 is still extracting/training but the pod should continue directly into
+G004 when the D2E-only IDM gate is genuinely ready, run the fail-closed chain
+watcher:
+
+```bash
+nohup uv run python scripts/watch_g003_then_launch_g004.py \
+  --launch \
+  --start-g004-watcher \
+  --output artifacts/fdm/g003_to_g004_chain_summary.json \
+  > artifacts/fdm/g003_to_g004_chain.log 2>&1 &
+echo $! > outputs/cluster/g003_to_g004_chain_watcher.pid
+```
+
+This chain watcher waits for the G003 parent to exit, reuses the G003 post-run
+watcher summary when it already reports `finalized_pass`, otherwise runs the
+non-mutating G003 finalizer, requires the G003 completion audit to pass, runs
+`scripts/plan_g004_launch.py`, and launches G004 only when that plan is ready.
+By default it does not require a separate OMX checkpoint for `G003-d2e-only-idm`
+because the chain itself never mutates OMX/Codex state; pass
+`--require-g003-goal-checkpoint` if an operator wants to force administrative
+checkpointing before G004 launch. In all modes, G003 audit pass remains
+mandatory and the chain never completes G003 or G004 by itself.
+
 After the 4×H200 run finishes, run the post-run finalizer before checkpointing
 G004:
 

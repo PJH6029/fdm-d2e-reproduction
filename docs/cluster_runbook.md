@@ -51,3 +51,27 @@ uv run python scripts/run_cluster_smoke_matrix.py \
 Single-GPU launches use `uv run python`; 2/4 GPU launches use `uv run torchrun --standalone --nproc-per-node <N>`. Reports are written under `outputs/cluster/` in the PVC checkout.
 
 No live production reservation is created by these scripts; the MLXP reservation exact-payload confirmation gate still applies before POSTing a reservation.
+
+## Current full-corpus unattended chain
+
+For the active full-corpus run, keep the G003 parent alive and let fail-closed
+watchers handle post-run handoff:
+
+```bash
+nohup uv run python scripts/watch_g003_then_finalize.py \
+  --output artifacts/idm/g003_postrun_watcher_summary.json \
+  > artifacts/idm/g003_postrun_watcher.log 2>&1 &
+echo $! > outputs/cluster/g003_postrun_watcher.pid
+
+nohup uv run python scripts/watch_g003_then_launch_g004.py \
+  --launch \
+  --start-g004-watcher \
+  --output artifacts/fdm/g003_to_g004_chain_summary.json \
+  > artifacts/fdm/g003_to_g004_chain.log 2>&1 &
+echo $! > outputs/cluster/g003_to_g004_chain_watcher.pid
+```
+
+The chain watcher never checkpoints OMX/Codex state. It launches G004 only after
+G003 finalization and the G003 audit pass, then starts the G004 post-run watcher.
+If G003 finalization/audit fails, it records a blocker instead of launching FDM
+training.
