@@ -1,0 +1,99 @@
+{
+  "schema": "g005_aux_examples.v1",
+  "status": "blocked",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "action_registry": "artifacts/aux/g005_aux_action_registry.json",
+  "namespace_root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux",
+  "examples_root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux_examples",
+  "required_splits": [
+    "train",
+    "val",
+    "test"
+  ],
+  "selected_source_ids": [
+    "atari_head_zenodo_v4",
+    "minerl_2019_zenodo_v2",
+    "p_doom_atari_breakout_hf"
+  ],
+  "supported_adapters": [
+    "atari_head_zip_csv_action_adapter"
+  ],
+  "sources": [
+    {
+      "source_id": "atari_head_zenodo_v4",
+      "adapter": "atari_head_zip_csv_action_adapter",
+      "status": "blocked",
+      "raw_dir": "outputs/aux/atari_head_zenodo_v4/raw",
+      "split_counts": {
+        "train": 0,
+        "val": 0,
+        "test": 0
+      },
+      "findings": [
+        {
+          "severity": "error",
+          "code": "aux_raw_dir_missing",
+          "source_id": "atari_head_zenodo_v4",
+          "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw"
+        }
+      ]
+    },
+    {
+      "source_id": "minerl_2019_zenodo_v2",
+      "adapter": "minerl_action_dict_adapter",
+      "status": "blocked",
+      "split_counts": {
+        "train": 0,
+        "val": 0,
+        "test": 0
+      },
+      "findings": [
+        {
+          "severity": "error",
+          "code": "unsupported_aux_example_adapter",
+          "adapter": "minerl_action_dict_adapter"
+        }
+      ]
+    },
+    {
+      "source_id": "p_doom_atari_breakout_hf",
+      "adapter": "p_doom_array_record_action_adapter",
+      "status": "blocked",
+      "split_counts": {
+        "train": 0,
+        "val": 0,
+        "test": 0
+      },
+      "findings": [
+        {
+          "severity": "error",
+          "code": "unsupported_aux_example_adapter",
+          "adapter": "p_doom_array_record_action_adapter"
+        }
+      ]
+    }
+  ],
+  "total_examples": 0,
+  "findings": [
+    {
+      "severity": "error",
+      "code": "aux_raw_dir_missing",
+      "source_id": "atari_head_zenodo_v4",
+      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4/raw"
+    },
+    {
+      "severity": "error",
+      "code": "unsupported_aux_example_adapter",
+      "source_id": "minerl_2019_zenodo_v2",
+      "adapter": "minerl_action_dict_adapter"
+    },
+    {
+      "severity": "error",
+      "code": "unsupported_aux_example_adapter",
+      "source_id": "p_doom_atari_breakout_hf",
+      "adapter": "p_doom_array_record_action_adapter"
+    }
+  ],
+  "error_count": 3,
+  "claim_boundary": "Source-specific auxiliary example manifests only; they do not train, checkpoint G005, or support D2E+aux quality claims without D2E-only gates, ablation, and final audits."
+}

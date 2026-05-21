@@ -35,6 +35,24 @@
       "p_doom_atari_breakout_hf"
     ]
   },
+  "aux_example_report": {
+    "source_ids": [
+      "atari_head_zenodo_v4",
+      "minerl_2019_zenodo_v2",
+      "p_doom_atari_breakout_hf"
+    ],
+    "selected_aux_ids": [
+      "atari_head_zenodo_v4",
+      "minerl_2019_zenodo_v2",
+      "p_doom_atari_breakout_hf"
+    ],
+    "required_splits": [
+      "test",
+      "train",
+      "val"
+    ],
+    "total_examples": 0
+  },
   "artifacts": {
     "aux_candidates": {
       "path": "artifacts/sources/aux_game_action_dataset_candidates.json",
@@ -45,14 +63,20 @@
     "aux_plan_doc": {
       "path": "docs/auxiliary_data_plan.md",
       "exists": true,
-      "bytes": 13588,
-      "sha256": "122490bcb55498fcca755b04492d45762562114836a2be0f1aff31c55bfd8e6d"
+      "bytes": 15138,
+      "sha256": "6354feaca9d35e26019cc6bbb0c8c882e47952c30f6157b5da8c3c612b1494ce"
     },
     "action_registry": {
       "path": "artifacts/aux/g005_aux_action_registry.json",
       "exists": true,
-      "bytes": 4650,
-      "sha256": "7533ba2411dbdf4e25f5704829387b8028eadd6e58b9d8a7680c89e687f289d9"
+      "bytes": 4659,
+      "sha256": "0510755833eaad9da40f79ef2a2271c2fd18a27f03781983df2ef9ad73fdeb26"
+    },
+    "aux_examples_summary": {
+      "path": "artifacts/aux/g005_aux_examples_summary.json",
+      "exists": true,
+      "bytes": 2939,
+      "sha256": "87fe7fe285699ce311ee22d3051af3daeb2f9478d931e30c4a62f2773ad40df7"
     },
     "namespace_manifest": {
       "path": "artifacts/aux/g005_aux_namespace_manifest.json",
@@ -311,8 +335,140 @@
       "json_path": "claim_boundary.no_aux_in_d2e_heldout",
       "expected": true,
       "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_not_pass",
+      "status": "blocked",
+      "error_count": 3
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_source_not_pass",
+      "source_id": "atari_head_zenodo_v4",
+      "status": "blocked"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_empty",
+      "source_id": "atari_head_zenodo_v4",
+      "split": "test"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_file_missing",
+      "source_id": "atari_head_zenodo_v4",
+      "split": "test"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_empty",
+      "source_id": "atari_head_zenodo_v4",
+      "split": "train"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_file_missing",
+      "source_id": "atari_head_zenodo_v4",
+      "split": "train"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_empty",
+      "source_id": "atari_head_zenodo_v4",
+      "split": "val"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_file_missing",
+      "source_id": "atari_head_zenodo_v4",
+      "split": "val"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_source_not_pass",
+      "source_id": "minerl_2019_zenodo_v2",
+      "status": "blocked"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_empty",
+      "source_id": "minerl_2019_zenodo_v2",
+      "split": "test"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_file_missing",
+      "source_id": "minerl_2019_zenodo_v2",
+      "split": "test"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_empty",
+      "source_id": "minerl_2019_zenodo_v2",
+      "split": "train"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_file_missing",
+      "source_id": "minerl_2019_zenodo_v2",
+      "split": "train"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_empty",
+      "source_id": "minerl_2019_zenodo_v2",
+      "split": "val"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_file_missing",
+      "source_id": "minerl_2019_zenodo_v2",
+      "split": "val"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_source_not_pass",
+      "source_id": "p_doom_atari_breakout_hf",
+      "status": "blocked"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_empty",
+      "source_id": "p_doom_atari_breakout_hf",
+      "split": "test"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_file_missing",
+      "source_id": "p_doom_atari_breakout_hf",
+      "split": "test"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_empty",
+      "source_id": "p_doom_atari_breakout_hf",
+      "split": "train"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_file_missing",
+      "source_id": "p_doom_atari_breakout_hf",
+      "split": "train"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_empty",
+      "source_id": "p_doom_atari_breakout_hf",
+      "split": "val"
+    },
+    {
+      "severity": "error",
+      "code": "aux_examples_split_file_missing",
+      "source_id": "p_doom_atari_breakout_hf",
+      "split": "val"
     }
   ],
-  "error_count": 27,
+  "error_count": 49,
   "claim_boundary": "This audit is required before checkpointing G005 complete; it proves D2E-only prerequisites, aux provenance/storage policy, separated namespaces, D2E-only vs D2E+aux ablations, target split tags, and run evidence."
 }

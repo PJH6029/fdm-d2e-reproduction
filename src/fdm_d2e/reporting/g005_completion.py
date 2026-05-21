@@ -331,6 +331,69 @@ def _validate_action_registry(
     return {"action_head_ids": sorted(by_id), "selected_aux_ids": sorted(selected_aux_ids)}
 
 
+def _validate_aux_examples(
+    aux_examples: dict[str, Any] | None,
+    *,
+    selected_aux_ids: set[str],
+    required_splits: set[str],
+    findings: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if aux_examples is None:
+        return {"source_ids": [], "selected_aux_ids": sorted(selected_aux_ids), "required_splits": sorted(required_splits)}
+    if aux_examples.get("status") != "pass":
+        findings.append(
+            {
+                "severity": "error",
+                "code": "aux_examples_not_pass",
+                "status": aux_examples.get("status"),
+                "error_count": aux_examples.get("error_count"),
+            }
+        )
+    rows = aux_examples.get("sources", [])
+    if not isinstance(rows, list):
+        findings.append({"severity": "error", "code": "aux_examples_sources_malformed"})
+        rows = []
+    by_id = {str(row.get("source_id")): row for row in rows if isinstance(row, dict) and row.get("source_id") is not None}
+    missing = sorted(selected_aux_ids - set(by_id))
+    extra = sorted(set(by_id) - selected_aux_ids)
+    if missing:
+        findings.append({"severity": "error", "code": "aux_examples_missing_selected_sources", "missing": missing})
+    if extra:
+        findings.append({"severity": "error", "code": "aux_examples_contains_unselected_sources", "extra": extra})
+    for source_id, row in sorted(by_id.items()):
+        if row.get("status") != "pass":
+            findings.append({"severity": "error", "code": "aux_examples_source_not_pass", "source_id": source_id, "status": row.get("status")})
+        split_counts = row.get("split_counts")
+        if not isinstance(split_counts, dict):
+            findings.append({"severity": "error", "code": "aux_examples_split_counts_malformed", "source_id": source_id})
+            split_counts = {}
+        split_files = row.get("split_files") if isinstance(row.get("split_files"), dict) else {}
+        for split in sorted(required_splits):
+            count = int(split_counts.get(split) or 0)
+            if count <= 0:
+                findings.append({"severity": "error", "code": "aux_examples_split_empty", "source_id": source_id, "split": split})
+            file_row = split_files.get(split) if isinstance(split_files, dict) else None
+            if not isinstance(file_row, dict) or file_row.get("exists") is not True or not file_row.get("sha256"):
+                findings.append({"severity": "error", "code": "aux_examples_split_file_missing", "source_id": source_id, "split": split})
+            elif int(file_row.get("rows") or 0) != count:
+                findings.append(
+                    {
+                        "severity": "error",
+                        "code": "aux_examples_split_file_count_mismatch",
+                        "source_id": source_id,
+                        "split": split,
+                        "expected": count,
+                        "actual": file_row.get("rows"),
+                    }
+                )
+    return {
+        "source_ids": sorted(by_id),
+        "selected_aux_ids": sorted(selected_aux_ids),
+        "required_splits": sorted(required_splits),
+        "total_examples": aux_examples.get("total_examples"),
+    }
+
+
 def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = ".") -> dict[str, Any]:
     root_path = Path(root)
     findings: list[dict[str, Any]] = []
@@ -357,6 +420,7 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
     aux_candidates = _load_json(root_path / paths.get("aux_candidates", "")) if paths.get("aux_candidates") else None
     namespace_manifest = _load_json(root_path / paths.get("namespace_manifest", "")) if paths.get("namespace_manifest") else None
     action_registry = _load_json(root_path / paths.get("action_registry", "")) if paths.get("action_registry") else None
+    aux_examples = _load_json(root_path / paths.get("aux_examples_summary", "")) if paths.get("aux_examples_summary") else None
     ablation = _load_json(root_path / paths.get("ablation_summary", "")) if paths.get("ablation_summary") else None
     metadata = _load_json(root_path / paths.get("checkpoint_metadata", "")) if paths.get("checkpoint_metadata") else None
     run_summary = _load_json(root_path / paths.get("run_summary", "")) if paths.get("run_summary") else None
@@ -388,6 +452,12 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
         action_registry,
         selected_aux_ids=selected_aux_ids,
         namespace_manifest=namespace_manifest,
+        findings=findings,
+    )
+    aux_example_report = _validate_aux_examples(
+        aux_examples,
+        selected_aux_ids=selected_aux_ids,
+        required_splits=set(config.get("required_aux_example_splits", ["train", "val", "test"])),
         findings=findings,
     )
     ablation_splits: set[str] = set()
@@ -448,6 +518,7 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
         "ablation_splits": sorted(ablation_splits),
         "namespace_report": namespace_report,
         "action_registry_report": action_registry_report,
+        "aux_example_report": aux_example_report,
         "artifacts": artifacts,
         "counts": count_report,
         "findings": findings,

@@ -91,6 +91,14 @@ def test_loader_manifest_passes_with_registry_inventory_and_integrity(tmp_path: 
     stage = payload["loader_stages"][0]
     assert stage["action_head"]["namespace"] == "aux_a"
     assert stage["loader_contract"]["train_manifest"] == "outputs/aux_examples/aux_a/train.jsonl"
+    assert stage["loader_contract"]["example_builder_command"] == [
+        "uv",
+        "run",
+        "python",
+        "scripts/build_g005_aux_examples.py",
+        "--source-id",
+        "aux_a",
+    ]
     assert stage["action_candidate_members"] == [{"archive": "raw/source.zip", "path": "actions.jsonl", "bytes": 3}]
 
 

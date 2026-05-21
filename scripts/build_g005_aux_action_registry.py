@@ -42,6 +42,13 @@ def _domain_family(candidate: dict[str, Any]) -> str:
 
 def _head_spec(source_id: str, candidate: dict[str, Any]) -> dict[str, Any]:
     family = _domain_family({**candidate, "id": source_id})
+    source_text = " ".join(
+        [
+            source_id.lower(),
+            str(candidate.get("source_url") or "").lower(),
+            str(candidate.get("metadata_api_url") or "").lower(),
+        ]
+    )
     if family == "minecraft_keyboard_mouse":
         controls = [
             {"name": "camera_delta_x", "kind": "continuous_axis", "units": "degrees_or_source_native"},
@@ -52,7 +59,12 @@ def _head_spec(source_id: str, candidate: dict[str, Any]) -> dict[str, Any]:
         transfer_role = "high_transfer_first_person_keyboard_mouse_like_pretraining"
     elif family == "atari_discrete":
         controls = [{"name": "atari_action_id", "kind": "categorical", "enum_source": "source_specific_action_enums_or_dataset_card"}]
-        adapter = "atari_discrete_action_adapter"
+        if "p-doom" in source_text or "array_record" in source_text:
+            adapter = "p_doom_array_record_action_adapter"
+        elif "zenodo" in source_text or "atari_head" in source_text:
+            adapter = "atari_head_zip_csv_action_adapter"
+        else:
+            adapter = "atari_discrete_action_adapter"
         transfer_role = "discrete_control_auxiliary_or_negative_transfer_control"
     else:
         controls = [{"name": "source_action_token", "kind": "source_specific"}]

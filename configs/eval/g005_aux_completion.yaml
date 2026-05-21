@@ -18,12 +18,18 @@
     "heldout_recording",
     "heldout_game"
   ],
+  "required_aux_example_splits": [
+    "train",
+    "val",
+    "test"
+  ],
   "require_d2e_only_baseline": true,
   "require_d2e_aux_candidate": true,
   "paths": {
     "aux_candidates": "artifacts/sources/aux_game_action_dataset_candidates.json",
     "aux_plan_doc": "docs/auxiliary_data_plan.md",
     "action_registry": "artifacts/aux/g005_aux_action_registry.json",
+    "aux_examples_summary": "artifacts/aux/g005_aux_examples_summary.json",
     "namespace_manifest": "artifacts/aux/g005_aux_namespace_manifest.json",
     "ablation_summary": "artifacts/aux/d2e_aux_ablation_summary.json",
     "checkpoint_metadata": "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json",

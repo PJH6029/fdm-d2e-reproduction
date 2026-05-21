@@ -17,6 +17,7 @@ def _config() -> dict:
         "aux_candidates": "artifacts/sources/aux.json",
         "aux_plan_doc": "docs/aux.md",
         "action_registry": "artifacts/aux/action_registry.json",
+        "aux_examples_summary": "artifacts/aux/examples.json",
         "namespace_manifest": "artifacts/aux/namespace.json",
         "ablation_summary": "artifacts/aux/ablation.json",
         "checkpoint_metadata": "outputs/fdm_aux/best/checkpoint_metadata.json",
@@ -34,6 +35,7 @@ def _config() -> dict:
         "prerequisite_goals": ["G003", "G004"],
         "expected_gpus": 4,
         "required_splits": SPLITS,
+        "required_aux_example_splits": ["train", "val", "test"],
         "required_target_eval_split_tags": SPLITS,
         "paths": paths,
         "aux_candidate_expectations": {
@@ -142,6 +144,27 @@ def _complete_fixture(root: Path) -> None:
         },
     )
     write_json(
+        root / cfg["paths"]["aux_examples_summary"],
+        {
+            "schema": "g005_aux_examples.v1",
+            "status": "pass",
+            "selected_source_ids": ["aux_a"],
+            "total_examples": 6,
+            "sources": [
+                {
+                    "source_id": "aux_a",
+                    "status": "pass",
+                    "split_counts": {"train": 4, "val": 1, "test": 1},
+                    "split_files": {
+                        "train": {"exists": True, "rows": 4, "sha256": "train-example-hash"},
+                        "val": {"exists": True, "rows": 1, "sha256": "val-example-hash"},
+                        "test": {"exists": True, "rows": 1, "sha256": "test-example-hash"},
+                    },
+                }
+            ],
+        },
+    )
+    write_json(
         root / cfg["paths"]["ablation_summary"],
         {
             "status": "pass",
@@ -208,6 +231,11 @@ def test_g005_aux_completion_audit_fails_on_prereq_leakage_and_counts(tmp_path: 
     namespace["aux_sources"][0]["d2e_heldout_overlap_count"] = 1
     namespace["d2e_eval_manifests"]["splits"]["temporal"]["same_hash"] = False
     write_json(namespace_path, namespace)
+    examples_path = tmp_path / _config()["paths"]["aux_examples_summary"]
+    examples = json.loads(examples_path.read_text())
+    examples["sources"][0]["split_counts"]["val"] = 0
+    examples["sources"][0]["split_files"]["val"]["rows"] = 0
+    write_json(examples_path, examples)
     _write_jsonl(tmp_path / _config()["paths"]["predictions"], 1)
     result = validate_g005_aux_completion(_config(), root=tmp_path)
     codes = {item["code"] for item in result["findings"]}
@@ -219,6 +247,7 @@ def test_g005_aux_completion_audit_fails_on_prereq_leakage_and_counts(tmp_path: 
     assert "ablation_split_missing_run_ids" in codes
     assert "namespace_aux_overlap_with_d2e_heldout" in codes
     assert "namespace_eval_split_hash_not_equal" in codes
+    assert "aux_examples_split_empty" in codes
 
 
 def test_g005_aux_completion_audit_rejects_unselected_namespace_and_hash_mismatch(tmp_path: Path):

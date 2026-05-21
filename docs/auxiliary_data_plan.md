@@ -127,6 +127,24 @@ contract. It remains `blocked` until downloads and integrity pass, then defines
 the expected `outputs/aux_examples/<dataset_id>/{train,val,test}.jsonl` outputs
 and required loader fields for real G005 auxiliary pretraining.
 
+`build_g005_aux_examples.py` is the first concrete source-specific example
+builder. It currently supports the `atari_head_zip_csv_action_adapter` by
+streaming action CSV members from Atari HEAD Zenodo raw zip archives and writing
+per-source train/val/test JSONL manifests with nested frame references and
+Atari-discrete action ids. Unsupported source layouts such as MineRL zip payloads
+and p-doom ArrayRecord files remain fail-closed until source-specific adapters
+are implemented; the G005 completion audit requires a passing
+`artifacts/aux/g005_aux_examples_summary.json` before any D2E+aux completion
+claim.
+
+Example source-specific invocation after integrity passes:
+
+```bash
+uv run python scripts/build_g005_aux_examples.py \
+  --source-id atari_head_zenodo_v4 \
+  --output artifacts/aux/g005_aux_examples_summary.json
+```
+
 For unattended cluster source staging, start the materializer in the background
 and then run the non-mutating watcher. Watcher scripts self-write their Python
 PID to `--watcher-pid-file`; do **not** overwrite that file with shell `$!`

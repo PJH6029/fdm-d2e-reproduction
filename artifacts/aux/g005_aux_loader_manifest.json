@@ -26,7 +26,7 @@
       "action_head": {
         "namespace": "atari_head_zenodo_v4",
         "type": "atari_discrete",
-        "adapter": "atari_discrete_action_adapter"
+        "adapter": "atari_head_zip_csv_action_adapter"
       },
       "raw_files": [],
       "action_candidate_members": [],
@@ -42,7 +42,15 @@
         "val_manifest": "outputs/aux_examples/atari_head_zenodo_v4/val.jsonl",
         "test_manifest": "outputs/aux_examples/atari_head_zenodo_v4/test.jsonl",
         "action_head_namespace": "atari_head_zenodo_v4",
-        "adapter": "atari_discrete_action_adapter",
+        "adapter": "atari_head_zip_csv_action_adapter",
+        "example_builder_command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/build_g005_aux_examples.py",
+          "--source-id",
+          "atari_head_zenodo_v4"
+        ],
         "must_emit_fields": [
           "source_id",
           "source_sequence_id",
@@ -78,6 +86,14 @@
         "test_manifest": "outputs/aux_examples/minerl_2019_zenodo_v2/test.jsonl",
         "action_head_namespace": "minerl_2019_zenodo_v2",
         "adapter": "minerl_action_dict_adapter",
+        "example_builder_command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/build_g005_aux_examples.py",
+          "--source-id",
+          "minerl_2019_zenodo_v2"
+        ],
         "must_emit_fields": [
           "source_id",
           "source_sequence_id",
@@ -96,7 +112,7 @@
       "action_head": {
         "namespace": "p_doom_atari_breakout_hf",
         "type": "atari_discrete",
-        "adapter": "atari_discrete_action_adapter"
+        "adapter": "p_doom_array_record_action_adapter"
       },
       "raw_files": [],
       "action_candidate_members": [],
@@ -112,7 +128,15 @@
         "val_manifest": "outputs/aux_examples/p_doom_atari_breakout_hf/val.jsonl",
         "test_manifest": "outputs/aux_examples/p_doom_atari_breakout_hf/test.jsonl",
         "action_head_namespace": "p_doom_atari_breakout_hf",
-        "adapter": "atari_discrete_action_adapter",
+        "adapter": "p_doom_array_record_action_adapter",
+        "example_builder_command": [
+          "uv",
+          "run",
+          "python",
+          "scripts/build_g005_aux_examples.py",
+          "--source-id",
+          "p_doom_atari_breakout_hf"
+        ],
         "must_emit_fields": [
           "source_id",
           "source_sequence_id",
@@ -134,7 +158,7 @@
     "pretrain shared visual-temporal backbone with source-specific action heads",
     "finetune/evaluate on D2E-only train/eval manifests without aux in heldouts"
   ],
-  "manifest_fingerprint": "b66b4361bb94c0705e10e1b861aee86763607d88697c064fa872173f04a55179",
+  "manifest_fingerprint": "100c33f565d5da260c3b5b5b30d66332af65bd5f953c8412eb2323047d7ec2f2",
   "findings": [
     {
       "severity": "error",

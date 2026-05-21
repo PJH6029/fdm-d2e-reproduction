@@ -1,0 +1,346 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import csv
+import hashlib
+import io
+import json
+import sys
+import zipfile
+from pathlib import Path
+from typing import Any, Iterable
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from fdm_d2e.io_utils import sha256_file, stable_hash_json, write_json
+
+
+DEFAULT_OUTPUT = "artifacts/aux/g005_aux_examples_summary.json"
+DEFAULT_ACTION_REGISTRY = "artifacts/aux/g005_aux_action_registry.json"
+DEFAULT_NAMESPACE_ROOT = "outputs/aux"
+DEFAULT_EXAMPLES_ROOT = "outputs/aux_examples"
+DEFAULT_SPLITS = ("train", "val", "test")
+SUPPORTED_ADAPTERS = {"atari_head_zip_csv_action_adapter"}
+
+
+def _path(root: Path, value: str | Path) -> Path:
+    p = Path(value)
+    return p if p.is_absolute() else root / p
+
+
+def _load_json(path: str | Path) -> Any:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def _action_heads(registry: dict[str, Any], source_ids: list[str] | None) -> list[dict[str, Any]]:
+    heads = [row for row in registry.get("action_heads", []) or [] if isinstance(row, dict) and row.get("id")]
+    if source_ids:
+        wanted = set(source_ids)
+        heads = [row for row in heads if str(row.get("id")) in wanted]
+        missing = sorted(wanted - {str(row.get("id")) for row in heads})
+        if missing:
+            raise SystemExit(f"requested source ids are not present in action registry: {', '.join(missing)}")
+    return sorted(heads, key=lambda row: str(row.get("id")))
+
+
+def _split_for_sequence(sequence_id: str, splits: tuple[str, ...]) -> str:
+    if set(splits) != {"train", "val", "test"}:
+        digest = int(hashlib.sha256(sequence_id.encode("utf-8")).hexdigest()[:8], 16)
+        return splits[digest % len(splits)]
+    bucket = int(hashlib.sha256(sequence_id.encode("utf-8")).hexdigest()[:8], 16) % 100
+    if bucket < 80:
+        return "train"
+    if bucket < 90:
+        return "val"
+    return "test"
+
+
+def _jsonl_writer(path: Path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path.open("w", encoding="utf-8")
+
+
+def _file_report(path: Path, root: Path) -> dict[str, Any]:
+    rel = str(path.relative_to(root)) if path.is_relative_to(root) else str(path)
+    exists = path.exists() and path.is_file()
+    return {
+        "path": rel,
+        "exists": exists,
+        "bytes": path.stat().st_size if exists else 0,
+        "sha256": sha256_file(path) if exists else None,
+    }
+
+
+def _maybe_int(value: Any) -> int | None:
+    try:
+        if value is None or value == "":
+            return None
+        return int(float(str(value)))
+    except (TypeError, ValueError):
+        return None
+
+
+def _load_atari_action_enums(raw_dir: Path) -> dict[str, str]:
+    path = raw_dir / "action_enums.txt"
+    if not path.exists() or not path.is_file():
+        return {}
+    enums: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        text = line.strip()
+        if not text or text.startswith("#"):
+            continue
+        if "," in text:
+            left, right = text.split(",", 1)
+        elif ":" in text:
+            left, right = text.split(":", 1)
+        else:
+            parts = text.split(maxsplit=1)
+            if len(parts) != 2:
+                continue
+            left, right = parts
+        action_id = str(_maybe_int(left.strip()) if _maybe_int(left.strip()) is not None else left.strip())
+        enums[action_id] = right.strip()
+    return enums
+
+
+def _matching_tar_member(txt_member: str, members: set[str]) -> str | None:
+    candidate = txt_member[:-4] + ".tar.bz2" if txt_member.endswith(".txt") else f"{txt_member}.tar.bz2"
+    return candidate if candidate in members else None
+
+
+def _frame_ref(root: Path, zip_path: Path, tar_member: str | None, sequence_id: str, frame_id: str) -> str:
+    zip_rel = str(zip_path.relative_to(root)) if zip_path.is_relative_to(root) else str(zip_path)
+    if tar_member:
+        return f"nested-archive://{zip_rel}!{tar_member}!{sequence_id}/{frame_id}.png"
+    return f"zip-csv://{zip_rel}!{sequence_id}#frame_id={frame_id}"
+
+
+def _iter_atari_rows(
+    *,
+    root: Path,
+    zip_path: Path,
+    source_id: str,
+    action_head_namespace: str,
+    action_enums: dict[str, str],
+    splits: tuple[str, ...],
+    max_examples: int | None,
+) -> Iterable[dict[str, Any]]:
+    emitted = 0
+    with zipfile.ZipFile(zip_path) as archive:
+        members = set(archive.namelist())
+        txt_members = sorted(name for name in members if name.endswith(".txt") and not name.endswith("action_enums.txt"))
+        for txt_member in txt_members:
+            sequence_id = Path(txt_member).with_suffix("").name
+            split = _split_for_sequence(sequence_id, splits)
+            tar_member = _matching_tar_member(txt_member, members)
+            with archive.open(txt_member) as raw:
+                reader = csv.DictReader(io.TextIOWrapper(raw, encoding="utf-8", errors="replace", newline=""))
+                for row_idx, row in enumerate(reader, 1):
+                    action_id = _maybe_int(row.get("action"))
+                    frame_id = str(row.get("frame_id") or f"{sequence_id}_{row_idx}")
+                    action_key = str(action_id) if action_id is not None else str(row.get("action") or "")
+                    yield {
+                        "source_id": source_id,
+                        "source_sequence_id": sequence_id,
+                        "frame_or_state_ref": _frame_ref(root, zip_path, tar_member, sequence_id, frame_id),
+                        "action": {
+                            "type": "atari_discrete",
+                            "action_id": action_id,
+                            "raw_action": row.get("action"),
+                            "action_enum": action_enums.get(action_key),
+                        },
+                        "action_head_namespace": action_head_namespace,
+                        "split": split,
+                        "reward": _maybe_int(row.get("unclipped_reward")),
+                        "score": _maybe_int(row.get("score")),
+                        "duration_ms": _maybe_int(row.get("duration(ms)")),
+                        "provenance": {
+                            "raw_zip": str(zip_path.relative_to(root)) if zip_path.is_relative_to(root) else str(zip_path),
+                            "csv_member": txt_member,
+                            "tar_member": tar_member,
+                            "frame_id": frame_id,
+                            "row_number": row_idx,
+                        },
+                    }
+                    emitted += 1
+                    if max_examples is not None and emitted >= max_examples:
+                        return
+
+
+def _build_atari_examples(
+    *,
+    root: Path,
+    head: dict[str, Any],
+    namespace_root: Path,
+    examples_root: Path,
+    splits: tuple[str, ...],
+    max_examples: int | None,
+    allow_incomplete_raw: bool,
+) -> dict[str, Any]:
+    source_id = str(head["id"])
+    raw_dir = namespace_root / source_id / "raw"
+    out_dir = examples_root / source_id
+    findings: list[dict[str, Any]] = []
+    if not raw_dir.exists() or not raw_dir.is_dir():
+        return {
+            "source_id": source_id,
+            "adapter": head.get("adapter"),
+            "status": "blocked",
+            "raw_dir": str(raw_dir.relative_to(root)) if raw_dir.is_relative_to(root) else str(raw_dir),
+            "split_counts": {split: 0 for split in splits},
+            "findings": [{"severity": "error", "code": "aux_raw_dir_missing", "source_id": source_id, "path": str(raw_dir)}],
+        }
+    zip_paths = sorted(path for path in raw_dir.glob("*.zip") if path.is_file() and ".part-" not in path.name and ".invalid-" not in path.name)
+    if not zip_paths:
+        return {
+            "source_id": source_id,
+            "adapter": head.get("adapter"),
+            "status": "blocked",
+            "raw_dir": str(raw_dir.relative_to(root)) if raw_dir.is_relative_to(root) else str(raw_dir),
+            "split_counts": {split: 0 for split in splits},
+            "findings": [{"severity": "error", "code": "aux_raw_zip_missing", "source_id": source_id, "path": str(raw_dir)}],
+        }
+
+    handles = {split: _jsonl_writer(out_dir / f"{split}.jsonl") for split in splits}
+    split_counts = {split: 0 for split in splits}
+    zip_reports: list[dict[str, Any]] = []
+    try:
+        action_enums = _load_atari_action_enums(raw_dir)
+        if not action_enums:
+            findings.append({"severity": "warning", "code": "atari_action_enums_missing", "source_id": source_id})
+        for zip_path in zip_paths:
+            report = _file_report(zip_path, root)
+            try:
+                zip_rows = 0
+                for example in _iter_atari_rows(
+                    root=root,
+                    zip_path=zip_path,
+                    source_id=source_id,
+                    action_head_namespace=str(head.get("namespace") or source_id),
+                    action_enums=action_enums,
+                    splits=splits,
+                    max_examples=None if max_examples is None else max(0, max_examples - sum(split_counts.values())),
+                ):
+                    handles[example["split"]].write(json.dumps(example, ensure_ascii=False, sort_keys=True) + "\n")
+                    split_counts[example["split"]] += 1
+                    zip_rows += 1
+                    if max_examples is not None and sum(split_counts.values()) >= max_examples:
+                        break
+                report["example_rows"] = zip_rows
+            except zipfile.BadZipFile as exc:
+                severity = "warning" if allow_incomplete_raw else "error"
+                findings.append({"severity": severity, "code": "aux_raw_zip_invalid", "source_id": source_id, "path": report["path"], "error": str(exc)})
+                report["invalid_zip"] = True
+            zip_reports.append(report)
+            if max_examples is not None and sum(split_counts.values()) >= max_examples:
+                break
+    finally:
+        for handle in handles.values():
+            handle.close()
+
+    split_files = {split: _file_report(out_dir / f"{split}.jsonl", root) for split in splits}
+    for split, count in split_counts.items():
+        split_files[split]["rows"] = count
+    if sum(split_counts.values()) == 0:
+        findings.append({"severity": "error", "code": "aux_examples_empty", "source_id": source_id})
+    errors = [item for item in findings if item.get("severity") == "error"]
+    return {
+        "source_id": source_id,
+        "adapter": head.get("adapter"),
+        "status": "pass" if not errors else "blocked",
+        "raw_dir": str(raw_dir.relative_to(root)) if raw_dir.is_relative_to(root) else str(raw_dir),
+        "output_namespace": str(out_dir.relative_to(root)) if out_dir.is_relative_to(root) else str(out_dir),
+        "split_counts": split_counts,
+        "split_files": split_files,
+        "raw_zip_files": zip_reports,
+        "action_enum_count": len(action_enums),
+        "max_examples_per_source": max_examples,
+        "manifest_fingerprint": stable_hash_json({"source_id": source_id, "split_counts": split_counts, "split_files": split_files}),
+        "findings": findings,
+    }
+
+
+def build_examples(args: argparse.Namespace) -> dict[str, Any]:
+    root = Path(args.root).resolve()
+    registry = _load_json(_path(root, args.action_registry))
+    heads = _action_heads(registry, args.source_id)
+    namespace_root = _path(root, args.namespace_root)
+    examples_root = _path(root, args.examples_root)
+    splits = tuple(args.required_splits or DEFAULT_SPLITS)
+    findings: list[dict[str, Any]] = []
+    sources: list[dict[str, Any]] = []
+
+    if registry.get("status") != "pass":
+        findings.append({"severity": "error", "code": "action_registry_not_pass", "status": registry.get("status")})
+    if not heads:
+        findings.append({"severity": "error", "code": "no_action_heads_selected"})
+
+    for head in heads:
+        source_id = str(head.get("id"))
+        adapter = str(head.get("adapter") or "")
+        if adapter == "atari_head_zip_csv_action_adapter":
+            row = _build_atari_examples(
+                root=root,
+                head=head,
+                namespace_root=namespace_root,
+                examples_root=examples_root,
+                splits=splits,
+                max_examples=args.max_examples_per_source,
+                allow_incomplete_raw=bool(args.allow_incomplete_raw),
+            )
+            sources.append(row)
+            findings.extend({**item, "source_id": item.get("source_id", source_id)} for item in row.get("findings", []))
+            continue
+        findings.append({"severity": "error", "code": "unsupported_aux_example_adapter", "source_id": source_id, "adapter": adapter})
+        sources.append(
+            {
+                "source_id": source_id,
+                "adapter": adapter,
+                "status": "blocked",
+                "split_counts": {split: 0 for split in splits},
+                "findings": [{"severity": "error", "code": "unsupported_aux_example_adapter", "adapter": adapter}],
+            }
+        )
+
+    errors = [item for item in findings if item.get("severity") == "error"]
+    payload = {
+        "schema": "g005_aux_examples.v1",
+        "status": "pass" if not errors else "blocked",
+        "root": str(root),
+        "action_registry": args.action_registry,
+        "namespace_root": str(namespace_root),
+        "examples_root": str(examples_root),
+        "required_splits": list(splits),
+        "selected_source_ids": [str(head.get("id")) for head in heads],
+        "supported_adapters": sorted(SUPPORTED_ADAPTERS),
+        "sources": sources,
+        "total_examples": sum(sum((row.get("split_counts") or {}).values()) for row in sources),
+        "findings": findings,
+        "error_count": len(errors),
+        "claim_boundary": "Source-specific auxiliary example manifests only; they do not train, checkpoint G005, or support D2E+aux quality claims without D2E-only gates, ablation, and final audits.",
+    }
+    return payload
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Build source-specific G005 auxiliary example JSONL manifests from materialized raw sources.")
+    parser.add_argument("--root", default=".")
+    parser.add_argument("--action-registry", default=DEFAULT_ACTION_REGISTRY)
+    parser.add_argument("--namespace-root", default=DEFAULT_NAMESPACE_ROOT)
+    parser.add_argument("--examples-root", default=DEFAULT_EXAMPLES_ROOT)
+    parser.add_argument("--source-id", action="append", help="Restrict to a selected source id; repeatable. Defaults to all registry heads.")
+    parser.add_argument("--required-splits", nargs="*", default=list(DEFAULT_SPLITS))
+    parser.add_argument("--max-examples-per-source", type=int)
+    parser.add_argument("--allow-incomplete-raw", action="store_true", help="Downgrade invalid zip files to warnings while downloads are still in progress.")
+    parser.add_argument("--output", default=DEFAULT_OUTPUT)
+    parser.add_argument("--allow-fail", action="store_true")
+    args = parser.parse_args()
+    payload = build_examples(args)
+    write_json(_path(Path(args.root).resolve(), args.output), payload)
+    print(f"g005 aux examples: status={payload['status']} examples={payload['total_examples']} output={args.output}")
+    return 0 if payload["status"] == "pass" or args.allow_fail else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

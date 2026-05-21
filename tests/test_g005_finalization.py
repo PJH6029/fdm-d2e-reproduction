@@ -137,6 +137,7 @@ def _write_fixture(root: Path) -> None:
             "paths": {
                 "aux_candidates": "artifacts/sources/aux.json",
                 "aux_plan_doc": "docs/aux.md",
+                "aux_examples_summary": "artifacts/aux/examples.json",
                 "namespace_manifest": "artifacts/aux/namespace.json",
                 "ablation_summary": "artifacts/aux/ablation.json",
                 "checkpoint_metadata": "outputs/fdm_aux/best/checkpoint_metadata.json",
@@ -174,6 +175,28 @@ def _write_fixture(root: Path) -> None:
                 "training_policy.source_specific_action_heads": True,
                 "d2e_eval_manifests.same_as_d2e_only": True,
             },
+            "required_aux_example_splits": ["train", "val", "test"],
+        },
+    )
+    write_json(
+        root / "artifacts/aux/examples.json",
+        {
+            "schema": "g005_aux_examples.v1",
+            "status": "pass",
+            "selected_source_ids": ["aux_a"],
+            "total_examples": 6,
+            "sources": [
+                {
+                    "source_id": "aux_a",
+                    "status": "pass",
+                    "split_counts": {"train": 4, "val": 1, "test": 1},
+                    "split_files": {
+                        "train": {"exists": True, "rows": 4, "sha256": "train-example-hash"},
+                        "val": {"exists": True, "rows": 1, "sha256": "val-example-hash"},
+                        "test": {"exists": True, "rows": 1, "sha256": "test-example-hash"},
+                    },
+                }
+            ],
         },
     )
 

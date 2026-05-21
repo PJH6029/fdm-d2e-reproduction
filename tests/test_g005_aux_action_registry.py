@@ -56,6 +56,7 @@ def test_registry_builds_source_specific_action_heads_for_selected_aux_sources(t
     heads = {row["id"]: row for row in payload["action_heads"]}
     assert heads["minerl"]["type"] == "minecraft_keyboard_mouse"
     assert heads["atari"]["type"] == "atari_discrete"
+    assert heads["atari"]["adapter"] == "atari_head_zip_csv_action_adapter"
     assert heads["minerl"]["namespace"] == "minerl"
     assert heads["atari"]["d2e_endpoint_claims_allowed"] == []
     assert payload["d2e_endpoint_claim_boundary"]["no_aux_source_directly_claims_d2e_keyboard_mouse"] is True
