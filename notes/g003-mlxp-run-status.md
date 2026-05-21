@@ -194,3 +194,9 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Pushed commit `8495d65` and fast-forwarded pod checkout to `8495d65`; `scripts/validate_g003_full_idm_completion.py` and config are present in pod.
 - Parent PID `9289` still running; monitor status `running`; decoded recording variants `77 / 918`; complete shards `0 / 16`; long-running active shards `[8, 9, 13]`; stale/no-progress shards `[]`; IDM metrics absent.
 - Pod-local G003 completion audit reports `fail` with `24` expected errors while full extraction/training artifacts are incomplete.
+
+## 2026-05-21 14:02 KST post-G004-audit sync snapshot
+
+- Pushed commit `e678dbf` and fast-forwarded pod checkout to `e678dbf`; `scripts/validate_g004_full_fdm_completion.py` and config are present in pod.
+- Parent PID `9289` still running; decoded recording variants `77 / 918`; complete shards `0 / 16`; IDM metrics absent.
+- Pod-local G004 completion audit reports `fail` with `26` expected errors because G003 is still in progress and G004 artifacts do not exist yet.

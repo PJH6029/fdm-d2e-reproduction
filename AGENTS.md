@@ -46,14 +46,14 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 13:56 KST.
+Latest known live run snapshot: 2026-05-21 14:02 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout was synced to commit `8495d65` (`Add G003 full-IDM completion audit`); the local G004 completion-audit patch still needs push/sync after commit.
+- Pod checkout was synced to commit `e678dbf` (`Add G004 full-FDM completion audit`); both G003/G004 completion audit scripts are present in pod.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
 - Last decoded count: `77 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
 - Monitor status was `running`; long-running active shards `[8, 9, 13]`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
