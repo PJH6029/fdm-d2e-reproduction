@@ -305,3 +305,11 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Parent PID `9289` still running at elapsed `05:28:24`; attached GPU monitor PID `31950` still running at elapsed `01:39:30`.
 - Monitor status remained `running`; decoded recording variants `116 / 918`; complete shards `0 / 16`; stale/no-progress shards `[]`; merged train/eval and IDM metrics absent.
 - After the future G004 4×H200 run exits, run `uv run python scripts/finalize_g004_d2e_full_fdm.py` before any G004 checkpoint. It requires the run summary, builds missing split stats, and runs the G004 audit without mutating OMX state.
+
+## 2026-05-21 17:21 KST live topology audit snapshot
+
+- Pod checkout fast-forwarded to `639f9ba` with `scripts/audit_g003_live_health.py`.
+- Parallel extraction parent PID `9289` remained running; post-run watcher and attached GPU monitor remained live.
+- Progress monitor status: `running`; decoded recording variants: `131 / 918`; complete shards: `0 / 16`; stale shards: `[]`; no-progress shards: `[]`; IDM metrics absent.
+- Live health audit status: `healthy_running`; stage: `extracting`; active extractor shards: `0..15`; inactive incomplete shards: `[]`; warnings: `[]`; errors: `[]`.
+- Duplicate extractor processes were recorded as an observation only because uv wrapper and child Python processes can both expose the same shard commandline. This is handoff/recovery telemetry only, not G003 completion evidence.
