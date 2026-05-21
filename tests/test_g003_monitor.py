@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.cluster.g003_monitor import (
     _detect_active_shard_processes,
+    _proc_resource_snapshot,
     build_g003_live_health_report,
     build_g003_progress_report,
     write_g003_live_health_report,
@@ -120,6 +121,24 @@ def test_g003_progress_active_process_scan_scopes_to_pid_file(tmp_path, monkeypa
     )
     assert _detect_active_shard_processes(pid_file=pid_file) == {0}
     assert _detect_active_shard_processes(pid_file=tmp_path / "missing.pid") == set()
+
+
+def test_g003_proc_resource_snapshot_reads_rss_without_name_error(tmp_path):
+    proc_entry = tmp_path / "1234"
+    proc_entry.mkdir()
+    # After the "(comm)" field, tail[0] is state, tail[11]/[12] are
+    # utime/stime, and tail[21] is rss pages for this monitor's parser.
+    stat_tail = ["R"] + [str(idx) for idx in range(1, 22)]
+    (proc_entry / "stat").write_text(f"1234 (python worker) {' '.join(stat_tail)}\n")
+    (proc_entry / "io").write_text("read_bytes: 7\nwrite_bytes: 11\n")
+
+    snapshot = _proc_resource_snapshot(proc_entry)
+
+    assert snapshot["state"] == "R"
+    assert snapshot["cpu_ticks"] == 23
+    assert snapshot["rss_bytes"] == 21 * os.sysconf("SC_PAGE_SIZE")
+    assert snapshot["read_bytes"] == 7
+    assert snapshot["write_bytes"] == 11
 
 
 def test_g003_progress_reports_rate_and_eta_from_log_mtime(tmp_path):
