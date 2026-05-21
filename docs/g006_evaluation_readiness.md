@@ -20,6 +20,19 @@ uv run python scripts/validate_g006_evaluation_readiness.py --allow-fail
 
 Run without `--allow-fail` before checkpointing G006 complete.
 
+For read-only launch/readiness planning before the finalizer, use:
+
+```bash
+uv run python scripts/plan_g006_readiness.py --allow-fail
+```
+
+This writes `artifacts/eval/g006_readiness_plan.json` and checks prerequisite
+goal states, required split-statistical comparison sources, checkpoint metadata
+sources, and claim-evidence paths. It is a planner only: it does not build final
+artifacts, checkpoint G006, or weaken G003/G004/G005 prerequisites. Missing
+live-suite evidence remains a warning while `live_open_game_suite` is explicitly
+`not_claimed_until_g008`.
+
 ## Required final artifacts
 
 The readiness audit expects these final artifacts to exist only after G003/G004
@@ -118,6 +131,19 @@ the readiness audit, runs the G006 completion audit, and writes
 `artifacts/eval/g006_finalization_summary.json`. It does not mutate OMX state;
 checkpoint `G006-evaluation-failure-analysis` only after the finalizer and
 `artifacts/eval/g006_completion_audit.json` report pass.
+
+For unattended handoff, the non-mutating watcher can poll readiness and run the
+same finalizer once all prerequisites and input artifacts are ready:
+
+```bash
+nohup uv run python scripts/watch_g006_then_finalize.py \
+  --output artifacts/eval/g006_postrun_watcher_summary.json \
+  > artifacts/eval/g006_postrun_watcher.log 2>&1 &
+```
+
+While inputs are missing it writes `waiting_for_g006_inputs` plus the latest
+readiness-plan findings. When ready it runs `scripts/finalize_g006_evaluation.py`
+and writes a watcher summary. It never mutates OMX/Codex state.
 
 ## Split-aware comparison builder
 

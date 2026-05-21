@@ -1,0 +1,101 @@
+{
+  "schema": "g006_postrun_watcher.v1",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "started_at_unix": 1779353786.7422554,
+  "output": "artifacts/eval/g006_postrun_watcher_summary.json",
+  "poll_seconds": 60.0,
+  "max_wait_seconds": -1.0,
+  "claim_boundary": "Watches G006 artifact/prerequisite readiness and runs local finalization only when ready; it never checkpoints G006 or mutates OMX/Codex goal state.",
+  "status": "waiting_for_g006_inputs",
+  "elapsed_seconds": 1.430511474609375e-06,
+  "readiness_plan_output": "artifacts/eval/g006_readiness_plan.json",
+  "readiness_status": "blocked",
+  "findings": [
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G003-d2e-only-idm",
+      "actual": "in_progress"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "prerequisite_goal_not_complete",
+      "goal_id": "G005-aux-data-best-model",
+      "actual": "pending"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "source_id": "g003_idm_temporal",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "source_id": "g003_idm_heldout_recording",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "source_id": "g003_idm_heldout_game",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "source_id": "g004_fdm_temporal",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "source_id": "g004_fdm_heldout_recording",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_comparison_source",
+      "source_id": "g004_fdm_heldout_game",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_metadata_source",
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_metadata_source",
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_claim_evidence_path",
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_claim_evidence_path",
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_claim_evidence_path",
+      "path": "artifacts/aux/d2e_aux_ablation_summary.json"
+    }
+  ],
+  "warnings": [
+    {
+      "severity": "warning",
+      "code": "optional_live_suite_evidence_missing_until_g008",
+      "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
+    }
+  ]
+}
