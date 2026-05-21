@@ -169,6 +169,53 @@ def _frame_pair_features(
     return list(cur_grid) + list(next_grid) + delta_grid + shift
 
 
+def _compact_grid_luma(row: dict[str, Any], *, grid_size: int = 8, luma_size: int = 16) -> tuple[list[float], list[float], list[float], list[float]] | None:
+    frame = row.get("frame", {})
+    grid_key = f"grid{grid_size}"
+    luma_key = f"luma{luma_size}"
+    cur_grid = [float(value) for value in frame.get(grid_key, [])]
+    next_grid = [float(value) for value in row.get(f"next_frame_{grid_key}", [])]
+    cur_luma = [float(value) for value in frame.get(luma_key, [])]
+    next_luma = [float(value) for value in row.get(f"next_frame_{luma_key}", [])]
+    expected_grid = grid_size * grid_size * 3
+    expected_luma = luma_size * luma_size
+    if (
+        len(cur_grid) == expected_grid
+        and len(next_grid) == expected_grid
+        and len(cur_luma) == expected_luma
+        and len(next_luma) == expected_luma
+    ):
+        return cur_grid, next_grid, cur_luma, next_luma
+    return None
+
+
+def _compact_frame_pair_features(
+    row: dict[str, Any],
+    *,
+    grid_size: int = 8,
+    luma_size: int = 16,
+    shift_surface: bool = True,
+) -> list[float]:
+    """Frame-pair features from compact JSONL fields, with PPM fallback.
+
+    Full-corpus D2E extraction stores compact grid/luma arrays instead of
+    long-lived per-frame PPM files.  The fallback keeps existing sample/shooter
+    configs compatible.
+    """
+
+    compact = _compact_grid_luma(row, grid_size=grid_size, luma_size=luma_size)
+    if compact is None:
+        return _frame_pair_features(row, grid_size=grid_size, luma_size=luma_size, shift_surface=shift_surface)
+    cur_grid, next_grid, cur_luma, next_luma = compact
+    delta_grid = [float(n - c) for c, n in zip(cur_grid, next_grid)]
+    shift = (
+        _coarse_shift_surface_features(tuple(cur_luma), tuple(next_luma), luma_size=luma_size)
+        if shift_surface
+        else _coarse_shift_features(tuple(cur_luma), tuple(next_luma), luma_size=luma_size)
+    )
+    return cur_grid + next_grid + delta_grid + shift
+
+
 def _coarse_shift_features(cur_luma: tuple[float, ...], next_luma: tuple[float, ...], *, luma_size: int = 16, max_shift: int = 4) -> list[float]:
     return _coarse_shift_surface_features(cur_luma, next_luma, luma_size=luma_size, max_shift=max_shift)[:4]
 
@@ -304,6 +351,8 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
         return base + _frame_pair_features(row, grid_size=8, luma_size=16) + _temporal_basis_features(row)
     if feature_mode == "summary_grid8_shift_surface_time":
         return base + _frame_pair_features(row, grid_size=8, luma_size=16, shift_surface=True) + _temporal_basis_features(row)
+    if feature_mode == "summary_compact_grid8_shift_surface_time":
+        return base + _compact_frame_pair_features(row, grid_size=8, luma_size=16, shift_surface=True) + _temporal_basis_features(row)
     if feature_mode == "summary_luma16_stack5_time":
         return base + _luma_stack_features(row, offsets=(-2, -1, 0, 1, 2), luma_size=16) + _temporal_basis_features(row)
     raise ValueError(f"unsupported IDM feature_mode: {feature_mode}")

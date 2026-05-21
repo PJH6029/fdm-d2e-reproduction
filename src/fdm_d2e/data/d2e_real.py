@@ -356,14 +356,85 @@ def _ppm_features(path: str | Path) -> list[float]:
     return [r_sum / count / max_value, g_sum / count / max_value, b_sum / count / max_value, luma_mean, luma_energy]
 
 
+def _ppm_grid_luma_features(path: str | Path, *, grid_size: int = 8, luma_size: int = 16) -> dict[str, list[float]]:
+    """Extract compact RGB-grid and luma-grid features from a PPM frame.
+
+    Full-corpus D2E runs cannot keep every decoded 64×64 frame as a long-lived
+    training artifact.  These features preserve enough spatial signal for the
+    repo-native IDM feature modes while allowing extraction jobs to delete
+    transient PPM files after each recording.
+    """
+
+    data = Path(path).read_bytes()
+    cursor = 0
+
+    def next_token() -> bytes:
+        nonlocal cursor
+        while cursor < len(data) and data[cursor] in b" \t\r\n":
+            cursor += 1
+        if cursor < len(data) and data[cursor] == ord("#"):
+            while cursor < len(data) and data[cursor] not in b"\r\n":
+                cursor += 1
+            return next_token()
+        start = cursor
+        while cursor < len(data) and data[cursor] not in b" \t\r\n":
+            cursor += 1
+        return data[start:cursor]
+
+    magic = next_token()
+    if magic != b"P6":
+        raise ValueError(f"{path} is not a binary PPM frame")
+    width = int(next_token())
+    height = int(next_token())
+    max_value = int(next_token())
+    while cursor < len(data) and data[cursor] in b" \t\r\n":
+        cursor += 1
+        break
+    pixels = data[cursor:]
+    expected = width * height * 3
+    if len(pixels) < expected:
+        raise ValueError(f"{path} has truncated PPM pixel data")
+    pixels = pixels[:expected]
+
+    grid_sums = [[0.0, 0.0, 0.0, 0.0] for _ in range(grid_size * grid_size)]
+    luma_sums = [[0.0, 0.0] for _ in range(luma_size * luma_size)]
+    for y in range(height):
+        gy = min(grid_size - 1, y * grid_size // height)
+        ly = min(luma_size - 1, y * luma_size // height)
+        for x in range(width):
+            gx = min(grid_size - 1, x * grid_size // width)
+            lx = min(luma_size - 1, x * luma_size // width)
+            base = (y * width + x) * 3
+            r = pixels[base] / max_value
+            g = pixels[base + 1] / max_value
+            b = pixels[base + 2] / max_value
+            luma = 0.2126 * r + 0.7152 * g + 0.0722 * b
+            grid_bucket = grid_sums[gy * grid_size + gx]
+            grid_bucket[0] += r
+            grid_bucket[1] += g
+            grid_bucket[2] += b
+            grid_bucket[3] += 1.0
+            luma_bucket = luma_sums[ly * luma_size + lx]
+            luma_bucket[0] += luma
+            luma_bucket[1] += 1.0
+    grid: list[float] = []
+    for r, g, b, count in grid_sums:
+        denom = count or 1.0
+        grid.extend([r / denom, g / denom, b / denom])
+    luma = [total / (count or 1.0) for total, count in luma_sums]
+    return {f"grid{grid_size}": grid, f"luma{luma_size}": luma}
+
+
 def extract_video_frame_features(
     video_source: str,
     output_dir: str | Path,
     *,
-    max_frames: int = 16,
+    max_frames: int | None = 16,
     fps: int = 20,
     image_size: int = 64,
     start_seconds: float = 0.0,
+    compact_features: bool = False,
+    keep_frames: bool = True,
 ) -> list[dict[str, Any]]:
     """Extract small real-video frame features through ffmpeg without storing raw D2E frames in git."""
 
@@ -383,22 +454,27 @@ def extract_video_frame_features(
         video_source,
         "-vf",
         f"fps={int(fps)},scale={int(image_size)}:{int(image_size)}",
-        "-frames:v",
-        str(int(max_frames)),
         "-y",
-        str(frame_dir / "frame_%06d.ppm"),
     ]
+    if max_frames is not None and int(max_frames) > 0:
+        cmd.extend(["-frames:v", str(int(max_frames))])
+    cmd.append(str(frame_dir / "frame_%06d.ppm"))
     subprocess.run(cmd, check=True)
     rows: list[dict[str, Any]] = []
     for idx, frame_path in enumerate(sorted(frame_dir.glob("frame_*.ppm"))):
+        features = _ppm_features(frame_path)
+        extra = _ppm_grid_luma_features(frame_path, grid_size=8, luma_size=16) if compact_features else {}
         rows.append(
             {
                 "frame_index": idx,
-                "path": str(frame_path),
-                "features": _ppm_features(frame_path),
+                "path": str(frame_path) if keep_frames else f"{video_source}#frame={idx}",
+                "features": features,
+                **extra,
                 "source_video": video_source,
             }
         )
+        if not keep_frames:
+            frame_path.unlink(missing_ok=True)
     if not rows:
         raise RuntimeError(f"ffmpeg produced no frames from {video_source}")
     return rows
@@ -452,6 +528,7 @@ def build_window_records(
                 "path": frame_row.get("path", ref.video_path),
                 "index": int(frame_row.get("frame_index", bin_index)),
                 "features": list(frame_row.get("features", [])),
+                **{key: list(frame_row[key]) for key in ("grid8", "luma16") if key in frame_row},
             },
             "events": events,
             "source": "real_d2e_decoded_mcap_video",
@@ -463,6 +540,11 @@ def build_window_records(
         dims = min(len(current_features), len(next_features))
         row["next_frame_features"] = next_features
         row["frame_delta_features"] = [next_features[i] - current_features[i] for i in range(dims)]
+        for key in ("grid8", "luma16"):
+            current_values = list(row.get("frame", {}).get(key, []))
+            next_values = list(records[idx + 1].get("frame", {}).get(key, [])) if idx + 1 < len(records) else current_values
+            if current_values and next_values:
+                row[f"next_frame_{key}"] = next_values
     tokenized = add_tokens(records)
     for row in tokenized:
         validate_named(row, "d2e_window_record.schema.json")
