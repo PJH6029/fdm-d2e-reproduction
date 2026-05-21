@@ -46,18 +46,18 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 16:11 KST.
+Latest known live run snapshot: 2026-05-21 16:18 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout contains the split-stat, manifest, and pre-checkpoint audit hardening commits through `58251dd` (`Separate evidence audits from OMX checkpoint state`); G003/G004 split-stat generation, G005/G006/G007/G008/G009 completion audit scripts, and package-manifest updates are present in pod.
+- Pod checkout contains the split-stat, manifest, pre-checkpoint audit, and G003 finalizer hardening commits through `e4a5524` (`Add safe G003 integrated-run finalizer`); G003/G004 split-stat generation, G005/G006/G007/G008/G009 completion audit scripts, and package-manifest updates are present in pod.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
-- Last decoded count: `113 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
+- Last decoded count: `115 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
 - Monitor status was `running`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
-- Parent PID `9289` was still running at elapsed `05:16:24`; attached GPU monitor PID `31950` was still running at elapsed `01:27:30` and writing `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv` in the pod. Do not commit/push that live CSV from local until the run exits, because the pod currently owns it as an untracked live output.
+- Parent PID `9289` was still running at elapsed `05:23:20`; attached GPU monitor PID `31950` was still running at elapsed `01:34:26` and writing `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv` in the pod. Do not commit/push that live CSV from local until the run exits, because the pod currently owns it as an untracked live output.
 
 Useful pod monitor command:
 
@@ -189,6 +189,13 @@ audits as pre-checkpoint evidence gates with
 status, but final quality gates are responsible for requiring all stories to be
 checkpointed `complete`. This prevents a circular blocker when preparing
 evidence before checkpointing G003/G004/etc.
+
+Latest G003 finalization helper: commit `e4a5524` adds
+`scripts/finalize_g003_integrated_run.py`. After parent PID `9289` exits, run
+`uv run python scripts/finalize_g003_integrated_run.py` to build any missing
+G003 split stats, synthesize attached 4×H200 train-run evidence, and run the
+G003 completion audit. It refuses to proceed while the parent is still running
+unless explicitly overridden and does not mutate OMX state.
 
 ## G005 completion gate
 

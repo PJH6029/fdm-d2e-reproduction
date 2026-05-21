@@ -291,3 +291,10 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Pushed commit `58251dd` and fast-forwarded pod checkout to `58251dd`; story-level completion audits now support pre-checkpoint evidence gating via `require_goal_checkpoint_complete=false`, with final quality gates retaining the hard requirement that all stories are checkpointed complete.
 - Parent PID `9289` still running at elapsed `05:16:24`; attached GPU monitor PID `31950` still running at elapsed `01:27:30`.
 - Monitor status remained `running`; decoded recording variants `113 / 918`; complete shards `0 / 16`; stale/no-progress shards `[]`; merged train/eval and IDM metrics absent.
+
+## 2026-05-21 16:18 KST G003 finalizer sync snapshot
+
+- Pushed commit `e4a5524` and fast-forwarded pod checkout to `e4a5524`; `scripts/finalize_g003_integrated_run.py` is present and executable in the pod.
+- Parent PID `9289` still running at elapsed `05:23:20`; attached GPU monitor PID `31950` still running at elapsed `01:34:26`.
+- Monitor status remained `running`; decoded recording variants `115 / 918`; complete shards `0 / 16`; stale/no-progress shards `[]`; merged train/eval and IDM metrics absent.
+- After PID `9289` exits, run `uv run python scripts/finalize_g003_integrated_run.py` before any G003 checkpoint. It builds missing split stats, synthesizes attached 4×H200 train evidence, and runs the G003 audit without mutating OMX state.
