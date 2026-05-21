@@ -83,9 +83,15 @@ def test_streaming_fdm_materializes_pseudolabel_train_and_ground_truth_eval(tmp_
     assert summary["counts"]["pairs"] == 6
     assert summary["counts"]["train"] == 3
     assert summary["counts"]["target"] == 3
+    assert summary["prior_action_context"]["train_source"] == "idm_pseudolabel_previous_teacher_forced"
+    assert summary["prior_action_context"]["target_source"] == "d2e_ground_truth_previous_teacher_forced"
     assert train_rows[0]["ground_truth_tokens"] == labels[0]["predicted_tokens"]
     assert train_rows[0]["label_source"] == "idm_pseudolabel_for_fdm"
+    assert train_rows[0]["prior_action_tokens"] == ["NOOP"]
+    assert train_rows[1]["prior_action_tokens"] == labels[0]["predicted_tokens"]
+    assert train_rows[1]["prior_action_source"] == "idm_pseudolabel_previous_teacher_forced"
     assert target_rows[0]["ground_truth_tokens"] == records[3]["ground_truth_tokens"]
+    assert target_rows[0]["prior_action_source"] == "d2e_ground_truth_previous_teacher_forced"
 
 
 def test_streaming_fdm_explicit_target_preserves_heldout_eval_namespace(tmp_path: Path):
@@ -125,6 +131,10 @@ def test_streaming_fdm_explicit_target_preserves_heldout_eval_namespace(tmp_path
     assert {row["source_id"] for row in train_rows} == {"d2e_480p"}
     assert {row["source_id"] for row in target_rows} == {"d2e_original"}
     assert summary["counts"]["target_eval_split_tags"] == {"heldout_game": 3}
+    assert train_rows[0]["prior_action_tokens"] == ["NOOP"]
+    assert train_rows[1]["prior_action_tokens"] == labels[0]["predicted_tokens"]
+    assert target_rows[0]["prior_action_tokens"] == ["NOOP"]
+    assert target_rows[1]["prior_action_tokens"] == target_records[0]["ground_truth_tokens"]
 
 
 def test_streaming_fdm_rejects_misaligned_labels(tmp_path: Path):
@@ -178,7 +188,7 @@ def test_streaming_fdm_trains_tiny_checkpoint(tmp_path: Path):
             "source_namespace": "unit_d2e_fdm",
             "fdm_train_fraction": 0.75,
             "torch_idm_config": {
-                "feature_mode": "summary_compact_grid8_shift_surface_time",
+                "feature_mode": "summary_causal_compact_grid8_time_prior_action",
                 "hidden_dim": 8,
                 "depth": 1,
                 "epochs": 1,
@@ -206,6 +216,7 @@ def test_streaming_fdm_trains_tiny_checkpoint(tmp_path: Path):
     assert checkpoint["target_split_names"] == ["eval"]
     assert checkpoint["target_games"] == ["Apex"]
     assert checkpoint["target_eval_split_tags"] == ["temporal"]
+    assert checkpoint["torch_checkpoint_metadata"]["feature_mode"] == "summary_causal_compact_grid8_time_prior_action"
     assert Path(checkpoint["resolved_config_path"]).exists()
     assert checkpoint["num_training_examples"] == 6
     assert checkpoint["target_examples"] == 2

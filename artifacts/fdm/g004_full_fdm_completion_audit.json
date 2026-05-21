@@ -281,6 +281,13 @@
     },
     {
       "severity": "error",
+      "code": "metadata_expectation_mismatch",
+      "json_path": "torch_checkpoint_metadata.feature_mode",
+      "expected": "summary_causal_compact_grid8_time_prior_action",
+      "actual": null
+    },
+    {
+      "severity": "error",
       "code": "split_summary_expectation_mismatch",
       "json_path": "counts.mode",
       "expected": "explicit_target",
@@ -299,8 +306,22 @@
       "json_path": "target_records_source_path",
       "expected": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
       "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "split_summary_expectation_mismatch",
+      "json_path": "prior_action_context.train_source",
+      "expected": "idm_pseudolabel_previous_teacher_forced",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "split_summary_expectation_mismatch",
+      "json_path": "prior_action_context.target_source",
+      "expected": "d2e_ground_truth_previous_teacher_forced",
+      "actual": null
     }
   ],
-  "error_count": 29,
+  "error_count": 32,
   "claim_boundary": "This audit is required before checkpointing G004 complete; it proves D2E-only FDM-from-IDM-pseudolabel provenance, split counts, prediction coverage, split stats, convergence evidence, and 4xH200 run evidence."
 }

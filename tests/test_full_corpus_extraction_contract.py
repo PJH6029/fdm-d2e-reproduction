@@ -76,3 +76,12 @@ def test_compact_grid8_feature_mode_uses_json_features_without_frame_files():
     assert len(features) == 16 + (8 * 8 * 3 * 3) + 16 + 12
     assert features[16] == 0.1
     assert features[16 + (8 * 8 * 3)] == 0.2
+
+    causal = record_features(
+        {**row, "prior_action_tokens": ["MOUSE_DX_P1", "MOUSE_DY_N1", "KEY_PRESS_87"]},
+        feature_mode="summary_causal_compact_grid8_time_prior_action",
+    )
+    assert len(causal) == 6 + (8 * 8 * 3) + (16 * 16) + 12 + 38
+    assert causal[6] == 0.1
+    assert causal[6 + (8 * 8 * 3)] == 0.1
+    assert any(abs(value) > 0 for value in causal[-38:])

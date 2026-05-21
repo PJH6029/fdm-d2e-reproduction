@@ -81,6 +81,15 @@ def _write_jsonl_row(handle, row: dict[str, Any]) -> None:
     handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def _with_prior_action_context(record: dict[str, Any], prior_tokens: list[str] | None, *, source: str) -> dict[str, Any]:
+    out = dict(record)
+    tokens = list(prior_tokens or ["NOOP"])
+    out["prior_action_tokens"] = tokens
+    out["prior_action_source"] = source
+    out["prior_action_is_reset"] = tokens == ["NOOP"]
+    return out
+
+
 def _tail_split_count(num_rows: int, train_fraction: float, min_target_per_recording: int) -> int:
     if num_rows <= 1:
         return num_rows
@@ -162,14 +171,26 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
     with train_records_path.open("w") as train_f, target_records_path.open("w") as target_f:
         if explicit_target_records_path is not None:
             seen_recordings: set[str] = set()
+            last_train_label_tokens_by_recording: dict[str, list[str]] = {}
             for line_no, (record, label) in enumerate(iter_ordered_record_label_pairs(records_path, labels_path), 1):
-                _write_jsonl_row(train_f, _pseudo_record(record, label, labels_path=labels_path, label_sha256=label_sha256))
+                rid = _recording_id(record)
+                prior_tokens = last_train_label_tokens_by_recording.get(rid, ["NOOP"])
+                contextual_record = _with_prior_action_context(record, prior_tokens, source="idm_pseudolabel_previous_teacher_forced")
+                _write_jsonl_row(train_f, _pseudo_record(contextual_record, label, labels_path=labels_path, label_sha256=label_sha256))
+                last_train_label_tokens_by_recording[rid] = _label_tokens(label)
                 counts["pairs"] = line_no
                 counts["train"] += 1
-                seen_recordings.add(_recording_id(record))
+                seen_recordings.add(rid)
                 observe_record(record)
+            last_target_tokens_by_recording: dict[str, list[str]] = {}
             for line_no, record in enumerate(iter_jsonl(explicit_target_records_path), 1):
-                _write_jsonl_row(target_f, record)
+                rid = _recording_id(record)
+                prior_tokens = last_target_tokens_by_recording.get(rid, ["NOOP"])
+                _write_jsonl_row(
+                    target_f,
+                    _with_prior_action_context(record, prior_tokens, source="d2e_ground_truth_previous_teacher_forced"),
+                )
+                last_target_tokens_by_recording[rid] = [str(token) for token in record.get("ground_truth_tokens", []) or ["NOOP"]]
                 counts["target"] = line_no
                 observe_record(record, target=True)
             counts["recordings"] = len(seen_recordings)
@@ -185,11 +206,30 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
                     train_fraction=train_fraction,
                     min_target_per_recording=min_target_per_recording,
                 )
+                previous_label_tokens = ["NOOP"]
                 for record, label in train_pairs:
-                    _write_jsonl_row(train_f, _pseudo_record(record, label, labels_path=labels_path, label_sha256=label_sha256))
+                    contextual_record = _with_prior_action_context(
+                        record,
+                        previous_label_tokens,
+                        source="idm_pseudolabel_previous_teacher_forced",
+                    )
+                    _write_jsonl_row(train_f, _pseudo_record(contextual_record, label, labels_path=labels_path, label_sha256=label_sha256))
+                    previous_label_tokens = _label_tokens(label)
                     counts["train"] += 1
+                previous_gt_by_sequence: dict[str, list[str]] = {}
+                previous_tokens = ["NOOP"]
+                for record, _label in sorted(group, key=lambda item: (int(item[0].get("timestamp_ns", 0)), str(item[0].get("sequence_id", "")))):
+                    previous_gt_by_sequence[str(record.get("sequence_id"))] = list(previous_tokens)
+                    previous_tokens = [str(token) for token in record.get("ground_truth_tokens", []) or ["NOOP"]]
                 for record in target_records:
-                    _write_jsonl_row(target_f, record)
+                    _write_jsonl_row(
+                        target_f,
+                        _with_prior_action_context(
+                            record,
+                            previous_gt_by_sequence.get(str(record.get("sequence_id")), ["NOOP"]),
+                            source="d2e_ground_truth_previous_teacher_forced",
+                        ),
+                    )
                     counts["target"] += 1
                     observe_record(record, target=True)
                 counts["recordings"] += 1
@@ -220,6 +260,12 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
         "fdm_train_fraction": train_fraction,
         "min_target_per_recording": min_target_per_recording,
         "counts": counts,
+        "prior_action_context": {
+            "train_source": "idm_pseudolabel_previous_teacher_forced",
+            "target_source": "d2e_ground_truth_previous_teacher_forced",
+            "first_action_tokens": ["NOOP"],
+            "claim_boundary": "Offline FDM evaluation is teacher-forced on previous actions only; closed-loop stability remains a separate G008 live-suite requirement.",
+        },
         "dataset_fingerprint": stable_hash_json(
             {
                 "labels_path": str(labels_path),
@@ -229,6 +275,10 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
                 "train_fraction": train_fraction,
                 "min_target_per_recording": min_target_per_recording,
                 "counts": counts,
+                "prior_action_context": {
+                    "train_source": "idm_pseudolabel_previous_teacher_forced",
+                    "target_source": "d2e_ground_truth_previous_teacher_forced",
+                },
             }
         ),
     }

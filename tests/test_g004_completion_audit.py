@@ -46,11 +46,14 @@ def _config() -> dict:
             "split_contract.exists": True,
             "torch_checkpoint_metadata.distributed.enabled": True,
             "torch_checkpoint_metadata.distributed.world_size": 4,
+            "torch_checkpoint_metadata.feature_mode": "summary_causal_compact_grid8_time_prior_action",
         },
         "split_summary_expectations": {
             "counts.mode": "explicit_target",
             "records_path": paths["fdm_train_records"],
             "target_records_source_path": paths["fdm_target_records"],
+            "prior_action_context.train_source": "idm_pseudolabel_previous_teacher_forced",
+            "prior_action_context.target_source": "d2e_ground_truth_previous_teacher_forced",
         },
     }
 
@@ -72,6 +75,10 @@ def _complete_fixture(root: Path) -> None:
             "records_path": cfg["paths"]["fdm_train_records"],
             "target_records_source_path": cfg["paths"]["fdm_target_records"],
             "counts": {"pairs": 3, "train": 3, "target": 2, "mode": "explicit_target"},
+            "prior_action_context": {
+                "train_source": "idm_pseudolabel_previous_teacher_forced",
+                "target_source": "d2e_ground_truth_previous_teacher_forced",
+            },
         },
     )
     checkpoint = root / cfg["paths"]["checkpoint"]
@@ -89,7 +96,10 @@ def _complete_fixture(root: Path) -> None:
             "source_idm_metadata": {"exists": True},
             "data_universe": {"exists": True},
             "split_contract": {"exists": True},
-            "torch_checkpoint_metadata": {"distributed": {"enabled": True, "world_size": 4}},
+            "torch_checkpoint_metadata": {
+                "distributed": {"enabled": True, "world_size": 4},
+                "feature_mode": "summary_causal_compact_grid8_time_prior_action",
+            },
             "num_training_examples": 3,
             "target_examples": 2,
             "target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],

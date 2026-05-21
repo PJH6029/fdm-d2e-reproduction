@@ -61,6 +61,7 @@ class NeuralIDMTests(unittest.TestCase):
             richer = record_features(row, feature_mode="summary_grid8_shift")
             timed = record_features(row, feature_mode="summary_grid8_shift_time")
             surfaced = record_features(row, feature_mode="summary_grid8_shift_surface_time")
+            causal = record_features(row, feature_mode="summary_causal_compact_grid8_time_prior_action")
             stacked = record_features(row, feature_mode="summary_luma16_stack5_time")
 
             self.assertEqual(len(summary), 16)
@@ -68,12 +69,14 @@ class NeuralIDMTests(unittest.TestCase):
             self.assertEqual(len(richer), 596)
             self.assertEqual(len(timed), 608)
             self.assertEqual(len(surfaced), 620)
+            self.assertEqual(len(causal), 504)
             self.assertEqual(len(stacked), 2332)
             self.assertTrue(any(abs(value) > 0 for value in rich[16:]))
             self.assertTrue(any(abs(value) > 0 for value in richer[16:]))
             self.assertTrue(any(abs(value) > 0 for value in timed[596:]))
             self.assertTrue(any(abs(value) > 0 for value in surfaced[596:608]))
             self.assertTrue(any(abs(value) > 0 for value in surfaced[608:]))
+            self.assertTrue(any(abs(value) > 0 for value in causal[6:]))
             self.assertTrue(any(abs(value) > 0 for value in stacked[16:2320]))
             self.assertTrue(any(abs(value) > 0 for value in stacked[2320:]))
 

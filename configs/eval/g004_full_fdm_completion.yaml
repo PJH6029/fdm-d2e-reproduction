@@ -30,7 +30,9 @@
   "split_summary_expectations": {
     "counts.mode": "explicit_target",
     "records_path": "outputs/data/d2e_full_corpus/train_core.jsonl",
-    "target_records_source_path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl"
+    "target_records_source_path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+    "prior_action_context.train_source": "idm_pseudolabel_previous_teacher_forced",
+    "prior_action_context.target_source": "d2e_ground_truth_previous_teacher_forced"
   },
   "metadata_expectations": {
     "label_source": "idm_pseudolabel",
@@ -40,6 +42,7 @@
     "data_universe.exists": true,
     "split_contract.exists": true,
     "torch_checkpoint_metadata.distributed.enabled": true,
-    "torch_checkpoint_metadata.distributed.world_size": 4
+    "torch_checkpoint_metadata.distributed.world_size": 4,
+    "torch_checkpoint_metadata.feature_mode": "summary_causal_compact_grid8_time_prior_action"
   }
 }

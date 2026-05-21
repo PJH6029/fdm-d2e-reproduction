@@ -24,14 +24,33 @@ preserves heldout-recording and heldout-game target namespaces instead of
 training the FDM on earlier windows from those heldout recordings/games. A
 sequence mismatch fails the run instead of silently mixing artifacts.
 
+## FDM-1 recipe alignment boundary
+
+The public FDM-1 recipe describes the FDM as next-action prediction conditioned
+on prior frames and actions, after an IDM labels videos with keyboard/mouse
+tokens. G004 therefore uses a causal compact feature mode for the FDM stage:
+
+- `summary_causal_compact_grid8_time_prior_action`
+- current frame summary + current compact grid/luma + temporal basis
+- previous action-token sketch from `prior_action_tokens`
+- no next-frame or frame-delta features in the FDM input
+
+For offline evaluation this is teacher-forced on previous actions only:
+training rows use the previous IDM pseudo-label, and target rows use the
+previous D2E ground-truth action within the same target recording. This remains
+an offline next-action evaluation, not closed-loop action execution; G008 is the
+separate closed-loop/live-suite gate.
+
 ## Training/evaluation split
 
 `src/fdm_d2e/training/streaming_fdm.py` materializes:
 
 - `fdm_train_pseudolabeled_records.jsonl`: D2E records whose
-  `ground_truth_tokens` are replaced by IDM-generated tokens.
+  `ground_truth_tokens` are replaced by IDM-generated tokens and whose
+  `prior_action_tokens` contain the previous IDM-generated action.
 - `fdm_target_ground_truth_records.jsonl`: recording-tail heldout records that
-  retain real D2E ground-truth tokens for evaluation.
+  retain real D2E ground-truth tokens for evaluation and carry previous-action
+  teacher-forcing context only.
 - `fdm_streaming_split_summary.json`: counts, input hashes, and split
   fingerprint.
 - `resolved_config.json` and `checkpoint_metadata.json`: config fingerprint,
@@ -108,8 +127,9 @@ During upstream G003/G004 execution this may be run with `--allow-fail`, but a
 terminal G004 checkpoint requires `artifacts/fdm/g004_full_fdm_completion_audit.json`
 to report `status == pass`. The audit checks G003/G004 goal state, D2E-only
 FDM-from-IDM-pseudolabel provenance, split materialization counts, prediction
-coverage, explicit train-core → target-all-eval split mode, target split tags,
-convergence-report presence, split statistics, and 4×H200 run evidence.
+coverage, explicit train-core → target-all-eval split mode, causal FDM feature
+mode, prior-action context provenance, target split tags, convergence-report
+presence, split statistics, and 4×H200 run evidence.
 
 ## Claim boundary
 

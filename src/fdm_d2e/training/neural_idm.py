@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import random
 import re
+import hashlib
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -30,6 +31,14 @@ def _summary_features(row: dict[str, Any]) -> list[float]:
     return features[:5] + next_features[:5] + delta_features[:5] + [float(row.get("bin_index", 0)) / 100.0]
 
 
+def _current_summary_features(row: dict[str, Any]) -> list[float]:
+    frame = row.get("frame", {})
+    features = [float(v) for v in frame.get("features", [])]
+    while len(features) < 5:
+        features.append(0.0)
+    return features[:5] + [float(row.get("bin_index", 0)) / 100.0]
+
+
 def _temporal_basis_features(row: dict[str, Any]) -> list[float]:
     bin_index = float(row.get("bin_index", 0))
     values: list[float] = []
@@ -37,6 +46,47 @@ def _temporal_basis_features(row: dict[str, Any]) -> list[float]:
         phase = 2.0 * math.pi * bin_index / period
         values.extend([math.sin(phase), math.cos(phase)])
     return values
+
+
+def _prior_action_features(row: dict[str, Any], *, num_buckets: int = 32) -> list[float]:
+    """Fixed-width sketch of the previous action tokens for causal FDM modes."""
+
+    tokens = [str(token) for token in row.get("prior_action_tokens", []) or []]
+    if not tokens:
+        tokens = ["NOOP"]
+    dxs: list[float] = []
+    dys: list[float] = []
+    key_count = 0
+    button_count = 0
+    scroll_count = 0
+    buckets = [0.0 for _ in range(num_buckets)]
+    for token in tokens:
+        value = token_to_delta_class(token)
+        if value is not None:
+            if token.startswith("MOUSE_DX_"):
+                dxs.append(float(value))
+            elif token.startswith("MOUSE_DY_"):
+                dys.append(float(value))
+        if token.startswith("KEY_"):
+            key_count += 1
+        elif token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")):
+            button_count += 1
+        elif token.startswith("SCROLL_"):
+            scroll_count += 1
+        digest = hashlib.sha256(token.encode("utf-8")).digest()
+        bucket = int.from_bytes(digest[:4], "big") % num_buckets
+        sign = 1.0 if digest[4] % 2 == 0 else -1.0
+        buckets[bucket] += sign
+    denom = max(1.0, float(len(tokens)))
+    return [
+        sum(dxs) / len(dxs) if dxs else 0.0,
+        sum(dys) / len(dys) if dys else 0.0,
+        min(1.0, key_count / 4.0),
+        min(1.0, button_count / 3.0),
+        min(1.0, scroll_count / 4.0),
+        1.0 if tokens == ["NOOP"] else 0.0,
+        *[value / denom for value in buckets],
+    ]
 
 
 def _read_ppm_tokens(payload: bytes) -> tuple[list[bytes], int]:
@@ -216,6 +266,27 @@ def _compact_frame_pair_features(
     return cur_grid + next_grid + delta_grid + shift
 
 
+def _compact_current_frame_features(
+    row: dict[str, Any],
+    *,
+    grid_size: int = 8,
+    luma_size: int = 16,
+) -> list[float]:
+    compact = _compact_grid_luma(row, grid_size=grid_size, luma_size=luma_size)
+    if compact is not None:
+        cur_grid, _next_grid, cur_luma, _next_luma = compact
+        return cur_grid + cur_luma
+    current_path = str(row.get("frame", {}).get("path", ""))
+    expected_len = (grid_size * grid_size * 3) + (luma_size * luma_size)
+    if not current_path or not Path(current_path).exists():
+        return [0.0] * expected_len
+    try:
+        cur_grid, cur_luma = _ppm_grid_and_luma(current_path, grid_size, luma_size)
+    except (OSError, ValueError):
+        return [0.0] * expected_len
+    return list(cur_grid) + list(cur_luma)
+
+
 def _coarse_shift_features(cur_luma: tuple[float, ...], next_luma: tuple[float, ...], *, luma_size: int = 16, max_shift: int = 4) -> list[float]:
     return _coarse_shift_surface_features(cur_luma, next_luma, luma_size=luma_size, max_shift=max_shift)[:4]
 
@@ -353,6 +424,13 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
         return base + _frame_pair_features(row, grid_size=8, luma_size=16, shift_surface=True) + _temporal_basis_features(row)
     if feature_mode == "summary_compact_grid8_shift_surface_time":
         return base + _compact_frame_pair_features(row, grid_size=8, luma_size=16, shift_surface=True) + _temporal_basis_features(row)
+    if feature_mode == "summary_causal_compact_grid8_time_prior_action":
+        return (
+            _current_summary_features(row)
+            + _compact_current_frame_features(row, grid_size=8, luma_size=16)
+            + _temporal_basis_features(row)
+            + _prior_action_features(row)
+        )
     if feature_mode == "summary_luma16_stack5_time":
         return base + _luma_stack_features(row, offsets=(-2, -1, 0, 1, 2), luma_size=16) + _temporal_basis_features(row)
     raise ValueError(f"unsupported IDM feature_mode: {feature_mode}")

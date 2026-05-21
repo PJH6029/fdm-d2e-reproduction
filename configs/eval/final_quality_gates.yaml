@@ -200,6 +200,11 @@
           "equals": 4
         },
         {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "torch_checkpoint_metadata.feature_mode",
+          "equals": "summary_causal_compact_grid8_time_prior_action"
+        },
+        {
           "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
           "json_path": "counts.mode",
           "equals": "explicit_target"
@@ -213,6 +218,16 @@
           "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
           "json_path": "target_records_source_path",
           "equals": "outputs/data/d2e_full_corpus/target_all_eval.jsonl"
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+          "json_path": "prior_action_context.train_source",
+          "equals": "idm_pseudolabel_previous_teacher_forced"
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+          "json_path": "prior_action_context.target_source",
+          "equals": "d2e_ground_truth_previous_teacher_forced"
         },
         {
           "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",

@@ -164,6 +164,10 @@ pseudo-labels over `outputs/data/d2e_full_corpus/train_core.jsonl`, written to
 then evaluate against untouched `outputs/data/d2e_full_corpus/target_all_eval.jsonl`.
 The old recording-tail split over `target_all_eval` is local-debug only and is
 rejected by the G004 completion audit via `counts.mode == explicit_target`.
+G004 FDM features must use
+`summary_causal_compact_grid8_time_prior_action` so the FDM input contains
+current-frame/temporal/prior-action context, not next-frame inverse-dynamics
+features.
 `scripts/run_g004_d2e_full_fdm_4xh200.sh` auto-generates the train-core
 pseudo-labels with `scripts/predict_idm_streaming.py` after G003 checkpoint
 artifacts exist.
