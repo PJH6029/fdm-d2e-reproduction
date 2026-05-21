@@ -143,6 +143,19 @@ attached 4×H200 train-run summary, and runs the G003 completion audit. It does
 not checkpoint OMX state; checkpoint `G003-d2e-only-idm` only after the
 finalizer and `artifacts/idm/g003_full_idm_completion_audit.json` report pass.
 
+To avoid missing the parent exit in long MLXP sessions, start the non-mutating
+post-run watcher:
+
+```bash
+nohup uv run python scripts/watch_g003_then_finalize.py \
+  > artifacts/idm/g003_postrun_watcher.log 2>&1 &
+```
+
+The watcher writes `outputs/cluster/g003_postrun_watcher.pid` while active and
+periodically updates `artifacts/idm/g003_postrun_watcher_summary.json`. Once the
+parent exits, it runs `scripts/finalize_g003_integrated_run.py` with the same
+fail-closed gates. It never checkpoints G003 or mutates OMX/Codex state.
+
 ## Distributed IDM training
 
 `scripts/run_g003_d2e_full_idm_parallel.sh` defaults to

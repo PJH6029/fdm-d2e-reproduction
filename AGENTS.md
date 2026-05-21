@@ -205,6 +205,12 @@ G003 split stats, synthesize attached 4×H200 train-run evidence, and run the
 G003 completion audit. It refuses to proceed while the parent is still running
 unless explicitly overridden and does not mutate OMX state.
 
+Latest G003 post-run watcher: `scripts/watch_g003_then_finalize.py` can be run
+in the pod with `nohup uv run python scripts/watch_g003_then_finalize.py >
+artifacts/idm/g003_postrun_watcher.log 2>&1 &`. It writes
+`artifacts/idm/g003_postrun_watcher_summary.json`, waits for the G003 parent to
+exit, then invokes the non-mutating G003 finalizer. It never checkpoints G003.
+
 Latest G004 finalization helper: commit `65b5d24` adds
 `scripts/finalize_g004_d2e_full_fdm.py`. After a G004 4×H200 run exits, run
 `uv run python scripts/finalize_g004_d2e_full_fdm.py` to require the G004 run

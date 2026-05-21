@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 207,
+  "entry_count": 209,
   "entries": [
     {
       "path": "README.md",
@@ -247,13 +247,13 @@
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "kind": "evidence_artifact",
       "bytes": 60454,
-      "sha256": "f18d8ceaf033060d077de375d9d91bcfcbba9443da7a7b026dcc5f2496f5d36d"
+      "sha256": "425e035b73d55776c67277a320a0f4f27d2c71cccc3811572caa2b1047a02a56"
     },
     {
       "path": "artifacts/reproducibility/g009_completion_audit.json",
       "kind": "evidence_artifact",
       "bytes": 3901,
-      "sha256": "029f8cf55deb61bf07e30000e67d5636b9d87bbf4c59b2a2cdb00700fefbc5ac"
+      "sha256": "8500774b3e75cacf0b971088ddf1c52140623ebdfdb54ba27aeb95b7e8d602c7"
     },
     {
       "path": "artifacts/reproducibility/g009_finalization_summary.json",
@@ -534,8 +534,8 @@
     {
       "path": "docs/d2e_full_idm_pipeline.md",
       "kind": "documentation",
-      "bytes": 9887,
-      "sha256": "34ee54a39d2d6f0b17fe7331edd9c831bbbb2295a7a9ebaf6eef52ee8abebfe1"
+      "bytes": 10418,
+      "sha256": "50e6aa075d699bfefc5be45fc2aa9cf1ec7b0e2e3ce3585c8a8846409122aef7"
     },
     {
       "path": "docs/d2e_full_split_contract.md",
@@ -678,8 +678,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 13501,
-      "sha256": "6c72a0a8eb46a0b0a3e54356b5e7a435c874f41c7a72eabdbe2879c0b08ecbe8"
+      "bytes": 13642,
+      "sha256": "bd01a4a5ced54ce430bc615d52a0c8ada2bfcfefaa04e559dab7b5271b2064fc"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -910,6 +910,12 @@
       "sha256": "2f51041899a4140b48c6696a747681cdf2c98494001905d44cca33bf8582a4f9"
     },
     {
+      "path": "scripts/watch_g003_then_finalize.py",
+      "kind": "reproduction_script",
+      "bytes": 11838,
+      "sha256": "f0f379e06621c0424edc6751e710484eedf76110d0cb1cd0a1664bb1fad20b5f"
+    },
+    {
       "path": "src/fdm_d2e/cluster/g003_monitor.py",
       "kind": "other",
       "bytes": 15398,
@@ -1112,6 +1118,12 @@
       "kind": "other",
       "bytes": 8587,
       "sha256": "cf5b513cf165786b78111b297137d37e73666dcf3a385c13896271a1271f9b74"
+    },
+    {
+      "path": "tests/test_g003_postrun_watcher.py",
+      "kind": "other",
+      "bytes": 4270,
+      "sha256": "b8bf042e81ef7103f9a1261dfda0d396204c3f44008ffb053dc57dc404158107"
     },
     {
       "path": "tests/test_g004_completion_audit.py",
