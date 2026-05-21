@@ -38,6 +38,9 @@ def _config() -> dict:
         "expected_recording_variants": 3,
         "expected_shards": 2,
         "expected_nproc_per_node": 4,
+        "expected_gpus": 4,
+        "min_gpu_monitor_rows": 4,
+        "require_gpu_monitor_covers_expected_gpus": True,
         "required_target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],
         "required_source_ids": ["d2e_480p", "d2e_original"],
         "required_resolution_tiers": ["480p", "original_fhd_qhd"],
@@ -131,11 +134,30 @@ def _complete_fixture(root: Path) -> None:
             "target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],
         },
     )
-    write_json(root / cfg["paths"]["run_summary"], {"exit_code": 0, "nproc_per_node": 4})
+    write_json(
+        root / cfg["paths"]["run_summary"],
+        {
+            "exit_code": 0,
+            "nproc_per_node": 4,
+            "expected_gpus": 4,
+            "gpu_monitor_status": {
+                "rows": 4,
+                "unique_gpu_indices": ["0", "1", "2", "3"],
+                "expected_gpus": 4,
+                "covers_expected_gpus": True,
+            },
+        },
+    )
     write_json(root / cfg["paths"]["split_stats_summary"], {"status": "pass"})
     gpu = root / cfg["paths"]["gpu_monitor"]
     gpu.parent.mkdir(parents=True, exist_ok=True)
-    gpu.write_text("timestamp,index\n")
+    gpu.write_text(
+        "timestamp,index,name\n"
+        "now,0,H200\n"
+        "now,1,H200\n"
+        "now,2,H200\n"
+        "now,3,H200\n"
+    )
 
 
 def test_g003_completion_audit_passes_on_full_fixture(tmp_path: Path):
@@ -146,6 +168,7 @@ def test_g003_completion_audit_passes_on_full_fixture(tmp_path: Path):
     assert payload["counts"]["train_records"] == 2
     assert payload["data_universe_counts"]["source_ids"] == {"d2e_480p": 2, "d2e_original": 1}
     assert payload["decode_counts_by_resolution_tier"] == {"480p": 2, "original_fhd_qhd": 1}
+    assert payload["gpu_monitor_status"]["covers_expected_gpus"] is True
 
 
 def test_g003_completion_audit_fails_on_partial_counts_and_goal(tmp_path: Path):
@@ -186,3 +209,33 @@ def test_g003_completion_audit_requires_both_d2e_resolution_tiers(tmp_path: Path
     assert "decode_missing_required_sources" in codes
     assert "decode_missing_required_resolution_tiers" in codes
     assert "decode_universe_row_id_mismatch" in codes
+
+
+def test_g003_completion_audit_rejects_partial_gpu_monitor(tmp_path: Path):
+    _complete_fixture(tmp_path)
+    cfg = _config()
+    (tmp_path / cfg["paths"]["gpu_monitor"]).write_text(
+        "timestamp,index,name\n"
+        "now,0,H200\n"
+        "now,1,H200\n"
+    )
+    write_json(
+        tmp_path / cfg["paths"]["run_summary"],
+        {
+            "exit_code": 0,
+            "nproc_per_node": 4,
+            "expected_gpus": 4,
+            "gpu_monitor_status": {
+                "rows": 2,
+                "unique_gpu_indices": ["0", "1"],
+                "expected_gpus": 4,
+                "covers_expected_gpus": False,
+            },
+        },
+    )
+    payload = validate_g003_full_idm_completion(cfg, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "gpu_monitor_too_few_rows" in codes
+    assert "gpu_monitor_does_not_cover_expected_gpus" in codes
+    assert "run_summary_gpu_monitor_missing_expected_gpus" in codes

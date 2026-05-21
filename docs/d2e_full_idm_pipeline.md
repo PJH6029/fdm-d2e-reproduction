@@ -232,4 +232,8 @@ OMX goal status but does not fail solely because G003 has not yet been
 checkpointed. The final quality gate separately verifies that G003 is complete.
 The audit checks full decode coverage, merged JSONL counts,
 pseudolabel/prediction counts, checkpoint metadata provenance, required target
-split tags, split-stat summary status, and 4×H200 run evidence.
+split tags, split-stat summary status, and 4×H200 run evidence. The 4×H200
+evidence includes `nproc_per_node == 4`, `expected_gpus == 4`, embedded
+`run_summary.gpu_monitor_status.covers_expected_gpus == true`, and a GPU
+monitor CSV with rows covering all four GPU indices. A run summary or CSV that
+merely exists is not enough for terminal G003 completion.

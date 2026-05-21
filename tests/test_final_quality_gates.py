@@ -119,3 +119,12 @@ def test_final_quality_config_preserves_full_d2e_source_tier_gates():
     assert '"d2e_original": 459' in text
     assert '"480p": 459' in text
     assert '"original_fhd_qhd": 459' in text
+
+
+def test_final_quality_config_requires_g003_gpu_monitor_coverage():
+    text = Path("configs/eval/final_quality_gates.yaml").read_text()
+    g003_section = text[text.index('"id": "G003-d2e-only-idm"') :]
+    g003_section = g003_section[: g003_section.index('"id": "G004-d2e-only-fdm-4xh200"')]
+    assert '"json_path": "expected_gpus"' in g003_section
+    assert '"json_path": "gpu_monitor_status.covers_expected_gpus"' in g003_section
+    assert '"artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"' in g003_section

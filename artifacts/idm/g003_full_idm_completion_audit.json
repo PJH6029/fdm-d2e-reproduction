@@ -6,6 +6,7 @@
   "require_goal_checkpoint_complete": false,
   "expected_recording_variants": 918,
   "expected_shards": 16,
+  "expected_gpus": 4,
   "artifacts": {
     "data_universe": {
       "path": "artifacts/sources/d2e_full_data_universe_manifest.json",
@@ -143,6 +144,12 @@
   },
   "decode_counts_by_source": {},
   "decode_counts_by_resolution_tier": {},
+  "gpu_monitor_status": {
+    "rows": 0,
+    "unique_gpu_indices": [],
+    "expected_gpus": 4,
+    "covers_expected_gpus": false
+  },
   "findings": [
     {
       "severity": "error",
@@ -285,8 +292,32 @@
       "severity": "error",
       "code": "run_summary_exit_nonzero",
       "actual": 2
+    },
+    {
+      "severity": "error",
+      "code": "run_summary_gpu_monitor_missing_expected_gpus",
+      "actual": {
+        "covers_expected_gpus": false,
+        "expected_gpus": 4,
+        "rows": 0,
+        "sample_count": 0,
+        "unique_gpu_indices": []
+      }
+    },
+    {
+      "severity": "error",
+      "code": "gpu_monitor_too_few_rows",
+      "expected_min": 4,
+      "actual": 0
+    },
+    {
+      "severity": "error",
+      "code": "gpu_monitor_does_not_cover_expected_gpus",
+      "expected_gpus": 4,
+      "unique_gpu_indices": [],
+      "rows": 0
     }
   ],
-  "error_count": 23,
+  "error_count": 26,
   "claim_boundary": "This audit is required before checkpointing G003 complete; it proves full-corpus D2E-only IDM coverage, counts, provenance, split stats, and 4xH200 run evidence."
 }
