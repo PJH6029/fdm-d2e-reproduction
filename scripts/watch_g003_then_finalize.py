@@ -57,6 +57,22 @@ def _progress(args: argparse.Namespace, root: Path) -> dict[str, Any]:
     )
 
 
+def _progress_summary(progress: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "status": progress.get("status"),
+        "pid": progress.get("pid"),
+        "pid_running": progress.get("pid_running"),
+        "log_dir": progress.get("log_dir"),
+        "repair_pid_glob": progress.get("repair_pid_glob"),
+        "decoded_recording_variants": progress.get("decoded_recording_variants"),
+        "expected_recording_variants": progress.get("expected_recording_variants"),
+        "complete_shards": progress.get("complete_shards"),
+        "num_shards": progress.get("num_shards"),
+        "stale_shards": progress.get("stale_shards"),
+        "no_progress_shards": progress.get("no_progress_shards"),
+    }
+
+
 def _finalizer_args(args: argparse.Namespace, root: Path) -> Namespace:
     return Namespace(
         root=str(root),
@@ -139,17 +155,7 @@ def watch(
                     **base,
                     "status": "waiting_active_parent",
                     "elapsed_seconds": elapsed,
-                    "progress": {
-                        "status": progress.get("status"),
-                        "pid": progress.get("pid"),
-                        "pid_running": progress.get("pid_running"),
-                        "decoded_recording_variants": progress.get("decoded_recording_variants"),
-                        "expected_recording_variants": progress.get("expected_recording_variants"),
-                        "complete_shards": progress.get("complete_shards"),
-                        "num_shards": progress.get("num_shards"),
-                        "stale_shards": progress.get("stale_shards"),
-                        "no_progress_shards": progress.get("no_progress_shards"),
-                    },
+                    "progress": _progress_summary(progress),
                     "findings": [],
                 }
                 _write_summary(root, args.output, payload)
@@ -169,17 +175,7 @@ def watch(
                 **base,
                 "status": status,
                 "elapsed_seconds": elapsed,
-                "progress": {
-                    "status": progress.get("status"),
-                    "pid": progress.get("pid"),
-                    "pid_running": progress.get("pid_running"),
-                    "decoded_recording_variants": progress.get("decoded_recording_variants"),
-                    "expected_recording_variants": progress.get("expected_recording_variants"),
-                    "complete_shards": progress.get("complete_shards"),
-                    "num_shards": progress.get("num_shards"),
-                    "stale_shards": progress.get("stale_shards"),
-                    "no_progress_shards": progress.get("no_progress_shards"),
-                },
+                "progress": _progress_summary(progress),
                 "g003_finalization_summary": args.g003_finalization_summary,
                 "g003_finalization_status": finalization.get("status"),
                 "g003_audit_status": finalization.get("g003_audit_status"),

@@ -79,6 +79,7 @@ def test_watcher_waits_without_finalizing_while_parent_is_running(tmp_path: Path
     payload = watch(_args(tmp_path), finalize_func=lambda ns: calls.append(ns) or {"status": "pass"})
     assert payload["status"] == "waiting_active_parent"
     assert payload["progress"]["pid_running"] is True
+    assert payload["progress"]["log_dir"] == str(tmp_path / "artifacts/sources")
     assert calls == []
     assert (tmp_path / "artifacts/idm/watcher.json").exists()
     assert not (tmp_path / "outputs/cluster/watcher.pid").exists()
@@ -122,6 +123,8 @@ def test_watcher_treats_running_repair_pid_as_active_before_finalizing(tmp_path:
     assert payload["status"] == "waiting_active_parent"
     assert payload["progress"]["pid_running"] is True
     assert payload["progress"]["decoded_recording_variants"] == 0
+    assert payload["progress"]["log_dir"] == str(tmp_path / "artifacts/sources/g003_accel64")
+    assert payload["progress"]["repair_pid_glob"] == str(tmp_path / "outputs/cluster/g003_accel64_shard_*_repair.pid")
     assert calls == []
 
 

@@ -135,6 +135,8 @@ def finalize(args: argparse.Namespace) -> dict[str, Any]:
             "status": progress.get("status"),
             "pid": progress.get("pid"),
             "pid_running": progress.get("pid_running"),
+            "log_dir": progress.get("log_dir"),
+            "repair_pid_glob": progress.get("repair_pid_glob"),
             "decoded_recording_variants": progress.get("decoded_recording_variants"),
             "expected_recording_variants": progress.get("expected_recording_variants"),
             "complete_shards": progress.get("complete_shards"),

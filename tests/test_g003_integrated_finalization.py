@@ -194,6 +194,7 @@ def test_finalize_blocks_by_default_when_parent_is_running(tmp_path: Path):
     pid_file.write_text(str(os.getpid()) + "\n")
     payload = finalize(_args(tmp_path))
     assert payload["status"] == "blocked_active_parent"
+    assert payload["progress"]["log_dir"] == str(tmp_path / "artifacts/sources")
     assert payload["findings"][0]["code"] == "parent_still_running"
     assert payload["g003_audit_status"] is None
 
@@ -202,6 +203,7 @@ def test_finalize_builds_split_stats_train_summary_and_audit(tmp_path: Path):
     _write_complete_fixture(tmp_path)
     payload = finalize(_args(tmp_path))
     assert payload["status"] == "pass"
+    assert payload["progress"]["log_dir"] == str(tmp_path / "artifacts/sources")
     assert payload["split_stats"]["status"] == "pass"
     assert payload["attached_train_summary_exit_code"] == 0
     assert payload["g003_audit_status"] == "pass"
