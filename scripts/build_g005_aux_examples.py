@@ -633,7 +633,7 @@ def _build_pdoom_examples(
                 "code": "array_record_dependency_missing",
                 "path": str(raw_dir),
                 "error": str(reader_exc),
-                "install_hint": "Install array_record in the cluster image before building p-doom ArrayRecord examples.",
+                "install_hint": "Install the project d2e extra (`uv sync --extra d2e`) or package `array-record` before building p-doom ArrayRecord examples.",
             },
         )
 

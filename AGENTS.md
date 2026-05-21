@@ -66,7 +66,7 @@ Latest known live run snapshot: 2026-05-21 20:21 KST.
 - G005 source materializer PID `49075` was still running.
 - G005 materialization watcher was restarted on commit `1324d44`; active Python PID `56862`, PID file `outputs/cluster/g005_aux_materialization_watcher.pid`.
 - `artifacts/aux/g005_aux_materialization_progress.json` reported `status=running`, raw bytes `5,100,304,027`, partial source `atari_head_zenodo_v4`, completed sources `[]`, missing sources `minerl_2019_zenodo_v2` and `p_doom_atari_breakout_hf`, `error_count=0`.
-- The pod runtime preflight currently reports `artifacts/aux/g005_aux_runtime_env.json` as `status=blocked`, `error_count=1`, missing `array_record.python.array_record_module` for the selected p-doom ArrayRecord adapter. This is an explicit launch/completion blocker unless the dependency is installed in the cluster image or p-doom is removed by audited source-selection change.
+- The pod runtime preflight at this snapshot reported `artifacts/aux/g005_aux_runtime_env.json` as `status=blocked`, `error_count=1`, missing `array_record.python.array_record_module` for the selected p-doom ArrayRecord adapter. The dependency is package `array-record` in the project `d2e` extra; run `uv sync --extra d2e` in the pod after pulling a dependency commit, then rerun the preflight. If it still blocks, treat it as an explicit G005 launch/completion blocker unless p-doom is removed by audited source-selection change.
 - The materialization watcher now runs integrity, source evidence, auxiliary examples, runtime env preflight, namespace readiness, and launch readiness after the materializer exits. It never starts G005 training or checkpoints OMX/Codex state.
 
 Useful pod monitor command:

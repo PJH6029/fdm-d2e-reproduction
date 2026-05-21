@@ -132,15 +132,16 @@ It supports the `atari_head_zip_csv_action_adapter`, `minerl_action_dict_adapter
 and `p_doom_array_record_action_adapter` layouts by writing per-source
 train/val/test JSONL manifests with nested raw-data references and source-native
 action payloads. The p-doom adapter intentionally requires the optional
-`array_record` runtime package in the cluster image; without it the source
-remains fail-closed. The G005 completion audit requires a passing
+`array-record` runtime package in the cluster image/project `d2e` extra; without
+it the source remains fail-closed. The G005 completion audit requires a passing
 `artifacts/aux/g005_aux_examples_summary.json` before any D2E+aux completion
 claim.
 
 `validate_g005_aux_runtime_env.py` is the matching dependency preflight for the
 selected auxiliary adapter registry. It writes
 `artifacts/aux/g005_aux_runtime_env.json` and blocks G005 launch/completion if a
-selected source needs an unavailable optional runtime (currently
+selected source needs an unavailable optional runtime (currently package
+`array-record`, import
 `array_record.python.array_record_module.ArrayRecordReader` for p-doom
 ArrayRecord streams). This is only environment readiness evidence; it does not
 materialize aux data, train, checkpoint goals, or justify any D2E+aux quality
@@ -149,6 +150,7 @@ claim.
 Example source-specific invocation after integrity passes:
 
 ```bash
+uv sync --extra d2e
 uv run python scripts/validate_g005_aux_runtime_env.py --allow-fail
 uv run python scripts/build_g005_aux_examples.py \
   --source-id atari_head_zenodo_v4 \

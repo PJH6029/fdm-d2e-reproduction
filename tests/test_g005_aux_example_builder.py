@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from fdm_d2e.io_utils import write_json
+import build_g005_aux_examples as aux_examples_module
 from build_g005_aux_examples import build_examples, _split_for_sequence
 
 
@@ -184,6 +185,11 @@ def test_pdoom_blocks_without_array_record_dependency(tmp_path: Path, monkeypatc
         if name.startswith("array_record"):
             del sys.modules[name]
     monkeypatch.syspath_prepend(str(tmp_path / "empty"))
+    monkeypatch.setattr(
+        aux_examples_module,
+        "_load_array_record_reader",
+        lambda: (None, ModuleNotFoundError("No module named 'array_record'")),
+    )
     _write_registry(tmp_path, [_head("p_doom_atari_breakout_hf", "p_doom_array_record_action_adapter")])
     _write_pdoom_records(tmp_path)
 

@@ -9,6 +9,8 @@ from typing import Iterable
 
 DEFAULT_PATTERNS = [
     "README.md",
+    "pyproject.toml",
+    "uv.lock",
     "docs/d2e_full_data_universe.md",
     "docs/d2e_full_split_contract.md",
     "docs/d2e_full_idm_pipeline.md",

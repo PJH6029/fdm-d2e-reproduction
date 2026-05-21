@@ -63,8 +63,8 @@
     "aux_plan_doc": {
       "path": "docs/auxiliary_data_plan.md",
       "exists": true,
-      "bytes": 15788,
-      "sha256": "4400d12651c0b8da88b7e79f00fa7c927339d795189ec4b0b489f1156e3142cd"
+      "bytes": 15859,
+      "sha256": "a90b6b518e83f1057cd6898e7400e9464e5841b3acd28cad6c8f8252c9fe9ca1"
     },
     "action_registry": {
       "path": "artifacts/aux/g005_aux_action_registry.json",
@@ -75,8 +75,8 @@
     "runtime_env": {
       "path": "artifacts/aux/g005_aux_runtime_env.json",
       "exists": true,
-      "bytes": 2282,
-      "sha256": "bf7c91bbd42059ba3aab09a788f5f3f21abe6ae182464ad3d63ba4a7d810ce54"
+      "bytes": 1795,
+      "sha256": "df75367c5b3cafa34c10b219f92b712486c40f149b17c9d05c3c607d85e489d0"
     },
     "aux_examples_summary": {
       "path": "artifacts/aux/g005_aux_examples_summary.json",
@@ -281,14 +281,6 @@
     {
       "severity": "error",
       "code": "json_expectation_mismatch",
-      "source": "runtime_env",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "blocked"
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
       "source": "ablation_summary",
       "json_path": "status",
       "expected": "pass",
@@ -483,6 +475,6 @@
       "split": "val"
     }
   ],
-  "error_count": 50,
+  "error_count": 49,
   "claim_boundary": "This audit is required before checkpointing G005 complete; it proves D2E-only prerequisites, aux provenance/storage policy, separated namespaces, D2E-only vs D2E+aux ablations, target split tags, and run evidence."
 }

@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from fdm_d2e.io_utils import write_json
+import validate_g005_aux_runtime_env as runtime_env_module
 from validate_g005_aux_runtime_env import validate_runtime_env
 
 
@@ -94,6 +95,14 @@ def test_runtime_env_blocks_missing_array_record_for_pdoom(tmp_path: Path, monke
     import shutil
 
     shutil.rmtree(tmp_path / "fake_modules/array_record")
+    original_import_module = runtime_env_module.importlib.import_module
+
+    def fake_import_module(name: str):
+        if name == "array_record.python.array_record_module":
+            raise ModuleNotFoundError("No module named 'array_record'")
+        return original_import_module(name)
+
+    monkeypatch.setattr(runtime_env_module.importlib, "import_module", fake_import_module)
     _write_registry(tmp_path, ["p_doom_array_record_action_adapter"])
 
     payload = validate_runtime_env(_args(tmp_path))
