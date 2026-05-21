@@ -19,6 +19,8 @@ def test_g003_integrated_run_builds_split_statistics_before_evidence() -> None:
 
     assert "SPLIT_STATS_CONFIG=\"${SPLIT_STATS_CONFIG:-configs/eval/g003_split_statistics.yaml}\"" in text
     assert "SPLIT_STATS_SUMMARY=\"${SPLIT_STATS_SUMMARY:-artifacts/eval/g003_split_statistical_comparisons_summary.json}\"" in text
+    assert "IDM_SUMMARY=\"${IDM_SUMMARY:-artifacts/idm/idm_streaming_d2e_full_compact_summary.json}\"" in text
+    assert "export BUILD_SPLIT_STATS SPLIT_STATS_CONFIG SPLIT_STATS_SUMMARY IDM_SUMMARY" in text
     assert train_idx < split_idx < evidence_idx
     assert '"split_stats_summary_exists": split_stats_summary_path.exists()' in text
 

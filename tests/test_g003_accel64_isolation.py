@@ -44,6 +44,7 @@ def test_g003_accel64_launch_scripts_preserve_canonical_outputs():
     assert "LOG_DIR=\"${LOG_DIR:-artifacts/sources/g003_accel64}\"" in run_text
     assert "CACHE_DIR=\"${CACHE_DIR:-/root/work/data/d2e/cache_accel64}\"" in run_text
     assert "configs/model/idm_streaming_d2e_full_compact_accel64.yaml" in run_text
+    assert "IDM_SUMMARY=\"${IDM_SUMMARY:-artifacts/idm/idm_streaming_d2e_full_compact_accel64_summary.json}\"" in run_text
 
     assert "outputs/cluster/g003_full_compact_accel64.pid" in launch_text
     assert "g003_full_idm_completion_accel64.yaml" in launch_text
