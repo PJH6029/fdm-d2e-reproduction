@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schema",
+    "generated_at_utc",
+    "d2e_sources",
+    "recordings",
+    "coverage",
+    "storage_budget",
+    "auxiliary_candidates",
+    "dataset_fingerprint"
+  ],
+  "properties": {
+    "schema": {"type": "string", "enum": ["data_universe_manifest.v1"]},
+    "generated_at_utc": {"type": "string"},
+    "d2e_sources": {"type": "array", "items": {"type": "object"}},
+    "recordings": {"type": "array", "items": {"type": "object"}},
+    "coverage": {"type": "object"},
+    "storage_budget": {"type": "object"},
+    "auxiliary_candidates": {"type": "array", "items": {"type": "object"}},
+    "dataset_fingerprint": {"type": "string"}
+  }
+}
