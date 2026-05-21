@@ -539,3 +539,10 @@ uv run python scripts/audit_g003_live_health.py \
 - Accel64 monitoring progressed through the window: `650 / 918` at 03:51 KST, `669 / 918` at 04:02, `689 / 918` at 04:12, `708 / 918` at 04:22, `723 / 918` at 04:32, `741 / 918` at 04:43, `758 / 918` at 04:53, and `776 / 918` at 05:03.
 - At 05:03 KST, `complete_shards=15 / 64`, parent alive, watcher `waiting_active_parent`, live health `healthy_running`, active extractors `49 / 49`, stale/no-progress shards `[]`, long-running shards `[11, 12]` with continue-monitor guidance.
 - No terminal G003 artifacts existed yet: accel64 full decode summary, merged train/eval JSONLs, IDM metrics/checkpoint, run evidence, finalization summary, split-stat summary, and accel64 audit remained absent. G003 remains non-terminal.
+
+### 2026-05-22 06:15 KST accel64 tail extraction at 864/918
+
+- Pod checkout still remained at `b568f0b`; newer local/origin commits were intentionally not deployed while the active accel64 parent was running.
+- Accel64 progressed over this monitoring window: `776 / 918` at 05:04 KST, `791 / 918` at 05:14, `805 / 918` at 05:24, `820 / 918` at 05:34, `833 / 918` at 05:45, `844 / 918` at 05:55, `852 / 918` filesystem summaries at 06:05, and `864 / 918` at 06:15.
+- At 06:15 KST, `complete_shards=36 / 64`, parent alive, watcher `waiting_active_parent`, live health `healthy_running`, active extractors `28 / 28`, stale/no-progress shards `[]`, long-running shards `[]`, recommendation `continue_waiting`.
+- Terminal G003 artifacts remained absent: no accel64 full decode summary, merged train/eval JSONLs, IDM metrics/checkpoint, run evidence, finalization summary, split-stat summary, or accel64 audit. G003 remains non-terminal and no checkpoint/update_goal was made.
