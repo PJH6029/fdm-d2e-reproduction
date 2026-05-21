@@ -6,6 +6,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -72,12 +73,28 @@ def _recording_dir(output_dir: Path, row: dict[str, Any]) -> Path:
     return output_dir / "by_recording" / str(row["source_id"]) / str(row["game"]) / str(row["recording_id"])
 
 
+def _emit_stage(row: dict[str, Any], stage: str, **fields: Any) -> None:
+    print(
+        json.dumps(
+            {
+                "stage": stage,
+                "timestamp_unix": time.time(),
+                "universe_row_id": universe_row_id(row),
+                **fields,
+            },
+            sort_keys=True,
+        ),
+        flush=True,
+    )
+
+
 def _load_or_extract_recording(args: argparse.Namespace, split_contract: dict[str, Any], row: dict[str, Any]) -> dict[str, Any]:
     rec_dir = _recording_dir(Path(args.output_dir), row)
     rec_dir.mkdir(parents=True, exist_ok=True)
     records_path = rec_dir / "all_records.jsonl"
     summary_path = rec_dir / "decode_summary.json"
     if records_path.exists() and summary_path.exists() and not args.force:
+        _emit_stage(row, "recording_resume_cached")
         records = read_jsonl(records_path)
         summary = read_json(summary_path)
         return {"records": records, "summary": {**summary, "resumed": True}}
@@ -88,16 +105,27 @@ def _load_or_extract_recording(args: argparse.Namespace, split_contract: dict[st
     # video payloads.  Namespace the cache by source_id to prevent one tier from
     # silently reusing the other's media file.
     cache_dir = Path(args.cache_dir) / str(row["source_id"])
+    stage_start = time.time()
+    _emit_stage(row, "download_mcap_start")
     downloaded = download_recording_ref(ref, cache_dir, token=token, kinds=("mcap",))
+    _emit_stage(row, "download_mcap_done", elapsed_seconds=round(time.time() - stage_start, 3))
     video_source = ref.video_url
     if args.video_mode == "download":
+        stage_start = time.time()
+        _emit_stage(row, "download_video_start")
         video_source = download_recording_ref(ref, cache_dir, token=token, kinds=("video",))["video"]
+        _emit_stage(row, "download_video_done", elapsed_seconds=round(time.time() - stage_start, 3))
 
     event_limit = int(args.event_limit) if args.event_limit is not None else None
+    stage_start = time.time()
+    _emit_stage(row, "decode_mcap_start")
     decoded_events = decode_mcap_events(downloaded["mcap"], limit=event_limit)
+    _emit_stage(row, "decode_mcap_done", elapsed_seconds=round(time.time() - stage_start, 3), decoded_events=len(decoded_events))
     max_bins = int(args.max_bins_per_recording) if args.max_bins_per_recording is not None else None
     max_frames = max_bins
     try:
+        stage_start = time.time()
+        _emit_stage(row, "extract_frames_start", video_mode=args.video_mode)
         frame_features = extract_video_frame_features(
             video_source,
             rec_dir,
@@ -107,10 +135,13 @@ def _load_or_extract_recording(args: argparse.Namespace, split_contract: dict[st
             compact_features=True,
             keep_frames=bool(args.keep_frames),
         )
+        _emit_stage(row, "extract_frames_done", elapsed_seconds=round(time.time() - stage_start, 3), frame_features=len(frame_features))
     except subprocess.CalledProcessError:
         if args.video_mode == "download":
             raise
         video_source = download_recording_ref(ref, cache_dir, token=token, kinds=("video",))["video"]
+        stage_start = time.time()
+        _emit_stage(row, "extract_frames_start", video_mode="download_fallback")
         frame_features = extract_video_frame_features(
             video_source,
             rec_dir,
@@ -120,6 +151,9 @@ def _load_or_extract_recording(args: argparse.Namespace, split_contract: dict[st
             compact_features=True,
             keep_frames=bool(args.keep_frames),
         )
+        _emit_stage(row, "extract_frames_done", elapsed_seconds=round(time.time() - stage_start, 3), frame_features=len(frame_features))
+    stage_start = time.time()
+    _emit_stage(row, "build_records_start", frame_features=len(frame_features), decoded_events=len(decoded_events))
     raw_records = build_window_records(
         ref,
         decoded_events,
@@ -128,7 +162,9 @@ def _load_or_extract_recording(args: argparse.Namespace, split_contract: dict[st
         max_bins=max_bins,
         frame_features=frame_features,
     )
+    _emit_stage(row, "build_records_done", elapsed_seconds=round(time.time() - stage_start, 3), records=len(raw_records))
     records = annotate_window_records(raw_records, universe_row=row, split_contract=split_contract)
+    _emit_stage(row, "annotate_records_done", records=len(records))
     write_jsonl(records_path, records)
     summary = {
         "schema": "d2e_full_recording_decode_summary.v1",

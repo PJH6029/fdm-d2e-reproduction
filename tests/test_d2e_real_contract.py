@@ -116,6 +116,47 @@ class D2ERealContractTests(unittest.TestCase):
         self.assertEqual(records[0]["next_frame_features"], frames[1]["features"])
         self.assertAlmostEqual(records[0]["frame_delta_features"][0], 0.3)
 
+    def test_build_window_records_buckets_actions_without_quadratic_timestamp_scans(self):
+        ref = D2ERecordingRef(
+            repo_id="open-world-agents/D2E-480p",
+            revision="main",
+            game="Apex_Legends",
+            recording_id="0805_01",
+            video_path="Apex_Legends/0805_01.mkv",
+            mcap_path="Apex_Legends/0805_01.mcap",
+            video_url="https://example.test/0805_01.mkv",
+            mcap_url="https://example.test/0805_01.mcap",
+        )
+
+        class CountingTimestamp:
+            calls = 0
+
+            def __init__(self, value: int):
+                self.value = value
+
+            def __int__(self) -> int:
+                type(self).calls += 1
+                return self.value
+
+        events = [{"type": "screen", "timestamp_ns": CountingTimestamp(0)}]
+        events.extend(
+            {
+                "type": "mouse_move",
+                "dx": idx % 5,
+                "dy": 0,
+                "timestamp_ns": CountingTimestamp(idx * 50_000_000),
+            }
+            for idx in range(1_000)
+        )
+        frames = [{"frame_index": idx, "path": f"frame{idx}.ppm", "features": [float(idx)]} for idx in range(1_000)]
+
+        with mock.patch("fdm_d2e.data.d2e_real.add_tokens", side_effect=lambda rows: rows), mock.patch("fdm_d2e.data.d2e_real.validate_named"):
+            records = build_window_records(ref, events, split="train", bin_ms=50, frame_features=frames)
+
+        self.assertEqual(len(records), 1_000)
+        self.assertEqual(records[1]["events"][0]["dx"], 1)
+        self.assertLess(CountingTimestamp.calls, 3_100)
+
     def test_choose_action_dense_window_skips_noop_prefix(self):
         events = [
             {"type": "screen", "timestamp_ns": 0},

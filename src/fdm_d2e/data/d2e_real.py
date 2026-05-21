@@ -614,7 +614,6 @@ def build_window_records(
         return []
     start_ns = int(start_ns if start_ns is not None else (screen_times[0] if screen_times else all_times[0]))
     bin_ns = int(bin_ms) * 1_000_000
-    action_events = [row for row in decoded_events if row.get("type") != "screen"]
     if frame_features:
         num_bins = len(frame_features)
     else:
@@ -622,15 +621,18 @@ def build_window_records(
         num_bins = int((last_ns - start_ns) // bin_ns) + 1
     if max_bins is not None:
         num_bins = min(num_bins, int(max_bins))
+    action_bins: dict[int, list[dict[str, Any]]] = {}
+    for row in decoded_events:
+        if row.get("type") == "screen":
+            continue
+        bin_index = int((int(row["timestamp_ns"]) - start_ns) // bin_ns)
+        if bin_index < 0 or bin_index >= num_bins:
+            continue
+        action_bins.setdefault(bin_index, []).append({k: v for k, v in row.items() if k != "topic"})
     records: list[dict[str, Any]] = []
     for bin_index in range(max(0, num_bins)):
         bin_start = start_ns + bin_index * bin_ns
-        bin_end = bin_start + bin_ns
-        events = [
-            {k: v for k, v in row.items() if k != "topic"}
-            for row in action_events
-            if bin_start <= int(row["timestamp_ns"]) < bin_end
-        ]
+        events = list(action_bins.get(bin_index, ()))
         frame_row = frame_features[bin_index] if frame_features and bin_index < len(frame_features) else {}
         record = {
             "schema": "d2e_window_record.v1",
