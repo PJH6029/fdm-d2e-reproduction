@@ -18,6 +18,14 @@ def main() -> int:
     parser.add_argument("--output-dir", default="outputs/data/d2e_full_corpus")
     parser.add_argument("--idm-output-dir", default="outputs/idm_streaming_d2e_full_compact")
     parser.add_argument("--pid-file", default="outputs/cluster/g003_full_compact_parallel.pid")
+    parser.add_argument(
+        "--repair-pid-glob",
+        default=None,
+        help=(
+            "Optional glob for isolated shard repair pid files. Defaults to a lane-scoped pattern derived "
+            "from --pid-file."
+        ),
+    )
     parser.add_argument("--num-shards", type=int, default=16)
     parser.add_argument("--stale-seconds", type=float, default=3600.0)
     parser.add_argument("--output", default="artifacts/idm/g003_full_compact_parallel_progress.json")
@@ -30,6 +38,7 @@ def main() -> int:
         output_dir=args.output_dir,
         idm_output_dir=args.idm_output_dir,
         pid_file=args.pid_file,
+        repair_pid_glob=args.repair_pid_glob,
         num_shards=args.num_shards,
         stale_seconds=args.stale_seconds,
     )

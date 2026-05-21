@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import glob
 import json
 import os
+import re
 import shlex
 import time
 from collections import Counter
@@ -256,7 +258,73 @@ def _detect_g003_processes() -> list[dict[str, Any]]:
     return sorted(processes, key=lambda row: (str(row.get("role")), int(row.get("pid", 0))))
 
 
-def _detect_active_shard_processes(*, pid_file: Path | None = None) -> set[int]:
+def _repair_pid_glob_for_parent(pid_file: Path | None, repair_pid_glob: str | None) -> str | None:
+    if repair_pid_glob is not None:
+        return repair_pid_glob or None
+    if pid_file is None:
+        return None
+    prefix = "g003_accel64" if "accel64" in pid_file.name else "g003"
+    return str(pid_file.parent / f"{prefix}_shard_*_repair.pid")
+
+
+def _repair_shard_index(path: Path) -> int | None:
+    match = re.search(r"shard_(\d+)_repair\.pid$", path.name)
+    if not match:
+        return None
+    try:
+        return int(match.group(1))
+    except ValueError:
+        return None
+
+
+def _repair_pid_statuses(
+    *,
+    pid_file: Path | None,
+    repair_pid_glob: str | None,
+    processes: list[dict[str, Any]],
+    from_snapshot: bool,
+) -> list[dict[str, Any]]:
+    pattern = _repair_pid_glob_for_parent(pid_file, repair_pid_glob)
+    if not pattern:
+        return []
+    rows: list[dict[str, Any]] = []
+    for raw_path in sorted(glob.glob(pattern)):
+        path = Path(raw_path)
+        pid = _read_pid(path)
+        shard_index = _repair_shard_index(path)
+        running = (
+            _pid_running_in_snapshot(processes, pid)
+            if from_snapshot
+            else _pid_running(pid)
+            if pid is not None
+            else False
+        )
+        rows.append(
+            {
+                "pid_file": str(path),
+                "pid": pid,
+                "shard_index": shard_index,
+                "running": bool(running),
+            }
+        )
+    return rows
+
+
+def _repair_scoped_pids(repair_statuses: list[dict[str, Any]], processes: list[dict[str, Any]]) -> set[int]:
+    scoped: set[int] = set()
+    for row in repair_statuses:
+        if not row.get("running"):
+            continue
+        try:
+            pid = int(row["pid"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        scoped.add(pid)
+        scoped.update(_descendant_pids(processes, pid))
+    return scoped
+
+
+def _detect_active_shard_processes(*, pid_file: Path | None = None, repair_pid_glob: str | None = None) -> set[int]:
     """Best-effort Linux /proc scan for active full-corpus extraction shards.
 
     When a pid file is supplied, only count extractor descendants of that
@@ -271,6 +339,13 @@ def _detect_active_shard_processes(*, pid_file: Path | None = None) -> set[int]:
         if parent_pid is None:
             return set()
         scoped_pids = _descendant_pids(processes, parent_pid)
+        repair_statuses = _repair_pid_statuses(
+            pid_file=pid_file,
+            repair_pid_glob=repair_pid_glob,
+            processes=processes,
+            from_snapshot=True,
+        )
+        scoped_pids.update(_repair_scoped_pids(repair_statuses, processes))
     out: set[int] = set()
     for row in processes:
         if row.get("role") != "extractor" or row.get("shard_index") is None:
@@ -345,6 +420,8 @@ def _scope_processes_to_pid_files(
     pid_file: Path,
     watcher_pid_file: Path,
     gpu_monitor_pid_file: Path,
+    repair_pid_glob: str | None = None,
+    from_snapshot: bool = False,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Scope live G003 processes to one integrated run.
 
@@ -358,13 +435,24 @@ def _scope_processes_to_pid_files(
     watcher_pid = _read_pid(watcher_pid_file)
     gpu_monitor_pid = _read_pid(gpu_monitor_pid_file)
     exact_pids = {pid for pid in [parent_pid, watcher_pid, gpu_monitor_pid] if pid is not None and pid > 0}
+    repair_statuses = _repair_pid_statuses(
+        pid_file=pid_file,
+        repair_pid_glob=repair_pid_glob,
+        processes=processes,
+        from_snapshot=from_snapshot,
+    )
+    repair_tree_pids = _repair_scoped_pids(repair_statuses, processes)
+    exact_pids.update(pid for pid in repair_tree_pids if pid > 0)
     scoped_tree_pids = _descendant_pids(processes, parent_pid)
+    scoped_tree_pids.update(repair_tree_pids)
     if parent_pid is None:
         return processes, {
             "mode": "unscoped_missing_parent_pid",
             "parent_pid": None,
             "watcher_pid": watcher_pid,
             "gpu_monitor_pid": gpu_monitor_pid,
+            "repair_pid_glob": _repair_pid_glob_for_parent(pid_file, repair_pid_glob),
+            "repair_pids": repair_statuses,
             "included_process_count": len(processes),
             "excluded_process_count": 0,
         }
@@ -389,6 +477,8 @@ def _scope_processes_to_pid_files(
         "parent_pid": parent_pid,
         "watcher_pid": watcher_pid,
         "gpu_monitor_pid": gpu_monitor_pid,
+        "repair_pid_glob": _repair_pid_glob_for_parent(pid_file, repair_pid_glob),
+        "repair_pids": repair_statuses,
         "descendant_process_count": max(0, len(scoped_tree_pids - ({parent_pid} if parent_pid else set()))),
         "included_process_count": len(scoped),
         "excluded_process_count": len([row for row in processes if int(row.get("pid", -1)) not in scoped_pids]),
@@ -407,6 +497,7 @@ def build_g003_live_health_report(
     pid_file: str | Path = "outputs/cluster/g003_full_compact_parallel.pid",
     watcher_pid_file: str | Path = "outputs/cluster/g003_postrun_watcher.pid",
     gpu_monitor_pid_file: str | Path = "outputs/cluster/g003_attached_gpu_monitor.pid",
+    repair_pid_glob: str | None = None,
     num_shards: int = 16,
     stale_seconds: float = 3600.0,
     min_active_extractors: int | None = None,
@@ -423,6 +514,8 @@ def build_g003_live_health_report(
         pid_file=Path(pid_file),
         watcher_pid_file=Path(watcher_pid_file),
         gpu_monitor_pid_file=Path(gpu_monitor_pid_file),
+        repair_pid_glob=repair_pid_glob,
+        from_snapshot=from_snapshot,
     )
     extractors = _processes_by_role(processes, "extractor")
     active_shards = sorted({int(row["shard_index"]) for row in extractors if row.get("shard_index") is not None})
@@ -723,6 +816,7 @@ def build_g003_progress_report(
     stale_seconds: float = 3600.0,
     now: float | None = None,
     active_shard_processes: set[int] | list[int] | None = None,
+    repair_pid_glob: str | None = None,
 ) -> dict[str, Any]:
     now_value = time.time() if now is None else float(now)
     shard_root_path = Path(shard_root)
@@ -731,7 +825,7 @@ def build_g003_progress_report(
     active_processes = (
         set(int(idx) for idx in active_shard_processes)
         if active_shard_processes is not None
-        else _detect_active_shard_processes(pid_file=Path(pid_file))
+        else _detect_active_shard_processes(pid_file=Path(pid_file), repair_pid_glob=repair_pid_glob)
     )
     shards = [
         _shard_report(
@@ -792,6 +886,7 @@ def build_g003_progress_report(
         "pid_file": str(pid_file),
         "pid": pid,
         "pid_running": running,
+        "repair_pid_glob": _repair_pid_glob_for_parent(Path(pid_file), repair_pid_glob),
         "num_shards": int(num_shards),
         "complete_shards": complete_shards,
         "stale_shards": [row["shard_index"] for row in stale_shards],

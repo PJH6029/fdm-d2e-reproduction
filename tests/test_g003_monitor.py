@@ -123,6 +123,29 @@ def test_g003_progress_active_process_scan_scopes_to_pid_file(tmp_path, monkeypa
     assert _detect_active_shard_processes(pid_file=tmp_path / "missing.pid") == set()
 
 
+def test_g003_progress_active_process_scan_includes_lane_scoped_repair_pid(tmp_path, monkeypatch):
+    canonical_pid = tmp_path / "outputs/cluster/g003_full_compact_parallel.pid"
+    accel_pid = tmp_path / "outputs/cluster/g003_full_compact_accel64.pid"
+    repair_pid = tmp_path / "outputs/cluster/g003_accel64_shard_1_repair.pid"
+    _write_pid(canonical_pid, 100)
+    _write_pid(accel_pid, 900)
+    _write_pid(repair_pid, 901)
+    monkeypatch.setattr(
+        "fdm_d2e.cluster.g003_monitor._detect_g003_processes",
+        lambda: [
+            {"pid": 100, "ppid": 1, "role": "parent", "shard_index": None},
+            {"pid": 101, "ppid": 100, "role": "extractor", "shard_index": 0},
+            {"pid": 900, "ppid": 1, "role": "parent", "shard_index": None},
+            {"pid": 910, "ppid": 900, "role": "extractor", "shard_index": 0},
+            {"pid": 901, "ppid": 1, "role": "extractor", "shard_index": 1},
+            {"pid": 902, "ppid": 901, "role": "extractor", "shard_index": 1},
+        ],
+    )
+
+    assert _detect_active_shard_processes(pid_file=canonical_pid) == {0}
+    assert _detect_active_shard_processes(pid_file=accel_pid) == {0, 1}
+
+
 def test_g003_proc_resource_snapshot_reads_rss_without_name_error(tmp_path):
     proc_entry = tmp_path / "1234"
     proc_entry.mkdir()
@@ -371,6 +394,47 @@ def test_g003_live_health_scopes_extractors_to_requested_parent_pid(tmp_path):
     assert report["process_resource_summary"]["by_role"]["extractor"]["count"] == 2
     assert report["process_scope"]["mode"] == "pid_file_process_tree"
     assert report["process_scope"]["excluded_process_count"] == 3
+
+
+def test_g003_live_health_counts_isolated_repair_pid_for_same_lane(tmp_path):
+    universe = _universe(tmp_path)
+    _write_pid(tmp_path / "outputs/cluster/g003_full_compact_accel64.pid", 900)
+    _write_pid(tmp_path / "outputs/cluster/g003_accel64_postrun_watcher.pid", 200)
+    _write_pid(tmp_path / "outputs/cluster/g003_accel64_attached_gpu_monitor.pid", 300)
+    _write_pid(tmp_path / "outputs/cluster/g003_accel64_shard_1_repair.pid", 901)
+    snapshot = [
+        {"pid": 900, "ppid": 1, "role": "parent", "shard_index": None},
+        {"pid": 200, "ppid": 1, "role": "postrun_watcher", "shard_index": None},
+        {"pid": 300, "ppid": 1, "role": "gpu_monitor", "shard_index": None},
+        {"pid": 910, "ppid": 900, "role": "extractor", "shard_index": 0, "cpu_ticks": 10},
+        {"pid": 901, "ppid": 1, "role": "extractor", "shard_index": 1, "cpu_ticks": 11},
+        {"pid": 902, "ppid": 901, "role": "extractor", "shard_index": 1, "cpu_ticks": 12},
+    ]
+    report = build_g003_live_health_report(
+        shard_root=tmp_path / "outputs/data/d2e_full_corpus_shards_accel64",
+        log_dir=tmp_path / "artifacts/sources/g003_accel64",
+        data_universe=universe,
+        pid_file=tmp_path / "outputs/cluster/g003_full_compact_accel64.pid",
+        watcher_pid_file=tmp_path / "outputs/cluster/g003_accel64_postrun_watcher.pid",
+        gpu_monitor_pid_file=tmp_path / "outputs/cluster/g003_accel64_attached_gpu_monitor.pid",
+        num_shards=2,
+        process_snapshot=snapshot,
+        now=1000.0,
+    )
+
+    assert report["status"] == "healthy_running"
+    assert report["active_extractor_shards"] == [0, 1]
+    assert report["inactive_incomplete_shards"] == []
+    assert report["duplicate_active_shards"] == [1]
+    assert report["warnings"] == []
+    assert report["process_scope"]["repair_pids"] == [
+        {
+            "pid_file": str(tmp_path / "outputs/cluster/g003_accel64_shard_1_repair.pid"),
+            "pid": 901,
+            "shard_index": 1,
+            "running": True,
+        }
+    ]
 
 
 def test_g003_live_health_does_not_require_extractors_during_idm_training(tmp_path):

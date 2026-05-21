@@ -22,6 +22,14 @@ def main() -> int:
     parser.add_argument("--pid-file", default="outputs/cluster/g003_full_compact_parallel.pid")
     parser.add_argument("--watcher-pid-file", default="outputs/cluster/g003_postrun_watcher.pid")
     parser.add_argument("--gpu-monitor-pid-file", default="outputs/cluster/g003_attached_gpu_monitor.pid")
+    parser.add_argument(
+        "--repair-pid-glob",
+        default=None,
+        help=(
+            "Optional glob for isolated shard repair pid files. Defaults to a lane-scoped pattern derived "
+            "from --pid-file, e.g. outputs/cluster/g003_accel64_shard_*_repair.pid for accel64 runs."
+        ),
+    )
     parser.add_argument("--num-shards", type=int, default=16)
     parser.add_argument("--stale-seconds", type=float, default=3600.0)
     parser.add_argument(
@@ -47,6 +55,7 @@ def main() -> int:
         pid_file=args.pid_file,
         watcher_pid_file=args.watcher_pid_file,
         gpu_monitor_pid_file=args.gpu_monitor_pid_file,
+        repair_pid_glob=args.repair_pid_glob,
         num_shards=args.num_shards,
         stale_seconds=args.stale_seconds,
         min_active_extractors=args.min_active_extractors,
