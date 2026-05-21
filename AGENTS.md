@@ -225,6 +225,13 @@ Do **not** modify or rely on completed `G007-runtime-sdk-adapter` evidence unles
 
 Do **not** checkpoint `G008-live-game-suite` complete until `scripts/validate_g008_live_suite_completion.py` reports `status=pass` in `artifacts/harness/g008_live_suite_completion_audit.json`. This audit requires completed D2E-only training prerequisites, G007 runtime-adapter evidence, trained checkpoint metadata, live evidence validation `quality_gate.status=pass`, statistical comparison evidence, and hashed video/replay/latency/failure artifacts. Protocol readiness alone never satisfies G008.
 
+Latest G008 finalization helper: after collecting explicit live evidence, run
+`uv run python scripts/finalize_g008_live_suite.py --evidence artifacts/harness/<run>/live_suite_evidence.json`.
+It writes the protocol report, validates evidence to
+`artifacts/harness/g008_live_open_game_suite_evidence_validation.json`, runs the
+G008 completion audit, writes a finalization summary, and does not mutate OMX
+state. Do not use it without `--evidence` except for non-terminal diagnostics.
+
 ## Runtime and harness boundary
 
 Current adapter-contract evidence is not live commercial-game control. Future live evidence must use open-source graphical games/tasks and include:

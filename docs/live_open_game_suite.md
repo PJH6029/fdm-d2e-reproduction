@@ -9,6 +9,7 @@ Machine-readable files:
 - Config: `configs/harness/g008_live_open_game_suite.yaml`
 - Protocol artifact: `artifacts/harness/g008_live_open_game_suite_protocol.json`
 - Validator: `scripts/validate_live_game_suite.py`
+- Finalizer: `scripts/finalize_g008_live_suite.py`
 - Validation module: `src/fdm_d2e/rollout/live_suite.py`
 - Contract tests: `tests/test_live_game_suite_contract.py`
 
@@ -78,6 +79,21 @@ statistical bar field:
   }
 }
 ```
+
+After collecting live evidence, prefer the fail-closed finalizer rather than
+manually chaining validators:
+
+```bash
+uv run python scripts/finalize_g008_live_suite.py \
+  --evidence artifacts/harness/<run>/live_suite_evidence.json
+```
+
+The finalizer writes the protocol report, validates the explicit live evidence
+to `artifacts/harness/g008_live_open_game_suite_evidence_validation.json`, runs
+the G008 completion audit, and writes
+`artifacts/harness/g008_live_open_game_suite_finalization_summary.json`. It does
+not mutate OMX state; checkpoint `G008-live-game-suite` only after the finalizer
+and `artifacts/harness/g008_live_suite_completion_audit.json` report pass.
 
 ## Current protocol gate
 

@@ -1,0 +1,43 @@
+{
+  "schema": "g008_live_suite_finalization.v1",
+  "status": "fail",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "protocol_output": "artifacts/harness/g008_live_open_game_suite_protocol.json",
+  "protocol_status": "protocol_ready",
+  "evidence_path": null,
+  "evidence_validation_output": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
+  "evidence_validation_status": null,
+  "g008_audit_status": "fail",
+  "g008_audit_error_count": 9,
+  "actions": [
+    {
+      "name": "protocol_report",
+      "output": "artifacts/harness/g008_live_open_game_suite_protocol.json",
+      "status": "protocol_ready"
+    },
+    {
+      "name": "evidence_validation",
+      "status": "skipped_missing_evidence",
+      "output": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
+    },
+    {
+      "name": "g008_completion_audit",
+      "output": "artifacts/harness/g008_live_suite_completion_audit.json",
+      "status": "fail",
+      "error_count": 9
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "missing_live_evidence",
+      "path": null
+    },
+    {
+      "severity": "error",
+      "code": "g008_completion_audit_not_pass",
+      "error_count": 9
+    }
+  ],
+  "claim_boundary": "Finalizes G008 live open-source graphical-game suite evidence only after an explicit live evidence JSON is validated; it does not checkpoint G008 and protocol-only evidence cannot pass."
+}
