@@ -1,3 +1,4 @@
+import io
 import tempfile
 import unittest
 from pathlib import Path
@@ -15,6 +16,7 @@ from fdm_d2e.data.d2e_real import (
     build_window_records,
     choose_action_dense_window_start,
     download_recording_ref,
+    extract_video_frame_features,
     normalize_owa_event,
     normalize_owa_events,
     prepare_real_dataset,
@@ -174,6 +176,35 @@ class D2ERealContractTests(unittest.TestCase):
             self.assertAlmostEqual(features[0], 0.5)
             self.assertAlmostEqual(features[1], 0.0)
             self.assertAlmostEqual(features[2], 0.5)
+
+    def test_video_frame_extraction_streams_raw_rgb_when_frames_are_not_kept(self):
+        raw_frame = bytes([255, 0, 0, 0, 0, 255] * 128)
+        popen_calls = []
+
+        class FakePopen:
+            def __init__(self, cmd, stdout=None, stderr=None):
+                popen_calls.append(cmd)
+                self.stdout = io.BytesIO(raw_frame)
+                self.stderr = io.BytesIO(b"")
+
+            def wait(self):
+                return 0
+
+            def kill(self):
+                pass
+
+        with tempfile.TemporaryDirectory() as td, mock.patch("fdm_d2e.data.d2e_real.shutil.which", return_value="/usr/bin/ffmpeg"), mock.patch(
+            "fdm_d2e.data.d2e_real.subprocess.Popen",
+            FakePopen,
+        ):
+            rows = extract_video_frame_features("video.mkv", td, max_frames=1, fps=20, image_size=16, compact_features=True, keep_frames=False)
+
+        self.assertEqual(len(rows), 1)
+        self.assertIn("-f", popen_calls[0])
+        self.assertIn("rawvideo", popen_calls[0])
+        self.assertEqual(len(rows[0]["grid8"]), 8 * 8 * 3)
+        self.assertEqual(len(rows[0]["luma16"]), 16 * 16)
+        self.assertEqual(rows[0]["path"], "video.mkv#frame=0")
 
     def test_download_recording_ref_retries_transient_url_errors(self):
         ref = D2ERecordingRef(

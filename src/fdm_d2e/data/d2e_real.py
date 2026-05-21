@@ -403,9 +403,16 @@ def _ppm_features(path: str | Path) -> list[float]:
         cursor += 1
         break
     pixels = data[cursor:]
+    try:
+        return _rgb_summary_features(width, height, max_value, pixels)
+    except ValueError as exc:
+        raise ValueError(f"{path} has truncated PPM pixel data") from exc
+
+
+def _rgb_summary_features(width: int, height: int, max_value: int, pixels: bytes) -> list[float]:
     expected = width * height * 3
     if len(pixels) < expected:
-        raise ValueError(f"{path} has truncated PPM pixel data")
+        raise ValueError("truncated RGB pixel data")
     pixels = pixels[:expected]
     count = width * height
     r_sum = sum(pixels[0::3])
@@ -458,6 +465,14 @@ def _ppm_compact_features(path: str | Path, *, grid_size: int = 8, luma_size: in
     """
 
     width, height, max_value, pixels = _ppm_header_and_pixels(path)
+    return _rgb_compact_features(width, height, max_value, pixels, grid_size=grid_size, luma_size=luma_size)
+
+
+def _rgb_compact_features(width: int, height: int, max_value: int, pixels: bytes, *, grid_size: int = 8, luma_size: int = 16) -> dict[str, list[float]]:
+    expected = width * height * 3
+    if len(pixels) < expected:
+        raise ValueError("truncated RGB pixel data")
+    pixels = pixels[:expected]
     try:
         import numpy as np  # type: ignore
 
@@ -483,7 +498,7 @@ def _ppm_compact_features(path: str | Path, *, grid_size: int = 8, luma_size: in
             luma_values = _ppm_grid_luma_features_python(width, height, max_value, pixels, grid_size=grid_size, luma_size=luma_size)[f"luma{luma_size}"]
         return {"features": summary, f"grid{grid_size}": grid_values, f"luma{luma_size}": luma_values}
     except Exception:
-        rgb_luma = _ppm_features(path)
+        rgb_luma = _rgb_summary_features(width, height, max_value, pixels)
         grid_luma = _ppm_grid_luma_features_python(width, height, max_value, pixels, grid_size=grid_size, luma_size=luma_size)
         return {"features": rgb_luma, **grid_luma}
 
@@ -543,6 +558,84 @@ def _ppm_grid_luma_features(path: str | Path, *, grid_size: int = 8, luma_size: 
     return _ppm_grid_luma_features_python(width, height, max_value, pixels, grid_size=grid_size, luma_size=luma_size)
 
 
+def _read_exact(stream: Any, size: int) -> bytes:
+    chunks: list[bytes] = []
+    remaining = size
+    while remaining > 0:
+        chunk = stream.read(remaining)
+        if not chunk:
+            break
+        chunks.append(chunk)
+        remaining -= len(chunk)
+    return b"".join(chunks)
+
+
+def _extract_video_frame_features_streaming(
+    ffmpeg: str,
+    video_source: str,
+    *,
+    max_frames: int | None,
+    fps: int,
+    image_size: int,
+    start_seconds: float,
+    compact_features: bool,
+) -> list[dict[str, Any]]:
+    """Extract 64×64 RGB frames through an ffmpeg pipe instead of transient PPM files."""
+
+    frame_size = int(image_size) * int(image_size) * 3
+    cmd = [
+        ffmpeg,
+        "-v",
+        "error",
+        "-ss",
+        str(start_seconds),
+        "-i",
+        video_source,
+        "-vf",
+        f"fps={int(fps)},scale={int(image_size)}:{int(image_size)}",
+    ]
+    if max_frames is not None and int(max_frames) > 0:
+        cmd.extend(["-frames:v", str(int(max_frames))])
+    cmd.extend(["-f", "rawvideo", "-pix_fmt", "rgb24", "-"])
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert proc.stdout is not None
+    rows: list[dict[str, Any]] = []
+    try:
+        while True:
+            pixels = _read_exact(proc.stdout, frame_size)
+            if not pixels:
+                break
+            if len(pixels) != frame_size:
+                raise RuntimeError(f"ffmpeg produced a truncated raw RGB frame from {video_source}")
+            if compact_features:
+                compact = _rgb_compact_features(int(image_size), int(image_size), 255, pixels, grid_size=8, luma_size=16)
+            else:
+                compact = {"features": _rgb_summary_features(int(image_size), int(image_size), 255, pixels)}
+            idx = len(rows)
+            rows.append(
+                {
+                    "frame_index": idx,
+                    "path": f"{video_source}#frame={idx}",
+                    **compact,
+                    "source_video": video_source,
+                }
+            )
+    except BaseException:
+        proc.kill()
+        proc.wait()
+        raise
+    finally:
+        if proc.stdout is not None:
+            proc.stdout.close()
+    stderr = proc.stderr.read() if proc.stderr is not None else b""
+    returncode = proc.wait()
+    if returncode:
+        raise subprocess.CalledProcessError(returncode, cmd, stderr=stderr)
+    if not rows:
+        raise RuntimeError(f"ffmpeg produced no frames from {video_source}")
+    return rows
+
+
 def extract_video_frame_features(
     video_source: str,
     output_dir: str | Path,
@@ -559,6 +652,16 @@ def extract_video_frame_features(
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise RuntimeError("ffmpeg is required for real D2E video feature extraction")
+    if not keep_frames:
+        return _extract_video_frame_features_streaming(
+            ffmpeg,
+            video_source,
+            max_frames=max_frames,
+            fps=fps,
+            image_size=image_size,
+            start_seconds=start_seconds,
+            compact_features=compact_features,
+        )
     frame_dir = ensure_dir(Path(output_dir) / "frames_ppm")
     for old in frame_dir.glob("frame_*.ppm"):
         old.unlink()
