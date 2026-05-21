@@ -46,18 +46,18 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 16:42 KST.
+Latest known live run snapshot: 2026-05-21 16:49 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout contains finalizer hardening commits through `1124998` (`Make G008 live-suite evidence finalization explicit`); G003/G004/G005/G008 finalizers, split-stat generation, completion audits, and package-manifest updates are present in pod.
+- Pod checkout contains finalizer hardening commits through `7311f33` (`Make G006 evaluation finalization repeatable`); G003/G004/G005/G006/G008 finalizers, split-stat generation, completion audits, and package-manifest updates are present in pod.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
-- Last decoded count: `121 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
+- Last decoded count: `123 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
 - Monitor status was `running`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
-- Parent PID `9289` was still running at elapsed `05:44:41`; attached GPU monitor PID `31950` was still running at elapsed `01:55:48` and writing `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv` in the pod. Do not commit/push that live CSV from local until the run exits, because the pod currently owns it as an untracked live output.
+- Parent PID `9289` was still running at elapsed `05:51:10`; attached GPU monitor PID `31950` was still running at elapsed `02:02:16` and writing `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv` in the pod. Do not commit/push that live CSV from local until the run exits, because the pod currently owns it as an untracked live output.
 
 Useful pod monitor command:
 
