@@ -144,6 +144,7 @@ def _shard_report(
         "process_active": process_active,
         "log_path": str(log_path),
         "log_exists": log_path.exists(),
+        "log_mtime": log_mtime,
         "seconds_since_log_update": seconds_since_update,
         "last_universe_row_id": last_row.get("universe_row_id") if last_row else None,
         "last_log_row": last_row,
@@ -187,6 +188,14 @@ def build_g003_progress_report(
     stale_shards = [row for row in shards if row["status"] in {"stale_log", "no_progress_stale"}]
     long_running_shards = [row for row in shards if row["status"] == "running_long_recording"]
     no_progress_shards = [row for row in shards if row["decoded_variants"] == 0 and not row["summary_exists"] and not row["process_active"]]
+    log_mtimes = [float(row["log_mtime"]) for row in shards if row.get("log_mtime") is not None]
+    elapsed_seconds = max(0.0, now_value - min(log_mtimes)) if log_mtimes else None
+    decoded_per_hour = None
+    eta_seconds = None
+    if elapsed_seconds and elapsed_seconds > 0 and decoded > 0:
+        decoded_per_hour = decoded / (elapsed_seconds / 3600.0)
+        remaining = max(0, total_expected - decoded)
+        eta_seconds = remaining / (decoded / elapsed_seconds) if decoded else None
     pid = _read_pid(Path(pid_file))
     running = (_pid_running(pid) if pid is not None else False) or bool(active_processes)
     merged_summary_exists = (Path(output_dir) / "train_core.jsonl").exists() and (Path(output_dir) / "target_all_eval.jsonl").exists()
@@ -203,6 +212,7 @@ def build_g003_progress_report(
         status = "not_started_or_unknown"
     return {
         "schema": "g003_progress_report.v1",
+        "generated_at_unix": now_value,
         "status": status,
         "pid_file": str(pid_file),
         "pid": pid,
@@ -216,6 +226,9 @@ def build_g003_progress_report(
         "decoded_recording_variants": decoded,
         "expected_recording_variants": total_expected,
         "completion_ratio": decoded / total_expected if total_expected else None,
+        "elapsed_seconds_since_first_log": elapsed_seconds,
+        "decoded_recording_variants_per_hour": decoded_per_hour,
+        "eta_seconds_at_current_rate": eta_seconds,
         "merged_train_eval_exists": merged_summary_exists,
         "idm_metrics_exists": idm_metrics_exists,
         "stale_seconds_threshold": float(stale_seconds),

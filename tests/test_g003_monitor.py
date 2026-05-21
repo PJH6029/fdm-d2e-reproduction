@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -94,6 +95,27 @@ def test_g003_progress_treats_stale_active_process_as_long_recording(tmp_path):
     assert report["long_running_shards"] == [0]
     assert report["active_shard_processes"] == [0]
     assert report["shards"][0]["status"] == "running_long_recording"
+
+
+def test_g003_progress_reports_rate_and_eta_from_log_mtime(tmp_path):
+    universe = _universe(tmp_path)
+    log_dir = tmp_path / "artifacts/sources"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / "d2e_full_corpus_shard_0.log"
+    log_path.write_text('{"decoded": 1, "total_selected": 2, "universe_row_id": "d2e_480p:Game/rec_0"}\n')
+    os.utime(log_path, (100.0, 100.0))
+    report = build_g003_progress_report(
+        shard_root=tmp_path / "outputs/data/d2e_full_corpus_shards",
+        log_dir=log_dir,
+        data_universe=universe,
+        pid_file=tmp_path / "missing.pid",
+        num_shards=2,
+        stale_seconds=999999,
+        now=200.0,
+    )
+    assert report["elapsed_seconds_since_first_log"] == 100.0
+    assert report["decoded_recording_variants_per_hour"] == 36.0
+    assert report["eta_seconds_at_current_rate"] == 300.0
 
 
 def test_g003_progress_complete_requires_shards_merge_and_metrics(tmp_path):
