@@ -87,6 +87,25 @@ The monitor summarizes decoded/expected recording variants, completed shards,
 stale/no-progress shards, parent PID state, and whether merged train/eval plus
 IDM metrics exist. It is progress evidence only and does not complete G003.
 
+## Distributed IDM training
+
+`scripts/run_g003_d2e_full_idm_parallel.sh` defaults to
+`IDM_NPROC_PER_NODE=4` and launches the streaming IDM stage with `torchrun`
+after shard merge. The active config records one validation checkpoint per epoch
+and a preregistered convergence report:
+
+- `eval_interval_epochs=1`,
+- `convergence_score=composite_primary`,
+- `plateau_patience=3`,
+- `plateau_min_relative_improvement=0.01`.
+
+The checkpoint metadata must report `distributed.enabled=true` and
+`distributed.world_size=4` for the primary G003 multi-GPU run. If the currently
+running extraction was launched before this script revision, verify the actual
+training command in `artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.log`;
+if it fell back to single-GPU training, rerun only the IDM training stage with
+`torchrun` on the merged full-corpus JSONLs before checkpointing G003 complete.
+
 
 ## G003 checkpoint metadata contract
 

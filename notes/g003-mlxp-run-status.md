@@ -141,3 +141,10 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - Parallel extraction parent PID `9289` remained running; elapsed at monitor was ~2h23m.
 - Monitor status: `running`; decoded recording variants: `69 / 918`; complete shards: `0 / 16`; long-running active shards: `[8, 9, 13]`; stale shards: `[]`; no-progress shards: `[]`; IDM metrics absent.
 - Observed throughput: `37.74` recording variants/hour; ETA at current rate: `22.49` hours. This is telemetry only, not a G003 completion claim.
+
+
+## G003 distributed IDM training guard
+
+- Commit pending after the 2026-05-21 ETA snapshot updates `scripts/run_g003_d2e_full_idm_parallel.sh` to default `IDM_NPROC_PER_NODE=4` and run the post-merge IDM stage with `torchrun`.
+- `configs/model/idm_streaming_d2e_full_compact.yaml` now records per-epoch validation checkpoints and convergence settings.
+- Because the current parent bash process was launched before this script revision, verify the actual training command in `artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.log` after extraction completes. If it uses the old single-GPU command, rerun the IDM training stage with `torchrun --standalone --nproc-per-node=4` on the merged full-corpus JSONLs before checkpointing G003 complete.

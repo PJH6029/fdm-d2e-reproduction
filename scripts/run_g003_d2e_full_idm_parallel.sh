@@ -8,6 +8,7 @@ DATA_OUTPUT_DIR="${DATA_OUTPUT_DIR:-outputs/data/d2e_full_corpus}"
 DECODE_SUMMARY="${DECODE_SUMMARY:-artifacts/sources/d2e_full_corpus_decode_summary.json}"
 IDM_CONFIG="${IDM_CONFIG:-configs/model/idm_streaming_d2e_full_compact.yaml}"
 CACHE_DIR="${CACHE_DIR:-/root/work/data/d2e/cache}"
+IDM_NPROC_PER_NODE="${IDM_NPROC_PER_NODE:-4}"
 
 mkdir -p artifacts/sources artifacts/idm artifacts/mlxp outputs/cluster "${SHARD_ROOT}" "${DATA_OUTPUT_DIR}"
 
@@ -54,7 +55,7 @@ uv run python scripts/merge_d2e_full_corpus_shards.py \
   --output-dir "${DATA_OUTPUT_DIR}" \
   --summary-out "${DECODE_SUMMARY}"
 
-CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}" uv run python scripts/train_idm_streaming.py \
+uv run torchrun --standalone --nproc-per-node="${IDM_NPROC_PER_NODE}" scripts/train_idm_streaming.py \
   --config "${IDM_CONFIG}" \
   --require-torch
 
@@ -85,6 +86,7 @@ evidence = {
         "decode_summary": str(decode_summary),
         "idm_summary": str(idm_summary_path),
     },
+    "idm_nproc_per_node": int(os.environ.get("IDM_NPROC_PER_NODE", "4")),
 }
 out = Path(f"artifacts/idm/g003_d2e_full_idm_run_{suffix}.json")
 out.parent.mkdir(parents=True, exist_ok=True)
