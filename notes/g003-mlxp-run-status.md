@@ -336,3 +336,11 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - G003 parent remained live; progress monitor status `running`, decoded recording variants `143 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`.
 - Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`; long-running active shards `[0, 5, 6, 12, 13, 14, 15]` are active-process telemetry, not stale failures.
 - G005 readiness is currently blocked as intended by incomplete G003/G004 D2E-only gates; G005 planner/watcher are future-run handoff tooling only and do not checkpoint OMX/Codex state.
+
+
+## 2026-05-21 17:57 KST G006 readiness/watcher sync snapshot
+
+- Pod checkout fast-forwarded to `49fb8c8` after adding `scripts/plan_g006_readiness.py` and `scripts/watch_g006_then_finalize.py`.
+- G003 parent remained live; progress monitor status `running`, decoded recording variants `146 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`.
+- Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`; long-running active shards `[0, 3, 5, 6, 12, 13, 14, 15]` are active-process telemetry, not stale failures.
+- G006 readiness is currently blocked as intended by incomplete G003/G004/G005 gates and missing split-stat artifacts; planner/watcher are future final-evaluation handoff tooling only and do not checkpoint OMX/Codex state.
