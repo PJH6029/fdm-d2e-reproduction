@@ -1,0 +1,21 @@
+{
+  "schema": "split_leakage_report.v1",
+  "status": "pass",
+  "errors": [],
+  "checks": {
+    "heldout_recording_rows_disjoint": true,
+    "cross_resolution_group_assignment_consistent": true,
+    "heldout_game_rows_disjoint": true,
+    "heldout_game_not_in_train": true,
+    "temporal_policy_covers_all_groups": true,
+    "temporal_window_policy_disjoint_by_construction": true
+  },
+  "counts": {
+    "recording_train_rows": 734,
+    "recording_heldout_rows": 184,
+    "heldout_games": 6,
+    "game_train_rows": 800,
+    "game_heldout_rows": 118,
+    "temporal_groups": 459
+  }
+}
