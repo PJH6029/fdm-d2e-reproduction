@@ -344,3 +344,12 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - G003 parent remained live; progress monitor status `running`, decoded recording variants `146 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`.
 - Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`; long-running active shards `[0, 3, 5, 6, 12, 13, 14, 15]` are active-process telemetry, not stale failures.
 - G006 readiness is currently blocked as intended by incomplete G003/G004/G005 gates and missing split-stat artifacts; planner/watcher are future final-evaluation handoff tooling only and do not checkpoint OMX/Codex state.
+
+## 2026-05-21 18:10 KST G008 readiness sync snapshot
+
+- Pushed commit `5638ecc` and fast-forwarded pod checkout to `5638ecc`; `scripts/plan_g008_readiness.py`, its tests/docs, and `artifacts/harness/g008_readiness_plan.json` are present.
+- Synced `.omx/ultragoal/{goals.json,ledger.jsonl,brief.md}` into the pod because `.omx/` is git-ignored and the pod checkout otherwise lacked current G007 completion state. This was a pod-local state sync only, not a Codex-goal mutation or story checkpoint.
+- G008 readiness in the pod is blocked as intended: protocol `protocol_ready`; prerequisites report `G003-d2e-only-idm=in_progress`, `G004-d2e-only-fdm-4xh200=pending`, `G007-runtime-sdk-adapter=complete`; findings are incomplete G003/G004, missing trained checkpoint metadata, and missing live-game launch binaries; evidence validation is not collected yet.
+- G003 parent remained live; progress monitor status `running`, decoded recording variants `149 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`, long-running active shards `[0, 3, 5, 12, 13, 14, 15]`.
+- Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
+- No G003 or G008 checkpoint/completion claim was made.

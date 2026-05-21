@@ -1,0 +1,374 @@
+{
+  "schema": "g003_live_health_report.v1",
+  "generated_at_unix": 1779354612.0977073,
+  "status": "healthy_running",
+  "stage": "extracting",
+  "progress_status": "running",
+  "parent": {
+    "pid_file": "outputs/cluster/g003_full_compact_parallel.pid",
+    "pid": 9289,
+    "running": true
+  },
+  "postrun_watcher": {
+    "pid_file": "outputs/cluster/g003_postrun_watcher.pid",
+    "pid": 41388,
+    "running": true
+  },
+  "gpu_monitor": {
+    "pid_file": "outputs/cluster/g003_attached_gpu_monitor.pid",
+    "pid": 31950,
+    "running": true
+  },
+  "process_roles": [
+    "extractor",
+    "gpu_monitor",
+    "parent",
+    "postrun_watcher"
+  ],
+  "processes": [
+    {
+      "pid": 9364,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 0,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_0 --summary-out outputs/data/d2e_full_corpus_shards/shard_0/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 0 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9366,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 1,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_1 --summary-out outputs/data/d2e_full_corpus_shards/shard_1/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 1 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9370,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 2,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_2 --summary-out outputs/data/d2e_full_corpus_shards/shard_2/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 2 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9372,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 3,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_3 --summary-out outputs/data/d2e_full_corpus_shards/shard_3/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 3 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9376,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 4,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_4 --summary-out outputs/data/d2e_full_corpus_shards/shard_4/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 4 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9382,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 5,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_5 --summary-out outputs/data/d2e_full_corpus_shards/shard_5/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 5 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9386,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 6,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_6 --summary-out outputs/data/d2e_full_corpus_shards/shard_6/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 6 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9389,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 7,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_7 --summary-out outputs/data/d2e_full_corpus_shards/shard_7/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 7 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9392,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 8,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_8 --summary-out outputs/data/d2e_full_corpus_shards/shard_8/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 8 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9394,
+      "ppid": 9364,
+      "role": "extractor",
+      "shard_index": 0,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_0 --summary-out outputs/data/d2e_full_corpus_shards/shard_0/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 0 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9396,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 9,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_9 --summary-out outputs/data/d2e_full_corpus_shards/shard_9/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 9 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9401,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 10,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_10 --summary-out outputs/data/d2e_full_corpus_shards/shard_10/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 10 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9407,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 11,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_11 --summary-out outputs/data/d2e_full_corpus_shards/shard_11/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 11 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9411,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 12,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_12 --summary-out outputs/data/d2e_full_corpus_shards/shard_12/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 12 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9414,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 13,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_13 --summary-out outputs/data/d2e_full_corpus_shards/shard_13/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 13 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9417,
+      "ppid": 9366,
+      "role": "extractor",
+      "shard_index": 1,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_1 --summary-out outputs/data/d2e_full_corpus_shards/shard_1/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 1 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9418,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 14,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_14 --summary-out outputs/data/d2e_full_corpus_shards/shard_14/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 14 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9422,
+      "ppid": 9289,
+      "role": "extractor",
+      "shard_index": 15,
+      "cmdline": "uv run python scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_15 --summary-out outputs/data/d2e_full_corpus_shards/shard_15/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 15 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9429,
+      "ppid": 9370,
+      "role": "extractor",
+      "shard_index": 2,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_2 --summary-out outputs/data/d2e_full_corpus_shards/shard_2/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 2 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9430,
+      "ppid": 9372,
+      "role": "extractor",
+      "shard_index": 3,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_3 --summary-out outputs/data/d2e_full_corpus_shards/shard_3/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 3 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9431,
+      "ppid": 9376,
+      "role": "extractor",
+      "shard_index": 4,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_4 --summary-out outputs/data/d2e_full_corpus_shards/shard_4/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 4 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9432,
+      "ppid": 9382,
+      "role": "extractor",
+      "shard_index": 5,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_5 --summary-out outputs/data/d2e_full_corpus_shards/shard_5/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 5 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9433,
+      "ppid": 9386,
+      "role": "extractor",
+      "shard_index": 6,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_6 --summary-out outputs/data/d2e_full_corpus_shards/shard_6/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 6 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9434,
+      "ppid": 9389,
+      "role": "extractor",
+      "shard_index": 7,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_7 --summary-out outputs/data/d2e_full_corpus_shards/shard_7/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 7 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9435,
+      "ppid": 9392,
+      "role": "extractor",
+      "shard_index": 8,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_8 --summary-out outputs/data/d2e_full_corpus_shards/shard_8/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 8 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9436,
+      "ppid": 9396,
+      "role": "extractor",
+      "shard_index": 9,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_9 --summary-out outputs/data/d2e_full_corpus_shards/shard_9/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 9 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9437,
+      "ppid": 9401,
+      "role": "extractor",
+      "shard_index": 10,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_10 --summary-out outputs/data/d2e_full_corpus_shards/shard_10/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 10 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9438,
+      "ppid": 9407,
+      "role": "extractor",
+      "shard_index": 11,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_11 --summary-out outputs/data/d2e_full_corpus_shards/shard_11/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 11 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9439,
+      "ppid": 9411,
+      "role": "extractor",
+      "shard_index": 12,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_12 --summary-out outputs/data/d2e_full_corpus_shards/shard_12/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 12 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9440,
+      "ppid": 9414,
+      "role": "extractor",
+      "shard_index": 13,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_13 --summary-out outputs/data/d2e_full_corpus_shards/shard_13/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 13 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9441,
+      "ppid": 9418,
+      "role": "extractor",
+      "shard_index": 14,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_14 --summary-out outputs/data/d2e_full_corpus_shards/shard_14/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 14 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 9442,
+      "ppid": 9422,
+      "role": "extractor",
+      "shard_index": 15,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/extract_d2e_full_corpus.py --config configs/data/d2e_full_corpus.yaml --data-universe artifacts/sources/d2e_full_data_universe_manifest.json --split-contract artifacts/sources/d2e_full_split_contract.json --output-dir outputs/data/d2e_full_corpus_shards/shard_15 --summary-out outputs/data/d2e_full_corpus_shards/shard_15/decode_summary.json --cache-dir /root/work/data/d2e/cache --shard-index 15 --num-shards 16 --bin-ms 50 --frame-fps 20 --image-size 64 --video-mode download"
+    },
+    {
+      "pid": 31946,
+      "ppid": 1,
+      "role": "gpu_monitor",
+      "shard_index": null,
+      "cmdline": "/root/.local/bin/uv run python scripts/attach_g003_gpu_monitor.py --pid-file outputs/cluster/g003_full_compact_parallel.pid --output artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv --metadata-out artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_attached.json --monitor-pid-file outputs/cluster/g003_attached_gpu_monitor.pid --interval-seconds 30"
+    },
+    {
+      "pid": 31950,
+      "ppid": 31946,
+      "role": "gpu_monitor",
+      "shard_index": null,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/attach_g003_gpu_monitor.py --pid-file outputs/cluster/g003_full_compact_parallel.pid --output artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv --metadata-out artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_attached.json --monitor-pid-file outputs/cluster/g003_attached_gpu_monitor.pid --interval-seconds 30"
+    },
+    {
+      "pid": 9289,
+      "ppid": 1,
+      "role": "parent",
+      "shard_index": null,
+      "cmdline": "bash scripts/run_g003_d2e_full_idm_parallel.sh"
+    },
+    {
+      "pid": 41384,
+      "ppid": 1,
+      "role": "postrun_watcher",
+      "shard_index": null,
+      "cmdline": "/root/.local/bin/uv run python scripts/watch_g003_then_finalize.py"
+    },
+    {
+      "pid": 41388,
+      "ppid": 41384,
+      "role": "postrun_watcher",
+      "shard_index": null,
+      "cmdline": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/watch_g003_then_finalize.py"
+    }
+  ],
+  "active_extractor_shards": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "duplicate_active_shards": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "inactive_incomplete_shards": [],
+  "expected_active_extractors": 16,
+  "warnings": [],
+  "errors": [],
+  "observations": [
+    {
+      "code": "duplicate_extractor_processes",
+      "shards": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "note": "Usually expected when both uv wrapper and child Python processes expose the shard commandline."
+    }
+  ],
+  "progress": {
+    "decoded_recording_variants": 149,
+    "expected_recording_variants": 918,
+    "completion_ratio": 0.16230936819172112,
+    "complete_shards": 0,
+    "num_shards": 16,
+    "stale_shards": [],
+    "long_running_shards": [
+      0,
+      3,
+      5,
+      12,
+      13,
+      14,
+      15
+    ],
+    "no_progress_shards": [],
+    "decoded_recording_variants_per_hour": 22.56711662369504,
+    "eta_seconds_at_current_rate": 122674.06803283116
+  },
+  "claim_boundary": "Live health report only; it does not mutate the G003 run and does not prove G003 completion or quality-gate passage."
+}
