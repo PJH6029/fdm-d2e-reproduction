@@ -30,6 +30,24 @@ def _jsonl_count(path: Path) -> int | None:
     return count
 
 
+def _as_string_set(value: Any) -> set[str]:
+    if value is None:
+        return set()
+    if isinstance(value, list):
+        result: set[str] = set()
+        for item in value:
+            if item is None:
+                continue
+            if isinstance(item, dict):
+                item_id = item.get("id") or item.get("source_id") or item.get("dataset_id")
+                if item_id is not None:
+                    result.add(str(item_id))
+            else:
+                result.add(str(item))
+        return result
+    return {str(value)}
+
+
 def _get(data: dict[str, Any] | None, dotted: str) -> Any:
     cur: Any = data
     for part in dotted.split("."):
@@ -66,6 +84,200 @@ def _assert_json_expectations(
             )
 
 
+def _selected_aux_candidate_ids(aux_candidates: dict[str, Any] | None) -> set[str]:
+    if aux_candidates is None:
+        return set()
+    return {
+        str(row.get("id"))
+        for row in aux_candidates.get("candidates", []) or []
+        if isinstance(row, dict) and row.get("selection_status") == "selected_candidate" and row.get("id") is not None
+    }
+
+
+def _namespace_source_rows(namespace_manifest: dict[str, Any] | None) -> list[dict[str, Any]]:
+    if namespace_manifest is None:
+        return []
+    rows = namespace_manifest.get("aux_sources")
+    if rows is None:
+        rows = namespace_manifest.get("sources")
+    if not isinstance(rows, list):
+        return []
+    return [row for row in rows if isinstance(row, dict)]
+
+
+def _validate_namespace_manifest(
+    namespace_manifest: dict[str, Any] | None,
+    *,
+    selected_aux_ids: set[str],
+    required_splits: set[str],
+    findings: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Validate the G005 source namespace/provenance contract.
+
+    This deliberately checks more than artifact existence: D2E+aux is allowed
+    to become the best model only if auxiliary sources remain in source-specific
+    namespaces, keep action heads separate, and prove the D2E eval manifests are
+    byte-identical to the D2E-only eval manifests used by G003/G004.
+    """
+    if namespace_manifest is None:
+        return {"aux_source_ids": [], "d2e_eval_splits": [], "selected_aux_ids": sorted(selected_aux_ids)}
+
+    source_rows = _namespace_source_rows(namespace_manifest)
+    source_ids = {str(row.get("id")) for row in source_rows if row.get("id") is not None}
+    missing_selected = sorted(selected_aux_ids - source_ids)
+    if missing_selected:
+        findings.append({"severity": "error", "code": "namespace_missing_selected_aux_sources", "missing": missing_selected})
+    unselected = sorted(source_ids - selected_aux_ids)
+    if unselected:
+        findings.append({"severity": "error", "code": "namespace_contains_unselected_aux_sources", "unselected": unselected})
+
+    for row in source_rows:
+        source_id = str(row.get("id") or "")
+        missing_fields = [field for field in ("id", "namespace", "source_url", "license_id", "provenance_sha256") if not row.get(field)]
+        if missing_fields:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "namespace_source_missing_required_fields",
+                    "source_id": source_id,
+                    "missing": missing_fields,
+                }
+            )
+        namespace = str(row.get("namespace") or "")
+        expected_prefix = f"outputs/aux/{source_id}/"
+        if source_id and not namespace.startswith(expected_prefix):
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "namespace_source_path_mismatch",
+                    "source_id": source_id,
+                    "expected_prefix": expected_prefix,
+                    "actual": namespace,
+                }
+            )
+        action_head = row.get("action_head")
+        if not isinstance(action_head, dict) or not action_head.get("type") or not action_head.get("namespace"):
+            findings.append({"severity": "error", "code": "namespace_source_missing_action_head", "source_id": source_id})
+        elif source_id and str(action_head.get("namespace")) != source_id:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "namespace_action_head_namespace_mismatch",
+                    "source_id": source_id,
+                    "actual": action_head.get("namespace"),
+                }
+            )
+        overlap_count = row.get("d2e_heldout_overlap_count", 0)
+        overlap_ids = row.get("d2e_heldout_overlap_recording_ids") or []
+        try:
+            overlap_count_int = int(overlap_count)
+        except (TypeError, ValueError):
+            overlap_count_int = -1
+        if overlap_count_int != 0 or overlap_ids:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "namespace_aux_overlap_with_d2e_heldout",
+                    "source_id": source_id,
+                    "overlap_count": overlap_count,
+                    "overlap_recording_ids": overlap_ids,
+                }
+            )
+
+    eval_splits_payload = _get(namespace_manifest, "d2e_eval_manifests.splits")
+    eval_splits: dict[str, Any]
+    if isinstance(eval_splits_payload, dict):
+        eval_splits = eval_splits_payload
+    elif isinstance(eval_splits_payload, list):
+        eval_splits = {str(row.get("split")): row for row in eval_splits_payload if isinstance(row, dict) and row.get("split") is not None}
+    else:
+        eval_splits = {}
+    missing_eval_splits = sorted(required_splits - set(eval_splits))
+    if missing_eval_splits:
+        findings.append({"severity": "error", "code": "namespace_missing_required_eval_splits", "missing": missing_eval_splits})
+    for split in sorted(required_splits & set(eval_splits)):
+        row = eval_splits[split]
+        if not isinstance(row, dict):
+            findings.append({"severity": "error", "code": "namespace_eval_split_malformed", "split": split})
+            continue
+        if row.get("same_hash") is not True:
+            findings.append({"severity": "error", "code": "namespace_eval_split_hash_not_equal", "split": split, "actual": row.get("same_hash")})
+        missing_hash_fields = [
+            field
+            for field in ("d2e_only_manifest_sha256", "d2e_aux_manifest_sha256")
+            if not row.get(field)
+        ]
+        if missing_hash_fields:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "namespace_eval_split_missing_hashes",
+                    "split": split,
+                    "missing": missing_hash_fields,
+                }
+            )
+    return {
+        "aux_source_ids": sorted(source_ids),
+        "selected_aux_ids": sorted(selected_aux_ids),
+        "d2e_eval_splits": sorted(eval_splits),
+    }
+
+
+def _validate_aux_ablation_details(
+    ablation: dict[str, Any] | None,
+    *,
+    required_splits: set[str],
+    namespace_manifest: dict[str, Any] | None,
+    findings: list[dict[str, Any]],
+) -> None:
+    if ablation is None:
+        return
+    eval_splits_payload = _get(namespace_manifest, "d2e_eval_manifests.splits") if namespace_manifest is not None else {}
+    namespace_hash_by_split: dict[str, str] = {}
+    if isinstance(eval_splits_payload, dict):
+        for split, row in eval_splits_payload.items():
+            if isinstance(row, dict) and row.get("d2e_aux_manifest_sha256"):
+                namespace_hash_by_split[str(split)] = str(row["d2e_aux_manifest_sha256"])
+    elif isinstance(eval_splits_payload, list):
+        for row in eval_splits_payload:
+            if isinstance(row, dict) and row.get("split") is not None and row.get("d2e_aux_manifest_sha256"):
+                namespace_hash_by_split[str(row["split"])] = str(row["d2e_aux_manifest_sha256"])
+
+    by_split = {
+        str(item.get("split")): item
+        for item in ablation.get("split_results", []) or []
+        if isinstance(item, dict) and item.get("split") is not None
+    }
+    for split in sorted(required_splits):
+        item = by_split.get(split)
+        if item is None:
+            continue
+        missing_run_fields = [field for field in ("d2e_only_run_id", "d2e_aux_run_id") if not item.get(field)]
+        if missing_run_fields:
+            findings.append({"severity": "error", "code": "ablation_split_missing_run_ids", "split": split, "missing": missing_run_fields})
+        if item.get("same_d2e_eval_manifest") is not True:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "ablation_split_not_same_d2e_eval_manifest",
+                    "split": split,
+                    "actual": item.get("same_d2e_eval_manifest"),
+                }
+            )
+        expected_hash = namespace_hash_by_split.get(split)
+        actual_hash = item.get("d2e_eval_manifest_sha256")
+        if expected_hash and actual_hash != expected_hash:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "ablation_split_eval_manifest_hash_mismatch",
+                    "split": split,
+                    "expected": expected_hash,
+                    "actual": actual_hash,
+                }
+            )
+
+
 def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = ".") -> dict[str, Any]:
     root_path = Path(root)
     findings: list[dict[str, Any]] = []
@@ -89,14 +301,17 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
             findings.append({"severity": "error", "code": "missing_required_artifact", "artifact_key": key, "path": evidence["path"]})
 
     aux_candidates = _load_json(root_path / paths.get("aux_candidates", "")) if paths.get("aux_candidates") else None
+    namespace_manifest = _load_json(root_path / paths.get("namespace_manifest", "")) if paths.get("namespace_manifest") else None
     ablation = _load_json(root_path / paths.get("ablation_summary", "")) if paths.get("ablation_summary") else None
     metadata = _load_json(root_path / paths.get("checkpoint_metadata", "")) if paths.get("checkpoint_metadata") else None
     run_summary = _load_json(root_path / paths.get("run_summary", "")) if paths.get("run_summary") else None
 
     _assert_json_expectations(aux_candidates, dict(config.get("aux_candidate_expectations", {})), source_name="aux_candidates", findings=findings)
+    _assert_json_expectations(namespace_manifest, dict(config.get("namespace_manifest_expectations", {})), source_name="namespace_manifest", findings=findings)
     _assert_json_expectations(ablation, dict(config.get("ablation_expectations", {})), source_name="ablation_summary", findings=findings)
     _assert_json_expectations(metadata, dict(config.get("metadata_expectations", {})), source_name="checkpoint_metadata", findings=findings)
 
+    selected_aux_ids = _selected_aux_candidate_ids(aux_candidates)
     if aux_candidates is not None:
         selected = [row for row in aux_candidates.get("candidates", []) if row.get("selection_status") == "selected_candidate"]
         if not selected:
@@ -107,6 +322,12 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
             findings.append({"severity": "error", "code": "aux_storage_over_cap", "selected_plus_d2e_gib": selected_total, "cap_gib": cap})
 
     required_splits = set(config.get("required_splits", []))
+    namespace_report = _validate_namespace_manifest(
+        namespace_manifest,
+        selected_aux_ids=selected_aux_ids,
+        required_splits=required_splits,
+        findings=findings,
+    )
     ablation_splits: set[str] = set()
     if ablation is not None:
         for item in ablation.get("split_results", []) or []:
@@ -119,11 +340,21 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
             findings.append({"severity": "error", "code": "ablation_missing_d2e_only_baseline"})
         if bool(config.get("require_d2e_aux_candidate", True)) and not bool(ablation.get("d2e_aux_candidate_present", False)):
             findings.append({"severity": "error", "code": "ablation_missing_d2e_aux_candidate"})
+    _validate_aux_ablation_details(ablation, required_splits=required_splits, namespace_manifest=namespace_manifest, findings=findings)
 
     if metadata is not None:
-        aux_sources = metadata.get("aux_sources") or metadata.get("source_aux_datasets") or []
-        if not isinstance(aux_sources, list) or not aux_sources:
+        aux_sources = _as_string_set(metadata.get("aux_sources") or metadata.get("source_aux_datasets") or [])
+        if not aux_sources:
             findings.append({"severity": "error", "code": "metadata_missing_aux_sources"})
+        if selected_aux_ids and aux_sources and aux_sources != selected_aux_ids:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "metadata_aux_sources_mismatch",
+                    "expected": sorted(selected_aux_ids),
+                    "actual": sorted(aux_sources),
+                }
+            )
         required_tags = set(config.get("required_target_eval_split_tags", []))
         actual_tags = set(str(tag) for tag in metadata.get("target_eval_split_tags", []) or [])
         missing_tags = sorted(required_tags - actual_tags)
@@ -152,6 +383,7 @@ def validate_g005_aux_completion(config: dict[str, Any], *, root: str | Path = "
         "prerequisite_goal_statuses": prereq_report,
         "required_splits": sorted(required_splits),
         "ablation_splits": sorted(ablation_splits),
+        "namespace_report": namespace_report,
         "artifacts": artifacts,
         "counts": count_report,
         "findings": findings,

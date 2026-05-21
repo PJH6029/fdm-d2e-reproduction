@@ -273,10 +273,21 @@
       "required_paths": [
         "artifacts/sources/aux_game_action_dataset_candidates.json",
         "docs/auxiliary_data_plan.md",
+        "artifacts/aux/g005_aux_namespace_manifest.json",
         "artifacts/aux/d2e_aux_ablation_summary.json",
         "artifacts/aux/g005_aux_completion_audit.json"
       ],
       "json_assertions": [
+        {
+          "path": "artifacts/aux/g005_aux_namespace_manifest.json",
+          "json_path": "completion_ready",
+          "equals": true
+        },
+        {
+          "path": "artifacts/aux/g005_aux_namespace_manifest.json",
+          "json_path": "d2e_eval_manifests.same_as_d2e_only",
+          "equals": true
+        },
         {
           "path": "artifacts/aux/d2e_aux_ablation_summary.json",
           "json_path": "status",

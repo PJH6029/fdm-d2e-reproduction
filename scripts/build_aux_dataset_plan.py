@@ -202,6 +202,14 @@ def build_payload() -> dict[str, Any]:
                 "outputs/fdm_aux/<run_id>/...",
                 "artifacts/aux/<run_id>/...",
             ],
+            "namespace_manifest": "artifacts/aux/g005_aux_namespace_manifest.json",
+            "namespace_manifest_requirements": [
+                "Every selected auxiliary source has a source-specific outputs/aux/<dataset_id>/ namespace.",
+                "Every selected auxiliary source records source_url, license_id, provenance_sha256, split hashes, and D2E heldout-overlap count.",
+                "Every non-D2E action space uses a source-specific action head/token namespace; do not collapse Atari/Minecraft actions into D2E keyboard/mouse endpoints.",
+                "D2E+aux ablations reuse byte-identical D2E eval manifests from D2E-only runs for temporal, heldout-recording, and heldout-game splits.",
+            ],
+            "source_specific_action_heads": True,
             "recommended_curriculum": [
                 "Validate each selected aux loader with source-specific train/val/test split and provenance hash.",
                 "Pretrain shared visual-temporal backbone on selected aux with source-specific action heads.",
@@ -274,6 +282,20 @@ Machine-readable artifact: `artifacts/sources/aux_game_action_dataset_candidates
 5. If VPT/BASALT license review passes, treat it as the highest-transfer Minecraft
    candidate; otherwise keep it excluded.
 
+## G005 namespace manifest requirement
+
+The terminal G005 checkpoint must include `artifacts/aux/g005_aux_namespace_manifest.json`
+with schema `g005_aux_namespace_manifest.v1`. The manifest must prove:
+
+- every selected auxiliary dataset is materialized under `outputs/aux/<dataset_id>/...`;
+- every selected source records `source_url`, `license_id`, `provenance_sha256`,
+  source-specific split hashes, and `d2e_heldout_overlap_count == 0`;
+- every non-D2E action space keeps a source-specific `action_head` namespace;
+- temporal, heldout-recording, and heldout-game D2E eval manifests are byte-identical
+  between D2E-only and D2E+aux ablations; and
+- `completion_ready == true` only after G003/G004 D2E-only gates are complete and the
+  above evidence is populated.
+
 ## Source evidence summary
 
 - MineRL 2019 Zenodo: backup of human Minecraft demonstrations with video feed and actions;
@@ -286,6 +308,21 @@ Machine-readable artifact: `artifacts/sources/aux_game_action_dataset_candidates
   actions, and train/val/test splits.
 - OpenAI VPT repository: documents IDM demos and BASALT 2022 video/action datasets around
   150GB per task; data/license provenance must be reviewed before selection.
+
+## G005 completion audit
+
+Before checkpointing `G005-aux-data-best-model` complete, run:
+
+```bash
+uv run python scripts/validate_g005_aux_completion.py
+```
+
+During preparation this may be run with `--allow-fail`, but a terminal G005
+checkpoint requires `artifacts/aux/g005_aux_completion_audit.json` to report
+`status == pass`. The audit rejects missing G003/G004 D2E-only prerequisites,
+missing namespace-manifest evidence, selected-source/provenance mismatches,
+non-identical D2E eval manifests, auxiliary overlap with D2E heldouts, missing
+D2E-only vs D2E+aux run IDs, prediction-count mismatch, and non-zero run exits.
 """
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")

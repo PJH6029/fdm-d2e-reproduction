@@ -146,11 +146,13 @@ Current planning artifacts:
 
 - `docs/auxiliary_data_plan.md`
 - `artifacts/sources/aux_game_action_dataset_candidates.json`
+- terminal G005 must additionally populate `artifacts/aux/g005_aux_namespace_manifest.json`.
 
 Required separation:
 
 - source-specific namespaces under `outputs/aux/<dataset_id>/...`,
-- clear license/provenance/storage accounting,
+- clear license/provenance/storage accounting, including `source_url`, `license_id`, `provenance_sha256`, and source split hashes per selected aux source,
+- source-specific action heads/token namespaces for every non-D2E action space,
 - D2E-only vs D2E+aux metrics on the same D2E eval split,
 - no auxiliary leakage into D2E heldout recordings/games.
 
@@ -174,7 +176,7 @@ artifacts exist.
 
 ## G005 completion gate
 
-Do **not** checkpoint `G005-aux-data-best-model` complete until `scripts/validate_g005_aux_completion.py` reports `status=pass` in `artifacts/aux/g005_aux_completion_audit.json`. This audit requires G003/G004 complete, selected aux provenance/storage policy, separated aux namespaces, D2E-only vs D2E+aux ablation across all required splits, no aux leakage into D2E heldouts, target split tags, prediction coverage, and run evidence.
+Do **not** checkpoint `G005-aux-data-best-model` complete until `scripts/validate_g005_aux_completion.py` reports `status=pass` in `artifacts/aux/g005_aux_completion_audit.json`. This audit requires G003/G004 complete, selected aux provenance/storage policy, `artifacts/aux/g005_aux_namespace_manifest.json` with `completion_ready=true`, separated `outputs/aux/<dataset_id>/...` namespaces, source-specific action heads, byte-identical D2E eval-manifest hashes for D2E-only vs D2E+aux, ablation across all required splits, no aux leakage into D2E heldouts, target split tags, prediction coverage, and run evidence.
 
 ## G006 completion gate
 

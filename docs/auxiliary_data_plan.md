@@ -45,22 +45,19 @@ Machine-readable artifact: `artifacts/sources/aux_game_action_dataset_candidates
 5. If VPT/BASALT license review passes, treat it as the highest-transfer Minecraft
    candidate; otherwise keep it excluded.
 
+## G005 namespace manifest requirement
 
-## G005 completion audit
+The terminal G005 checkpoint must include `artifacts/aux/g005_aux_namespace_manifest.json`
+with schema `g005_aux_namespace_manifest.v1`. The manifest must prove:
 
-Before checkpointing `G005-aux-data-best-model` complete, run:
-
-```bash
-uv run python scripts/validate_g005_aux_completion.py
-```
-
-During preparation this may be run with `--allow-fail`, but a terminal G005
-checkpoint requires `artifacts/aux/g005_aux_completion_audit.json` to report
-`status == pass`. The audit checks G003/G004 prerequisite goal state, selected
-aux provenance/storage policy, separated aux namespaces, D2E-only vs D2E+aux
-ablation coverage on temporal/heldout-recording/heldout-game splits, no aux
-leakage into D2E heldout data, target split tags, prediction coverage, and run
-evidence.
+- every selected auxiliary dataset is materialized under `outputs/aux/<dataset_id>/...`;
+- every selected source records `source_url`, `license_id`, `provenance_sha256`,
+  source-specific split hashes, and `d2e_heldout_overlap_count == 0`;
+- every non-D2E action space keeps a source-specific `action_head` namespace;
+- temporal, heldout-recording, and heldout-game D2E eval manifests are byte-identical
+  between D2E-only and D2E+aux ablations; and
+- `completion_ready == true` only after G003/G004 D2E-only gates are complete and the
+  above evidence is populated.
 
 ## Source evidence summary
 
@@ -74,3 +71,18 @@ evidence.
   actions, and train/val/test splits.
 - OpenAI VPT repository: documents IDM demos and BASALT 2022 video/action datasets around
   150GB per task; data/license provenance must be reviewed before selection.
+
+## G005 completion audit
+
+Before checkpointing `G005-aux-data-best-model` complete, run:
+
+```bash
+uv run python scripts/validate_g005_aux_completion.py
+```
+
+During preparation this may be run with `--allow-fail`, but a terminal G005
+checkpoint requires `artifacts/aux/g005_aux_completion_audit.json` to report
+`status == pass`. The audit rejects missing G003/G004 D2E-only prerequisites,
+missing namespace-manifest evidence, selected-source/provenance mismatches,
+non-identical D2E eval manifests, auxiliary overlap with D2E heldouts, missing
+D2E-only vs D2E+aux run IDs, prediction-count mismatch, and non-zero run exits.

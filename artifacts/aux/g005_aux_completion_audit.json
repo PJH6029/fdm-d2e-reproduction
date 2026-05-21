@@ -13,18 +13,33 @@
     "temporal"
   ],
   "ablation_splits": [],
+  "namespace_report": {
+    "aux_source_ids": [],
+    "d2e_eval_splits": [],
+    "selected_aux_ids": [
+      "atari_head_zenodo_v4",
+      "minerl_2019_zenodo_v2",
+      "p_doom_atari_breakout_hf"
+    ]
+  },
   "artifacts": {
     "aux_candidates": {
       "path": "artifacts/sources/aux_game_action_dataset_candidates.json",
       "exists": true,
-      "bytes": 10749,
-      "sha256": "3f7a80a8511f52c0ac3cef4dfab4d1a1ae268bf67e14b32fde899345c10a7bf7"
+      "bytes": 11458,
+      "sha256": "114840fdf562e99d74a7f7b9a43ead767d515717da521ffca756322f23651972"
     },
     "aux_plan_doc": {
       "path": "docs/auxiliary_data_plan.md",
       "exists": true,
-      "bytes": 4346,
-      "sha256": "088f482dcd540ced4b060fd61ecd4bddae3de7aba44ca9fd3cf18fc873c9f391"
+      "bytes": 5108,
+      "sha256": "459207fd5bec71b8baa3ecabb19d197f23d16144f1eadc1756de8984024fdd3f"
+    },
+    "namespace_manifest": {
+      "path": "artifacts/aux/g005_aux_namespace_manifest.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
     },
     "ablation_summary": {
       "path": "artifacts/aux/d2e_aux_ablation_summary.json",
@@ -107,6 +122,12 @@
     {
       "severity": "error",
       "code": "missing_required_artifact",
+      "artifact_key": "namespace_manifest",
+      "path": "artifacts/aux/g005_aux_namespace_manifest.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
       "artifact_key": "ablation_summary",
       "path": "artifacts/aux/d2e_aux_ablation_summary.json"
     },
@@ -157,6 +178,62 @@
       "code": "missing_required_artifact",
       "artifact_key": "run_summary",
       "path": "artifacts/aux/g005_d2e_aux_train_run.json"
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "namespace_manifest",
+      "json_path": "schema",
+      "expected": "g005_aux_namespace_manifest.v1",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "namespace_manifest",
+      "json_path": "source_namespace",
+      "expected": "d2e_aux",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "namespace_manifest",
+      "json_path": "completion_ready",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "namespace_manifest",
+      "json_path": "claim_boundary.no_aux_in_d2e_heldout",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "namespace_manifest",
+      "json_path": "claim_boundary.no_d2e_aux_claim_before_d2e_only_gates",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "namespace_manifest",
+      "json_path": "training_policy.source_specific_action_heads",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "json_expectation_mismatch",
+      "source": "namespace_manifest",
+      "json_path": "d2e_eval_manifests.same_as_d2e_only",
+      "expected": true,
+      "actual": null
     },
     {
       "severity": "error",
@@ -223,6 +300,6 @@
       "actual": null
     }
   ],
-  "error_count": 20,
+  "error_count": 28,
   "claim_boundary": "This audit is required before checkpointing G005 complete; it proves D2E-only prerequisites, aux provenance/storage policy, separated namespaces, D2E-only vs D2E+aux ablations, target split tags, and run evidence."
 }

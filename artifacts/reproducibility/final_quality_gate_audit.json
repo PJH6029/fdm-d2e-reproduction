@@ -818,14 +818,20 @@
         {
           "path": "artifacts/sources/aux_game_action_dataset_candidates.json",
           "exists": true,
-          "bytes": 10749,
-          "sha256": "3f7a80a8511f52c0ac3cef4dfab4d1a1ae268bf67e14b32fde899345c10a7bf7"
+          "bytes": 11458,
+          "sha256": "114840fdf562e99d74a7f7b9a43ead767d515717da521ffca756322f23651972"
         },
         {
           "path": "docs/auxiliary_data_plan.md",
           "exists": true,
-          "bytes": 4346,
-          "sha256": "088f482dcd540ced4b060fd61ecd4bddae3de7aba44ca9fd3cf18fc873c9f391"
+          "bytes": 5108,
+          "sha256": "459207fd5bec71b8baa3ecabb19d197f23d16144f1eadc1756de8984024fdd3f"
+        },
+        {
+          "path": "artifacts/aux/g005_aux_namespace_manifest.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
         },
         {
           "path": "artifacts/aux/d2e_aux_ablation_summary.json",
@@ -836,8 +842,8 @@
         {
           "path": "artifacts/aux/g005_aux_completion_audit.json",
           "exists": true,
-          "bytes": 6462,
-          "sha256": "e365bca038fa5117a25b35c6d5c8921bc27beeda9c6a9afa8e2088e4a8f85ba9"
+          "bytes": 8583,
+          "sha256": "aa17e4e8c0388e586f5cd2d829ee2d72e39fcd2f55570b2c52073e064430b33f"
         }
       ],
       "findings": [
@@ -852,7 +858,25 @@
           "severity": "error",
           "code": "missing_required_artifact",
           "goal_id": "G005-aux-data-best-model",
+          "path": "artifacts/aux/g005_aux_namespace_manifest.json"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G005-aux-data-best-model",
           "path": "artifacts/aux/d2e_aux_ablation_summary.json"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "artifacts/aux/g005_aux_namespace_manifest.json",
+          "json_path": "completion_ready"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "artifacts/aux/g005_aux_namespace_manifest.json",
+          "json_path": "d2e_eval_manifests.same_as_d2e_only"
         },
         {
           "severity": "error",
@@ -1118,8 +1142,8 @@
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 37795,
-          "sha256": "5922238539b923da0d2cce5b466a14f8f44e9030e4679e3ba0fb894d9bec70cb"
+          "bytes": 37797,
+          "sha256": "d97540d78c64d499598583630d88e03f9b4c7b11d2917b8ed19b7279daf318c0"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -1156,8 +1180,8 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 37795,
-    "sha256": "5922238539b923da0d2cce5b466a14f8f44e9030e4679e3ba0fb894d9bec70cb"
+    "bytes": 37797,
+    "sha256": "d97540d78c64d499598583630d88e03f9b4c7b11d2917b8ed19b7279daf318c0"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -1631,7 +1655,25 @@
       "severity": "error",
       "code": "missing_required_artifact",
       "goal_id": "G005-aux-data-best-model",
+      "path": "artifacts/aux/g005_aux_namespace_manifest.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G005-aux-data-best-model",
       "path": "artifacts/aux/d2e_aux_ablation_summary.json"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "artifacts/aux/g005_aux_namespace_manifest.json",
+      "json_path": "completion_ready"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "artifacts/aux/g005_aux_namespace_manifest.json",
+      "json_path": "d2e_eval_manifests.same_as_d2e_only"
     },
     {
       "severity": "error",
@@ -1778,6 +1820,6 @@
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
     }
   ],
-  "error_count": 98,
+  "error_count": 101,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

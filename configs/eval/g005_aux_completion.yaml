@@ -12,6 +12,7 @@
   "paths": {
     "aux_candidates": "artifacts/sources/aux_game_action_dataset_candidates.json",
     "aux_plan_doc": "docs/auxiliary_data_plan.md",
+    "namespace_manifest": "artifacts/aux/g005_aux_namespace_manifest.json",
     "ablation_summary": "artifacts/aux/d2e_aux_ablation_summary.json",
     "checkpoint_metadata": "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json",
     "resolved_config": "outputs/fdm_aux/d2e_aux_best/resolved_config.json",
@@ -38,5 +39,14 @@
     "d2e_eval_split_contract.exists": true,
     "data_universe.exists": true,
     "claim_boundary.no_aux_in_d2e_heldout": true
+  },
+  "namespace_manifest_expectations": {
+    "schema": "g005_aux_namespace_manifest.v1",
+    "source_namespace": "d2e_aux",
+    "completion_ready": true,
+    "claim_boundary.no_aux_in_d2e_heldout": true,
+    "claim_boundary.no_d2e_aux_claim_before_d2e_only_gates": true,
+    "training_policy.source_specific_action_heads": true,
+    "d2e_eval_manifests.same_as_d2e_only": true
   }
 }

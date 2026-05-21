@@ -15,9 +15,12 @@ def test_aux_plan_preserves_d2e_only_gate_and_user_decision():
     assert payload["user_decision"]["d2e_aux_may_be_primary"] is True
     assert payload["claim_boundary"]["no_d2e_aux_claim_before_d2e_only_gates"] is True
     assert payload["claim_boundary"]["no_training_started_by_this_artifact"] is True
+    assert payload["training_policy"]["source_specific_action_heads"] is True
+    assert payload["training_policy"]["namespace_manifest"] == "artifacts/aux/g005_aux_namespace_manifest.json"
     doc = Path("docs/auxiliary_data_plan.md").read_text()
     assert "D2E-only hard gates remain mandatory" in doc
     assert "This artifact is source-selection/storage evidence only" in doc
+    assert "G005 namespace manifest requirement" in doc
 
 
 def test_aux_selected_candidates_fit_storage_and_have_usable_license_status():

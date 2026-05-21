@@ -31,6 +31,14 @@
       "outputs/fdm_aux/<run_id>/...",
       "artifacts/aux/<run_id>/..."
     ],
+    "namespace_manifest": "artifacts/aux/g005_aux_namespace_manifest.json",
+    "namespace_manifest_requirements": [
+      "Every selected auxiliary source has a source-specific outputs/aux/<dataset_id>/ namespace.",
+      "Every selected auxiliary source records source_url, license_id, provenance_sha256, split hashes, and D2E heldout-overlap count.",
+      "Every non-D2E action space uses a source-specific action head/token namespace; do not collapse Atari/Minecraft actions into D2E keyboard/mouse endpoints.",
+      "D2E+aux ablations reuse byte-identical D2E eval manifests from D2E-only runs for temporal, heldout-recording, and heldout-game splits."
+    ],
+    "source_specific_action_heads": true,
     "recommended_curriculum": [
       "Validate each selected aux loader with source-specific train/val/test split and provenance hash.",
       "Pretrain shared visual-temporal backbone on selected aux with source-specific action heads.",
