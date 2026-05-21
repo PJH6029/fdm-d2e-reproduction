@@ -73,6 +73,9 @@ uv run python scripts/build_g005_aux_action_registry.py \
   --output artifacts/aux/g005_aux_action_registry.json
 uv run python scripts/build_g005_aux_archive_inventory.py \
   --output artifacts/aux/g005_aux_archive_inventory.json
+uv run python scripts/build_g005_aux_loader_manifest.py \
+  --output artifacts/aux/g005_aux_loader_manifest.json \
+  --allow-fail
 uv run python scripts/build_g005_eval_manifest_hashes.py \
   --output artifacts/aux/d2e_eval_manifest_hashes.json
 uv run python scripts/build_g005_aux_source_evidence.py \
@@ -117,6 +120,12 @@ must remain separate during auxiliary pretraining (`minecraft_keyboard_mouse`,
 `atari_discrete`, etc.). The G005 completion audit requires this registry and
 rejects collapsed/shared auxiliary action heads or any direct auxiliary claim on
 D2E keyboard/mouse endpoints.
+
+`build_g005_aux_loader_manifest.py` combines the action registry, archive
+inventory, and materialization-integrity evidence into a source-specific loader
+contract. It remains `blocked` until downloads and integrity pass, then defines
+the expected `outputs/aux_examples/<dataset_id>/{train,val,test}.jsonl` outputs
+and required loader fields for real G005 auxiliary pretraining.
 
 For unattended cluster source staging, start the materializer in the background
 and then run the non-mutating watcher:

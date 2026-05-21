@@ -1,0 +1,184 @@
+{
+  "schema": "g005_aux_loader_manifest.v1",
+  "status": "blocked",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "selected_aux_source_ids": [
+    "atari_head_zenodo_v4",
+    "minerl_2019_zenodo_v2",
+    "p_doom_atari_breakout_hf"
+  ],
+  "source_specific_action_heads": true,
+  "no_aux_in_d2e_heldout": true,
+  "no_cross_source_action_collapse": true,
+  "required_splits": [
+    "train",
+    "val",
+    "test"
+  ],
+  "inputs": {
+    "action_registry": "artifacts/aux/g005_aux_action_registry.json",
+    "archive_inventory": "artifacts/aux/g005_aux_archive_inventory.json",
+    "materialization_integrity": "artifacts/aux/g005_aux_materialization_integrity.json"
+  },
+  "loader_stages": [
+    {
+      "source_id": "atari_head_zenodo_v4",
+      "action_head": {
+        "namespace": "atari_head_zenodo_v4",
+        "type": "atari_discrete",
+        "adapter": "atari_discrete_action_adapter"
+      },
+      "raw_files": [],
+      "action_candidate_members": [],
+      "required_splits": [
+        "train",
+        "val",
+        "test"
+      ],
+      "loader_contract": {
+        "input_namespace": "outputs/aux/atari_head_zenodo_v4/raw",
+        "output_namespace": "outputs/aux_examples/atari_head_zenodo_v4",
+        "train_manifest": "outputs/aux_examples/atari_head_zenodo_v4/train.jsonl",
+        "val_manifest": "outputs/aux_examples/atari_head_zenodo_v4/val.jsonl",
+        "test_manifest": "outputs/aux_examples/atari_head_zenodo_v4/test.jsonl",
+        "action_head_namespace": "atari_head_zenodo_v4",
+        "adapter": "atari_discrete_action_adapter",
+        "must_emit_fields": [
+          "source_id",
+          "source_sequence_id",
+          "frame_or_state_ref",
+          "action",
+          "action_head_namespace",
+          "split",
+          "provenance"
+        ]
+      },
+      "training_role": "discrete_control_auxiliary_or_negative_transfer_control",
+      "claim_boundary": "Loader outputs remain source-specific auxiliary examples and cannot be counted as D2E heldout/eval examples."
+    },
+    {
+      "source_id": "minerl_2019_zenodo_v2",
+      "action_head": {
+        "namespace": "minerl_2019_zenodo_v2",
+        "type": "minecraft_keyboard_mouse",
+        "adapter": "minerl_action_dict_adapter"
+      },
+      "raw_files": [],
+      "action_candidate_members": [],
+      "required_splits": [
+        "train",
+        "val",
+        "test"
+      ],
+      "loader_contract": {
+        "input_namespace": "outputs/aux/minerl_2019_zenodo_v2/raw",
+        "output_namespace": "outputs/aux_examples/minerl_2019_zenodo_v2",
+        "train_manifest": "outputs/aux_examples/minerl_2019_zenodo_v2/train.jsonl",
+        "val_manifest": "outputs/aux_examples/minerl_2019_zenodo_v2/val.jsonl",
+        "test_manifest": "outputs/aux_examples/minerl_2019_zenodo_v2/test.jsonl",
+        "action_head_namespace": "minerl_2019_zenodo_v2",
+        "adapter": "minerl_action_dict_adapter",
+        "must_emit_fields": [
+          "source_id",
+          "source_sequence_id",
+          "frame_or_state_ref",
+          "action",
+          "action_head_namespace",
+          "split",
+          "provenance"
+        ]
+      },
+      "training_role": "high_transfer_first_person_keyboard_mouse_like_pretraining",
+      "claim_boundary": "Loader outputs remain source-specific auxiliary examples and cannot be counted as D2E heldout/eval examples."
+    },
+    {
+      "source_id": "p_doom_atari_breakout_hf",
+      "action_head": {
+        "namespace": "p_doom_atari_breakout_hf",
+        "type": "atari_discrete",
+        "adapter": "atari_discrete_action_adapter"
+      },
+      "raw_files": [],
+      "action_candidate_members": [],
+      "required_splits": [
+        "train",
+        "val",
+        "test"
+      ],
+      "loader_contract": {
+        "input_namespace": "outputs/aux/p_doom_atari_breakout_hf/raw",
+        "output_namespace": "outputs/aux_examples/p_doom_atari_breakout_hf",
+        "train_manifest": "outputs/aux_examples/p_doom_atari_breakout_hf/train.jsonl",
+        "val_manifest": "outputs/aux_examples/p_doom_atari_breakout_hf/val.jsonl",
+        "test_manifest": "outputs/aux_examples/p_doom_atari_breakout_hf/test.jsonl",
+        "action_head_namespace": "p_doom_atari_breakout_hf",
+        "adapter": "atari_discrete_action_adapter",
+        "must_emit_fields": [
+          "source_id",
+          "source_sequence_id",
+          "frame_or_state_ref",
+          "action",
+          "action_head_namespace",
+          "split",
+          "provenance"
+        ]
+      },
+      "training_role": "discrete_control_auxiliary_or_negative_transfer_control",
+      "claim_boundary": "Loader outputs remain source-specific auxiliary examples and cannot be counted as D2E heldout/eval examples."
+    }
+  ],
+  "training_sequence": [
+    "materialize selected aux raw sources under outputs/aux/<source_id>/raw",
+    "validate materialization integrity and source-level split manifests",
+    "build source-specific auxiliary example manifests under outputs/aux_examples/<source_id>/",
+    "pretrain shared visual-temporal backbone with source-specific action heads",
+    "finetune/evaluate on D2E-only train/eval manifests without aux in heldouts"
+  ],
+  "manifest_fingerprint": "b66b4361bb94c0705e10e1b861aee86763607d88697c064fa872173f04a55179",
+  "findings": [
+    {
+      "severity": "error",
+      "code": "archive_inventory_not_pass",
+      "status": "blocked",
+      "error_count": 3
+    },
+    {
+      "severity": "error",
+      "code": "materialization_integrity_not_pass",
+      "status": "blocked",
+      "error_count": 40
+    },
+    {
+      "severity": "error",
+      "code": "loader_source_has_no_raw_files",
+      "source_id": "atari_head_zenodo_v4"
+    },
+    {
+      "severity": "warning",
+      "code": "loader_source_has_no_action_member_hints",
+      "source_id": "atari_head_zenodo_v4"
+    },
+    {
+      "severity": "error",
+      "code": "loader_source_has_no_raw_files",
+      "source_id": "minerl_2019_zenodo_v2"
+    },
+    {
+      "severity": "warning",
+      "code": "loader_source_has_no_action_member_hints",
+      "source_id": "minerl_2019_zenodo_v2"
+    },
+    {
+      "severity": "error",
+      "code": "loader_source_has_no_raw_files",
+      "source_id": "p_doom_atari_breakout_hf"
+    },
+    {
+      "severity": "warning",
+      "code": "loader_source_has_no_action_member_hints",
+      "source_id": "p_doom_atari_breakout_hf"
+    }
+  ],
+  "error_count": 5,
+  "claim_boundary": "Aux loader manifest only; it plans source-specific loader outputs and cannot train, checkpoint G005, or support D2E+aux model-quality claims by itself."
+}
