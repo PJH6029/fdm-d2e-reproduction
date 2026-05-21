@@ -1,0 +1,82 @@
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from fdm_d2e.io_utils import write_json
+from fdm_d2e.reporting.quality_gates import validate_final_quality_gates, write_final_quality_gate_audit
+
+
+def _write(path: Path, text: str = "x") -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def _config() -> dict:
+    return {
+        "goals_path": ".omx/ultragoal/goals.json",
+        "package_manifest_path": "artifacts/reproducibility/package_manifest.json",
+        "claim_boundary_audit_path": "artifacts/reproducibility/claim_boundary_audit.json",
+        "live_suite_evidence_validation_path": "artifacts/harness/live_validation.json",
+        "require_all_goals_complete": True,
+        "require_live_suite_pass": True,
+        "goal_gates": [
+            {"id": "G001", "requires_status": "complete", "required_paths": ["artifacts/g001.json"]},
+            {
+                "id": "G008",
+                "requires_status": "complete",
+                "required_paths": ["artifacts/harness/live_validation.json"],
+                "json_assertions": [{"path": "artifacts/harness/live_validation.json", "json_path": "quality_gate.status", "equals": "pass"}],
+            },
+        ],
+    }
+
+
+def _complete_fixture(root: Path) -> None:
+    write_json(
+        root / ".omx/ultragoal/goals.json",
+        {"goals": [{"id": "G001", "status": "complete"}, {"id": "G008", "status": "complete"}]},
+    )
+    _write(root / "artifacts/g001.json", "{}")
+    write_json(root / "artifacts/harness/live_validation.json", {"quality_gate": {"status": "pass"}})
+    write_json(root / "artifacts/reproducibility/claim_boundary_audit.json", {"status": "pass"})
+    entries = [
+        {"path": "artifacts/g001.json", "kind": "evidence_artifact", "bytes": 2, "sha256": "stub"},
+        {"path": "artifacts/harness/live_validation.json", "kind": "evidence_artifact", "bytes": 2, "sha256": "stub"},
+    ]
+    write_json(root / "artifacts/reproducibility/package_manifest.json", {"schema": "repro_package_manifest.v1", "entries": entries})
+
+
+def test_final_quality_gate_passes_when_all_configured_evidence_is_present(tmp_path):
+    _complete_fixture(tmp_path)
+    payload = validate_final_quality_gates(_config(), root=tmp_path)
+    assert payload["status"] == "pass"
+    assert payload["error_count"] == 0
+    assert {row["goal_id"]: row["status"] for row in payload["goal_reports"]} == {"G001": "pass", "G008": "pass"}
+
+
+def test_final_quality_gate_fails_on_incomplete_goal_missing_artifact_and_live_gate(tmp_path):
+    _complete_fixture(tmp_path)
+    goals = json.loads((tmp_path / ".omx/ultragoal/goals.json").read_text())
+    goals["goals"][1]["status"] = "pending"
+    write_json(tmp_path / ".omx/ultragoal/goals.json", goals)
+    (tmp_path / "artifacts/harness/live_validation.json").unlink()
+    payload = validate_final_quality_gates(_config(), root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "goal_status_not_complete" in codes
+    assert "missing_required_artifact" in codes
+    assert "missing_live_suite_evidence_validation" in codes
+    assert "not_all_ultragoal_stories_complete" in codes
+
+
+def test_final_quality_gate_writes_output_without_requiring_self_reference(tmp_path):
+    _complete_fixture(tmp_path)
+    config = {**_config(), "output_path": "artifacts/reproducibility/final_quality_gate_audit.json"}
+    payload = write_final_quality_gate_audit(config, root=tmp_path)
+    written = json.loads((tmp_path / "artifacts/reproducibility/final_quality_gate_audit.json").read_text())
+    assert payload["status"] == "pass"
+    assert written["schema"] == "final_quality_gate_audit.v1"

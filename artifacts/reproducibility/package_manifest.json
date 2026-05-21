@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 110,
+  "entry_count": 116,
   "entries": [
     {
       "path": "README.md",
@@ -214,6 +214,12 @@
       "sha256": "8470acffce943565f7e99c12c1d211e998d6c53f76d77bebe4fc5d64d4124bd8"
     },
     {
+      "path": "configs/eval/final_quality_gates.yaml",
+      "kind": "configuration",
+      "bytes": 5044,
+      "sha256": "e32268b2f258a4aa27a2ee300c73304a354c130af647c810715142e9e1ab43db"
+    },
+    {
       "path": "configs/eval/primary_endpoints.yaml",
       "kind": "configuration",
       "bytes": 1009,
@@ -346,6 +352,12 @@
       "sha256": "577394359fc4e3f1414532894b27a8242f8ee52baef4506f4813397094f4cec4"
     },
     {
+      "path": "docs/evidence_index.md",
+      "kind": "documentation",
+      "bytes": 4843,
+      "sha256": "784fe6cb8a5896dfba9ee01afa3a6b1908f7e0baa7cb6796e9f1ab8925d9f17a"
+    },
+    {
       "path": "docs/failure_analysis.md",
       "kind": "documentation",
       "bytes": 2210,
@@ -356,6 +368,12 @@
       "kind": "documentation",
       "bytes": 5640,
       "sha256": "ac1e7d012f1a7547c65adf002c178447a78da0f6f8862c9599bd06d977aeece7"
+    },
+    {
+      "path": "docs/final_quality_gates.md",
+      "kind": "documentation",
+      "bytes": 2272,
+      "sha256": "f3d515975fb0c4de7f7a47c4197a9053a1483a3ec0619f1d2e6cdf7228ff7767"
     },
     {
       "path": "docs/final_research_report.md",
@@ -426,8 +444,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 8197,
-      "sha256": "6993d56682661c24110c13a6333b5fb246add1c08d7234c01be073c355c5a6c0"
+      "bytes": 8906,
+      "sha256": "bc5d665d3ba6390876a1a08a2a980dcc8bbb9ab356c71c7cd522433e6801ddf7"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -526,6 +544,12 @@
       "sha256": "0582dc0241445d895f6f9344d05f2c39b2f853369b51ab0ceeb5c2300b8360e2"
     },
     {
+      "path": "scripts/validate_final_quality_gates.py",
+      "kind": "reproduction_script",
+      "bytes": 1252,
+      "sha256": "20ff077940aa26155793f887b224cc3bf9a1deefd0440da59d8b2dd0fcd9db19"
+    },
+    {
       "path": "scripts/validate_live_game_suite.py",
       "kind": "reproduction_script",
       "bytes": 1869,
@@ -554,6 +578,12 @@
       "kind": "other",
       "bytes": 4273,
       "sha256": "dae838d220bccfdae2296a9f11a804e5fc37380f45a61d47bbfdf6ace764b5f0"
+    },
+    {
+      "path": "src/fdm_d2e/reporting/quality_gates.py",
+      "kind": "other",
+      "bytes": 9903,
+      "sha256": "e390fb884ec9dfa83005602d94d92aa9096049d6edb38fb90ba59ebbd9c68696"
     },
     {
       "path": "src/fdm_d2e/rollout/game_harness.py",
@@ -626,6 +656,12 @@
       "kind": "other",
       "bytes": 3451,
       "sha256": "f33eecd4baadb0f243349e45752bc29d821a61326c41d9a875fc318a7cb13a68"
+    },
+    {
+      "path": "tests/test_final_quality_gates.py",
+      "kind": "other",
+      "bytes": 3823,
+      "sha256": "c7e93fb56f519b5d6cfcb7753bd175e5585b88bdf84d1066b26a57b1c6416ea9"
     },
     {
       "path": "tests/test_full_corpus_extraction_contract.py",

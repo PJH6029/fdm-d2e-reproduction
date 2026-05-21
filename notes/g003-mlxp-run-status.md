@@ -58,6 +58,16 @@ kubectl -n p-production exec prod-rsv-jeonghunpark-20260521-76e25a -- bash -lc '
 - Decoded per-recording summaries: `40 / 918`; shard summaries: `0 / 16`; IDM metrics not yet produced.
 - Progress is still moving; no hard-stall evidence at this snapshot.
 
+
+## 2026-05-21 12:43 KST progress snapshot
+
+- Parallel extraction command still running from PID `9289`.
+- Pod checkout: `666d38e` at snapshot time.
+- Elapsed at snapshot: ~1h42m.
+- Decoded per-recording summaries: `43 / 918`; shard summaries: `0 / 16`; IDM metrics not yet produced.
+- Cache size observed: ~31 GiB; shard output size: ~102 GiB.
+- Progress is still moving; no hard-stall evidence at this snapshot.
+
 Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts exist:
 
 - full decode summary covering all 918 D2E recording variants or audited exclusions with retry logs/reasons/impact,

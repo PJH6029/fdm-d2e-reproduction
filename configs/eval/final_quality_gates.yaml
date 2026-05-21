@@ -1,0 +1,131 @@
+{
+  "schema": "final_quality_gates_config.v1",
+  "goals_path": ".omx/ultragoal/goals.json",
+  "package_manifest_path": "artifacts/reproducibility/package_manifest.json",
+  "claim_boundary_audit_path": "artifacts/reproducibility/claim_boundary_audit.json",
+  "live_suite_evidence_validation_path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
+  "output_path": "artifacts/reproducibility/final_quality_gate_audit.json",
+  "require_all_goals_complete": true,
+  "require_live_suite_pass": true,
+  "require_package_manifest_for_configured_paths": true,
+  "goal_gates": [
+    {
+      "id": "G001-data-universe-audit",
+      "title": "Data universe audit",
+      "requires_status": "complete",
+      "required_paths": [
+        "artifacts/sources/d2e_full_data_universe_manifest.json",
+        "docs/d2e_full_data_universe.md"
+      ]
+    },
+    {
+      "id": "G002-split-leakage-contract",
+      "title": "Split/leakage contract",
+      "requires_status": "complete",
+      "required_paths": [
+        "artifacts/sources/d2e_full_split_contract.json",
+        "artifacts/sources/d2e_full_split_leakage_report.json",
+        "artifacts/sources/d2e_full_temporal_split_manifest.json",
+        "artifacts/sources/d2e_full_heldout_recording_split_manifest.json",
+        "artifacts/sources/d2e_full_heldout_game_split_manifest.json",
+        "docs/d2e_full_split_contract.md"
+      ]
+    },
+    {
+      "id": "G003-d2e-only-idm",
+      "title": "D2E-only IDM full-corpus training",
+      "requires_status": "complete",
+      "required_paths": [
+        "artifacts/sources/d2e_full_corpus_decode_summary.json",
+        "outputs/data/d2e_full_corpus/train_core.jsonl",
+        "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+        "outputs/idm_streaming_d2e_full_compact/checkpoint.pt",
+        "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
+        "outputs/idm_streaming_d2e_full_compact/predictions.jsonl",
+        "outputs/idm_streaming_d2e_full_compact/metrics.json",
+        "outputs/idm_streaming_d2e_full_compact/label_quality_report.json",
+        "outputs/idm_streaming_d2e_full_compact/statistical_comparison.json",
+        "artifacts/idm/idm_streaming_d2e_full_compact_summary.json"
+      ]
+    },
+    {
+      "id": "G004-d2e-only-fdm-4xh200",
+      "title": "D2E-only FDM + 4xH200 scaling",
+      "requires_status": "complete",
+      "required_paths": [
+        "outputs/fdm_streaming_d2e_full_compact/checkpoint.pt",
+        "outputs/fdm_streaming_d2e_full_compact/predictions.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/metrics.json",
+        "outputs/fdm_streaming_d2e_full_compact/statistical_comparison.json",
+        "outputs/fdm_streaming_d2e_full_compact/convergence_report.json",
+        "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json"
+      ]
+    },
+    {
+      "id": "G005-aux-data-best-model",
+      "title": "Auxiliary data integration and best model",
+      "requires_status": "complete",
+      "required_paths": [
+        "artifacts/sources/aux_game_action_dataset_candidates.json",
+        "docs/auxiliary_data_plan.md",
+        "artifacts/aux/d2e_aux_ablation_summary.json"
+      ]
+    },
+    {
+      "id": "G006-evaluation-failure-analysis",
+      "title": "Expanded evaluation/statistics/failure analysis",
+      "requires_status": "complete",
+      "required_paths": [
+        "artifacts/eval/final_endpoint_statistics.json",
+        "artifacts/eval/final_failure_analysis.json",
+        "docs/failure_analysis.md"
+      ]
+    },
+    {
+      "id": "G007-runtime-sdk-adapter",
+      "title": "Reusable inference SDK and game adapter",
+      "requires_status": "complete",
+      "required_paths": [
+        "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
+        "configs/runtime/game_adapter_demo.yaml",
+        "docs/runtime_sdk_adapter.md"
+      ]
+    },
+    {
+      "id": "G008-live-game-suite",
+      "title": "Live open-source graphical game suite",
+      "requires_status": "complete",
+      "required_paths": [
+        "configs/harness/g008_live_open_game_suite.yaml",
+        "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
+        "docs/live_open_game_suite.md"
+      ],
+      "json_assertions": [
+        {
+          "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
+          "json_path": "quality_gate.status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "G009-report-repro-package",
+      "title": "Final report and reproducibility package",
+      "requires_status": "complete",
+      "required_paths": [
+        "docs/final_research_report.md",
+        "docs/evidence_index.md",
+        "docs/reproducibility_runbook.md",
+        "artifacts/reproducibility/package_manifest.json",
+        "artifacts/reproducibility/claim_boundary_audit.json"
+      ],
+      "json_assertions": [
+        {
+          "path": "artifacts/reproducibility/claim_boundary_audit.json",
+          "json_path": "status",
+          "equals": "pass"
+        }
+      ]
+    }
+  ]
+}
