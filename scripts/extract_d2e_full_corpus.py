@@ -84,7 +84,10 @@ def _load_or_extract_recording(args: argparse.Namespace, split_contract: dict[st
 
     ref = d2e_ref_from_universe_row(row)
     token = args.hf_token or os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_HUB_TOKEN")
-    cache_dir = Path(args.cache_dir)
+    # D2E-480p and D2E-Original share game/recording filenames but differ in
+    # video payloads.  Namespace the cache by source_id to prevent one tier from
+    # silently reusing the other's media file.
+    cache_dir = Path(args.cache_dir) / str(row["source_id"])
     downloaded = download_recording_ref(ref, cache_dir, token=token, kinds=("mcap",))
     video_source = ref.video_url
     if args.video_mode == "download":
