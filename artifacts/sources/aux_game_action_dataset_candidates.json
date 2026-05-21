@@ -1,0 +1,179 @@
+{
+  "schema": "aux_game_action_dataset_candidates.v1",
+  "generated_at_utc": "deterministic-manifest-no-wall-clock",
+  "purpose": "G005 preparation only: public game/action datasets that may be mixed with D2E after D2E-only hard gates finish.",
+  "user_decision": {
+    "d2e_aux_may_be_primary": true,
+    "interpretation": "D2E+aux may be the best/primary final model, but D2E-only gates and D2E-only vs D2E+aux ablations remain mandatory and separately reported."
+  },
+  "claim_boundary": {
+    "no_d2e_aux_claim_before_d2e_only_gates": true,
+    "no_training_started_by_this_artifact": true,
+    "no_live_harness_claim_by_this_artifact": true,
+    "summary": "This is a source-selection and storage plan, not model-quality or harness evidence."
+  },
+  "storage_policy": {
+    "cap_tib": 5.0,
+    "cap_gib": 5120.0,
+    "d2e_source_estimate_gib": 1881.96,
+    "selected_candidate_total_gib": 16.876,
+    "selected_plus_d2e_gib": 1898.836,
+    "fits_cap_with_selected_candidates": true,
+    "review_required_candidate_total_gib": 559.0,
+    "selected_plus_review_plus_d2e_gib": 2457.836,
+    "fits_cap_if_high_value_review_passes": true,
+    "cache_warning": "Source files fit the 5TiB cap, but decoded caches/checkpoints must be staged and garbage-collected during G005."
+  },
+  "training_policy": {
+    "artifact_namespaces": [
+      "outputs/aux/<dataset_id>/...",
+      "outputs/idm_aux/<run_id>/...",
+      "outputs/fdm_aux/<run_id>/...",
+      "artifacts/aux/<run_id>/..."
+    ],
+    "recommended_curriculum": [
+      "Validate each selected aux loader with source-specific train/val/test split and provenance hash.",
+      "Pretrain shared visual-temporal backbone on selected aux with source-specific action heads.",
+      "Finetune on D2E-only train split; never use aux examples inside D2E heldout splits.",
+      "Compare D2E-only vs D2E+aux under the same temporal, heldout-recording, and heldout-game D2E eval manifests."
+    ],
+    "action_mapping_rule": "Keep source-specific action heads/tokens and report source-specific metrics; only D2E keyboard/mouse endpoints can support D2E desktop-action claims."
+  },
+  "candidates": [
+    {
+      "id": "minerl_2019_zenodo_v2",
+      "name": "MineRL 2019 Datasets backup",
+      "domain": "Minecraft human demonstrations",
+      "source_url": "https://zenodo.org/records/12659939",
+      "metadata_api_url": "https://zenodo.org/api/records/12659939",
+      "doi": "10.5281/zenodo.12659939",
+      "official_project_url": "https://github.com/minerllabs/minerl",
+      "publication_date": "2024-07-05",
+      "source_revision_or_record": "zenodo_record_12659939",
+      "size_bytes": 8571175338,
+      "published_size_note": "Zenodo files total 8.6 GB decimal across four MineRL-v0 zips.",
+      "license": "MIT License",
+      "license_id": "mit-license",
+      "license_status": "usable_with_attribution_review",
+      "selection_status": "selected_candidate",
+      "valid_for_training_now": true,
+      "supervision": "human players playing Minecraft; video feed and actions captured/stored",
+      "action_signal": "state-action demonstrations with Minecraft camera/button/control fields via MineRL data tooling",
+      "adapter_strategy": "Use a Minecraft-specific action head and map camera/buttons into a provenance-preserving aux token namespace; do not collapse into D2E keyboard/mouse metrics.",
+      "g005_role": "high-transfer first-person keyboard/mouse-like auxiliary pretraining before D2E finetune/ablation",
+      "why": "Closest small, license-permissive public game/action corpus among selected candidates; complements D2E with 3D first-person control.",
+      "risks": [
+        "MineRL-v0 environment/action schema differs from D2E desktop MCAP keyboard/mouse events",
+        "needs adapter/token mapping and source-specific heads",
+        "Minecraft IP/provenance notices must remain separate from D2E artifacts"
+      ],
+      "source_evidence": [
+        "Zenodo description says the record backs up parts of MineRL 2019 and contains human Minecraft play with video feed and actions captured/stored.",
+        "MineRL GitHub README links the Zenodo backup after original mirrors went down and describes data access for Minecraft agents.",
+        "Zenodo API metadata reports license id mit-license and total file bytes 8571175338."
+      ],
+      "size_gib": 7.983
+    },
+    {
+      "id": "atari_head_zenodo_v4",
+      "name": "Atari-HEAD human eye-tracking and demonstration dataset",
+      "domain": "Atari human gameplay demonstrations",
+      "source_url": "https://zenodo.org/records/3451402",
+      "metadata_api_url": "https://zenodo.org/api/records/3451402",
+      "doi": "10.5281/zenodo.3451402",
+      "official_project_url": "https://arxiv.org/abs/1903.06754",
+      "publication_date": "2019-09-19",
+      "source_revision_or_record": "zenodo_record_3451402_v4",
+      "size_bytes": 8726806887,
+      "published_size_note": "Zenodo files total 8.7 GB decimal and include action_enums.txt plus per-game zips.",
+      "license": "Creative Commons Attribution 4.0 International",
+      "license_id": "cc-by-4.0",
+      "license_status": "usable_with_attribution_required",
+      "selection_status": "selected_candidate",
+      "valid_for_training_now": true,
+      "supervision": "per-frame Atari action demonstrations with gaze/reward metadata",
+      "action_signal": "ALE action integer/action enum per frame; gaze fields optional and not required for IDM/FDM action training",
+      "adapter_strategy": "Use a discrete Atari action head and keep Atari metrics separated from D2E mouse/keyboard endpoint claims.",
+      "g005_role": "small human-demonstration discrete-control auxiliary ablation and low-cost overfitting/control experiment",
+      "why": "Human gameplay with explicit actions across 20 Atari games; useful for testing whether game-action pretraining helps heldout-game generalization.",
+      "risks": [
+        "Atari observations/actions are lower dimensional than D2E desktop video",
+        "not keyboard/mouse desktop control",
+        "CC-BY attribution requirements must be propagated in artifact metadata"
+      ],
+      "source_evidence": [
+        "Zenodo v4 metadata includes action_enums.txt and per-game zips with cc-by-4.0 license id.",
+        "Atari-HEAD paper reports 117 gameplay hours, 20 games, 8M action demonstrations, and 328M gaze samples."
+      ],
+      "size_gib": 8.127
+    },
+    {
+      "id": "p_doom_atari_breakout_hf",
+      "name": "p-doom Atari-Breakout action-conditioned frames",
+      "domain": "Atari Breakout agent gameplay/world-model data",
+      "source_url": "https://huggingface.co/datasets/p-doom/atari-breakout-dataset",
+      "metadata_api_url": "https://huggingface.co/api/datasets/p-doom/atari-breakout-dataset",
+      "doi": null,
+      "official_project_url": "https://github.com/p-doom/jasmine/tree/main/data/jasmine_data",
+      "publication_date": "2025-10-31",
+      "source_revision_or_record": "hf_sha_34c60197acabf0011a36affff183cc87c755edc4",
+      "size_bytes": 823000000,
+      "published_size_note": "Hugging Face file tree reports approximately 823 MB.",
+      "license": "CC0 1.0",
+      "license_id": "cc0-1.0",
+      "license_status": "usable_public_domain_dedication",
+      "selection_status": "selected_candidate",
+      "valid_for_training_now": true,
+      "supervision": "10M 84x84 frames and actions collected from Atari Breakout agent training",
+      "action_signal": "action-conditioned video prediction records with train/val/test splits",
+      "adapter_strategy": "Use only for discrete-action data-loader/provenance tests and a small auxiliary scaling control; do not treat as human demonstration evidence.",
+      "g005_role": "tiny permissive adapter/prototype corpus and negative/low-transfer control for aux scaling curves",
+      "why": "Very small, permissive, and already split; useful to validate auxiliary ingestion without consuming cluster storage.",
+      "risks": [
+        "agent-generated rather than human demonstrations",
+        "single game only",
+        "ArrayRecord/Grain reader integration needed before training"
+      ],
+      "source_evidence": [
+        "Hugging Face dataset card lists license cc0-1.0, 10M frames/actions, 84x84 resolution, and train/val/test splits.",
+        "Hugging Face API reports dataset sha 34c60197acabf0011a36affff183cc87c755edc4 and card license cc0-1.0."
+      ],
+      "size_gib": 0.766
+    },
+    {
+      "id": "openai_vpt_basalt_2022",
+      "name": "OpenAI VPT BASALT 2022 contractor demonstrations",
+      "domain": "Minecraft contractor demonstrations",
+      "source_url": "https://github.com/openai/Video-Pre-Training",
+      "metadata_api_url": null,
+      "doi": null,
+      "official_project_url": "https://github.com/openai/Video-Pre-Training",
+      "publication_date": "2022-07-26",
+      "source_revision_or_record": "openai_vpt_repository_dataset_index_links",
+      "size_bytes": null,
+      "estimated_size_gib": 559.0,
+      "published_size_note": "Repository README states around 150 GB per BASALT task; four task indexes imply roughly 600 GB decimal before cache expansion.",
+      "license": "repository code is MIT; data/license provenance requires explicit review before training use",
+      "license_id": "review_required",
+      "license_status": "license_provenance_review_required",
+      "selection_status": "high_value_review_required_not_selected",
+      "valid_for_training_now": false,
+      "supervision": "MP4 recordings with associated JSONL action files/indexes for BASALT tasks",
+      "action_signal": "keyboard/mouse-like Minecraft action JSONL paired with video demonstrations",
+      "adapter_strategy": "If license review passes, use as the highest-priority Minecraft aux corpus with source-specific tokenizer and D2E finetune ablation.",
+      "g005_role": "best high-transfer candidate after license/provenance review; not part of current selected working set",
+      "why": "Closest public analog to VPT/FDM-style IDM labeling and behavioral cloning, with video+action contractor demonstrations.",
+      "risks": [
+        "dataset terms are not as clearly packaged as Zenodo/HF candidates",
+        "around 150 GB per task and larger cache/checkpoint footprint",
+        "README notes action JSONL stripping/caveats for BASALT competition context",
+        "Minecraft IP disclaimer must be preserved"
+      ],
+      "source_evidence": [
+        "OpenAI VPT README documents IDM demo videos/actions and BASALT 2022 demonstration datasets around 150GB per task.",
+        "OpenAI VPT README says repository code is MIT but also includes a Minecraft IP disclaimer; dataset rights require separate review."
+      ],
+      "size_gib": 559.0
+    }
+  ]
+}
