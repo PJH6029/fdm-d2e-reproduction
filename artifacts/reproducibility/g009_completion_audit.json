@@ -47,8 +47,8 @@
     "package_manifest": {
       "path": "artifacts/reproducibility/package_manifest.json",
       "exists": true,
-      "bytes": 38856,
-      "sha256": "4b811fef7b5aa6b45ccb9c1c6a34d785401ff7259caee9aad42cde58e525b581"
+      "bytes": 39274,
+      "sha256": "8155eae9a5641f097d1561a20d738bf59a38bb553b4077fb2d85f36699330211"
     },
     "claim_boundary_audit": {
       "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -59,8 +59,8 @@
     "final_quality_audit": {
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "exists": true,
-      "bytes": 63057,
-      "sha256": "0e194cbb285b2c45ef83245fb3f11cd2145777f2c33e2925a8f02dba6940b387"
+      "bytes": 62550,
+      "sha256": "f42ecfe8863537bbfa69810c29bc21f8a49b61e2e2c33309f0c3385e651d5455"
     }
   },
   "required_manifest_paths": [
@@ -72,7 +72,7 @@
     "artifacts/reproducibility/claim_boundary_audit.json",
     "artifacts/reproducibility/final_quality_gate_audit.json"
   ],
-  "manifest_entry_count": 185,
+  "manifest_entry_count": 187,
   "findings": [
     {
       "severity": "error",
@@ -116,15 +116,8 @@
       "json_path": "status",
       "expected": "pass",
       "actual": "fail"
-    },
-    {
-      "severity": "error",
-      "code": "package_manifest_missing_required_paths",
-      "missing": [
-        "artifacts/reproducibility/final_quality_gate_audit.json"
-      ]
     }
   ],
-  "error_count": 8,
+  "error_count": 7,
   "claim_boundary": "This audit is required before checkpointing G009 complete; final report, evidence index, runbook, package manifest, claim-boundary audit, manifest hashes, and prerequisite goal statuses must all be current."
 }

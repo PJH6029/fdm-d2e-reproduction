@@ -1138,8 +1138,8 @@
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 38856,
-          "sha256": "4b811fef7b5aa6b45ccb9c1c6a34d785401ff7259caee9aad42cde58e525b581"
+          "bytes": 39274,
+          "sha256": "c0d580b8aec4a6c689d520b53bf5eedf2705a985a755e282b488746764b2e893"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -1151,7 +1151,7 @@
           "path": "artifacts/reproducibility/final_quality_gate_audit.json",
           "exists": true,
           "bytes": 63057,
-          "sha256": "0e194cbb285b2c45ef83245fb3f11cd2145777f2c33e2925a8f02dba6940b387"
+          "sha256": "ee46ec21aba002368c5af09101d9f681815de0b0f302f8584384bc72cbfd2efe"
         },
         {
           "path": "artifacts/reproducibility/g009_completion_audit.json",
@@ -1167,12 +1167,6 @@
           "goal_id": "G009-report-repro-package",
           "expected_status": "complete",
           "actual_status": "pending"
-        },
-        {
-          "severity": "error",
-          "code": "artifact_not_in_package_manifest",
-          "goal_id": "G009-report-repro-package",
-          "path": "artifacts/reproducibility/final_quality_gate_audit.json"
         },
         {
           "severity": "error",
@@ -1196,8 +1190,8 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 38856,
-    "sha256": "4b811fef7b5aa6b45ccb9c1c6a34d785401ff7259caee9aad42cde58e525b581"
+    "bytes": 39274,
+    "sha256": "c0d580b8aec4a6c689d520b53bf5eedf2705a985a755e282b488746764b2e893"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -1808,12 +1802,6 @@
     },
     {
       "severity": "error",
-      "code": "artifact_not_in_package_manifest",
-      "goal_id": "G009-report-repro-package",
-      "path": "artifacts/reproducibility/final_quality_gate_audit.json"
-    },
-    {
-      "severity": "error",
       "code": "json_assertion_mismatch",
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "json_path": "status",
@@ -1849,11 +1837,10 @@
       "severity": "error",
       "code": "configured_artifacts_missing_from_manifest",
       "paths": [
-        "artifacts/eval/g006_final_artifact_build_summary.json",
-        "artifacts/reproducibility/final_quality_gate_audit.json"
+        "artifacts/eval/g006_final_artifact_build_summary.json"
       ]
     }
   ],
-  "error_count": 102,
+  "error_count": 101,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

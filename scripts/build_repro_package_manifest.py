@@ -201,6 +201,7 @@ DEFAULT_PATTERNS = [
     "artifacts/runtime/g007_runtime_fixture_predictions.jsonl",
     "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
     "artifacts/reproducibility/claim_boundary_audit.json",
+    "artifacts/reproducibility/final_quality_gate_audit.json",
     "artifacts/reproducibility/g009_completion_audit.json",
     "artifacts/reproducibility/final_cleanup_review.md",
 ]
