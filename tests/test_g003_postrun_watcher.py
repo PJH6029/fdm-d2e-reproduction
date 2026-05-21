@@ -45,6 +45,7 @@ def _args(root: Path, **overrides) -> Namespace:
         "data_output_dir": "outputs/data",
         "idm_output_dir": "outputs/idm",
         "pid_file": "outputs/cluster/parent.pid",
+        "repair_pid_glob": None,
         "num_shards": 1,
         "stale_seconds": 3600.0,
     }
@@ -97,6 +98,31 @@ def test_watcher_runs_finalizer_once_parent_is_inactive(tmp_path: Path):
     assert len(calls) == 1
     assert calls[0].allow_active_parent is False
     assert calls[0].summary_out == "artifacts/idm/finalize.json"
+    assert calls[0].repair_pid_glob is None
+
+
+def test_watcher_treats_running_repair_pid_as_active_before_finalizing(tmp_path: Path):
+    _write_universe(tmp_path)
+    repair_pid_file = tmp_path / "outputs/cluster/g003_accel64_shard_0_repair.pid"
+    repair_pid_file.parent.mkdir(parents=True, exist_ok=True)
+    repair_pid_file.write_text(f"{os.getpid()}\n")
+    parent_pid_file = tmp_path / "outputs/cluster/g003_full_compact_accel64.pid"
+    parent_pid_file.write_text("999999999\n")
+    calls: list[Namespace] = []
+
+    payload = watch(
+        _args(
+            tmp_path,
+            pid_file="outputs/cluster/g003_full_compact_accel64.pid",
+            repair_pid_glob="outputs/cluster/g003_accel64_shard_*_repair.pid",
+        ),
+        finalize_func=lambda ns: calls.append(ns) or {"status": "pass"},
+    )
+
+    assert payload["status"] == "waiting_active_parent"
+    assert payload["progress"]["pid_running"] is True
+    assert payload["progress"]["decoded_recording_variants"] == 0
+    assert calls == []
 
 
 def test_watcher_refuses_duplicate_running_watcher(tmp_path: Path):

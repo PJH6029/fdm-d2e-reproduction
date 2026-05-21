@@ -54,6 +54,7 @@ nohup uv run python scripts/watch_g003_then_finalize.py \
   --data-output-dir outputs/data/d2e_full_corpus_accel64 \
   --idm-output-dir outputs/idm_streaming_d2e_full_compact_accel64 \
   --pid-file "${PID_FILE}" \
+  --repair-pid-glob outputs/cluster/g003_accel64_shard_'*'_repair.pid \
   --num-shards 64 \
   > "${WATCHER_LOG}" 2>&1 &
 echo "launched accel64 postrun watcher pid=$! summary=${WATCHER_SUMMARY}"

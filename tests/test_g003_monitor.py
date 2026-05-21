@@ -141,6 +141,7 @@ def test_g003_progress_active_process_scan_includes_lane_scoped_repair_pid(tmp_p
             {"pid": 902, "ppid": 901, "role": "extractor", "shard_index": 1},
         ],
     )
+    monkeypatch.setattr("fdm_d2e.cluster.g003_monitor._pid_running", lambda pid: pid in {100, 900, 901})
 
     assert _detect_active_shard_processes(pid_file=canonical_pid) == {0}
     assert _detect_active_shard_processes(pid_file=accel_pid) == {0, 1}

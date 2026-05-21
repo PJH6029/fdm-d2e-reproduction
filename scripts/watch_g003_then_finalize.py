@@ -51,6 +51,7 @@ def _progress(args: argparse.Namespace, root: Path) -> dict[str, Any]:
         output_dir=_path(root, args.data_output_dir),
         idm_output_dir=_path(root, args.idm_output_dir),
         pid_file=_path(root, args.pid_file),
+        repair_pid_glob=str(_path(root, args.repair_pid_glob)) if args.repair_pid_glob else None,
         num_shards=int(args.num_shards),
         stale_seconds=float(args.stale_seconds),
     )
@@ -83,6 +84,7 @@ def _finalizer_args(args: argparse.Namespace, root: Path) -> Namespace:
         data_output_dir=args.data_output_dir,
         idm_output_dir=args.idm_output_dir,
         pid_file=args.pid_file,
+        repair_pid_glob=args.repair_pid_glob,
         num_shards=args.num_shards,
         stale_seconds=args.stale_seconds,
     )
@@ -226,6 +228,11 @@ def main() -> int:
     parser.add_argument("--data-output-dir", default="outputs/data/d2e_full_corpus")
     parser.add_argument("--idm-output-dir", default="outputs/idm_streaming_d2e_full_compact")
     parser.add_argument("--pid-file", default="outputs/cluster/g003_full_compact_parallel.pid")
+    parser.add_argument(
+        "--repair-pid-glob",
+        default=None,
+        help="Optional glob for isolated shard repair pid files; defaults to a lane-scoped pattern derived from --pid-file.",
+    )
     parser.add_argument("--num-shards", type=int, default=16)
     parser.add_argument("--stale-seconds", type=float, default=3600.0)
     args = parser.parse_args()

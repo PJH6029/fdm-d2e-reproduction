@@ -334,6 +334,7 @@ def _detect_active_shard_processes(*, pid_file: Path | None = None, repair_pid_g
 
     processes = _detect_g003_processes()
     scoped_pids: set[int] | None = None
+    out: set[int] = set()
     if pid_file is not None:
         parent_pid = _read_pid(pid_file)
         if parent_pid is None:
@@ -343,10 +344,16 @@ def _detect_active_shard_processes(*, pid_file: Path | None = None, repair_pid_g
             pid_file=pid_file,
             repair_pid_glob=repair_pid_glob,
             processes=processes,
-            from_snapshot=True,
+            from_snapshot=False,
         )
         scoped_pids.update(_repair_scoped_pids(repair_statuses, processes))
-    out: set[int] = set()
+        for repair in repair_statuses:
+            if not repair.get("running") or repair.get("shard_index") is None:
+                continue
+            try:
+                out.add(int(repair["shard_index"]))
+            except (TypeError, ValueError):
+                continue
     for row in processes:
         if row.get("role") != "extractor" or row.get("shard_index") is None:
             continue
@@ -518,7 +525,12 @@ def build_g003_live_health_report(
         from_snapshot=from_snapshot,
     )
     extractors = _processes_by_role(processes, "extractor")
-    active_shards = sorted({int(row["shard_index"]) for row in extractors if row.get("shard_index") is not None})
+    repair_active_shards = {
+        int(row["shard_index"])
+        for row in process_scope.get("repair_pids", [])
+        if row.get("running") and row.get("shard_index") is not None
+    }
+    active_shards = sorted({int(row["shard_index"]) for row in extractors if row.get("shard_index") is not None} | repair_active_shards)
     progress = build_g003_progress_report(
         shard_root=shard_root,
         log_dir=log_dir,
