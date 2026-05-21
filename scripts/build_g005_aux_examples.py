@@ -385,12 +385,12 @@ def _iter_minerl_zip_rows(
     emitted = 0
     zip_rel = _rel(root, zip_path)
     with zipfile.ZipFile(zip_path) as archive:
-        members = sorted(
+        json_members = sorted(
             name
             for name in archive.namelist()
             if name.lower().endswith((".json", ".jsonl")) and not name.endswith("/")
         )
-        for member in members:
+        for member in json_members:
             sequence_id = str(Path(member).with_suffix(""))
             split = _split_for_sequence(f"{zip_path.name}:{sequence_id}", splits)
             with archive.open(member) as raw:
@@ -423,6 +423,77 @@ def _iter_minerl_zip_rows(
                 emitted += 1
                 if max_examples is not None and emitted >= max_examples:
                     return
+        npz_members = sorted(
+            name
+            for name in archive.namelist()
+            if name.lower().endswith(".npz") and not name.endswith("/")
+        )
+        for member in npz_members:
+            sequence_id = str(Path(member).parent)
+            split = _split_for_sequence(f"{zip_path.name}:{sequence_id}", splits)
+            action_arrays = _minerl_npz_action_arrays(archive.read(member))
+            for example in _iter_minerl_npz_action_rows(
+                root=root,
+                zip_rel=zip_rel,
+                member=member,
+                action_arrays=action_arrays,
+                split=split,
+                sequence_id=sequence_id,
+                source_id=source_id,
+                action_head_namespace=action_head_namespace,
+            ):
+                yield example
+                emitted += 1
+                if max_examples is not None and emitted >= max_examples:
+                    return
+
+
+def _jsonable_npz_value(value: Any) -> Any:
+    if hasattr(value, "tolist"):
+        return value.tolist()
+    return value
+
+
+def _minerl_npz_action_arrays(payload: bytes) -> dict[str, Any]:
+    import numpy as np
+
+    with np.load(io.BytesIO(payload), allow_pickle=True) as npz:
+        return {name.split("$", 1)[1]: npz[name] for name in npz.files if name.startswith("action$")}
+
+
+def _minerl_npz_action_length(arrays: dict[str, Any]) -> int:
+    lengths = [len(value) for value in arrays.values() if hasattr(value, "__len__")]
+    return min(lengths) if lengths else 0
+
+
+def _iter_minerl_npz_action_rows(
+    *,
+    root: Path,
+    zip_rel: str,
+    member: str,
+    action_arrays: dict[str, Any],
+    split: str,
+    sequence_id: str,
+    source_id: str,
+    action_head_namespace: str,
+) -> Iterable[dict[str, Any]]:
+    action_len = _minerl_npz_action_length(action_arrays)
+    for row_idx in range(action_len):
+        action = {key: _jsonable_npz_value(values[row_idx]) for key, values in action_arrays.items()}
+        yield {
+            "source_id": source_id,
+            "source_sequence_id": sequence_id,
+            "frame_or_state_ref": f"zip-npz://{zip_rel}!{member}#step={row_idx}",
+            "action": {"type": "minecraft_keyboard_mouse", "raw_action": action},
+            "action_head_namespace": action_head_namespace,
+            "split": split,
+            "provenance": {
+                "raw_zip": zip_rel,
+                "npz_member": member,
+                "row_number": row_idx,
+                "action_keys": sorted(action),
+            },
+        }
 
 
 def _build_minerl_examples(
@@ -463,13 +534,16 @@ def _build_minerl_examples(
     split_counts = _zero_split_counts(splits)
     zip_reports: list[dict[str, Any]] = []
     json_member_count = 0
+    npz_member_count = 0
     try:
         for zip_path in zip_paths:
             report = _file_report(zip_path, root)
             try:
                 with zipfile.ZipFile(zip_path) as archive:
                     report["json_member_count"] = len([name for name in archive.namelist() if name.lower().endswith((".json", ".jsonl"))])
+                    report["npz_member_count"] = len([name for name in archive.namelist() if name.lower().endswith(".npz")])
                     json_member_count += int(report["json_member_count"])
+                    npz_member_count += int(report["npz_member_count"])
                 rows = 0
                 for example in _iter_minerl_zip_rows(
                     root=root,
@@ -484,7 +558,7 @@ def _build_minerl_examples(
                     if max_examples is not None and sum(split_counts.values()) >= max_examples:
                         break
                 report["example_rows"] = rows
-            except (zipfile.BadZipFile, json.JSONDecodeError, UnicodeDecodeError) as exc:
+            except (zipfile.BadZipFile, json.JSONDecodeError, UnicodeDecodeError, ValueError, OSError, KeyError, ImportError) as exc:
                 severity = "warning" if allow_incomplete_raw else "error"
                 findings.append({"severity": severity, "code": "minerl_zip_parse_failed", "source_id": source_id, "path": report["path"], "error": str(exc)})
             zip_reports.append(report)
@@ -493,8 +567,8 @@ def _build_minerl_examples(
     finally:
         for handle in handles.values():
             handle.close()
-    if json_member_count == 0:
-        findings.append({"severity": "error", "code": "minerl_action_json_missing", "source_id": source_id})
+    if json_member_count == 0 and npz_member_count == 0:
+        findings.append({"severity": "error", "code": "minerl_action_members_missing", "source_id": source_id})
     split_files = _split_file_report(root, out_dir, split_counts, splits)
     return _finish_source_row(
         root=root,
@@ -505,7 +579,12 @@ def _build_minerl_examples(
         split_counts=split_counts,
         split_files=split_files,
         findings=findings,
-        extra={"raw_zip_files": zip_reports, "json_member_count": json_member_count, "max_examples_per_source": max_examples},
+        extra={
+            "raw_zip_files": zip_reports,
+            "json_member_count": json_member_count,
+            "npz_member_count": npz_member_count,
+            "max_examples_per_source": max_examples,
+        },
     )
 
 

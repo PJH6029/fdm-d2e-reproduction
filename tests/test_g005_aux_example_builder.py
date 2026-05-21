@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import json
+import io
 import pickle
 import sys
 import zipfile
 from argparse import Namespace
 from pathlib import Path
+
+import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -125,6 +128,51 @@ def test_builds_minerl_zip_action_dict_examples(tmp_path: Path) -> None:
     assert train_rows[0]["action"]["type"] == "minecraft_keyboard_mouse"
     assert "camera" in train_rows[0]["action"]["raw_action"]
     assert train_rows[0]["frame_or_state_ref"].startswith("zip-json://outputs/aux/minerl_2019_zenodo_v2/raw/MineRLTreechop-v0.zip!")
+
+
+def _write_minerl_npz_zip(root: Path) -> None:
+    source_id = "minerl_2019_zenodo_v2"
+    raw = root / f"outputs/aux/{source_id}/raw"
+    raw.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(raw / "MineRLTreechop-v0.zip", "w") as archive:
+        for split in SPLITS:
+            for idx in range(10000):
+                sequence = f"npz_trajectory_{split}_{idx}"
+                if _split_for_sequence(f"MineRLTreechop-v0.zip:MineRLTreechop-v0/{sequence}", SPLITS) == split:
+                    break
+            else:
+                raise AssertionError(f"could not find npz sequence for {split}")
+            member_root = f"MineRLTreechop-v0/{sequence}"
+            archive.writestr(f"{member_root}/metadata.json", json.dumps({"duration_steps": 2}))
+            buffer = io.BytesIO()
+            np.savez(
+                buffer,
+                **{
+                    "action$forward": np.asarray([1, 0], dtype=np.int64),
+                    "action$attack": np.asarray([0, 1], dtype=np.int64),
+                    "action$camera": np.asarray([[1.5, -2.0], [0.0, 0.25]], dtype=np.float32),
+                    "reward": np.asarray([0.0, 1.0], dtype=np.float32),
+                },
+            )
+            archive.writestr(f"{member_root}/rendered.npz", buffer.getvalue())
+
+
+def test_builds_minerl_rendered_npz_actions(tmp_path: Path) -> None:
+    _write_registry(tmp_path, [_head("minerl_2019_zenodo_v2", "minerl_action_dict_adapter", "minecraft_keyboard_mouse")])
+    _write_minerl_npz_zip(tmp_path)
+
+    payload = build_examples(_args(tmp_path, source_id=["minerl_2019_zenodo_v2"]))
+
+    assert payload["status"] == "pass"
+    source = payload["sources"][0]
+    assert source["json_member_count"] == 3
+    assert source["npz_member_count"] == 3
+    assert source["split_counts"] == {"train": 2, "val": 2, "test": 2}
+    rows = [json.loads(line) for line in (tmp_path / "outputs/aux_examples/minerl_2019_zenodo_v2/train.jsonl").read_text().splitlines()]
+    assert rows[0]["frame_or_state_ref"].startswith("zip-npz://outputs/aux/minerl_2019_zenodo_v2/raw/MineRLTreechop-v0.zip!")
+    assert rows[0]["action"]["raw_action"]["forward"] in {0, 1}
+    assert isinstance(rows[0]["action"]["raw_action"]["camera"], list)
+    assert rows[0]["provenance"]["npz_member"].endswith("rendered.npz")
 
 
 def _install_fake_array_record(monkeypatch, tmp_path: Path) -> None:
