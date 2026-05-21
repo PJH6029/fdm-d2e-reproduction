@@ -320,3 +320,11 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all required artifacts 
 - G003 parent remained live; progress monitor status `running`, decoded recording variants `136 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`.
 - Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
 - The G008 changes are validation/test hardening only and do not affect the already-loaded extraction workers; G003 remains in progress and must not be checkpointed.
+
+
+## 2026-05-21 17:39 KST G004 watcher sync snapshot
+
+- Pod checkout fast-forwarded to `7ce729c` after adding `scripts/watch_g004_then_finalize.py` and G004 wrapper PID-file support.
+- G003 parent remained live; progress monitor status `running`, decoded recording variants `139 / 918`, complete shards `0 / 16`, stale/no-progress shards `[]`.
+- Live health audit status `healthy_running`, stage `extracting`, active extractor shards `0..15`, warnings/errors `[]`.
+- G004 watcher is future-run handoff tooling only; it does not affect current G003 extraction and does not checkpoint OMX/Codex state.
