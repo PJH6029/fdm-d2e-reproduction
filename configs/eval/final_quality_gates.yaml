@@ -52,7 +52,11 @@
         "outputs/idm_streaming_d2e_full_compact/statistical_comparison.json",
         "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
         "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
-        "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"
+        "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
+        "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+        "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+        "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+        "artifacts/eval/g003_split_statistical_comparisons_summary.json"
       ],
       "json_assertions": [
         {
@@ -89,6 +93,41 @@
           "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
           "json_path": "nproc_per_node",
           "equals": 4
+        },
+        {
+          "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+          "json_path": "selected_recording_variants",
+          "equals": 918
+        },
+        {
+          "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+          "json_path": "num_shards",
+          "equals": 16
+        },
+        {
+          "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+          "json_path": "failures",
+          "equals": []
+        },
+        {
+          "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json",
+          "json_path": "status",
+          "equals": "pass"
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+          "json_path": "split",
+          "equals": "temporal"
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+          "json_path": "split",
+          "equals": "heldout_recording"
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+          "json_path": "split",
+          "equals": "heldout_game"
         }
       ]
     },
@@ -109,7 +148,11 @@
         "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json",
         "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json",
         "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
-        "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv"
+        "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv",
+        "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+        "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+        "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+        "artifacts/eval/g004_split_statistical_comparisons_summary.json"
       ],
       "json_assertions": [
         {
@@ -156,6 +199,26 @@
           "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
           "json_path": "nproc_per_node",
           "equals": 4
+        },
+        {
+          "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
+          "json_path": "status",
+          "equals": "pass"
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+          "json_path": "split",
+          "equals": "temporal"
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+          "json_path": "split",
+          "equals": "heldout_recording"
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+          "json_path": "split",
+          "equals": "heldout_game"
         }
       ]
     },
@@ -177,7 +240,8 @@
         "artifacts/eval/final_endpoint_statistics.json",
         "artifacts/eval/final_failure_analysis.json",
         "artifacts/eval/final_claim_taxonomy.json",
-        "docs/failure_analysis.md"
+        "docs/failure_analysis.md",
+        "artifacts/eval/g006_final_artifact_build_summary.json"
       ],
       "json_assertions": [
         {
@@ -192,6 +256,11 @@
         },
         {
           "path": "artifacts/eval/final_claim_taxonomy.json",
+          "json_path": "status",
+          "equals": "pass"
+        },
+        {
+          "path": "artifacts/eval/g006_final_artifact_build_summary.json",
           "json_path": "status",
           "equals": "pass"
         }

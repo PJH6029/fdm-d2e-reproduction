@@ -184,6 +184,30 @@
           "exists": false,
           "bytes": 0,
           "sha256": null
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
         }
       ],
       "findings": [
@@ -298,6 +322,30 @@
         },
         {
           "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G003-d2e-only-idm",
+          "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G003-d2e-only-idm",
+          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G003-d2e-only-idm",
+          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G003-d2e-only-idm",
+          "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json"
+        },
+        {
+          "severity": "error",
           "code": "json_assertion_file_missing",
           "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
           "json_path": "source_namespace"
@@ -337,6 +385,48 @@
           "code": "json_assertion_file_missing",
           "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
           "json_path": "nproc_per_node"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+          "json_path": "selected_recording_variants"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+          "json_path": "num_shards"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+          "json_path": "failures"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json",
+          "json_path": "status"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+          "json_path": "split"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+          "json_path": "split"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+          "json_path": "split"
         }
       ]
     },
@@ -421,6 +511,30 @@
         },
         {
           "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        {
+          "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
           "exists": false,
           "bytes": 0,
           "sha256": null
@@ -514,6 +628,30 @@
         },
         {
           "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G004-d2e-only-fdm-4xh200",
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G004-d2e-only-fdm-4xh200",
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G004-d2e-only-fdm-4xh200",
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
+        },
+        {
+          "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G004-d2e-only-fdm-4xh200",
+          "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json"
+        },
+        {
+          "severity": "error",
           "code": "json_assertion_file_missing",
           "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
           "json_path": "label_source"
@@ -565,6 +703,30 @@
           "code": "json_assertion_file_missing",
           "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
           "json_path": "nproc_per_node"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
+          "json_path": "status"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+          "json_path": "split"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+          "json_path": "split"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+          "json_path": "split"
         }
       ]
     },
@@ -640,6 +802,12 @@
           "exists": true,
           "bytes": 2210,
           "sha256": "cd77f696656010ae78060083a601644ee3eba1a8ea798ac065c9971f6b3e7cbe"
+        },
+        {
+          "path": "artifacts/eval/g006_final_artifact_build_summary.json",
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
         }
       ],
       "findings": [
@@ -670,6 +838,12 @@
         },
         {
           "severity": "error",
+          "code": "missing_required_artifact",
+          "goal_id": "G006-evaluation-failure-analysis",
+          "path": "artifacts/eval/g006_final_artifact_build_summary.json"
+        },
+        {
+          "severity": "error",
           "code": "json_assertion_file_missing",
           "path": "artifacts/eval/final_endpoint_statistics.json",
           "json_path": "status"
@@ -684,6 +858,12 @@
           "severity": "error",
           "code": "json_assertion_file_missing",
           "path": "artifacts/eval/final_claim_taxonomy.json",
+          "json_path": "status"
+        },
+        {
+          "severity": "error",
+          "code": "json_assertion_file_missing",
+          "path": "artifacts/eval/g006_final_artifact_build_summary.json",
           "json_path": "status"
         }
       ]
@@ -792,8 +972,8 @@
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 29116,
-          "sha256": "693e2b126727881ba97e42a291908ca6ec130213203c10f704f64ef537aac8b3"
+          "bytes": 29117,
+          "sha256": "11f3d192486f7472edbb05a4f28f65a5e1599b283d9a94ec219e5dceb6a07793"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -816,8 +996,8 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 29116,
-    "sha256": "693e2b126727881ba97e42a291908ca6ec130213203c10f704f64ef537aac8b3"
+    "bytes": 29117,
+    "sha256": "11f3d192486f7472edbb05a4f28f65a5e1599b283d9a94ec219e5dceb6a07793"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
@@ -933,6 +1113,30 @@
     },
     {
       "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G003-d2e-only-idm",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G003-d2e-only-idm",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G003-d2e-only-idm",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G003-d2e-only-idm",
+      "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json"
+    },
+    {
+      "severity": "error",
       "code": "json_assertion_file_missing",
       "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
       "json_path": "source_namespace"
@@ -972,6 +1176,48 @@
       "code": "json_assertion_file_missing",
       "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
       "json_path": "nproc_per_node"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+      "json_path": "selected_recording_variants"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+      "json_path": "num_shards"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+      "json_path": "failures"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json",
+      "json_path": "status"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "json_path": "split"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "json_path": "split"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "json_path": "split"
     },
     {
       "severity": "error",
@@ -1060,6 +1306,30 @@
     },
     {
       "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G004-d2e-only-fdm-4xh200",
+      "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json"
+    },
+    {
+      "severity": "error",
       "code": "json_assertion_file_missing",
       "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
       "json_path": "label_source"
@@ -1114,6 +1384,30 @@
     },
     {
       "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
+      "json_path": "status"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "json_path": "split"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "json_path": "split"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "json_path": "split"
+    },
+    {
+      "severity": "error",
       "code": "goal_status_not_complete",
       "goal_id": "G005-aux-data-best-model",
       "expected_status": "complete",
@@ -1152,6 +1446,12 @@
     },
     {
       "severity": "error",
+      "code": "missing_required_artifact",
+      "goal_id": "G006-evaluation-failure-analysis",
+      "path": "artifacts/eval/g006_final_artifact_build_summary.json"
+    },
+    {
+      "severity": "error",
       "code": "json_assertion_file_missing",
       "path": "artifacts/eval/final_endpoint_statistics.json",
       "json_path": "status"
@@ -1166,6 +1466,12 @@
       "severity": "error",
       "code": "json_assertion_file_missing",
       "path": "artifacts/eval/final_claim_taxonomy.json",
+      "json_path": "status"
+    },
+    {
+      "severity": "error",
+      "code": "json_assertion_file_missing",
+      "path": "artifacts/eval/g006_final_artifact_build_summary.json",
       "json_path": "status"
     },
     {
@@ -1212,6 +1518,6 @@
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
     }
   ],
-  "error_count": 63,
+  "error_count": 84,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

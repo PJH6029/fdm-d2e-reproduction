@@ -31,15 +31,20 @@ The audit checks, without mutating OMX/Codex goal state:
    checkpoint, pseudolabels, predictions, metrics, label-quality report, and
    statistical comparison. The IDM checkpoint/run metadata must also prove
    D2E-only provenance (`source_namespace=d2e_full_corpus`, data-universe and
-   split-contract artifacts present) and 4×H200 distributed training evidence
-   (`distributed.enabled=true`, `world_size=4`, run `exit_code=0`).
+   split-contract artifacts present), 4×H200 distributed training evidence
+   (`distributed.enabled=true`, `world_size=4`, run `exit_code=0`), full
+   decode coverage (`selected_recording_variants=918`, `num_shards=16`, no
+   failures), and per-split statistical summaries for temporal,
+   heldout-recording, and heldout-game splits.
 4. G004 D2E-only FDM artifacts exist: checkpoint, predictions, metrics,
    statistical comparison, convergence report, and 4×H200 run evidence. The
    FDM metadata must prove IDM-pseudolabel training, no oracle ground-truth
-   control, D2E-only provenance, source-IDM metadata linkage, and distributed
-   world-size/run-exit evidence.
+   control, D2E-only provenance, source-IDM metadata linkage, distributed
+   world-size/run-exit evidence, and per-split statistical summaries for
+   temporal, heldout-recording, and heldout-game splits.
 5. G005 aux artifacts exist and remain separated from D2E-only namespaces.
-6. G006 final endpoint statistics and failure-analysis artifacts exist.
+6. G006 final endpoint statistics, failure-analysis, claim-taxonomy, and
+   final artifact-build summary artifacts exist and report `status == pass`.
 7. G007 runtime SDK adapter evidence remains present.
 8. G008 live open-source graphical-game evidence validation exists and has
    `quality_gate.status == pass`; protocol readiness does not count.
