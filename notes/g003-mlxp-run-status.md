@@ -448,3 +448,12 @@ uv run python scripts/audit_g003_live_health.py \
 - Pod validation after pull: `uv run pytest tests/test_g003_postrun_watcher.py tests/test_g003_integrated_finalization.py -q` passed (`6` tests).
 - New accel64 watcher summary confirms lane-local evidence fields: status `waiting_active_parent`, decoded `172 / 918`, `progress.log_dir=/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/sources/g003_accel64`, `progress.repair_pid_glob=/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/cluster/g003_accel64_shard_*_repair.pid`, `pid_running=true`.
 - G003 remains incomplete and must not be checkpointed complete until the completion audit passes after full decode, merge, IDM training/eval, label-quality, and split-stat artifacts exist.
+
+## 2026-05-22 00:52 KST canonical watcher lane-evidence rollout
+
+- Restarted only the canonical G003 postrun watcher on current checkout `2c1d034`; active extraction parents were not touched.
+- Pod validation before restart: `uv run pytest tests/test_g003_postrun_watcher.py tests/test_g003_integrated_finalization.py -q` passed (`6` tests).
+- Old canonical watcher Python PID `41388` was replaced by new Python PID `124896`.
+- New canonical watcher summary confirms lane evidence: status `waiting_active_parent`, decoded `277 / 918`, `progress.log_dir=/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/sources`, `progress.repair_pid_glob=/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/cluster/g003_shard_*_repair.pid`, `pid_running=true`.
+- Fresh lane-local probe at this continuation: canonical `277 / 918`, active `16 / 16`; accel64 `174 / 918`, active `64 / 64`, shard 29 repair PID `113351` still running and `shard_29/decode_summary.json` still absent.
+- G003 remains incomplete; completion audit still fails with missing full decode/merge/IDM artifacts. Do not checkpoint complete.
