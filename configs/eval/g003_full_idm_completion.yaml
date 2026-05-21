@@ -1,0 +1,37 @@
+{
+  "schema": "g003_full_idm_completion_config.v1",
+  "goals_path": ".omx/ultragoal/goals.json",
+  "goal_id": "G003-d2e-only-idm",
+  "output_path": "artifacts/idm/g003_full_idm_completion_audit.json",
+  "expected_recording_variants": 918,
+  "expected_shards": 16,
+  "expected_nproc_per_node": 4,
+  "required_target_eval_split_tags": ["temporal", "heldout_recording", "heldout_game"],
+  "paths": {
+    "decode_summary": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+    "train_records": "outputs/data/d2e_full_corpus/train_core.jsonl",
+    "target_records": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+    "checkpoint": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt",
+    "checkpoint_metadata": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "resolved_config": "outputs/idm_streaming_d2e_full_compact/resolved_config.json",
+    "streaming_stats": "outputs/idm_streaming_d2e_full_compact/streaming_stats.json",
+    "train_history": "outputs/idm_streaming_d2e_full_compact/train_history.json",
+    "convergence_report": "outputs/idm_streaming_d2e_full_compact/convergence_report.json",
+    "pseudolabels": "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
+    "predictions": "outputs/idm_streaming_d2e_full_compact/predictions.jsonl",
+    "metrics": "outputs/idm_streaming_d2e_full_compact/metrics.json",
+    "label_quality_report": "outputs/idm_streaming_d2e_full_compact/label_quality_report.json",
+    "statistical_comparison": "outputs/idm_streaming_d2e_full_compact/statistical_comparison.json",
+    "summary": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
+    "run_summary": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
+    "gpu_monitor": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
+    "split_stats_summary": "artifacts/eval/g003_split_statistical_comparisons_summary.json"
+  },
+  "metadata_expectations": {
+    "source_namespace": "d2e_full_corpus",
+    "data_universe.exists": true,
+    "split_contract.exists": true,
+    "distributed.enabled": true,
+    "distributed.world_size": 4
+  }
+}

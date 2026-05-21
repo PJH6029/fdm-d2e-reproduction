@@ -34,8 +34,8 @@ The audit checks, without mutating OMX/Codex goal state:
    split-contract artifacts present), 4×H200 distributed training evidence
    (`distributed.enabled=true`, `world_size=4`, run `exit_code=0`), full
    decode coverage (`selected_recording_variants=918`, `num_shards=16`, no
-   failures), and per-split statistical summaries for temporal,
-   heldout-recording, and heldout-game splits.
+   failures), per-split statistical summaries for temporal, heldout-recording,
+   and heldout-game splits, and `g003_full_idm_completion_audit.status=pass`.
 4. G004 D2E-only FDM artifacts exist: checkpoint, predictions, metrics,
    statistical comparison, convergence report, and 4×H200 run evidence. The
    FDM metadata must prove IDM-pseudolabel training, no oracle ground-truth

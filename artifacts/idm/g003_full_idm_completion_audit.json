@@ -1,0 +1,279 @@
+{
+  "schema": "g003_full_idm_completion_audit.v1",
+  "status": "fail",
+  "goal_id": "G003-d2e-only-idm",
+  "goal_status": "in_progress",
+  "expected_recording_variants": 918,
+  "expected_shards": 16,
+  "artifacts": {
+    "decode_summary": {
+      "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "train_records": {
+      "path": "outputs/data/d2e_full_corpus/train_core.jsonl",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "target_records": {
+      "path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "checkpoint": {
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "checkpoint_metadata": {
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "resolved_config": {
+      "path": "outputs/idm_streaming_d2e_full_compact/resolved_config.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "streaming_stats": {
+      "path": "outputs/idm_streaming_d2e_full_compact/streaming_stats.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "train_history": {
+      "path": "outputs/idm_streaming_d2e_full_compact/train_history.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "convergence_report": {
+      "path": "outputs/idm_streaming_d2e_full_compact/convergence_report.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "pseudolabels": {
+      "path": "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "predictions": {
+      "path": "outputs/idm_streaming_d2e_full_compact/predictions.jsonl",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "metrics": {
+      "path": "outputs/idm_streaming_d2e_full_compact/metrics.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "label_quality_report": {
+      "path": "outputs/idm_streaming_d2e_full_compact/label_quality_report.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "statistical_comparison": {
+      "path": "outputs/idm_streaming_d2e_full_compact/statistical_comparison.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "summary": {
+      "path": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "run_summary": {
+      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "gpu_monitor": {
+      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    },
+    "split_stats_summary": {
+      "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    }
+  },
+  "counts": {
+    "train_records": null,
+    "target_records": null,
+    "pseudolabels": null,
+    "predictions": null,
+    "decode_train_core": null,
+    "decode_target_all_eval": null
+  },
+  "findings": [
+    {
+      "severity": "error",
+      "code": "goal_not_checkpointed_complete",
+      "goal_id": "G003-d2e-only-idm",
+      "actual": "in_progress"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "decode_summary",
+      "path": "artifacts/sources/d2e_full_corpus_decode_summary.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "train_records",
+      "path": "outputs/data/d2e_full_corpus/train_core.jsonl"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "target_records",
+      "path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "checkpoint",
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "checkpoint_metadata",
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "resolved_config",
+      "path": "outputs/idm_streaming_d2e_full_compact/resolved_config.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "streaming_stats",
+      "path": "outputs/idm_streaming_d2e_full_compact/streaming_stats.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "train_history",
+      "path": "outputs/idm_streaming_d2e_full_compact/train_history.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "convergence_report",
+      "path": "outputs/idm_streaming_d2e_full_compact/convergence_report.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "pseudolabels",
+      "path": "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "predictions",
+      "path": "outputs/idm_streaming_d2e_full_compact/predictions.jsonl"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "metrics",
+      "path": "outputs/idm_streaming_d2e_full_compact/metrics.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "label_quality_report",
+      "path": "outputs/idm_streaming_d2e_full_compact/label_quality_report.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "statistical_comparison",
+      "path": "outputs/idm_streaming_d2e_full_compact/statistical_comparison.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "summary",
+      "path": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "run_summary",
+      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "gpu_monitor",
+      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"
+    },
+    {
+      "severity": "error",
+      "code": "missing_required_artifact",
+      "artifact_key": "split_stats_summary",
+      "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json"
+    },
+    {
+      "severity": "error",
+      "code": "metadata_expectation_mismatch",
+      "json_path": "source_namespace",
+      "expected": "d2e_full_corpus",
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "metadata_expectation_mismatch",
+      "json_path": "data_universe.exists",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "metadata_expectation_mismatch",
+      "json_path": "split_contract.exists",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "metadata_expectation_mismatch",
+      "json_path": "distributed.enabled",
+      "expected": true,
+      "actual": null
+    },
+    {
+      "severity": "error",
+      "code": "metadata_expectation_mismatch",
+      "json_path": "distributed.world_size",
+      "expected": 4,
+      "actual": null
+    }
+  ],
+  "error_count": 24,
+  "claim_boundary": "This audit is required before checkpointing G003 complete; it proves full-corpus D2E-only IDM coverage, counts, provenance, split stats, and 4xH200 run evidence."
+}

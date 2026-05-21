@@ -46,17 +46,17 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 13:06 KST.
+Latest known live run snapshot: 2026-05-21 13:51 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
 - Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout was synced to commit `7fe6b3f` (`Preserve G003 provenance in streaming IDM metadata`).
+- Pod checkout was synced to commit `a0fbd99` (`Require full-corpus and split-stat gate evidence`) before the local G003 completion-audit patch.
 - Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
-- Last decoded count: `62 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
-- Monitor status was `review_stale_shards` for shards `[8, 9, 13]`, but child extraction processes were still alive. Treat as review/watch evidence, not G003 failure, unless the parent exits or shard logs/processes stop progressing.
+- Last decoded count: `76 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
+- Monitor status was `running`; long-running active shards `[8, 9, 13]`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
 
 Useful pod monitor command:
 
@@ -83,6 +83,8 @@ Do **not** checkpoint `G003-d2e-only-idm` complete until all of these exist and 
 - `checkpoint_metadata.json` and `resolved_config.json` proving config/data-universe/split/source provenance,
 - pseudolabels, predictions, metrics, label-quality report, statistical comparison report, train history, convergence report,
 - committed run evidence and monitor/evaluation summaries.
+
+The local G003 completion audit is `configs/eval/g003_full_idm_completion.yaml` + `scripts/validate_g003_full_idm_completion.py` and writes `artifacts/idm/g003_full_idm_completion_audit.json`. It is expected to fail while extraction/training artifacts are missing, but must report `status=pass` before G003 checkpointing.
 
 The current streaming IDM config must carry:
 
@@ -141,6 +143,7 @@ Common checks:
 uv run pytest -q
 uv run python scripts/audit_claim_boundaries.py --output artifacts/reproducibility/claim_boundary_audit.json
 uv run python scripts/build_repro_package_manifest.py --output artifacts/reproducibility/package_manifest.json
+uv run python scripts/validate_g003_full_idm_completion.py --allow-fail
 uv run python scripts/validate_final_quality_gates.py --allow-fail
 ```
 

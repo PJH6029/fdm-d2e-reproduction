@@ -135,3 +135,18 @@ G003 checkpointing:
 
 This metadata is required so later FDM and report stages can prove they used the
 D2E-only full-corpus split rather than historical bounded or auxiliary data.
+
+## G003 completion audit
+
+Before checkpointing `G003-d2e-only-idm` complete, run:
+
+```bash
+uv run python scripts/validate_g003_full_idm_completion.py
+```
+
+During active extraction/training this may be run with `--allow-fail`, but a
+terminal G003 checkpoint requires `artifacts/idm/g003_full_idm_completion_audit.json`
+to report `status == pass`. The audit checks goal state, full decode coverage,
+merged JSONL counts, pseudolabel/prediction counts, checkpoint metadata
+provenance, required target split tags, split-stat summary status, and 4×H200
+run evidence.

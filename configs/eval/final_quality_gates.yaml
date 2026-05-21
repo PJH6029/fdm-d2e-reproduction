@@ -56,7 +56,8 @@
         "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
         "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
         "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
-        "artifacts/eval/g003_split_statistical_comparisons_summary.json"
+        "artifacts/eval/g003_split_statistical_comparisons_summary.json",
+        "artifacts/idm/g003_full_idm_completion_audit.json"
       ],
       "json_assertions": [
         {
@@ -128,6 +129,11 @@
           "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
           "json_path": "split",
           "equals": "heldout_game"
+        },
+        {
+          "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+          "json_path": "status",
+          "equals": "pass"
         }
       ]
     },
