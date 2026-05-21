@@ -53,6 +53,43 @@
         "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
         "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
         "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"
+      ],
+      "json_assertions": [
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "source_namespace",
+          "equals": "d2e_full_corpus"
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "data_universe.exists",
+          "equals": true
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "split_contract.exists",
+          "equals": true
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "distributed.enabled",
+          "equals": true
+        },
+        {
+          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "distributed.world_size",
+          "equals": 4
+        },
+        {
+          "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
+          "json_path": "exit_code",
+          "equals": 0
+        },
+        {
+          "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
+          "json_path": "nproc_per_node",
+          "equals": 4
+        }
       ]
     },
     {
@@ -73,6 +110,53 @@
         "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json",
         "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
         "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv"
+      ],
+      "json_assertions": [
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "label_source",
+          "equals": "idm_pseudolabel"
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "oracle_ground_truth_control",
+          "equals": false
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "source_namespace",
+          "equals": "d2e_full_corpus"
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "source_idm_metadata.exists",
+          "equals": true
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "data_universe.exists",
+          "equals": true
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "split_contract.exists",
+          "equals": true
+        },
+        {
+          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+          "json_path": "torch_checkpoint_metadata.distributed.world_size",
+          "equals": 4
+        },
+        {
+          "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
+          "json_path": "exit_code",
+          "equals": 0
+        },
+        {
+          "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
+          "json_path": "nproc_per_node",
+          "equals": 4
+        }
       ]
     },
     {

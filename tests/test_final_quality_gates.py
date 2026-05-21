@@ -73,6 +73,17 @@ def test_final_quality_gate_fails_on_incomplete_goal_missing_artifact_and_live_g
     assert "not_all_ultragoal_stories_complete" in codes
 
 
+def test_final_quality_gate_enforces_json_assertion_values(tmp_path):
+    _complete_fixture(tmp_path)
+    write_json(tmp_path / "artifacts/harness/live_validation.json", {"quality_gate": {"status": "protocol_ready"}})
+    payload = validate_final_quality_gates(_config(), root=tmp_path)
+    mismatches = [item for item in payload["findings"] if item["code"] == "json_assertion_mismatch"]
+    assert payload["status"] == "fail"
+    assert mismatches
+    assert mismatches[0]["expected"] == "pass"
+    assert mismatches[0]["actual"] == "protocol_ready"
+
+
 def test_final_quality_gate_writes_output_without_requiring_self_reference(tmp_path):
     _complete_fixture(tmp_path)
     config = {**_config(), "output_path": "artifacts/reproducibility/final_quality_gate_audit.json"}
