@@ -97,6 +97,35 @@ def _proc_ppid(entry: Path) -> int | None:
         return None
 
 
+def _proc_resource_snapshot(entry: Path) -> dict[str, Any]:
+    """Best-effort /proc counters for distinguishing active long recordings from dead air."""
+
+    out: dict[str, Any] = {}
+    try:
+        stat = (entry / "stat").read_text(encoding="utf-8", errors="ignore")
+        tail = stat.rsplit(")", 1)[1].strip().split()
+        if len(tail) > 12:
+            out["state"] = tail[0]
+            out["utime_ticks"] = int(tail[11])
+            out["stime_ticks"] = int(tail[12])
+            out["cpu_ticks"] = out["utime_ticks"] + out["stime_ticks"]
+        if len(tail) > 21:
+            out["rss_bytes"] = int(tail[21]) * int(os.sysconf("SC_PAGE_SIZE"))
+    except (FileNotFoundError, ProcessLookupError, PermissionError, OSError, IndexError, ValueError):
+        pass
+    try:
+        for line in (entry / "io").read_text(encoding="utf-8", errors="ignore").splitlines():
+            if ":" not in line:
+                continue
+            key, value = line.split(":", 1)
+            key = key.strip()
+            if key in {"read_bytes", "write_bytes", "cancelled_write_bytes"}:
+                out[key] = int(value.strip())
+    except (FileNotFoundError, ProcessLookupError, PermissionError, OSError, ValueError):
+        pass
+    return out
+
+
 def _arg_value(parts: list[str], flag: str) -> str | None:
     if flag not in parts:
         return None
@@ -146,12 +175,62 @@ def _process_summary(row: dict[str, Any]) -> dict[str, Any]:
         shard_index = int(shard_index) if shard_index is not None else None
     except (TypeError, ValueError):
         shard_index = None
-    return {
+    summary: dict[str, Any] = {
         "pid": int(row["pid"]),
         "ppid": int(row["ppid"]) if row.get("ppid") is not None else None,
         "role": role,
         "shard_index": shard_index,
         "cmdline": cmdline,
+    }
+    for key in [
+        "state",
+        "utime_ticks",
+        "stime_ticks",
+        "cpu_ticks",
+        "rss_bytes",
+        "read_bytes",
+        "write_bytes",
+        "cancelled_write_bytes",
+    ]:
+        if key not in row or row.get(key) is None:
+            continue
+        if key == "state":
+            summary[key] = str(row[key])
+            continue
+        try:
+            summary[key] = int(row[key])
+        except (TypeError, ValueError):
+            continue
+    return summary
+
+
+def _resource_rollup(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    numeric_keys = ["cpu_ticks", "utime_ticks", "stime_ticks", "rss_bytes", "read_bytes", "write_bytes", "cancelled_write_bytes"]
+    out: dict[str, Any] = {"count": len(rows), "states": dict(Counter(str(row.get("state")) for row in rows if row.get("state")))}
+    for key in numeric_keys:
+        values = [int(row[key]) for row in rows if row.get(key) is not None]
+        if not values:
+            continue
+        out[f"{key}_total"] = sum(values)
+        if key == "rss_bytes":
+            out[f"{key}_max"] = max(values)
+    return out
+
+
+def _process_resource_summary(processes: list[dict[str, Any]]) -> dict[str, Any]:
+    by_role: dict[str, dict[str, Any]] = {}
+    for role in sorted({str(row.get("role")) for row in processes if row.get("role")}):
+        by_role[role] = _resource_rollup([row for row in processes if row.get("role") == role])
+    extractor_rows = [row for row in processes if row.get("role") == "extractor" and row.get("shard_index") is not None]
+    extractors_by_shard = {
+        str(shard): _resource_rollup([row for row in extractor_rows if int(row["shard_index"]) == shard])
+        for shard in sorted({int(row["shard_index"]) for row in extractor_rows})
+    }
+    return {
+        "overall": _resource_rollup(processes),
+        "by_role": by_role,
+        "extractors_by_shard": extractors_by_shard,
+        "claim_boundary": "Resource counters are point-in-time liveness evidence; they do not prove shard completion or training quality.",
     }
 
 
@@ -178,6 +257,7 @@ def _detect_g003_processes() -> list[dict[str, Any]]:
                 "role": role,
                 "shard_index": shard_index,
                 "cmdline": " ".join(parts),
+                **_proc_resource_snapshot(entry),
             }
         )
     return sorted(processes, key=lambda row: (str(row.get("role")), int(row.get("pid", 0))))
@@ -324,6 +404,7 @@ def build_g003_live_health_report(
         "gpu_monitor": gpu_monitor,
         "process_roles": active_roles,
         "processes": processes,
+        "process_resource_summary": _process_resource_summary(processes),
         "active_extractor_shards": active_shards,
         "duplicate_active_shards": duplicate_active_shards,
         "inactive_incomplete_shards": inactive_incomplete_shards,

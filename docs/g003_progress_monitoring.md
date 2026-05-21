@@ -39,9 +39,10 @@ uv run python scripts/audit_g003_live_health.py \
 This second command is also non-mutating. It adds best-effort Linux `/proc`
 topology evidence for the parent script, shard extractors, post-run watcher,
 attached GPU monitor, merge/training/finalizer processes, inactive incomplete
-shards, duplicate extractor observations, and low-active-extractor warnings. It is
-handoff/recovery evidence only; it must not be treated as a completion or
-quality-gate proof.
+shards, duplicate extractor observations, low-active-extractor warnings, and
+point-in-time `/proc` resource counters such as extractor CPU ticks, RSS, and
+read/write bytes. It is handoff/recovery evidence only; it must not be treated as
+a completion or quality-gate proof.
 
 ## Interpretation
 
@@ -50,7 +51,9 @@ quality-gate proof.
 - `recommendation=continue_monitor_long_recordings`: one or more active shard
   extractors have been quiet beyond the stale threshold. This is not a restart
   signal by itself; keep the active processes running and re-run live-health
-  checks because full/original D2E recordings can stay quiet for hours.
+  checks because full/original D2E recordings can stay quiet for hours. If the
+  live-health report shows extractor CPU/read/write counters, use those only as
+  liveness/handoff evidence, not as a completion proof.
 - `status=review_stale_shards`: at least one shard log has not changed past the
   configured threshold; inspect before taking action because large original-video
   downloads can legitimately keep a shard quiet for a long time.

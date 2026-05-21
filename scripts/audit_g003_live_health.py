@@ -51,12 +51,14 @@ def main() -> int:
         stale_seconds=args.stale_seconds,
         min_active_extractors=args.min_active_extractors,
     )
+    extractor_resources = report.get("process_resource_summary", {}).get("by_role", {}).get("extractor", {})
     print(
         "g003 live health: "
         f"status={report['status']} stage={report['stage']} "
         f"decoded={report['progress']['decoded_recording_variants']}/{report['progress']['expected_recording_variants']} "
         f"active_extractors={len(report['active_extractor_shards'])}/{report['expected_active_extractors']} "
         f"recommendation={report['progress']['recommendation']['code']} "
+        f"extractor_cpu_ticks={extractor_resources.get('cpu_ticks_total')} "
         f"warnings={len(report['warnings'])} errors={len(report['errors'])} output={args.output}"
     )
     if args.fail_on_blocked and report["status"] == "blocked_live_health":

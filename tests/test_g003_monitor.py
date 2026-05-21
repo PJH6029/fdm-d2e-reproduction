@@ -175,6 +175,13 @@ def _g003_process_snapshot(*, extractors: list[int] | None = None, include_train
             {
                 "pid": 1000 + offset,
                 "ppid": 100,
+                "state": "R",
+                "utime_ticks": 100 + offset,
+                "stime_ticks": 10 + offset,
+                "cpu_ticks": 110 + (2 * offset),
+                "rss_bytes": 1024 * (offset + 1),
+                "read_bytes": 2048 * (offset + 1),
+                "write_bytes": 4096 * (offset + 1),
                 "cmdline": [
                     "python",
                     "scripts/extract_d2e_full_corpus.py",
@@ -218,6 +225,10 @@ def test_g003_live_health_reports_healthy_full_extractor_topology(tmp_path):
     assert report["active_extractor_shards"] == [0, 1]
     assert report["warnings"] == []
     assert report["progress"]["recommendation"]["code"] == "continue_waiting"
+    resources = report["process_resource_summary"]
+    assert resources["by_role"]["extractor"]["count"] == 2
+    assert resources["by_role"]["extractor"]["cpu_ticks_total"] == 222
+    assert resources["extractors_by_shard"]["0"]["read_bytes_total"] == 2048
 
 
 def test_g003_live_health_warns_when_incomplete_shard_has_no_extractor(tmp_path):
