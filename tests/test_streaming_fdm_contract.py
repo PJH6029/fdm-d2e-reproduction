@@ -139,6 +139,7 @@ def test_streaming_fdm_trains_tiny_checkpoint(tmp_path: Path):
                 "hidden_dim": 8,
                 "depth": 1,
                 "epochs": 1,
+                "eval_interval_epochs": 1,
                 "batch_size": 4,
                 "categorical_min_count": 1,
                 "mouse_head_mode": "axis_softmax",
@@ -153,6 +154,8 @@ def test_streaming_fdm_trains_tiny_checkpoint(tmp_path: Path):
     assert checkpoint["oracle_ground_truth_control"] is False
     assert checkpoint["num_training_examples"] == 6
     assert checkpoint["target_examples"] == 2
+    assert checkpoint["convergence_report_path"]
+    assert summary["convergence_report"]["num_validation_checkpoints"] == 1
     assert Path(checkpoint["predictions_path"]).exists()
     assert Path(checkpoint["train_records_path"]).exists()
     assert summary["statistical_comparison"]["schema"] == "stat_comparison.v1"

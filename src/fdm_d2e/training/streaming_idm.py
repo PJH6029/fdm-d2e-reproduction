@@ -526,6 +526,142 @@ def _aggregate_epoch_stats(torch, stats: dict[str, Any], *, device: str, dist: d
     }
 
 
+def _predicted_tokens_from_output(
+    output: list[float],
+    *,
+    config: dict[str, Any],
+    category_vocab: list[str],
+    mouse_axis_classes: list[str],
+) -> list[str]:
+    category_threshold = float(config.get("category_threshold", 0.35))
+    category_thresholds = {token: category_threshold for token in category_vocab}
+    _dx, _dy, tokens = _prediction_from_output(
+        output,
+        base_dx=0.0,
+        base_dy=0.0,
+        residual_mouse=False,
+        category_vocab=category_vocab,
+        category_thresholds=category_thresholds,
+        category_threshold=category_threshold,
+        mouse_head_mode=str(config.get("mouse_head_mode", "axis_softmax")),
+        mouse_axis_classes=mouse_axis_classes,
+        mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
+        mouse_axis_temperature=float(config.get("mouse_axis_temperature", 1.0)),
+        mouse_output_gain=float(config.get("mouse_output_gain", 1.0)),
+    )
+    return tokens
+
+
+def _metric_path_value(metrics: dict[str, Any], path: str) -> float | None:
+    current: Any = metrics
+    for part in path.split("."):
+        if not isinstance(current, dict) or part not in current:
+            return None
+        current = current[part]
+    if current is None:
+        return None
+    return float(current)
+
+
+def _convergence_score(metrics: dict[str, Any], mode: str) -> dict[str, Any]:
+    if mode and mode != "composite_primary":
+        value = _metric_path_value(metrics, mode)
+        return {"mode": mode, "value": value, "components": {mode: value}}
+    components = {
+        "keyboard_accuracy": _metric_path_value(metrics, "keyboard.accuracy"),
+        "mouse_button_f1": _metric_path_value(metrics, "mouse_button.f1"),
+        "mouse_button_accuracy": _metric_path_value(metrics, "mouse_button.accuracy"),
+        "mouse_move_pearson": _metric_path_value(metrics, "mouse_move.pearson"),
+    }
+    values = [
+        value
+        for key, value in components.items()
+        if value is not None and key != "mouse_button_accuracy"
+    ]
+    if components["mouse_button_f1"] is None and components["mouse_button_accuracy"] is not None:
+        values.append(components["mouse_button_accuracy"])
+    return {
+        "mode": "composite_primary",
+        "value": sum(values) / len(values) if values else None,
+        "components": components,
+    }
+
+
+def _evaluate_stream_metrics(
+    torch,
+    model,
+    *,
+    target_records: str | Path,
+    stats: dict[str, Any],
+    config: dict[str, Any],
+    device: str,
+    category_vocab: list[str],
+    mouse_axis_classes: list[str],
+) -> dict[str, Any]:
+    metric = StreamingActionMetrics()
+    batch_size = int(config.get("convergence_eval_batch_size", config.get("eval_batch_size", config.get("batch_size", 2048))))
+    max_examples = config.get("convergence_eval_max_examples")
+    count = 0
+    model.eval()
+    with torch.no_grad():
+        for rows in _iter_batches(target_records, batch_size, max_examples):
+            x = _batch_features(torch, rows, feature_mode=str(stats["feature_mode"]), mean=stats["mean"], std=stats["std"], device=device)
+            outputs = model(x).detach().cpu().tolist()
+            for row, output in zip(rows, outputs):
+                tokens = _predicted_tokens_from_output(
+                    output,
+                    config=config,
+                    category_vocab=category_vocab,
+                    mouse_axis_classes=mouse_axis_classes,
+                )
+                metric.update(tokens, row)
+                count += 1
+    metrics = metric.payload()
+    score = _convergence_score(metrics, str(config.get("convergence_score", "composite_primary")))
+    return {"target_records": count, "metrics": metrics, "score": score}
+
+
+def _convergence_report(history: list[dict[str, Any]], config: dict[str, Any], *, output_dir: Path) -> dict[str, Any]:
+    patience = int(config.get("plateau_patience", 3))
+    min_relative_improvement = float(config.get("plateau_min_relative_improvement", 0.01))
+    validation_rows = [
+        row
+        for row in history
+        if isinstance(row.get("validation"), dict)
+        and row["validation"].get("score", {}).get("value") is not None
+    ]
+    values = [float(row["validation"]["score"]["value"]) for row in validation_rows]
+    recent_relative_improvements: list[float] = []
+    plateau_met = False
+    if len(values) >= patience + 1:
+        recent = values[-(patience + 1) :]
+        for prev, curr in zip(recent, recent[1:]):
+            recent_relative_improvements.append((curr - prev) / max(abs(prev), 1e-9))
+        plateau_met = all(value < min_relative_improvement for value in recent_relative_improvements)
+    report = {
+        "schema": "streaming_convergence_report.v1",
+        "score_mode": str(config.get("convergence_score", "composite_primary")),
+        "direction": "higher",
+        "eval_interval_epochs": int(config.get("eval_interval_epochs", 0)),
+        "patience": patience,
+        "min_relative_improvement": min_relative_improvement,
+        "plateau_met": plateau_met,
+        "num_validation_checkpoints": len(validation_rows),
+        "recent_relative_improvements": recent_relative_improvements,
+        "history": [
+            {
+                "epoch": row["epoch"],
+                "train_loss": row.get("loss"),
+                "validation_score": row.get("validation", {}).get("score"),
+                "validation_examples": row.get("validation", {}).get("target_records"),
+            }
+            for row in history
+        ],
+        "report_path": str(output_dir / "convergence_report.json"),
+    }
+    return report
+
+
 def _predict_stream(
     torch,
     model,
@@ -545,9 +681,6 @@ def _predict_stream(
     metrics_by_model = {name: StreamingActionMetrics() for name in all_model_names}
     group_metrics_by_model: dict[str, dict[str, StreamingActionMetrics]] = {name: {} for name in all_model_names}
     cluster_metrics_by_model: dict[str, dict[str, StreamingActionMetrics]] = {name: {} for name in all_model_names}
-    category_threshold = float(config.get("category_threshold", 0.35))
-    category_thresholds = {token: category_threshold for token in category_vocab}
-    mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
     batch_size = int(config.get("eval_batch_size", config.get("batch_size", 2048)))
     max_target_examples = config.get("max_target_examples")
     model.eval()
@@ -561,19 +694,11 @@ def _predict_stream(
             x = _batch_features(torch, rows, feature_mode=str(stats["feature_mode"]), mean=stats["mean"], std=stats["std"], device=device)
             outputs = model(x).detach().cpu().tolist()
             for row, output in zip(rows, outputs):
-                _, _, tokens = _prediction_from_output(
+                tokens = _predicted_tokens_from_output(
                     output,
-                    base_dx=0.0,
-                    base_dy=0.0,
-                    residual_mouse=False,
+                    config=config,
                     category_vocab=category_vocab,
-                    category_thresholds=category_thresholds,
-                    category_threshold=category_threshold,
-                    mouse_head_mode=mouse_head_mode,
                     mouse_axis_classes=mouse_axis_classes,
-                    mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
-                    mouse_axis_temperature=float(config.get("mouse_axis_temperature", 1.0)),
-                    mouse_output_gain=float(config.get("mouse_output_gain", 1.0)),
                 )
                 confidence = max(0.05, min(0.99, 1.0 / (1.0 + len(tokens))))
                 pseudo = {
@@ -707,6 +832,20 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         device=device,
     )
     history = []
+    convergence_report = {
+        "schema": "streaming_convergence_report.v1",
+        "score_mode": str(config.get("convergence_score", "composite_primary")),
+        "direction": "higher",
+        "eval_interval_epochs": int(config.get("eval_interval_epochs", 0)),
+        "patience": int(config.get("plateau_patience", 3)),
+        "min_relative_improvement": float(config.get("plateau_min_relative_improvement", 0.01)),
+        "plateau_met": False,
+        "num_validation_checkpoints": 0,
+        "recent_relative_improvements": [],
+        "history": [],
+        "report_path": str(out_dir / "convergence_report.json"),
+    }
+    eval_interval_epochs = int(config.get("eval_interval_epochs", 0))
     for epoch in range(int(config.get("epochs", 3))):
         join_context = train_model.join() if dist["enabled"] else nullcontext()
         with join_context:
@@ -726,8 +865,23 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             )
         epoch_stats = _aggregate_epoch_stats(torch, epoch_stats, device=device, dist=dist)
         if dist["is_rank0"]:
-            history.append({"epoch": epoch + 1, **epoch_stats})
+            row = {"epoch": epoch + 1, **epoch_stats}
+            if eval_interval_epochs > 0 and ((epoch + 1) % eval_interval_epochs == 0 or (epoch + 1) == int(config.get("epochs", 3))):
+                row["validation"] = _evaluate_stream_metrics(
+                    torch,
+                    model,
+                    target_records=target_records,
+                    stats=stats,
+                    config=config,
+                    device=device,
+                    category_vocab=category_vocab,
+                    mouse_axis_classes=mouse_axis_classes,
+                )
+            history.append(row)
+            convergence_report = _convergence_report(history, config, output_dir=out_dir)
             write_json(out_dir / "train_history.json", {"schema": "streaming_idm_train_history.v1", "history": history})
+            write_json(out_dir / "convergence_report.json", convergence_report)
+        _barrier(torch, dist)
     if not dist["is_rank0"]:
         _barrier(torch, dist)
         return {
@@ -773,6 +927,8 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "metrics_path": prediction["metrics_path"],
         "label_quality_report_path": prediction["label_quality_report_path"],
         "statistical_comparison_path": prediction["statistical_comparison_path"],
+        "convergence_report_path": str(out_dir / "convergence_report.json"),
+        "convergence_plateau_met": bool(convergence_report.get("plateau_met", False)),
         "calibration": {
             "mode": "global_threshold_streaming",
             "category_threshold": float(config.get("category_threshold", 0.35)),
@@ -799,6 +955,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "metrics": prediction["metrics"],
         "label_quality_report": prediction["label_quality_report"],
         "statistical_comparison": prediction["statistical_comparison"],
+        "convergence_report": convergence_report,
         "history_tail": history[-5:],
         "device": device,
         "stats_path": str(stats_path),

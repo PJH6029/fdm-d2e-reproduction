@@ -61,6 +61,7 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
             "hidden_dim": 8,
             "depth": 1,
             "epochs": 1,
+            "eval_interval_epochs": 1,
             "batch_size": 4,
             "categorical_min_count": 1,
             "mouse_head_mode": "axis_softmax",
@@ -74,6 +75,9 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
     assert Path(summary["metadata"]["checkpoint_path"]).exists()
     assert Path(summary["metadata"]["pseudo_label_path"]).exists()
     assert Path(summary["metadata"]["label_quality_report_path"]).exists()
+    assert Path(summary["metadata"]["convergence_report_path"]).exists()
+    assert summary["convergence_report"]["num_validation_checkpoints"] == 1
+    assert summary["convergence_report"]["history"][0]["validation_score"]["mode"] == "composite_primary"
     assert summary["label_quality_report"]["baseline_metrics"]["noop"]["num_examples"] == 4
     assert "game:Apex" in summary["label_quality_report"]["groups_by_model"]["tiny_streaming_idm"]
     assert Path(summary["metadata"]["statistical_comparison_path"]).exists()

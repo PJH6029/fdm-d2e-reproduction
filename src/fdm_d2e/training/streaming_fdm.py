@@ -280,6 +280,8 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
         "torch_checkpoint_metadata": torch_summary["metadata"],
         "statistical_comparison_path": torch_summary["metadata"].get("statistical_comparison_path"),
         "metrics_path": torch_summary["metadata"].get("metrics_path"),
+        "convergence_report_path": torch_summary["metadata"].get("convergence_report_path"),
+        "convergence_plateau_met": bool(torch_summary["metadata"].get("convergence_plateau_met", False)),
         "dataset_fingerprint": split_summary["dataset_fingerprint"],
     }
     validate_named(checkpoint, "fdm_checkpoint_metadata.schema.json")
@@ -289,6 +291,7 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
         "checkpoint": checkpoint,
         "metrics": torch_summary["metrics"],
         "statistical_comparison": torch_summary["statistical_comparison"],
+        "convergence_report": torch_summary.get("convergence_report"),
         "split_summary": split_summary,
         "torch_summary_path": str(output_dir / "torch_train_summary.json"),
         "predictions_path": str(torch_summary["predictions_path"]),

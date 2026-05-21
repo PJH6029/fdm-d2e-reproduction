@@ -52,11 +52,22 @@ The script runs a GPU smoke check, launches the streaming action trainer through
 - `outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json`
 - `outputs/fdm_streaming_d2e_full_compact/summary.json`
 - `outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt`
+- `outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json`
 - `outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl`
 - `outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json`
 - `outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json`
 - `artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json`
 - `artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json`
+- `artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv`
+
+`configs/model/fdm_streaming_d2e_full_compact.yaml` enables per-epoch
+validation checkpoints and a preregistered plateau rule:
+
+- score: `composite_primary` over keyboard accuracy, mouse-button F1/accuracy,
+  and mouse-move Pearson when present;
+- plateau: `<1%` relative score improvement over `3` consecutive validation
+  checkpoints;
+- final full metrics/statistics are still computed on the full target stream.
 
 ## Claim boundary
 

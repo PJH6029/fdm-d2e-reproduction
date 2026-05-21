@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 73,
+  "entry_count": 100,
   "entries": [
     {
       "path": "README.md",
@@ -148,10 +148,52 @@
       "sha256": "716946df0ea0c0ba2a245c1bb5bc172580b113c7e2e4262938f6da9340f30ec2"
     },
     {
+      "path": "artifacts/sources/d2e_full_data_universe_manifest.json",
+      "kind": "evidence_artifact",
+      "bytes": 1477181,
+      "sha256": "549cd16aa992bc76c3bea9f571100fe5cc721ca706e7d50f2c9e40fd2d21c8f8"
+    },
+    {
+      "path": "artifacts/sources/d2e_full_heldout_game_split_manifest.json",
+      "kind": "evidence_artifact",
+      "bytes": 66791,
+      "sha256": "16bca1616ab35f23f6ac1d028889def00cc271b8f48808dcddb8579e277d6b11"
+    },
+    {
+      "path": "artifacts/sources/d2e_full_heldout_recording_split_manifest.json",
+      "kind": "evidence_artifact",
+      "bytes": 72346,
+      "sha256": "5120cf7abcb78c005407479f52643748bcd3e125388daf8c8ddd79f28cdd08c3"
+    },
+    {
+      "path": "artifacts/sources/d2e_full_split_contract.json",
+      "kind": "evidence_artifact",
+      "bytes": 466810,
+      "sha256": "e64e90f3745108a2813d4d4f84ee69a08f4cb7e46923371983006c481dadde98"
+    },
+    {
+      "path": "artifacts/sources/d2e_full_split_leakage_report.json",
+      "kind": "evidence_artifact",
+      "bytes": 582,
+      "sha256": "623d512fc85a4aedba822ff00079c99806d2d30c8fdbf5b6767276784ab0e922"
+    },
+    {
+      "path": "artifacts/sources/d2e_full_temporal_split_manifest.json",
+      "kind": "evidence_artifact",
+      "bytes": 283305,
+      "sha256": "0a11aeb5a529c5d2309544f34ec17b621ff22fcd7d2a112af4462e221a23ff45"
+    },
+    {
       "path": "artifacts/sources/d2e_multi_decode_shooter64_summary.json",
       "kind": "evidence_artifact",
       "bytes": 83090,
       "sha256": "e7e8b8c9a76a09d38c4d209ef96aa13f63e7577bf7d865c80319ff4770fdc58c"
+    },
+    {
+      "path": "configs/data/d2e_full_corpus.yaml",
+      "kind": "configuration",
+      "bytes": 546,
+      "sha256": "312b1664df3d9fb31c664768519c417318eeb00d277294ede8ef95bc8e824063"
     },
     {
       "path": "configs/data/d2e_real_multi_shooter64.yaml",
@@ -196,10 +238,22 @@
       "sha256": "2a0325d6c4a1ccd6fe65ff62175117ae7fb107ffca7cc72c93062f1aa97be885"
     },
     {
+      "path": "configs/model/fdm_streaming_d2e_full_compact.yaml",
+      "kind": "configuration",
+      "bytes": 1446,
+      "sha256": "83264d84cb26f65dcc99acdefbffb63f5c08415b8209029421605bee8ca1c3ef"
+    },
+    {
       "path": "configs/model/idm_predict_shooter64_train_button_recall.yaml",
       "kind": "configuration",
       "bytes": 311,
       "sha256": "df9e699811b76976b03a7928011fb4f79d4acf410faff150e6c55712f95bfb78"
+    },
+    {
+      "path": "configs/model/idm_streaming_d2e_full_compact.yaml",
+      "kind": "configuration",
+      "bytes": 1129,
+      "sha256": "25f8fccd1f003c918febba27d53ed6ea2e26c76e318d94229ae9f6092aeb16e5"
     },
     {
       "path": "configs/model/idm_torch_shooter64_surface_motion.yaml",
@@ -236,6 +290,30 @@
       "kind": "documentation",
       "bytes": 1753,
       "sha256": "e112a5fd266b2ddab6e8b91c3233668d50b4f6c4151f672afab3a74309495885"
+    },
+    {
+      "path": "docs/d2e_full_data_universe.md",
+      "kind": "documentation",
+      "bytes": 1918,
+      "sha256": "f8d8d7ac33ca77a31fa9e7280327cf1a37b2fb08f4058de909eb1657d1a55919"
+    },
+    {
+      "path": "docs/d2e_full_fdm_pipeline.md",
+      "kind": "documentation",
+      "bytes": 3364,
+      "sha256": "918e354e76a4514ceae309ac08023d159e5b35b91dbcc389a1f9885f0833edad"
+    },
+    {
+      "path": "docs/d2e_full_idm_pipeline.md",
+      "kind": "documentation",
+      "bytes": 3249,
+      "sha256": "e00092d112f0a37f93898a255b33050e5d281461bd0736c3cfb6fb6d0e54de55"
+    },
+    {
+      "path": "docs/d2e_full_split_contract.md",
+      "kind": "documentation",
+      "bytes": 1134,
+      "sha256": "9cc73cfd7b53b77ca0a00fd9741ac18d11c66af45912c3da5f33e7f7038d14c0"
     },
     {
       "path": "docs/d2e_real_ingestion.md",
@@ -304,10 +382,22 @@
       "sha256": "15ef0f7563e29b03e954743f8676f0ef97cb28c5574504cc2adc4eb3c8e1180b"
     },
     {
+      "path": "scripts/build_data_universe_manifest.py",
+      "kind": "reproduction_script",
+      "bytes": 5100,
+      "sha256": "52037b51a23e5aa4c30e661fe23e9f81e6f9ae6d978b43ef56f6048e1aeae643"
+    },
+    {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 6432,
-      "sha256": "047aa85d33bea448abcec6f57ab6cc242714d5333364d9dd0afc798d86cfedca"
+      "bytes": 7733,
+      "sha256": "330acacea0c82f8410afeab3ce44db7b228bd29966934db9b23a4e8448208743"
+    },
+    {
+      "path": "scripts/build_split_contract.py",
+      "kind": "reproduction_script",
+      "bytes": 4118,
+      "sha256": "10505c6fbd6935273981937170077ace15a8e494955bdcb359996fd1dd895b47"
     },
     {
       "path": "scripts/calibrate_fdm_predictions.py",
@@ -316,10 +406,22 @@
       "sha256": "6747a4d4fb5c71eeabddead2ebf15c90e5162ebfef3a305b2614f103922e2894"
     },
     {
+      "path": "scripts/extract_d2e_full_corpus.py",
+      "kind": "reproduction_script",
+      "bytes": 12911,
+      "sha256": "8d41160d3013408eaffb442630177f350caa2a1b9dc750eeb4180afbdf9f9d85"
+    },
+    {
       "path": "scripts/extract_d2e_real_multi.py",
       "kind": "reproduction_script",
       "bytes": 4431,
       "sha256": "30112c927038b5b0925c88759d4f8f095928b86bbd1edd1e19ca4242334dd080"
+    },
+    {
+      "path": "scripts/merge_d2e_full_corpus_shards.py",
+      "kind": "reproduction_script",
+      "bytes": 3949,
+      "sha256": "7c8cccf7b738d61a2da743c814065f8e73b35343cf6d5ba131a5d5b902ea6155"
     },
     {
       "path": "scripts/predict_idm_torch.py",
@@ -332,6 +434,18 @@
       "kind": "reproduction_script",
       "bytes": 979,
       "sha256": "9710a0173c0b69eca9536fb6aa219c54bcbbd8d4768670f0975c2b043add76c6"
+    },
+    {
+      "path": "scripts/run_g003_d2e_full_idm_parallel.sh",
+      "kind": "reproduction_script",
+      "bytes": 3620,
+      "sha256": "29a11c2c8c69a27c80c9228adfa9a7a71466373fbd802ead007339a79c4cc6aa"
+    },
+    {
+      "path": "scripts/run_g004_d2e_full_fdm_4xh200.sh",
+      "kind": "reproduction_script",
+      "bytes": 3166,
+      "sha256": "2c48a97fb88ba7c162f3f07b75ae9303fedee957d8c67eb00c58120f7ac22806"
     },
     {
       "path": "scripts/run_game_harness_eval.py",
@@ -358,10 +472,28 @@
       "sha256": "9a97cbd6d7187efd8b68a26185772c484cd41e03375ab4de738e274c68423d8c"
     },
     {
+      "path": "scripts/train_fdm_streaming.py",
+      "kind": "reproduction_script",
+      "bytes": 1147,
+      "sha256": "d367654d948b9e35e0b4397886e4eb21628a8c107690e5176162281f1a59868b"
+    },
+    {
+      "path": "scripts/train_idm_streaming.py",
+      "kind": "reproduction_script",
+      "bytes": 1339,
+      "sha256": "d19fc17a0936e16169562fa5332e2f78bddc13b2e75884f581427e57a468a460"
+    },
+    {
       "path": "scripts/train_idm_torch.py",
       "kind": "reproduction_script",
       "bytes": 1249,
       "sha256": "0582dc0241445d895f6f9344d05f2c39b2f853369b51ab0ceeb5c2300b8360e2"
+    },
+    {
+      "path": "src/fdm_d2e/data/full_corpus.py",
+      "kind": "other",
+      "bytes": 6632,
+      "sha256": "fb8faea4848090da18de88d73d516000c8f1e85d5fbea5ba4a9954615e77b753"
     },
     {
       "path": "src/fdm_d2e/eval/action_metrics.py",
@@ -400,6 +532,18 @@
       "sha256": "4ca845236d692917fcba2fff21b7794741511e6682c9dcfe1f0a8a73ccda8619"
     },
     {
+      "path": "src/fdm_d2e/training/streaming_fdm.py",
+      "kind": "other",
+      "bytes": 14410,
+      "sha256": "dd2bf9319f52a68eb4c8ca95f0d2f8a17d1e6d3ac3179dc4b4cd7add6b636e20"
+    },
+    {
+      "path": "src/fdm_d2e/training/streaming_idm.py",
+      "kind": "other",
+      "bytes": 41915,
+      "sha256": "7209518e4cf5ae50b5a5096c76e5e3c754eef15598f31de3fac415aa70f73c3a"
+    },
+    {
       "path": "src/fdm_d2e/training/torch_idm.py",
       "kind": "other",
       "bytes": 81917,
@@ -430,6 +574,12 @@
       "sha256": "f33eecd4baadb0f243349e45752bc29d821a61326c41d9a875fc318a7cb13a68"
     },
     {
+      "path": "tests/test_full_corpus_extraction_contract.py",
+      "kind": "other",
+      "bytes": 2953,
+      "sha256": "d9812df72fe92b66ffc6a00e9155afb045a3ba354b63a05e619e12ba33f85e84"
+    },
+    {
       "path": "tests/test_game_harness_contract.py",
       "kind": "other",
       "bytes": 3213,
@@ -440,6 +590,18 @@
       "kind": "other",
       "bytes": 3170,
       "sha256": "7dd1b9dd9b9656a15913ee62df81a97dcf6beb4882e877dca6929a528e43cabe"
+    },
+    {
+      "path": "tests/test_streaming_fdm_contract.py",
+      "kind": "other",
+      "bytes": 5907,
+      "sha256": "d15472a2282313d1b06c830171cfd580c667773ff073abd35f9c74e4fc9498ea"
+    },
+    {
+      "path": "tests/test_streaming_idm_contract.py",
+      "kind": "other",
+      "bytes": 3481,
+      "sha256": "0b82ca77b177b3f8d3031d2d186e056b52e64e2fc3ad6662c00c6e6efbd37601"
     }
   ],
   "notes": [
