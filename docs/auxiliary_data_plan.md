@@ -65,6 +65,23 @@ Build the manifest from explicit materialization/eval evidence rather than editi
 uv run python scripts/build_g005_aux_namespace_manifest.py   --source-evidence artifacts/aux/<source>_materialization.json   --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json   --completion-ready
 ```
 
+After the D2E+aux training/ablation run finishes, run the G005 finalizer before
+checkpointing:
+
+```bash
+uv run python scripts/finalize_g005_aux_best_model.py \
+  --source-evidence artifacts/aux/<source>_materialization.json \
+  --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json \
+  --completion-ready
+```
+
+The finalizer builds or reuses the namespace manifest, requires the G005 run
+summary, runs `scripts/validate_g005_aux_completion.py` through the same
+completion-audit implementation, and writes
+`artifacts/aux/g005_aux_finalization_summary.json`. It does not mutate OMX
+state; checkpoint `G005-aux-data-best-model` only after the finalizer and
+`artifacts/aux/g005_aux_completion_audit.json` report pass.
+
 ## Source evidence summary
 
 - MineRL 2019 Zenodo: backup of human Minecraft demonstrations with video feed and actions;

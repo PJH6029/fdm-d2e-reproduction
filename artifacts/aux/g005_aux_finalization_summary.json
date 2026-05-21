@@ -1,0 +1,50 @@
+{
+  "schema": "g005_aux_finalization.v1",
+  "status": "fail",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "actions": [
+    {
+      "name": "namespace_manifest",
+      "status": "blocked_missing_source_evidence",
+      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/artifacts/aux/g005_aux_namespace_manifest.json",
+      "exists": false
+    },
+    {
+      "name": "run_summary",
+      "path": "artifacts/aux/g005_d2e_aux_train_run.json",
+      "exists": false,
+      "exit_code": null
+    },
+    {
+      "name": "g005_completion_audit",
+      "output": "artifacts/aux/g005_aux_completion_audit.json",
+      "status": "fail",
+      "error_count": 27
+    }
+  ],
+  "namespace_manifest_path": "artifacts/aux/g005_aux_namespace_manifest.json",
+  "namespace_manifest_status": "blocked_missing_source_evidence",
+  "namespace_completion_ready": null,
+  "run_summary": null,
+  "g005_audit_status": "fail",
+  "g005_audit_error_count": 27,
+  "findings": [
+    {
+      "severity": "error",
+      "code": "namespace_manifest_not_ready",
+      "status": "blocked_missing_source_evidence",
+      "error": null
+    },
+    {
+      "severity": "error",
+      "code": "missing_run_summary",
+      "path": "artifacts/aux/g005_d2e_aux_train_run.json"
+    },
+    {
+      "severity": "error",
+      "code": "g005_completion_audit_not_pass",
+      "error_count": 27
+    }
+  ],
+  "claim_boundary": "Finalizes artifacts for the G005 D2E+aux best-model lane after D2E-only gates and aux training/ablation evidence exist; it does not checkpoint G005 or weaken D2E-only prerequisites."
+}

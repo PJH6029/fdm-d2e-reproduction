@@ -207,6 +207,12 @@ without mutating OMX state.
 
 Do **not** checkpoint `G005-aux-data-best-model` complete until `scripts/validate_g005_aux_completion.py` reports `status=pass` in `artifacts/aux/g005_aux_completion_audit.json`. This audit requires G003/G004 complete, selected aux provenance/storage policy, `artifacts/aux/g005_aux_namespace_manifest.json` with `completion_ready=true`, separated `outputs/aux/<dataset_id>/...` namespaces, source-specific action heads, byte-identical D2E eval-manifest hashes for D2E-only vs D2E+aux, ablation across all required splits, no aux leakage into D2E heldouts, target split tags, prediction coverage, and run evidence. Build that namespace manifest with `scripts/build_g005_aux_namespace_manifest.py` from explicit per-source materialization evidence and D2E eval hash evidence rather than editing it by hand.
 
+Latest G005 finalization helper: use
+`uv run python scripts/finalize_g005_aux_best_model.py --source-evidence <...> --eval-manifest-hashes <...> --completion-ready`
+after D2E-only G003/G004 gates and the D2E+aux training/ablation run finish. It
+builds/reuses the namespace manifest, requires G005 run summary evidence, runs
+the G005 completion audit, and does not mutate OMX state.
+
 ## G006 completion gate
 
 Do **not** checkpoint `G006-evaluation-failure-analysis` complete until `scripts/validate_g006_completion.py` reports `status=pass` in `artifacts/eval/g006_completion_audit.json`. This audit requires G003/G004/G005 complete, endpoint statistics, failure analysis, claim taxonomy, readiness audit, final artifact-build summary, required splits/endpoints, required failure axes, documented non-rejections/examples, required claim states with evidence paths for claimable/documented claims, and forbidden claim boundaries.

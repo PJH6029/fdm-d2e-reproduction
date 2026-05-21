@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 192,
+  "entry_count": 195,
   "entries": [
     {
       "path": "README.md",
@@ -19,7 +19,13 @@
       "path": "artifacts/aux/g005_aux_completion_audit.json",
       "kind": "evidence_artifact",
       "bytes": 8469,
-      "sha256": "4ccdbbdb0b4e89185fbd2c174ef68cc0fad5a3c0798ad6caab0947ddf681d867"
+      "sha256": "7c8e9068c5b4eb809bbbdc077e1ab18039258865801361af82bca033be39b58f"
+    },
+    {
+      "path": "artifacts/aux/g005_aux_finalization_summary.json",
+      "kind": "evidence_artifact",
+      "bytes": 1617,
+      "sha256": "9167d52d04afff05d67a13435dc7854fbcfad1a43717186b2880df0f6457a6c0"
     },
     {
       "path": "artifacts/eval/final_claim_taxonomy.json",
@@ -223,13 +229,13 @@
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "kind": "evidence_artifact",
       "bytes": 61910,
-      "sha256": "0eca3b3c94ad12ecc10ff54942bc1fd90d23dcf865a7eff1610866b911ce01c4"
+      "sha256": "92b137d59bf99496ea4e0f0f5e7d41de5a64e9a1de4b84129204b85dedb324c4"
     },
     {
       "path": "artifacts/reproducibility/g009_completion_audit.json",
       "kind": "evidence_artifact",
       "bytes": 3901,
-      "sha256": "dcaa08354261e2308f0d760947d9e9b41f221d9dcb01a82633181c21a8144be6"
+      "sha256": "71d8530e8326a1b56312597140771b0ca2c0b2f6a146d52ea026678e33c01a2d"
     },
     {
       "path": "artifacts/runtime/g007_completion_audit.json",
@@ -474,8 +480,8 @@
     {
       "path": "docs/auxiliary_data_plan.md",
       "kind": "documentation",
-      "bytes": 5430,
-      "sha256": "d32bfb0d7d1eca3c2c51d1fa42dd800fa2bea7bed61014f0e1bad6b2d2e2bb53"
+      "bytes": 6157,
+      "sha256": "3578f99f7e8548e89cffb2d9ee1071b814cb45e544560a6807767114fa23f492"
     },
     {
       "path": "docs/baselines_statistics.md",
@@ -648,8 +654,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 12775,
-      "sha256": "d873791adbcfa6a8c846c5a259fe343eac9c9000b9ac93b73ef6d911ad79d765"
+      "bytes": 12918,
+      "sha256": "36d56a50f31a2418b28639ac24239a12b23bf864ac99b9d05c0ec32d9d472230"
     },
     {
       "path": "scripts/build_split_contract.py",
@@ -692,6 +698,12 @@
       "kind": "reproduction_script",
       "bytes": 6698,
       "sha256": "2301ce510cd1bdd4e1bc313ec19778324a4e33478b0d6fecb12180935dd82aed"
+    },
+    {
+      "path": "scripts/finalize_g005_aux_best_model.py",
+      "kind": "reproduction_script",
+      "bytes": 7389,
+      "sha256": "7066123e846a97e65b1301eecf4cf2a5f485e0f84b09741d8d67e7d4e7c66b4d"
     },
     {
       "path": "scripts/merge_d2e_full_corpus_shards.py",
@@ -1070,6 +1082,12 @@
       "kind": "other",
       "bytes": 10220,
       "sha256": "b1f99bc2cf01627eae9322e4aadd9d1d992f11fcf596602cd9cf600068b30bdf"
+    },
+    {
+      "path": "tests/test_g005_finalization.py",
+      "kind": "other",
+      "bytes": 8870,
+      "sha256": "084c470dddb554364d016033276dce8b01409b2f591461715e009782cdbb6d19"
     },
     {
       "path": "tests/test_g005_namespace_manifest_builder.py",
