@@ -19,6 +19,7 @@ These instructions apply to this repository and all child paths unless a deeper 
 
 - Prefer `uv` for dependency sync, Python execution, tests, and training/cluster commands.
 - Commit regularly after coherent, verified milestones. Do not accumulate one huge commit.
+- Treat sustained 4×H200 GPU idle time as a blocker/risk for this research ultragoal. During MLXP runs, actively monitor utilization, separate expected CPU/IO materialization from real GPU training, and prefer sharded/parallel/cache/prediction implementations that minimize idle GPU wall-clock while preserving completion audits and reproducibility artifacts.
 - Use the Lore commit protocol for every commit: intent-first subject plus meaningful trailers (`Constraint:`, `Rejected:`, `Confidence:`, `Scope-risk:`, `Directive:`, `Tested:`, `Not-tested:`). Include `Co-authored-by: OmX <omx@oh-my-codex.dev>` when appropriate.
 - Preserve configs, manifests, hashes, dataset fingerprints, split contracts, checkpoints, predictions, metrics, reports, and monitor artifacts. Future agents should resume from committed files, not chat history.
 - Keep claims evidence-bound. If a metric/harness claim lacks committed evidence, phrase it as pending/future work.

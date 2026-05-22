@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from fdm_d2e.io_utils import read_jsonl
-from fdm_d2e.training.streaming_fdm import materialize_fdm_streaming_splits, recover_streaming_fdm_outputs_from_checkpoint, train_streaming_fdm
+from fdm_d2e.training.streaming_fdm import ensure_fdm_canonical_records, materialize_fdm_streaming_splits, recover_streaming_fdm_outputs_from_checkpoint, train_streaming_fdm
 from fdm_d2e.training.torch_idm import torch_available
 
 
@@ -270,6 +270,78 @@ def test_streaming_fdm_parallel_materialization_uses_prediction_parts_and_target
     assert target_rows[0]["prior_action_tokens"] == ["NOOP"]
     assert target_rows[1]["prior_action_tokens"] == target_a[0]["ground_truth_tokens"]
     assert target_rows[2]["prior_action_tokens"] == ["NOOP"]
+
+
+def test_streaming_fdm_parallel_materialization_can_defer_canonical_monoliths(tmp_path: Path):
+    train_records = [_record(idx, "d2e_480p:Apex/train_a") for idx in range(3)]
+    target_a = [_record(idx + 10, "d2e_original:Celeste/target_a") for idx in range(2)]
+    target_b = [_record(idx + 12, "d2e_original:Celeste/target_b") for idx in range(1)]
+    target_records = [*target_a, *target_b]
+    labels = [_label(row, idx) for idx, row in enumerate(train_records)]
+    records_path = tmp_path / "train_core.jsonl"
+    labels_path = tmp_path / "labels.jsonl"
+    target_path = tmp_path / "target_all_eval.jsonl"
+    train_shard = tmp_path / "source_shards" / "shard_0" / "train_core.jsonl"
+    target_shard_a = tmp_path / "source_shards" / "shard_0" / "target_all_eval.jsonl"
+    target_shard_b = tmp_path / "source_shards" / "shard_1" / "target_all_eval.jsonl"
+    labels_part = tmp_path / "prediction_parts" / "part_000" / "pseudolabels.jsonl"
+    for path, rows in [
+        (records_path, train_records),
+        (labels_path, labels),
+        (target_path, target_records),
+        (train_shard, train_records),
+        (target_shard_a, target_a),
+        (target_shard_b, target_b),
+        (labels_part, labels),
+    ]:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        _write_jsonl(path, rows)
+    prediction_summary = tmp_path / "prediction_summary.json"
+    prediction_summary.write_text(
+        json.dumps(
+            {
+                "schema": "streaming_idm_predict_summary.v1",
+                "records": 3,
+                "prediction_resume": {
+                    "write_mode": "parallel_parts",
+                    "parts": [
+                        {
+                            "part_index": 0,
+                            "records": 3,
+                            "record_paths": [str(train_shard)],
+                            "pseudo_label_path": str(labels_part),
+                        }
+                    ],
+                },
+            }
+        )
+    )
+
+    summary = materialize_fdm_streaming_splits(
+        {
+            "records_path": str(records_path),
+            "labels_path": str(labels_path),
+            "target_records_path": str(target_path),
+            "target_records_glob": str(tmp_path / "source_shards" / "shard_*" / "target_all_eval.jsonl"),
+            "train_prediction_summary_path": str(prediction_summary),
+            "output_dir": str(tmp_path / "fdm_deferred"),
+            "materialization_workers": 2,
+            "defer_canonical_materialization": True,
+        }
+    )
+
+    assert summary["canonical_materialization"]["status"] == "deferred"
+    assert not Path(summary["train_records_path"]).exists()
+    assert not Path(summary["target_records_path"]).exists()
+    assert len(summary["train_record_paths"]) == 1
+    assert len(read_jsonl(summary["train_record_paths"][0])) == 3
+
+    canonical = ensure_fdm_canonical_records(summary)
+    assert canonical["status"] == "complete"
+    assert canonical["train_rows"] == 3
+    assert canonical["target_rows"] == 3
+    assert len(read_jsonl(summary["train_records_path"])) == 3
+    assert len(read_jsonl(summary["target_records_path"])) == 3
 
 
 def test_streaming_fdm_rejects_misaligned_labels(tmp_path: Path):

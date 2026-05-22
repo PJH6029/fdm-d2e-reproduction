@@ -460,8 +460,16 @@ def _parallel_materialize_fdm_explicit_target(
     target_results = sorted(target_results, key=lambda item: int(item["part_index"]))
     train_part_paths = [Path(item["path"]) for item in train_results]
     target_part_paths = [Path(item["path"]) for item in target_results]
-    train_rows = _concat_jsonl_files(train_part_paths, train_records_path)
-    target_rows = _concat_jsonl_files(target_part_paths, target_records_path)
+    defer_canonical = bool(config.get("defer_canonical_materialization", False))
+    train_rows = sum(int(item["counts"]["train"]) for item in train_results)
+    target_rows = sum(int(item["counts"]["target"]) for item in target_results)
+    if not defer_canonical:
+        train_rows = _concat_jsonl_files(train_part_paths, train_records_path)
+        target_rows = _concat_jsonl_files(target_part_paths, target_records_path)
+    else:
+        for stale_path in (train_records_path, target_records_path):
+            if stale_path.exists() or stale_path.is_symlink():
+                stale_path.unlink()
     train_shard_paths = _link_parts_as_shards(train_part_paths, output_dir, prefix="fdm_train")
     target_shard_paths = _link_parts_as_shards(target_part_paths, output_dir, prefix="fdm_target")
     counts = _merge_fdm_counts(
@@ -471,7 +479,7 @@ def _parallel_materialize_fdm_explicit_target(
     if int(counts["train"]) != train_rows:
         raise ValueError(f"parallel train concat count mismatch: counts={counts['train']} concat={train_rows}")
     if int(counts["target"]) != target_rows:
-        raise ValueError(f"parallel target concat count mismatch: counts={counts['target']} concat={target_rows}")
+        raise ValueError(f"parallel target count mismatch: counts={counts['target']} rows={target_rows}")
     if int(train_prediction_summary.get("records", train_rows)) != train_rows:
         raise ValueError(
             f"parallel train count does not match IDM prediction summary: "
@@ -503,6 +511,7 @@ def _parallel_materialize_fdm_explicit_target(
         "parallel_materialization": {
             "enabled": True,
             "workers": max_workers,
+            "defer_canonical_materialization": defer_canonical,
             "train_prediction_summary_path": str(summary_path),
             "target_records_glob": str(config.get("target_records_glob", "")),
             "target_source_record_paths": [str(path) for path in target_record_paths],
@@ -526,6 +535,15 @@ def _parallel_materialize_fdm_explicit_target(
             ],
             "recording_shard_assumption": bool(config.get("materialization_assume_recording_shards", False)),
             "claim_boundary": "Parallel materialization uses recording-sharded D2E extraction parts; prior-action state is local to each recording shard.",
+        },
+        "canonical_materialization": {
+            "deferred": defer_canonical,
+            "status": "deferred" if defer_canonical else "complete",
+            "train_records_path": str(train_records_path),
+            "target_records_path": str(target_records_path),
+            "train_source_paths": [str(path) for path in train_shard_paths],
+            "target_source_paths": [str(path) for path in target_shard_paths],
+            "claim_boundary": "Canonical monoliths are audit/repro artifacts; sharded paths are the training and streaming-eval inputs.",
         },
         "fdm_train_fraction": train_fraction,
         "min_target_per_recording": min_target_per_recording,
@@ -794,6 +812,69 @@ def _fdm_torch_config(config: dict[str, Any], split_summary: dict[str, Any], *, 
     return torch_cfg, train_record_paths, target_record_paths, model_name
 
 
+def ensure_fdm_canonical_records(split_summary: dict[str, Any], *, force: bool = False) -> dict[str, Any]:
+    """Build audit-facing FDM monolith JSONLs from training/eval shards.
+
+    Full-corpus G004 trains and evaluates from shard paths to keep GPUs fed.
+    The large canonical monolith files are still required by completion audits
+    and reproducibility manifests, but they do not need to block the start of
+    DDP training.  This helper materializes them after GPU-relevant work or
+    during finalization.
+    """
+
+    canonical = dict(split_summary.get("canonical_materialization") or {})
+    train_records_path = Path(canonical.get("train_records_path") or split_summary["train_records_path"])
+    target_records_path = Path(canonical.get("target_records_path") or split_summary["target_records_path"])
+    train_source_paths = [Path(path) for path in canonical.get("train_source_paths") or split_summary.get("train_record_paths", [])]
+    target_source_paths = [Path(path) for path in canonical.get("target_source_paths") or split_summary.get("target_record_paths", [])]
+    if not train_source_paths or not target_source_paths:
+        raise ValueError("cannot build FDM canonical records without train/target source shard paths")
+
+    train_expected = int((split_summary.get("counts") or {}).get("train", 0))
+    target_expected = int((split_summary.get("counts") or {}).get("target", 0))
+
+    def existing_rows(path: Path) -> int | None:
+        if not path.exists() or not path.is_file() or force:
+            return None
+        rows = sum(1 for line in path.open() if line.strip())
+        return rows
+
+    train_rows = existing_rows(train_records_path)
+    train_built = False
+    if train_rows is None or train_rows != train_expected:
+        train_rows = _concat_jsonl_files(train_source_paths, train_records_path)
+        train_built = True
+    target_rows = existing_rows(target_records_path)
+    target_built = False
+    if target_rows is None or target_rows != target_expected:
+        target_rows = _concat_jsonl_files(target_source_paths, target_records_path)
+        target_built = True
+    if train_expected and train_rows != train_expected:
+        raise ValueError(f"canonical FDM train count mismatch: expected={train_expected} actual={train_rows}")
+    if target_expected and target_rows != target_expected:
+        raise ValueError(f"canonical FDM target count mismatch: expected={target_expected} actual={target_rows}")
+    canonical.update(
+        {
+            "deferred": False,
+            "status": "complete",
+            "train_records_path": str(train_records_path),
+            "target_records_path": str(target_records_path),
+            "train_source_paths": [str(path) for path in train_source_paths],
+            "target_source_paths": [str(path) for path in target_source_paths],
+            "train_rows": int(train_rows),
+            "target_rows": int(target_rows),
+            "train_built": train_built,
+            "target_built": target_built,
+            "claim_boundary": "Canonical monoliths are audit/repro artifacts; sharded paths are the training and streaming-eval inputs.",
+        }
+    )
+    split_summary["canonical_materialization"] = canonical
+    split_summary_path = Path(split_summary.get("split_summary_path") or Path(split_summary["train_records_path"]).parent / "fdm_streaming_split_summary.json")
+    if split_summary_path.exists():
+        write_json(split_summary_path, split_summary)
+    return canonical
+
+
 def _write_fdm_summary_from_torch_summary(
     config: dict[str, Any],
     *,
@@ -941,6 +1022,7 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
             "world_size": torch_summary.get("world_size"),
             "status": "worker_complete",
         }
+    ensure_fdm_canonical_records(split_summary)
     return _write_fdm_summary_from_torch_summary(
         config,
         split_summary=split_summary,
@@ -967,6 +1049,7 @@ def recover_streaming_fdm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
     torch_cfg["resume_predictions"] = bool(config.get("resume_predictions", torch_cfg.get("resume_predictions", True)))
     torch_recovery = recover_streaming_idm_outputs_from_checkpoint(torch_cfg)
     torch_summary = read_json(output_dir / "torch_train_summary.json")
+    ensure_fdm_canonical_records(split_summary)
     summary = _write_fdm_summary_from_torch_summary(
         config,
         split_summary=split_summary,

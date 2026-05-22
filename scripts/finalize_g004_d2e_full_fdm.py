@@ -13,6 +13,7 @@ from fdm_d2e.config import load_config
 from fdm_d2e.eval.split_statistics import write_split_statistical_comparisons
 from fdm_d2e.io_utils import write_json
 from fdm_d2e.reporting.g004_completion import write_g004_full_fdm_completion_audit
+from fdm_d2e.training.streaming_fdm import ensure_fdm_canonical_records
 
 
 DEFAULT_SUMMARY_OUT = "artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json"
@@ -68,6 +69,15 @@ def _maybe_build_split_stats(args: argparse.Namespace, root: Path) -> dict[str, 
     return {"status": _status_from_payload(payload) or "unknown", "reason": "built", "summary_path": str(summary_path), "payload": payload, **inputs}
 
 
+def _maybe_build_canonical_records(args: argparse.Namespace, root: Path) -> dict[str, Any]:
+    split_summary_path = _path(root, args.split_summary)
+    if not split_summary_path.exists():
+        return {"status": "skipped", "reason": "missing_split_summary", "split_summary": args.split_summary}
+    split_summary = json.loads(split_summary_path.read_text(encoding="utf-8"))
+    canonical = ensure_fdm_canonical_records(split_summary, force=args.force_canonical_records)
+    return {"status": canonical.get("status", "unknown"), "split_summary": args.split_summary, "canonical": canonical}
+
+
 def finalize(args: argparse.Namespace) -> dict[str, Any]:
     root = Path(args.root).resolve()
     findings: list[dict[str, Any]] = []
@@ -83,6 +93,8 @@ def finalize(args: argparse.Namespace) -> dict[str, Any]:
         actions.append({"name": "run_summary", "path": args.run_summary, "exit_code": run_summary.get("exit_code")})
         if run_summary.get("exit_code") != 0:
             findings.append({"severity": "error", "code": "run_summary_exit_nonzero", "actual": run_summary.get("exit_code")})
+        canonical = _maybe_build_canonical_records(args, root)
+        actions.append({"name": "canonical_records", **canonical})
         split_stats = _maybe_build_split_stats(args, root)
         actions.append({"name": "split_stats", **{k: v for k, v in split_stats.items() if k != "payload"}})
         audit = write_g004_full_fdm_completion_audit(load_config(_path(root, args.g004_completion_config)), root=root, output_path=args.g004_audit_output)
@@ -117,6 +129,8 @@ def main() -> int:
     parser.add_argument("--force-split-stats", action="store_true")
     parser.add_argument("--split-stats-config", default="configs/eval/g004_split_statistics.yaml")
     parser.add_argument("--split-stats-summary", default="artifacts/eval/g004_split_statistical_comparisons_summary.json")
+    parser.add_argument("--split-summary", default="outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json")
+    parser.add_argument("--force-canonical-records", action="store_true")
     parser.add_argument("--g004-completion-config", default="configs/eval/g004_full_fdm_completion.yaml")
     parser.add_argument("--g004-audit-output", default="artifacts/fdm/g004_full_fdm_completion_audit.json")
     parser.add_argument("--run-summary", default="artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json")

@@ -47,6 +47,7 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 
 - Use the `mlxp-reservation-api` skill for SNUPI MLXP GPU reservation workflows.
 - User authorized cluster GPU reservations/scheduling without further confirmation during this ultragoal; use up to 4×H200 and design multi-GPU-capable training paths.
+- Treat sustained 4×H200 GPU idle time as a serious execution blocker/risk across the ultragoal, not merely expected overhead. For every cluster training run, monitor GPU utilization, label CPU/IO-only phases explicitly, and prefer sharded/parallel materialization, tensor-cache, prediction-worker, and recovery paths that get DDP training onto GPUs sooner while preserving audit/reproducibility artifacts.
 - Cluster workflow: edit locally, push, then pull in the pod PVC path `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction` before running GPU jobs.
 - Docker registry username: `pjh6029`; auth is already configured.
 
