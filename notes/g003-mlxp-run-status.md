@@ -598,3 +598,11 @@ uv run python scripts/audit_g003_live_health.py \
 - Local commits `60a25da` and `8148678` were pushed to origin to reduce repeated per-batch tensor/lookup setup and add opt-in chunked tensor training caches for future runs. Validation passed: `uv run pytest -q tests/test_streaming_idm_contract.py tests/test_streaming_fdm_contract.py` and full `uv run pytest -q` (`307` tests).
 - Do not pull `60a25da`/`8148678` into the pod while the active G003 torchrun is still running. Pull it after G003 training/finalization exits and before G004 launch/promotion-related follow-up, so the running source tree is not mutated under active Python workers.
 - No G003 OMX checkpoint and no aggregate `update_goal` call was made.
+
+
+### 2026-05-22 13:36 KST G003 first full-corpus IDM epoch completed
+
+- G003 accel64 4×H200 torchrun completed epoch 1 over the full train-core corpus: `19,211,006` examples, `4,692` aggregate batches, loss `1.5158540560842337`.
+- Rank0 convergence evaluation wrote `outputs/idm_streaming_d2e_full_compact_accel64/train_history.json` and `convergence_report.json` with `262,144` target examples. Composite validation score after epoch 1: `0.1058949944649953` (`keyboard_accuracy=0.006023485509156915`, `mouse_button_f1=0.002607845267847441`, `mouse_move_pearson=0.30905365261798157`).
+- The same torchrun continued into epoch 2 without restart; a 13:36 KST rank-progress probe showed all four ranks reading their first assigned epoch-2 shard paths.
+- Final G003 artifacts are still pending: epochs 2-3, final checkpoint, full target prediction/pseudolabels, metrics, split statistics, integrated finalization summary, accel64 completion audit, promotion to canonical paths, and canonical completion audit. Do not checkpoint G003 yet.
