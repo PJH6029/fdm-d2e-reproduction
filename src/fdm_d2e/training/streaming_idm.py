@@ -1522,6 +1522,7 @@ def _predict_stream(
     target_source_ids: set[str] = set()
     target_resolution_tiers: set[str] = set()
     target_eval_split_tags: set[str] = set()
+    validate_pseudolabels = bool(config.get("validate_pseudolabels", True))
     sequence_fingerprint = hashlib.sha256()
     pseudo_path = output_dir / "pseudolabels.jsonl"
     predictions_path = output_dir / "predictions.jsonl"
@@ -1648,7 +1649,8 @@ def _predict_stream(
                     "training_split_hash": str(stats["dataset_fingerprint"]),
                     "input_window": {"frame_ref": row.get("frame", {}).get("path", ""), "frame_index": int(row.get("frame", {}).get("index", 0))},
                 }
-                validate_named(pseudo, "idm_pseudolabel.schema.json")
+                if validate_pseudolabels:
+                    validate_named(pseudo, "idm_pseudolabel.schema.json")
                 pred = {
                     "sequence_id": row["sequence_id"],
                     "recording_id": row.get("recording_id"),
@@ -1717,6 +1719,7 @@ def _predict_stream(
             "enabled": resume_predictions,
             "existing_rows": resume_existing_rows,
             "write_mode": write_mode,
+            "pseudolabel_validation": validate_pseudolabels,
         },
         "metrics_state": _metric_state_map(metrics_by_model),
         "group_metrics_state": _nested_metric_state_map(group_metrics_by_model),
@@ -1975,6 +1978,7 @@ def _predict_streaming_idm_checkpoint_parallel(config: dict[str, Any], *, checkp
         "mouse_axis_temperature",
         "mouse_output_gain",
         "force_cpu",
+        "validate_pseudolabels",
     ):
         if key in config:
             prediction_config[key] = config[key]
@@ -1982,8 +1986,14 @@ def _predict_streaming_idm_checkpoint_parallel(config: dict[str, Any], *, checkp
     parts_root = ensure_dir(config.get("prediction_parts_dir", output_dir / "prediction_recovery_parts"))
     cuda_devices = config.get("prediction_cuda_devices")
     if cuda_devices is None:
-        cuda_devices = list(range(len(chunks)))
+        visible_devices = os.environ.get("CUDA_VISIBLE_DEVICES")
+        if visible_devices:
+            cuda_devices = [device.strip() for device in visible_devices.split(",") if device.strip()]
+        else:
+            cuda_devices = list(range(len(chunks)))
     cuda_devices = list(cuda_devices)
+    if not cuda_devices and not bool(config.get("force_cpu", False)):
+        raise ValueError("prediction_cuda_devices resolved to an empty list")
     payloads = []
     for part_index, record_paths in enumerate(chunks):
         payloads.append(
@@ -2055,6 +2065,7 @@ def _predict_streaming_idm_checkpoint_parallel(config: dict[str, Any], *, checkp
             "existing_rows": 0,
             "write_mode": "parallel_parts",
             "workers": len(parts),
+            "pseudolabel_validation": bool(prediction_config.get("validate_pseudolabels", True)),
             "parts": [
                 {
                     "part_index": part["part_index"],

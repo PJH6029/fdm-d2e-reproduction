@@ -30,6 +30,28 @@ def main() -> None:
         default=None,
         help="Shard-parallel checkpoint prediction workers for recovery; use 4 on 4xH200 full-corpus G003.",
     )
+    parser.add_argument(
+        "--prediction-cuda-devices",
+        default=None,
+        help=(
+            "Comma-separated CUDA devices to round-robin across prediction workers. "
+            "Defaults to CUDA_VISIBLE_DEVICES when set."
+        ),
+    )
+    parser.add_argument(
+        "--eval-batch-size",
+        type=int,
+        default=None,
+        help="Override target prediction batch size during checkpoint recovery.",
+    )
+    parser.add_argument(
+        "--no-pseudolabel-validation",
+        action="store_true",
+        help=(
+            "Skip per-row pseudolabel JSON-schema validation during recovery. "
+            "Use only when the fixed generator path is covered by tests/audits and full-corpus throughput matters."
+        ),
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
@@ -45,6 +67,12 @@ def main() -> None:
     config["resume_predictions"] = not args.no_resume_predictions
     if args.prediction_workers is not None:
         config["prediction_workers"] = int(args.prediction_workers)
+    if args.prediction_cuda_devices:
+        config["prediction_cuda_devices"] = [device.strip() for device in args.prediction_cuda_devices.split(",") if device.strip()]
+    if args.eval_batch_size is not None:
+        config["eval_batch_size"] = int(args.eval_batch_size)
+    if args.no_pseudolabel_validation:
+        config["validate_pseudolabels"] = False
 
     summary = recover_streaming_idm_outputs_from_checkpoint(config)
     print(

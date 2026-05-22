@@ -399,6 +399,8 @@ def test_streaming_idm_recovers_outputs_with_parallel_prediction_workers(tmp_pat
             "output_dir": str(output_dir),
             "summary_out": str(summary_path),
             "prediction_workers": 2,
+            "eval_batch_size": 3,
+            "validate_pseudolabels": False,
             "force_cpu": True,
         }
     )
@@ -409,8 +411,10 @@ def test_streaming_idm_recovers_outputs_with_parallel_prediction_workers(tmp_pat
     assert recovery["target_records"] == 5
     assert recovery["prediction_resume"]["write_mode"] == "parallel_parts"
     assert recovery["prediction_resume"]["workers"] == 2
+    assert recovery["prediction_resume"]["pseudolabel_validation"] is False
     assert metadata["target_records"] == 5
     assert recovered_summary["prediction_resume"]["workers"] == 2
+    assert recovered_summary["prediction_resume"]["pseudolabel_validation"] is False
     assert len(pseudo_path.read_text().splitlines()) == 5
     assert len((output_dir / "predictions.jsonl").read_text().splitlines()) == 5
 
