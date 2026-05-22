@@ -1750,10 +1750,13 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     output_dir = ensure_dir(config.get("output_dir", checkpoint_path.parent / "prediction"))
     force_cpu = bool(config.get("force_cpu", False))
     device = "cuda" if torch.cuda.is_available() and not force_cpu else "cpu"
+    prediction_workers = int(config.get("prediction_workers", 1))
+    parallel_prediction = prediction_workers > 1 and len(record_paths) > 1
+    checkpoint_device = "cpu" if parallel_prediction else device
     try:
-        checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+        checkpoint = torch.load(checkpoint_path, map_location=checkpoint_device, weights_only=False)
     except TypeError:  # pragma: no cover - older torch releases.
-        checkpoint = torch.load(checkpoint_path, map_location=device)
+        checkpoint = torch.load(checkpoint_path, map_location=checkpoint_device)
     checkpoint_config = dict(checkpoint.get("config", {}))
     prediction_config = dict(checkpoint_config)
     for key, value in config.get("prediction_overrides", {}).items():
@@ -1774,34 +1777,44 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     ):
         if key in config:
             prediction_config[key] = config[key]
-    stats = dict(checkpoint["stats"])
-    category_vocab = [str(token) for token in checkpoint.get("category_vocab", [])]
-    mouse_head_mode = str(checkpoint.get("mouse_head_mode", prediction_config.get("mouse_head_mode", "axis_softmax")))
-    mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", prediction_config.get("mouse_axis_classes", MOUSE_AXIS_CLASSES))]
-    prediction_config["mouse_head_mode"] = mouse_head_mode
-    model = _build_model(
-        torch,
-        input_dim=int(stats["input_dim"]),
-        output_dim=2 + len(category_vocab) + (2 * len(mouse_axis_classes) if mouse_head_mode == "axis_softmax" else 0),
-        hidden_dim=int(checkpoint_config.get("hidden_dim", prediction_config.get("hidden_dim", 512))),
-        depth=int(checkpoint_config.get("depth", prediction_config.get("depth", 3))),
-        dropout=float(checkpoint_config.get("dropout", prediction_config.get("dropout", 0.05))),
-        config=prediction_config,
-        feature_mode=str(stats["feature_mode"]),
-    ).to(device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    prediction = _predict_stream(
-        torch,
-        model,
-        target_records=record_paths if len(record_paths) > 1 else records_path,
-        stats=stats,
-        config=prediction_config,
-        device=device,
-        category_vocab=category_vocab,
-        mouse_axis_classes=mouse_axis_classes,
-        checkpoint_path=checkpoint_path,
-        output_dir=output_dir,
-    )
+    if parallel_prediction:
+        prediction = _predict_streaming_idm_checkpoint_parallel(
+            config,
+            checkpoint=checkpoint,
+            checkpoint_path=checkpoint_path,
+            output_dir=output_dir,
+            target_record_paths=record_paths,
+            prediction_config_base=prediction_config,
+        )
+    else:
+        stats = dict(checkpoint["stats"])
+        category_vocab = [str(token) for token in checkpoint.get("category_vocab", [])]
+        mouse_head_mode = str(checkpoint.get("mouse_head_mode", prediction_config.get("mouse_head_mode", "axis_softmax")))
+        mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", prediction_config.get("mouse_axis_classes", MOUSE_AXIS_CLASSES))]
+        prediction_config["mouse_head_mode"] = mouse_head_mode
+        model = _build_model(
+            torch,
+            input_dim=int(stats["input_dim"]),
+            output_dim=2 + len(category_vocab) + (2 * len(mouse_axis_classes) if mouse_head_mode == "axis_softmax" else 0),
+            hidden_dim=int(checkpoint_config.get("hidden_dim", prediction_config.get("hidden_dim", 512))),
+            depth=int(checkpoint_config.get("depth", prediction_config.get("depth", 3))),
+            dropout=float(checkpoint_config.get("dropout", prediction_config.get("dropout", 0.05))),
+            config=prediction_config,
+            feature_mode=str(stats["feature_mode"]),
+        ).to(device)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        prediction = _predict_stream(
+            torch,
+            model,
+            target_records=record_paths if len(record_paths) > 1 else records_path,
+            stats=stats,
+            config=prediction_config,
+            device=device,
+            category_vocab=category_vocab,
+            mouse_axis_classes=mouse_axis_classes,
+            checkpoint_path=checkpoint_path,
+            output_dir=output_dir,
+        )
     summary = {
         "schema": "streaming_idm_predict_summary.v1",
         "source_checkpoint_path": str(checkpoint_path),
@@ -1951,21 +1964,32 @@ def _concatenate_prediction_parts(parts: list[dict[str, Any]], *, output_dir: Pa
     }
 
 
-def _predict_streaming_idm_checkpoint_parallel(config: dict[str, Any], *, checkpoint: dict[str, Any], checkpoint_path: Path, output_dir: Path) -> dict[str, Any]:
+def _predict_streaming_idm_checkpoint_parallel(
+    config: dict[str, Any],
+    *,
+    checkpoint: dict[str, Any],
+    checkpoint_path: Path,
+    output_dir: Path,
+    target_record_paths: Sequence[Path] | None = None,
+    prediction_config_base: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     checkpoint_config = dict(checkpoint.get("config", {}))
-    target_record_paths = _record_paths_from_config(
-        checkpoint_config,
-        primary_key="target_records",
-        paths_key="target_record_paths",
-        glob_key="target_records_glob",
-    )
+    if target_record_paths is None:
+        target_record_paths = _record_paths_from_config(
+            checkpoint_config,
+            primary_key="target_records",
+            paths_key="target_record_paths",
+            glob_key="target_records_glob",
+        )
+    else:
+        target_record_paths = list(target_record_paths)
     if not target_record_paths:
         raise ValueError("parallel checkpoint recovery requires at least one target record path")
     workers = int(config.get("prediction_workers", 1))
     if workers <= 1 or len(target_record_paths) == 1:
         raise ValueError("parallel prediction requested without multiple workers/record paths")
     chunks = _chunk_sequence(target_record_paths, workers)
-    prediction_config = dict(checkpoint_config)
+    prediction_config = dict(prediction_config_base or checkpoint_config)
     for key in (
         "model_name",
         "endpoints",
