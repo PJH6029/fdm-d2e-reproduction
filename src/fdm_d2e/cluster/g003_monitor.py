@@ -164,6 +164,8 @@ def _classify_g003_process(parts: list[str]) -> tuple[str | None, int | None]:
         return "gpu_monitor", None
     if "scripts/merge_d2e_full_corpus_shards.py" in joined or "merge_d2e_full_corpus_shards.py" in joined:
         return "merge", None
+    if "scripts/precompute_streaming_idm_stats.py" in joined or "precompute_streaming_idm_stats.py" in joined:
+        return "idm_precompute", None
     if "scripts/train_idm_streaming.py" in joined or "train_idm_streaming.py" in joined or "torchrun" in joined:
         return "idm_train", None
     if "scripts/finalize_g003_integrated_run.py" in joined or "finalize_g003_integrated_run.py" in joined:
@@ -565,6 +567,7 @@ def build_g003_live_health_report(
     watcher = _pid_file_status(Path(watcher_pid_file), processes, from_snapshot=from_snapshot)
     gpu_monitor = _pid_file_status(Path(gpu_monitor_pid_file), processes, from_snapshot=from_snapshot)
     active_roles = sorted({str(row["role"]) for row in processes if row.get("role")})
+    precompute_active = bool(_processes_by_role(processes, "idm_precompute"))
     train_active = bool(_processes_by_role(processes, "idm_train"))
     merge_active = bool(_processes_by_role(processes, "merge"))
     finalizer_active = bool(_processes_by_role(processes, "finalizer"))
@@ -574,7 +577,7 @@ def build_g003_live_health_report(
     duplicate_active_shards = sorted(index for index, count in shard_counts.items() if count > 1)
     expected_active = min_active_extractors
     if expected_active is None:
-        expected_active = len(incomplete_shards) if incomplete_shards and not (train_active or merge_active or finalizer_active) else 0
+        expected_active = len(incomplete_shards) if incomplete_shards and not (precompute_active or train_active or merge_active or finalizer_active) else 0
     warnings: list[dict[str, Any]] = []
     errors: list[dict[str, Any]] = []
     observations: list[dict[str, Any]] = []
@@ -609,6 +612,9 @@ def build_g003_live_health_report(
         status = "blocked_live_health"
     elif train_active:
         stage = "idm_training"
+        status = "healthy_running" if parent["running"] else "parent_not_running"
+    elif precompute_active:
+        stage = "idm_stats_precompute"
         status = "healthy_running" if parent["running"] else "parent_not_running"
     elif merge_active:
         stage = "merge"

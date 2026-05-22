@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from fdm_d2e.training.streaming_idm import _distributed_runtime, predict_streaming_idm_checkpoint, train_streaming_idm
+from fdm_d2e.training.streaming_idm import _distributed_runtime, predict_streaming_idm_checkpoint, scan_streaming_idm_stats, train_streaming_idm
 from fdm_d2e.training.torch_idm import torch_available
 
 
@@ -194,3 +194,23 @@ def test_distributed_runtime_passes_configured_timeout(monkeypatch):
     assert calls["init_kwargs"]["backend"] == "nccl"
     assert calls["init_kwargs"]["timeout"].total_seconds() == 21600
     assert dist["timeout_seconds"] == 21600
+
+
+def test_streaming_idm_stats_can_scan_multiple_record_files(tmp_path: Path):
+    shard_a = tmp_path / "shard_a.jsonl"
+    shard_b = tmp_path / "shard_b.jsonl"
+    _write_jsonl(shard_a, [_record(idx, "train_core") for idx in range(3)])
+    _write_jsonl(shard_b, [_record(idx + 3, "train_core") for idx in range(3)])
+
+    stats = scan_streaming_idm_stats(
+        [shard_a, shard_b],
+        feature_mode="summary_compact_grid8_shift_surface_time",
+        categorical_min_count=1,
+        num_workers=1,
+    )
+
+    assert stats["num_examples"] == 6
+    assert stats["input_dim"] > 0
+    assert stats["source_ids"] == ["d2e_480p"]
+    assert "KEY_PRESS_87" in stats["category_vocab"]
+    assert stats["last_tokens_by_recording"]["d2e_480p:Apex/rec"]

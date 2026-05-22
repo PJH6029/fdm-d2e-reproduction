@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.config import load_config
 from fdm_d2e.io_utils import read_json, write_json
-from fdm_d2e.training.streaming_idm import scan_streaming_idm_stats
+from fdm_d2e.training.streaming_idm import scan_streaming_idm_stats_from_config
 
 
 def main() -> int:
@@ -29,11 +29,7 @@ def main() -> int:
         )
         return 0
 
-    stats = scan_streaming_idm_stats(
-        config["train_records"],
-        feature_mode=str(config.get("feature_mode", "summary_compact_grid8_shift_surface_time")),
-        categorical_min_count=int(config.get("categorical_min_count", 1)),
-    )
+    stats = scan_streaming_idm_stats_from_config(config)
     write_json(stats_path, stats)
     print(
         "precomputed streaming IDM stats: "

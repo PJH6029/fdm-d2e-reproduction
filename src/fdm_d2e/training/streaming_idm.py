@@ -3,11 +3,13 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import glob
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import timedelta
 from contextlib import nullcontext
 from collections import Counter
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Sequence
 
 from fdm_d2e.config import load_config
 from fdm_d2e.eval.statistics import cluster_bootstrap_delta, endpoint_value, holm_bonferroni
@@ -36,6 +38,38 @@ def iter_jsonl(path: str | Path) -> Iterable[dict[str, Any]]:
             yield row
 
 
+def _record_paths_from_value(value: str | Path | Sequence[str | Path]) -> list[Path]:
+    if isinstance(value, (str, Path)):
+        return [Path(value)]
+    return [Path(item) for item in value]
+
+
+def _glob_record_paths(pattern: str | Path | Sequence[str | Path] | None) -> list[Path]:
+    if pattern is None:
+        return []
+    patterns = [pattern] if isinstance(pattern, (str, Path)) else list(pattern)
+    paths: list[Path] = []
+    for item in patterns:
+        paths.extend(Path(match) for match in sorted(glob.glob(str(item))))
+    return paths
+
+
+def _record_paths_from_config(
+    config: dict[str, Any],
+    *,
+    primary_key: str,
+    paths_key: str,
+    glob_key: str,
+) -> list[Path]:
+    explicit = config.get(paths_key)
+    if explicit:
+        return _record_paths_from_value(explicit)
+    glob_paths = _glob_record_paths(config.get(glob_key))
+    if glob_paths:
+        return glob_paths
+    return _record_paths_from_value(config[primary_key])
+
+
 def _category_vocab_from_counts(counts: dict[str, int], min_count: int) -> list[str]:
     return sorted(token for token, count in counts.items() if count >= min_count)
 
@@ -52,26 +86,80 @@ def _tokens(row: dict[str, Any]) -> list[str]:
     return list(row.get("ground_truth_tokens") or ["NOOP"])
 
 
-def scan_streaming_idm_stats(train_records: str | Path, *, feature_mode: str, categorical_min_count: int = 1) -> dict[str, Any]:
+def _empty_stats_accumulator() -> dict[str, Any]:
+    return {
+        "count": 0,
+        "mean": [],
+        "m2": [],
+        "category_counts": Counter(),
+        "sequence_counts": Counter(),
+        "last_tokens_by_recording": {},
+        "last_tokens_by_game": {},
+        "source_ids": set(),
+        "resolution_tiers": set(),
+        "split_names": set(),
+        "eval_split_tags": set(),
+        "fingerprint_parts": [],
+    }
+
+
+def _merge_feature_moments(
+    *,
+    count_a: int,
+    mean_a: list[float],
+    m2_a: list[float],
+    count_b: int,
+    mean_b: list[float],
+    m2_b: list[float],
+) -> tuple[int, list[float], list[float]]:
+    if count_b == 0:
+        return count_a, mean_a, m2_a
+    if count_a == 0:
+        return count_b, list(mean_b), list(m2_b)
+    if len(mean_a) != len(mean_b):
+        raise ValueError(f"inconsistent feature dimension across record partitions: {len(mean_a)} != {len(mean_b)}")
+    total = count_a + count_b
+    merged_mean: list[float] = []
+    merged_m2: list[float] = []
+    for idx, (a_mean, b_mean) in enumerate(zip(mean_a, mean_b)):
+        delta = b_mean - a_mean
+        mean = a_mean + delta * (count_b / total)
+        m2 = m2_a[idx] + m2_b[idx] + (delta * delta) * count_a * count_b / total
+        merged_mean.append(mean)
+        merged_m2.append(m2)
+    return total, merged_mean, merged_m2
+
+
+def _latest_token_map_update(target: dict[str, tuple[int, list[str]]], key: str, timestamp_ns: Any, tokens: list[str]) -> None:
+    try:
+        timestamp = int(timestamp_ns)
+    except (TypeError, ValueError):
+        timestamp = -1
+    previous = target.get(key)
+    if previous is None or timestamp >= previous[0]:
+        target[key] = (timestamp, tokens)
+
+
+def _scan_stats_partition(path: str | Path, feature_mode: str) -> dict[str, Any]:
     count = 0
     mean: list[float] = []
     m2: list[float] = []
-    category_counts: dict[str, int] = {}
+    category_counts: Counter[str] = Counter()
     sequence_counts: Counter[tuple[str, ...]] = Counter()
-    last_tokens_by_recording: dict[str, list[str]] = {}
-    last_tokens_by_game: dict[str, list[str]] = {}
+    last_tokens_by_recording: dict[str, tuple[int, list[str]]] = {}
+    last_tokens_by_game: dict[str, tuple[int, list[str]]] = {}
     source_ids: set[str] = set()
     resolution_tiers: set[str] = set()
     split_names: set[str] = set()
     eval_split_tags: set[str] = set()
     fingerprint = hashlib.sha256()
-    for row in iter_jsonl(train_records):
+    for row in iter_jsonl(path):
         features = [float(value) for value in record_features(row, feature_mode=feature_mode)]
         if not mean:
             mean = [0.0 for _ in features]
             m2 = [0.0 for _ in features]
         if len(features) != len(mean):
-            raise ValueError(f"inconsistent feature dimension in {train_records}: {len(features)} != {len(mean)}")
+            raise ValueError(f"inconsistent feature dimension in {path}: {len(features)} != {len(mean)}")
         count += 1
         for idx, value in enumerate(features):
             delta = value - mean[idx]
@@ -80,11 +168,12 @@ def scan_streaming_idm_stats(train_records: str | Path, *, feature_mode: str, ca
         for token in row.get("ground_truth_tokens", []):
             token = str(token)
             if _is_category_token(token):
-                category_counts[token] = category_counts.get(token, 0) + 1
+                category_counts[token] += 1
         tokens = _tokens(row)
         sequence_counts[tuple(tokens)] += 1
-        last_tokens_by_recording[str(row.get("recording_id", ""))] = tokens
-        last_tokens_by_game[str(row.get("game", "unknown"))] = tokens
+        timestamp_ns = row.get("timestamp_ns")
+        _latest_token_map_update(last_tokens_by_recording, str(row.get("recording_id", "")), timestamp_ns, tokens)
+        _latest_token_map_update(last_tokens_by_game, str(row.get("game", "unknown")), timestamp_ns, tokens)
         if row.get("source_id") is not None:
             source_ids.add(str(row["source_id"]))
         if row.get("resolution_tier") is not None:
@@ -105,28 +194,134 @@ def scan_streaming_idm_stats(train_records: str | Path, *, feature_mode: str, ca
             ).encode("utf-8")
         )
         fingerprint.update(b"\n")
+    return {
+        "path": str(path),
+        "count": count,
+        "mean": mean,
+        "m2": m2,
+        "category_counts": dict(category_counts),
+        "sequence_counts": dict(sequence_counts),
+        "last_tokens_by_recording": last_tokens_by_recording,
+        "last_tokens_by_game": last_tokens_by_game,
+        "source_ids": source_ids,
+        "resolution_tiers": resolution_tiers,
+        "split_names": split_names,
+        "eval_split_tags": eval_split_tags,
+        "fingerprint": fingerprint.hexdigest(),
+    }
+
+
+def _merge_stats_partitions(partitions: Iterable[dict[str, Any]], *, train_records: str | Path | Sequence[str | Path], feature_mode: str, categorical_min_count: int) -> dict[str, Any]:
+    acc = _empty_stats_accumulator()
+    for part in partitions:
+        count, mean, m2 = _merge_feature_moments(
+            count_a=int(acc["count"]),
+            mean_a=list(acc["mean"]),
+            m2_a=list(acc["m2"]),
+            count_b=int(part.get("count", 0)),
+            mean_b=[float(value) for value in part.get("mean", [])],
+            m2_b=[float(value) for value in part.get("m2", [])],
+        )
+        acc["count"] = count
+        acc["mean"] = mean
+        acc["m2"] = m2
+        acc["category_counts"].update({str(k): int(v) for k, v in dict(part.get("category_counts", {})).items()})
+        acc["sequence_counts"].update({tuple(k): int(v) for k, v in dict(part.get("sequence_counts", {})).items()})
+        for key, value in dict(part.get("last_tokens_by_recording", {})).items():
+            timestamp, tokens = value
+            _latest_token_map_update(acc["last_tokens_by_recording"], str(key), timestamp, list(tokens))
+        for key, value in dict(part.get("last_tokens_by_game", {})).items():
+            timestamp, tokens = value
+            _latest_token_map_update(acc["last_tokens_by_game"], str(key), timestamp, list(tokens))
+        acc["source_ids"].update(str(value) for value in part.get("source_ids", set()))
+        acc["resolution_tiers"].update(str(value) for value in part.get("resolution_tiers", set()))
+        acc["split_names"].update(str(value) for value in part.get("split_names", set()))
+        acc["eval_split_tags"].update(str(value) for value in part.get("eval_split_tags", set()))
+        acc["fingerprint_parts"].append({"path": str(part.get("path", "")), "count": int(part.get("count", 0)), "fingerprint": str(part.get("fingerprint", ""))})
+
+    count = int(acc["count"])
     if count == 0:
         raise ValueError(f"no training rows found in {train_records}")
+    mean = [float(value) for value in acc["mean"]]
+    m2 = [float(value) for value in acc["m2"]]
     std = [(m2[idx] / max(1, count - 1)) ** 0.5 or 1.0 for idx in range(len(mean))]
+    fingerprint = hashlib.sha256(
+        json.dumps(
+            {
+                "feature_mode": feature_mode,
+                "partitions": sorted(acc["fingerprint_parts"], key=lambda row: row["path"]),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()
+    last_tokens_by_recording = {
+        key: list(tokens)
+        for key, (_timestamp, tokens) in sorted(dict(acc["last_tokens_by_recording"]).items())
+    }
+    last_tokens_by_game = {
+        key: list(tokens)
+        for key, (_timestamp, tokens) in sorted(dict(acc["last_tokens_by_game"]).items())
+    }
     return {
         "schema": "streaming_idm_stats.v1",
-        "train_records": str(train_records),
+        "train_records": str(train_records) if isinstance(train_records, (str, Path)) else [str(path) for path in train_records],
         "num_examples": count,
         "feature_mode": feature_mode,
         "input_dim": len(mean),
         "mean": mean,
         "std": std,
-        "category_vocab": _category_vocab_from_counts(category_counts, categorical_min_count),
-        "category_counts": category_counts,
-        "global_majority_tokens": list(sequence_counts.most_common(1)[0][0]) if sequence_counts else ["NOOP"],
+        "category_vocab": _category_vocab_from_counts(dict(acc["category_counts"]), categorical_min_count),
+        "category_counts": dict(sorted(dict(acc["category_counts"]).items())),
+        "global_majority_tokens": list(acc["sequence_counts"].most_common(1)[0][0]) if acc["sequence_counts"] else ["NOOP"],
         "last_tokens_by_recording": last_tokens_by_recording,
         "last_tokens_by_game": last_tokens_by_game,
-        "source_ids": sorted(source_ids),
-        "resolution_tiers": sorted(resolution_tiers),
-        "split_names": sorted(split_names),
-        "eval_split_tags": sorted(eval_split_tags),
-        "dataset_fingerprint": fingerprint.hexdigest(),
+        "source_ids": sorted(acc["source_ids"]),
+        "resolution_tiers": sorted(acc["resolution_tiers"]),
+        "split_names": sorted(acc["split_names"]),
+        "eval_split_tags": sorted(acc["eval_split_tags"]),
+        "dataset_fingerprint": fingerprint,
     }
+
+
+def scan_streaming_idm_stats(
+    train_records: str | Path | Sequence[str | Path],
+    *,
+    feature_mode: str,
+    categorical_min_count: int = 1,
+    num_workers: int = 1,
+) -> dict[str, Any]:
+    paths = _record_paths_from_value(train_records)
+    if len(paths) > 1 and int(num_workers) > 1:
+        workers = min(int(num_workers), len(paths))
+        partitions: list[dict[str, Any]] = []
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            futures = {pool.submit(_scan_stats_partition, path, feature_mode): path for path in paths}
+            for future in as_completed(futures):
+                partitions.append(future.result())
+        return _merge_stats_partitions(partitions, train_records=train_records, feature_mode=feature_mode, categorical_min_count=categorical_min_count)
+    return _merge_stats_partitions(
+        (_scan_stats_partition(path, feature_mode) for path in paths),
+        train_records=train_records,
+        feature_mode=feature_mode,
+        categorical_min_count=categorical_min_count,
+    )
+
+
+def scan_streaming_idm_stats_from_config(config: dict[str, Any]) -> dict[str, Any]:
+    train_record_paths = _record_paths_from_config(
+        config,
+        primary_key="train_records",
+        paths_key="train_record_paths",
+        glob_key="train_records_glob",
+    )
+    return scan_streaming_idm_stats(
+        train_record_paths if len(train_record_paths) > 1 else train_record_paths[0],
+        feature_mode=str(config.get("feature_mode", "summary_compact_grid8_shift_surface_time")),
+        categorical_min_count=int(config.get("categorical_min_count", 1)),
+        num_workers=int(config.get("precompute_num_workers", config.get("stats_num_workers", 1))),
+    )
+
 
 
 def _batch_features(torch, rows: list[dict[str, Any]], *, feature_mode: str, mean: list[float], std: list[float], device: str):
@@ -160,17 +355,30 @@ def _axis_targets(torch, rows: list[dict[str, Any]], axis_classes: list[str], *,
     )
 
 
-def _iter_batches(path: str | Path, batch_size: int, max_examples: int | None = None) -> Iterable[list[dict[str, Any]]]:
+def _iter_batches(
+    path: str | Path | Sequence[str | Path],
+    batch_size: int,
+    max_examples: int | None = None,
+    *,
+    rank: int = 0,
+    world_size: int = 1,
+    shard_by_path: bool = False,
+) -> Iterable[list[dict[str, Any]]]:
     batch: list[dict[str, Any]] = []
     seen = 0
-    for row in iter_jsonl(path):
+    for path_idx, record_path in enumerate(_record_paths_from_value(path)):
+        if shard_by_path and world_size > 1 and (path_idx % world_size) != rank:
+            continue
+        for row in iter_jsonl(record_path):
+            if max_examples is not None and seen >= max_examples:
+                break
+            batch.append(row)
+            seen += 1
+            if len(batch) >= batch_size:
+                yield batch
+                batch = []
         if max_examples is not None and seen >= max_examples:
             break
-        batch.append(row)
-        seen += 1
-        if len(batch) >= batch_size:
-            yield batch
-            batch = []
     if batch:
         yield batch
 
@@ -200,6 +408,7 @@ def _train_one_epoch(
     mouse_axis_classes: list[str],
     rank: int = 0,
     world_size: int = 1,
+    train_record_paths: Sequence[str | Path] | None = None,
 ) -> dict[str, Any]:
     batch_size = int(config.get("batch_size", 2048))
     feature_mode = str(stats["feature_mode"])
@@ -208,8 +417,19 @@ def _train_one_epoch(
     batches = 0
     examples = 0
     loss_sum = 0.0
-    for batch_idx, rows in enumerate(_iter_batches(train_records, batch_size, config.get("max_train_examples"))):
-        if world_size > 1 and (batch_idx % world_size) != rank:
+    record_paths = list(train_record_paths or _record_paths_from_value(train_records))
+    shard_by_path = len(record_paths) > 1
+    for batch_idx, rows in enumerate(
+        _iter_batches(
+            record_paths,
+            batch_size,
+            config.get("max_train_examples"),
+            rank=rank,
+            world_size=world_size,
+            shard_by_path=shard_by_path,
+        )
+    ):
+        if world_size > 1 and not shard_by_path and (batch_idx % world_size) != rank:
             continue
         x = _batch_features(torch, rows, feature_mode=feature_mode, mean=stats["mean"], std=stats["std"], device=device)
         mouse_y = _mouse_targets(torch, rows, device=device)
@@ -645,7 +865,7 @@ def _evaluate_stream_metrics(
     torch,
     model,
     *,
-    target_records: str | Path,
+    target_records: str | Path | Sequence[str | Path],
     stats: dict[str, Any],
     config: dict[str, Any],
     device: str,
@@ -720,7 +940,7 @@ def _predict_stream(
     torch,
     model,
     *,
-    target_records: str | Path,
+    target_records: str | Path | Sequence[str | Path],
     stats: dict[str, Any],
     config: dict[str, Any],
     device: str,
@@ -945,6 +1165,18 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     device = str(dist["device"])
     train_records = Path(config["train_records"])
     target_records = Path(config["target_records"])
+    train_record_paths = _record_paths_from_config(
+        config,
+        primary_key="train_records",
+        paths_key="train_record_paths",
+        glob_key="train_records_glob",
+    )
+    target_record_paths = _record_paths_from_config(
+        config,
+        primary_key="target_records",
+        paths_key="target_record_paths",
+        glob_key="target_records_glob",
+    )
     feature_mode = str(config.get("feature_mode", "summary_compact_grid8_shift_surface_time"))
     out_dir = ensure_dir(config.get("output_dir", "outputs/idm_streaming_full"))
     stats_path = out_dir / "streaming_stats.json"
@@ -956,9 +1188,10 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             stats = read_json(stats_path)
         else:
             stats = scan_streaming_idm_stats(
-                train_records,
+                train_record_paths if len(train_record_paths) > 1 else train_record_paths[0],
                 feature_mode=feature_mode,
                 categorical_min_count=int(config.get("categorical_min_count", 1)),
+                num_workers=int(config.get("precompute_num_workers", config.get("stats_num_workers", 1))),
             )
             write_json(stats_path, stats)
         if dist["enabled"]:
@@ -1023,6 +1256,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
                 mouse_axis_classes=mouse_axis_classes,
                 rank=int(dist["rank"]),
                 world_size=int(dist["world_size"]),
+                train_record_paths=train_record_paths,
             )
         epoch_stats = _aggregate_epoch_stats(torch, epoch_stats, device=device, dist=dist)
         if dist["is_rank0"]:
@@ -1031,7 +1265,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
                 row["validation"] = _evaluate_stream_metrics(
                     torch,
                     model,
-                    target_records=target_records,
+                    target_records=target_record_paths if len(target_record_paths) > 1 else target_record_paths[0],
                     stats=stats,
                     config=config,
                     device=device,
@@ -1043,8 +1277,9 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             write_json(out_dir / "train_history.json", {"schema": "streaming_idm_train_history.v1", "history": history})
             write_json(out_dir / "convergence_report.json", convergence_report)
         _barrier(torch, dist)
+    if dist["enabled"] and torch.distributed.is_initialized():
+        torch.distributed.destroy_process_group()
     if not dist["is_rank0"]:
-        _barrier(torch, dist)
         return {
             "schema": "streaming_idm_worker_summary.v1",
             "rank": int(dist["rank"]),
@@ -1067,7 +1302,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     prediction = _predict_stream(
         torch,
         model,
-        target_records=target_records,
+        target_records=target_record_paths if len(target_record_paths) > 1 else target_record_paths[0],
         stats=stats,
         config=config,
         device=device,
@@ -1154,5 +1389,4 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "predictions_path": prediction["predictions_path"],
     }
     write_json(config.get("summary_out", out_dir / "summary.json"), summary)
-    _barrier(torch, dist)
     return summary

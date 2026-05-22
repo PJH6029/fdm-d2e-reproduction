@@ -555,3 +555,15 @@ uv run python scripts/audit_g003_live_health.py \
 - Pushed/deployed commit `3d3d9c5`: adds configurable `distributed_timeout_seconds=21600`, precomputes streaming IDM stats before torchrun, and adds `scripts/run_g003_accel64_training_resume.sh` to resume from merged accel64 artifacts without rerunning extraction. Pod targeted tests passed (`9 passed`).
 - Relaunched the accel64 training-only resume at 09:14 KST with parent PID `250901`, fresh GPU monitor, and fresh postrun watcher. At 09:25 KST, `scripts/precompute_streaming_idm_stats.py` was CPU-active and no IDM metrics/checkpoints existed yet. The live-health warning `parent_running_no_known_worker` is expected during this precompute stage because the health classifier does not yet label the new precompute helper as an IDM worker.
 - G003 remains non-terminal: do not checkpoint complete until resumed IDM training, split stats, finalization, accel64 audit, promotion, and canonical G003 audit pass.
+
+## 2026-05-22 09:45 KST accel64 training-timeout recovery patch
+
+- Accel64 extraction/merge is complete on the pod (`918 / 918` variants, `64 / 64` shards), but the resumed training lane was still in single-process `precompute_streaming_idm_stats.py` after ~30 min and had read only ~17.4 GiB of the ~393 GiB merged `train_core.jsonl`; projected wall time was too high for the G003 gate.
+- Local patch adds scalable recovery mechanics before redeploying:
+  - streaming IDM stats can scan multiple shard JSONLs and merge Welford moments/category counts;
+  - accel64 config uses `train_records_glob` / `target_records_glob`, `precompute_num_workers=32`, and bounded convergence validation (`convergence_eval_max_examples=262144`);
+  - distributed IDM destroys the process group after synchronized training so non-rank0 workers do not wait during rank0 full-target prediction;
+  - split-stat builder can stream ordered prediction/ground-truth rows using precomputed train stats instead of loading full train/target/prediction JSONLs into memory;
+  - G003 live-health classifies stats precompute as `idm_stats_precompute` rather than warning `parent_running_no_known_worker`.
+- Validation before commit/deploy: `uv run pytest -q` -> `305 passed`.
+- Next operational step: commit/push, pull in pod, stop the slow precompute parent, and restart `scripts/run_g003_accel64_training_resume.sh` so G003 continues from already-merged accel64 data with parallel stats and sharded distributed training.
