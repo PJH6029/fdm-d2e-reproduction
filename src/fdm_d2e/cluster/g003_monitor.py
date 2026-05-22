@@ -484,7 +484,7 @@ def _scope_processes_to_pid_files(
             "excluded_process_count": 0,
         }
 
-    worker_roles = {"extractor", "merge", "idm_train", "finalizer"}
+    worker_roles = {"extractor", "merge", "idm_precompute", "idm_train", "finalizer"}
     scoped: list[dict[str, Any]] = []
     for row in processes:
         try:
