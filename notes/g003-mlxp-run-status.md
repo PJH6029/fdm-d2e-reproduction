@@ -635,3 +635,12 @@ uv run python scripts/audit_g003_live_health.py \
 - Terminal G003 artifacts are still absent: `metrics.json`, `checkpoint_metadata.json`, `checkpoint.pt`, `pseudolabels.jsonl`, `predictions.jsonl`, accel64 IDM summary, split-stat summary, integrated finalization summary, and accel64 completion audit.
 - A stale `outputs/cluster/g003_to_g004_chain_watcher.pid` / `artifacts/fdm/g003_to_g004_chain_summary.json` exists in the pod, but no `watch_g003_then_launch_g004.py` process was observed. After G003 accel64 audit passes and is promoted/checkpointed, start a fresh current G003→G004 watcher with `--require-g003-goal-checkpoint`.
 - No G003 checkpoint/completion claim was made.
+
+## 2026-05-22 16:45 KST G003 accel64 epoch-2 complete / epoch-3 started
+
+- Active G003 torchrun remains healthy on pod checkout `9a9f099`; no pod pull was performed.
+- Epoch 2 completed and updated `outputs/idm_streaming_d2e_full_compact_accel64/train_history.json` plus `convergence_report.json`.
+- Epoch 2 metrics: train loss `1.448147530049278`, validation composite `0.11558532553625012`, keyboard accuracy `0.006652199484860162`, mouse-button F1 `0.023052525721358397`, mouse-move Pearson `0.3170512514025318` over `262,144` validation records.
+- Epoch 2 improved over epoch 1 composite (`0.1058949944649953` -> `0.11558532553625012`) and mouse-button F1 (`0.002607845267847441` -> `0.023052525721358397`). This is training-progress evidence only, not G003 completion.
+- Epoch 3 started by 16:45 KST: workers reopened `train_core.jsonl` shard files. Terminal artifacts (`metrics.json`, `checkpoint_metadata.json`, `checkpoint.pt`, pseudolabels, predictions, summary, split stats, completion audit) remain absent.
+- No G003 checkpoint/completion claim was made.

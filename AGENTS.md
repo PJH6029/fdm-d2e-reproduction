@@ -46,7 +46,7 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-22 14:09 KST.
+Latest known live run snapshot: 2026-05-22 16:45 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
@@ -58,8 +58,7 @@ Latest known live run snapshot: 2026-05-22 14:09 KST.
 - Active training command: `uv run torchrun --standalone --nproc-per-node=4 scripts/train_idm_streaming.py --config configs/model/idm_streaming_d2e_full_compact_accel64.yaml --require-torch`. Rank worker PIDs observed at the snapshot: `252006`, `252007`, `252008`, `252009`.
 - Shard-parallel stats precompute is complete: `outputs/idm_streaming_d2e_full_compact_accel64/streaming_stats.json` exists with `19,211,006` examples and input dim `620`.
 - Live health reports `healthy_running` / `idm_training`; the post-run watcher reports `waiting_active_parent`. GPU monitor CSV path: `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv`.
-- Epoch 1 completed and wrote `outputs/idm_streaming_d2e_full_compact_accel64/train_history.json` plus `convergence_report.json`: loss `1.5158540560842337`, validation score `0.1058949944649953`, keyboard accuracy `0.006023485509156915`, mouse-button F1 `0.002607845267847441`, mouse-move Pearson `0.30905365261798157`. Epoch 2 is in progress.
-- Latest rank-progress sample at 2026-05-22 14:07 KST: rank 0 `0.2166`, rank 1 `0.2262`, rank 2 `0.1838`, rank 3 `0.2771` through their assigned epoch-2 shard bytes. GPU utilization may show `0%` while ranks are CPU/parsing-bound; CPU workers were still alive at ~100% each.
+- Epochs 1 and 2 completed and wrote `outputs/idm_streaming_d2e_full_compact_accel64/train_history.json` plus `convergence_report.json`. Epoch 1: loss `1.5158540560842337`, validation score `0.1058949944649953`, keyboard accuracy `0.006023485509156915`, mouse-button F1 `0.002607845267847441`, mouse-move Pearson `0.30905365261798157`. Epoch 2: loss `1.448147530049278`, validation score `0.11558532553625012`, keyboard accuracy `0.006652199484860162`, mouse-button F1 `0.023052525721358397`, mouse-move Pearson `0.3170512514025318`. Epoch 3 started by 2026-05-22 16:45 KST.
 - Terminal artifacts were still absent at the snapshot: `metrics.json`, `checkpoint_metadata.json`, `checkpoint.pt`, `pseudolabels.jsonl`, `predictions.jsonl`, accel64 IDM summary, split-stat summary, integrated finalization summary, and completion audit. G003 remains non-terminal.
 - A stale `outputs/cluster/g003_to_g004_chain_watcher.pid` and `artifacts/fdm/g003_to_g004_chain_summary.json` may exist in the pod, but no `watch_g003_then_launch_g004.py` process was observed at 2026-05-22 14:09 KST. Do not rely on that stale watcher to launch G004; start a fresh current watcher only after G003 audit promotion and OMX checkpointing.
 
