@@ -212,12 +212,15 @@ must compare predictions against the target shard glob, not the monolithic
 target JSONL, because prediction order follows the target shard path order.
 Latest local/origin trainer hardening adds optional `training_cache_dir`
 chunked tensor caches for IDM/FDM training epochs. It also adds
-`resume_predictions=true` for checkpoint inference so interrupted G004
-train-core pseudo-label generation can append after already-written
-`pseudolabels.jsonl`/`predictions.jsonl` rows while recomputing metrics over the
-prefix. This is intended for future G003 restarts and G004 runs after the active
-G003 torchrun exits; do not pull new trainer commits into the pod while the
-current G003 Python workers are still running.
+`resume_predictions=true` for checkpoint inference so interrupted G003/G004
+prediction passes can append after already-written `pseudolabels.jsonl` /
+`predictions.jsonl` rows while recomputing metrics over the prefix. If a
+full-corpus IDM run saves `checkpoint.pt` but exits before metadata/summary,
+run `uv run python scripts/recover_idm_streaming_outputs.py --config <train-config>`
+after pulling latest origin to rebuild prediction, metrics, checkpoint metadata,
+and train summary without retraining. This is intended for future G003 restarts
+and G004 runs after the active G003 torchrun exits; do not pull new trainer
+commits into the pod while the current G003 Python workers are still running.
 
 Latest G004 launch preflight: run
 `uv run python scripts/plan_g004_launch.py --check-gpus` in the pod before

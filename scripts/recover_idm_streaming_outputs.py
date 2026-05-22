@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from fdm_d2e.config import load_config
+from fdm_d2e.training.streaming_idm import recover_streaming_idm_outputs_from_checkpoint
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Recover streaming IDM metrics/metadata/summary from an existing checkpoint "
+            "without retraining. Useful when full-corpus target prediction was interrupted."
+        )
+    )
+    parser.add_argument("--config", default="configs/model/idm_streaming_d2e_full_compact_accel64.yaml")
+    parser.add_argument("--checkpoint-path", default=None)
+    parser.add_argument("--output-dir", default=None)
+    parser.add_argument("--summary-out", default=None)
+    parser.add_argument("--force-cpu", action="store_true")
+    parser.add_argument("--no-resume-predictions", action="store_true")
+    args = parser.parse_args()
+
+    config = load_config(args.config)
+    config.setdefault("config_path", args.config)
+    output_dir = args.output_dir or config.get("output_dir")
+    if output_dir:
+        config["output_dir"] = output_dir
+    config["checkpoint_path"] = args.checkpoint_path or str(Path(config.get("output_dir", output_dir or ".")) / "checkpoint.pt")
+    if args.summary_out:
+        config["summary_out"] = args.summary_out
+    if args.force_cpu:
+        config["force_cpu"] = True
+    config["resume_predictions"] = not args.no_resume_predictions
+
+    summary = recover_streaming_idm_outputs_from_checkpoint(config)
+    print(
+        "streaming idm checkpoint recovery complete: "
+        f"status={summary['status']} target_records={summary['target_records']} "
+        f"metadata={summary['metadata_path']}"
+    )
+
+
+if __name__ == "__main__":
+    main()

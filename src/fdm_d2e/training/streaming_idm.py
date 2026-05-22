@@ -1750,6 +1750,178 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     return summary
 
 
+def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
+    """Rebuild streaming IDM prediction/metadata artifacts from an existing checkpoint.
+
+    Full-corpus G003/G004 jobs save the model checkpoint before running the long
+    target prediction pass.  If that prediction or metadata write is
+    interrupted, this recovery path avoids retraining: it reruns/resumes
+    checkpoint inference over the target records, then reconstructs the same
+    checkpoint metadata and train-summary contract produced by
+    ``train_streaming_idm``.
+    """
+
+    torch = require_torch()
+    checkpoint_path = Path(config["checkpoint_path"])
+    force_cpu = bool(config.get("force_cpu", False))
+    device = "cuda" if torch.cuda.is_available() and not force_cpu else "cpu"
+    try:
+        checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    except TypeError:  # pragma: no cover - older torch releases.
+        checkpoint = torch.load(checkpoint_path, map_location=device)
+    checkpoint_config = dict(checkpoint.get("config", {}))
+    if not checkpoint_config:
+        raise ValueError(f"checkpoint does not contain a training config: {checkpoint_path}")
+    output_dir = ensure_dir(config.get("output_dir", checkpoint_config.get("output_dir", checkpoint_path.parent)))
+    target_record_paths = _record_paths_from_config(
+        checkpoint_config,
+        primary_key="target_records",
+        paths_key="target_record_paths",
+        glob_key="target_records_glob",
+    )
+    prediction_config: dict[str, Any] = {
+        "checkpoint_path": str(checkpoint_path),
+        "checkpoint_metadata_path": str(output_dir / "checkpoint_metadata.json"),
+        "records_path": str(checkpoint_config["target_records"]),
+        "output_dir": str(output_dir),
+        "resume_predictions": bool(config.get("resume_predictions", True)),
+        "force_cpu": force_cpu,
+        "summary_out": str(config.get("prediction_summary_out", output_dir / "prediction_recovery_summary.json")),
+    }
+    if len(target_record_paths) > 1:
+        prediction_config["record_paths"] = [str(path) for path in target_record_paths]
+        if checkpoint_config.get("target_records_glob"):
+            prediction_config["records_glob"] = checkpoint_config["target_records_glob"]
+    for key in (
+        "model_name",
+        "endpoints",
+        "baseline_names",
+        "eval_batch_size",
+        "batch_size",
+        "max_target_examples",
+        "category_threshold",
+        "mouse_axis_decode_mode",
+        "mouse_axis_temperature",
+        "mouse_output_gain",
+    ):
+        if key in config:
+            prediction_config[key] = config[key]
+        elif key in checkpoint_config:
+            prediction_config[key] = checkpoint_config[key]
+    prediction = predict_streaming_idm_checkpoint(prediction_config)
+    stats = dict(checkpoint["stats"])
+    category_vocab = [str(token) for token in checkpoint.get("category_vocab", [])]
+    mouse_head_mode = str(checkpoint.get("mouse_head_mode", checkpoint_config.get("mouse_head_mode", "axis_softmax")))
+    mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", checkpoint_config.get("mouse_axis_classes", MOUSE_AXIS_CLASSES))]
+    history = list(checkpoint.get("history", []))
+    config_fingerprint = stable_hash_json(checkpoint_config)
+    resolved_config_path = output_dir / "resolved_config.json"
+    write_json(
+        resolved_config_path,
+        {
+            "schema": "streaming_idm_resolved_config.v1",
+            "model": str(checkpoint_config.get("model_name", "streaming_compact_idm")),
+            "config": checkpoint_config,
+            "config_fingerprint": config_fingerprint,
+            "recovered_from_checkpoint": str(checkpoint_path),
+        },
+    )
+    convergence_report_path = output_dir / "convergence_report.json"
+    convergence_report = read_json(convergence_report_path) if convergence_report_path.exists() else _convergence_report(history, checkpoint_config, output_dir=output_dir)
+    if not convergence_report_path.exists():
+        write_json(convergence_report_path, convergence_report)
+    data_universe_path = checkpoint_config.get("data_universe")
+    split_contract_path = checkpoint_config.get("split_contract")
+    metadata = {
+        "schema": "idm_checkpoint_metadata.v1",
+        "model": str(checkpoint_config.get("model_name", "streaming_compact_idm")),
+        "dataset_fingerprint": str(stats["dataset_fingerprint"]),
+        "config_fingerprint": config_fingerprint,
+        "config_path": str(checkpoint_config.get("config_path", config.get("config_path", ""))),
+        "resolved_config_path": str(resolved_config_path),
+        "train_records": int(stats["num_examples"]),
+        "target_records": int(prediction["records"]),
+        "train_records_path": str(checkpoint_config["train_records"]),
+        "target_records_path": str(checkpoint_config["target_records"]),
+        "data_universe": _file_artifact_metadata(data_universe_path),
+        "data_universe_fingerprint": _json_fingerprint(data_universe_path),
+        "split_contract": _file_artifact_metadata(split_contract_path),
+        "split_contract_fingerprint": _json_fingerprint(split_contract_path),
+        "split_id": str(checkpoint_config.get("split_id") or _json_fingerprint(split_contract_path) or "d2e_full_split_contract"),
+        "source_namespace": str(checkpoint_config.get("source_namespace", "d2e_full_corpus")),
+        "source_ids": list(stats.get("source_ids", [])),
+        "resolution_tiers": list(stats.get("resolution_tiers", [])),
+        "target_source_ids": list(prediction.get("target_source_ids", [])),
+        "target_resolution_tiers": list(prediction.get("target_resolution_tiers", [])),
+        "split_names": list(stats.get("split_names", [])),
+        "eval_split_tags": list(stats.get("eval_split_tags", [])),
+        "target_eval_split_tags": list(prediction.get("target_eval_split_tags", [])),
+        "pseudo_label_path": prediction["pseudo_label_path"],
+        "filtered_pseudo_label_path": prediction["pseudo_label_path"],
+        "checkpoint_path": str(checkpoint_path),
+        "metrics_path": prediction["metrics_path"],
+        "label_quality_report_path": prediction["label_quality_report_path"],
+        "statistical_comparison_path": prediction["statistical_comparison_path"],
+        "convergence_report_path": str(convergence_report_path),
+        "convergence_plateau_met": bool(convergence_report.get("plateau_met", False)),
+        "calibration": {
+            "mode": "global_threshold_streaming",
+            "category_threshold": float(checkpoint_config.get("category_threshold", 0.35)),
+            "last_train_loss": history[-1]["loss"] if history else None,
+            "prediction_fingerprint": prediction["prediction_fingerprint"],
+        },
+        "feature_mode": str(stats["feature_mode"]),
+        "input_dim": int(stats["input_dim"]),
+        "categorical_vocab": category_vocab,
+        "mouse_head_mode": mouse_head_mode,
+        "mouse_axis_classes": mouse_axis_classes if mouse_head_mode == "axis_softmax" else [],
+        "distributed": {
+            "enabled": bool(checkpoint_config.get("distributed", {}).get("enabled", False)),
+            "world_size": int(checkpoint_config.get("distributed", {}).get("world_size", 1)),
+            "backend": checkpoint_config.get("distributed", {}).get("backend"),
+            "rank0_device": device,
+        },
+        "recovery": {
+            "schema": "streaming_idm_checkpoint_recovery.v1",
+            "source_checkpoint_path": str(checkpoint_path),
+            "prediction_summary_path": str(prediction_config["summary_out"]),
+            "prediction_resume": prediction.get("prediction_resume", {}),
+        },
+    }
+    validate_named(metadata, "idm_checkpoint_metadata.schema.json")
+    metadata_path = output_dir / "checkpoint_metadata.json"
+    write_json(metadata_path, metadata)
+    metrics = read_json(prediction["metrics_path"])
+    label_quality_report = read_json(prediction["label_quality_report_path"])
+    statistical_comparison = read_json(prediction["statistical_comparison_path"]) if prediction.get("statistical_comparison_path") else None
+    summary = {
+        "schema": "streaming_idm_train_summary.v1",
+        "metadata": metadata,
+        "metrics": metrics,
+        "label_quality_report": label_quality_report,
+        "statistical_comparison": statistical_comparison,
+        "convergence_report": convergence_report,
+        "history_tail": history[-5:],
+        "device": device,
+        "stats_path": str(output_dir / "streaming_stats.json"),
+        "predictions_path": prediction["predictions_path"],
+        "prediction_resume": prediction.get("prediction_resume", {}),
+        "recovered_from_checkpoint": str(checkpoint_path),
+    }
+    summary_path = Path(config.get("summary_out", checkpoint_config.get("summary_out", output_dir / "summary.json")))
+    write_json(summary_path, summary)
+    return {
+        "schema": "streaming_idm_checkpoint_recovery_summary.v1",
+        "status": "pass",
+        "checkpoint_path": str(checkpoint_path),
+        "metadata_path": str(metadata_path),
+        "summary_path": str(summary_path),
+        "prediction_summary_path": str(prediction_config["summary_out"]),
+        "target_records": int(prediction["records"]),
+        "prediction_resume": prediction.get("prediction_resume", {}),
+    }
+
+
 def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     torch = require_torch()
     dist = _distributed_runtime(torch, config)

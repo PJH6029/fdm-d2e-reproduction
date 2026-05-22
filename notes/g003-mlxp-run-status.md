@@ -612,3 +612,9 @@ uv run python scripts/audit_g003_live_health.py \
 
 - Local/origin code now includes `resume_predictions=true` support for `predict_streaming_idm_checkpoint`: if matching `pseudolabels.jsonl` and `predictions.jsonl` prefixes exist, the predictor verifies sequence order, recomputes metrics over the prefix, and appends inference for the remaining records.
 - The G004 train-core pseudo-label config enables this resume path. Commit `314e55b` also enables `resume_predictions` in the full G003 IDM and G004 FDM training configs, so interrupted final target prediction can resume after a future rerun. This is future-run hardening only; it was validated locally and must not be pulled into the active pod checkout until the current G003 torchrun/finalization exits.
+
+
+### 2026-05-22 13:58 KST checkpoint-output recovery helper prepared locally
+
+- Local/origin code now includes `scripts/recover_idm_streaming_outputs.py` and `recover_streaming_idm_outputs_from_checkpoint`. If a full-corpus IDM run has saved `checkpoint.pt` but exits before prediction/metrics/metadata/summary finish, this helper reruns or resumes checkpoint prediction and reconstructs `checkpoint_metadata.json` plus the train-summary artifact without retraining.
+- Validation passed locally with targeted recovery tests and full pytest. This remains future-run hardening only; do not pull into the active pod checkout until the current G003 torchrun/finalization exits.

@@ -5,7 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from fdm_d2e.training.streaming_idm import _distributed_runtime, predict_streaming_idm_checkpoint, scan_streaming_idm_stats, train_streaming_idm
+from fdm_d2e.training.streaming_idm import (
+    _distributed_runtime,
+    predict_streaming_idm_checkpoint,
+    recover_streaming_idm_outputs_from_checkpoint,
+    scan_streaming_idm_stats,
+    train_streaming_idm,
+)
 from fdm_d2e.training.torch_idm import torch_available
 
 
@@ -268,6 +274,75 @@ def test_streaming_idm_prediction_can_resume_partial_outputs(tmp_path: Path):
     assert Path(resumed_summary["pseudo_label_path"]).read_text().splitlines()[:2] == pseudo_lines[:2]
     assert Path(resumed_summary["predictions_path"]).read_text().splitlines()[:2] == prediction_lines[:2]
     assert len(Path(resumed_summary["pseudo_label_path"]).read_text().splitlines()) == 5
+
+
+def test_streaming_idm_recovers_outputs_from_checkpoint_without_retraining(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    train_path = tmp_path / "train.jsonl"
+    target_path = tmp_path / "target.jsonl"
+    output_dir = tmp_path / "idm_recover"
+    summary_path = tmp_path / "recovered_summary.json"
+    _write_jsonl(train_path, [_record(idx, "train_core") for idx in range(8)])
+    _write_jsonl(target_path, [_record(idx + 8, "eval") for idx in range(5)])
+
+    train_summary = train_streaming_idm(
+        {
+            "model_name": "tiny_streaming_idm_recover",
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(output_dir),
+            "summary_out": str(summary_path),
+            "config_path": "test_recover_config",
+            "source_namespace": "unit_d2e_stream",
+            "feature_mode": "summary_compact_grid8_shift_surface_time",
+            "hidden_dim": 8,
+            "depth": 1,
+            "epochs": 1,
+            "eval_interval_epochs": 1,
+            "batch_size": 4,
+            "categorical_min_count": 1,
+            "mouse_head_mode": "axis_softmax",
+            "seed": 23,
+            "force_cpu": True,
+        }
+    )
+    pseudo_path = Path(train_summary["metadata"]["pseudo_label_path"])
+    predictions_path = Path(train_summary["predictions_path"])
+    pseudo_lines = pseudo_path.read_text().splitlines()
+    prediction_lines = predictions_path.read_text().splitlines()
+    pseudo_path.write_text("\n".join(pseudo_lines[:2]) + "\n")
+    predictions_path.write_text("\n".join(prediction_lines[:2]) + "\n")
+    for rel in [
+        "metrics.json",
+        "label_quality_report.json",
+        "statistical_comparison.json",
+        "checkpoint_metadata.json",
+    ]:
+        path = output_dir / rel
+        if path.exists():
+            path.unlink()
+    summary_path.unlink()
+
+    recovery = recover_streaming_idm_outputs_from_checkpoint(
+        {
+            "checkpoint_path": train_summary["metadata"]["checkpoint_path"],
+            "output_dir": str(output_dir),
+            "summary_out": str(summary_path),
+            "resume_predictions": True,
+            "force_cpu": True,
+        }
+    )
+
+    recovered_summary = json.loads(summary_path.read_text())
+    metadata = json.loads((output_dir / "checkpoint_metadata.json").read_text())
+    assert recovery["status"] == "pass"
+    assert recovery["target_records"] == 5
+    assert recovery["prediction_resume"]["existing_rows"] == 2
+    assert metadata["target_records"] == 5
+    assert metadata["recovery"]["source_checkpoint_path"] == train_summary["metadata"]["checkpoint_path"]
+    assert recovered_summary["schema"] == "streaming_idm_train_summary.v1"
+    assert len(pseudo_path.read_text().splitlines()) == 5
 
 
 def test_distributed_runtime_passes_configured_timeout(monkeypatch):
