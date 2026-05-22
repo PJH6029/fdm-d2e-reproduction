@@ -1,0 +1,354 @@
+{
+  "schema": "streaming_idm_predict_summary.v1",
+  "source_checkpoint_path": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt",
+  "source_checkpoint_artifact": {
+    "path": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt",
+    "exists": true,
+    "sha256": "99e3db66ebb288b8b590e0ba540177b8f0415263fc264a82f12dbe1d8ba9d117",
+    "bytes": 4122359
+  },
+  "source_checkpoint_metadata": {
+    "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "exists": true,
+    "sha256": "e433fc0477ec82b8297110001b9f44ba5719e3da9ffbded3d068771d800c479b",
+    "bytes": 20529
+  },
+  "records_path": "outputs/data/d2e_full_corpus/train_core.jsonl",
+  "record_paths": [
+    "outputs/data/d2e_full_corpus_shards/shard_0/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_1/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_10/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_11/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_12/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_13/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_14/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_15/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_16/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_17/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_18/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_19/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_2/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_20/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_21/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_22/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_23/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_24/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_25/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_26/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_27/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_28/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_29/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_3/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_30/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_31/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_32/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_33/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_34/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_35/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_36/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_37/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_38/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_39/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_4/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_40/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_41/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_42/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_43/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_44/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_45/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_46/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_47/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_48/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_49/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_5/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_50/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_51/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_52/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_53/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_54/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_55/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_56/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_57/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_58/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_59/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_6/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_60/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_61/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_62/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_63/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_7/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_8/train_core.jsonl",
+    "outputs/data/d2e_full_corpus_shards/shard_9/train_core.jsonl"
+  ],
+  "records_glob": "outputs/data/d2e_full_corpus_shards/shard_*/train_core.jsonl",
+  "output_dir": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels",
+  "prediction_config": {
+    "schema": "streaming_idm_train_config.v1",
+    "model_name": "streaming_compact_idm_d2e_full",
+    "train_records": "outputs/data/d2e_full_corpus_accel64/train_core.jsonl",
+    "train_records_glob": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/train_core.jsonl",
+    "target_records": "outputs/data/d2e_full_corpus_accel64/target_all_eval.jsonl",
+    "target_records_glob": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/target_all_eval.jsonl",
+    "data_universe": "artifacts/sources/d2e_full_data_universe_manifest.json",
+    "split_contract": "artifacts/sources/d2e_full_split_contract.json",
+    "source_namespace": "d2e_full_corpus",
+    "endpoints": "configs/eval/primary_endpoints.yaml",
+    "baseline_names": [
+      "noop",
+      "global_majority",
+      "last_seen_train"
+    ],
+    "output_dir": "outputs/idm_streaming_d2e_full_compact_accel64",
+    "summary_out": "artifacts/idm/idm_streaming_d2e_full_compact_accel64_summary.json",
+    "feature_mode": "summary_compact_grid8_shift_surface_time",
+    "hidden_dim": 512,
+    "depth": 3,
+    "dropout": 0.05,
+    "epochs": 3,
+    "eval_interval_epochs": 1,
+    "convergence_score": "composite_primary",
+    "plateau_patience": 3,
+    "plateau_min_relative_improvement": 0.01,
+    "batch_size": 4096,
+    "eval_batch_size": 16384,
+    "convergence_eval_max_examples": 262144,
+    "precompute_num_workers": 32,
+    "stats_num_workers": 32,
+    "lr": 0.0003,
+    "weight_decay": 0.0001,
+    "grad_clip": 1.0,
+    "categorical_min_count": 4,
+    "categorical_loss": "focal",
+    "focal_gamma": 2.0,
+    "categorical_loss_weight": 0.75,
+    "categorical_pos_weight_cap": 20.0,
+    "category_threshold": 0.45,
+    "mouse_head_mode": "axis_softmax",
+    "mouse_axis_decode_mode": "expected",
+    "mouse_axis_temperature": 1.25,
+    "mouse_axis_loss_weight": 1.0,
+    "mouse_regression_loss_weight": 0.5,
+    "seed": 20260521,
+    "distributed_timeout_seconds": 21600,
+    "config_path": "configs/model/idm_streaming_d2e_full_compact_accel64.yaml",
+    "resume_predictions": true
+  },
+  "records": 19211006,
+  "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+  "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/predictions.jsonl",
+  "metrics_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/metrics.json",
+  "label_quality_report_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/label_quality_report.json",
+  "statistical_comparison_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/statistical_comparison.json",
+  "target_source_ids": [
+    "d2e_480p",
+    "d2e_original"
+  ],
+  "target_resolution_tiers": [
+    "480p",
+    "original_fhd_qhd"
+  ],
+  "target_eval_split_tags": [],
+  "prediction_fingerprint": "a540983e102967be39cd11e95a7c6eaa35c4b28df848cf55e6bf9cda14515d50",
+  "prediction_resume": {
+    "enabled": false,
+    "existing_rows": 0,
+    "write_mode": "parallel_parts",
+    "workers": 16,
+    "pseudolabel_validation": false,
+    "parts": [
+      {
+        "part_index": 0,
+        "records": 1121684,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_0/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_1/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_10/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_11/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_000/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_000/predictions.jsonl"
+      },
+      {
+        "part_index": 1,
+        "records": 1633458,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_12/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_13/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_14/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_15/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_001/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_001/predictions.jsonl"
+      },
+      {
+        "part_index": 2,
+        "records": 1698060,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_16/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_17/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_18/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_19/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_002/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_002/predictions.jsonl"
+      },
+      {
+        "part_index": 3,
+        "records": 1117045,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_2/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_20/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_21/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_22/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_003/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_003/predictions.jsonl"
+      },
+      {
+        "part_index": 4,
+        "records": 1201218,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_23/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_24/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_25/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_26/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_004/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_004/predictions.jsonl"
+      },
+      {
+        "part_index": 5,
+        "records": 857970,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_27/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_28/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_29/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_3/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_005/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_005/predictions.jsonl"
+      },
+      {
+        "part_index": 6,
+        "records": 1597891,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_30/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_31/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_32/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_33/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_006/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_006/predictions.jsonl"
+      },
+      {
+        "part_index": 7,
+        "records": 1144425,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_34/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_35/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_36/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_37/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_007/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_007/predictions.jsonl"
+      },
+      {
+        "part_index": 8,
+        "records": 1104112,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_38/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_39/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_4/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_40/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_008/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_008/predictions.jsonl"
+      },
+      {
+        "part_index": 9,
+        "records": 1351897,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_41/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_42/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_43/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_44/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_009/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_009/predictions.jsonl"
+      },
+      {
+        "part_index": 10,
+        "records": 1078306,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_45/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_46/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_47/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_48/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_010/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_010/predictions.jsonl"
+      },
+      {
+        "part_index": 11,
+        "records": 1204409,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_49/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_5/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_50/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_51/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_011/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_011/predictions.jsonl"
+      },
+      {
+        "part_index": 12,
+        "records": 988859,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_52/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_53/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_54/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_55/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_012/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_012/predictions.jsonl"
+      },
+      {
+        "part_index": 13,
+        "records": 1170339,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_56/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_57/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_58/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_59/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_013/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_013/predictions.jsonl"
+      },
+      {
+        "part_index": 14,
+        "records": 810509,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_6/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_60/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_61/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_62/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_014/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_014/predictions.jsonl"
+      },
+      {
+        "part_index": 15,
+        "records": 1130824,
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_63/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_7/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_8/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_9/train_core.jsonl"
+        ],
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_015/pseudolabels.jsonl",
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_015/predictions.jsonl"
+      }
+    ]
+  },
+  "claim_boundary": "Prediction-only IDM pseudo-label artifact; it does not retrain or modify the source G003 checkpoint."
+}

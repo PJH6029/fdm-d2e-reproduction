@@ -1,0 +1,255 @@
+{
+  "artifacts": {
+    "fdm_split_summary": {
+      "bytes": 0,
+      "exists": false,
+      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json"
+    },
+    "fdm_target_partial": {
+      "bytes": 0,
+      "exists": true,
+      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl"
+    },
+    "fdm_train_partial": {
+      "bytes": 20576564028,
+      "exists": true,
+      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_train_pseudolabeled_records.jsonl"
+    },
+    "run_summary": {
+      "bytes": 0,
+      "exists": false,
+      "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json"
+    },
+    "train_core_predictions": {
+      "bytes": 7613175080,
+      "exists": true,
+      "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/predictions.jsonl"
+    },
+    "train_core_pseudolabels": {
+      "bytes": 11638487567,
+      "exists": true,
+      "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl"
+    }
+  },
+  "captured_at_unix": 1779469000.3512266,
+  "claim_boundary": "Transition evidence only; G004 remains incomplete until FDM train/eval, split stats, audit, and OMX checkpoint pass.",
+  "git_head": "c090d6a81f28239096aad649d9f3809b26d86da0",
+  "idm_train_core_prediction_resume": {
+    "enabled": false,
+    "existing_rows": 0,
+    "parts": [
+      {
+        "part_index": 0,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_000/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_000/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_0/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_1/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_10/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_11/train_core.jsonl"
+        ],
+        "records": 1121684
+      },
+      {
+        "part_index": 1,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_001/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_001/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_12/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_13/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_14/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_15/train_core.jsonl"
+        ],
+        "records": 1633458
+      },
+      {
+        "part_index": 2,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_002/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_002/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_16/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_17/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_18/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_19/train_core.jsonl"
+        ],
+        "records": 1698060
+      },
+      {
+        "part_index": 3,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_003/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_003/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_2/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_20/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_21/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_22/train_core.jsonl"
+        ],
+        "records": 1117045
+      },
+      {
+        "part_index": 4,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_004/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_004/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_23/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_24/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_25/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_26/train_core.jsonl"
+        ],
+        "records": 1201218
+      },
+      {
+        "part_index": 5,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_005/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_005/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_27/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_28/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_29/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_3/train_core.jsonl"
+        ],
+        "records": 857970
+      },
+      {
+        "part_index": 6,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_006/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_006/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_30/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_31/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_32/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_33/train_core.jsonl"
+        ],
+        "records": 1597891
+      },
+      {
+        "part_index": 7,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_007/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_007/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_34/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_35/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_36/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_37/train_core.jsonl"
+        ],
+        "records": 1144425
+      },
+      {
+        "part_index": 8,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_008/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_008/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_38/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_39/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_4/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_40/train_core.jsonl"
+        ],
+        "records": 1104112
+      },
+      {
+        "part_index": 9,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_009/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_009/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_41/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_42/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_43/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_44/train_core.jsonl"
+        ],
+        "records": 1351897
+      },
+      {
+        "part_index": 10,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_010/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_010/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_45/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_46/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_47/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_48/train_core.jsonl"
+        ],
+        "records": 1078306
+      },
+      {
+        "part_index": 11,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_011/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_011/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_49/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_5/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_50/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_51/train_core.jsonl"
+        ],
+        "records": 1204409
+      },
+      {
+        "part_index": 12,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_012/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_012/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_52/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_53/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_54/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_55/train_core.jsonl"
+        ],
+        "records": 988859
+      },
+      {
+        "part_index": 13,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_013/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_013/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_56/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_57/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_58/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_59/train_core.jsonl"
+        ],
+        "records": 1170339
+      },
+      {
+        "part_index": 14,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_014/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_014/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_6/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_60/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_61/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_62/train_core.jsonl"
+        ],
+        "records": 810509
+      },
+      {
+        "part_index": 15,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_015/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/prediction_recovery_parts/part_015/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_full_corpus_shards/shard_63/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_7/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_8/train_core.jsonl",
+          "outputs/data/d2e_full_corpus_shards/shard_9/train_core.jsonl"
+        ],
+        "records": 1130824
+      }
+    ],
+    "pseudolabel_validation": false,
+    "workers": 16,
+    "write_mode": "parallel_parts"
+  },
+  "idm_train_core_prediction_summary_path": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json",
+  "idm_train_core_records": 19211006,
+  "process_snapshot": [
+    "260000 bash scripts/run_g004_d2e_full_fdm_4xh200.sh",
+    "260010 bash scripts/run_g004_d2e_full_fdm_4xh200.sh",
+    "260083 uv run python scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid",
+    "260088 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid",
+    "261469 uv run torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "261472 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "261541 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "261542 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "261543 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "261544 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "261608 bash -lc pgrep -af 'train_fdm_streaming|torchrun|run_g004|watch_g004' || true"
+  ],
+  "schema": "g004_transition_to_fdm_materialization_snapshot.v1",
+  "status": "fdm_materialization_active"
+}
