@@ -1,8 +1,8 @@
 # G003 MLXP Run Status
 
-Updated: 2026-05-21 KST
+Updated: 2026-05-22 KST
 
-- Latest pushed commit pulled in pod: `7fe6b3f` (G004 convergence/scaling evidence support and G007 runtime adapter claim-boundary updates are present in the checkout; running G003 shard Python processes may have been launched before later pulls and continue with their loaded code).
+- Latest commit verified in the pod checkout before the current active G003 torchrun: `9a9f099`. Origin/local are ahead at `60a25da`, but that commit is intentionally not pulled into the pod until the active G003 torchrun/finalization exits.
 - MLXP reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a` in namespace `p-production`.
 - Reservation window: 2026-05-21 10:00+09:00 to 2026-05-24 09:00+09:00.
@@ -588,3 +588,13 @@ uv run python scripts/audit_g003_live_health.py \
 - The previously used production kubeconfig at `/home/top321902/.kube/mlxp/jeonghunpark/production-kubeconfig.yaml` began returning Kubernetes `Unauthorized` while the MLXP reservation API still reported the production pod as running.
 - The debug kubeconfig at `/home/top321902/.kube/mlxp/jeonghunpark/debug-kubeconfig.yaml` authenticated successfully for the same `p-production` namespace and pod, so monitoring was switched to that kubeconfig without touching the training process.
 - Local old watch session using the stale production kubeconfig was killed; a new watch loop is running via `/tmp/g003_train_watch_debugkcfg.sh`.
+
+
+### 2026-05-22 12:26 KST G003 still healthy; local G004 trainer optimization pushed
+
+- G003 accel64 remains non-terminal. Full extraction/merge and stats precompute are complete, and 4×H200 IDM torchrun is still active under parent PID file `outputs/cluster/g003_full_compact_accel64.pid`.
+- Fresh probe at 12:22 KST reported live health `healthy_running`, stage `idm_training`, decoded `918 / 918`, complete shards `64 / 64`, and watcher status `waiting_active_parent`. No `train_history.json`, checkpoint, metrics, split-stat summary, finalization summary, or completion audit existed yet.
+- Rank file-progress probe showed rank workers still CPU-active in epoch streaming; the slowest inferred rank was at ~0.67 of its assigned first-epoch shard bytes while one rank had already exhausted its current file handle and was likely waiting in the DDP join path. Continue waiting rather than restarting.
+- Local commit `60a25da` was pushed to origin to reduce repeated per-batch tensor/lookup setup in `streaming_idm.py` for future runs. Validation passed: `uv run pytest -q tests/test_streaming_idm_contract.py tests/test_streaming_fdm_contract.py` and full `uv run pytest -q` (`307` tests).
+- Do not pull `60a25da` into the pod while the active G003 torchrun is still running. Pull it after G003 training/finalization exits and before G004 launch/promotion-related follow-up, so the running source tree is not mutated under active Python workers.
+- No G003 OMX checkpoint and no aggregate `update_goal` call was made.
