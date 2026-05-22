@@ -1475,7 +1475,7 @@ def _predict_stream(
             resume_existing_rows = prediction_rows
             if resume_existing_rows:
                 target_iter = _iter_records(target_records)
-                for row_idx, pred_row in enumerate(iter_jsonl(predictions_path), 1):
+                for row_idx, (pseudo_row, pred_row) in enumerate(zip(iter_jsonl(pseudo_path), iter_jsonl(predictions_path)), 1):
                     try:
                         row = next(target_iter)
                     except StopIteration as exc:
@@ -1487,6 +1487,21 @@ def _predict_stream(
                             f"resume_predictions sequence_id mismatch at row {row_idx}: "
                             f"{row.get('sequence_id')!r} != {pred_row.get('sequence_id')!r}"
                         )
+                    if str(pseudo_row.get("sequence_id")) != str(pred_row.get("sequence_id")):
+                        raise ValueError(
+                            f"resume_predictions pseudolabel/prediction sequence_id mismatch at row {row_idx}: "
+                            f"{pseudo_row.get('sequence_id')!r} != {pred_row.get('sequence_id')!r}"
+                        )
+                    if str(pseudo_row.get("model")) != model_name:
+                        raise ValueError(
+                            f"resume_predictions model mismatch at row {row_idx}: "
+                            f"{pseudo_row.get('model')!r} != {model_name!r}"
+                        )
+                    if str(pseudo_row.get("training_split_hash")) != str(stats["dataset_fingerprint"]):
+                        raise ValueError(
+                            f"resume_predictions training_split_hash mismatch at row {row_idx}: "
+                            f"{pseudo_row.get('training_split_hash')!r} != {stats['dataset_fingerprint']!r}"
+                        )
                     if row.get("source_id") is not None:
                         target_source_ids.add(str(row["source_id"]))
                     if row.get("resolution_tier") is not None:
@@ -1494,6 +1509,8 @@ def _predict_stream(
                     for tag in row.get("eval_split_tags", []) or []:
                         target_eval_split_tags.add(str(tag))
                     tokens = [str(token) for token in pred_row.get("predicted_tokens", [])]
+                    if [str(token) for token in pseudo_row.get("predicted_tokens", [])] != tokens:
+                        raise ValueError(f"resume_predictions token mismatch at row {row_idx}")
                     _observe_prediction_metrics(
                         row=row,
                         tokens=tokens,
