@@ -2,7 +2,7 @@
 
 Updated: 2026-05-22 KST
 
-- Latest commit verified in the pod checkout before the current active G003 torchrun: `9a9f099`. Origin/local are ahead at `8148678`, but those commits are intentionally not pulled into the pod until the active G003 torchrun/finalization exits.
+- Latest commit verified in the pod checkout before the current active G003 torchrun: `9a9f099`. Origin/local are ahead at `09050f9` (including tensor-cache implementation `8148678`), but those commits are intentionally not pulled into the pod until the active G003 torchrun/finalization exits.
 - MLXP reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a` in namespace `p-production`.
 - Reservation window: 2026-05-21 10:00+09:00 to 2026-05-24 09:00+09:00.
