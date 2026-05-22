@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from datetime import timedelta
 from contextlib import nullcontext
 from collections import Counter
 from pathlib import Path
@@ -497,7 +498,16 @@ def _distributed_runtime(torch, config: dict[str, Any]) -> dict[str, Any]:
         if torch.cuda.is_available() and not force_cpu:
             torch.cuda.set_device(local_rank)
         if not torch.distributed.is_initialized():
-            torch.distributed.init_process_group(backend=backend)
+            init_kwargs: dict[str, Any] = {"backend": backend}
+            timeout_seconds = config.get("distributed_timeout_seconds")
+            if timeout_seconds is None:
+                timeout_seconds = os.environ.get("TORCH_DISTRIBUTED_TIMEOUT_SECONDS") or os.environ.get("TORCH_DIST_TIMEOUT_SECONDS")
+            if timeout_seconds is not None:
+                timeout = float(timeout_seconds)
+                if timeout <= 0:
+                    raise ValueError("distributed_timeout_seconds must be positive")
+                init_kwargs["timeout"] = timedelta(seconds=timeout)
+            torch.distributed.init_process_group(**init_kwargs)
     if torch.cuda.is_available() and not force_cpu:
         device = f"cuda:{local_rank}" if enabled else "cuda"
     else:
@@ -510,6 +520,7 @@ def _distributed_runtime(torch, config: dict[str, Any]) -> dict[str, Any]:
         "is_rank0": rank == 0,
         "backend": backend,
         "device": device,
+        "timeout_seconds": float(timeout_seconds) if enabled and timeout_seconds is not None else None,
     }
 
 

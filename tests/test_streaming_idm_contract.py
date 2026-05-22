@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from fdm_d2e.training.streaming_idm import predict_streaming_idm_checkpoint, train_streaming_idm
+from fdm_d2e.training.streaming_idm import _distributed_runtime, predict_streaming_idm_checkpoint, train_streaming_idm
 from fdm_d2e.training.torch_idm import torch_available
 
 
@@ -153,3 +153,44 @@ def test_streaming_idm_predicts_train_core_pseudolabels_without_retraining(tmp_p
     assert Path(pred_summary["pseudo_label_path"]).exists()
     assert Path(pred_summary["predictions_path"]).exists()
     assert Path(tmp_path / "fdm_train_core_summary.json").exists()
+
+
+def test_distributed_runtime_passes_configured_timeout(monkeypatch):
+    calls = {}
+
+    class FakeCuda:
+        @staticmethod
+        def is_available():
+            return True
+
+        @staticmethod
+        def set_device(local_rank):
+            calls["set_device"] = local_rank
+
+    class FakeDistributed:
+        @staticmethod
+        def is_available():
+            return True
+
+        @staticmethod
+        def is_initialized():
+            return False
+
+        @staticmethod
+        def init_process_group(**kwargs):
+            calls["init_kwargs"] = kwargs
+
+    class FakeTorch:
+        cuda = FakeCuda()
+        distributed = FakeDistributed()
+
+    monkeypatch.setenv("WORLD_SIZE", "4")
+    monkeypatch.setenv("RANK", "2")
+    monkeypatch.setenv("LOCAL_RANK", "2")
+
+    dist = _distributed_runtime(FakeTorch(), {"distributed_timeout_seconds": 21600})
+
+    assert calls["set_device"] == 2
+    assert calls["init_kwargs"]["backend"] == "nccl"
+    assert calls["init_kwargs"]["timeout"].total_seconds() == 21600
+    assert dist["timeout_seconds"] == 21600

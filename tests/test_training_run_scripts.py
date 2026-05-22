@@ -21,8 +21,22 @@ def test_g003_integrated_run_builds_split_statistics_before_evidence() -> None:
     assert "SPLIT_STATS_SUMMARY=\"${SPLIT_STATS_SUMMARY:-artifacts/eval/g003_split_statistical_comparisons_summary.json}\"" in text
     assert "IDM_SUMMARY=\"${IDM_SUMMARY:-artifacts/idm/idm_streaming_d2e_full_compact_summary.json}\"" in text
     assert "export BUILD_SPLIT_STATS SPLIT_STATS_CONFIG SPLIT_STATS_SUMMARY IDM_SUMMARY" in text
+    assert "scripts/precompute_streaming_idm_stats.py" in text
+    assert text.index("scripts/precompute_streaming_idm_stats.py") < text.index("torchrun")
     assert train_idx < split_idx < evidence_idx
     assert '"split_stats_summary_exists": split_stats_summary_path.exists()' in text
+
+
+def test_g003_accel64_training_resume_skips_extraction_and_preserves_evidence_paths() -> None:
+    text = _script("scripts/run_g003_accel64_training_resume.sh")
+    assert "scripts/extract_d2e_full_corpus.py" not in text
+    assert "scripts/merge_d2e_full_corpus_shards.py" not in text
+    assert "artifacts/sources/d2e_full_corpus_decode_summary_accel64.json" in text
+    assert '"${DATA_OUTPUT_DIR}/train_core.jsonl"' in text
+    assert "configs/model/idm_streaming_d2e_full_compact_accel64.yaml" in text
+    assert "scripts/precompute_streaming_idm_stats.py" in text
+    assert text.index("scripts/precompute_streaming_idm_stats.py") < text.index("torchrun")
+    assert "training_only_after_successful_accel64_merge" in text
 
 
 def test_standalone_g003_and_g004_wrappers_fail_closed_on_split_statistics() -> None:

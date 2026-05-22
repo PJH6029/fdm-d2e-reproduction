@@ -10,6 +10,7 @@ DECODE_SUMMARY="${DECODE_SUMMARY:-artifacts/sources/d2e_full_corpus_decode_summa
 IDM_CONFIG="${IDM_CONFIG:-configs/model/idm_streaming_d2e_full_compact.yaml}"
 CACHE_DIR="${CACHE_DIR:-/root/work/data/d2e/cache}"
 IDM_NPROC_PER_NODE="${IDM_NPROC_PER_NODE:-4}"
+PRECOMPUTE_IDM_STATS="${PRECOMPUTE_IDM_STATS:-1}"
 BUILD_SPLIT_STATS="${BUILD_SPLIT_STATS:-1}"
 SPLIT_STATS_CONFIG="${SPLIT_STATS_CONFIG:-configs/eval/g003_split_statistics.yaml}"
 SPLIT_STATS_SUMMARY="${SPLIT_STATS_SUMMARY:-artifacts/eval/g003_split_statistical_comparisons_summary.json}"
@@ -65,6 +66,11 @@ uv run python scripts/merge_d2e_full_corpus_shards.py \
   --shard-root "${SHARD_ROOT}" \
   --output-dir "${DATA_OUTPUT_DIR}" \
   --summary-out "${DECODE_SUMMARY}"
+
+if [[ "${PRECOMPUTE_IDM_STATS}" != "0" ]]; then
+  uv run python scripts/precompute_streaming_idm_stats.py \
+    --config "${IDM_CONFIG}"
+fi
 
 uv run torchrun --standalone --nproc-per-node="${IDM_NPROC_PER_NODE}" scripts/train_idm_streaming.py \
   --config "${IDM_CONFIG}" \

@@ -7,7 +7,11 @@
   "split_contract": "artifacts/sources/d2e_full_split_contract.json",
   "source_namespace": "d2e_full_corpus",
   "endpoints": "configs/eval/primary_endpoints.yaml",
-  "baseline_names": ["noop", "global_majority", "last_seen_train"],
+  "baseline_names": [
+    "noop",
+    "global_majority",
+    "last_seen_train"
+  ],
   "output_dir": "outputs/idm_streaming_d2e_full_compact",
   "summary_out": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
   "feature_mode": "summary_compact_grid8_shift_surface_time",
@@ -35,5 +39,6 @@
   "mouse_axis_temperature": 1.25,
   "mouse_axis_loss_weight": 1.0,
   "mouse_regression_loss_weight": 0.5,
-  "seed": 20260521
+  "seed": 20260521,
+  "distributed_timeout_seconds": 21600
 }
