@@ -574,3 +574,11 @@ uv run python scripts/audit_g003_live_health.py \
 - Shard-parallel stats precompute completed successfully and wrote `outputs/idm_streaming_d2e_full_compact_accel64/streaming_stats.json` with `19,211,006` train examples and input dim `620`.
 - `torchrun --standalone --nproc-per-node=4 scripts/train_idm_streaming.py --config configs/model/idm_streaming_d2e_full_compact_accel64.yaml --require-torch` is active under parent PID file `outputs/cluster/g003_full_compact_accel64.pid`.
 - Live health reports `healthy_running` / `idm_training`; 4 GPUs have allocated training memory. `train_history.json`, checkpoint, final metrics, split stats, and G003 audit are still pending.
+
+### 2026-05-22 11:15 KST G004 shard-aware prep deployed while G003 trains
+
+- G003 accel64 remains non-terminal but healthy: full extraction/merge is complete (`918 / 918` variants, `64 / 64` shards, `19,211,006` train-core rows, `16,698,646` target-eval rows). Shard-parallel stats precompute is complete (`streaming_stats.json`, input dim `620`).
+- Active 4×H200 torchrun is still in `idm_training` under parent PID `251593`; rank workers `252006`-`252009` were CPU-active. `train_history.json`, checkpoint, metrics, split-stat summary, finalization summary, and completion audit were still absent at this snapshot.
+- Local/pushed commit `14f4f60` prepares G004 before the hard gate opens: FDM materialization now keeps audit-required monolithic evidence files while also writing train/target shard JSONLs, passes shard paths into DDP training, raises G004 distributed timeout to 24h, bounds convergence validation, uses parallel stats precompute, and makes G004 split statistics stream over the target shard glob with precomputed train stats.
+- Validation: `uv run pytest -q` passed (`307` tests). Pod checkout was fast-forwarded to `14f4f60` without stopping the active G003 Python/torchrun processes, so future G004 launch sees the shard-aware patch.
+- G003 remains non-terminal. Do not checkpoint complete until accel64 training/eval/finalization pass, promotion to canonical paths succeeds, and canonical `artifacts/idm/g003_full_idm_completion_audit.json` reports `pass`.

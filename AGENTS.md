@@ -46,18 +46,35 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-21 20:34 KST.
+Latest known live run snapshot: 2026-05-22 11:15 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
-- Current run command: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
-- Parent PID file: `outputs/cluster/g003_full_compact_parallel.pid`; last observed PID `9289` running.
-- Pod checkout contains finalizer/preflight hardening commits through `b58433e` (`Record restored pod runtime environment`); G003/G004/G005/G006/G008/G009 finalizers, G003 post-run watcher, G004 launch preflight, G005 aux materialization/runtime preflights, split-stat generation, completion audits, and package-manifest updates are present in pod.
-- Latest monitor artifact: `artifacts/idm/g003_full_compact_parallel_progress.json`.
-- Last decoded count: `211 / 918` recording variants; shard summaries `0 / 16`; IDM metrics absent.
-- Monitor status was `running`; stale/no-progress shard lists empty. Treat as progress telemetry only until parent exits or shard logs/processes stop progressing.
-- Parent PID `9289` was still running; G003→G004 chain watcher was restarted on commit `b58433e` and active Python PID `58603` reported `waiting_g003_parent` with `211 / 918` decoded. Attached GPU monitor evidence remains pod-owned live output until the parent exits/finalizer runs. Do not commit local stand-ins for live GPU CSV/watcher summaries.
+- Pod checkout was fast-forwarded to `14f4f60` while the active G003 Python/torchrun processes continued from already-loaded code; this is intentional so the future G004 launch sees the shard-aware FDM patch.
+- Accel64 extraction and merge are complete: `918 / 918` recording variants, `64 / 64` shards, `35,909,652` total records, `19,211,006` train-core rows, `16,698,646` target-eval rows, `failures=0`.
+- Active command: `bash scripts/run_g003_accel64_training_resume.sh`, parent PID file `outputs/cluster/g003_full_compact_accel64.pid`, observed parent PID `251593`.
+- Active training command: `uv run torchrun --standalone --nproc-per-node=4 scripts/train_idm_streaming.py --config configs/model/idm_streaming_d2e_full_compact_accel64.yaml --require-torch`. Rank worker PIDs observed at the snapshot: `252006`, `252007`, `252008`, `252009`.
+- Shard-parallel stats precompute is complete: `outputs/idm_streaming_d2e_full_compact_accel64/streaming_stats.json` exists with `19,211,006` examples and input dim `620`.
+- Live health reports `healthy_running` / `idm_training`; the post-run watcher reports `waiting_active_parent`. GPU monitor CSV path: `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv`.
+- Terminal artifacts were still absent at the snapshot: `train_history.json`, `metrics.json`, `checkpoint_metadata.json`, `checkpoint.pt`, accel64 IDM summary, split-stat summary, integrated finalization summary, and completion audit. G003 remains non-terminal.
+
+Useful pod monitor command:
+
+```bash
+KUBECONFIG=/home/top321902/.kube/mlxp/jeonghunpark/production-kubeconfig.yaml \
+  kubectl --request-timeout=600s -n p-production exec -i prod-rsv-jeonghunpark-20260521-76e25a -- bash -s < /tmp/g003_resume_probe.sh
+```
+
+`kubectl exec` is flaky with `connect: cannot assign requested address`; retry with a short sleep. Non-login pod shells may not include `uv` on `PATH`, so `export PATH="$HOME/.local/bin:$PATH"` or call `/root/.local/bin/uv`.
+
+After G003 accel64 audit passes, promote to canonical paths with:
+
+```bash
+uv run python scripts/promote_g003_accel64_to_canonical.py
+```
+
+Then checkpoint `G003-d2e-only-idm` complete through OMX only after calling Codex `get_goal` and passing the snapshot JSON to `omx ultragoal checkpoint --goal-id G003-d2e-only-idm --status complete ...`. Do not mark the aggregate Codex goal complete.
 
 ## Current G005 auxiliary materialization
 
@@ -183,6 +200,16 @@ features.
 `scripts/run_g004_d2e_full_fdm_4xh200.sh` auto-generates the train-core
 pseudo-labels with `scripts/predict_idm_streaming.py` after G003 checkpoint
 artifacts exist.
+
+Current G004 throughput hardening: commit `14f4f60` keeps the monolithic FDM
+train/target JSONLs required by the completion audit, but also writes
+`outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_*.jsonl` and
+`outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_*.jsonl`.
+`train_streaming_fdm` passes those shard paths into the shared streaming trainer
+so 4×H200 DDP ranks parse disjoint shard files instead of each rank re-reading
+the full monolith. `configs/eval/g004_split_statistics.yaml` is streaming and
+must compare predictions against the target shard glob, not the monolithic
+target JSONL, because prediction order follows the target shard path order.
 
 Latest G004 launch preflight: run
 `uv run python scripts/plan_g004_launch.py --check-gpus` in the pod before
