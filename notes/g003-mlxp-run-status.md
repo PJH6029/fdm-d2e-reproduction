@@ -2,7 +2,7 @@
 
 Updated: 2026-05-22 KST
 
-- Latest commit verified in the pod checkout before the current active G003 torchrun: `9a9f099`. Origin/local are ahead at `60a25da`, but that commit is intentionally not pulled into the pod until the active G003 torchrun/finalization exits.
+- Latest commit verified in the pod checkout before the current active G003 torchrun: `9a9f099`. Origin/local are ahead at `8148678`, but those commits are intentionally not pulled into the pod until the active G003 torchrun/finalization exits.
 - MLXP reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a` in namespace `p-production`.
 - Reservation window: 2026-05-21 10:00+09:00 to 2026-05-24 09:00+09:00.
@@ -595,6 +595,6 @@ uv run python scripts/audit_g003_live_health.py \
 - G003 accel64 remains non-terminal. Full extraction/merge and stats precompute are complete, and 4×H200 IDM torchrun is still active under parent PID file `outputs/cluster/g003_full_compact_accel64.pid`.
 - Fresh probe at 12:22 KST reported live health `healthy_running`, stage `idm_training`, decoded `918 / 918`, complete shards `64 / 64`, and watcher status `waiting_active_parent`. No `train_history.json`, checkpoint, metrics, split-stat summary, finalization summary, or completion audit existed yet.
 - Rank file-progress probe showed rank workers still CPU-active in epoch streaming; the slowest inferred rank was at ~0.67 of its assigned first-epoch shard bytes while one rank had already exhausted its current file handle and was likely waiting in the DDP join path. Continue waiting rather than restarting.
-- Local commit `60a25da` was pushed to origin to reduce repeated per-batch tensor/lookup setup in `streaming_idm.py` for future runs. Validation passed: `uv run pytest -q tests/test_streaming_idm_contract.py tests/test_streaming_fdm_contract.py` and full `uv run pytest -q` (`307` tests).
-- Do not pull `60a25da` into the pod while the active G003 torchrun is still running. Pull it after G003 training/finalization exits and before G004 launch/promotion-related follow-up, so the running source tree is not mutated under active Python workers.
+- Local commits `60a25da` and `8148678` were pushed to origin to reduce repeated per-batch tensor/lookup setup and add opt-in chunked tensor training caches for future runs. Validation passed: `uv run pytest -q tests/test_streaming_idm_contract.py tests/test_streaming_fdm_contract.py` and full `uv run pytest -q` (`307` tests).
+- Do not pull `60a25da`/`8148678` into the pod while the active G003 torchrun is still running. Pull it after G003 training/finalization exits and before G004 launch/promotion-related follow-up, so the running source tree is not mutated under active Python workers.
 - No G003 OMX checkpoint and no aggregate `update_goal` call was made.
