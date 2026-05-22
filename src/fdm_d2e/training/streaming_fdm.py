@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -81,6 +82,35 @@ def _write_jsonl_row(handle, row: dict[str, Any]) -> None:
     handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def _open_shard_writers(output_dir: Path, *, prefix: str, num_shards: int) -> tuple[list[Path], list[Any]]:
+    if num_shards <= 1:
+        return [], []
+    shard_dir = ensure_dir(output_dir / f"{prefix}_shards")
+    paths = [shard_dir / f"shard_{idx:05d}.jsonl" for idx in range(num_shards)]
+    handles = []
+    for path in paths:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        handles.append(path.open("w"))
+    return paths, handles
+
+
+def _close_all(handles: Iterable[Any]) -> None:
+    for handle in handles:
+        handle.close()
+
+
+def _write_jsonl_row_with_shards(
+    handle,
+    shard_handles: list[Any],
+    row: dict[str, Any],
+    *,
+    row_index: int,
+) -> None:
+    _write_jsonl_row(handle, row)
+    if shard_handles:
+        _write_jsonl_row(shard_handles[row_index % len(shard_handles)], row)
+
+
 def _with_prior_action_context(record: dict[str, Any], prior_tokens: list[str] | None, *, source: str) -> dict[str, Any]:
     out = dict(record)
     tokens = list(prior_tokens or ["NOOP"])
@@ -124,6 +154,11 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
     output_dir = ensure_dir(config.get("output_dir", "outputs/fdm_streaming_d2e_full_compact"))
     train_records_path = output_dir / "fdm_train_pseudolabeled_records.jsonl"
     target_records_path = output_dir / "fdm_target_ground_truth_records.jsonl"
+    num_output_shards = int(config.get("num_output_shards", config.get("output_shards", 1)))
+    if num_output_shards < 1:
+        raise ValueError("num_output_shards must be >= 1")
+    train_shard_paths, train_shard_handles = _open_shard_writers(output_dir, prefix="fdm_train", num_shards=num_output_shards)
+    target_shard_paths, target_shard_handles = _open_shard_writers(output_dir, prefix="fdm_target", num_shards=num_output_shards)
     label_sha256 = sha256_file(labels_path)
     train_fraction = float(config.get("fdm_train_fraction", 0.75))
     if not 0.0 < train_fraction <= 1.0:
@@ -168,84 +203,85 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
         for tag in record.get("eval_split_tags", []) or []:
             bump("target_eval_split_tags" if target else "eval_split_tags", tag)
 
-    with train_records_path.open("w") as train_f, target_records_path.open("w") as target_f:
-        if explicit_target_records_path is not None:
-            seen_recordings: set[str] = set()
-            last_train_label_tokens_by_recording: dict[str, list[str]] = {}
-            for line_no, (record, label) in enumerate(iter_ordered_record_label_pairs(records_path, labels_path), 1):
-                rid = _recording_id(record)
-                prior_tokens = last_train_label_tokens_by_recording.get(rid, ["NOOP"])
-                contextual_record = _with_prior_action_context(record, prior_tokens, source="idm_pseudolabel_previous_teacher_forced")
-                _write_jsonl_row(train_f, _pseudo_record(contextual_record, label, labels_path=labels_path, label_sha256=label_sha256))
-                last_train_label_tokens_by_recording[rid] = _label_tokens(label)
-                counts["pairs"] = line_no
-                counts["train"] += 1
-                seen_recordings.add(rid)
-                observe_record(record)
-            last_target_tokens_by_recording: dict[str, list[str]] = {}
-            for line_no, record in enumerate(iter_jsonl(explicit_target_records_path), 1):
-                rid = _recording_id(record)
-                prior_tokens = last_target_tokens_by_recording.get(rid, ["NOOP"])
-                _write_jsonl_row(
-                    target_f,
-                    _with_prior_action_context(record, prior_tokens, source="d2e_ground_truth_previous_teacher_forced"),
-                )
-                last_target_tokens_by_recording[rid] = [str(token) for token in record.get("ground_truth_tokens", []) or ["NOOP"]]
-                counts["target"] = line_no
-                observe_record(record, target=True)
-            counts["recordings"] = len(seen_recordings)
-        else:
-            current_recording: str | None = None
-            group: list[tuple[dict[str, Any], dict[str, Any]]] = []
-
-            def flush_group() -> None:
-                if not group:
-                    return
-                train_pairs, target_records = _split_group(
-                    group,
-                    train_fraction=train_fraction,
-                    min_target_per_recording=min_target_per_recording,
-                )
-                previous_label_tokens = ["NOOP"]
-                for record, label in train_pairs:
-                    contextual_record = _with_prior_action_context(
-                        record,
-                        previous_label_tokens,
-                        source="idm_pseudolabel_previous_teacher_forced",
-                    )
-                    _write_jsonl_row(train_f, _pseudo_record(contextual_record, label, labels_path=labels_path, label_sha256=label_sha256))
-                    previous_label_tokens = _label_tokens(label)
+    try:
+        with train_records_path.open("w") as train_f, target_records_path.open("w") as target_f:
+            if explicit_target_records_path is not None:
+                seen_recordings: set[str] = set()
+                last_train_label_tokens_by_recording: dict[str, list[str]] = {}
+                for line_no, (record, label) in enumerate(iter_ordered_record_label_pairs(records_path, labels_path), 1):
+                    rid = _recording_id(record)
+                    prior_tokens = last_train_label_tokens_by_recording.get(rid, ["NOOP"])
+                    contextual_record = _with_prior_action_context(record, prior_tokens, source="idm_pseudolabel_previous_teacher_forced")
+                    train_row = _pseudo_record(contextual_record, label, labels_path=labels_path, label_sha256=label_sha256)
+                    _write_jsonl_row_with_shards(train_f, train_shard_handles, train_row, row_index=int(counts["train"]))
+                    last_train_label_tokens_by_recording[rid] = _label_tokens(label)
+                    counts["pairs"] = line_no
                     counts["train"] += 1
-                previous_gt_by_sequence: dict[str, list[str]] = {}
-                previous_tokens = ["NOOP"]
-                for record, _label in sorted(group, key=lambda item: (int(item[0].get("timestamp_ns", 0)), str(item[0].get("sequence_id", "")))):
-                    previous_gt_by_sequence[str(record.get("sequence_id"))] = list(previous_tokens)
-                    previous_tokens = [str(token) for token in record.get("ground_truth_tokens", []) or ["NOOP"]]
-                for record in target_records:
-                    _write_jsonl_row(
-                        target_f,
-                        _with_prior_action_context(
+                    seen_recordings.add(rid)
+                    observe_record(record)
+                last_target_tokens_by_recording: dict[str, list[str]] = {}
+                for line_no, record in enumerate(iter_jsonl(explicit_target_records_path), 1):
+                    rid = _recording_id(record)
+                    prior_tokens = last_target_tokens_by_recording.get(rid, ["NOOP"])
+                    target_row = _with_prior_action_context(record, prior_tokens, source="d2e_ground_truth_previous_teacher_forced")
+                    _write_jsonl_row_with_shards(target_f, target_shard_handles, target_row, row_index=int(counts["target"]))
+                    last_target_tokens_by_recording[rid] = [str(token) for token in record.get("ground_truth_tokens", []) or ["NOOP"]]
+                    counts["target"] = line_no
+                    observe_record(record, target=True)
+                counts["recordings"] = len(seen_recordings)
+            else:
+                current_recording: str | None = None
+                group: list[tuple[dict[str, Any], dict[str, Any]]] = []
+
+                def flush_group() -> None:
+                    if not group:
+                        return
+                    train_pairs, target_records = _split_group(
+                        group,
+                        train_fraction=train_fraction,
+                        min_target_per_recording=min_target_per_recording,
+                    )
+                    previous_label_tokens = ["NOOP"]
+                    for record, label in train_pairs:
+                        contextual_record = _with_prior_action_context(
+                            record,
+                            previous_label_tokens,
+                            source="idm_pseudolabel_previous_teacher_forced",
+                        )
+                        train_row = _pseudo_record(contextual_record, label, labels_path=labels_path, label_sha256=label_sha256)
+                        _write_jsonl_row_with_shards(train_f, train_shard_handles, train_row, row_index=int(counts["train"]))
+                        previous_label_tokens = _label_tokens(label)
+                        counts["train"] += 1
+                    previous_gt_by_sequence: dict[str, list[str]] = {}
+                    previous_tokens = ["NOOP"]
+                    for record, _label in sorted(group, key=lambda item: (int(item[0].get("timestamp_ns", 0)), str(item[0].get("sequence_id", "")))):
+                        previous_gt_by_sequence[str(record.get("sequence_id"))] = list(previous_tokens)
+                        previous_tokens = [str(token) for token in record.get("ground_truth_tokens", []) or ["NOOP"]]
+                    for record in target_records:
+                        target_row = _with_prior_action_context(
                             record,
                             previous_gt_by_sequence.get(str(record.get("sequence_id")), ["NOOP"]),
                             source="d2e_ground_truth_previous_teacher_forced",
-                        ),
-                    )
-                    counts["target"] += 1
-                    observe_record(record, target=True)
-                counts["recordings"] += 1
+                        )
+                        _write_jsonl_row_with_shards(target_f, target_shard_handles, target_row, row_index=int(counts["target"]))
+                        counts["target"] += 1
+                        observe_record(record, target=True)
+                    counts["recordings"] += 1
 
-            for record, label in iter_ordered_record_label_pairs(records_path, labels_path):
-                rid = _recording_id(record)
-                if current_recording is None:
-                    current_recording = rid
-                if rid != current_recording:
-                    flush_group()
-                    group = []
-                    current_recording = rid
-                group.append((record, label))
-                counts["pairs"] += 1
-                observe_record(record)
-            flush_group()
+                for record, label in iter_ordered_record_label_pairs(records_path, labels_path):
+                    rid = _recording_id(record)
+                    if current_recording is None:
+                        current_recording = rid
+                    if rid != current_recording:
+                        flush_group()
+                        group = []
+                        current_recording = rid
+                    group.append((record, label))
+                    counts["pairs"] += 1
+                    observe_record(record)
+                flush_group()
+    finally:
+        _close_all([*train_shard_handles, *target_shard_handles])
 
     if counts["train"] == 0 or counts["target"] == 0:
         raise ValueError(f"streaming FDM split is empty: train={counts['train']} target={counts['target']}")
@@ -257,6 +293,16 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
         "target_records_source_path": str(explicit_target_records_path) if explicit_target_records_path is not None else str(records_path),
         "train_records_path": str(train_records_path),
         "target_records_path": str(target_records_path),
+        "train_record_paths": [str(path) for path in train_shard_paths] if train_shard_paths else [str(train_records_path)],
+        "target_record_paths": [str(path) for path in target_shard_paths] if target_shard_paths else [str(target_records_path)],
+        "train_records_glob": str(output_dir / "fdm_train_shards" / "shard_*.jsonl") if train_shard_paths else None,
+        "target_records_glob": str(output_dir / "fdm_target_shards" / "shard_*.jsonl") if target_shard_paths else None,
+        "output_shards": {
+            "enabled": bool(train_shard_paths or target_shard_paths),
+            "num_shards": num_output_shards if train_shard_paths or target_shard_paths else 1,
+            "train_record_paths": [str(path) for path in train_shard_paths],
+            "target_record_paths": [str(path) for path in target_shard_paths],
+        },
         "fdm_train_fraction": train_fraction,
         "min_target_per_recording": min_target_per_recording,
         "counts": counts,
@@ -305,7 +351,19 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
         if torch.cuda.is_available() and not force_cpu:
             torch.cuda.set_device(local_rank)
         if not torch.distributed.is_initialized():
-            torch.distributed.init_process_group(backend=backend)
+            init_kwargs: dict[str, Any] = {"backend": backend}
+            timeout_seconds = (
+                torch_cfg_for_dist.get("distributed_timeout_seconds")
+                or config.get("distributed_timeout_seconds")
+                or os.environ.get("TORCH_DISTRIBUTED_TIMEOUT_SECONDS")
+                or os.environ.get("TORCH_DIST_TIMEOUT_SECONDS")
+            )
+            if timeout_seconds is not None:
+                timeout = float(timeout_seconds)
+                if timeout <= 0:
+                    raise ValueError("distributed_timeout_seconds must be positive")
+                init_kwargs["timeout"] = timedelta(seconds=timeout)
+            torch.distributed.init_process_group(**init_kwargs)
     if rank == 0:
         split_summary = materialize_fdm_streaming_splits(config)
     if world_size > 1:
@@ -315,6 +373,8 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
         split_summary = read_json(split_summary_path)
     model_name = str(config.get("model_name", "streaming_compact_fdm"))
     torch_cfg = dict(config.get("torch_idm_config", {}))
+    train_record_paths = [str(path) for path in split_summary.get("train_record_paths", []) if path]
+    target_record_paths = [str(path) for path in split_summary.get("target_record_paths", []) if path]
     torch_cfg.update(
         {
             "model_name": model_name,
@@ -326,6 +386,12 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
             "baseline_names": list(config.get("baseline_names", ["noop", "global_majority", "last_seen_train"])),
         }
     )
+    if len(train_record_paths) > 1:
+        torch_cfg["train_record_paths"] = train_record_paths
+        torch_cfg["train_records_glob"] = split_summary.get("train_records_glob")
+    if len(target_record_paths) > 1:
+        torch_cfg["target_record_paths"] = target_record_paths
+        torch_cfg["target_records_glob"] = split_summary.get("target_records_glob")
     torch_summary = train_streaming_idm(torch_cfg)
     if torch_summary.get("schema") == "streaming_idm_worker_summary.v1":
         return {
@@ -383,6 +449,10 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
         "records_path": str(config["records_path"]),
         "train_records_path": str(split_summary["train_records_path"]),
         "target_records_path": str(split_summary["target_records_path"]),
+        "train_record_paths": train_record_paths or [str(split_summary["train_records_path"])],
+        "target_record_paths": target_record_paths or [str(split_summary["target_records_path"])],
+        "train_records_glob": split_summary.get("train_records_glob"),
+        "target_records_glob": split_summary.get("target_records_glob"),
         "target_examples": int(split_summary["counts"]["target"]),
         "split_summary_path": str(output_dir / "fdm_streaming_split_summary.json"),
         "torch_checkpoint_metadata": torch_summary["metadata"],

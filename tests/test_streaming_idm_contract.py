@@ -155,6 +155,52 @@ def test_streaming_idm_predicts_train_core_pseudolabels_without_retraining(tmp_p
     assert Path(tmp_path / "fdm_train_core_summary.json").exists()
 
 
+def test_streaming_idm_predicts_over_multiple_record_files(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    train_path = tmp_path / "train.jsonl"
+    target_path = tmp_path / "target.jsonl"
+    shard_a = tmp_path / "fdm_train_core_a.jsonl"
+    shard_b = tmp_path / "fdm_train_core_b.jsonl"
+    _write_jsonl(train_path, [_record(idx, "train_core") for idx in range(8)])
+    _write_jsonl(target_path, [_record(idx + 8, "eval") for idx in range(4)])
+    _write_jsonl(shard_a, [_record(idx + 20, "train_core") for idx in range(3)])
+    _write_jsonl(shard_b, [_record(idx + 23, "train_core") for idx in range(2)])
+
+    train_summary = train_streaming_idm(
+        {
+            "model_name": "tiny_streaming_idm_predict_shards",
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(tmp_path / "idm_sharded_predict"),
+            "feature_mode": "summary_compact_grid8_shift_surface_time",
+            "hidden_dim": 8,
+            "depth": 1,
+            "epochs": 1,
+            "batch_size": 4,
+            "categorical_min_count": 1,
+            "mouse_head_mode": "axis_softmax",
+            "seed": 13,
+            "force_cpu": True,
+        }
+    )
+
+    pred_summary = predict_streaming_idm_checkpoint(
+        {
+            "checkpoint_path": train_summary["metadata"]["checkpoint_path"],
+            "records_path": str(shard_a),
+            "record_paths": [str(shard_a), str(shard_b)],
+            "output_dir": str(tmp_path / "fdm_train_core_pseudolabels_sharded"),
+            "force_cpu": True,
+            "eval_batch_size": 2,
+        }
+    )
+
+    assert pred_summary["records"] == 5
+    assert pred_summary["record_paths"] == [str(shard_a), str(shard_b)]
+    assert len(Path(pred_summary["pseudo_label_path"]).read_text().strip().splitlines()) == 5
+
+
 def test_distributed_runtime_passes_configured_timeout(monkeypatch):
     calls = {}
 

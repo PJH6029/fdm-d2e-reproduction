@@ -1076,6 +1076,12 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     torch = require_torch()
     checkpoint_path = Path(config["checkpoint_path"])
     records_path = Path(config["records_path"])
+    record_paths = _record_paths_from_config(
+        config,
+        primary_key="records_path",
+        paths_key="record_paths",
+        glob_key="records_glob",
+    )
     output_dir = ensure_dir(config.get("output_dir", checkpoint_path.parent / "prediction"))
     force_cpu = bool(config.get("force_cpu", False))
     device = "cuda" if torch.cuda.is_available() and not force_cpu else "cpu"
@@ -1121,7 +1127,7 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     prediction = _predict_stream(
         torch,
         model,
-        target_records=records_path,
+        target_records=record_paths if len(record_paths) > 1 else records_path,
         stats=stats,
         config=prediction_config,
         device=device,
@@ -1136,6 +1142,8 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "source_checkpoint_artifact": _file_artifact_metadata(checkpoint_path),
         "source_checkpoint_metadata": _file_artifact_metadata(config.get("checkpoint_metadata_path")),
         "records_path": str(records_path),
+        "record_paths": [str(path) for path in record_paths],
+        "records_glob": config.get("records_glob"),
         "output_dir": str(output_dir),
         "prediction_config": prediction_config,
         "records": int(prediction["target_records"]),
