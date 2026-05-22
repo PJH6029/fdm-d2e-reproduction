@@ -62,11 +62,11 @@ Latest known live run snapshot: 2026-05-22 11:15 KST.
 Useful pod monitor command:
 
 ```bash
-KUBECONFIG=/home/top321902/.kube/mlxp/jeonghunpark/production-kubeconfig.yaml \
+KUBECONFIG=/home/top321902/.kube/mlxp/jeonghunpark/debug-kubeconfig.yaml \
   kubectl --request-timeout=600s -n p-production exec -i prod-rsv-jeonghunpark-20260521-76e25a -- bash -s < /tmp/g003_resume_probe.sh
 ```
 
-`kubectl exec` is flaky with `connect: cannot assign requested address`; retry with a short sleep. Non-login pod shells may not include `uv` on `PATH`, so `export PATH="$HOME/.local/bin:$PATH"` or call `/root/.local/bin/uv`.
+`kubectl exec` is flaky with `connect: cannot assign requested address`; retry with a short sleep. If `production-kubeconfig.yaml` returns `Unauthorized`, use `/home/top321902/.kube/mlxp/jeonghunpark/debug-kubeconfig.yaml` with `-n p-production` (verified on 2026-05-22 11:38 KST). Non-login pod shells may not include `uv` on `PATH`, so `export PATH="$HOME/.local/bin:$PATH"` or call `/root/.local/bin/uv`.
 
 After G003 accel64 audit passes, promote to canonical paths with:
 

@@ -582,3 +582,9 @@ uv run python scripts/audit_g003_live_health.py \
 - Local/pushed commit `14f4f60` prepares G004 before the hard gate opens: FDM materialization now keeps audit-required monolithic evidence files while also writing train/target shard JSONLs, passes shard paths into DDP training, raises G004 distributed timeout to 24h, bounds convergence validation, uses parallel stats precompute, and makes G004 split statistics stream over the target shard glob with precomputed train stats.
 - Validation: `uv run pytest -q` passed (`307` tests). Pod checkout was fast-forwarded to `14f4f60` without stopping the active G003 Python/torchrun processes, so future G004 launch sees the shard-aware patch.
 - G003 remains non-terminal. Do not checkpoint complete until accel64 training/eval/finalization pass, promotion to canonical paths succeeds, and canonical `artifacts/idm/g003_full_idm_completion_audit.json` reports `pass`.
+
+### 2026-05-22 11:38 KST kubeconfig monitor handoff
+
+- The previously used production kubeconfig at `/home/top321902/.kube/mlxp/jeonghunpark/production-kubeconfig.yaml` began returning Kubernetes `Unauthorized` while the MLXP reservation API still reported the production pod as running.
+- The debug kubeconfig at `/home/top321902/.kube/mlxp/jeonghunpark/debug-kubeconfig.yaml` authenticated successfully for the same `p-production` namespace and pod, so monitoring was switched to that kubeconfig without touching the training process.
+- Local old watch session using the stale production kubeconfig was killed; a new watch loop is running via `/tmp/g003_train_watch_debugkcfg.sh`.
