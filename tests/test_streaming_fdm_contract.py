@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from fdm_d2e.io_utils import read_jsonl
-from fdm_d2e.training.streaming_fdm import materialize_fdm_streaming_splits, train_streaming_fdm
+from fdm_d2e.training.streaming_fdm import materialize_fdm_streaming_splits, recover_streaming_fdm_outputs_from_checkpoint, train_streaming_fdm
 from fdm_d2e.training.torch_idm import torch_available
 
 
@@ -268,3 +268,84 @@ def test_streaming_fdm_trains_tiny_checkpoint(tmp_path: Path):
     assert Path(checkpoint["predictions_path"]).exists()
     assert Path(checkpoint["train_records_path"]).exists()
     assert summary["statistical_comparison"]["schema"] == "stat_comparison.v1"
+
+
+def test_streaming_fdm_recovers_wrapper_outputs_from_torch_checkpoint(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    records = [_record(idx) for idx in range(8)]
+    labels = [_label(row, idx) for idx, row in enumerate(records)]
+    records_path = tmp_path / "records.jsonl"
+    labels_path = tmp_path / "labels.jsonl"
+    endpoints = tmp_path / "endpoints.json"
+    out = tmp_path / "fdm_recover"
+    summary_out = tmp_path / "fdm_recovered_summary.json"
+    _write_jsonl(records_path, records)
+    _write_jsonl(labels_path, labels)
+    endpoints.write_text(
+        json.dumps(
+            {
+                "schema": "primary_endpoints.v1",
+                "reference_baseline": "noop",
+                "endpoints": [],
+            }
+        )
+    )
+    config = {
+        "model_name": "tiny_streaming_fdm_recover",
+        "records_path": str(records_path),
+        "labels_path": str(labels_path),
+        "output_dir": str(out),
+        "summary_out": str(summary_out),
+        "endpoints": str(endpoints),
+        "config_path": "test_fdm_recover_config",
+        "source_namespace": "unit_d2e_fdm",
+        "fdm_train_fraction": 0.75,
+        "num_output_shards": 2,
+        "torch_idm_config": {
+            "feature_mode": "summary_causal_compact_grid8_time_prior_action",
+            "hidden_dim": 8,
+            "depth": 1,
+            "epochs": 1,
+            "eval_interval_epochs": 1,
+            "batch_size": 4,
+            "categorical_min_count": 1,
+            "mouse_head_mode": "axis_softmax",
+            "force_cpu": True,
+            "seed": 29,
+            "resume_predictions": True,
+        },
+    }
+    train_summary = train_streaming_fdm(config)
+    pseudo_path = out / "torch_model" / "pseudolabels.jsonl"
+    predictions_path = out / "torch_model" / "predictions.jsonl"
+    pseudo_lines = pseudo_path.read_text().splitlines()
+    prediction_lines = predictions_path.read_text().splitlines()
+    pseudo_path.write_text("\n".join(pseudo_lines[:1]) + "\n")
+    predictions_path.write_text("\n".join(prediction_lines[:1]) + "\n")
+    for rel in [
+        "checkpoint_metadata.json",
+        "summary.json",
+        "torch_train_summary.json",
+        "torch_model/checkpoint_metadata.json",
+        "torch_model/metrics.json",
+        "torch_model/label_quality_report.json",
+        "torch_model/statistical_comparison.json",
+    ]:
+        path = out / rel
+        if path.exists():
+            path.unlink()
+    if summary_out.exists():
+        summary_out.unlink()
+
+    recovery = recover_streaming_fdm_outputs_from_checkpoint(config)
+    recovered_summary = json.loads(summary_out.read_text())
+    recovered_metadata = json.loads((out / "checkpoint_metadata.json").read_text())
+
+    assert recovery["status"] == "pass"
+    assert recovery["prediction_resume"]["existing_rows"] == 1
+    assert recovery["target_examples"] == train_summary["checkpoint"]["target_examples"]
+    assert recovered_summary["schema"] == "streaming_fdm_train_summary.v1"
+    assert recovered_summary["recovered_from_torch_checkpoint"].endswith("torch_model/checkpoint.pt")
+    assert recovered_metadata["recovery"]["source_torch_checkpoint_path"].endswith("torch_model/checkpoint.pt")
+    assert len(pseudo_path.read_text().splitlines()) == train_summary["checkpoint"]["target_examples"]

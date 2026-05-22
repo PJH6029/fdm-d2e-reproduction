@@ -618,3 +618,9 @@ uv run python scripts/audit_g003_live_health.py \
 
 - Local/origin code now includes `scripts/recover_idm_streaming_outputs.py` and `recover_streaming_idm_outputs_from_checkpoint`. If a full-corpus IDM run has saved `checkpoint.pt` but exits before prediction/metrics/metadata/summary finish, this helper reruns or resumes checkpoint prediction and reconstructs `checkpoint_metadata.json` plus the train-summary artifact without retraining.
 - Validation passed locally with targeted recovery tests and full pytest. This remains future-run hardening only; do not pull into the active pod checkout until the current G003 torchrun/finalization exits.
+
+
+### 2026-05-22 14:04 KST FDM wrapper recovery helper prepared locally
+
+- Local/origin code now includes `scripts/recover_fdm_streaming_outputs.py` and `recover_streaming_fdm_outputs_from_checkpoint`. If G004 saves `outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt` but exits before FDM wrapper metadata/summary, this helper recovers torch-model prediction/metrics and rebuilds FDM `checkpoint_metadata.json`, `summary.json`, and optional artifact summary without retraining.
+- Validation passed locally with targeted FDM/IDM recovery tests and full pytest. This remains future-run hardening only; do not pull into the active pod checkout until the current G003 torchrun/finalization exits.

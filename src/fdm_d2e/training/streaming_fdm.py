@@ -9,7 +9,13 @@ from typing import Any, Iterable
 from fdm_d2e.config import load_config
 from fdm_d2e.io_utils import ensure_dir, read_json, sha256_file, stable_hash_json, write_json
 from fdm_d2e.schema import validate_named
-from fdm_d2e.training.streaming_idm import _file_artifact_metadata, _json_fingerprint, iter_jsonl, train_streaming_idm
+from fdm_d2e.training.streaming_idm import (
+    _file_artifact_metadata,
+    _json_fingerprint,
+    iter_jsonl,
+    recover_streaming_idm_outputs_from_checkpoint,
+    train_streaming_idm,
+)
 from fdm_d2e.training.torch_idm import require_torch
 
 
@@ -332,45 +338,7 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
-def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
-    output_dir = ensure_dir(config.get("output_dir", "outputs/fdm_streaming_d2e_full_compact"))
-    split_summary_path = output_dir / "fdm_streaming_split_summary.json"
-    world_size = int(os.environ.get("WORLD_SIZE", "1"))
-    rank = int(os.environ.get("RANK", "0"))
-    torch = None
-    if world_size > 1:
-        torch = require_torch()
-        torch_cfg_for_dist = dict(config.get("torch_idm_config", {}))
-        force_cpu = bool(torch_cfg_for_dist.get("force_cpu", config.get("force_cpu", False)))
-        local_rank = int(os.environ.get("LOCAL_RANK", str(rank)))
-        backend = str(
-            torch_cfg_for_dist.get("distributed_backend")
-            or config.get("distributed_backend")
-            or ("nccl" if torch.cuda.is_available() and not force_cpu else "gloo")
-        )
-        if torch.cuda.is_available() and not force_cpu:
-            torch.cuda.set_device(local_rank)
-        if not torch.distributed.is_initialized():
-            init_kwargs: dict[str, Any] = {"backend": backend}
-            timeout_seconds = (
-                torch_cfg_for_dist.get("distributed_timeout_seconds")
-                or config.get("distributed_timeout_seconds")
-                or os.environ.get("TORCH_DISTRIBUTED_TIMEOUT_SECONDS")
-                or os.environ.get("TORCH_DIST_TIMEOUT_SECONDS")
-            )
-            if timeout_seconds is not None:
-                timeout = float(timeout_seconds)
-                if timeout <= 0:
-                    raise ValueError("distributed_timeout_seconds must be positive")
-                init_kwargs["timeout"] = timedelta(seconds=timeout)
-            torch.distributed.init_process_group(**init_kwargs)
-    if rank == 0:
-        split_summary = materialize_fdm_streaming_splits(config)
-    if world_size > 1:
-        assert torch is not None
-        torch.distributed.barrier()
-    if rank != 0:
-        split_summary = read_json(split_summary_path)
+def _fdm_torch_config(config: dict[str, Any], split_summary: dict[str, Any], *, output_dir: Path) -> tuple[dict[str, Any], list[str], list[str], str]:
     model_name = str(config.get("model_name", "streaming_compact_fdm"))
     torch_cfg = dict(config.get("torch_idm_config", {}))
     train_record_paths = [str(path) for path in split_summary.get("train_record_paths", []) if path]
@@ -392,26 +360,32 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
     if len(target_record_paths) > 1:
         torch_cfg["target_record_paths"] = target_record_paths
         torch_cfg["target_records_glob"] = split_summary.get("target_records_glob")
-    torch_summary = train_streaming_idm(torch_cfg)
-    if torch_summary.get("schema") == "streaming_idm_worker_summary.v1":
-        return {
-            "schema": "streaming_fdm_worker_summary.v1",
-            "rank": torch_summary.get("rank"),
-            "world_size": torch_summary.get("world_size"),
-            "status": "worker_complete",
-        }
+    return torch_cfg, train_record_paths, target_record_paths, model_name
+
+
+def _write_fdm_summary_from_torch_summary(
+    config: dict[str, Any],
+    *,
+    split_summary: dict[str, Any],
+    torch_summary: dict[str, Any],
+    output_dir: Path,
+    train_record_paths: list[str],
+    target_record_paths: list[str],
+    model_name: str,
+    recovered_from_torch_checkpoint: str | None = None,
+) -> dict[str, Any]:
     label_hash = str(split_summary["labels_sha256"])
     config_fingerprint = stable_hash_json(config)
     resolved_config_path = output_dir / "resolved_config.json"
-    write_json(
-        resolved_config_path,
-        {
-            "schema": "streaming_fdm_resolved_config.v1",
-            "model": model_name,
-            "config": config,
-            "config_fingerprint": config_fingerprint,
-        },
-    )
+    resolved_payload = {
+        "schema": "streaming_fdm_resolved_config.v1",
+        "model": model_name,
+        "config": config,
+        "config_fingerprint": config_fingerprint,
+    }
+    if recovered_from_torch_checkpoint:
+        resolved_payload["recovered_from_torch_checkpoint"] = recovered_from_torch_checkpoint
+    write_json(resolved_config_path, resolved_payload)
     labels_path = Path(config["labels_path"])
     source_idm_metadata_path = config.get("source_idm_metadata") or str(labels_path.parent / "checkpoint_metadata.json")
     data_universe_path = config.get("data_universe")
@@ -462,6 +436,12 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
         "convergence_plateau_met": bool(torch_summary["metadata"].get("convergence_plateau_met", False)),
         "dataset_fingerprint": split_summary["dataset_fingerprint"],
     }
+    if recovered_from_torch_checkpoint:
+        checkpoint["recovery"] = {
+            "schema": "streaming_fdm_checkpoint_recovery.v1",
+            "source_torch_checkpoint_path": recovered_from_torch_checkpoint,
+            "torch_summary_path": str(output_dir / "torch_train_summary.json"),
+        }
     validate_named(checkpoint, "fdm_checkpoint_metadata.schema.json")
     write_json(output_dir / "checkpoint_metadata.json", checkpoint)
     summary = {
@@ -474,10 +454,108 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
         "torch_summary_path": str(output_dir / "torch_train_summary.json"),
         "predictions_path": str(torch_summary["predictions_path"]),
     }
+    if recovered_from_torch_checkpoint:
+        summary["recovered_from_torch_checkpoint"] = recovered_from_torch_checkpoint
     write_json(config.get("summary_out", output_dir / "summary.json"), summary)
     if config.get("artifact_summary_out"):
         write_json(config["artifact_summary_out"], summary)
     return summary
+
+
+def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
+    output_dir = ensure_dir(config.get("output_dir", "outputs/fdm_streaming_d2e_full_compact"))
+    split_summary_path = output_dir / "fdm_streaming_split_summary.json"
+    world_size = int(os.environ.get("WORLD_SIZE", "1"))
+    rank = int(os.environ.get("RANK", "0"))
+    torch = None
+    if world_size > 1:
+        torch = require_torch()
+        torch_cfg_for_dist = dict(config.get("torch_idm_config", {}))
+        force_cpu = bool(torch_cfg_for_dist.get("force_cpu", config.get("force_cpu", False)))
+        local_rank = int(os.environ.get("LOCAL_RANK", str(rank)))
+        backend = str(
+            torch_cfg_for_dist.get("distributed_backend")
+            or config.get("distributed_backend")
+            or ("nccl" if torch.cuda.is_available() and not force_cpu else "gloo")
+        )
+        if torch.cuda.is_available() and not force_cpu:
+            torch.cuda.set_device(local_rank)
+        if not torch.distributed.is_initialized():
+            init_kwargs: dict[str, Any] = {"backend": backend}
+            timeout_seconds = (
+                torch_cfg_for_dist.get("distributed_timeout_seconds")
+                or config.get("distributed_timeout_seconds")
+                or os.environ.get("TORCH_DISTRIBUTED_TIMEOUT_SECONDS")
+                or os.environ.get("TORCH_DIST_TIMEOUT_SECONDS")
+            )
+            if timeout_seconds is not None:
+                timeout = float(timeout_seconds)
+                if timeout <= 0:
+                    raise ValueError("distributed_timeout_seconds must be positive")
+                init_kwargs["timeout"] = timedelta(seconds=timeout)
+            torch.distributed.init_process_group(**init_kwargs)
+    if rank == 0:
+        split_summary = materialize_fdm_streaming_splits(config)
+    if world_size > 1:
+        assert torch is not None
+        torch.distributed.barrier()
+    if rank != 0:
+        split_summary = read_json(split_summary_path)
+    torch_cfg, train_record_paths, target_record_paths, model_name = _fdm_torch_config(config, split_summary, output_dir=output_dir)
+    torch_summary = train_streaming_idm(torch_cfg)
+    if torch_summary.get("schema") == "streaming_idm_worker_summary.v1":
+        return {
+            "schema": "streaming_fdm_worker_summary.v1",
+            "rank": torch_summary.get("rank"),
+            "world_size": torch_summary.get("world_size"),
+            "status": "worker_complete",
+        }
+    return _write_fdm_summary_from_torch_summary(
+        config,
+        split_summary=split_summary,
+        torch_summary=torch_summary,
+        output_dir=output_dir,
+        train_record_paths=train_record_paths,
+        target_record_paths=target_record_paths,
+        model_name=model_name,
+    )
+
+
+def recover_streaming_fdm_outputs_from_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
+    output_dir = ensure_dir(config.get("output_dir", "outputs/fdm_streaming_d2e_full_compact"))
+    split_summary_path = output_dir / "fdm_streaming_split_summary.json"
+    if split_summary_path.exists():
+        split_summary = read_json(split_summary_path)
+    elif bool(config.get("materialize_split_if_missing", False)):
+        split_summary = materialize_fdm_streaming_splits(config)
+    else:
+        raise FileNotFoundError(f"missing FDM split summary for recovery: {split_summary_path}")
+    torch_cfg, train_record_paths, target_record_paths, model_name = _fdm_torch_config(config, split_summary, output_dir=output_dir)
+    torch_cfg["checkpoint_path"] = str(config.get("torch_checkpoint_path") or Path(torch_cfg["output_dir"]) / "checkpoint.pt")
+    torch_cfg["summary_out"] = str(output_dir / "torch_train_summary.json")
+    torch_cfg["resume_predictions"] = bool(config.get("resume_predictions", torch_cfg.get("resume_predictions", True)))
+    torch_recovery = recover_streaming_idm_outputs_from_checkpoint(torch_cfg)
+    torch_summary = read_json(output_dir / "torch_train_summary.json")
+    summary = _write_fdm_summary_from_torch_summary(
+        config,
+        split_summary=split_summary,
+        torch_summary=torch_summary,
+        output_dir=output_dir,
+        train_record_paths=train_record_paths,
+        target_record_paths=target_record_paths,
+        model_name=model_name,
+        recovered_from_torch_checkpoint=str(torch_cfg["checkpoint_path"]),
+    )
+    return {
+        "schema": "streaming_fdm_checkpoint_recovery_summary.v1",
+        "status": "pass",
+        "torch_recovery": torch_recovery,
+        "checkpoint_metadata_path": str(output_dir / "checkpoint_metadata.json"),
+        "summary_path": str(config.get("summary_out", output_dir / "summary.json")),
+        "artifact_summary_path": str(config.get("artifact_summary_out", "")) if config.get("artifact_summary_out") else None,
+        "target_examples": int(summary["checkpoint"]["target_examples"]),
+        "prediction_resume": torch_recovery.get("prediction_resume", {}),
+    }
 
 
 def train_streaming_fdm_from_config(path: str | Path) -> dict[str, Any]:
