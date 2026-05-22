@@ -567,3 +567,10 @@ uv run python scripts/audit_g003_live_health.py \
   - G003 live-health classifies stats precompute as `idm_stats_precompute` rather than warning `parent_running_no_known_worker`.
 - Validation before commit/deploy: `uv run pytest -q` -> `305 passed`.
 - Next operational step: commit/push, pull in pod, stop the slow precompute parent, and restart `scripts/run_g003_accel64_training_resume.sh` so G003 continues from already-merged accel64 data with parallel stats and sharded distributed training.
+
+## 2026-05-22 10:26 KST accel64 stats complete / 4xH200 training active
+
+- Pod pulled `626ba3d` and restarted the accel64 resume lane from existing full merge artifacts.
+- Shard-parallel stats precompute completed successfully and wrote `outputs/idm_streaming_d2e_full_compact_accel64/streaming_stats.json` with `19,211,006` train examples and input dim `620`.
+- `torchrun --standalone --nproc-per-node=4 scripts/train_idm_streaming.py --config configs/model/idm_streaming_d2e_full_compact_accel64.yaml --require-torch` is active under parent PID file `outputs/cluster/g003_full_compact_accel64.pid`.
+- Live health reports `healthy_running` / `idm_training`; 4 GPUs have allocated training memory. `train_history.json`, checkpoint, final metrics, split stats, and G003 audit are still pending.
