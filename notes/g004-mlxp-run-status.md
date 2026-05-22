@@ -32,3 +32,11 @@ The pod was fast-forwarded to commit `6e40ec6`, which adds parallel FDM material
 At the first post-relaunch inspection, 16 spawned materialization workers were actively writing `outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_*.jsonl`. This is still an offline CPU/IO materialization stage, so GPU utilization may remain near 0% until split materialization, monolith concat, stats/cache build, and DDP training begin.
 
 Claim boundary: this is active-run/restart evidence only. G004 remains incomplete until `artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json` reports pass and `artifacts/fdm/g004_full_fdm_completion_audit.json` reports `status=pass`, `error_count=0`, followed by OMX checkpointing with a fresh goal snapshot if the Codex goal tool is usable.
+
+## 2026-05-23 GPU-idle restart status
+
+After the aggregate Codex goal was restored, the user made GPU utilization an explicit ultragoal-wide operating constraint. The active G004 run on commit `6e40ec6` was still in CPU/IO materialization with all four H200 GPUs at 0% utilization, so it was terminated and backed up under `outputs/fdm_streaming_d2e_full_compact_gpu_idle_restart_backup_20260522T235357Z` plus `artifacts/fdm/g004_gpu_idle_restart_backup_20260522T235357Z`.
+
+The pod was reset to commit `d38a3b1`, which persists the GPU-utilization rule and defers G004 audit-facing train/target monolith construction until after GPU-relevant sharded training/prediction work. Fresh G004 parent PID: `262618`; watcher PID: `262772`. Mirrored local evidence: `artifacts/fdm/g004_gpu_idle_restart_decision.json` and `artifacts/fdm/g004_gpu_idle_restart_launch.json`.
+
+Claim boundary: this restart improves GPU wall-clock utilization strategy but is not G004 completion evidence. G004 remains incomplete until finalization and `g004_full_fdm_completion_audit.json` pass, followed by OMX checkpointing.

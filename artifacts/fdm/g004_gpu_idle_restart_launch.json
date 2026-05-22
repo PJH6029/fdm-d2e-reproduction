@@ -1,0 +1,24 @@
+{
+  "backup_artifacts": "artifacts/fdm/g004_gpu_idle_restart_backup_20260522T235357Z",
+  "backup_output": "outputs/fdm_streaming_d2e_full_compact_gpu_idle_restart_backup_20260522T235357Z",
+  "created_at_unix": 1779494067.4597366,
+  "head": "d38a3b1",
+  "pid_file": "262618",
+  "processes_after": [
+    "262618 bash scripts/run_g004_d2e_full_fdm_4xh200.sh",
+    "262627 bash scripts/run_g004_d2e_full_fdm_4xh200.sh",
+    "262701 uv run torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "262704 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "262768 uv run python scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid",
+    "262772 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid",
+    "262778 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "262779 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "262780 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "262781 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "262803 bash -lc pgrep -af 'run_g004|torchrun|train_fdm_streaming|watch_g004|multiprocessing.spawn|resource_tracker' || true"
+  ],
+  "run_launch_pid": "262618",
+  "schema": "g004_gpu_idle_restart_launch.v1",
+  "watch_launch_pid": "262768",
+  "watcher_pid_file": "262772"
+}
