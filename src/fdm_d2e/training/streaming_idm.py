@@ -402,13 +402,18 @@ def _iter_batches(
     rank: int = 0,
     world_size: int = 1,
     shard_by_path: bool = False,
+    skip_examples: int = 0,
 ) -> Iterable[list[dict[str, Any]]]:
     batch: list[dict[str, Any]] = []
     seen = 0
+    skipped = 0
     for path_idx, record_path in enumerate(_record_paths_from_value(path)):
         if shard_by_path and world_size > 1 and (path_idx % world_size) != rank:
             continue
         for row in iter_jsonl(record_path):
+            if skipped < int(skip_examples):
+                skipped += 1
+                continue
             if max_examples is not None and seen >= max_examples:
                 break
             batch.append(row)
@@ -1247,6 +1252,38 @@ def _metric_path_value(metrics: dict[str, Any], path: str) -> float | None:
     return float(current)
 
 
+def _count_jsonl_rows(path: str | Path) -> int:
+    with Path(path).open() as handle:
+        return sum(1 for line in handle if line.strip())
+
+
+def _iter_records(path: str | Path | Sequence[str | Path]) -> Iterable[dict[str, Any]]:
+    for record_path in _record_paths_from_value(path):
+        yield from iter_jsonl(record_path)
+
+
+def _observe_prediction_metrics(
+    *,
+    row: dict[str, Any],
+    tokens: list[str],
+    stats: dict[str, Any],
+    model_name: str,
+    baseline_names: list[str],
+    metrics_by_model: dict[str, StreamingActionMetrics],
+    group_metrics_by_model: dict[str, dict[str, StreamingActionMetrics]],
+    cluster_metrics_by_model: dict[str, dict[str, StreamingActionMetrics]],
+) -> None:
+    model_tokens = {model_name: tokens}
+    for baseline_name in baseline_names:
+        model_tokens[baseline_name] = _baseline_tokens(baseline_name, row, stats)
+    cluster = str(row.get("recording_id") or row.get("cross_resolution_key") or row.get("sequence_id"))
+    for name, pred_tokens in model_tokens.items():
+        metrics_by_model[name].update(pred_tokens, row)
+        _ensure_metric(cluster_metrics_by_model[name], cluster).update(pred_tokens, row)
+        for group_key in _group_keys(row):
+            _ensure_metric(group_metrics_by_model[name], group_key).update(pred_tokens, row)
+
+
 def _file_artifact_metadata(path_text: str | Path | None) -> dict[str, Any] | None:
     if not path_text:
         return None
@@ -1413,9 +1450,75 @@ def _predict_stream(
     pseudo_path = output_dir / "pseudolabels.jsonl"
     predictions_path = output_dir / "predictions.jsonl"
     pseudo_path.parent.mkdir(parents=True, exist_ok=True)
+    resume_predictions = bool(config.get("resume_predictions", False))
+    resume_existing_rows = 0
+    if resume_predictions:
+        pseudo_exists = pseudo_path.exists()
+        predictions_exists = predictions_path.exists()
+        if pseudo_exists != predictions_exists:
+            raise ValueError(
+                "resume_predictions requires pseudolabels and predictions to either both exist or both be absent: "
+                f"pseudolabels={pseudo_exists} predictions={predictions_exists}"
+            )
+        if pseudo_exists and predictions_exists:
+            pseudo_rows = _count_jsonl_rows(pseudo_path)
+            prediction_rows = _count_jsonl_rows(predictions_path)
+            if pseudo_rows != prediction_rows:
+                raise ValueError(
+                    f"resume_predictions found mismatched output row counts: "
+                    f"pseudolabels={pseudo_rows} predictions={prediction_rows}"
+                )
+            if max_target_examples is not None and prediction_rows > int(max_target_examples):
+                raise ValueError(
+                    f"resume_predictions found {prediction_rows} existing rows, exceeding max_target_examples={max_target_examples}"
+                )
+            resume_existing_rows = prediction_rows
+            if resume_existing_rows:
+                target_iter = _iter_records(target_records)
+                for row_idx, pred_row in enumerate(iter_jsonl(predictions_path), 1):
+                    try:
+                        row = next(target_iter)
+                    except StopIteration as exc:
+                        raise ValueError(
+                            f"resume_predictions has more predictions than target records at row {row_idx}"
+                        ) from exc
+                    if str(row.get("sequence_id")) != str(pred_row.get("sequence_id")):
+                        raise ValueError(
+                            f"resume_predictions sequence_id mismatch at row {row_idx}: "
+                            f"{row.get('sequence_id')!r} != {pred_row.get('sequence_id')!r}"
+                        )
+                    if row.get("source_id") is not None:
+                        target_source_ids.add(str(row["source_id"]))
+                    if row.get("resolution_tier") is not None:
+                        target_resolution_tiers.add(str(row["resolution_tier"]))
+                    for tag in row.get("eval_split_tags", []) or []:
+                        target_eval_split_tags.add(str(tag))
+                    tokens = [str(token) for token in pred_row.get("predicted_tokens", [])]
+                    _observe_prediction_metrics(
+                        row=row,
+                        tokens=tokens,
+                        stats=stats,
+                        model_name=model_name,
+                        baseline_names=baseline_names,
+                        metrics_by_model=metrics_by_model,
+                        group_metrics_by_model=group_metrics_by_model,
+                        cluster_metrics_by_model=cluster_metrics_by_model,
+                    )
+                    sequence_fingerprint.update(json.dumps({"id": row["sequence_id"], "tokens": tokens}, sort_keys=True).encode("utf-8"))
+                    sequence_fingerprint.update(b"\n")
+                target_count = resume_existing_rows
+    write_mode = "a" if resume_existing_rows else "w"
     mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
-    with pseudo_path.open("w") as pseudo_f, predictions_path.open("w") as pred_f, torch.no_grad():
-        for rows in _iter_batches(target_records, batch_size, max_target_examples):
+    remaining_max_examples = None
+    if max_target_examples is not None:
+        remaining_max_examples = max(0, int(max_target_examples) - int(resume_existing_rows))
+    with pseudo_path.open(write_mode) as pseudo_f, predictions_path.open(write_mode) as pred_f, torch.no_grad():
+        for rows in _iter_batches(
+            target_records,
+            batch_size,
+            remaining_max_examples,
+            skip_examples=resume_existing_rows,
+        ):
             x = _batch_features(
                 torch,
                 rows,
@@ -1463,15 +1566,16 @@ def _predict_stream(
                 }
                 pseudo_f.write(json.dumps(pseudo, ensure_ascii=False, sort_keys=True) + "\n")
                 pred_f.write(json.dumps(pred, ensure_ascii=False, sort_keys=True) + "\n")
-                model_tokens = {model_name: tokens}
-                for baseline_name in baseline_names:
-                    model_tokens[baseline_name] = _baseline_tokens(baseline_name, row, stats)
-                cluster = str(row.get("recording_id") or row.get("cross_resolution_key") or row.get("sequence_id"))
-                for name, pred_tokens in model_tokens.items():
-                    metrics_by_model[name].update(pred_tokens, row)
-                    _ensure_metric(cluster_metrics_by_model[name], cluster).update(pred_tokens, row)
-                    for group_key in _group_keys(row):
-                        _ensure_metric(group_metrics_by_model[name], group_key).update(pred_tokens, row)
+                _observe_prediction_metrics(
+                    row=row,
+                    tokens=tokens,
+                    stats=stats,
+                    model_name=model_name,
+                    baseline_names=baseline_names,
+                    metrics_by_model=metrics_by_model,
+                    group_metrics_by_model=group_metrics_by_model,
+                    cluster_metrics_by_model=cluster_metrics_by_model,
+                )
                 sequence_fingerprint.update(json.dumps({"id": row["sequence_id"], "tokens": tokens}, sort_keys=True).encode("utf-8"))
                 sequence_fingerprint.update(b"\n")
                 target_count += 1
@@ -1516,6 +1620,11 @@ def _predict_stream(
         "target_source_ids": sorted(target_source_ids),
         "target_resolution_tiers": sorted(target_resolution_tiers),
         "target_eval_split_tags": sorted(target_eval_split_tags),
+        "prediction_resume": {
+            "enabled": resume_predictions,
+            "existing_rows": resume_existing_rows,
+            "write_mode": write_mode,
+        },
     }
 
 
@@ -1561,6 +1670,7 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "mouse_axis_decode_mode",
         "mouse_axis_temperature",
         "mouse_output_gain",
+        "resume_predictions",
         "force_cpu",
     ):
         if key in config:
@@ -1613,6 +1723,7 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "target_resolution_tiers": prediction["target_resolution_tiers"],
         "target_eval_split_tags": prediction["target_eval_split_tags"],
         "prediction_fingerprint": prediction["prediction_fingerprint"],
+        "prediction_resume": prediction["prediction_resume"],
         "claim_boundary": "Prediction-only IDM pseudo-label artifact; it does not retrain or modify the source G003 checkpoint.",
     }
     if config.get("summary_out"):
@@ -1883,6 +1994,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "device": device,
         "stats_path": str(stats_path),
         "predictions_path": prediction["predictions_path"],
+        "prediction_resume": prediction["prediction_resume"],
     }
     write_json(config.get("summary_out", out_dir / "summary.json"), summary)
     return summary

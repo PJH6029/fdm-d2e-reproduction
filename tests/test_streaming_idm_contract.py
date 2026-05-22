@@ -207,6 +207,69 @@ def test_streaming_idm_predicts_over_multiple_record_files(tmp_path: Path):
     assert len(Path(pred_summary["pseudo_label_path"]).read_text().strip().splitlines()) == 5
 
 
+def test_streaming_idm_prediction_can_resume_partial_outputs(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    train_path = tmp_path / "train.jsonl"
+    target_path = tmp_path / "target.jsonl"
+    predict_path = tmp_path / "predict.jsonl"
+    _write_jsonl(train_path, [_record(idx, "train_core") for idx in range(8)])
+    _write_jsonl(target_path, [_record(idx + 8, "eval") for idx in range(4)])
+    _write_jsonl(predict_path, [_record(idx + 20, "eval") for idx in range(5)])
+
+    train_summary = train_streaming_idm(
+        {
+            "model_name": "tiny_streaming_idm_resume_predict",
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(tmp_path / "idm_resume_predict"),
+            "feature_mode": "summary_compact_grid8_shift_surface_time",
+            "hidden_dim": 8,
+            "depth": 1,
+            "epochs": 1,
+            "batch_size": 4,
+            "categorical_min_count": 1,
+            "mouse_head_mode": "axis_softmax",
+            "seed": 19,
+            "force_cpu": True,
+        }
+    )
+    output_dir = tmp_path / "resumed_predictions"
+    first_summary = predict_streaming_idm_checkpoint(
+        {
+            "checkpoint_path": train_summary["metadata"]["checkpoint_path"],
+            "records_path": str(predict_path),
+            "output_dir": str(output_dir),
+            "force_cpu": True,
+            "eval_batch_size": 2,
+            "resume_predictions": True,
+        }
+    )
+    pseudo_path = Path(first_summary["pseudo_label_path"])
+    predictions_path = Path(first_summary["predictions_path"])
+    pseudo_lines = pseudo_path.read_text().splitlines()
+    prediction_lines = predictions_path.read_text().splitlines()
+    pseudo_path.write_text("\n".join(pseudo_lines[:2]) + "\n")
+    predictions_path.write_text("\n".join(prediction_lines[:2]) + "\n")
+
+    resumed_summary = predict_streaming_idm_checkpoint(
+        {
+            "checkpoint_path": train_summary["metadata"]["checkpoint_path"],
+            "records_path": str(predict_path),
+            "output_dir": str(output_dir),
+            "force_cpu": True,
+            "eval_batch_size": 2,
+            "resume_predictions": True,
+        }
+    )
+
+    assert resumed_summary["records"] == 5
+    assert resumed_summary["prediction_resume"]["existing_rows"] == 2
+    assert Path(resumed_summary["pseudo_label_path"]).read_text().splitlines()[:2] == pseudo_lines[:2]
+    assert Path(resumed_summary["predictions_path"]).read_text().splitlines()[:2] == prediction_lines[:2]
+    assert len(Path(resumed_summary["pseudo_label_path"]).read_text().splitlines()) == 5
+
+
 def test_distributed_runtime_passes_configured_timeout(monkeypatch):
     calls = {}
 

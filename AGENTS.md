@@ -211,10 +211,13 @@ the full monolith. `configs/eval/g004_split_statistics.yaml` is streaming and
 must compare predictions against the target shard glob, not the monolithic
 target JSONL, because prediction order follows the target shard path order.
 Latest local/origin trainer hardening adds optional `training_cache_dir`
-chunked tensor caches for IDM/FDM training epochs. This is intended for future
-G003 restarts and G004 runs after the active G003 torchrun exits; do not pull
-new trainer commits into the pod while the current G003 Python workers are still
-running.
+chunked tensor caches for IDM/FDM training epochs. It also adds
+`resume_predictions=true` for checkpoint inference so interrupted G004
+train-core pseudo-label generation can append after already-written
+`pseudolabels.jsonl`/`predictions.jsonl` rows while recomputing metrics over the
+prefix. This is intended for future G003 restarts and G004 runs after the active
+G003 torchrun exits; do not pull new trainer commits into the pod while the
+current G003 Python workers are still running.
 
 Latest G004 launch preflight: run
 `uv run python scripts/plan_g004_launch.py --check-gpus` in the pod before

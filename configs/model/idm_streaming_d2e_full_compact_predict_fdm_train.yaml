@@ -7,7 +7,12 @@
   "summary_out": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json",
   "model_name": "streaming_compact_idm_d2e_full",
   "endpoints": "configs/eval/primary_endpoints.yaml",
-  "baseline_names": ["noop", "global_majority", "last_seen_train"],
+  "baseline_names": [
+    "noop",
+    "global_majority",
+    "last_seen_train"
+  ],
   "eval_batch_size": 4096,
-  "claim_boundary": "Prediction-only pseudo-label generation for G004 FDM training on D2E train_core; does not alter G003 target-eval pseudolabels or checkpoint."
+  "claim_boundary": "Prediction-only pseudo-label generation for G004 FDM training on D2E train_core; does not alter G003 target-eval pseudolabels or checkpoint.",
+  "resume_predictions": true
 }

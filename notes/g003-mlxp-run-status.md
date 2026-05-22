@@ -606,3 +606,9 @@ uv run python scripts/audit_g003_live_health.py \
 - Rank0 convergence evaluation wrote `outputs/idm_streaming_d2e_full_compact_accel64/train_history.json` and `convergence_report.json` with `262,144` target examples. Composite validation score after epoch 1: `0.1058949944649953` (`keyboard_accuracy=0.006023485509156915`, `mouse_button_f1=0.002607845267847441`, `mouse_move_pearson=0.30905365261798157`).
 - The same torchrun continued into epoch 2 without restart; a 13:36 KST rank-progress probe showed all four ranks reading their first assigned epoch-2 shard paths.
 - Final G003 artifacts are still pending: epochs 2-3, final checkpoint, full target prediction/pseudolabels, metrics, split statistics, integrated finalization summary, accel64 completion audit, promotion to canonical paths, and canonical completion audit. Do not checkpoint G003 yet.
+
+
+### 2026-05-22 13:50 KST prediction-resume hardening prepared locally
+
+- Local/origin code now includes `resume_predictions=true` support for `predict_streaming_idm_checkpoint`: if matching `pseudolabels.jsonl` and `predictions.jsonl` prefixes exist, the predictor verifies sequence order, recomputes metrics over the prefix, and appends inference for the remaining records.
+- The G004 train-core pseudo-label config enables this resume path. This is future-run hardening only; it was validated locally and must not be pulled into the active pod checkout until the current G003 torchrun/finalization exits.
