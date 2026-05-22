@@ -19,6 +19,7 @@ from fdm_d2e.training.neural_idm import record_features, target_mouse_delta
 from fdm_d2e.training.torch_idm import (
     MOUSE_AXIS_CLASSES,
     _axis_class_indices,
+    _axis_suffix_from_delta,
     _build_model,
     _categorical_loss,
     _prediction_from_output,
@@ -324,16 +325,34 @@ def scan_streaming_idm_stats_from_config(config: dict[str, Any]) -> dict[str, An
 
 
 
-def _batch_features(torch, rows: list[dict[str, Any]], *, feature_mode: str, mean: list[float], std: list[float], device: str):
+def _normalizer_tensors(torch, *, mean: list[float], std: list[float], device: str):
+    return (
+        torch.tensor(mean, dtype=torch.float32, device=device),
+        torch.tensor(std, dtype=torch.float32, device=device).clamp_min(1e-6),
+    )
+
+
+def _batch_features(
+    torch,
+    rows: list[dict[str, Any]],
+    *,
+    feature_mode: str,
+    mean: list[float],
+    std: list[float],
+    device: str,
+    mean_t=None,
+    std_t=None,
+):
     xs = [[float(value) for value in record_features(row, feature_mode=feature_mode)] for row in rows]
     x = torch.tensor(xs, dtype=torch.float32, device=device)
-    mean_t = torch.tensor(mean, dtype=torch.float32, device=device)
-    std_t = torch.tensor(std, dtype=torch.float32, device=device).clamp_min(1e-6)
+    if mean_t is None or std_t is None:
+        mean_t, std_t = _normalizer_tensors(torch, mean=mean, std=std, device=device)
     return (x - mean_t) / std_t
 
 
-def _category_targets(torch, rows: list[dict[str, Any]], vocab: list[str], *, device: str):
-    vocab_index = {token: idx for idx, token in enumerate(vocab)}
+def _category_targets(torch, rows: list[dict[str, Any]], vocab: list[str], *, device: str, vocab_index: dict[str, int] | None = None):
+    if vocab_index is None:
+        vocab_index = {token: idx for idx, token in enumerate(vocab)}
     y = torch.zeros((len(rows), len(vocab)), dtype=torch.float32, device=device)
     for row_idx, row in enumerate(rows):
         for token in set(row.get("ground_truth_tokens", [])):
@@ -347,8 +366,28 @@ def _mouse_targets(torch, rows: list[dict[str, Any]], *, device: str):
     return torch.tensor([target_mouse_delta(row) for row in rows], dtype=torch.float32, device=device)
 
 
-def _axis_targets(torch, rows: list[dict[str, Any]], axis_classes: list[str], *, device: str):
-    dx, dy = _axis_class_indices(rows, axis_classes)
+def _axis_class_indices_with_index(records: list[dict[str, Any]], class_index: dict[str, int]) -> tuple[list[int], list[int]]:
+    dx_indices: list[int] = []
+    dy_indices: list[int] = []
+    for row in records:
+        dx, dy = target_mouse_delta(row)
+        dx_indices.append(class_index[_axis_suffix_from_delta(dx, "MOUSE_DX_")])
+        dy_indices.append(class_index[_axis_suffix_from_delta(dy, "MOUSE_DY_")])
+    return dx_indices, dy_indices
+
+
+def _axis_targets(
+    torch,
+    rows: list[dict[str, Any]],
+    axis_classes: list[str],
+    *,
+    device: str,
+    class_index: dict[str, int] | None = None,
+):
+    if class_index is None:
+        dx, dy = _axis_class_indices(rows, axis_classes)
+    else:
+        dx, dy = _axis_class_indices_with_index(rows, class_index)
     return (
         torch.tensor(dx, dtype=torch.long, device=device),
         torch.tensor(dy, dtype=torch.long, device=device),
@@ -419,6 +458,9 @@ def _train_one_epoch(
     loss_sum = 0.0
     record_paths = list(train_record_paths or _record_paths_from_value(train_records))
     shard_by_path = len(record_paths) > 1
+    mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
+    vocab_index = {token: idx for idx, token in enumerate(category_vocab)}
+    axis_class_index = {label: idx for idx, label in enumerate(mouse_axis_classes)}
     for batch_idx, rows in enumerate(
         _iter_batches(
             record_paths,
@@ -431,9 +473,18 @@ def _train_one_epoch(
     ):
         if world_size > 1 and not shard_by_path and (batch_idx % world_size) != rank:
             continue
-        x = _batch_features(torch, rows, feature_mode=feature_mode, mean=stats["mean"], std=stats["std"], device=device)
+        x = _batch_features(
+            torch,
+            rows,
+            feature_mode=feature_mode,
+            mean=stats["mean"],
+            std=stats["std"],
+            device=device,
+            mean_t=mean_t,
+            std_t=std_t,
+        )
         mouse_y = _mouse_targets(torch, rows, device=device)
-        cat_y = _category_targets(torch, rows, category_vocab, device=device)
+        cat_y = _category_targets(torch, rows, category_vocab, device=device, vocab_index=vocab_index)
         pred = model(x)
         mouse_loss = torch.nn.functional.smooth_l1_loss(pred[:, :2], mouse_y)
         category_end = 2 + len(category_vocab)
@@ -442,7 +493,7 @@ def _train_one_epoch(
         else:
             cat_loss = torch.tensor(0.0, device=device)
         if mouse_head_mode == "axis_softmax":
-            dx_y, dy_y = _axis_targets(torch, rows, mouse_axis_classes, device=device)
+            dx_y, dy_y = _axis_targets(torch, rows, mouse_axis_classes, device=device, class_index=axis_class_index)
             axis_count = len(mouse_axis_classes)
             dx_logits = pred[:, category_end : category_end + axis_count]
             dy_logits = pred[:, category_end + axis_count : category_end + (2 * axis_count)]
@@ -877,9 +928,19 @@ def _evaluate_stream_metrics(
     max_examples = config.get("convergence_eval_max_examples")
     count = 0
     model.eval()
+    mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
     with torch.no_grad():
         for rows in _iter_batches(target_records, batch_size, max_examples):
-            x = _batch_features(torch, rows, feature_mode=str(stats["feature_mode"]), mean=stats["mean"], std=stats["std"], device=device)
+            x = _batch_features(
+                torch,
+                rows,
+                feature_mode=str(stats["feature_mode"]),
+                mean=stats["mean"],
+                std=stats["std"],
+                device=device,
+                mean_t=mean_t,
+                std_t=std_t,
+            )
             outputs = model(x).detach().cpu().tolist()
             for row, output in zip(rows, outputs):
                 tokens = _predicted_tokens_from_output(
@@ -966,9 +1027,19 @@ def _predict_stream(
     pseudo_path = output_dir / "pseudolabels.jsonl"
     predictions_path = output_dir / "predictions.jsonl"
     pseudo_path.parent.mkdir(parents=True, exist_ok=True)
+    mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
     with pseudo_path.open("w") as pseudo_f, predictions_path.open("w") as pred_f, torch.no_grad():
         for rows in _iter_batches(target_records, batch_size, max_target_examples):
-            x = _batch_features(torch, rows, feature_mode=str(stats["feature_mode"]), mean=stats["mean"], std=stats["std"], device=device)
+            x = _batch_features(
+                torch,
+                rows,
+                feature_mode=str(stats["feature_mode"]),
+                mean=stats["mean"],
+                std=stats["std"],
+                device=device,
+                mean_t=mean_t,
+                std_t=std_t,
+            )
             outputs = model(x).detach().cpu().tolist()
             for row, output in zip(rows, outputs):
                 if row.get("source_id") is not None:
