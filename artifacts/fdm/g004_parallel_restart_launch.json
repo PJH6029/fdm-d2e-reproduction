@@ -1,0 +1,37 @@
+{
+  "conflict_backup": "artifacts/fdm/g004_pull_conflict_backup_20260522T234011Z",
+  "created_at_unix": 1779493225.817675,
+  "files": {
+    "artifacts/fdm/g004_d2e_full_fdm_4xh200.log": {
+      "bytes": 772,
+      "exists": true
+    },
+    "artifacts/fdm/g004_d2e_full_fdm_4xh200.nohup.log": {
+      "bytes": 772,
+      "exists": true
+    },
+    "outputs/cluster/g004_d2e_full_fdm_4xh200.pid": {
+      "bytes": 7,
+      "exists": true
+    },
+    "outputs/cluster/g004_postrun_watcher.pid": {
+      "bytes": 7,
+      "exists": true
+    }
+  },
+  "head": "6e40ec6",
+  "pid_file": "262210",
+  "processes_after": [
+    "262210 bash scripts/run_g004_d2e_full_fdm_4xh200.sh",
+    "262219 bash scripts/run_g004_d2e_full_fdm_4xh200.sh",
+    "262228 uv run python scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid",
+    "262232 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid",
+    "262298 uv run torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "262301 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "262367 bash -lc pgrep -af 'run_g004|torchrun|train_fdm_streaming|watch_g004' || true"
+  ],
+  "run_launch_pid": "262210",
+  "schema": "g004_parallel_restart_launch.v1",
+  "watch_launch_pid": "262228",
+  "watcher_pid_file": "262232"
+}

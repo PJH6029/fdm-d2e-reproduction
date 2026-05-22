@@ -1,0 +1,61 @@
+{
+  "artifacts_before": [
+    {
+      "bytes": 0,
+      "exists": false,
+      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json"
+    },
+    {
+      "bytes": 400298678216,
+      "exists": true,
+      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_train_pseudolabeled_records.jsonl"
+    },
+    {
+      "bytes": 50232749377,
+      "exists": true,
+      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl"
+    },
+    {
+      "bytes": 0,
+      "exists": false,
+      "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/train_history.json"
+    },
+    {
+      "bytes": 0,
+      "exists": false,
+      "path": "outputs/fdm_streaming_d2e_full_compact/summary.json"
+    },
+    {
+      "bytes": 3093,
+      "exists": true,
+      "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200.log"
+    },
+    {
+      "bytes": 322959,
+      "exists": true,
+      "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv"
+    },
+    {
+      "bytes": 1272,
+      "exists": true,
+      "path": "artifacts/fdm/g004_postrun_watcher_summary.json"
+    }
+  ],
+  "created_at_unix": 1779493166.3620603,
+  "old_head": "c090d6a",
+  "processes_before": [
+    "260000 bash scripts/run_g004_d2e_full_fdm_4xh200.sh",
+    "260010 bash scripts/run_g004_d2e_full_fdm_4xh200.sh",
+    "260083 uv run python scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid",
+    "260088 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid",
+    "261469 uv run torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "261472 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "261541 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "261542 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "261543 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "261544 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "262117 bash -lc pgrep -af 'run_g004|torchrun|train_fdm_streaming|watch_g004' || true"
+  ],
+  "reason": "pre-patch G004 run still in serial CPU/IO materialization with GPUs idle; relaunch after parallel materialization/cache/prediction patch",
+  "schema": "g004_parallel_restart_decision.v1"
+}
