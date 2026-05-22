@@ -345,6 +345,76 @@ def test_streaming_idm_recovers_outputs_from_checkpoint_without_retraining(tmp_p
     assert len(pseudo_path.read_text().splitlines()) == 5
 
 
+def test_streaming_idm_recovers_outputs_with_parallel_prediction_workers(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    train_path = tmp_path / "train.jsonl"
+    target_a = tmp_path / "target_a.jsonl"
+    target_b = tmp_path / "target_b.jsonl"
+    output_dir = tmp_path / "idm_parallel_recover"
+    summary_path = tmp_path / "parallel_recovered_summary.json"
+    _write_jsonl(train_path, [_record(idx, "train_core") for idx in range(8)])
+    _write_jsonl(target_a, [_record(idx + 8, "eval") for idx in range(3)])
+    _write_jsonl(target_b, [_record(idx + 11, "eval") for idx in range(2)])
+
+    train_summary = train_streaming_idm(
+        {
+            "model_name": "tiny_streaming_idm_parallel_recover",
+            "train_records": str(train_path),
+            "target_records": str(target_a),
+            "target_record_paths": [str(target_a), str(target_b)],
+            "output_dir": str(output_dir),
+            "summary_out": str(summary_path),
+            "config_path": "test_parallel_recover_config",
+            "source_namespace": "unit_d2e_stream",
+            "feature_mode": "summary_compact_grid8_shift_surface_time",
+            "hidden_dim": 8,
+            "depth": 1,
+            "epochs": 1,
+            "eval_interval_epochs": 1,
+            "batch_size": 4,
+            "categorical_min_count": 1,
+            "mouse_head_mode": "axis_softmax",
+            "seed": 29,
+            "force_cpu": True,
+        }
+    )
+    pseudo_path = Path(train_summary["metadata"]["pseudo_label_path"])
+    for rel in [
+        "pseudolabels.jsonl",
+        "predictions.jsonl",
+        "metrics.json",
+        "label_quality_report.json",
+        "statistical_comparison.json",
+        "checkpoint_metadata.json",
+    ]:
+        path = output_dir / rel
+        if path.exists():
+            path.unlink()
+    summary_path.unlink()
+
+    recovery = recover_streaming_idm_outputs_from_checkpoint(
+        {
+            "checkpoint_path": train_summary["metadata"]["checkpoint_path"],
+            "output_dir": str(output_dir),
+            "summary_out": str(summary_path),
+            "prediction_workers": 2,
+            "force_cpu": True,
+        }
+    )
+
+    recovered_summary = json.loads(summary_path.read_text())
+    metadata = json.loads((output_dir / "checkpoint_metadata.json").read_text())
+    assert recovery["status"] == "pass"
+    assert recovery["target_records"] == 5
+    assert recovery["prediction_resume"]["write_mode"] == "parallel_parts"
+    assert recovery["prediction_resume"]["workers"] == 2
+    assert metadata["target_records"] == 5
+    assert recovered_summary["prediction_resume"]["workers"] == 2
+    assert len(pseudo_path.read_text().splitlines()) == 5
+    assert len((output_dir / "predictions.jsonl").read_text().splitlines()) == 5
+
+
 def test_distributed_runtime_passes_configured_timeout(monkeypatch):
     calls = {}
 

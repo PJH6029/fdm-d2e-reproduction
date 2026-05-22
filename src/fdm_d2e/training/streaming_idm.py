@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import glob
+import multiprocessing as mp
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import timedelta
 from contextlib import nullcontext
@@ -1045,6 +1046,81 @@ class StreamingActionMetrics:
         return metrics
 
 
+_STREAMING_ACTION_METRIC_FIELDS = (
+    "matched",
+    "keyboard_total",
+    "keyboard_correct",
+    "button_total",
+    "button_correct",
+    "button_predicted_total",
+    "button_exact_tp",
+    "button_fp",
+    "button_fn",
+    "button_no_gt",
+    "button_no_gt_fp",
+    "mouse_n",
+    "sum_pred",
+    "sum_gt",
+    "sum_pred_sq",
+    "sum_gt_sq",
+    "sum_cross",
+    "sum_abs_pred",
+    "sum_abs_gt",
+    "failure_count",
+)
+
+
+def _metric_state(metric: StreamingActionMetrics) -> dict[str, int | float]:
+    return {field: getattr(metric, field) for field in _STREAMING_ACTION_METRIC_FIELDS}
+
+
+def _metric_from_state(state: dict[str, Any]) -> StreamingActionMetrics:
+    metric = StreamingActionMetrics()
+    for field in _STREAMING_ACTION_METRIC_FIELDS:
+        if field in state:
+            setattr(metric, field, state[field])
+    return metric
+
+
+def _merge_metric_state(left: dict[str, Any] | None, right: dict[str, Any]) -> dict[str, Any]:
+    merged = {field: (left or {}).get(field, 0) for field in _STREAMING_ACTION_METRIC_FIELDS}
+    for field in _STREAMING_ACTION_METRIC_FIELDS:
+        merged[field] = merged.get(field, 0) + right.get(field, 0)
+    return merged
+
+
+def _metric_state_map(metrics: dict[str, StreamingActionMetrics]) -> dict[str, dict[str, Any]]:
+    return {name: _metric_state(metric) for name, metric in metrics.items()}
+
+
+def _nested_metric_state_map(metrics: dict[str, dict[str, StreamingActionMetrics]]) -> dict[str, dict[str, dict[str, Any]]]:
+    return {
+        name: {key: _metric_state(metric) for key, metric in metric_map.items()}
+        for name, metric_map in metrics.items()
+    }
+
+
+def _merge_named_metric_states(items: Iterable[dict[str, dict[str, Any]]]) -> dict[str, StreamingActionMetrics]:
+    merged: dict[str, dict[str, Any]] = {}
+    for item in items:
+        for name, state in item.items():
+            merged[name] = _merge_metric_state(merged.get(name), state)
+    return {name: _metric_from_state(state) for name, state in merged.items()}
+
+
+def _merge_nested_metric_states(items: Iterable[dict[str, dict[str, dict[str, Any]]]]) -> dict[str, dict[str, StreamingActionMetrics]]:
+    merged: dict[str, dict[str, dict[str, Any]]] = {}
+    for item in items:
+        for name, metric_map in item.items():
+            target_map = merged.setdefault(name, {})
+            for key, state in metric_map.items():
+                target_map[key] = _merge_metric_state(target_map.get(key), state)
+    return {
+        name: {key: _metric_from_state(state) for key, state in metric_map.items()}
+        for name, metric_map in merged.items()
+    }
+
+
 def _group_keys(row: dict[str, Any]) -> list[str]:
     keys = ["all"]
     for tag in row.get("eval_split_tags", []) or []:
@@ -1642,6 +1718,9 @@ def _predict_stream(
             "existing_rows": resume_existing_rows,
             "write_mode": write_mode,
         },
+        "metrics_state": _metric_state_map(metrics_by_model),
+        "group_metrics_state": _nested_metric_state_map(group_metrics_by_model),
+        "cluster_metrics_state": _nested_metric_state_map(cluster_metrics_by_model),
     }
 
 
@@ -1750,6 +1829,246 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     return summary
 
 
+def _chunk_sequence(items: Sequence[Path], chunks: int) -> list[list[Path]]:
+    chunks = max(1, min(int(chunks), len(items)))
+    base = len(items) // chunks
+    extra = len(items) % chunks
+    out: list[list[Path]] = []
+    start = 0
+    for idx in range(chunks):
+        size = base + (1 if idx < extra else 0)
+        out.append(list(items[start : start + size]))
+        start += size
+    return [chunk for chunk in out if chunk]
+
+
+def _predict_stream_for_parallel_part(payload: dict[str, Any]) -> dict[str, Any]:
+    """Worker entry point returning raw metric states for aggregation.
+
+    This intentionally calls the lower-level prediction path instead of the
+    public summary wrapper so the parent can aggregate exact counters across
+    workers and still emit the normal monolithic G003 recovery contract.
+    """
+
+    if payload.get("cuda_visible_devices") is not None:
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(payload["cuda_visible_devices"])
+    else:
+        os.environ.pop("CUDA_VISIBLE_DEVICES", None)
+    torch = require_torch()
+    checkpoint_path = Path(payload["checkpoint_path"])
+    force_cpu = bool(payload.get("force_cpu", False))
+    device = "cuda" if torch.cuda.is_available() and not force_cpu else "cpu"
+    try:
+        checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    except TypeError:  # pragma: no cover - older torch releases.
+        checkpoint = torch.load(checkpoint_path, map_location=device)
+    checkpoint_config = dict(checkpoint["config"])
+    prediction_config = dict(payload["prediction_config"])
+    stats = dict(checkpoint["stats"])
+    category_vocab = [str(token) for token in checkpoint.get("category_vocab", [])]
+    mouse_head_mode = str(checkpoint.get("mouse_head_mode", prediction_config.get("mouse_head_mode", "axis_softmax")))
+    mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", prediction_config.get("mouse_axis_classes", MOUSE_AXIS_CLASSES))]
+    prediction_config["mouse_head_mode"] = mouse_head_mode
+    model = _build_model(
+        torch,
+        input_dim=int(stats["input_dim"]),
+        output_dim=2 + len(category_vocab) + (2 * len(mouse_axis_classes) if mouse_head_mode == "axis_softmax" else 0),
+        hidden_dim=int(checkpoint_config.get("hidden_dim", prediction_config.get("hidden_dim", 512))),
+        depth=int(checkpoint_config.get("depth", prediction_config.get("depth", 3))),
+        dropout=float(checkpoint_config.get("dropout", prediction_config.get("dropout", 0.05))),
+        config=prediction_config,
+        feature_mode=str(stats["feature_mode"]),
+    ).to(device)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    record_paths = [Path(path) for path in payload["record_paths"]]
+    output_dir = ensure_dir(payload["output_dir"])
+    prediction = _predict_stream(
+        torch,
+        model,
+        target_records=record_paths,
+        stats=stats,
+        config=prediction_config,
+        device=device,
+        category_vocab=category_vocab,
+        mouse_axis_classes=mouse_axis_classes,
+        checkpoint_path=checkpoint_path,
+        output_dir=output_dir,
+    )
+    return {
+        "part_index": int(payload["part_index"]),
+        "record_paths": [str(path) for path in record_paths],
+        "output_dir": str(output_dir),
+        "pseudo_label_path": prediction["pseudo_label_path"],
+        "predictions_path": prediction["predictions_path"],
+        "records": int(prediction["target_records"]),
+        "target_source_ids": prediction["target_source_ids"],
+        "target_resolution_tiers": prediction["target_resolution_tiers"],
+        "target_eval_split_tags": prediction["target_eval_split_tags"],
+        "metrics_state": prediction["metrics_state"],
+        "group_metrics_state": prediction["group_metrics_state"],
+        "cluster_metrics_state": prediction["cluster_metrics_state"],
+    }
+
+
+def _concatenate_prediction_parts(parts: list[dict[str, Any]], *, output_dir: Path) -> dict[str, Any]:
+    pseudo_path = output_dir / "pseudolabels.jsonl"
+    predictions_path = output_dir / "predictions.jsonl"
+    sequence_fingerprint = hashlib.sha256()
+    rows = 0
+    pseudo_path.parent.mkdir(parents=True, exist_ok=True)
+    with pseudo_path.open("w") as pseudo_out, predictions_path.open("w") as pred_out:
+        for part in sorted(parts, key=lambda item: int(item["part_index"])):
+            with Path(part["pseudo_label_path"]).open() as pseudo_in, Path(part["predictions_path"]).open() as pred_in:
+                for pseudo_line, pred_line in zip(pseudo_in, pred_in):
+                    if not pseudo_line.strip() and not pred_line.strip():
+                        continue
+                    if not pseudo_line.strip() or not pred_line.strip():
+                        raise ValueError(f"mismatched blank prediction lines in part {part['part_index']}")
+                    pseudo = json.loads(pseudo_line)
+                    pred = json.loads(pred_line)
+                    if str(pseudo.get("sequence_id")) != str(pred.get("sequence_id")):
+                        raise ValueError(f"sequence_id mismatch while merging part {part['part_index']}: {pseudo.get('sequence_id')} != {pred.get('sequence_id')}")
+                    tokens = [str(token) for token in pred.get("predicted_tokens", [])]
+                    if [str(token) for token in pseudo.get("predicted_tokens", [])] != tokens:
+                        raise ValueError(f"token mismatch while merging part {part['part_index']}: {pred.get('sequence_id')}")
+                    pseudo_out.write(pseudo_line if pseudo_line.endswith("\n") else pseudo_line + "\n")
+                    pred_out.write(pred_line if pred_line.endswith("\n") else pred_line + "\n")
+                    sequence_fingerprint.update(json.dumps({"id": pred["sequence_id"], "tokens": tokens}, sort_keys=True).encode("utf-8"))
+                    sequence_fingerprint.update(b"\n")
+                    rows += 1
+                remaining_pseudo = [line for line in pseudo_in if line.strip()]
+                remaining_pred = [line for line in pred_in if line.strip()]
+                if remaining_pseudo or remaining_pred:
+                    raise ValueError(f"mismatched prediction row counts while merging part {part['part_index']}")
+    return {
+        "pseudo_label_path": str(pseudo_path),
+        "predictions_path": str(predictions_path),
+        "target_records": rows,
+        "prediction_fingerprint": sequence_fingerprint.hexdigest(),
+    }
+
+
+def _predict_streaming_idm_checkpoint_parallel(config: dict[str, Any], *, checkpoint: dict[str, Any], checkpoint_path: Path, output_dir: Path) -> dict[str, Any]:
+    checkpoint_config = dict(checkpoint.get("config", {}))
+    target_record_paths = _record_paths_from_config(
+        checkpoint_config,
+        primary_key="target_records",
+        paths_key="target_record_paths",
+        glob_key="target_records_glob",
+    )
+    if not target_record_paths:
+        raise ValueError("parallel checkpoint recovery requires at least one target record path")
+    workers = int(config.get("prediction_workers", 1))
+    if workers <= 1 or len(target_record_paths) == 1:
+        raise ValueError("parallel prediction requested without multiple workers/record paths")
+    chunks = _chunk_sequence(target_record_paths, workers)
+    prediction_config = dict(checkpoint_config)
+    for key in (
+        "model_name",
+        "endpoints",
+        "baseline_names",
+        "eval_batch_size",
+        "batch_size",
+        "max_target_examples",
+        "category_threshold",
+        "mouse_axis_decode_mode",
+        "mouse_axis_temperature",
+        "mouse_output_gain",
+        "force_cpu",
+    ):
+        if key in config:
+            prediction_config[key] = config[key]
+    prediction_config["resume_predictions"] = False
+    parts_root = ensure_dir(config.get("prediction_parts_dir", output_dir / "prediction_recovery_parts"))
+    cuda_devices = config.get("prediction_cuda_devices")
+    if cuda_devices is None:
+        cuda_devices = list(range(len(chunks)))
+    cuda_devices = list(cuda_devices)
+    payloads = []
+    for part_index, record_paths in enumerate(chunks):
+        payloads.append(
+            {
+                "part_index": part_index,
+                "record_paths": [str(path) for path in record_paths],
+                "output_dir": str(parts_root / f"part_{part_index:03d}"),
+                "checkpoint_path": str(checkpoint_path),
+                "prediction_config": prediction_config,
+                "force_cpu": bool(config.get("force_cpu", False)),
+                "cuda_visible_devices": None if bool(config.get("force_cpu", False)) else cuda_devices[part_index % len(cuda_devices)],
+            }
+        )
+    parts: list[dict[str, Any]] = []
+    # Use spawn rather than fork because the parent may have already imported
+    # torch/CUDA during training or tests. Forking after torch init can hang
+    # before workers return their prediction summaries.
+    with ProcessPoolExecutor(max_workers=len(payloads), mp_context=mp.get_context("spawn")) as executor:
+        futures = [executor.submit(_predict_stream_for_parallel_part, payload) for payload in payloads]
+        for future in as_completed(futures):
+            parts.append(future.result())
+    parts = sorted(parts, key=lambda item: int(item["part_index"]))
+    merged_paths = _concatenate_prediction_parts(parts, output_dir=output_dir)
+    metrics_by_model = _merge_named_metric_states(part["metrics_state"] for part in parts)
+    group_metrics_by_model = _merge_nested_metric_states(part["group_metrics_state"] for part in parts)
+    cluster_metrics_by_model = _merge_nested_metric_states(part["cluster_metrics_state"] for part in parts)
+    model_name = str(prediction_config.get("model_name", "streaming_compact_idm"))
+    baseline_names = [str(name) for name in prediction_config.get("baseline_names", ["noop", "global_majority", "last_seen_train"])]
+    metrics_path = output_dir / "metrics.json"
+    metrics_payload = metrics_by_model[model_name].payload()
+    write_json(metrics_path, metrics_payload)
+    label_quality_report = {
+        "schema": "idm_label_quality_report.v1",
+        "model": model_name,
+        "target_records": int(merged_paths["target_records"]),
+        "model_metrics": metrics_payload,
+        "baseline_metrics": {name: metrics_by_model[name].payload() for name in baseline_names if name in metrics_by_model},
+        "groups_by_model": {
+            name: _metric_payloads(group_metrics)
+            for name, group_metrics in group_metrics_by_model.items()
+        },
+        "cluster_count": len(cluster_metrics_by_model.get(model_name, {})),
+    }
+    label_quality_report_path = output_dir / "label_quality_report.json"
+    write_json(label_quality_report_path, label_quality_report)
+    statistical_comparison = None
+    statistical_comparison_path = None
+    if prediction_config.get("endpoints"):
+        statistical_comparison = _streaming_statistical_comparison(
+            cluster_metrics_by_model,
+            load_config(prediction_config["endpoints"]),
+        )
+        statistical_comparison_path = output_dir / "statistical_comparison.json"
+        write_json(statistical_comparison_path, statistical_comparison)
+    return {
+        **merged_paths,
+        "records": int(merged_paths["target_records"]),
+        "metrics_path": str(metrics_path),
+        "metrics": metrics_payload,
+        "label_quality_report_path": str(label_quality_report_path),
+        "label_quality_report": label_quality_report,
+        "statistical_comparison_path": str(statistical_comparison_path) if statistical_comparison_path else None,
+        "statistical_comparison": statistical_comparison,
+        "target_source_ids": sorted({source for part in parts for source in part.get("target_source_ids", [])}),
+        "target_resolution_tiers": sorted({tier for part in parts for tier in part.get("target_resolution_tiers", [])}),
+        "target_eval_split_tags": sorted({tag for part in parts for tag in part.get("target_eval_split_tags", [])}),
+        "prediction_resume": {
+            "enabled": False,
+            "existing_rows": 0,
+            "write_mode": "parallel_parts",
+            "workers": len(parts),
+            "parts": [
+                {
+                    "part_index": part["part_index"],
+                    "records": part["records"],
+                    "record_paths": part["record_paths"],
+                    "pseudo_label_path": part["pseudo_label_path"],
+                    "predictions_path": part["predictions_path"],
+                }
+                for part in parts
+            ],
+        },
+    }
+
+
 def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     """Rebuild streaming IDM prediction/metadata artifacts from an existing checkpoint.
 
@@ -1808,7 +2127,16 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
             prediction_config[key] = config[key]
         elif key in checkpoint_config:
             prediction_config[key] = checkpoint_config[key]
-    prediction = predict_streaming_idm_checkpoint(prediction_config)
+    prediction_workers = int(config.get("prediction_workers", 1))
+    if prediction_workers > 1:
+        prediction = _predict_streaming_idm_checkpoint_parallel(
+            config,
+            checkpoint=checkpoint,
+            checkpoint_path=checkpoint_path,
+            output_dir=output_dir,
+        )
+    else:
+        prediction = predict_streaming_idm_checkpoint(prediction_config)
     stats = dict(checkpoint["stats"])
     category_vocab = [str(token) for token in checkpoint.get("category_vocab", [])]
     mouse_head_mode = str(checkpoint.get("mouse_head_mode", checkpoint_config.get("mouse_head_mode", "axis_softmax")))

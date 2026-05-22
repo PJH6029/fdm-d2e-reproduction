@@ -24,6 +24,12 @@ def main() -> None:
     parser.add_argument("--summary-out", default=None)
     parser.add_argument("--force-cpu", action="store_true")
     parser.add_argument("--no-resume-predictions", action="store_true")
+    parser.add_argument(
+        "--prediction-workers",
+        type=int,
+        default=None,
+        help="Shard-parallel checkpoint prediction workers for recovery; use 4 on 4xH200 full-corpus G003.",
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
@@ -37,6 +43,8 @@ def main() -> None:
     if args.force_cpu:
         config["force_cpu"] = True
     config["resume_predictions"] = not args.no_resume_predictions
+    if args.prediction_workers is not None:
+        config["prediction_workers"] = int(args.prediction_workers)
 
     summary = recover_streaming_idm_outputs_from_checkpoint(config)
     print(
