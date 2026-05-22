@@ -105,13 +105,14 @@ nohup uv run python scripts/watch_g003_then_launch_g004.py \
 
 ## Current G005 auxiliary materialization
 
-Latest known live run snapshot: 2026-05-21 20:33 KST. This snapshot is stale relative to the active G003 training; re-probe before making any G005 claims or launch decisions.
+Latest known live run snapshot: 2026-05-22 14:12 KST.
 
-- G005 source materializer PID `49075` was still running.
-- G005 materialization watcher was restarted on commit `1324d44`; active Python PID `56862`, PID file `outputs/cluster/g005_aux_materialization_watcher.pid`.
-- `artifacts/aux/g005_aux_materialization_progress.json` reported `status=running`, raw bytes `6,061,294,503`, partial source `atari_head_zenodo_v4`, completed sources `[]`, missing sources `minerl_2019_zenodo_v2` and `p_doom_atari_breakout_hf`, `error_count=0`.
-- Pod environment was restored with `uv sync --extra d2e --extra train --extra test` after adding `array-record`; `artifacts/aux/g005_aux_runtime_env.json` now reports `status=pass`, `error_count=0`, and torch `2.12.0+cu130` sees CUDA with 4 devices. Do not rerun a narrower `uv sync --extra d2e` alone in the pod because it removes train/test packages.
-- The materialization watcher now runs integrity, source evidence, auxiliary examples, runtime env preflight, namespace readiness, and launch readiness after the materializer exits. It never starts G005 training or checkpoints OMX/Codex state.
+- G005 source materializer PID `49075` has exited; no active G005 materialization/watcher/training processes were observed.
+- `artifacts/aux/g005_aux_materialization_progress.json` reports `status=pass`, `error_count=0`, `pid_running=false`.
+- `artifacts/aux/g005_aux_runtime_env.json` reports `status=pass`, `error_count=0`, and the pod environment had been restored with `uv sync --extra d2e --extra train --extra test` after adding `array-record`. Do not rerun a narrower `uv sync --extra d2e` alone in the pod because it removes train/test packages.
+- `artifacts/aux/g005_aux_namespace_manifest.json` reports `completion_ready=true`; local committed small artifacts already include namespace/source/materialization evidence. Do not commit raw `outputs/aux/**/raw` archives.
+- `artifacts/aux/g005_aux_materialization_watcher_summary.json` reports `status=g005_launch_not_ready`; `artifacts/aux/g005_aux_completion_audit.json` still reports `status=fail` with `error_count=51`, as expected while G003/G004 D2E-only prerequisites and G005 training/ablation evidence are incomplete.
+- The materialization watcher never starts G005 training or checkpoints OMX/Codex state. Do not launch G005 training until G003 and G004 are complete and checkpointed.
 
 Useful pod monitor command:
 
