@@ -5,11 +5,15 @@
   "source_idm_metadata": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
   "records_path": "outputs/data/d2e_full_corpus/train_core.jsonl",
   "target_records_path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+  "target_records_glob": "outputs/data/d2e_full_corpus_shards/shard_*/target_all_eval.jsonl",
+  "train_prediction_summary_path": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json",
   "data_universe": "artifacts/sources/d2e_full_data_universe_manifest.json",
   "split_contract": "artifacts/sources/d2e_full_split_contract.json",
   "source_namespace": "d2e_full_corpus",
   "output_dir": "outputs/fdm_streaming_d2e_full_compact",
   "num_output_shards": 64,
+  "materialization_workers": 16,
+  "materialization_assume_recording_shards": true,
   "distributed_timeout_seconds": 86400,
   "summary_out": "outputs/fdm_streaming_d2e_full_compact/summary.json",
   "artifact_summary_out": "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json",
@@ -52,7 +56,10 @@
     "seed": 17,
     "training_cache_dir": "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache",
     "training_cache_chunk_size": 8192,
-    "training_cache_num_workers": 8,
+    "training_cache_num_workers": 16,
+    "prediction_workers": 16,
+    "prediction_cuda_devices": ["0", "1", "2", "3"],
+    "validate_pseudolabels": false,
     "resume_predictions": true
   }
 }

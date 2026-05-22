@@ -174,6 +174,104 @@ def test_streaming_fdm_materializes_sharded_training_and_target_outputs(tmp_path
     assert len(read_jsonl(summary["train_records_path"])) == 6
 
 
+def test_streaming_fdm_parallel_materialization_uses_prediction_parts_and_target_shards(tmp_path: Path):
+    train_a = [_record(idx, "d2e_480p:Apex/train_a") for idx in range(3)]
+    train_b = [_record(idx + 3, "d2e_480p:Apex/train_b") for idx in range(3)]
+    target_a = [_record(idx + 10, "d2e_original:Celeste/target_a") for idx in range(2)]
+    target_b = [_record(idx + 12, "d2e_original:Celeste/target_b") for idx in range(2)]
+    for row in [*target_a, *target_b]:
+        row["source_id"] = "d2e_original"
+        row["resolution_tier"] = "original_fhd_qhd"
+        row["split"] = "heldout_game"
+        row["eval_split_tags"] = ["heldout_game"]
+    labels_a = [_label(row, idx) for idx, row in enumerate(train_a)]
+    labels_b = [_label(row, idx + len(train_a)) for idx, row in enumerate(train_b)]
+    records_path = tmp_path / "train_core.jsonl"
+    labels_path = tmp_path / "labels.jsonl"
+    target_path = tmp_path / "target_all_eval.jsonl"
+    train_shard_a = tmp_path / "source_shards" / "shard_0" / "train_core.jsonl"
+    train_shard_b = tmp_path / "source_shards" / "shard_1" / "train_core.jsonl"
+    target_shard_a = tmp_path / "source_shards" / "shard_0" / "target_all_eval.jsonl"
+    target_shard_b = tmp_path / "source_shards" / "shard_1" / "target_all_eval.jsonl"
+    labels_part_a = tmp_path / "prediction_parts" / "part_000" / "pseudolabels.jsonl"
+    labels_part_b = tmp_path / "prediction_parts" / "part_001" / "pseudolabels.jsonl"
+    for path, rows in [
+        (records_path, [*train_a, *train_b]),
+        (labels_path, [*labels_a, *labels_b]),
+        (target_path, [*target_a, *target_b]),
+        (train_shard_a, train_a),
+        (train_shard_b, train_b),
+        (target_shard_a, target_a),
+        (target_shard_b, target_b),
+        (labels_part_a, labels_a),
+        (labels_part_b, labels_b),
+    ]:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        _write_jsonl(path, rows)
+    prediction_summary = tmp_path / "prediction_summary.json"
+    prediction_summary.write_text(
+        json.dumps(
+            {
+                "schema": "streaming_idm_predict_summary.v1",
+                "records": 6,
+                "prediction_resume": {
+                    "write_mode": "parallel_parts",
+                    "parts": [
+                        {
+                            "part_index": 0,
+                            "records": 3,
+                            "record_paths": [str(train_shard_a)],
+                            "pseudo_label_path": str(labels_part_a),
+                        },
+                        {
+                            "part_index": 1,
+                            "records": 3,
+                            "record_paths": [str(train_shard_b)],
+                            "pseudo_label_path": str(labels_part_b),
+                        },
+                    ],
+                },
+            }
+        )
+    )
+
+    summary = materialize_fdm_streaming_splits(
+        {
+            "records_path": str(records_path),
+            "labels_path": str(labels_path),
+            "target_records_path": str(target_path),
+            "target_records_glob": str(tmp_path / "source_shards" / "shard_*" / "target_all_eval.jsonl"),
+            "train_prediction_summary_path": str(prediction_summary),
+            "output_dir": str(tmp_path / "fdm_parallel"),
+            "materialization_workers": 2,
+            "materialization_assume_recording_shards": True,
+            "num_output_shards": 4,
+        }
+    )
+
+    assert summary["parallel_materialization"]["enabled"] is True
+    assert summary["parallel_materialization"]["workers"] == 2
+    assert summary["counts"]["mode"] == "explicit_target"
+    assert summary["counts"]["train"] == 6
+    assert summary["counts"]["target"] == 4
+    train_rows = read_jsonl(summary["train_records_path"])
+    target_rows = read_jsonl(summary["target_records_path"])
+    assert len(train_rows) == 6
+    assert len(target_rows) == 4
+    assert len(summary["train_record_paths"]) == 2
+    assert len(summary["target_record_paths"]) == 2
+    assert all(Path(path).is_file() for path in summary["train_record_paths"])
+    assert all(Path(path).is_file() for path in summary["target_record_paths"])
+    assert sum(len(read_jsonl(path)) for path in summary["train_record_paths"]) == 6
+    assert sum(len(read_jsonl(path)) for path in summary["target_record_paths"]) == 4
+    assert train_rows[0]["prior_action_tokens"] == ["NOOP"]
+    assert train_rows[1]["prior_action_tokens"] == labels_a[0]["predicted_tokens"]
+    assert train_rows[3]["prior_action_tokens"] == ["NOOP"]
+    assert target_rows[0]["prior_action_tokens"] == ["NOOP"]
+    assert target_rows[1]["prior_action_tokens"] == target_a[0]["ground_truth_tokens"]
+    assert target_rows[2]["prior_action_tokens"] == ["NOOP"]
+
+
 def test_streaming_fdm_rejects_misaligned_labels(tmp_path: Path):
     records = [_record(idx) for idx in range(2)]
     labels = [_label(row, idx) for idx, row in enumerate(records)]

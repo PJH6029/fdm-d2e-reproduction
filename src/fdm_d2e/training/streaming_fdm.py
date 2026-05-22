@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import json
 import os
+import glob
+import multiprocessing as mp
+import shutil
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Sequence
 
 from fdm_d2e.config import load_config
 from fdm_d2e.io_utils import ensure_dir, read_json, sha256_file, stable_hash_json, write_json
@@ -146,6 +150,415 @@ def _split_group(
     return train_pairs, target_records
 
 
+def _record_paths_from_value(value: str | Path | Sequence[str | Path]) -> list[Path]:
+    if isinstance(value, (str, Path)):
+        return [Path(value)]
+    return [Path(item) for item in value]
+
+
+def _glob_paths(pattern: str | Path | Sequence[str | Path] | None) -> list[Path]:
+    if pattern is None:
+        return []
+    patterns = [pattern] if isinstance(pattern, (str, Path)) else list(pattern)
+    paths: list[Path] = []
+    for item in patterns:
+        paths.extend(Path(match) for match in sorted(glob.glob(str(item))))
+    return paths
+
+
+def _empty_fdm_counts(mode: str) -> dict[str, Any]:
+    return {
+        "pairs": 0,
+        "train": 0,
+        "target": 0,
+        "recordings": 0,
+        "games": {},
+        "target_games": {},
+        "source_ids": {},
+        "resolution_tiers": {},
+        "split_names": {},
+        "eval_split_tags": {},
+        "target_source_ids": {},
+        "target_resolution_tiers": {},
+        "target_split_names": {},
+        "target_eval_split_tags": {},
+        "mode": mode,
+    }
+
+
+def _bump_count(counts: dict[str, Any], mapping_name: str, value: Any) -> None:
+    if value is None:
+        return
+    key = str(value)
+    if not key:
+        return
+    mapping = counts[mapping_name]
+    mapping[key] = int(mapping.get(key, 0)) + 1
+
+
+def _observe_fdm_record(counts: dict[str, Any], record: dict[str, Any], *, target: bool = False) -> None:
+    game = str(record.get("game", "unknown"))
+    game_mapping = counts["target_games" if target else "games"]
+    game_mapping[game] = int(game_mapping.get(game, 0)) + 1
+    _bump_count(counts, "target_source_ids" if target else "source_ids", record.get("source_id"))
+    _bump_count(counts, "target_resolution_tiers" if target else "resolution_tiers", record.get("resolution_tier"))
+    _bump_count(counts, "target_split_names" if target else "split_names", record.get("split"))
+    for tag in record.get("eval_split_tags", []) or []:
+        _bump_count(counts, "target_eval_split_tags" if target else "eval_split_tags", tag)
+
+
+def _merge_fdm_counts(items: Iterable[dict[str, Any]], *, mode: str) -> dict[str, Any]:
+    merged = _empty_fdm_counts(mode)
+    recording_ids: set[str] = set()
+    for item in items:
+        for key in ("pairs", "train", "target"):
+            merged[key] = int(merged.get(key, 0)) + int(item.get(key, 0))
+        for rid in item.get("_recording_ids", []) or []:
+            recording_ids.add(str(rid))
+        for key in (
+            "games",
+            "target_games",
+            "source_ids",
+            "resolution_tiers",
+            "split_names",
+            "eval_split_tags",
+            "target_source_ids",
+            "target_resolution_tiers",
+            "target_split_names",
+            "target_eval_split_tags",
+        ):
+            target_map = merged[key]
+            for name, raw_count in dict(item.get(key, {})).items():
+                target_map[str(name)] = int(target_map.get(str(name), 0)) + int(raw_count)
+    merged["recordings"] = len(recording_ids)
+    return merged
+
+
+def _iter_ordered_record_label_pairs_many(
+    record_paths: Sequence[str | Path],
+    labels_path: str | Path,
+) -> Iterable[tuple[dict[str, Any], dict[str, Any], int]]:
+    labels_path = Path(labels_path)
+    with labels_path.open() as lf:
+        line_no = 0
+        for records_path in record_paths:
+            records_path = Path(records_path)
+            with records_path.open() as rf:
+                for rline in rf:
+                    if not rline.strip():
+                        continue
+                    lline = lf.readline()
+                    line_no += 1
+                    if not lline:
+                        raise ValueError(f"record/label count mismatch at line {line_no}: labels exhausted reading {records_path}")
+                    record = json.loads(rline)
+                    label = json.loads(lline)
+                    if not isinstance(record, dict) or not isinstance(label, dict):
+                        raise ValueError(f"record and label rows must be JSON objects at line {line_no}")
+                    _validate_label(label, labels_path=labels_path, line_no=line_no)
+                    if str(record.get("sequence_id")) != str(label.get("sequence_id")):
+                        raise ValueError(
+                            f"record/label sequence_id mismatch at line {line_no}: "
+                            f"{record.get('sequence_id')!r} != {label.get('sequence_id')!r}"
+                        )
+                    yield record, label, line_no
+        for extra_line in lf:
+            if extra_line.strip():
+                raise ValueError(f"record/label count mismatch at line {line_no + 1}: extra label rows in {labels_path}")
+
+
+def _write_parallel_train_materialization_part(payload: dict[str, Any]) -> dict[str, Any]:
+    output_path = Path(payload["output_path"])
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    counts = _empty_fdm_counts("explicit_target")
+    recording_ids: set[str] = set()
+    last_tokens_by_recording: dict[str, list[str]] = {}
+    canonical_labels_path = Path(payload["canonical_labels_path"])
+    label_sha256 = str(payload["label_sha256"])
+    with output_path.open("w") as out:
+        for record, label, line_no in _iter_ordered_record_label_pairs_many(payload["record_paths"], payload["labels_path"]):
+            rid = _recording_id(record)
+            prior_tokens = last_tokens_by_recording.get(rid, ["NOOP"])
+            contextual_record = _with_prior_action_context(
+                record,
+                prior_tokens,
+                source="idm_pseudolabel_previous_teacher_forced",
+            )
+            train_row = _pseudo_record(
+                contextual_record,
+                label,
+                labels_path=canonical_labels_path,
+                label_sha256=label_sha256,
+            )
+            _write_jsonl_row(out, train_row)
+            last_tokens_by_recording[rid] = _label_tokens(label)
+            counts["pairs"] = int(counts["pairs"]) + 1
+            counts["train"] = int(counts["train"]) + 1
+            recording_ids.add(rid)
+            _observe_fdm_record(counts, record)
+    counts["_recording_ids"] = sorted(recording_ids)
+    expected_records = payload.get("expected_records")
+    if expected_records is not None and int(expected_records) != int(counts["train"]):
+        raise ValueError(
+            f"parallel train materialization part {payload['part_index']} row-count mismatch: "
+            f"expected={expected_records} actual={counts['train']}"
+        )
+    return {
+        "part_index": int(payload["part_index"]),
+        "path": str(output_path),
+        "record_paths": [str(path) for path in payload["record_paths"]],
+        "labels_path": str(payload["labels_path"]),
+        "counts": counts,
+    }
+
+
+def _write_parallel_target_materialization_part(payload: dict[str, Any]) -> dict[str, Any]:
+    output_path = Path(payload["output_path"])
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    counts = _empty_fdm_counts("explicit_target")
+    last_tokens_by_recording: dict[str, list[str]] = {}
+    with output_path.open("w") as out:
+        for records_path in payload["record_paths"]:
+            for record in iter_jsonl(records_path):
+                rid = _recording_id(record)
+                prior_tokens = last_tokens_by_recording.get(rid, ["NOOP"])
+                target_row = _with_prior_action_context(
+                    record,
+                    prior_tokens,
+                    source="d2e_ground_truth_previous_teacher_forced",
+                )
+                _write_jsonl_row(out, target_row)
+                last_tokens_by_recording[rid] = [str(token) for token in record.get("ground_truth_tokens", []) or ["NOOP"]]
+                counts["target"] = int(counts["target"]) + 1
+                _observe_fdm_record(counts, record, target=True)
+    return {
+        "part_index": int(payload["part_index"]),
+        "path": str(output_path),
+        "record_paths": [str(path) for path in payload["record_paths"]],
+        "counts": counts,
+    }
+
+
+def _concat_jsonl_files(inputs: Sequence[Path], output: Path) -> int:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    rows = 0
+    with output.open("w") as out:
+        for path in inputs:
+            with Path(path).open() as src:
+                for line in src:
+                    if not line.strip():
+                        continue
+                    out.write(line if line.endswith("\n") else line + "\n")
+                    rows += 1
+    return rows
+
+
+def _replace_symlink_or_copy(source: Path, dest: Path) -> None:
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists() or dest.is_symlink():
+        dest.unlink()
+    try:
+        os.symlink(os.path.relpath(source, dest.parent), dest)
+    except OSError:
+        shutil.copyfile(source, dest)
+
+
+def _link_parts_as_shards(part_paths: Sequence[Path], output_dir: Path, *, prefix: str) -> list[Path]:
+    shard_dir = output_dir / f"{prefix}_shards"
+    if shard_dir.exists():
+        shutil.rmtree(shard_dir)
+    shard_dir.mkdir(parents=True, exist_ok=True)
+    shard_paths: list[Path] = []
+    for idx, part_path in enumerate(part_paths):
+        shard_path = shard_dir / f"shard_{idx:05d}.jsonl"
+        _replace_symlink_or_copy(Path(part_path), shard_path)
+        shard_paths.append(shard_path)
+    return shard_paths
+
+
+def _chunk_paths(paths: Sequence[Path], chunks: int) -> list[list[Path]]:
+    chunks = max(1, min(int(chunks), len(paths)))
+    base = len(paths) // chunks
+    extra = len(paths) % chunks
+    out: list[list[Path]] = []
+    start = 0
+    for idx in range(chunks):
+        size = base + (1 if idx < extra else 0)
+        out.append(list(paths[start : start + size]))
+        start += size
+    return [chunk for chunk in out if chunk]
+
+
+def _parallel_materialize_fdm_explicit_target(
+    config: dict[str, Any],
+    *,
+    labels_path: Path,
+    records_path: Path,
+    explicit_target_records_path: Path,
+    output_dir: Path,
+    train_records_path: Path,
+    target_records_path: Path,
+    label_sha256: str,
+    train_fraction: float,
+    min_target_per_recording: int,
+) -> dict[str, Any]:
+    workers = int(config.get("materialization_workers", 1))
+    summary_path = Path(config["train_prediction_summary_path"])
+    train_prediction_summary = read_json(summary_path)
+    train_parts = list((train_prediction_summary.get("prediction_resume") or {}).get("parts") or [])
+    if not train_parts:
+        raise ValueError(f"train_prediction_summary_path has no prediction_resume.parts: {summary_path}")
+    target_record_paths = _glob_paths(config.get("target_records_glob")) or _record_paths_from_value(
+        config.get("target_record_paths") or str(explicit_target_records_path)
+    )
+    if len(target_record_paths) <= 1:
+        raise ValueError("parallel FDM materialization requires target_records_glob or multiple target_record_paths")
+    parts_root = output_dir / "materialization_parts"
+    if parts_root.exists():
+        shutil.rmtree(parts_root)
+    train_parts_root = parts_root / "train"
+    target_parts_root = parts_root / "target"
+    train_payloads = []
+    for fallback_index, part in enumerate(train_parts):
+        part_index = int(part.get("part_index", fallback_index))
+        record_paths = [str(path) for path in part.get("record_paths", []) if path]
+        labels_part_path = part.get("pseudo_label_path")
+        if not record_paths or not labels_part_path:
+            raise ValueError(f"invalid train prediction part {part_index}: missing record_paths/pseudo_label_path")
+        train_payloads.append(
+            {
+                "part_index": part_index,
+                "record_paths": record_paths,
+                "labels_path": str(labels_part_path),
+                "canonical_labels_path": str(labels_path),
+                "label_sha256": label_sha256,
+                "expected_records": part.get("records"),
+                "output_path": str(train_parts_root / f"part_{part_index:05d}.jsonl"),
+            }
+        )
+    target_payloads = [
+        {
+            "part_index": idx,
+            "record_paths": [str(path) for path in chunk],
+            "output_path": str(target_parts_root / f"part_{idx:05d}.jsonl"),
+        }
+        for idx, chunk in enumerate(_chunk_paths(target_record_paths, workers))
+    ]
+    train_results: list[dict[str, Any]] = []
+    target_results: list[dict[str, Any]] = []
+    max_workers = min(workers, max(len(train_payloads), len(target_payloads)))
+    with ProcessPoolExecutor(max_workers=max_workers, mp_context=mp.get_context("spawn")) as executor:
+        futures = [executor.submit(_write_parallel_train_materialization_part, payload) for payload in train_payloads]
+        futures.extend(executor.submit(_write_parallel_target_materialization_part, payload) for payload in target_payloads)
+        for future in as_completed(futures):
+            result = future.result()
+            if result.get("labels_path") is not None:
+                train_results.append(result)
+            else:
+                target_results.append(result)
+    train_results = sorted(train_results, key=lambda item: int(item["part_index"]))
+    target_results = sorted(target_results, key=lambda item: int(item["part_index"]))
+    train_part_paths = [Path(item["path"]) for item in train_results]
+    target_part_paths = [Path(item["path"]) for item in target_results]
+    train_rows = _concat_jsonl_files(train_part_paths, train_records_path)
+    target_rows = _concat_jsonl_files(target_part_paths, target_records_path)
+    train_shard_paths = _link_parts_as_shards(train_part_paths, output_dir, prefix="fdm_train")
+    target_shard_paths = _link_parts_as_shards(target_part_paths, output_dir, prefix="fdm_target")
+    counts = _merge_fdm_counts(
+        [*(item["counts"] for item in train_results), *(item["counts"] for item in target_results)],
+        mode="explicit_target",
+    )
+    if int(counts["train"]) != train_rows:
+        raise ValueError(f"parallel train concat count mismatch: counts={counts['train']} concat={train_rows}")
+    if int(counts["target"]) != target_rows:
+        raise ValueError(f"parallel target concat count mismatch: counts={counts['target']} concat={target_rows}")
+    if int(train_prediction_summary.get("records", train_rows)) != train_rows:
+        raise ValueError(
+            f"parallel train count does not match IDM prediction summary: "
+            f"summary={train_prediction_summary.get('records')} materialized={train_rows}"
+        )
+    if counts["train"] == 0 or counts["target"] == 0:
+        raise ValueError(f"streaming FDM split is empty: train={counts['train']} target={counts['target']}")
+    payload = {
+        "schema": "streaming_fdm_split_summary.v1",
+        "labels_path": str(labels_path),
+        "labels_sha256": label_sha256,
+        "records_path": str(records_path),
+        "target_records_source_path": str(explicit_target_records_path),
+        "train_records_path": str(train_records_path),
+        "target_records_path": str(target_records_path),
+        "train_record_paths": [str(path) for path in train_shard_paths],
+        "target_record_paths": [str(path) for path in target_shard_paths],
+        "train_records_glob": str(output_dir / "fdm_train_shards" / "shard_*.jsonl"),
+        "target_records_glob": str(output_dir / "fdm_target_shards" / "shard_*.jsonl"),
+        "output_shards": {
+            "enabled": True,
+            "num_shards": max(len(train_shard_paths), len(target_shard_paths)),
+            "train_num_shards": len(train_shard_paths),
+            "target_num_shards": len(target_shard_paths),
+            "train_record_paths": [str(path) for path in train_shard_paths],
+            "target_record_paths": [str(path) for path in target_shard_paths],
+            "shard_strategy": "parallel_part_symlinks",
+        },
+        "parallel_materialization": {
+            "enabled": True,
+            "workers": max_workers,
+            "train_prediction_summary_path": str(summary_path),
+            "target_records_glob": str(config.get("target_records_glob", "")),
+            "target_source_record_paths": [str(path) for path in target_record_paths],
+            "train_parts": [
+                {
+                    "part_index": item["part_index"],
+                    "path": item["path"],
+                    "record_paths": item["record_paths"],
+                    "rows": int(item["counts"]["train"]),
+                }
+                for item in train_results
+            ],
+            "target_parts": [
+                {
+                    "part_index": item["part_index"],
+                    "path": item["path"],
+                    "record_paths": item["record_paths"],
+                    "rows": int(item["counts"]["target"]),
+                }
+                for item in target_results
+            ],
+            "recording_shard_assumption": bool(config.get("materialization_assume_recording_shards", False)),
+            "claim_boundary": "Parallel materialization uses recording-sharded D2E extraction parts; prior-action state is local to each recording shard.",
+        },
+        "fdm_train_fraction": train_fraction,
+        "min_target_per_recording": min_target_per_recording,
+        "counts": counts,
+        "prior_action_context": {
+            "train_source": "idm_pseudolabel_previous_teacher_forced",
+            "target_source": "d2e_ground_truth_previous_teacher_forced",
+            "first_action_tokens": ["NOOP"],
+            "claim_boundary": "Offline FDM evaluation is teacher-forced on previous actions only; closed-loop stability remains a separate G008 live-suite requirement.",
+        },
+        "dataset_fingerprint": stable_hash_json(
+            {
+                "labels_path": str(labels_path),
+                "labels_sha256": label_sha256,
+                "records_path": str(records_path),
+                "target_records_source_path": str(explicit_target_records_path),
+                "train_prediction_summary_path": str(summary_path),
+                "target_records_glob": str(config.get("target_records_glob", "")),
+                "materialization": "parallel_part_symlinks",
+                "train_fraction": train_fraction,
+                "min_target_per_recording": min_target_per_recording,
+                "counts": counts,
+                "prior_action_context": {
+                    "train_source": "idm_pseudolabel_previous_teacher_forced",
+                    "target_source": "d2e_ground_truth_previous_teacher_forced",
+                },
+            }
+        ),
+    }
+    write_json(output_dir / "fdm_streaming_split_summary.json", payload)
+    return payload
+
+
 def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
     """Create full-corpus FDM train/eval JSONLs without loading them all.
 
@@ -163,14 +576,32 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
     num_output_shards = int(config.get("num_output_shards", config.get("output_shards", 1)))
     if num_output_shards < 1:
         raise ValueError("num_output_shards must be >= 1")
-    train_shard_paths, train_shard_handles = _open_shard_writers(output_dir, prefix="fdm_train", num_shards=num_output_shards)
-    target_shard_paths, target_shard_handles = _open_shard_writers(output_dir, prefix="fdm_target", num_shards=num_output_shards)
     label_sha256 = sha256_file(labels_path)
     train_fraction = float(config.get("fdm_train_fraction", 0.75))
     if not 0.0 < train_fraction <= 1.0:
         raise ValueError("fdm_train_fraction must be in (0, 1]")
     min_target_per_recording = int(config.get("min_target_per_recording", 1))
     explicit_target_records_path = Path(config["target_records_path"]) if config.get("target_records_path") else None
+    if (
+        explicit_target_records_path is not None
+        and int(config.get("materialization_workers", 1)) > 1
+        and config.get("train_prediction_summary_path")
+    ):
+        return _parallel_materialize_fdm_explicit_target(
+            config,
+            labels_path=labels_path,
+            records_path=records_path,
+            explicit_target_records_path=explicit_target_records_path,
+            output_dir=output_dir,
+            train_records_path=train_records_path,
+            target_records_path=target_records_path,
+            label_sha256=label_sha256,
+            train_fraction=train_fraction,
+            min_target_per_recording=min_target_per_recording,
+        )
+
+    train_shard_paths, train_shard_handles = _open_shard_writers(output_dir, prefix="fdm_train", num_shards=num_output_shards)
+    target_shard_paths, target_shard_handles = _open_shard_writers(output_dir, prefix="fdm_target", num_shards=num_output_shards)
 
     counts: dict[str, Any] = {
         "pairs": 0,

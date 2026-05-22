@@ -2437,30 +2437,42 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             "status": "worker_complete",
         }
     checkpoint_path = out_dir / "checkpoint.pt"
-    torch.save(
-        {
-            "model_state_dict": model.state_dict(),
-            "config": config,
-            "stats": stats,
-            "category_vocab": category_vocab,
-            "mouse_head_mode": mouse_head_mode,
-            "mouse_axis_classes": mouse_axis_classes,
-            "history": history,
-        },
-        checkpoint_path,
-    )
-    prediction = _predict_stream(
-        torch,
-        model,
-        target_records=target_record_paths if len(target_record_paths) > 1 else target_record_paths[0],
-        stats=stats,
-        config=config,
-        device=device,
-        category_vocab=category_vocab,
-        mouse_axis_classes=mouse_axis_classes,
-        checkpoint_path=checkpoint_path,
-        output_dir=out_dir,
-    )
+    checkpoint_payload = {
+        "model_state_dict": model.state_dict(),
+        "config": config,
+        "stats": stats,
+        "category_vocab": category_vocab,
+        "mouse_head_mode": mouse_head_mode,
+        "mouse_axis_classes": mouse_axis_classes,
+        "history": history,
+    }
+    torch.save(checkpoint_payload, checkpoint_path)
+    prediction_workers = int(config.get("prediction_workers", 1))
+    if prediction_workers > 1 and len(target_record_paths) > 1:
+        if str(device).startswith("cuda"):
+            model.to("cpu")
+            torch.cuda.empty_cache()
+        prediction = _predict_streaming_idm_checkpoint_parallel(
+            config,
+            checkpoint=checkpoint_payload,
+            checkpoint_path=checkpoint_path,
+            output_dir=out_dir,
+            target_record_paths=target_record_paths,
+            prediction_config_base=config,
+        )
+    else:
+        prediction = _predict_stream(
+            torch,
+            model,
+            target_records=target_record_paths if len(target_record_paths) > 1 else target_record_paths[0],
+            stats=stats,
+            config=config,
+            device=device,
+            category_vocab=category_vocab,
+            mouse_axis_classes=mouse_axis_classes,
+            checkpoint_path=checkpoint_path,
+            output_dir=out_dir,
+        )
     config_fingerprint = stable_hash_json(config)
     resolved_config_path = out_dir / "resolved_config.json"
     write_json(
