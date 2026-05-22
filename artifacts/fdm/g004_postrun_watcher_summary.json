@@ -1,0 +1,38 @@
+{
+  "schema": "g004_postrun_watcher.v1",
+  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
+  "started_at_unix": 1779463317.1122816,
+  "output": "artifacts/fdm/g004_postrun_watcher_summary.json",
+  "pid_file": "outputs/cluster/g004_d2e_full_fdm_4xh200.pid",
+  "watcher_pid_file": "outputs/cluster/g004_postrun_watcher.pid",
+  "poll_seconds": 60.0,
+  "max_wait_seconds": -1.0,
+  "claim_boundary": "Watches for the G004 parent to exit and then runs local finalization only; it never checkpoints G004 or mutates OMX/Codex goal state.",
+  "status": "waiting_active_parent",
+  "elapsed_seconds": 180.01296854019165,
+  "run": {
+    "pid": 260000,
+    "pid_running": true,
+    "run_summary_exists": false,
+    "run_summary_status": null,
+    "run_summary": null,
+    "artifacts": {
+      "run_summary": {
+        "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
+        "exists": false,
+        "bytes": 0
+      },
+      "log": {
+        "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200.log",
+        "exists": true,
+        "bytes": 943
+      },
+      "gpu_monitor": {
+        "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv",
+        "exists": true,
+        "bytes": 2403
+      }
+    }
+  },
+  "findings": []
+}
