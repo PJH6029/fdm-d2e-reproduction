@@ -644,3 +644,18 @@ uv run python scripts/audit_g003_live_health.py \
 - Epoch 2 improved over epoch 1 composite (`0.1058949944649953` -> `0.11558532553625012`) and mouse-button F1 (`0.002607845267847441` -> `0.023052525721358397`). This is training-progress evidence only, not G003 completion.
 - Epoch 3 started by 16:45 KST: workers reopened `train_core.jsonl` shard files. Terminal artifacts (`metrics.json`, `checkpoint_metadata.json`, `checkpoint.pt`, pseudolabels, predictions, summary, split stats, completion audit) remain absent.
 - No G003 checkpoint/completion claim was made.
+
+## 2026-05-23 00:02 KST G003 full-corpus IDM complete / OMX checkpointed
+
+- G003 completed after the 3-epoch accel64 D2E-only IDM checkpoint was recovered into full target outputs without retraining.
+- Recovery used `scripts/recover_idm_streaming_outputs.py --prediction-workers 16 --prediction-cuda-devices 0,1,2,3 --eval-batch-size 16384 --no-pseudolabel-validation` on pod `prod-rsv-jeonghunpark-20260521-76e25a` at checkout `04767fd`.
+- Full target recovery evidence on PVC: `outputs/idm_streaming_d2e_full_compact_accel64/pseudolabels.jsonl` and `predictions.jsonl` both contain `16,698,646` rows; metrics and checkpoint metadata were regenerated from the trained checkpoint.
+- Split-stat finalization, accel64 audit, canonical promotion, and canonical audit all passed. Key committed/copyable evidence:
+  - `artifacts/idm/g003_full_idm_completion_audit.json` — canonical status `pass`, `error_count=0`, counts train `19,211,006`, target/pseudo/pred `16,698,646`.
+  - `artifacts/idm/g003_full_idm_completion_accel64_audit.json` — accel64 status `pass`, `error_count=0`.
+  - `artifacts/idm/g003_accel64_integrated_finalization_summary.json` — status `pass`, train summary exit `0`, audit pass.
+  - `artifacts/idm/g003_accel64_promotion_manifest.json` — status `pass`, canonical audit pass.
+  - `artifacts/eval/g003_split_statistical_comparisons_summary.json` and `_accel64_summary.json` — status `pass`.
+- The recovery path initially wrote single-rank distributed metadata because checkpoint-output recovery itself ran as one process. `artifacts/idm/g003_accel64_recovery_metadata_repair.json` records the before/after provenance repair from the 4×H200 run evidence and GPU monitor artifacts.
+- `omx ultragoal checkpoint --goal-id G003-d2e-only-idm --status complete` succeeded at `2026-05-22T15:02:33.910Z` against the aggregate `.omx/ultragoal/goals.json` plan. `G004-d2e-only-fdm-4xh200` is now the next pending hard gate.
+- Raw full-corpus JSONL/checkpoint outputs remain on the pod/PVC and are intentionally not committed; small audit/evidence artifacts were copied into the local repo for versioned handoff.

@@ -1,0 +1,96 @@
+{
+  "schema": "g003_integrated_finalization.v1",
+  "status": "pass",
+  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
+  "progress": {
+    "status": "complete",
+    "pid": 251593,
+    "pid_running": false,
+    "log_dir": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/sources/g003_accel64",
+    "repair_pid_glob": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/cluster/g003_accel64_shard_*_repair.pid",
+    "decoded_recording_variants": 918,
+    "expected_recording_variants": 918,
+    "complete_shards": 64,
+    "num_shards": 64,
+    "stale_shards": [],
+    "no_progress_shards": [],
+    "merged_train_eval_exists": true,
+    "idm_metrics_exists": true
+  },
+  "actions": [
+    {
+      "name": "split_stats",
+      "status": "pass",
+      "reason": "existing_summary",
+      "summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/eval/g003_split_statistical_comparisons_accel64_summary.json",
+      "required_paths": {
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_accel64/predictions.jsonl",
+        "ground_truth_path": "outputs/data/d2e_full_corpus_accel64/target_all_eval.jsonl",
+        "train_records_path": "outputs/data/d2e_full_corpus_accel64/train_core.jsonl"
+      },
+      "exists": {
+        "predictions_path": true,
+        "ground_truth_path": true,
+        "train_records_path": true
+      }
+    },
+    {
+      "name": "attached_train_summary",
+      "output": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run_accel64.json",
+      "exit_code": 0,
+      "findings": []
+    },
+    {
+      "name": "g003_completion_audit",
+      "output": "artifacts/idm/g003_full_idm_completion_accel64_audit.json",
+      "status": "pass",
+      "error_count": 0
+    }
+  ],
+  "split_stats": {
+    "status": "pass",
+    "reason": "existing_summary",
+    "summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/eval/g003_split_statistical_comparisons_accel64_summary.json",
+    "payload": {
+      "schema": "split_statistical_comparison_build.v1",
+      "status": "pass",
+      "model_name": "streaming_compact_idm_d2e_full_accel64",
+      "outputs": [
+        {
+          "split": "temporal",
+          "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_compact_accel64/split_temporal_statistical_comparison.json",
+          "status": "pass",
+          "comparisons": 21
+        },
+        {
+          "split": "heldout_recording",
+          "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_compact_accel64/split_heldout_recording_statistical_comparison.json",
+          "status": "pass",
+          "comparisons": 21
+        },
+        {
+          "split": "heldout_game",
+          "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_compact_accel64/split_heldout_game_statistical_comparison.json",
+          "status": "pass",
+          "comparisons": 21
+        }
+      ],
+      "claim_boundary": "Builder creates split-specific comparison artifacts; G006 still requires prerequisite goals and final artifact synthesis."
+    },
+    "required_paths": {
+      "predictions_path": "outputs/idm_streaming_d2e_full_compact_accel64/predictions.jsonl",
+      "ground_truth_path": "outputs/data/d2e_full_corpus_accel64/target_all_eval.jsonl",
+      "train_records_path": "outputs/data/d2e_full_corpus_accel64/train_core.jsonl"
+    },
+    "exists": {
+      "predictions_path": true,
+      "ground_truth_path": true,
+      "train_records_path": true
+    }
+  },
+  "attached_train_summary_exit_code": 0,
+  "g003_audit_status": "pass",
+  "g003_audit_error_count": 0,
+  "findings": [],
+  "claim_boundary": "Finalizes artifacts after an integrated G003 run exits; it does not checkpoint G003 and does not prove completion unless status is pass and the OMX checkpoint is subsequently recorded."
+}

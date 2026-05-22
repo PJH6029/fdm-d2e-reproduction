@@ -1,0 +1,867 @@
+{
+  "schema": "g003_accel64_promotion_manifest.v1",
+  "status": "pass",
+  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
+  "source_config": "configs/eval/g003_full_idm_completion_accel64.yaml",
+  "canonical_config": "configs/eval/g003_full_idm_completion.yaml",
+  "source_audit": "artifacts/idm/g003_full_idm_completion_accel64_audit.json",
+  "source_audit_status": "pass",
+  "source_pid": {
+    "pid_file": "outputs/cluster/g003_full_compact_accel64.pid",
+    "pid": 251593,
+    "running": false
+  },
+  "primary_pid": {
+    "pid_file": "outputs/cluster/g003_full_compact_parallel.pid",
+    "pid": 135989,
+    "running": false
+  },
+  "method": "relative_symlink",
+  "dry_run": false,
+  "skip_finalize": false,
+  "backup_root": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504",
+  "actions": [
+    {
+      "key": "shard_root",
+      "source": "outputs/data/d2e_full_corpus_shards_accel64",
+      "dest": "outputs/data/d2e_full_corpus_shards",
+      "kind": "directory",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/outputs/data/d2e_full_corpus_shards",
+      "status": "linked"
+    },
+    {
+      "key": "data_output:all_records.jsonl",
+      "source": "outputs/data/d2e_full_corpus_accel64/all_records.jsonl",
+      "dest": "outputs/data/d2e_full_corpus/all_records.jsonl",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "data_output:target_all_eval.jsonl",
+      "source": "outputs/data/d2e_full_corpus_accel64/target_all_eval.jsonl",
+      "dest": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "data_output:target_heldout_game.jsonl",
+      "source": "outputs/data/d2e_full_corpus_accel64/target_heldout_game.jsonl",
+      "dest": "outputs/data/d2e_full_corpus/target_heldout_game.jsonl",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "data_output:target_heldout_recording.jsonl",
+      "source": "outputs/data/d2e_full_corpus_accel64/target_heldout_recording.jsonl",
+      "dest": "outputs/data/d2e_full_corpus/target_heldout_recording.jsonl",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "data_output:target_temporal.jsonl",
+      "source": "outputs/data/d2e_full_corpus_accel64/target_temporal.jsonl",
+      "dest": "outputs/data/d2e_full_corpus/target_temporal.jsonl",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "data_output:train_core.jsonl",
+      "source": "outputs/data/d2e_full_corpus_accel64/train_core.jsonl",
+      "dest": "outputs/data/d2e_full_corpus/train_core.jsonl",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:checkpoint.pt",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/checkpoint.pt",
+      "dest": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:checkpoint_metadata.json",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/checkpoint_metadata.json",
+      "dest": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:convergence_report.json",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/convergence_report.json",
+      "dest": "outputs/idm_streaming_d2e_full_compact/convergence_report.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:label_quality_report.json",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/label_quality_report.json",
+      "dest": "outputs/idm_streaming_d2e_full_compact/label_quality_report.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:metrics.json",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/metrics.json",
+      "dest": "outputs/idm_streaming_d2e_full_compact/metrics.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:predictions.jsonl",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/predictions.jsonl",
+      "dest": "outputs/idm_streaming_d2e_full_compact/predictions.jsonl",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:pseudolabels.jsonl",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/pseudolabels.jsonl",
+      "dest": "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:resolved_config.json",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/resolved_config.json",
+      "dest": "outputs/idm_streaming_d2e_full_compact/resolved_config.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:split_heldout_game_statistical_comparison.json",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/split_heldout_game_statistical_comparison.json",
+      "dest": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:split_heldout_recording_statistical_comparison.json",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/split_heldout_recording_statistical_comparison.json",
+      "dest": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:split_temporal_statistical_comparison.json",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/split_temporal_statistical_comparison.json",
+      "dest": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:statistical_comparison.json",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/statistical_comparison.json",
+      "dest": "outputs/idm_streaming_d2e_full_compact/statistical_comparison.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:streaming_stats.json",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/streaming_stats.json",
+      "dest": "outputs/idm_streaming_d2e_full_compact/streaming_stats.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "idm_output:train_history.json",
+      "source": "outputs/idm_streaming_d2e_full_compact_accel64/train_history.json",
+      "dest": "outputs/idm_streaming_d2e_full_compact/train_history.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "completion_path:decode_summary",
+      "source": "artifacts/sources/d2e_full_corpus_decode_summary_accel64.json",
+      "dest": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "completion_path:gpu_monitor",
+      "source": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv",
+      "dest": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
+      "status": "linked"
+    },
+    {
+      "key": "completion_path:split_stats_summary",
+      "source": "artifacts/eval/g003_split_statistical_comparisons_accel64_summary.json",
+      "dest": "artifacts/eval/g003_split_statistical_comparisons_summary.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "completion_path:summary",
+      "source": "artifacts/idm/idm_streaming_d2e_full_compact_accel64_summary.json",
+      "dest": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "integrated_run_evidence",
+      "source": "artifacts/idm/g003_d2e_full_idm_run_accel64.json",
+      "dest": "artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "attached_monitor_metadata",
+      "source": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64_attached.json",
+      "dest": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_attached.json",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_0.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_0.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_0.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_0.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_1.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_1.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_1.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_1.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_10.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_10.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_10.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_10.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_11.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_11.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_11.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_11.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_12.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_12.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_12.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_12.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_13.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_13.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_13.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_13.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_14.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_14.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_14.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_14.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_15.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_15.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_15.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_15.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_16.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_16.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_16.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_17.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_17.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_17.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_18.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_18.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_18.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_19.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_19.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_19.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_2.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_2.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_2.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_2.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_20.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_20.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_20.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_21.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_21.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_21.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_22.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_22.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_22.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_23.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_23.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_23.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_24.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_24.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_24.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_25.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_25.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_25.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_26.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_26.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_26.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_27.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_27.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_27.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_28.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_28.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_28.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_29.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_29.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_29.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_3.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_3.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_3.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_3.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_30.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_30.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_30.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_31.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_31.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_31.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_32.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_32.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_32.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_33.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_33.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_33.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_34.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_34.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_34.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_35.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_35.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_35.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_36.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_36.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_36.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_37.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_37.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_37.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_38.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_38.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_38.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_39.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_39.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_39.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_4.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_4.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_4.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_4.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_40.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_40.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_40.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_41.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_41.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_41.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_42.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_42.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_42.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_43.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_43.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_43.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_44.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_44.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_44.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_45.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_45.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_45.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_46.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_46.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_46.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_47.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_47.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_47.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_48.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_48.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_48.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_49.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_49.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_49.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_5.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_5.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_5.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_5.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_50.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_50.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_50.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_51.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_51.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_51.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_52.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_52.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_52.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_53.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_53.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_53.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_54.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_54.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_54.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_55.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_55.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_55.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_56.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_56.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_56.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_57.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_57.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_57.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_58.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_58.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_58.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_59.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_59.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_59.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_6.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_6.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_6.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_6.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_60.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_60.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_60.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_61.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_61.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_61.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_62.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_62.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_62.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_63.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_63.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_63.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": false,
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_7.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_7.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_7.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_7.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_8.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_8.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_8.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_8.log",
+      "status": "linked"
+    },
+    {
+      "key": "shard_log:d2e_full_corpus_shard_9.log",
+      "source": "artifacts/sources/g003_accel64/d2e_full_corpus_shard_9.log",
+      "dest": "artifacts/sources/d2e_full_corpus_shard_9.log",
+      "kind": "file",
+      "source_exists": true,
+      "dest_exists_before": true,
+      "backup_path": "artifacts/idm/g003_accel64_promotion_backups/20260522T144504/artifacts/sources/d2e_full_corpus_shard_9.log",
+      "status": "linked"
+    }
+  ],
+  "canonical_train_summary_exit_code": 0,
+  "canonical_audit_status": "pass",
+  "canonical_audit_error_count": 0,
+  "findings": [],
+  "claim_boundary": "Promotes an already-passing isolated accel64 G003 run into canonical paths via symlinks; it does not checkpoint OMX state and does not weaken the canonical G003 completion audit."
+}

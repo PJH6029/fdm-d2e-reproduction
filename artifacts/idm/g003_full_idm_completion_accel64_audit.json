@@ -5,9 +5,8 @@
   "goal_status": "in_progress",
   "require_goal_checkpoint_complete": false,
   "expected_recording_variants": 918,
-  "expected_shards": 16,
+  "expected_shards": 64,
   "allowed_shard_counts": [
-    16,
     64
   ],
   "expected_gpus": 4,
@@ -19,109 +18,109 @@
       "sha256": "549cd16aa992bc76c3bea9f571100fe5cc721ca706e7d50f2c9e40fd2d21c8f8"
     },
     "decode_summary": {
-      "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
+      "path": "artifacts/sources/d2e_full_corpus_decode_summary_accel64.json",
       "exists": true,
       "bytes": 1192133,
       "sha256": "e1e7ec5db367a8cded98b5f311c89ba6bd0b28d0921f47d80d93ee630323ed02"
     },
     "train_records": {
-      "path": "outputs/data/d2e_full_corpus/train_core.jsonl",
+      "path": "outputs/data/d2e_full_corpus_accel64/train_core.jsonl",
       "exists": true,
       "bytes": 393034990563,
       "sha256": "31eca0eeb09305bee2dbecacbd52111376d1b91051268ca3714cbac320845597"
     },
     "target_records": {
-      "path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+      "path": "outputs/data/d2e_full_corpus_accel64/target_all_eval.jsonl",
       "exists": true,
       "bytes": 341543678522,
       "sha256": "08c416b873f6785f643bc1397c60d872f5a17aff945fa0d1ae245aa4a2b55c24"
     },
     "checkpoint": {
-      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt",
+      "path": "outputs/idm_streaming_d2e_full_compact_accel64/checkpoint.pt",
       "exists": true,
       "bytes": 4122359,
       "sha256": "99e3db66ebb288b8b590e0ba540177b8f0415263fc264a82f12dbe1d8ba9d117"
     },
     "checkpoint_metadata": {
-      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "path": "outputs/idm_streaming_d2e_full_compact_accel64/checkpoint_metadata.json",
       "exists": true,
       "bytes": 20529,
       "sha256": "e433fc0477ec82b8297110001b9f44ba5719e3da9ffbded3d068771d800c479b"
     },
     "resolved_config": {
-      "path": "outputs/idm_streaming_d2e_full_compact/resolved_config.json",
+      "path": "outputs/idm_streaming_d2e_full_compact_accel64/resolved_config.json",
       "exists": true,
       "bytes": 2335,
       "sha256": "b2ace28b08558eda8e9cbeaae26765106afe82d2d41445ce57dede6b1d953088"
     },
     "streaming_stats": {
-      "path": "outputs/idm_streaming_d2e_full_compact/streaming_stats.json",
+      "path": "outputs/idm_streaming_d2e_full_compact_accel64/streaming_stats.json",
       "exists": true,
       "bytes": 340501,
       "sha256": "ccafdd5ce5ce2fc3f4aec1ef2fd23c97abda55d136da3d950261df3eff47e41f"
     },
     "train_history": {
-      "path": "outputs/idm_streaming_d2e_full_compact/train_history.json",
+      "path": "outputs/idm_streaming_d2e_full_compact_accel64/train_history.json",
       "exists": true,
       "bytes": 5232,
       "sha256": "85a86c3ed6130f46821ec73a8435d5ba50515363980596ac903e8f50febd3448"
     },
     "convergence_report": {
-      "path": "outputs/idm_streaming_d2e_full_compact/convergence_report.json",
+      "path": "outputs/idm_streaming_d2e_full_compact_accel64/convergence_report.json",
       "exists": true,
       "bytes": 1795,
       "sha256": "39cbf0b00f3f18ad0e3ffbad53408410502a0f094ad2e590d89246441e647fb0"
     },
     "pseudolabels": {
-      "path": "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
+      "path": "outputs/idm_streaming_d2e_full_compact_accel64/pseudolabels.jsonl",
       "exists": true,
       "bytes": 10101581690,
       "sha256": "990cdb9f7c652f96e58b09404427b8ad35dd49ce743ef6c74caa1b0425323399"
     },
     "predictions": {
-      "path": "outputs/idm_streaming_d2e_full_compact/predictions.jsonl",
+      "path": "outputs/idm_streaming_d2e_full_compact_accel64/predictions.jsonl",
       "exists": true,
       "bytes": 6371662344,
       "sha256": "27cdd34250629a5f433b4da2adbbdea61f01a8f417c7c8e471066d6c54b0f17e"
     },
     "metrics": {
-      "path": "outputs/idm_streaming_d2e_full_compact/metrics.json",
+      "path": "outputs/idm_streaming_d2e_full_compact_accel64/metrics.json",
       "exists": true,
       "bytes": 893,
       "sha256": "278f6cfbc338fe7d40b5a65194aa10ee63900659585adfa83e2ccebe97789342"
     },
     "label_quality_report": {
-      "path": "outputs/idm_streaming_d2e_full_compact/label_quality_report.json",
+      "path": "outputs/idm_streaming_d2e_full_compact_accel64/label_quality_report.json",
       "exists": true,
       "bytes": 176520,
       "sha256": "de52dcc923f1b79d814786c41739314c3822cee086761d3033085e992601e926"
     },
     "statistical_comparison": {
-      "path": "outputs/idm_streaming_d2e_full_compact/statistical_comparison.json",
+      "path": "outputs/idm_streaming_d2e_full_compact_accel64/statistical_comparison.json",
       "exists": true,
       "bytes": 8926,
       "sha256": "cd2c4bf6a0f885561b76a0f64ae5dffd8650e7e55bfc83715f6d0f48019220db"
     },
     "summary": {
-      "path": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
+      "path": "artifacts/idm/idm_streaming_d2e_full_compact_accel64_summary.json",
       "exists": true,
       "bytes": 239136,
       "sha256": "f06c58e28df57b005a5914528a7b4425a0c42b8dff8923e73a3671be014cb057"
     },
     "run_summary": {
-      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
+      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run_accel64.json",
       "exists": true,
-      "bytes": 2824,
-      "sha256": "983d70ac2eeed1b1f6d8148ce7081894f277b740a8a740827e00aeb0c86294ee"
+      "bytes": 2850,
+      "sha256": "44bd9cb8c95a9369923c494b9df54762974931e332df2b60d2f8bf4f4d56b5db"
     },
     "gpu_monitor": {
-      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
+      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv",
       "exists": true,
       "bytes": 442759,
       "sha256": "9de078668c4ed621d852f8d991f02872883b7cdea06dd65d7eb12cd5abdaee69"
     },
     "split_stats_summary": {
-      "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json",
+      "path": "artifacts/eval/g003_split_statistical_comparisons_accel64_summary.json",
       "exists": true,
       "bytes": 1140,
       "sha256": "becd51d914cac880c506070968f0766f44e6d5717c62a89a4ab4d5a0e3c5239c"

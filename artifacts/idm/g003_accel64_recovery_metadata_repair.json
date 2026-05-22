@@ -1,0 +1,48 @@
+{
+  "after": {
+    "metadata_distributed": {
+      "backend": "nccl",
+      "enabled": true,
+      "gpu_monitor_path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv",
+      "rank0_device": "cuda",
+      "run_evidence_path": "artifacts/idm/g003_d2e_full_idm_run_accel64.json",
+      "source": "repaired_from_g003_accel64_run_evidence_after_checkpoint_output_recovery",
+      "world_size": 4
+    },
+    "summary_metadata_distributed": {
+      "backend": "nccl",
+      "enabled": true,
+      "gpu_monitor_path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv",
+      "rank0_device": "cuda",
+      "run_evidence_path": "artifacts/idm/g003_d2e_full_idm_run_accel64.json",
+      "source": "repaired_from_g003_accel64_run_evidence_after_checkpoint_output_recovery",
+      "world_size": 4
+    }
+  },
+  "artifact_sha256": {
+    "checkpoint_metadata": "e433fc0477ec82b8297110001b9f44ba5719e3da9ffbded3d068771d800c479b",
+    "idm_summary": "f06c58e28df57b005a5914528a7b4425a0c42b8dff8923e73a3671be014cb057",
+    "run_evidence": "d151f91a37bfae9dcd41cdf3bc9642fc7f1a24a0148b9b5bd44730a72dd5a833"
+  },
+  "artifacts": {
+    "checkpoint_metadata": "outputs/idm_streaming_d2e_full_compact_accel64/checkpoint_metadata.json",
+    "idm_summary": "artifacts/idm/idm_streaming_d2e_full_compact_accel64_summary.json",
+    "run_evidence": "artifacts/idm/g003_d2e_full_idm_run_accel64.json"
+  },
+  "before": {
+    "metadata_distributed": {
+      "backend": null,
+      "enabled": false,
+      "rank0_device": "cuda",
+      "world_size": 1
+    },
+    "summary_metadata_distributed": {
+      "backend": null,
+      "enabled": false,
+      "rank0_device": "cuda",
+      "world_size": 1
+    }
+  },
+  "schema": "g003_accel64_recovery_metadata_repair.v1",
+  "status": "pass"
+}
