@@ -624,3 +624,14 @@ uv run python scripts/audit_g003_live_health.py \
 
 - Local/origin code now includes `scripts/recover_fdm_streaming_outputs.py` and `recover_streaming_fdm_outputs_from_checkpoint`. If G004 saves `outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt` but exits before FDM wrapper metadata/summary, this helper recovers torch-model prediction/metrics and rebuilds FDM `checkpoint_metadata.json`, `summary.json`, and optional artifact summary without retraining.
 - Validation passed locally with targeted FDM/IDM recovery tests and full pytest. This remains future-run hardening only; do not pull into the active pod checkout until the current G003 torchrun/finalization exits.
+
+## 2026-05-22 14:09 KST G003 accel64 epoch-2 snapshot
+
+- Active aggregate Codex goal remains active; do not mark complete. `.omx/ultragoal/goals.json` keeps `G003-d2e-only-idm` in progress.
+- Pod `prod-rsv-jeonghunpark-20260521-76e25a` in namespace `p-production` is reachable with `/home/top321902/.kube/mlxp/jeonghunpark/debug-kubeconfig.yaml`; production kubeconfig may still return `Unauthorized` and execs may need retries for `connect: cannot assign requested address`.
+- Active G003 torchrun is still running from pod checkout `9a9f099`; local/origin are ahead at `d5fdafc`. Do not pull latest origin into the pod while workers `252006..252009` are active.
+- Full accel64 extraction/merge remains complete: `918/918` variants, `64/64` shards, train-core `19,211,006` rows, target-eval `16,698,646` rows.
+- Epoch 1 completed with train loss `1.5158540560842337` and validation composite `0.1058949944649953`; epoch 2 is in progress. Latest sampled per-rank epoch-2 progress: rank0 `0.2166`, rank1 `0.2262`, rank2 `0.1838`, rank3 `0.2771`.
+- Terminal G003 artifacts are still absent: `metrics.json`, `checkpoint_metadata.json`, `checkpoint.pt`, `pseudolabels.jsonl`, `predictions.jsonl`, accel64 IDM summary, split-stat summary, integrated finalization summary, and accel64 completion audit.
+- A stale `outputs/cluster/g003_to_g004_chain_watcher.pid` / `artifacts/fdm/g003_to_g004_chain_summary.json` exists in the pod, but no `watch_g003_then_launch_g004.py` process was observed. After G003 accel64 audit passes and is promoted/checkpointed, start a fresh current G003→G004 watcher with `--require-g003-goal-checkpoint`.
+- No G003 checkpoint/completion claim was made.

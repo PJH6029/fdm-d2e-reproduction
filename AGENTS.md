@@ -24,7 +24,7 @@ These instructions apply to this repository and all child paths unless a deeper 
 - Keep claims evidence-bound. If a metric/harness claim lacks committed evidence, phrase it as pending/future work.
 - Do not commit secrets, tokens, kubeconfigs, private reservation payloads, or unredacted sensitive MLXP data.
 
-## Current ultragoal state (2026-05-21 KST)
+## Current ultragoal state (2026-05-22 KST)
 
 Active aggregate Codex objective:
 
@@ -46,18 +46,22 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G003 MLXP run
 
-Latest known live run snapshot: 2026-05-22 11:15 KST.
+Latest known live run snapshot: 2026-05-22 14:09 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
-- Pod checkout was fast-forwarded to `14f4f60` while the active G003 Python/torchrun processes continued from already-loaded code; this is intentional so the future G004 launch sees the shard-aware FDM patch.
+- Active pod checkout for the currently running G003 torchrun is `9a9f099`.
+- Local/origin are intentionally ahead of the active pod checkout, with latest known local/origin `d5fdafc` adding tensor-cache, prediction-resume validation, and IDM/FDM recovery helpers. **Do not pull latest origin into the pod while the current G003 Python workers are still running.** Pull only after the active G003 torchrun/finalization exits, before recovery/promotion/G004 launch.
 - Accel64 extraction and merge are complete: `918 / 918` recording variants, `64 / 64` shards, `35,909,652` total records, `19,211,006` train-core rows, `16,698,646` target-eval rows, `failures=0`.
 - Active command: `bash scripts/run_g003_accel64_training_resume.sh`, parent PID file `outputs/cluster/g003_full_compact_accel64.pid`, observed parent PID `251593`.
 - Active training command: `uv run torchrun --standalone --nproc-per-node=4 scripts/train_idm_streaming.py --config configs/model/idm_streaming_d2e_full_compact_accel64.yaml --require-torch`. Rank worker PIDs observed at the snapshot: `252006`, `252007`, `252008`, `252009`.
 - Shard-parallel stats precompute is complete: `outputs/idm_streaming_d2e_full_compact_accel64/streaming_stats.json` exists with `19,211,006` examples and input dim `620`.
 - Live health reports `healthy_running` / `idm_training`; the post-run watcher reports `waiting_active_parent`. GPU monitor CSV path: `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv`.
-- Terminal artifacts were still absent at the snapshot: `train_history.json`, `metrics.json`, `checkpoint_metadata.json`, `checkpoint.pt`, accel64 IDM summary, split-stat summary, integrated finalization summary, and completion audit. G003 remains non-terminal.
+- Epoch 1 completed and wrote `outputs/idm_streaming_d2e_full_compact_accel64/train_history.json` plus `convergence_report.json`: loss `1.5158540560842337`, validation score `0.1058949944649953`, keyboard accuracy `0.006023485509156915`, mouse-button F1 `0.002607845267847441`, mouse-move Pearson `0.30905365261798157`. Epoch 2 is in progress.
+- Latest rank-progress sample at 2026-05-22 14:07 KST: rank 0 `0.2166`, rank 1 `0.2262`, rank 2 `0.1838`, rank 3 `0.2771` through their assigned epoch-2 shard bytes. GPU utilization may show `0%` while ranks are CPU/parsing-bound; CPU workers were still alive at ~100% each.
+- Terminal artifacts were still absent at the snapshot: `metrics.json`, `checkpoint_metadata.json`, `checkpoint.pt`, `pseudolabels.jsonl`, `predictions.jsonl`, accel64 IDM summary, split-stat summary, integrated finalization summary, and completion audit. G003 remains non-terminal.
+- A stale `outputs/cluster/g003_to_g004_chain_watcher.pid` and `artifacts/fdm/g003_to_g004_chain_summary.json` may exist in the pod, but no `watch_g003_then_launch_g004.py` process was observed at 2026-05-22 14:09 KST. Do not rely on that stale watcher to launch G004; start a fresh current watcher only after G003 audit promotion and OMX checkpointing.
 
 Useful pod monitor command:
 
@@ -68,17 +72,40 @@ KUBECONFIG=/home/top321902/.kube/mlxp/jeonghunpark/debug-kubeconfig.yaml \
 
 `kubectl exec` is flaky with `connect: cannot assign requested address`; retry with a short sleep. If `production-kubeconfig.yaml` returns `Unauthorized`, use `/home/top321902/.kube/mlxp/jeonghunpark/debug-kubeconfig.yaml` with `-n p-production` (verified on 2026-05-22 11:38 KST). Non-login pod shells may not include `uv` on `PATH`, so `export PATH="$HOME/.local/bin:$PATH"` or call `/root/.local/bin/uv`.
 
-After G003 accel64 audit passes, promote to canonical paths with:
+After the active G003 accel64 torchrun/finalization exits:
+
+1. Pull latest origin in the pod to pick up recovery/promotion hardening.
+2. If `checkpoint.pt` exists but metadata/summary/predictions are missing, recover without retraining:
+
+   ```bash
+   uv run python scripts/recover_idm_streaming_outputs.py \
+     --config configs/model/idm_streaming_d2e_full_compact_accel64.yaml
+   ```
+
+3. Ensure the accel64 finalization/audit reports pass.
+4. Promote accel64 artifacts to canonical paths with:
 
 ```bash
 uv run python scripts/promote_g003_accel64_to_canonical.py
 ```
 
-Then checkpoint `G003-d2e-only-idm` complete through OMX only after calling Codex `get_goal` and passing the snapshot JSON to `omx ultragoal checkpoint --goal-id G003-d2e-only-idm --status complete ...`. Do not mark the aggregate Codex goal complete.
+Then verify canonical `artifacts/idm/g003_full_idm_completion_audit.json` reports `status=pass`, checkpoint `G003-d2e-only-idm` complete through OMX only after calling Codex `get_goal` and passing the snapshot JSON to `omx ultragoal checkpoint --goal-id G003-d2e-only-idm --status complete ...`. Do not mark the aggregate Codex goal complete. After the checkpoint is recorded, launch G004 with a fresh current watcher requiring the G003 checkpoint:
+
+```bash
+nohup uv run python scripts/watch_g003_then_launch_g004.py \
+  --replace-existing-watcher \
+  --launch \
+  --start-g004-watcher \
+  --require-g003-goal-checkpoint \
+  --output artifacts/fdm/g003_to_g004_chain_summary.json \
+  --watcher-pid-file outputs/cluster/g003_to_g004_chain_watcher.pid \
+  --poll-seconds 60 \
+  > artifacts/fdm/g003_to_g004_chain.log 2>&1 &
+```
 
 ## Current G005 auxiliary materialization
 
-Latest known live run snapshot: 2026-05-21 20:33 KST.
+Latest known live run snapshot: 2026-05-21 20:33 KST. This snapshot is stale relative to the active G003 training; re-probe before making any G005 claims or launch decisions.
 
 - G005 source materializer PID `49075` was still running.
 - G005 materialization watcher was restarted on commit `1324d44`; active Python PID `56862`, PID file `outputs/cluster/g005_aux_materialization_watcher.pid`.
@@ -120,38 +147,23 @@ The current streaming IDM config must carry:
 - `split_contract: artifacts/sources/d2e_full_split_contract.json`,
 - `source_namespace: d2e_full_corpus`.
 
-### Current-run 4×H200 monitor recovery
+### Current-run 4×H200 monitor evidence
 
-The active integrated run predates the dedicated standalone train wrapper, so do
-not restart it just to create GPU-monitor evidence. The attached monitor path is
-now installed in the pod and currently running as PID `31950`:
+The active authoritative G003 lane is now accel64, not the older canonical
+16-shard lane. Do not restart training just to change monitor evidence. The
+active post-run watcher is expected to use accel64 evidence paths:
 
-```bash
-kubectl -n p-production exec prod-rsv-jeonghunpark-20260521-76e25a -- bash -lc '
-  cd /root/work/code/continuous-gui-poc/fdm-d2e-reproduction
-  git fetch origin main && git pull --ff-only origin main
-  export PATH="$HOME/.local/bin:$PATH"
-  nohup /root/.local/bin/uv run python scripts/attach_g003_gpu_monitor.py \
-    --pid-file outputs/cluster/g003_full_compact_parallel.pid \
-    --output artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv \
-    --metadata-out artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_attached.json \
-    --monitor-pid-file outputs/cluster/g003_attached_gpu_monitor.pid \
-    --interval-seconds 30 \
-    > artifacts/idm/g003_attached_gpu_monitor.log 2>&1 &
-  echo monitor_launcher_pid=$!
-'
-```
+- PID file: `outputs/cluster/g003_full_compact_accel64.pid`
+- GPU monitor CSV: `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv`
+- attached-monitor metadata: `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64_attached.json`
+- train-run summary: `artifacts/idm/g003_d2e_full_idm_4xh200_train_run_accel64.json`
+- integrated finalization summary: `artifacts/idm/g003_accel64_integrated_finalization_summary.json`
+- completion audit: `artifacts/idm/g003_full_idm_completion_accel64_audit.json`
 
-When the integrated run exits, synthesize
-`artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json` with:
-
-```bash
-uv run python scripts/build_g003_attached_train_run_summary.py
-```
-
-The summary builder is fail-closed and requires integrated run evidence,
-checkpoint metadata/metrics, attached-monitor metadata, and CSV coverage for all
-four GPU indices before it reports `exit_code=0`.
+When accel64 audit passes, `scripts/promote_g003_accel64_to_canonical.py`
+symlinks/promotes the accel64 outputs into canonical G003 paths and rebuilds the
+canonical train-run summary/audit. Use that promotion path instead of trying to
+manually copy monitor evidence.
 
 ## Dataset and split artifacts
 
@@ -250,18 +262,17 @@ status, but final quality gates are responsible for requiring all stories to be
 checkpointed `complete`. This prevents a circular blocker when preparing
 evidence before checkpointing G003/G004/etc.
 
-Latest G003 finalization helper: commit `e4a5524` adds
-`scripts/finalize_g003_integrated_run.py`. After parent PID `9289` exits, run
-`uv run python scripts/finalize_g003_integrated_run.py` to build any missing
-G003 split stats, synthesize attached 4×H200 train-run evidence, and run the
-G003 completion audit. It refuses to proceed while the parent is still running
-unless explicitly overridden and does not mutate OMX state.
+Latest G003 finalization helper: `scripts/finalize_g003_integrated_run.py`
+builds any missing G003 split stats, synthesizes attached 4×H200 train-run
+evidence, and runs the G003 completion audit. For the active accel64 lane, the
+post-run watcher already supplies accel64-specific arguments and should finalize
+after parent PID `251593` exits. It refuses to proceed while the parent is still
+running unless explicitly overridden and does not mutate OMX state.
 
-Latest G003 post-run watcher: `scripts/watch_g003_then_finalize.py` can be run
-in the pod with `nohup uv run python scripts/watch_g003_then_finalize.py >
-artifacts/idm/g003_postrun_watcher.log 2>&1 &`. It writes
-`artifacts/idm/g003_postrun_watcher_summary.json`, waits for the G003 parent to
-exit, then invokes the non-mutating G003 finalizer. It never checkpoints G003.
+Latest G003 post-run watcher: for active accel64, the watcher writes
+`artifacts/idm/g003_accel64_postrun_watcher_summary.json`, waits for the G003
+parent to exit, then invokes the non-mutating G003 finalizer. It never
+checkpoints G003.
 
 Latest G004 finalization helper: commit `65b5d24` adds
 `scripts/finalize_g004_d2e_full_fdm.py`. After a G004 4×H200 run exits, run
