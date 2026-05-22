@@ -68,6 +68,8 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
             "epochs": 1,
             "eval_interval_epochs": 1,
             "batch_size": 4,
+            "training_cache_dir": str(tmp_path / "idm_train_cache"),
+            "training_cache_chunk_size": 3,
             "categorical_min_count": 1,
             "mouse_head_mode": "axis_softmax",
             "seed": 7,
@@ -86,6 +88,10 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
     assert summary["metadata"]["target_resolution_tiers"] == ["480p"]
     assert summary["metadata"]["split_names"] == ["train_core"]
     assert summary["metadata"]["target_eval_split_tags"] == ["temporal"]
+    assert summary["metadata"]["training_cache"]["enabled"] is True
+    assert summary["metadata"]["training_cache"]["rows"] == 8
+    assert summary["metadata"]["training_cache"]["chunk_size"] == 3
+    assert all(Path(path).exists() for path in summary["metadata"]["training_cache"]["manifest_paths"])
     assert Path(summary["metadata"]["resolved_config_path"]).exists()
     assert Path(summary["metadata"]["train_records_path"]).exists()
     assert Path(summary["metadata"]["target_records_path"]).exists()

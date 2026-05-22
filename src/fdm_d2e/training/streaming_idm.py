@@ -422,6 +422,335 @@ def _iter_batches(
         yield batch
 
 
+def _cache_source_metadata(path: str | Path) -> dict[str, Any]:
+    record_path = Path(path)
+    stat = record_path.stat()
+    return {
+        "path": str(record_path),
+        "bytes": int(stat.st_size),
+        "mtime_ns": int(stat.st_mtime_ns),
+    }
+
+
+def _training_cache_identity(
+    path: str | Path,
+    *,
+    stats: dict[str, Any],
+    config: dict[str, Any],
+    category_vocab: list[str],
+    mouse_axis_classes: list[str],
+) -> dict[str, Any]:
+    return {
+        "schema": "streaming_idm_training_cache.v1",
+        "source": _cache_source_metadata(path),
+        "feature_mode": str(stats["feature_mode"]),
+        "input_dim": int(stats["input_dim"]),
+        "dataset_fingerprint": str(stats["dataset_fingerprint"]),
+        "category_vocab": list(category_vocab),
+        "mouse_head_mode": str(config.get("mouse_head_mode", "axis_softmax")),
+        "mouse_axis_classes": list(mouse_axis_classes),
+        "cache_version": 1,
+    }
+
+
+def _training_cache_manifest_path(
+    cache_dir: str | Path,
+    path: str | Path,
+    *,
+    stats: dict[str, Any],
+    config: dict[str, Any],
+    category_vocab: list[str],
+    mouse_axis_classes: list[str],
+) -> Path:
+    identity = _training_cache_identity(
+        path,
+        stats=stats,
+        config=config,
+        category_vocab=category_vocab,
+        mouse_axis_classes=mouse_axis_classes,
+    )
+    key = stable_hash_json(identity)
+    safe_stem = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "_" for ch in Path(path).stem)[:64] or "records"
+    return Path(cache_dir) / f"{safe_stem}-{key[:20]}.manifest.json"
+
+
+def _cache_axis_indices(row: dict[str, Any], class_index: dict[str, int]) -> tuple[int, int]:
+    dx, dy = target_mouse_delta(row)
+    return (
+        class_index[_axis_suffix_from_delta(dx, "MOUSE_DX_")],
+        class_index[_axis_suffix_from_delta(dy, "MOUSE_DY_")],
+    )
+
+
+def _flush_training_cache_chunk(
+    torch,
+    *,
+    chunk_path: Path,
+    rows: list[dict[str, Any]],
+    stats: dict[str, Any],
+    category_vocab: list[str],
+    vocab_index: dict[str, int],
+    axis_class_index: dict[str, int],
+    mouse_head_mode: str,
+) -> dict[str, Any]:
+    feature_mode = str(stats["feature_mode"])
+    x = torch.tensor(
+        [[float(value) for value in record_features(row, feature_mode=feature_mode)] for row in rows],
+        dtype=torch.float32,
+    )
+    mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device="cpu")
+    x = (x - mean_t) / std_t
+    mouse_y = torch.tensor([target_mouse_delta(row) for row in rows], dtype=torch.float32)
+    cat_y = torch.zeros((len(rows), len(category_vocab)), dtype=torch.float32)
+    for row_idx, row in enumerate(rows):
+        for token in set(row.get("ground_truth_tokens", [])):
+            idx = vocab_index.get(str(token))
+            if idx is not None:
+                cat_y[row_idx, idx] = 1.0
+    payload: dict[str, Any] = {
+        "schema": "streaming_idm_training_cache_chunk.v1",
+        "rows": len(rows),
+        "x": x,
+        "mouse_y": mouse_y,
+        "cat_y": cat_y,
+    }
+    if mouse_head_mode == "axis_softmax":
+        axis = [_cache_axis_indices(row, axis_class_index) for row in rows]
+        payload["dx_y"] = torch.tensor([item[0] for item in axis], dtype=torch.long)
+        payload["dy_y"] = torch.tensor([item[1] for item in axis], dtype=torch.long)
+    tmp_path = chunk_path.with_suffix(chunk_path.suffix + ".tmp")
+    torch.save(payload, tmp_path)
+    tmp_path.replace(chunk_path)
+    return {"path": str(chunk_path), "rows": len(rows)}
+
+
+def _build_training_cache_for_path(
+    path: str | Path,
+    *,
+    manifest_path: str | Path,
+    identity: dict[str, Any],
+    stats: dict[str, Any],
+    config: dict[str, Any],
+    category_vocab: list[str],
+    mouse_axis_classes: list[str],
+    chunk_size: int,
+    force_rebuild: bool = False,
+) -> dict[str, Any]:
+    manifest_path = Path(manifest_path)
+    if manifest_path.exists() and not force_rebuild:
+        manifest = read_json(manifest_path)
+        chunk_rows = manifest.get("chunks", [])
+        if manifest.get("identity") == identity and chunk_rows and all(Path(row["path"]).exists() for row in chunk_rows):
+            return manifest
+    torch = require_torch()
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    chunk_dir = ensure_dir(manifest_path.with_suffix(""))
+    for old_chunk in chunk_dir.glob("chunk_*.pt"):
+        old_chunk.unlink()
+    vocab_index = {token: idx for idx, token in enumerate(category_vocab)}
+    axis_class_index = {label: idx for idx, label in enumerate(mouse_axis_classes)}
+    mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
+    chunks: list[dict[str, Any]] = []
+    batch: list[dict[str, Any]] = []
+    count = 0
+    for row in iter_jsonl(path):
+        batch.append(row)
+        count += 1
+        if len(batch) >= chunk_size:
+            chunks.append(
+                _flush_training_cache_chunk(
+                    torch,
+                    chunk_path=chunk_dir / f"chunk_{len(chunks):06d}.pt",
+                    rows=batch,
+                    stats=stats,
+                    category_vocab=category_vocab,
+                    vocab_index=vocab_index,
+                    axis_class_index=axis_class_index,
+                    mouse_head_mode=mouse_head_mode,
+                )
+            )
+            batch = []
+    if batch:
+        chunks.append(
+            _flush_training_cache_chunk(
+                torch,
+                chunk_path=chunk_dir / f"chunk_{len(chunks):06d}.pt",
+                rows=batch,
+                stats=stats,
+                category_vocab=category_vocab,
+                vocab_index=vocab_index,
+                axis_class_index=axis_class_index,
+                mouse_head_mode=mouse_head_mode,
+            )
+        )
+    manifest = {
+        "schema": "streaming_idm_training_cache_manifest.v1",
+        "identity": identity,
+        "source_path": str(path),
+        "manifest_path": str(manifest_path),
+        "chunk_size": int(chunk_size),
+        "rows": int(count),
+        "chunks": chunks,
+    }
+    tmp_manifest = manifest_path.with_suffix(manifest_path.suffix + ".tmp")
+    write_json(tmp_manifest, manifest)
+    tmp_manifest.replace(manifest_path)
+    return manifest
+
+
+def _build_training_cache_manifests(
+    record_paths: Sequence[str | Path],
+    *,
+    stats: dict[str, Any],
+    config: dict[str, Any],
+    category_vocab: list[str],
+    mouse_axis_classes: list[str],
+) -> list[dict[str, Any]]:
+    cache_dir = config.get("training_cache_dir")
+    if not cache_dir:
+        return []
+    chunk_size = int(config.get("training_cache_chunk_size", config.get("batch_size", 4096) * 2))
+    if chunk_size <= 0:
+        raise ValueError("training_cache_chunk_size must be positive")
+    cache_workers = max(1, int(config.get("training_cache_num_workers", 1)))
+    force_rebuild = bool(config.get("force_rebuild_training_cache", False))
+    tasks = []
+    for path in record_paths:
+        identity = _training_cache_identity(
+            path,
+            stats=stats,
+            config=config,
+            category_vocab=category_vocab,
+            mouse_axis_classes=mouse_axis_classes,
+        )
+        manifest_path = _training_cache_manifest_path(
+            cache_dir,
+            path,
+            stats=stats,
+            config=config,
+            category_vocab=category_vocab,
+            mouse_axis_classes=mouse_axis_classes,
+        )
+        tasks.append((path, manifest_path, identity))
+    if len(tasks) > 1 and cache_workers > 1:
+        manifests: list[dict[str, Any]] = []
+        workers = min(cache_workers, len(tasks))
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            futures = {
+                pool.submit(
+                    _build_training_cache_for_path,
+                    path,
+                    manifest_path=manifest_path,
+                    identity=identity,
+                    stats=stats,
+                    config=config,
+                    category_vocab=category_vocab,
+                    mouse_axis_classes=mouse_axis_classes,
+                    chunk_size=chunk_size,
+                    force_rebuild=force_rebuild,
+                ): manifest_path
+                for path, manifest_path, identity in tasks
+            }
+            for future in as_completed(futures):
+                manifests.append(future.result())
+        return sorted(manifests, key=lambda row: str(row["source_path"]))
+    return [
+        _build_training_cache_for_path(
+            path,
+            manifest_path=manifest_path,
+            identity=identity,
+            stats=stats,
+            config=config,
+            category_vocab=category_vocab,
+            mouse_axis_classes=mouse_axis_classes,
+            chunk_size=chunk_size,
+            force_rebuild=force_rebuild,
+        )
+        for path, manifest_path, identity in tasks
+    ]
+
+
+def _load_training_cache_manifests(
+    record_paths: Sequence[str | Path],
+    *,
+    stats: dict[str, Any],
+    config: dict[str, Any],
+    category_vocab: list[str],
+    mouse_axis_classes: list[str],
+) -> list[dict[str, Any]]:
+    cache_dir = config.get("training_cache_dir")
+    if not cache_dir:
+        return []
+    manifests: list[dict[str, Any]] = []
+    for path in record_paths:
+        identity = _training_cache_identity(
+            path,
+            stats=stats,
+            config=config,
+            category_vocab=category_vocab,
+            mouse_axis_classes=mouse_axis_classes,
+        )
+        manifest_path = _training_cache_manifest_path(
+            cache_dir,
+            path,
+            stats=stats,
+            config=config,
+            category_vocab=category_vocab,
+            mouse_axis_classes=mouse_axis_classes,
+        )
+        if not manifest_path.exists():
+            raise FileNotFoundError(f"missing streaming IDM training cache manifest: {manifest_path}")
+        manifest = read_json(manifest_path)
+        if manifest.get("identity") != identity:
+            raise ValueError(f"stale streaming IDM training cache manifest: {manifest_path}")
+        manifests.append(manifest)
+    return manifests
+
+
+def _iter_training_cache_batches(
+    torch,
+    cache_manifests: Sequence[dict[str, Any]],
+    *,
+    batch_size: int,
+    device: str,
+    max_examples: int | None,
+    rank: int,
+    world_size: int,
+    shard_by_path: bool,
+) -> Iterable[tuple[Any, Any, Any, Any | None, Any | None, int]]:
+    seen = 0
+    for path_idx, manifest in enumerate(cache_manifests):
+        if shard_by_path and world_size > 1 and (path_idx % world_size) != rank:
+            continue
+        for chunk in manifest.get("chunks", []):
+            try:
+                payload = torch.load(chunk["path"], map_location="cpu", weights_only=False)
+            except TypeError:  # pragma: no cover - older torch releases.
+                payload = torch.load(chunk["path"], map_location="cpu")
+            rows = int(payload["rows"])
+            for start in range(0, rows, batch_size):
+                if max_examples is not None and seen >= max_examples:
+                    break
+                end = min(rows, start + batch_size)
+                if max_examples is not None:
+                    end = min(end, start + (max_examples - seen))
+                x = payload["x"][start:end].to(device)
+                mouse_y = payload["mouse_y"][start:end].to(device)
+                cat_y = payload["cat_y"][start:end].to(device)
+                dx_y = payload.get("dx_y")
+                dy_y = payload.get("dy_y")
+                if dx_y is not None and dy_y is not None:
+                    dx_y = dx_y[start:end].to(device)
+                    dy_y = dy_y[start:end].to(device)
+                batch_rows = int(end - start)
+                seen += batch_rows
+                yield x, mouse_y, cat_y, dx_y, dy_y, batch_rows
+            if max_examples is not None and seen >= max_examples:
+                break
+        if max_examples is not None and seen >= max_examples:
+            break
+
+
 def _soft_pos_weight(torch, category_counts: dict[str, int], vocab: list[str], total: int, *, cap: float, device: str):
     if not vocab:
         return None
@@ -448,6 +777,7 @@ def _train_one_epoch(
     rank: int = 0,
     world_size: int = 1,
     train_record_paths: Sequence[str | Path] | None = None,
+    training_cache_manifests: Sequence[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     batch_size = int(config.get("batch_size", 2048))
     feature_mode = str(stats["feature_mode"])
@@ -458,6 +788,61 @@ def _train_one_epoch(
     loss_sum = 0.0
     record_paths = list(train_record_paths or _record_paths_from_value(train_records))
     shard_by_path = len(record_paths) > 1
+    if training_cache_manifests:
+        for batch_idx, (x, mouse_y, cat_y, dx_y, dy_y, batch_rows) in enumerate(
+            _iter_training_cache_batches(
+                torch,
+                training_cache_manifests,
+                batch_size=batch_size,
+                device=device,
+                max_examples=config.get("max_train_examples"),
+                rank=rank,
+                world_size=world_size,
+                shard_by_path=shard_by_path,
+            )
+        ):
+            if world_size > 1 and not shard_by_path and (batch_idx % world_size) != rank:
+                continue
+            pred = model(x)
+            mouse_loss = torch.nn.functional.smooth_l1_loss(pred[:, :2], mouse_y)
+            category_end = 2 + len(category_vocab)
+            if category_vocab:
+                cat_loss = _categorical_loss(torch, pred[:, 2:category_end], cat_y, cat_pos_weight, config)
+            else:
+                cat_loss = torch.tensor(0.0, device=device)
+            if mouse_head_mode == "axis_softmax":
+                if dx_y is None or dy_y is None:
+                    raise ValueError("training cache is missing axis targets for mouse_head_mode=axis_softmax")
+                axis_count = len(mouse_axis_classes)
+                dx_logits = pred[:, category_end : category_end + axis_count]
+                dy_logits = pred[:, category_end + axis_count : category_end + (2 * axis_count)]
+                axis_loss = 0.5 * (
+                    torch.nn.functional.cross_entropy(dx_logits, dx_y)
+                    + torch.nn.functional.cross_entropy(dy_logits, dy_y)
+                )
+            else:
+                axis_loss = torch.tensor(0.0, device=device)
+            loss = (
+                float(config.get("mouse_regression_loss_weight", 1.0)) * mouse_loss
+                + float(config.get("categorical_loss_weight", 0.5)) * cat_loss
+                + float(config.get("mouse_axis_loss_weight", 1.0 if mouse_head_mode == "axis_softmax" else 0.0)) * axis_loss
+            )
+            opt.zero_grad(set_to_none=True)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), float(config.get("grad_clip", 1.0)))
+            opt.step()
+            loss_value = float(loss.detach().cpu())
+            losses.append(loss_value)
+            loss_sum += loss_value * batch_rows
+            batches += 1
+            examples += batch_rows
+        return {
+            "loss": sum(losses) / len(losses) if losses else None,
+            "loss_sum": loss_sum,
+            "batches": batches,
+            "examples": examples,
+            "training_cache": True,
+        }
     mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
     vocab_index = {token: idx for idx, token in enumerate(category_vocab)}
     axis_class_index = {label: idx for idx, label in enumerate(mouse_axis_classes)}
@@ -522,6 +907,7 @@ def _train_one_epoch(
         "loss_sum": loss_sum,
         "batches": batches,
         "examples": examples,
+        "training_cache": False,
     }
 
 
@@ -1280,6 +1666,27 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
     if mouse_head_mode not in {"regression", "axis_softmax"}:
         raise ValueError(f"unsupported mouse_head_mode: {mouse_head_mode}")
+    training_cache_manifests: list[dict[str, Any]] = []
+    if config.get("training_cache_dir"):
+        if dist["enabled"] and not dist["is_rank0"]:
+            _barrier(torch, dist)
+            training_cache_manifests = _load_training_cache_manifests(
+                train_record_paths,
+                stats=stats,
+                config=config,
+                category_vocab=category_vocab,
+                mouse_axis_classes=mouse_axis_classes,
+            )
+        else:
+            training_cache_manifests = _build_training_cache_manifests(
+                train_record_paths,
+                stats=stats,
+                config=config,
+                category_vocab=category_vocab,
+                mouse_axis_classes=mouse_axis_classes,
+            )
+            if dist["enabled"]:
+                _barrier(torch, dist)
     output_dim = 2 + len(category_vocab) + (2 * len(mouse_axis_classes) if mouse_head_mode == "axis_softmax" else 0)
     model = _build_model(
         torch,
@@ -1336,6 +1743,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
                 rank=int(dist["rank"]),
                 world_size=int(dist["world_size"]),
                 train_record_paths=train_record_paths,
+                training_cache_manifests=training_cache_manifests,
             )
         epoch_stats = _aggregate_epoch_stats(torch, epoch_stats, device=device, dist=dist)
         if dist["is_rank0"]:
@@ -1451,6 +1859,15 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             "world_size": int(dist["world_size"]),
             "backend": dist["backend"],
             "rank0_device": device,
+        },
+        "training_cache": {
+            "enabled": bool(training_cache_manifests),
+            "dir": str(config.get("training_cache_dir", "")),
+            "manifest_paths": [str(row.get("manifest_path")) for row in training_cache_manifests],
+            "rows": sum(int(row.get("rows", 0)) for row in training_cache_manifests),
+            "chunk_size": int(config.get("training_cache_chunk_size", config.get("batch_size", 4096) * 2))
+            if config.get("training_cache_dir")
+            else None,
         },
     }
     validate_named(metadata, "idm_checkpoint_metadata.schema.json")

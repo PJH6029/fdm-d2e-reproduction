@@ -14,7 +14,11 @@
   "summary_out": "outputs/fdm_streaming_d2e_full_compact/summary.json",
   "artifact_summary_out": "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json",
   "endpoints": "configs/eval/primary_endpoints.yaml",
-  "baseline_names": ["noop", "global_majority", "last_seen_train"],
+  "baseline_names": [
+    "noop",
+    "global_majority",
+    "last_seen_train"
+  ],
   "fdm_train_fraction": 0.75,
   "min_target_per_recording": 1,
   "torch_idm_config": {
@@ -45,6 +49,9 @@
     "mouse_axis_decode_mode": "expected",
     "mouse_axis_temperature": 1.0,
     "mouse_output_gain": 1.0,
-    "seed": 17
+    "seed": 17,
+    "training_cache_dir": "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache",
+    "training_cache_chunk_size": 8192,
+    "training_cache_num_workers": 8
   }
 }
