@@ -103,3 +103,22 @@ Diagnosis: the current active pod code assigns cache shard paths by `path_idx % 
 Local follow-up hardening changes the future/recovery default to deterministic `greedy_rows` cache-shard assignment. On the observed G004 cache manifest, expected row spread improves from `768,893` rows (`path_idx % world_size`) to `152,546` rows (`greedy_rows`). Evidence: `artifacts/fdm/g004_gpu_rank_imbalance_diagnosis.json`.
 
 Do not pull this hardening commit into the active pod while parent PID `263344` is still running. Use it only for future G004 recovery/restart, G005, or later training runs.
+
+## 2026-05-23 terminal completion
+
+G004 is now terminal and checkpointed complete in OMX.
+
+- The `bfe61db` 4×H200 FDM run exited successfully: `artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json` has `exit_code=0`.
+- The pod was then advanced to `3478af1` after the parent exited so the fixed finalizer could run.
+- Non-mutating finalization passed: `artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json` has `status=pass`, `g004_audit_status=pass`, and `g004_audit_error_count=0`.
+- Completion audit passed: `artifacts/fdm/g004_full_fdm_completion_audit.json` has `status=pass`, `error_count=0`.
+- Split statistics passed: `artifacts/eval/g004_split_statistical_comparisons_summary.json` has `status=pass`.
+- GPU monitor evidence is mirrored in `artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv`.
+- Raw train/target JSONLs, checkpoint, predictions, tensor cache, and large intermediate outputs remain on the MLXP PVC under `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
+
+OMX checkpoint:
+
+- `G004-d2e-only-fdm-4xh200` was checkpointed complete at `2026-05-23T04:00:41Z` with a fresh active aggregate `get_goal` snapshot.
+- The aggregate Codex goal remains active because `G005`, `G006`, `G008`, and `G009` are still pending.
+
+Claim boundary: this is D2E-only offline FDM training/evaluation evidence, not D2E+aux best-model evidence, live-game evidence, or final report/repro package completion.

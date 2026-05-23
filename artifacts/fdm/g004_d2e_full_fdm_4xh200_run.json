@@ -1,0 +1,61 @@
+{
+  "build_split_stats": true,
+  "config": "configs/model/fdm_streaming_d2e_full_compact.yaml",
+  "convergence_plateau_met": true,
+  "convergence_report_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json",
+  "exit_code": 0,
+  "expected_gpus": 4,
+  "fdm_labels": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+  "git_head": "bfe61db675870c8fe7862f2740609f13e6c71593",
+  "gpu_monitor_log": "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv",
+  "gpu_monitor_sha256": "c7ea00279c78e2db157be1e0bd856a34fb75fbcf6afa6207ee9a213ba50d70b3",
+  "gpu_monitor_status": {
+    "covers_expected_gpus": true,
+    "expected_gpus": 4,
+    "rows": 1296,
+    "unique_gpu_indices": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  "idm_predict_config": "configs/model/idm_streaming_d2e_full_compact_predict_fdm_train.yaml",
+  "log_path": "artifacts/fdm/g004_d2e_full_fdm_4xh200.log",
+  "metrics_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
+  "model": "streaming_fdm_d2e_full_compact",
+  "nproc_per_node": 4,
+  "num_training_examples": 19211006,
+  "pid_file": "outputs/cluster/g004_d2e_full_fdm_4xh200.pid",
+  "predictions_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+  "schema": "g004_fdm_4xh200_run.v1",
+  "split_stats_config": "configs/eval/g004_split_statistics.yaml",
+  "split_stats_outputs": [
+    {
+      "comparisons": 21,
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "split": "temporal",
+      "status": "pass"
+    },
+    {
+      "comparisons": 21,
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "split": "heldout_recording",
+      "status": "pass"
+    },
+    {
+      "comparisons": 21,
+      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "split": "heldout_game",
+      "status": "pass"
+    }
+  ],
+  "split_stats_status": "pass",
+  "split_stats_summary_exists": true,
+  "split_stats_summary_path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
+  "statistical_comparison_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json",
+  "summary_exists": true,
+  "summary_path": "outputs/fdm_streaming_d2e_full_compact/summary.json",
+  "target_examples": 16698646,
+  "wall_clock_seconds": 9717
+}

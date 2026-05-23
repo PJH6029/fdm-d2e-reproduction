@@ -37,7 +37,7 @@ Current `.omx/ultragoal/goals.json` status:
 - `G001-data-universe-audit` — complete.
 - `G002-split-leakage-contract` — complete.
 - `G003-d2e-only-idm` — complete and checkpointed in OMX.
-- `G004-d2e-only-fdm-4xh200` — pending in OMX; current MLXP relaunch is training from reusable split/cache evidence.
+- `G004-d2e-only-fdm-4xh200` — complete and checkpointed in OMX.
 - `G005-aux-data-best-model` — pending.
 - `G006-evaluation-failure-analysis` — pending.
 - `G007-runtime-sdk-adapter` — complete for the adapter-contract slice only.
@@ -46,19 +46,24 @@ Current `.omx/ultragoal/goals.json` status:
 
 Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 are all complete and final quality gates pass.
 
-## Current G004 MLXP run/restart state
+## Completed G004 MLXP run/restart state
 
-Latest known live run snapshot: 2026-05-23 10:16 KST.
+Terminal snapshot: 2026-05-23 13:00 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - Previous `d38a3b1` run failed after reusable split materialization; failure evidence is `artifacts/fdm/g004_ddp_runtime_failure_snapshot.json`.
-- Current pod checkout is `bfe61db`; parent PID `263344`; watcher PID `263368`.
-- Current relaunch reused the existing split summary/shards instead of rewriting materialization. Reusable shard evidence: `fdm_train_shards` 16 files / `400,301,959,913` bytes; `fdm_target_shards` 16 files / `347,089,780,692` bytes.
-- Current progress evidence: `artifacts/fdm/g004_bfe61db_relaunch_training_progress_snapshot.json`. At 2026-05-23T01:16:33Z, `streaming_stats.json`, a 2,369-file ~53GB train cache, and `train_history.json` existed; epoch 1 completed over `19,211,006` examples with validation composite score `0.15456648272454743`.
-- GPU-utilization diagnosis: `artifacts/fdm/g004_gpu_rank_imbalance_diagnosis.json` records that the active `bfe61db` run can idle GPU0 during epoch tails because cache shards are assigned by path modulo. Local/origin hardening after `d9375fa` uses deterministic `greedy_rows` cache-shard assignment for future/recovery runs. Do **not** pull new local commits into the active pod while parent PID `263344` is still running.
-- Claim boundary: this is progress evidence only. G004 remains incomplete until final checkpoint, full predictions, wrapper summary, `artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json` pass, `artifacts/fdm/g004_full_fdm_completion_audit.json` `status=pass`/`error_count=0`, and OMX checkpointing with a fresh `get_goal` snapshot. Do not call `update_goal complete` for G004 in aggregate mode.
+- The `bfe61db` relaunch reused existing split summary/shards instead of rewriting materialization. Reusable shard evidence: `fdm_train_shards` 16 files / `400,301,959,913` bytes; `fdm_target_shards` 16 files / `347,089,780,692` bytes.
+- Training/prediction completed successfully on 4×H200 and produced full target predictions. Pod run evidence: `artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json` has `exit_code=0`.
+- Terminal finalization evidence copied locally:
+  - `artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json` — `status=pass`.
+  - `artifacts/fdm/g004_full_fdm_completion_audit.json` — `status=pass`, `error_count=0`.
+  - `artifacts/eval/g004_split_statistical_comparisons_summary.json` — `status=pass`.
+  - `artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv` — 4×H200 monitor evidence.
+- Raw checkpoint, predictions, train/target JSONLs, caches, and large output files remain on the MLXP PVC under the pod repo path; only small audit/evidence artifacts are committed locally.
+- GPU-utilization diagnosis: `artifacts/fdm/g004_gpu_rank_imbalance_diagnosis.json` records that the completed `bfe61db` run could idle GPU0 during epoch tails because cache shards were assigned by path modulo. Local/origin hardening after `d9375fa` uses deterministic `greedy_rows` cache-shard assignment for future/recovery runs, including G005+ training.
+- Claim boundary: G004 is D2E-only offline FDM training/evaluation evidence. It does not prove D2E+aux best-model, G006 final failure analysis, G008 live-game control, or final G009 reproducibility package completion.
 
 Useful G004 monitor command:
 

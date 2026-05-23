@@ -26,12 +26,11 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
   - `G001-data-universe-audit`: full D2E-480p + D2E-Original universe manifest and storage/license report.
   - `G002-split-leakage-contract`: temporal, heldout-recording, and heldout-game split/leakage contract.
   - `G003-d2e-only-idm`: full-corpus D2E-only IDM train/eval, canonical/accel64 promotion, split stats, and completion audit checkpointed in OMX.
+  - `G004-d2e-only-fdm-4xh200`: full-corpus D2E-only FDM 4×H200 training/evaluation from G003 IDM pseudo-labels, finalization, split statistics, GPU monitor evidence, and completion audit checkpointed in OMX.
   - `G007-runtime-sdk-adapter`: reusable SDK/action decoder/safety adapter/latency logger/deterministic replay contract only; this is not G008 live-game success.
 - G008 live-suite protocol exists (`docs/live_open_game_suite.md`, `configs/harness/g008_live_open_game_suite.yaml`, `scripts/validate_live_game_suite.py`) and requires >=3 open-source graphical games, >=3 tasks, 5 seeds/task, video/replay/latency/failure logs, and statistical comparison; protocol/readiness evidence is not G008 completion.
 - Final completion audit now exists (`configs/eval/final_quality_gates.yaml`, `scripts/validate_final_quality_gates.py`, `artifacts/reproducibility/final_quality_gate_audit.json`) and must pass before aggregate goal completion; current expected status is fail while G003-G009 remain incomplete.
 - G006 evaluation readiness audit exists (`configs/eval/g006_evaluation_readiness.yaml`, `scripts/validate_g006_evaluation_readiness.py`, `artifacts/eval/g006_evaluation_readiness_audit.json`) and must pass before G006 checkpoint; current expected status is fail until final split-aware endpoint stats, failure analysis, and claim taxonomy exist.
-- Current active gate:
-  - `G004-d2e-only-fdm-4xh200`: D2E-only FDM 4×H200 run on the existing MLXP pod.
 - Pending gates:
   - `G005-aux-data-best-model`, `G006-evaluation-failure-analysis`, `G008-live-game-suite`, `G009-report-repro-package`.
 - D2E-only gates must finish before D2E+aux or runtime success claims. D2E+aux may become the primary/best final model, but D2E-only results/ablations remain mandatory and separately reported.
@@ -58,10 +57,9 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Current reservation/pod: `rsv-jeonghunpark-20260521-76e25a` / `prod-rsv-jeonghunpark-20260521-76e25a` in namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - G003 is complete in OMX; do not treat older G003 run/watcher notes as active blockers.
-- G004 run on pod checkout `d38a3b1` completed split materialization, then failed before stats/cache/DDP with `_distributed_runtime()` `timeout_seconds` `UnboundLocalError`; committed evidence: `artifacts/fdm/g004_ddp_runtime_failure_snapshot.json`.
-- The pod was reset to fixed commit `bfe61db` and relaunched. Current parent PID `263344`; watcher PID `263368`.
-- Relaunch reused `outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json` and shard paths instead of rematerializing. Training has begun: `artifacts/fdm/g004_bfe61db_relaunch_training_progress_snapshot.json` shows stats, a 2,369-file ~53GB cache, and epoch 1 train history over 19,211,006 examples. Continue monitoring until all epochs/checkpoint/prediction/finalization/audit pass.
-- GPU-utilization follow-up: `artifacts/fdm/g004_gpu_rank_imbalance_diagnosis.json` shows GPU0 can idle in the active `bfe61db` run because cache shards are assigned by path modulo. Local/origin hardening switches future/recovery cache assignment to deterministic `greedy_rows`; do not pull it into the pod until parent PID `263344` exits.
+- G004 is complete and checkpointed in OMX. Terminal evidence: `artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json` exit_code=0, `artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json` status=pass, `artifacts/fdm/g004_full_fdm_completion_audit.json` status=pass/error_count=0, `artifacts/eval/g004_split_statistical_comparisons_summary.json` status=pass, and `artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv`.
+- Raw G004 checkpoint/predictions/train-target JSONLs/caches remain on the MLXP PVC. Local git carries small audit/evidence artifacts and handoff notes only.
+- GPU-utilization follow-up: `artifacts/fdm/g004_gpu_rank_imbalance_diagnosis.json` shows GPU0 could idle in the completed `bfe61db` run because cache shards were assigned by path modulo. Local/origin hardening switches future/recovery cache assignment to deterministic `greedy_rows`; use it for G005 and later training runs.
 - G003 progress monitor exists (`scripts/monitor_g003_progress.py`, `docs/g003_progress_monitoring.md`) for non-mutating shard/PID/stale-progress summaries; monitor output is progress evidence only, not G003 completion.
 - G003 live health audit exists (`scripts/audit_g003_live_health.py`) for non-mutating parent/extractor/watcher/GPU-monitor process-topology summaries; use it for handoff/recovery evidence but not for completion claims.
 - Historical G003 accel64 process notes for parent PID `251593` are no longer current; keep them only as provenance for the completed G003 checkpoint. Do not block G004 on old G003 worker/PID state.

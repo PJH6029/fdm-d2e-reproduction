@@ -1,0 +1,1608 @@
+{
+  "schema": "streaming_fdm_train_summary.v1",
+  "checkpoint": {
+    "schema": "fdm_checkpoint_metadata.v1",
+    "model": "streaming_fdm_d2e_full_compact",
+    "label_source": "idm_pseudolabel",
+    "source_label_artifact": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+    "source_label_sha256": "0838b9dca1aed644a86b036e81e44f0e412b4e7d85e28f3deef9ad82b57c0a4c",
+    "source_idm_metadata": {
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "exists": true,
+      "sha256": "e433fc0477ec82b8297110001b9f44ba5719e3da9ffbded3d068771d800c479b",
+      "bytes": 20529
+    },
+    "source_idm_fingerprint": "bcc73497a77dbf34e4634d3324e038a236a8514bd4071ef878c3a742ca8fc034",
+    "config_fingerprint": "384280ebe412fd76443ac00729a5a069873f3a6f7888a2e3bc05753c3861acc5",
+    "config_path": "configs/model/fdm_streaming_d2e_full_compact.yaml",
+    "resolved_config_path": "outputs/fdm_streaming_d2e_full_compact/resolved_config.json",
+    "data_universe": {
+      "path": "artifacts/sources/d2e_full_data_universe_manifest.json",
+      "exists": true,
+      "sha256": "549cd16aa992bc76c3bea9f571100fe5cc721ca706e7d50f2c9e40fd2d21c8f8",
+      "bytes": 1477181
+    },
+    "data_universe_fingerprint": "a4d96c1b35a770a5ce426a3407af4fbd728ddac9a648cdb4746e2f827f803216",
+    "split_contract": {
+      "path": "artifacts/sources/d2e_full_split_contract.json",
+      "exists": true,
+      "sha256": "e64e90f3745108a2813d4d4f84ee69a08f4cb7e46923371983006c481dadde98",
+      "bytes": 466810
+    },
+    "split_contract_fingerprint": "a4d96c1b35a770a5ce426a3407af4fbd728ddac9a648cdb4746e2f827f803216",
+    "split_id": "a4d96c1b35a770a5ce426a3407af4fbd728ddac9a648cdb4746e2f827f803216",
+    "source_namespace": "d2e_full_corpus",
+    "source_ids": [
+      "d2e_480p",
+      "d2e_original"
+    ],
+    "resolution_tiers": [
+      "480p",
+      "original_fhd_qhd"
+    ],
+    "split_names": [
+      "train_core"
+    ],
+    "eval_split_tags": [],
+    "target_source_ids": [
+      "d2e_480p",
+      "d2e_original"
+    ],
+    "target_resolution_tiers": [
+      "480p",
+      "original_fhd_qhd"
+    ],
+    "target_split_names": [
+      "eval"
+    ],
+    "target_games": [
+      "Apex_Legends",
+      "Barony",
+      "Battlefield_6_Open_Beta",
+      "Brotato",
+      "Core_Keeper",
+      "Counter-Strike_2",
+      "Cyberpunk_2077",
+      "Dinkum",
+      "Eternal_Return",
+      "Euro_Truck_Simulator_2",
+      "Grand_Theft_Auto_V",
+      "Grounded",
+      "MapleStory_Worlds_Southperry",
+      "Medieval_Dynasty",
+      "Minecraft_1.21.8",
+      "Monster_Hunter_Wilds",
+      "OguForest",
+      "PEAK",
+      "PUBG",
+      "Raft",
+      "Rainbow_Six",
+      "Ready_Or_Not",
+      "Satisfactory",
+      "Skul",
+      "Slime_Rancher",
+      "Stardew_Valley",
+      "Super_Bunny_Man",
+      "VALORANT",
+      "Vampire_Survivors"
+    ],
+    "target_eval_split_tags": [
+      "heldout_game",
+      "heldout_recording",
+      "temporal"
+    ],
+    "predictions_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+    "num_training_examples": 19211006,
+    "oracle_ground_truth_control": false,
+    "records_path": "outputs/data/d2e_full_corpus/train_core.jsonl",
+    "train_records_path": "outputs/fdm_streaming_d2e_full_compact/fdm_train_pseudolabeled_records.jsonl",
+    "target_records_path": "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl",
+    "train_record_paths": [
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00000.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00001.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00002.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00003.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00004.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00005.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00006.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00007.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00008.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00009.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00010.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00011.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00012.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00013.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00014.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00015.jsonl"
+    ],
+    "target_record_paths": [
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00000.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00001.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00002.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00003.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00004.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00005.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00006.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00007.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00008.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00009.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00010.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00011.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00012.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00013.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00014.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00015.jsonl"
+    ],
+    "train_records_glob": "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_*.jsonl",
+    "target_records_glob": "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_*.jsonl",
+    "target_examples": 16698646,
+    "split_summary_path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+    "torch_checkpoint_metadata": {
+      "schema": "idm_checkpoint_metadata.v1",
+      "model": "streaming_fdm_d2e_full_compact",
+      "dataset_fingerprint": "2120e54698615ca4230b29ab2aa88d92b466510722c3fe20bf039361ca552082",
+      "config_fingerprint": "a19dad13cd1ea53610d0a9e31e6319388c07a37546763a08d1a8651b1e48874a",
+      "config_path": "",
+      "resolved_config_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/resolved_config.json",
+      "train_records": 19211006,
+      "target_records": 16698646,
+      "train_records_path": "outputs/fdm_streaming_d2e_full_compact/fdm_train_pseudolabeled_records.jsonl",
+      "target_records_path": "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl",
+      "data_universe": null,
+      "data_universe_fingerprint": null,
+      "split_contract": null,
+      "split_contract_fingerprint": null,
+      "split_id": "d2e_full_split_contract",
+      "source_namespace": "d2e_full_corpus",
+      "source_ids": [
+        "d2e_480p",
+        "d2e_original"
+      ],
+      "resolution_tiers": [
+        "480p",
+        "original_fhd_qhd"
+      ],
+      "target_source_ids": [
+        "d2e_480p",
+        "d2e_original"
+      ],
+      "target_resolution_tiers": [
+        "480p",
+        "original_fhd_qhd"
+      ],
+      "split_names": [
+        "train_core"
+      ],
+      "eval_split_tags": [],
+      "target_eval_split_tags": [
+        "heldout_game",
+        "heldout_recording",
+        "temporal"
+      ],
+      "pseudo_label_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/pseudolabels.jsonl",
+      "filtered_pseudo_label_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/pseudolabels.jsonl",
+      "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+      "metrics_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
+      "label_quality_report_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/label_quality_report.json",
+      "statistical_comparison_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json",
+      "convergence_report_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json",
+      "convergence_plateau_met": true,
+      "calibration": {
+        "mode": "global_threshold_streaming",
+        "category_threshold": 0.35,
+        "last_train_loss": 0.6913180771952429,
+        "prediction_fingerprint": "bca23fbfb303623fa9675ce8e6770e651562e006b948973b86703f511bce73d8"
+      },
+      "feature_mode": "summary_causal_compact_grid8_time_prior_action",
+      "input_dim": 504,
+      "categorical_vocab": [
+        "KEY_PRESS_100",
+        "KEY_PRESS_101",
+        "KEY_PRESS_102",
+        "KEY_PRESS_104",
+        "KEY_PRESS_109",
+        "KEY_PRESS_110",
+        "KEY_PRESS_112",
+        "KEY_PRESS_113",
+        "KEY_PRESS_114",
+        "KEY_PRESS_115",
+        "KEY_PRESS_116",
+        "KEY_PRESS_117",
+        "KEY_PRESS_118",
+        "KEY_PRESS_119",
+        "KEY_PRESS_13",
+        "KEY_PRESS_160",
+        "KEY_PRESS_161",
+        "KEY_PRESS_162",
+        "KEY_PRESS_164",
+        "KEY_PRESS_174",
+        "KEY_PRESS_175",
+        "KEY_PRESS_186",
+        "KEY_PRESS_187",
+        "KEY_PRESS_188",
+        "KEY_PRESS_189",
+        "KEY_PRESS_190",
+        "KEY_PRESS_191",
+        "KEY_PRESS_192",
+        "KEY_PRESS_20",
+        "KEY_PRESS_21",
+        "KEY_PRESS_219",
+        "KEY_PRESS_220",
+        "KEY_PRESS_221",
+        "KEY_PRESS_222",
+        "KEY_PRESS_25",
+        "KEY_PRESS_27",
+        "KEY_PRESS_32",
+        "KEY_PRESS_33",
+        "KEY_PRESS_34",
+        "KEY_PRESS_35",
+        "KEY_PRESS_37",
+        "KEY_PRESS_38",
+        "KEY_PRESS_39",
+        "KEY_PRESS_40",
+        "KEY_PRESS_48",
+        "KEY_PRESS_49",
+        "KEY_PRESS_50",
+        "KEY_PRESS_51",
+        "KEY_PRESS_52",
+        "KEY_PRESS_53",
+        "KEY_PRESS_54",
+        "KEY_PRESS_55",
+        "KEY_PRESS_56",
+        "KEY_PRESS_57",
+        "KEY_PRESS_65",
+        "KEY_PRESS_66",
+        "KEY_PRESS_67",
+        "KEY_PRESS_68",
+        "KEY_PRESS_69",
+        "KEY_PRESS_70",
+        "KEY_PRESS_71",
+        "KEY_PRESS_72",
+        "KEY_PRESS_73",
+        "KEY_PRESS_74",
+        "KEY_PRESS_75",
+        "KEY_PRESS_76",
+        "KEY_PRESS_77",
+        "KEY_PRESS_78",
+        "KEY_PRESS_79",
+        "KEY_PRESS_8",
+        "KEY_PRESS_80",
+        "KEY_PRESS_81",
+        "KEY_PRESS_82",
+        "KEY_PRESS_83",
+        "KEY_PRESS_84",
+        "KEY_PRESS_85",
+        "KEY_PRESS_86",
+        "KEY_PRESS_87",
+        "KEY_PRESS_88",
+        "KEY_PRESS_89",
+        "KEY_PRESS_9",
+        "KEY_PRESS_90",
+        "KEY_PRESS_91",
+        "KEY_PRESS_96",
+        "KEY_PRESS_97",
+        "KEY_PRESS_98",
+        "KEY_RELEASE_100",
+        "KEY_RELEASE_101",
+        "KEY_RELEASE_102",
+        "KEY_RELEASE_104",
+        "KEY_RELEASE_109",
+        "KEY_RELEASE_110",
+        "KEY_RELEASE_112",
+        "KEY_RELEASE_113",
+        "KEY_RELEASE_114",
+        "KEY_RELEASE_115",
+        "KEY_RELEASE_116",
+        "KEY_RELEASE_117",
+        "KEY_RELEASE_118",
+        "KEY_RELEASE_119",
+        "KEY_RELEASE_13",
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_161",
+        "KEY_RELEASE_162",
+        "KEY_RELEASE_164",
+        "KEY_RELEASE_174",
+        "KEY_RELEASE_175",
+        "KEY_RELEASE_186",
+        "KEY_RELEASE_187",
+        "KEY_RELEASE_188",
+        "KEY_RELEASE_189",
+        "KEY_RELEASE_190",
+        "KEY_RELEASE_191",
+        "KEY_RELEASE_192",
+        "KEY_RELEASE_20",
+        "KEY_RELEASE_21",
+        "KEY_RELEASE_219",
+        "KEY_RELEASE_220",
+        "KEY_RELEASE_221",
+        "KEY_RELEASE_222",
+        "KEY_RELEASE_25",
+        "KEY_RELEASE_27",
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_33",
+        "KEY_RELEASE_34",
+        "KEY_RELEASE_35",
+        "KEY_RELEASE_37",
+        "KEY_RELEASE_38",
+        "KEY_RELEASE_39",
+        "KEY_RELEASE_40",
+        "KEY_RELEASE_48",
+        "KEY_RELEASE_49",
+        "KEY_RELEASE_50",
+        "KEY_RELEASE_51",
+        "KEY_RELEASE_52",
+        "KEY_RELEASE_53",
+        "KEY_RELEASE_54",
+        "KEY_RELEASE_55",
+        "KEY_RELEASE_56",
+        "KEY_RELEASE_57",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_66",
+        "KEY_RELEASE_67",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_69",
+        "KEY_RELEASE_70",
+        "KEY_RELEASE_71",
+        "KEY_RELEASE_72",
+        "KEY_RELEASE_73",
+        "KEY_RELEASE_74",
+        "KEY_RELEASE_75",
+        "KEY_RELEASE_76",
+        "KEY_RELEASE_77",
+        "KEY_RELEASE_78",
+        "KEY_RELEASE_79",
+        "KEY_RELEASE_8",
+        "KEY_RELEASE_80",
+        "KEY_RELEASE_81",
+        "KEY_RELEASE_82",
+        "KEY_RELEASE_83",
+        "KEY_RELEASE_84",
+        "KEY_RELEASE_85",
+        "KEY_RELEASE_86",
+        "KEY_RELEASE_87",
+        "KEY_RELEASE_88",
+        "KEY_RELEASE_89",
+        "KEY_RELEASE_9",
+        "KEY_RELEASE_90",
+        "KEY_RELEASE_91",
+        "KEY_RELEASE_96",
+        "KEY_RELEASE_97",
+        "KEY_RELEASE_98",
+        "MOUSE_LEFT_DOWN",
+        "MOUSE_LEFT_UP",
+        "MOUSE_MIDDLE_DOWN",
+        "MOUSE_MIDDLE_UP",
+        "MOUSE_RIGHT_DOWN",
+        "MOUSE_RIGHT_UP",
+        "MOUSE_X1_DOWN",
+        "MOUSE_X1_UP"
+      ],
+      "mouse_head_mode": "axis_softmax",
+      "mouse_axis_classes": [
+        "N5",
+        "N4",
+        "N3",
+        "N2",
+        "N1",
+        "Z0",
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5"
+      ],
+      "distributed": {
+        "enabled": true,
+        "world_size": 4,
+        "backend": "nccl",
+        "rank0_device": "cuda:0"
+      },
+      "training_cache": {
+        "enabled": true,
+        "dir": "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache",
+        "manifest_paths": [
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00000-8acde8c0b8b2abf063a7.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00001-234ff8b48d1391887dd3.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00002-50a3cdaff5581932b040.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00003-a2d8e1541d0dca15ee69.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00004-5de8e9cf039c8d27ec34.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00005-9107569aea523558ac8b.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00006-d694e479468ff10d71e8.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00007-887c6cb9462b14173db9.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00008-af33cfbbdce4c2ae35fb.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00009-94cc246066befa5293b4.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00010-027dca3a9ea7be907259.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00011-b677de637719b1c39b36.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00012-9a9191dfb7e56d36ab65.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00013-a4091bfd4d7a9f38c66e.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00014-5256211e74f54269dac5.manifest.json",
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache/shard_00015-13f98d4efb15409312be.manifest.json"
+        ],
+        "rows": 19211006,
+        "chunk_size": 8192
+      }
+    },
+    "statistical_comparison_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json",
+    "metrics_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
+    "convergence_report_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json",
+    "convergence_plateau_met": true,
+    "dataset_fingerprint": "7fc2cc28f611dc14a39a73eae7e7587d3635650185e0325ccb7de02a3c2b287f"
+  },
+  "metrics": {
+    "schema": "metrics.v1",
+    "stage": "fdm_eval",
+    "num_examples": 16698646,
+    "keyboard": {
+      "status": "computed",
+      "accuracy": 0.002659524222253231,
+      "num_examples": 3017081
+    },
+    "mouse_button": {
+      "status": "computed",
+      "accuracy": 0.05210611341005652,
+      "num_examples": 759527,
+      "predicted_examples": 5442338,
+      "exact_true_positive_examples": 39576,
+      "false_positive_examples": 5402762,
+      "false_negative_examples": 719951,
+      "precision": 0.00727187469796988,
+      "recall": 0.05210611341005652,
+      "f1": 0.012762612536712747,
+      "no_button_examples": 15939119,
+      "no_button_false_positive_examples": 5012697,
+      "no_button_false_positive_rate": 0.31449021743297106
+    },
+    "mouse_move": {
+      "status": "computed",
+      "pearson": 0.34817355680270057,
+      "scale_ratio": 1.6277335085623454,
+      "num_values": 14661338
+    },
+    "failure_count": 16698490
+  },
+  "statistical_comparison": {
+    "schema": "stat_comparison.v1",
+    "reference_baseline": "noop",
+    "correction": "holm_bonferroni",
+    "cluster_key": "recording_id",
+    "comparisons": [
+      {
+        "model": "streaming_fdm_d2e_full_compact",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.004684713102497696,
+        "ci": [
+          0.0035741592358548547,
+          0.0058306256346324775
+        ],
+        "p_value": 0.0,
+        "num_clusters": 896,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 896,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.013036830071795255,
+        "ci": [
+          0.010730303358088191,
+          0.015475935932778438
+        ],
+        "p_value": 0.0,
+        "num_clusters": 896,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "streaming_fdm_d2e_full_compact",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.06875564150423025,
+        "ci": [
+          0.0651871215910011,
+          0.07240894364248011
+        ],
+        "p_value": 0.0,
+        "num_clusters": 845,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 845,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.003932745540490976,
+        "ci": [
+          0.0016829163503534034,
+          0.0066370373129542625
+        ],
+        "p_value": 0.0,
+        "num_clusters": 845,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "streaming_fdm_d2e_full_compact",
+        "reference": "noop",
+        "endpoint": "mouse_button_precision",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_precision",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_precision",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "streaming_fdm_d2e_full_compact",
+        "reference": "noop",
+        "endpoint": "mouse_button_f1",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.011959955567010757,
+        "ci": [
+          0.011204827089496572,
+          0.012753261829473363
+        ],
+        "p_value": 0.0,
+        "num_clusters": 845,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_f1",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 845,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_f1",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.00026358581174125087,
+        "ci": [
+          9.15956085344761e-05,
+          0.00047618452510222916
+        ],
+        "p_value": 0.0,
+        "num_clusters": 845,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "streaming_fdm_d2e_full_compact",
+        "reference": "noop",
+        "endpoint": "no_button_false_positive_rate",
+        "direction": "lower",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": -0.307482348570733,
+        "ci": [
+          -0.3162563402712215,
+          -0.2988933042278863
+        ],
+        "p_value": 1.0,
+        "num_clusters": 918,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "no_button_false_positive_rate",
+        "direction": "lower",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 918,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "no_button_false_positive_rate",
+        "direction": "lower",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": -0.013071895424836602,
+        "ci": [
+          -0.020697167755991286,
+          -0.006535947712418301
+        ],
+        "p_value": 1.0,
+        "num_clusters": 918,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "streaming_fdm_d2e_full_compact",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.3318418826785722,
+        "ci": [
+          0.32282363792132684,
+          0.34093259015432686
+        ],
+        "p_value": 0.0,
+        "num_clusters": 537,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.007337436068439578,
+        "ci": [
+          0.0008316210339342706,
+          0.015598983555464758
+        ],
+        "p_value": 0.0125,
+        "num_clusters": 537,
+        "p_adjusted_holm": 0.1125,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "streaming_fdm_d2e_full_compact",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": -0.03146808982509053,
+        "ci": [
+          -0.05392994026964626,
+          -0.008400828806540583
+        ],
+        "p_value": 1.0,
+        "num_clusters": 880,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": 0.010546252852558391,
+        "ci": [
+          -0.001942222928994708,
+          0.02284229702706586
+        ],
+        "p_value": 0.052,
+        "num_clusters": 880,
+        "p_adjusted_holm": 0.416,
+        "reject_holm_0_05": false
+      }
+    ]
+  },
+  "convergence_report": {
+    "schema": "streaming_convergence_report.v1",
+    "score_mode": "composite_primary",
+    "direction": "higher",
+    "eval_interval_epochs": 1,
+    "patience": 3,
+    "min_relative_improvement": 0.01,
+    "plateau_met": true,
+    "num_validation_checkpoints": 6,
+    "recent_relative_improvements": [
+      -0.02771465043665761,
+      -0.10598958423150283,
+      -0.004530733328254983
+    ],
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 0.8501569711240883,
+        "validation_score": {
+          "mode": "composite_primary",
+          "value": 0.15456648272454743,
+          "components": {
+            "keyboard_accuracy": 0.0003447786318372645,
+            "mouse_button_f1": 0.014543470740080368,
+            "mouse_button_accuracy": 0.13202077545597293,
+            "mouse_move_pearson": 0.44881119880172465
+          }
+        },
+        "validation_examples": 262144
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.7310070104246197,
+        "validation_score": {
+          "mode": "composite_primary",
+          "value": 0.16200300274293702,
+          "components": {
+            "keyboard_accuracy": 0.0028596345346502527,
+            "mouse_button_f1": 0.007408758073339027,
+            "mouse_button_accuracy": 0.04662398840439667,
+            "mouse_move_pearson": 0.4757406156208218
+          }
+        },
+        "validation_examples": 262144
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.7121042077683276,
+        "validation_score": {
+          "mode": "composite_primary",
+          "value": 0.17133087013552742,
+          "components": {
+            "keyboard_accuracy": 0.00020281095990427322,
+            "mouse_button_f1": 0.007868561770980522,
+            "mouse_button_accuracy": 0.05145548979345332,
+            "mouse_move_pearson": 0.5059212376756975
+          }
+        },
+        "validation_examples": 262144
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.7039599932847829,
+        "validation_score": {
+          "mode": "composite_primary",
+          "value": 0.1665824949607129,
+          "components": {
+            "keyboard_accuracy": 0.00628713975703247,
+            "mouse_button_f1": 0.01216829768337525,
+            "mouse_button_accuracy": 0.0885372629544631,
+            "mouse_move_pearson": 0.481292047441731
+          }
+        },
+        "validation_examples": 262144
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.6965871328590297,
+        "validation_score": {
+          "mode": "composite_primary",
+          "value": 0.14892648557958052,
+          "components": {
+            "keyboard_accuracy": 0.0006692761676841016,
+            "mouse_button_f1": 0.012075484552236265,
+            "mouse_button_accuracy": 0.08563836212102911,
+            "mouse_move_pearson": 0.43403469601882116
+          }
+        },
+        "validation_examples": 262144
+      },
+      {
+        "epoch": 6,
+        "train_loss": 0.6913180771952429,
+        "validation_score": {
+          "mode": "composite_primary",
+          "value": 0.14825173938790523,
+          "components": {
+            "keyboard_accuracy": 0.0010546169915022208,
+            "mouse_button_f1": 0.010232339826331847,
+            "mouse_button_accuracy": 0.052663365140717476,
+            "mouse_move_pearson": 0.43346826134588157
+          }
+        },
+        "validation_examples": 262144
+      }
+    ],
+    "report_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json"
+  },
+  "split_summary": {
+    "schema": "streaming_fdm_split_summary.v1",
+    "labels_path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+    "labels_sha256": "0838b9dca1aed644a86b036e81e44f0e412b4e7d85e28f3deef9ad82b57c0a4c",
+    "records_path": "outputs/data/d2e_full_corpus/train_core.jsonl",
+    "target_records_source_path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+    "train_records_path": "outputs/fdm_streaming_d2e_full_compact/fdm_train_pseudolabeled_records.jsonl",
+    "target_records_path": "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl",
+    "train_record_paths": [
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00000.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00001.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00002.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00003.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00004.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00005.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00006.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00007.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00008.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00009.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00010.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00011.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00012.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00013.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00014.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00015.jsonl"
+    ],
+    "target_record_paths": [
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00000.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00001.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00002.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00003.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00004.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00005.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00006.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00007.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00008.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00009.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00010.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00011.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00012.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00013.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00014.jsonl",
+      "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00015.jsonl"
+    ],
+    "train_records_glob": "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_*.jsonl",
+    "target_records_glob": "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_*.jsonl",
+    "output_shards": {
+      "enabled": true,
+      "num_shards": 16,
+      "train_num_shards": 16,
+      "target_num_shards": 16,
+      "train_record_paths": [
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00000.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00001.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00002.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00003.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00004.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00005.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00006.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00007.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00008.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00009.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00010.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00011.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00012.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00013.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00014.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00015.jsonl"
+      ],
+      "target_record_paths": [
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00000.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00001.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00002.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00003.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00004.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00005.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00006.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00007.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00008.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00009.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00010.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00011.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00012.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00013.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00014.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00015.jsonl"
+      ],
+      "shard_strategy": "parallel_part_symlinks"
+    },
+    "parallel_materialization": {
+      "enabled": true,
+      "workers": 16,
+      "defer_canonical_materialization": true,
+      "train_prediction_summary_path": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json",
+      "target_records_glob": "outputs/data/d2e_full_corpus_shards/shard_*/target_all_eval.jsonl",
+      "target_source_record_paths": [
+        "outputs/data/d2e_full_corpus_shards/shard_0/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_1/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_10/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_11/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_12/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_13/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_14/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_15/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_16/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_17/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_18/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_19/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_2/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_20/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_21/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_22/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_23/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_24/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_25/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_26/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_27/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_28/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_29/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_3/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_30/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_31/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_32/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_33/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_34/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_35/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_36/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_37/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_38/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_39/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_4/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_40/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_41/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_42/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_43/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_44/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_45/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_46/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_47/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_48/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_49/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_5/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_50/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_51/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_52/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_53/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_54/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_55/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_56/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_57/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_58/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_59/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_6/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_60/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_61/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_62/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_63/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_7/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_8/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards/shard_9/target_all_eval.jsonl"
+      ],
+      "train_parts": [
+        {
+          "part_index": 0,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00000.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_0/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_1/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_10/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_11/train_core.jsonl"
+          ],
+          "rows": 1121684
+        },
+        {
+          "part_index": 1,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00001.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_12/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_13/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_14/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_15/train_core.jsonl"
+          ],
+          "rows": 1633458
+        },
+        {
+          "part_index": 2,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00002.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_16/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_17/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_18/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_19/train_core.jsonl"
+          ],
+          "rows": 1698060
+        },
+        {
+          "part_index": 3,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00003.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_2/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_20/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_21/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_22/train_core.jsonl"
+          ],
+          "rows": 1117045
+        },
+        {
+          "part_index": 4,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00004.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_23/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_24/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_25/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_26/train_core.jsonl"
+          ],
+          "rows": 1201218
+        },
+        {
+          "part_index": 5,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00005.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_27/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_28/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_29/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_3/train_core.jsonl"
+          ],
+          "rows": 857970
+        },
+        {
+          "part_index": 6,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00006.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_30/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_31/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_32/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_33/train_core.jsonl"
+          ],
+          "rows": 1597891
+        },
+        {
+          "part_index": 7,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00007.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_34/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_35/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_36/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_37/train_core.jsonl"
+          ],
+          "rows": 1144425
+        },
+        {
+          "part_index": 8,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00008.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_38/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_39/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_4/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_40/train_core.jsonl"
+          ],
+          "rows": 1104112
+        },
+        {
+          "part_index": 9,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00009.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_41/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_42/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_43/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_44/train_core.jsonl"
+          ],
+          "rows": 1351897
+        },
+        {
+          "part_index": 10,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00010.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_45/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_46/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_47/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_48/train_core.jsonl"
+          ],
+          "rows": 1078306
+        },
+        {
+          "part_index": 11,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00011.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_49/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_5/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_50/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_51/train_core.jsonl"
+          ],
+          "rows": 1204409
+        },
+        {
+          "part_index": 12,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00012.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_52/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_53/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_54/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_55/train_core.jsonl"
+          ],
+          "rows": 988859
+        },
+        {
+          "part_index": 13,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00013.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_56/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_57/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_58/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_59/train_core.jsonl"
+          ],
+          "rows": 1170339
+        },
+        {
+          "part_index": 14,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00014.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_6/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_60/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_61/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_62/train_core.jsonl"
+          ],
+          "rows": 810509
+        },
+        {
+          "part_index": 15,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/train/part_00015.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_63/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_7/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_8/train_core.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_9/train_core.jsonl"
+          ],
+          "rows": 1130824
+        }
+      ],
+      "target_parts": [
+        {
+          "part_index": 0,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00000.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_0/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_1/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_10/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_11/target_all_eval.jsonl"
+          ],
+          "rows": 1089390
+        },
+        {
+          "part_index": 1,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00001.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_12/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_13/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_14/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_15/target_all_eval.jsonl"
+          ],
+          "rows": 1018173
+        },
+        {
+          "part_index": 2,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00002.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_16/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_17/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_18/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_19/target_all_eval.jsonl"
+          ],
+          "rows": 898692
+        },
+        {
+          "part_index": 3,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00003.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_2/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_20/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_21/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_22/target_all_eval.jsonl"
+          ],
+          "rows": 986551
+        },
+        {
+          "part_index": 4,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00004.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_23/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_24/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_25/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_26/target_all_eval.jsonl"
+          ],
+          "rows": 681790
+        },
+        {
+          "part_index": 5,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00005.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_27/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_28/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_29/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_3/target_all_eval.jsonl"
+          ],
+          "rows": 907924
+        },
+        {
+          "part_index": 6,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00006.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_30/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_31/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_32/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_33/target_all_eval.jsonl"
+          ],
+          "rows": 769740
+        },
+        {
+          "part_index": 7,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00007.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_34/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_35/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_36/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_37/target_all_eval.jsonl"
+          ],
+          "rows": 898715
+        },
+        {
+          "part_index": 8,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00008.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_38/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_39/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_4/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_40/target_all_eval.jsonl"
+          ],
+          "rows": 888529
+        },
+        {
+          "part_index": 9,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00009.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_41/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_42/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_43/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_44/target_all_eval.jsonl"
+          ],
+          "rows": 1015028
+        },
+        {
+          "part_index": 10,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00010.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_45/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_46/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_47/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_48/target_all_eval.jsonl"
+          ],
+          "rows": 1519495
+        },
+        {
+          "part_index": 11,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00011.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_49/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_5/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_50/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_51/target_all_eval.jsonl"
+          ],
+          "rows": 861540
+        },
+        {
+          "part_index": 12,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00012.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_52/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_53/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_54/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_55/target_all_eval.jsonl"
+          ],
+          "rows": 1186839
+        },
+        {
+          "part_index": 13,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00013.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_56/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_57/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_58/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_59/target_all_eval.jsonl"
+          ],
+          "rows": 1381352
+        },
+        {
+          "part_index": 14,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00014.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_6/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_60/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_61/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_62/target_all_eval.jsonl"
+          ],
+          "rows": 1246917
+        },
+        {
+          "part_index": 15,
+          "path": "outputs/fdm_streaming_d2e_full_compact/materialization_parts/target/part_00015.jsonl",
+          "record_paths": [
+            "outputs/data/d2e_full_corpus_shards/shard_63/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_7/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_8/target_all_eval.jsonl",
+            "outputs/data/d2e_full_corpus_shards/shard_9/target_all_eval.jsonl"
+          ],
+          "rows": 1347971
+        }
+      ],
+      "recording_shard_assumption": true,
+      "claim_boundary": "Parallel materialization uses recording-sharded D2E extraction parts; prior-action state is local to each recording shard."
+    },
+    "canonical_materialization": {
+      "deferred": false,
+      "status": "complete",
+      "train_records_path": "outputs/fdm_streaming_d2e_full_compact/fdm_train_pseudolabeled_records.jsonl",
+      "target_records_path": "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl",
+      "train_source_paths": [
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00000.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00001.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00002.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00003.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00004.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00005.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00006.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00007.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00008.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00009.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00010.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00011.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00012.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00013.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00014.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00015.jsonl"
+      ],
+      "target_source_paths": [
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00000.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00001.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00002.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00003.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00004.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00005.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00006.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00007.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00008.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00009.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00010.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00011.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00012.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00013.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00014.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00015.jsonl"
+      ],
+      "claim_boundary": "Canonical monoliths are audit/repro artifacts; sharded paths are the training and streaming-eval inputs.",
+      "train_rows": 19211006,
+      "target_rows": 16698646,
+      "train_built": true,
+      "target_built": true
+    },
+    "fdm_train_fraction": 0.75,
+    "min_target_per_recording": 1,
+    "counts": {
+      "pairs": 19211006,
+      "train": 19211006,
+      "target": 16698646,
+      "recordings": 642,
+      "games": {
+        "Apex_Legends": 2510223,
+        "Brotato": 591420,
+        "Cyberpunk_2077": 948920,
+        "Euro_Truck_Simulator_2": 1935761,
+        "Grounded": 1016246,
+        "Monster_Hunter_Wilds": 687025,
+        "Stardew_Valley": 968780,
+        "Raft": 971150,
+        "Dinkum": 895053,
+        "Ready_Or_Not": 923596,
+        "Core_Keeper": 650201,
+        "MapleStory_Worlds_Southperry": 842281,
+        "Super_Bunny_Man": 76851,
+        "PEAK": 125027,
+        "VALORANT": 26148,
+        "Satisfactory": 1013706,
+        "Medieval_Dynasty": 1084394,
+        "Counter-Strike_2": 823481,
+        "PUBG": 282291,
+        "Minecraft_1.21.8": 778676,
+        "Grand_Theft_Auto_V": 895786,
+        "Slime_Rancher": 944937,
+        "Battlefield_6_Open_Beta": 219053
+      },
+      "target_games": {
+        "Apex_Legends": 998189,
+        "Brotato": 234355,
+        "Cyberpunk_2077": 705108,
+        "Euro_Truck_Simulator_2": 759887,
+        "Grounded": 284693,
+        "Monster_Hunter_Wilds": 381982,
+        "Rainbow_Six": 1875264,
+        "Stardew_Valley": 1063404,
+        "Battlefield_6_Open_Beta": 95955,
+        "Eternal_Return": 2383693,
+        "Raft": 456287,
+        "Dinkum": 518355,
+        "Core_Keeper": 606270,
+        "Ready_Or_Not": 448663,
+        "Vampire_Survivors": 398915,
+        "MapleStory_Worlds_Southperry": 740962,
+        "OguForest": 121248,
+        "Super_Bunny_Man": 21818,
+        "PEAK": 118595,
+        "VALORANT": 6538,
+        "Satisfactory": 272469,
+        "Medieval_Dynasty": 467571,
+        "Counter-Strike_2": 504920,
+        "PUBG": 382693,
+        "Minecraft_1.21.8": 460142,
+        "Grand_Theft_Auto_V": 487021,
+        "Barony": 1137036,
+        "Skul": 282766,
+        "Slime_Rancher": 483847
+      },
+      "source_ids": {
+        "d2e_480p": 10314784,
+        "d2e_original": 8896222
+      },
+      "resolution_tiers": {
+        "480p": 10314784,
+        "original_fhd_qhd": 8896222
+      },
+      "split_names": {
+        "train_core": 19211006
+      },
+      "eval_split_tags": {},
+      "target_source_ids": {
+        "d2e_480p": 8765872,
+        "d2e_original": 7932774
+      },
+      "target_resolution_tiers": {
+        "480p": 8765872,
+        "original_fhd_qhd": 7932774
+      },
+      "target_split_names": {
+        "eval": 16698646
+      },
+      "target_eval_split_tags": {
+        "temporal": 7181939,
+        "heldout_game": 6198922,
+        "heldout_recording": 7477199
+      },
+      "mode": "explicit_target"
+    },
+    "prior_action_context": {
+      "train_source": "idm_pseudolabel_previous_teacher_forced",
+      "target_source": "d2e_ground_truth_previous_teacher_forced",
+      "first_action_tokens": [
+        "NOOP"
+      ],
+      "claim_boundary": "Offline FDM evaluation is teacher-forced on previous actions only; closed-loop stability remains a separate G008 live-suite requirement."
+    },
+    "dataset_fingerprint": "7fc2cc28f611dc14a39a73eae7e7587d3635650185e0325ccb7de02a3c2b287f"
+  },
+  "torch_summary_path": "outputs/fdm_streaming_d2e_full_compact/torch_train_summary.json",
+  "predictions_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl"
+}

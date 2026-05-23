@@ -3,9 +3,8 @@
   "status": "fail",
   "goals_path": ".omx/ultragoal/goals.json",
   "goal_status_counts": {
-    "complete": 3,
-    "in_progress": 1,
-    "pending": 5
+    "complete": 5,
+    "pending": 4
   },
   "goal_reports": [
     {
@@ -79,7 +78,7 @@
     {
       "goal_id": "G003-d2e-only-idm",
       "title": "D2E-only IDM full-corpus training",
-      "actual_status": "in_progress",
+      "actual_status": "complete",
       "required_status": "complete",
       "status": "fail",
       "artifacts": [
@@ -169,15 +168,15 @@
         },
         {
           "path": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 239136,
+          "sha256": "f06c58e28df57b005a5914528a7b4425a0c42b8dff8923e73a3671be014cb057"
         },
         {
           "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
           "exists": true,
-          "bytes": 2506,
-          "sha256": "3c18933b2eb3f5f54d146e4376d3feea2ba084f97ff7d56c348115a8b59ccb58"
+          "bytes": 2824,
+          "sha256": "983d70ac2eeed1b1f6d8148ce7081894f277b740a8a740827e00aeb0c86294ee"
         },
         {
           "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
@@ -205,25 +204,18 @@
         },
         {
           "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 1140,
+          "sha256": "becd51d914cac880c506070968f0766f44e6d5717c62a89a4ab4d5a0e3c5239c"
         },
         {
           "path": "artifacts/idm/g003_full_idm_completion_audit.json",
           "exists": true,
-          "bytes": 9409,
-          "sha256": "be36bb2ba2db1f7b4057fe2a786cac9cf71a5a28d2656b4ad7d90f10fc7f2789"
+          "bytes": 5803,
+          "sha256": "7795caf40a57e5fa34bbc6a2beb69daed9139f8da0bcf7d63a375dabbef79be2"
         }
       ],
       "findings": [
-        {
-          "severity": "error",
-          "code": "goal_status_not_complete",
-          "goal_id": "G003-d2e-only-idm",
-          "expected_status": "complete",
-          "actual_status": "in_progress"
-        },
         {
           "severity": "error",
           "code": "missing_required_artifact",
@@ -312,12 +304,6 @@
           "severity": "error",
           "code": "missing_required_artifact",
           "goal_id": "G003-d2e-only-idm",
-          "path": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
           "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"
         },
         {
@@ -337,12 +323,6 @@
           "code": "missing_required_artifact",
           "goal_id": "G003-d2e-only-idm",
           "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json"
         },
         {
           "severity": "error",
@@ -376,22 +356,6 @@
         },
         {
           "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
-          "json_path": "exit_code",
-          "expected": 0,
-          "actual": 2
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
-          "json_path": "gpu_monitor_status.covers_expected_gpus",
-          "expected": true,
-          "actual": false
-        },
-        {
-          "severity": "error",
           "code": "json_assertion_file_missing",
           "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
           "json_path": "selected_recording_variants"
@@ -411,12 +375,6 @@
         {
           "severity": "error",
           "code": "json_assertion_file_missing",
-          "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json",
-          "json_path": "status"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
           "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
           "json_path": "split"
         },
@@ -431,43 +389,13 @@
           "code": "json_assertion_file_missing",
           "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
           "json_path": "split"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/idm/g003_full_idm_completion_audit.json",
-          "json_path": "status",
-          "expected": "pass",
-          "actual": "fail"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/idm/g003_full_idm_completion_audit.json",
-          "json_path": "decode_counts_by_source",
-          "expected": {
-            "d2e_480p": 459,
-            "d2e_original": 459
-          },
-          "actual": {}
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/idm/g003_full_idm_completion_audit.json",
-          "json_path": "decode_counts_by_resolution_tier",
-          "expected": {
-            "480p": 459,
-            "original_fhd_qhd": 459
-          },
-          "actual": {}
         }
       ]
     },
     {
       "goal_id": "G004-d2e-only-fdm-4xh200",
       "title": "D2E-only FDM + 4xH200 scaling",
-      "actual_status": "pending",
+      "actual_status": "complete",
       "required_status": "complete",
       "status": "fail",
       "artifacts": [
@@ -479,39 +407,39 @@
         },
         {
           "path": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 19866,
+          "sha256": "1e6667e67c416d6c6acbd193597e71513b161f5b858718e060260776eb7c6dbd"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 15862,
+          "sha256": "9c3b6525864c139f3f33ce022f323aee62963fe78d74eed48db58baf9466cd16"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/resolved_config.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 3221,
+          "sha256": "c714dea6faf7412616426cca38002073504ac1138fe6deadf52f8ae4c5d69700"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/summary.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 67105,
+          "sha256": "574a664f2d33c21e7c7dd94a2f55760ffcc3186c420b0a414afbc90fc31744fc"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 34584,
+          "sha256": "f93877d263863394523c8a3eb90aeeabe21578ca87a7bb9b6a5e3a651a5db170"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/torch_train_summary.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 229566,
+          "sha256": "e7247f5093690512999df2d6845e77aa4f96628aec09b2193971459ca1557825"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
@@ -527,39 +455,39 @@
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 894,
+          "sha256": "5d3fcd7b600c5f4703c901981281f5f2ea761a4710c58b956533f07f7ce4b407"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 8958,
+          "sha256": "466f55aacdf0fb6c37021952b97edc674d253ca02aebf38058793c0cca6437b8"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 3274,
+          "sha256": "5848d863453b898476e0ab8815622c005ed6bfe7f1771d476a2c02dc859723ab"
         },
         {
           "path": "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 67105,
+          "sha256": "574a664f2d33c21e7c7dd94a2f55760ffcc3186c420b0a414afbc90fc31744fc"
         },
         {
           "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 2462,
+          "sha256": "9d3fc29b3cb5fcbdefe9abf1192e34b361a37063d0e4d78f008cb838a02c49b3"
         },
         {
           "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 103851,
+          "sha256": "c7ea00279c78e2db157be1e0bd856a34fb75fbcf6afa6207ee9a213ba50d70b3"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
@@ -581,66 +509,23 @@
         },
         {
           "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 877,
+          "sha256": "94c8383ff37e2ef7c903bdee43df8e2b99c3cd91e3e70dd2846aaa8c5e88e9e8"
         },
         {
           "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
           "exists": true,
-          "bytes": 14059,
-          "sha256": "e0bec9eec0b0cfbe1e52210c4a0910c5d9bff8ea6ed16d220d32eec4f01020e8"
+          "bytes": 6058,
+          "sha256": "fc4f922fa0daca8bc345bfb630d8f6ad1ea594b5ea8655c187f15845935f311e"
         }
       ],
       "findings": [
         {
           "severity": "error",
-          "code": "goal_status_not_complete",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "expected_status": "complete",
-          "actual_status": "pending"
-        },
-        {
-          "severity": "error",
           "code": "missing_required_artifact",
           "goal_id": "G004-d2e-only-fdm-4xh200",
           "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/resolved_config.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/summary.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/torch_train_summary.json"
         },
         {
           "severity": "error",
@@ -656,37 +541,31 @@
         },
         {
           "severity": "error",
-          "code": "missing_required_artifact",
+          "code": "artifact_not_in_package_manifest",
           "goal_id": "G004-d2e-only-fdm-4xh200",
           "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json"
         },
         {
           "severity": "error",
-          "code": "missing_required_artifact",
+          "code": "artifact_not_in_package_manifest",
           "goal_id": "G004-d2e-only-fdm-4xh200",
           "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json"
         },
         {
           "severity": "error",
-          "code": "missing_required_artifact",
+          "code": "artifact_not_in_package_manifest",
           "goal_id": "G004-d2e-only-fdm-4xh200",
           "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json"
         },
         {
           "severity": "error",
-          "code": "missing_required_artifact",
+          "code": "artifact_not_in_package_manifest",
           "goal_id": "G004-d2e-only-fdm-4xh200",
           "path": "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json"
         },
         {
           "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
+          "code": "artifact_not_in_package_manifest",
           "goal_id": "G004-d2e-only-fdm-4xh200",
           "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv"
         },
@@ -707,152 +586,6 @@
           "code": "missing_required_artifact",
           "goal_id": "G004-d2e-only-fdm-4xh200",
           "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "label_source"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "oracle_ground_truth_control"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "source_namespace"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "source_idm_metadata.exists"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "source_idm_metadata.path"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "data_universe.exists"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "split_contract.exists"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "source_ids"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "target_source_ids"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "resolution_tiers"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "target_resolution_tiers"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "torch_checkpoint_metadata.distributed.world_size"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "torch_checkpoint_metadata.feature_mode"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
-          "json_path": "counts.mode"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
-          "json_path": "records_path"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
-          "json_path": "target_records_source_path"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
-          "json_path": "prior_action_context.train_source"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
-          "json_path": "prior_action_context.target_source"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
-          "json_path": "exit_code"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
-          "json_path": "nproc_per_node"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
-          "json_path": "gpu_monitor_status.covers_expected_gpus"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
-          "json_path": "status"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
-          "json_path": "status",
-          "expected": "pass",
-          "actual": "fail"
         },
         {
           "severity": "error",
@@ -895,9 +628,9 @@
         },
         {
           "path": "artifacts/aux/g005_aux_namespace_manifest.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 329970,
+          "sha256": "62bb015d2b69e9a526a13c837b334aba0fbea969787a3e30f0df592150ea7456"
         },
         {
           "path": "artifacts/aux/d2e_aux_ablation_summary.json",
@@ -924,25 +657,7 @@
           "severity": "error",
           "code": "missing_required_artifact",
           "goal_id": "G005-aux-data-best-model",
-          "path": "artifacts/aux/g005_aux_namespace_manifest.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G005-aux-data-best-model",
           "path": "artifacts/aux/d2e_aux_ablation_summary.json"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/aux/g005_aux_namespace_manifest.json",
-          "json_path": "completion_ready"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/aux/g005_aux_namespace_manifest.json",
-          "json_path": "d2e_eval_manifests.same_as_d2e_only"
         },
         {
           "severity": "error",
@@ -1192,8 +907,8 @@
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 83944,
-          "sha256": "a3cfa3203f72e6a2c356bce9723d954d17aacc9992f5e2264c99896815d4e16c"
+          "bytes": 89980,
+          "sha256": "da8da17e11414c133eba343705f8ca2d5c7818b01473d17d7a82be1de1b076c3"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
@@ -1216,19 +931,12 @@
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 83944,
-    "sha256": "a3cfa3203f72e6a2c356bce9723d954d17aacc9992f5e2264c99896815d4e16c"
+    "bytes": 89980,
+    "sha256": "da8da17e11414c133eba343705f8ca2d5c7818b01473d17d7a82be1de1b076c3"
   },
   "claim_boundary_audit_status": "pass",
   "live_suite_validation_status": null,
   "findings": [
-    {
-      "severity": "error",
-      "code": "goal_status_not_complete",
-      "goal_id": "G003-d2e-only-idm",
-      "expected_status": "complete",
-      "actual_status": "in_progress"
-    },
     {
       "severity": "error",
       "code": "missing_required_artifact",
@@ -1317,12 +1025,6 @@
       "severity": "error",
       "code": "missing_required_artifact",
       "goal_id": "G003-d2e-only-idm",
-      "path": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
       "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"
     },
     {
@@ -1342,12 +1044,6 @@
       "code": "missing_required_artifact",
       "goal_id": "G003-d2e-only-idm",
       "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json"
     },
     {
       "severity": "error",
@@ -1381,22 +1077,6 @@
     },
     {
       "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
-      "json_path": "exit_code",
-      "expected": 0,
-      "actual": 2
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_train_run.json",
-      "json_path": "gpu_monitor_status.covers_expected_gpus",
-      "expected": true,
-      "actual": false
-    },
-    {
-      "severity": "error",
       "code": "json_assertion_file_missing",
       "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
       "json_path": "selected_recording_variants"
@@ -1412,12 +1092,6 @@
       "code": "json_assertion_file_missing",
       "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
       "json_path": "failures"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json",
-      "json_path": "status"
     },
     {
       "severity": "error",
@@ -1439,82 +1113,9 @@
     },
     {
       "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "fail"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
-      "json_path": "decode_counts_by_source",
-      "expected": {
-        "d2e_480p": 459,
-        "d2e_original": 459
-      },
-      "actual": {}
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
-      "json_path": "decode_counts_by_resolution_tier",
-      "expected": {
-        "480p": 459,
-        "original_fhd_qhd": 459
-      },
-      "actual": {}
-    },
-    {
-      "severity": "error",
-      "code": "goal_status_not_complete",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "expected_status": "complete",
-      "actual_status": "pending"
-    },
-    {
-      "severity": "error",
       "code": "missing_required_artifact",
       "goal_id": "G004-d2e-only-fdm-4xh200",
       "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/resolved_config.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/summary.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/torch_train_summary.json"
     },
     {
       "severity": "error",
@@ -1530,37 +1131,31 @@
     },
     {
       "severity": "error",
-      "code": "missing_required_artifact",
+      "code": "artifact_not_in_package_manifest",
       "goal_id": "G004-d2e-only-fdm-4xh200",
       "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json"
     },
     {
       "severity": "error",
-      "code": "missing_required_artifact",
+      "code": "artifact_not_in_package_manifest",
       "goal_id": "G004-d2e-only-fdm-4xh200",
       "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json"
     },
     {
       "severity": "error",
-      "code": "missing_required_artifact",
+      "code": "artifact_not_in_package_manifest",
       "goal_id": "G004-d2e-only-fdm-4xh200",
       "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json"
     },
     {
       "severity": "error",
-      "code": "missing_required_artifact",
+      "code": "artifact_not_in_package_manifest",
       "goal_id": "G004-d2e-only-fdm-4xh200",
       "path": "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json"
     },
     {
       "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
+      "code": "artifact_not_in_package_manifest",
       "goal_id": "G004-d2e-only-fdm-4xh200",
       "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv"
     },
@@ -1581,152 +1176,6 @@
       "code": "missing_required_artifact",
       "goal_id": "G004-d2e-only-fdm-4xh200",
       "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "label_source"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "oracle_ground_truth_control"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "source_namespace"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "source_idm_metadata.exists"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "source_idm_metadata.path"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "data_universe.exists"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "split_contract.exists"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "source_ids"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "target_source_ids"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "resolution_tiers"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "target_resolution_tiers"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "torch_checkpoint_metadata.distributed.world_size"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "torch_checkpoint_metadata.feature_mode"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
-      "json_path": "counts.mode"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
-      "json_path": "records_path"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
-      "json_path": "target_records_source_path"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
-      "json_path": "prior_action_context.train_source"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
-      "json_path": "prior_action_context.target_source"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
-      "json_path": "exit_code"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
-      "json_path": "nproc_per_node"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json",
-      "json_path": "gpu_monitor_status.covers_expected_gpus"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
-      "json_path": "status"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "fail"
     },
     {
       "severity": "error",
@@ -1757,25 +1206,7 @@
       "severity": "error",
       "code": "missing_required_artifact",
       "goal_id": "G005-aux-data-best-model",
-      "path": "artifacts/aux/g005_aux_namespace_manifest.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G005-aux-data-best-model",
       "path": "artifacts/aux/d2e_aux_ablation_summary.json"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/aux/g005_aux_namespace_manifest.json",
-      "json_path": "completion_ready"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/aux/g005_aux_namespace_manifest.json",
-      "json_path": "d2e_eval_manifests.same_as_d2e_only"
     },
     {
       "severity": "error",
@@ -1884,8 +1315,6 @@
       "severity": "error",
       "code": "not_all_ultragoal_stories_complete",
       "goal_ids": [
-        "G003-d2e-only-idm",
-        "G004-d2e-only-fdm-4xh200",
         "G005-aux-data-best-model",
         "G006-evaluation-failure-analysis",
         "G008-live-game-suite",
@@ -1896,8 +1325,19 @@
       "severity": "error",
       "code": "missing_live_suite_evidence_validation",
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
+    },
+    {
+      "severity": "error",
+      "code": "configured_artifacts_missing_from_manifest",
+      "paths": [
+        "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json",
+        "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv",
+        "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json",
+        "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
+        "outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json"
+      ]
     }
   ],
-  "error_count": 105,
+  "error_count": 62,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

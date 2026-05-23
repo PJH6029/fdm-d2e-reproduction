@@ -16,6 +16,8 @@ Treat sustained 4×H200 GPU idleness as a blocker/risk, not as harmless backgrou
 - Do not restart or kill an active long run blindly. First capture a progress snapshot, determine whether the current phase is expected CPU/IO or an unintended bottleneck, and preserve recoverable artifacts.
 - Commit or otherwise persist utilization evidence for major milestones: GPU monitor summaries, progress snapshots, bottleneck diagnosis, and optimization changes.
 
-## Current G004 implication
+## G004 result and forward implication
 
-For `G004-d2e-only-fdm-4xh200`, continue monitoring the `bfe61db` relaunch until all epochs, checkpointing, prediction, finalization, and audit pass. Rank-0-only coordination/evaluation may cause temporary imbalance, but sustained all-GPU 0% during DDP training or prediction should trigger diagnosis and throughput hardening.
+`G004-d2e-only-fdm-4xh200` is now complete and checkpointed in OMX. Its evidence includes 4×H200 monitor logs and a rank-imbalance diagnosis showing that path-modulo cache shard assignment could idle GPU0 near epoch tails. The repo default has been hardened to deterministic `greedy_rows` cache-shard assignment for future/recovery runs.
+
+For `G005` and later GPU work, keep this rule active: rank-local imbalance or sustained all-GPU 0% during DDP training/inference/prediction should trigger immediate diagnosis and throughput hardening. Expected CPU/IO-only phases are allowed only when labeled and bounded.
