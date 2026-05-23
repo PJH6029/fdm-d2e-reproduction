@@ -18,6 +18,9 @@ VALIDATE_G005="${VALIDATE_G005:-1}"
 MAX_TARGET_EXAMPLES="${MAX_TARGET_EXAMPLES:-}"
 SKIP_PREDICTION="${SKIP_PREDICTION:-0}"
 PAPER_MAX_ROWS="${PAPER_MAX_ROWS:-$MAX_TARGET_EXAMPLES}"
+EPOCHS_OVERRIDE="${EPOCHS_OVERRIDE:-}"
+BATCH_SIZE_OVERRIDE="${BATCH_SIZE_OVERRIDE:-}"
+EVAL_BATCH_SIZE_OVERRIDE="${EVAL_BATCH_SIZE_OVERRIDE:-}"
 RUNTIME_CONFIG="${RUNTIME_CONFIG:-outputs/cluster/${MODEL_SLUG}_runtime_config.yaml}"
 RUNTIME_PAPER_TARGET_CONFIG="${RUNTIME_PAPER_TARGET_CONFIG:-outputs/cluster/${MODEL_SLUG}_runtime_paper_target.yaml}"
 
@@ -63,9 +66,9 @@ set +e
   echo "nproc_per_node=$NPROC_PER_NODE"
   echo "gpu_monitor_log=$GPU_MONITOR_LOG"
   RUN_CONFIG="$CONFIG"
-  if [[ -n "$MAX_TARGET_EXAMPLES" || "$SKIP_PREDICTION" != "0" ]]; then
+  if [[ -n "$MAX_TARGET_EXAMPLES" || "$SKIP_PREDICTION" != "0" || -n "$EPOCHS_OVERRIDE" || -n "$BATCH_SIZE_OVERRIDE" || -n "$EVAL_BATCH_SIZE_OVERRIDE" ]]; then
     RUN_CONFIG="$RUNTIME_CONFIG"
-    uv run python - "$CONFIG" "$RUN_CONFIG" "$MAX_TARGET_EXAMPLES" "$SKIP_PREDICTION" <<'PY'
+    uv run python - "$CONFIG" "$RUN_CONFIG" "$MAX_TARGET_EXAMPLES" "$SKIP_PREDICTION" "$EPOCHS_OVERRIDE" "$BATCH_SIZE_OVERRIDE" "$EVAL_BATCH_SIZE_OVERRIDE" <<'PY'
 from __future__ import annotations
 import json
 import sys
@@ -75,16 +78,28 @@ src = Path(sys.argv[1])
 dst = Path(sys.argv[2])
 max_target = sys.argv[3]
 skip_prediction = sys.argv[4] != "0"
+epochs_override = sys.argv[5]
+batch_size_override = sys.argv[6]
+eval_batch_size_override = sys.argv[7]
 config = json.loads(src.read_text(encoding="utf-8"))
 config["source_config_path"] = str(src)
 config["runtime_overrides"] = {
     "max_target_examples": int(max_target) if max_target else None,
     "skip_prediction": skip_prediction,
+    "epochs": int(epochs_override) if epochs_override else None,
+    "batch_size": int(batch_size_override) if batch_size_override else None,
+    "eval_batch_size": int(eval_batch_size_override) if eval_batch_size_override else None,
 }
 if max_target:
     config["max_target_examples"] = int(max_target)
 if skip_prediction:
     config["skip_prediction"] = True
+if epochs_override:
+    config["epochs"] = int(epochs_override)
+if batch_size_override:
+    config["batch_size"] = int(batch_size_override)
+if eval_batch_size_override:
+    config["eval_batch_size"] = int(eval_batch_size_override)
 dst.parent.mkdir(parents=True, exist_ok=True)
 dst.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
