@@ -38,7 +38,7 @@ def _extract_value(line: str, key: str) -> Any:
     while start < len(line) and line[start].isspace():
         start += 1
     try:
-        value, _end = _JSON_DECODER.raw_decode(line[start:])
+        value, _end = _JSON_DECODER.raw_decode(line, start)
     except json.JSONDecodeError:
         return None
     return value
