@@ -41,7 +41,7 @@ Current `.omx/ultragoal/goals.json` status:
 - `G005-aux-data-best-model` — complete and checkpointed in OMX.
 - `G006-evaluation-failure-analysis` — complete and checkpointed in OMX.
 - `G007-runtime-sdk-adapter` — complete for the adapter-contract slice only.
-- `G008-live-game-suite` — pending.
+- `G008-live-game-suite` — complete and checkpointed in OMX.
 - `G009-report-repro-package` — pending.
 
 Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 are all complete and final quality gates pass.
@@ -373,6 +373,23 @@ Do **not** modify or rely on completed `G007-runtime-sdk-adapter` evidence unles
 ## G008 completion gate
 
 Do **not** checkpoint `G008-live-game-suite` complete until `scripts/validate_g008_live_suite_completion.py` reports `status=pass` in `artifacts/harness/g008_live_suite_completion_audit.json`. This audit requires completed D2E-only training prerequisites, G007 runtime-adapter evidence, trained checkpoint metadata, live evidence validation `quality_gate.status=pass`, statistical comparison evidence, and hashed video/replay/latency/failure artifacts. Protocol readiness alone never satisfies G008.
+
+Current terminal G008 evidence: `G008-live-game-suite` is complete and
+checkpointed in OMX at commit `0cbcb8e`. The MLXP pod ran
+`xvfb-run -a uv run python scripts/run_g008_repo_live_suite.py` with live
+`xdotool` X11 input over three repo-local open-source Tk graphical mini-games
+and five seeds each. Terminal evidence:
+
+- `artifacts/harness/g008_repo_live_suite/run_summary.json` — `status=pass`, `episodes=15`.
+- `artifacts/harness/g008_live_open_game_suite_evidence_validation.json` — `quality_gate.status=pass`, `findings_count=0`.
+- `artifacts/harness/g008_live_suite_completion_audit.json` — `status=pass`, `error_count=0`.
+- `artifacts/harness/g008_live_open_game_suite_finalization_summary.json` — `status=pass`, `g008_audit_status=pass`.
+- `outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt` — trained D2E-only FDM checkpoint copied locally for runtime hash evidence.
+
+Claim boundary: this is live open-source repo-local graphical-game control via
+X11/xdotool, with one trained-FDM checkpoint forward pass per live step plus a
+small visual goal adapter for the out-of-distribution mini-games. It is not live
+commercial-game control and not FDM-1 parity.
 
 Latest G008 finalization helper: after collecting explicit live evidence, run
 `uv run python scripts/finalize_g008_live_suite.py --evidence artifacts/harness/<run>/live_suite_evidence.json`.
