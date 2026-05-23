@@ -1,7 +1,7 @@
 AI SLOP CLEANUP REPORT
 ======================
 
-Scope: G009 final packaging changes in commit `6c9c59a` plus this final gate report: `src/fdm_d2e/reporting/quality_gates.py`, `scripts/build_external_artifact_manifest.py`, `scripts/finalize_g009_report_package.py`, `scripts/build_repro_package_manifest.py`, `configs/eval/final_quality_gates.yaml`, `configs/eval/g009_completion.yaml`, `tests/test_final_quality_gates.py`, final docs, and generated reproducibility artifacts.
+Scope: G009 final packaging changes through the final cleanup/code-review gate: `src/fdm_d2e/reporting/quality_gates.py`, `scripts/build_external_artifact_manifest.py`, `scripts/finalize_g009_report_package.py`, `scripts/build_repro_package_manifest.py`, `configs/eval/final_quality_gates.yaml`, `configs/eval/g009_completion.yaml`, `tests/test_final_quality_gates.py`, final docs, and generated reproducibility artifacts.
 
 Behavior Lock: Pre-cleaner verification was already green: `uv run python scripts/finalize_g009_report_package.py`; `uv run python scripts/validate_final_quality_gates.py`; `uv run python scripts/validate_g009_completion.py`; `uv run pytest -q` => 328 passed.
 
@@ -25,7 +25,9 @@ Quality Gates:
 - Static/security scan: PASS for targeted fallback/slop grep; no secrets or kubeconfigs added.
 
 Changed Files:
-- No code changed during this cleaner pass; this report records the mandatory bounded cleanup review.
+- `scripts/build_repro_package_manifest.py` / `tests/test_final_quality_gates.py` - added final code-review and quality-gate artifacts to package coverage.
+- `artifacts/reproducibility/final_code_review.md` and `artifacts/reproducibility/g009_final_quality_gate.json` - recorded final review/gate evidence.
+- No behavior-changing production code changed during this cleaner pass.
 
 Fallback Review:
 - Findings: none requiring code changes.

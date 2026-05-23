@@ -219,6 +219,8 @@ def test_repro_manifest_covers_external_and_nested_runtime_artifacts():
     assert '"outputs/fdm_streaming_d2e_full_compact/torch_model/*"' in text
     assert '"artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor*"' in text
     assert '"artifacts/harness/g008_repo_live_suite/**/*"' in text
+    assert '"artifacts/reproducibility/final_code_review.md"' in text
+    assert '"artifacts/reproducibility/g009_final_quality_gate.json"' in text
 
 
 def test_final_quality_config_does_not_require_self_referential_g009_artifacts():

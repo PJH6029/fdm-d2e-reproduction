@@ -5,7 +5,7 @@
   "claim_audit_status": "pass",
   "final_quality_status": "pass",
   "final_quality_error_count": 0,
-  "package_manifest_entry_count": 549,
+  "package_manifest_entry_count": 551,
   "g009_audit_status": "pass",
   "g009_audit_error_count": 0,
   "actions": [
@@ -24,7 +24,7 @@
     {
       "name": "package_manifest_bootstrap",
       "output": "artifacts/reproducibility/package_manifest.json",
-      "entry_count": 549
+      "entry_count": 551
     },
     {
       "name": "final_quality_gate_audit",
@@ -35,13 +35,13 @@
     {
       "name": "g009_completion_audit_pre_final_manifest",
       "output": "artifacts/reproducibility/g009_completion_audit.json",
-      "status": "pass",
-      "error_count": 0
+      "status": "fail",
+      "error_count": 1
     },
     {
       "name": "package_manifest_final",
       "output": "artifacts/reproducibility/package_manifest.json",
-      "entry_count": 549
+      "entry_count": 551
     },
     {
       "name": "g009_completion_audit",

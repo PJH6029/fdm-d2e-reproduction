@@ -1,0 +1,24 @@
+{
+  "schema": "omx_ultragoal_final_quality_gate.v1",
+  "goal_id": "G009-report-repro-package",
+  "aiSlopCleaner": {
+    "status": "passed",
+    "evidence": "artifacts/reproducibility/final_cleanup_review.md"
+  },
+  "verification": {
+    "status": "passed",
+    "commands": [
+      "uv run python -m py_compile src/fdm_d2e/reporting/quality_gates.py scripts/build_external_artifact_manifest.py scripts/finalize_g009_report_package.py scripts/build_repro_package_manifest.py",
+      "uv run python scripts/finalize_g009_report_package.py",
+      "uv run python scripts/validate_final_quality_gates.py",
+      "uv run python scripts/validate_g009_completion.py",
+      "uv run pytest -q"
+    ],
+    "evidence": "finalizer status=pass, final quality status=pass, G009 audit status=pass, full pytest 329 passed"
+  },
+  "codeReview": {
+    "recommendation": "APPROVE",
+    "architectStatus": "CLEAR",
+    "evidence": "artifacts/reproducibility/final_code_review.md"
+  }
+}

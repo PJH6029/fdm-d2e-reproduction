@@ -316,6 +316,8 @@ DEFAULT_PATTERNS = [
     "artifacts/reproducibility/g009_completion_audit.json",
     "artifacts/reproducibility/g009_finalization_summary*.json",
     "artifacts/reproducibility/final_cleanup_review.md",
+    "artifacts/reproducibility/final_code_review.md",
+    "artifacts/reproducibility/g009_final_quality_gate.json",
 ]
 
 
