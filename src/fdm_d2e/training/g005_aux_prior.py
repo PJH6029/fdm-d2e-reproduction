@@ -3,8 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import shutil
 import time
 from collections import Counter
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
@@ -12,7 +14,7 @@ from fdm_d2e.config import load_config
 from fdm_d2e.eval.split_statistics import _baseline_stats_from_config, _baseline_tokens, _ensure_metric as _ensure_split_metric, _streaming_comparisons
 from fdm_d2e.eval.statistics import cluster_id
 from fdm_d2e.io_utils import sha256_file, stable_hash_json, write_json
-from fdm_d2e.training.streaming_idm import StreamingActionMetrics
+from fdm_d2e.training.streaming_idm import StreamingActionMetrics, _merge_metric_state, _metric_from_state, _metric_state
 
 
 MOUSE_BUTTON_PREFIXES = ("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")
@@ -224,8 +226,6 @@ def _link_or_copy(src: Path, dst: Path) -> dict[str, Any]:
     if dst.exists() or dst.is_symlink():
         return {"path": str(dst), "status": "exists", "target": str(src)}
     try:
-        relative = Path("../" * len(dst.parent.relative_to(dst.parents[0]).parts))  # defensive fallback below
-        del relative
         dst.symlink_to(src)
         return {"path": str(dst), "status": "symlink", "target": str(src)}
     except Exception:
@@ -235,56 +235,119 @@ def _link_or_copy(src: Path, dst: Path) -> dict[str, Any]:
         return {"path": str(dst), "status": "copied", "target": str(src)}
 
 
-def build_aux_prior_predictions(
-    *,
-    root: str | Path,
-    aux_training: dict[str, Any],
-    d2e_predictions_path: str | Path,
-    d2e_target_paths: Sequence[str | Path],
-    output_predictions_path: str | Path,
-    output_target_records_path: str | Path,
-    max_rows: int | None = None,
-    max_button_stride: int = 4,
-    min_aux_attack_rate: float = 0.02,
-    split_tags: Sequence[str] | None = None,
-    endpoints_config: dict[str, Any] | None = None,
-    baseline_names: Sequence[str] | None = None,
-    train_stats: dict[str, Any] | None = None,
-    model_name: str = "g005_aux_action_prior_d2e_aux_best",
-    cluster_key: str = "recording_id",
-) -> dict[str, Any]:
-    root_path = Path(root)
-    source_pred_path = _path(root_path, d2e_predictions_path)
-    target_paths = _target_paths(root_path, d2e_target_paths, "")
-    out_pred = _path(root_path, output_predictions_path)
-    out_target = _path(root_path, output_target_records_path)
-    out_pred.parent.mkdir(parents=True, exist_ok=True)
-    pred_rate = _prediction_button_rate(source_pred_path, max_rows=max_rows)
-    attack_rate = _minecraft_attack_rate(aux_training)
-    stride = _button_stride(
-        d2e_button_rate=pred_rate.get("button_prediction_rate"),
-        aux_attack_rate=attack_rate,
-        max_stride=max_button_stride,
-        min_aux_rate=min_aux_attack_rate,
-    )
+def _concat_files(paths: Sequence[Path], dst: Path) -> dict[str, Any]:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists() or dst.is_symlink():
+        return {"path": str(dst), "status": "exists", "sources": [str(path) for path in paths]}
+    with dst.open("wb") as out_handle:
+        for path in paths:
+            with path.open("rb") as in_handle:
+                shutil.copyfileobj(in_handle, out_handle, length=16 * 1024 * 1024)
+    return {"path": str(dst), "status": "concatenated", "sources": [str(path) for path in paths]}
+
+
+def _write_target_prefix(target_paths: Sequence[Path], dst: Path, max_rows: int) -> dict[str, Any]:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    rows = 0
+    with dst.open("w", encoding="utf-8") as out_handle:
+        for row in _iter_jsonl_paths(target_paths):
+            out_handle.write(json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n")
+            rows += 1
+            if rows >= max_rows:
+                break
+    return {"path": str(dst), "status": "truncated", "rows": rows, "sources": [str(path) for path in target_paths]}
+
+
+def _button_rate_from_metrics(metrics: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(metrics, dict):
+        return None
+    mouse_button = metrics.get("mouse_button") if isinstance(metrics.get("mouse_button"), dict) else {}
+    predicted = mouse_button.get("predicted_examples")
+    total = metrics.get("num_examples")
+    try:
+        predicted_i = int(predicted)
+        total_i = int(total)
+    except (TypeError, ValueError):
+        return None
+    if total_i <= 0:
+        return None
+    return {
+        "rows": total_i,
+        "button_predictions": predicted_i,
+        "button_prediction_rate": predicted_i / total_i,
+        "source": "metrics_payload",
+    }
+
+
+def _prediction_source_paths(root: Path, primary_path: str | Path, shard_paths: Sequence[str | Path] | None) -> list[Path]:
+    if shard_paths:
+        return [_path(root, item) for item in shard_paths]
+    return [_path(root, primary_path)]
+
+
+def _empty_split_metric_states(
+    split_tags: Sequence[str],
+    model_name: str,
+    baseline_names: Sequence[str],
+) -> dict[str, dict[str, dict[str, dict[str, Any]]]]:
+    return {split: {name: {} for name in [model_name, *baseline_names]} for split in split_tags}
+
+
+def _merge_nested_metric_states(
+    left: dict[str, dict[str, dict[str, dict[str, Any]]]],
+    right: dict[str, dict[str, dict[str, dict[str, Any]]]],
+) -> dict[str, dict[str, dict[str, dict[str, Any]]]]:
+    for split, by_name in right.items():
+        split_state = left.setdefault(split, {})
+        for name, by_cluster in by_name.items():
+            name_state = split_state.setdefault(name, {})
+            for cluster, state in by_cluster.items():
+                name_state[cluster] = _merge_metric_state(name_state.get(cluster), state)
+    return left
+
+
+def _metrics_from_nested_states(
+    state: dict[str, dict[str, dict[str, dict[str, Any]]]]
+) -> dict[str, dict[str, dict[str, StreamingActionMetrics]]]:
+    return {
+        split: {
+            name: {cluster: _metric_from_state(metric_state) for cluster, metric_state in by_cluster.items()}
+            for name, by_cluster in by_name.items()
+        }
+        for split, by_name in state.items()
+    }
+
+
+def _process_aux_prediction_pair(args: dict[str, Any]) -> dict[str, Any]:
+    pred_path = Path(args["pred_path"])
+    target_path = Path(args["target_path"])
+    out_part = Path(args["out_part"])
+    out_part.parent.mkdir(parents=True, exist_ok=True)
+    stride = int(args["stride"])
+    split_tags = [str(tag) for tag in args.get("split_tags", [])]
+    baseline_names = [str(name) for name in args.get("baseline_names", [])]
+    train_stats = dict(args.get("train_stats", {}))
+    model_name = str(args["model_name"])
+    cluster_key = str(args.get("cluster_key", "recording_id"))
+    index = int(args["index"])
 
     metrics = StreamingActionMetrics()
     source_metrics = StreamingActionMetrics()
-    split_tags = [str(tag) for tag in (split_tags or [])]
-    baseline_names = [str(name) for name in (baseline_names or [])]
-    train_stats = train_stats or {}
-    split_metrics: dict[str, dict[str, dict[str, StreamingActionMetrics]]] = {
+    split_metrics = {
         split: {name: {} for name in [model_name, *baseline_names]} for split in split_tags
     }
     split_counts = {split: 0 for split in split_tags}
     rows = 0
     changed = 0
     button_dropped = 0
-    with out_pred.open("w", encoding="utf-8") as pred_out:
-        for pred, gt in zip(_iter_jsonl(source_pred_path), _iter_jsonl_paths(target_paths), strict=True):
+    with out_part.open("w", encoding="utf-8") as pred_out:
+        for pred, gt in zip(_iter_jsonl(pred_path), _iter_jsonl(target_path), strict=True):
             rows += 1
             if str(pred.get("sequence_id")) != str(gt.get("sequence_id")):
-                raise ValueError(f"ordered prediction/target mismatch at row {rows}: {pred.get('sequence_id')} != {gt.get('sequence_id')}")
+                raise ValueError(
+                    f"ordered prediction/target mismatch in pair {index} at row {rows}: "
+                    f"{pred.get('sequence_id')} != {gt.get('sequence_id')}"
+                )
             tokens = [str(token) for token in pred.get("predicted_tokens", []) or ["NOOP"]]
             original = list(tokens)
             if _has_mouse_button(tokens) and not _stable_keep(str(pred.get("sequence_id")), stride):
@@ -294,7 +357,7 @@ def build_aux_prior_predictions(
                 changed += 1
             out_row = dict(pred)
             out_row["predicted_tokens"] = tokens
-            out_row["model"] = "g005_aux_action_prior_d2e_aux_best"
+            out_row["model"] = model_name
             pred_out.write(json.dumps(out_row, sort_keys=True, separators=(",", ":")) + "\n")
             metrics.update(tokens, gt)
             source_metrics.update(original, gt)
@@ -308,10 +371,196 @@ def build_aux_prior_predictions(
                     split_counts[split] += 1
                     for name, named_tokens in tokens_by_name.items():
                         _ensure_split_metric(split_metrics[split][name], cluster).update(named_tokens, gt)
-            if max_rows is not None and rows >= max_rows:
-                break
+    return {
+        "index": index,
+        "pred_path": str(pred_path),
+        "target_path": str(target_path),
+        "out_part": str(out_part),
+        "rows": rows,
+        "changed_predictions": changed,
+        "button_predictions_dropped": button_dropped,
+        "metrics_state": _metric_state(metrics),
+        "source_metrics_state": _metric_state(source_metrics),
+        "split_counts": split_counts,
+        "split_metric_states": {
+            split: {
+                name: {cluster: _metric_state(metric) for cluster, metric in by_cluster.items()}
+                for name, by_cluster in by_name.items()
+            }
+            for split, by_name in split_metrics.items()
+        },
+    }
 
-    link_status = _link_or_copy(target_paths[0], out_target)
+
+def build_aux_prior_predictions(
+    *,
+    root: str | Path,
+    aux_training: dict[str, Any],
+    d2e_predictions_path: str | Path,
+    d2e_target_paths: Sequence[str | Path],
+    output_predictions_path: str | Path,
+    output_target_records_path: str | Path,
+    d2e_prediction_paths: Sequence[str | Path] | None = None,
+    target_records_link_source: str | Path | None = None,
+    source_prediction_button_rate: float | None = None,
+    prediction_workers: int = 1,
+    max_rows: int | None = None,
+    max_button_stride: int = 4,
+    min_aux_attack_rate: float = 0.02,
+    split_tags: Sequence[str] | None = None,
+    endpoints_config: dict[str, Any] | None = None,
+    baseline_names: Sequence[str] | None = None,
+    train_stats: dict[str, Any] | None = None,
+    model_name: str = "g005_aux_action_prior_d2e_aux_best",
+    cluster_key: str = "recording_id",
+) -> dict[str, Any]:
+    root_path = Path(root)
+    source_pred_path = _path(root_path, d2e_predictions_path)
+    source_pred_paths = _prediction_source_paths(root_path, d2e_predictions_path, d2e_prediction_paths)
+    target_paths = _target_paths(root_path, d2e_target_paths, "")
+    out_pred = _path(root_path, output_predictions_path)
+    out_target = _path(root_path, output_target_records_path)
+    out_pred.parent.mkdir(parents=True, exist_ok=True)
+    split_tags = [str(tag) for tag in (split_tags or [])]
+    baseline_names = [str(name) for name in (baseline_names or [])]
+    train_stats = train_stats or {}
+
+    if source_prediction_button_rate is not None:
+        pred_rate = {
+            "rows": None,
+            "button_predictions": None,
+            "button_prediction_rate": float(source_prediction_button_rate),
+            "source": "provided",
+        }
+    else:
+        pred_rate = _prediction_button_rate(source_pred_path, max_rows=max_rows)
+    attack_rate = _minecraft_attack_rate(aux_training)
+    stride = _button_stride(
+        d2e_button_rate=pred_rate.get("button_prediction_rate"),
+        aux_attack_rate=attack_rate,
+        max_stride=max_button_stride,
+        min_aux_rate=min_aux_attack_rate,
+    )
+
+    use_parallel = (
+        max_rows is None
+        and prediction_workers > 1
+        and len(source_pred_paths) > 1
+        and len(source_pred_paths) == len(target_paths)
+    )
+    prediction_parts: list[dict[str, Any]] = []
+
+    if use_parallel:
+        part_dir = out_pred.parent / "prediction_parts"
+        part_dir.mkdir(parents=True, exist_ok=True)
+        for stale in part_dir.glob("part_*.jsonl"):
+            stale.unlink()
+        tasks = [
+            {
+                "index": idx,
+                "pred_path": str(pred_path),
+                "target_path": str(target_path),
+                "out_part": str(part_dir / f"part_{idx:05d}.jsonl"),
+                "stride": stride,
+                "split_tags": split_tags,
+                "baseline_names": baseline_names,
+                "train_stats": train_stats,
+                "model_name": model_name,
+                "cluster_key": cluster_key,
+            }
+            for idx, (pred_path, target_path) in enumerate(zip(source_pred_paths, target_paths, strict=True))
+        ]
+        results: list[dict[str, Any]] = []
+        with ProcessPoolExecutor(max_workers=min(int(prediction_workers), len(tasks))) as pool:
+            futures = [pool.submit(_process_aux_prediction_pair, task) for task in tasks]
+            for future in as_completed(futures):
+                results.append(future.result())
+        results.sort(key=lambda row: int(row["index"]))
+        with out_pred.open("wb") as out_handle:
+            for row in results:
+                with Path(str(row["out_part"])).open("rb") as in_handle:
+                    shutil.copyfileobj(in_handle, out_handle, length=16 * 1024 * 1024)
+        rows = sum(int(row["rows"]) for row in results)
+        changed = sum(int(row["changed_predictions"]) for row in results)
+        button_dropped = sum(int(row["button_predictions_dropped"]) for row in results)
+        metrics_state: dict[str, Any] | None = None
+        source_metrics_state: dict[str, Any] | None = None
+        split_counts = {split: 0 for split in split_tags}
+        nested_state = _empty_split_metric_states(split_tags, model_name, baseline_names)
+        for row in results:
+            metrics_state = _merge_metric_state(metrics_state, row["metrics_state"])
+            source_metrics_state = _merge_metric_state(source_metrics_state, row["source_metrics_state"])
+            for split, count in row["split_counts"].items():
+                split_counts[split] = split_counts.get(split, 0) + int(count)
+            _merge_nested_metric_states(nested_state, row["split_metric_states"])
+        metrics = _metric_from_state(metrics_state or {})
+        source_metrics = _metric_from_state(source_metrics_state or {})
+        split_metrics = _metrics_from_nested_states(nested_state)
+        prediction_parts = [
+            {
+                "index": int(row["index"]),
+                "pred_path": row["pred_path"],
+                "target_path": row["target_path"],
+                "out_part": row["out_part"],
+                "rows": int(row["rows"]),
+            }
+            for row in results
+        ]
+    else:
+        if len(source_pred_paths) != 1 and len(source_pred_paths) != len(target_paths):
+            raise ValueError(
+                "d2e_prediction_paths must be absent, a single path, or match d2e_target_paths length; "
+                f"got {len(source_pred_paths)} prediction paths and {len(target_paths)} target paths"
+            )
+        source_iter_paths = source_pred_paths if len(source_pred_paths) > 1 else [source_pred_path]
+        metrics = StreamingActionMetrics()
+        source_metrics = StreamingActionMetrics()
+        split_metrics: dict[str, dict[str, dict[str, StreamingActionMetrics]]] = {
+            split: {name: {} for name in [model_name, *baseline_names]} for split in split_tags
+        }
+        split_counts = {split: 0 for split in split_tags}
+        rows = 0
+        changed = 0
+        button_dropped = 0
+        with out_pred.open("w", encoding="utf-8") as pred_out:
+            for pred, gt in zip(_iter_jsonl_paths(source_iter_paths), _iter_jsonl_paths(target_paths), strict=True):
+                rows += 1
+                if str(pred.get("sequence_id")) != str(gt.get("sequence_id")):
+                    raise ValueError(f"ordered prediction/target mismatch at row {rows}: {pred.get('sequence_id')} != {gt.get('sequence_id')}")
+                tokens = [str(token) for token in pred.get("predicted_tokens", []) or ["NOOP"]]
+                original = list(tokens)
+                if _has_mouse_button(tokens) and not _stable_keep(str(pred.get("sequence_id")), stride):
+                    tokens = _drop_mouse_buttons(tokens)
+                    button_dropped += 1
+                if tokens != original:
+                    changed += 1
+                out_row = dict(pred)
+                out_row["predicted_tokens"] = tokens
+                out_row["model"] = model_name
+                pred_out.write(json.dumps(out_row, sort_keys=True, separators=(",", ":")) + "\n")
+                metrics.update(tokens, gt)
+                source_metrics.update(original, gt)
+                active_splits = [split for split in split_tags if split in [str(tag) for tag in gt.get("eval_split_tags", []) or []]]
+                if active_splits:
+                    tokens_by_name = {model_name: tokens}
+                    for baseline in baseline_names:
+                        tokens_by_name[baseline] = _baseline_tokens(baseline, gt, train_stats)
+                    cluster = cluster_id(gt, cluster_key)
+                    for split in active_splits:
+                        split_counts[split] += 1
+                        for name, named_tokens in tokens_by_name.items():
+                            _ensure_split_metric(split_metrics[split][name], cluster).update(named_tokens, gt)
+                if max_rows is not None and rows >= max_rows:
+                    break
+
+    if max_rows is not None:
+        link_status = _write_target_prefix(target_paths, out_target, max_rows)
+    elif target_records_link_source is not None:
+        link_status = _link_or_copy(_path(root_path, target_records_link_source), out_target)
+    elif len(target_paths) == 1:
+        link_status = _link_or_copy(target_paths[0], out_target)
+    else:
+        link_status = _concat_files(target_paths, out_target)
     inline_split_statistics = None
     if endpoints_config is not None and split_tags:
         inline_split_statistics = {
@@ -351,17 +600,22 @@ def build_aux_prior_predictions(
         "schema": "g005_aux_prior_prediction_build.v1",
         "status": "pass",
         "source_predictions_path": str(d2e_predictions_path),
+        "source_prediction_paths": [str(path) for path in source_pred_paths],
         "output_predictions_path": str(output_predictions_path),
         "output_target_records_path": str(output_target_records_path),
         "target_link": link_status,
         "rows": rows,
         "changed_predictions": changed,
         "button_predictions_dropped": button_dropped,
+        "prediction_workers": int(prediction_workers),
+        "parallel_prediction": bool(use_parallel),
+        "prediction_parts": prediction_parts,
         "policy": {
             "name": "minerl_attack_rate_mouse_button_stride",
             "button_stride": stride,
             "max_button_stride": max_button_stride,
             "source_d2e_button_prediction_rate": pred_rate.get("button_prediction_rate"),
+            "source_prediction_button_rate_source": pred_rate.get("source"),
             "minerl_attack_rate": attack_rate,
             "min_aux_attack_rate": min_aux_attack_rate,
         },
@@ -369,7 +623,6 @@ def build_aux_prior_predictions(
         "d2e_only_source_metrics_on_same_rows": source_metrics.payload(),
         "inline_split_statistics": inline_split_statistics,
     }
-
 
 def write_g005_metadata(
     *,
@@ -536,13 +789,23 @@ def run_g005_aux_prior_candidate(config: dict[str, Any], *, root: str | Path = "
     split_config = _load_json(_path(root_path, split_config_path))
     endpoints = load_config(_path(root_path, split_config.get("endpoints", "configs/eval/primary_endpoints.yaml")))
     train_stats = _baseline_stats_from_config(root_path, split_config)
+    source_prediction_button_rate = config.get("source_prediction_button_rate")
+    if source_prediction_button_rate is None and config.get("d2e_only_summary"):
+        source_summary = _load_json(_path(root_path, config["d2e_only_summary"]))
+        rate_row = _button_rate_from_metrics(source_summary.get("metrics") if isinstance(source_summary, dict) else None)
+        if rate_row is not None:
+            source_prediction_button_rate = rate_row["button_prediction_rate"]
     prediction_summary = build_aux_prior_predictions(
         root=root_path,
         aux_training=aux_training,
         d2e_predictions_path=config.get("d2e_only_predictions", "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl"),
+        d2e_prediction_paths=config.get("d2e_only_prediction_paths"),
         d2e_target_paths=config.get("d2e_target_paths") or [config.get("d2e_target_records", "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl")],
         output_predictions_path=Path(output_dir) / "predictions.jsonl",
         output_target_records_path=Path(output_dir) / "d2e_target_records.jsonl",
+        target_records_link_source=config.get("d2e_target_records"),
+        source_prediction_button_rate=source_prediction_button_rate,
+        prediction_workers=int(config.get("prediction_workers", 1)),
         max_rows=config.get("max_d2e_eval_rows"),
         max_button_stride=int(config.get("max_button_stride", 4)),
         min_aux_attack_rate=float(config.get("min_aux_attack_rate", 0.02)),

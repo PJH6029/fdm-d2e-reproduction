@@ -36,5 +36,25 @@
   "run_summary": "artifacts/aux/g005_d2e_aux_train_run.json",
   "max_button_stride": 4,
   "min_aux_attack_rate": 0.02,
-  "claim_boundary": "This config trains a conservative D2E+aux action-prior candidate; it is G005 evidence only after full-run artifacts, ablation, finalization, and completion audit pass."
+  "claim_boundary": "This config trains a conservative D2E+aux action-prior candidate; it is G005 evidence only after full-run artifacts, ablation, finalization, and completion audit pass.",
+  "d2e_only_prediction_paths": [
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_000/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_001/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_002/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_003/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_004/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_005/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_006/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_007/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_008/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_009/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_010/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_011/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_012/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_013/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_014/predictions.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_015/predictions.jsonl"
+  ],
+  "prediction_workers": 16,
+  "prediction_parallelization_note": "Use G004 prediction recovery parts aligned with target shards so G005 full-target prediction, metrics, and split statistics parse 16 shard pairs in parallel before concatenating canonical predictions.jsonl."
 }

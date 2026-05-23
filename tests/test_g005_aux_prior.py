@@ -95,6 +95,10 @@ def test_run_g005_aux_prior_candidate_writes_completion_artifacts(tmp_path: Path
     ]
     _write_jsonl(tmp_path / "d2e_target.jsonl", target_rows)
     _write_jsonl(tmp_path / "d2e_pred.jsonl", pred_rows)
+    _write_jsonl(tmp_path / "d2e_target_part0.jsonl", target_rows[:2])
+    _write_jsonl(tmp_path / "d2e_target_part1.jsonl", target_rows[2:])
+    _write_jsonl(tmp_path / "d2e_pred_part0.jsonl", pred_rows[:2])
+    _write_jsonl(tmp_path / "d2e_pred_part1.jsonl", pred_rows[2:])
     write_json(tmp_path / "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json", {"metrics": {"baseline": True}})
     split_cfg = {
         "schema": "split_statistical_comparison_builder_config.v1",
@@ -136,19 +140,25 @@ def test_run_g005_aux_prior_candidate_writes_completion_artifacts(tmp_path: Path
             "data_universe": "artifacts/sources/d2e_full_data_universe_manifest.json",
             "split_contract": "artifacts/sources/d2e_full_split_contract.json",
             "d2e_only_predictions": "d2e_pred.jsonl",
+            "d2e_only_prediction_paths": ["d2e_pred_part0.jsonl", "d2e_pred_part1.jsonl"],
             "d2e_target_records": "d2e_target.jsonl",
-            "d2e_target_paths": ["d2e_target.jsonl"],
+            "d2e_target_paths": ["d2e_target_part0.jsonl", "d2e_target_part1.jsonl"],
             "d2e_only_summary": "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json",
             "split_stats_config": "configs/eval/g005_split_statistics.yaml",
             "split_stats_summary": "artifacts/eval/g005_split_statistical_comparisons_summary.json",
             "ablation_summary": "artifacts/aux/d2e_aux_ablation_summary.json",
             "run_summary": "artifacts/aux/g005_d2e_aux_train_run.json",
             "max_button_stride": 2,
+            "prediction_workers": 2,
         },
         root=tmp_path,
     )
 
     assert run_summary["status"] == "pass"
+    prediction_summary = json.loads((tmp_path / "outputs/fdm_aux/d2e_aux_best/prediction_build_summary.json").read_text())
+    assert prediction_summary["parallel_prediction"] is True
+    assert prediction_summary["rows"] == 3
+    assert prediction_summary["target_link"]["target"].endswith("d2e_target.jsonl")
     assert (tmp_path / "outputs/fdm_aux/d2e_aux_best/checkpoint.pt").exists()
     metadata = json.loads((tmp_path / "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json").read_text())
     assert metadata["source_namespace"] == "d2e_aux"

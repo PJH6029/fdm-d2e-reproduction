@@ -2,11 +2,11 @@
   "schema": "g005_aux_completion_audit.v1",
   "status": "fail",
   "goal_id": "G005-aux-data-best-model",
-  "goal_status": "pending",
+  "goal_status": "in_progress",
   "require_goal_checkpoint_complete": false,
   "prerequisite_goal_statuses": {
-    "G003-d2e-only-idm": "in_progress",
-    "G004-d2e-only-fdm-4xh200": "pending"
+    "G003-d2e-only-idm": "complete",
+    "G004-d2e-only-fdm-4xh200": "complete"
   },
   "required_splits": [
     "heldout_game",
@@ -17,8 +17,8 @@
   "d2e_only_audit_report": {
     "g003": {
       "audit_key": "g003",
-      "status": "fail",
-      "error_count": 23,
+      "status": "pass",
+      "error_count": 0,
       "included_recording_variants": 918,
       "source_ids": {
         "d2e_480p": 459,
@@ -28,13 +28,19 @@
         "480p": 459,
         "original_fhd_qhd": 459
       },
-      "decode_source_ids": {},
-      "decode_resolution_tiers": {}
+      "decode_source_ids": {
+        "d2e_480p": 459,
+        "d2e_original": 459
+      },
+      "decode_resolution_tiers": {
+        "480p": 459,
+        "original_fhd_qhd": 459
+      }
     },
     "g004": {
       "audit_key": "g004",
-      "status": "fail",
-      "error_count": 46,
+      "status": "pass",
+      "error_count": 0,
       "included_recording_variants": 918,
       "source_ids": {
         "d2e_480p": 459,
@@ -49,12 +55,20 @@
     }
   },
   "namespace_report": {
-    "aux_source_ids": [],
-    "d2e_eval_splits": [],
+    "aux_source_ids": [
+      "atari_head_zenodo_v4",
+      "minerl_2019_zenodo_v2",
+      "p_doom_atari_breakout_hf"
+    ],
     "selected_aux_ids": [
       "atari_head_zenodo_v4",
       "minerl_2019_zenodo_v2",
       "p_doom_atari_breakout_hf"
+    ],
+    "d2e_eval_splits": [
+      "heldout_game",
+      "heldout_recording",
+      "temporal"
     ]
   },
   "action_registry_report": {
@@ -85,7 +99,7 @@
       "train",
       "val"
     ],
-    "total_examples": 0
+    "total_examples": 23064579
   },
   "artifacts": {
     "aux_candidates": {
@@ -109,20 +123,20 @@
     "runtime_env": {
       "path": "artifacts/aux/g005_aux_runtime_env.json",
       "exists": true,
-      "bytes": 1795,
-      "sha256": "df75367c5b3cafa34c10b219f92b712486c40f149b17c9d05c3c607d85e489d0"
+      "bytes": 1823,
+      "sha256": "f80352f2d30f41a617df1c0a550062a7def119c6fc2c3988c31c2fe9de33403c"
     },
     "aux_examples_summary": {
       "path": "artifacts/aux/g005_aux_examples_summary.json",
       "exists": true,
-      "bytes": 3459,
-      "sha256": "5e8754b427b58137c66c59807399cb735a1a297130f55f52f371195f943167ff"
+      "bytes": 250387,
+      "sha256": "b387131b089e99837af910d83de471b099dae7dde4b4d1909f38e3332b8c1760"
     },
     "namespace_manifest": {
       "path": "artifacts/aux/g005_aux_namespace_manifest.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 329970,
+      "sha256": "62bb015d2b69e9a526a13c837b334aba0fbea969787a3e30f0df592150ea7456"
     },
     "ablation_summary": {
       "path": "artifacts/aux/d2e_aux_ablation_summary.json",
@@ -133,14 +147,14 @@
     "g003_completion_audit": {
       "path": "artifacts/idm/g003_full_idm_completion_audit.json",
       "exists": true,
-      "bytes": 8633,
-      "sha256": "1858703d2bedb8ead48840c731a9e9730538c523d8a99b9e6594c650984e8567"
+      "bytes": 5803,
+      "sha256": "7795caf40a57e5fa34bbc6a2beb69daed9139f8da0bcf7d63a375dabbef79be2"
     },
     "g004_completion_audit": {
       "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
       "exists": true,
-      "bytes": 14059,
-      "sha256": "e0bec9eec0b0cfbe1e52210c4a0910c5d9bff8ea6ed16d220d32eec4f01020e8"
+      "bytes": 6058,
+      "sha256": "fc4f922fa0daca8bc345bfb630d8f6ad1ea594b5ea8655c187f15845935f311e"
     },
     "checkpoint_metadata": {
       "path": "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json",
@@ -198,24 +212,6 @@
   "findings": [
     {
       "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G003-d2e-only-idm",
-      "actual": "in_progress"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "actual": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "namespace_manifest",
-      "path": "artifacts/aux/g005_aux_namespace_manifest.json"
-    },
-    {
-      "severity": "error",
       "code": "missing_required_artifact",
       "artifact_key": "ablation_summary",
       "path": "artifacts/aux/d2e_aux_ablation_summary.json"
@@ -267,62 +263,6 @@
       "code": "missing_required_artifact",
       "artifact_key": "run_summary",
       "path": "artifacts/aux/g005_d2e_aux_train_run.json"
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "namespace_manifest",
-      "json_path": "schema",
-      "expected": "g005_aux_namespace_manifest.v1",
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "namespace_manifest",
-      "json_path": "source_namespace",
-      "expected": "d2e_aux",
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "namespace_manifest",
-      "json_path": "completion_ready",
-      "expected": true,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "namespace_manifest",
-      "json_path": "claim_boundary.no_aux_in_d2e_heldout",
-      "expected": true,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "namespace_manifest",
-      "json_path": "claim_boundary.no_d2e_aux_claim_before_d2e_only_gates",
-      "expected": true,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "namespace_manifest",
-      "json_path": "training_policy.source_specific_action_heads",
-      "expected": true,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "namespace_manifest",
-      "json_path": "d2e_eval_manifests.same_as_d2e_only",
-      "expected": true,
-      "actual": null
     },
     {
       "severity": "error",
@@ -390,151 +330,26 @@
     },
     {
       "severity": "error",
-      "code": "d2e_only_completion_audit_not_pass",
-      "audit_key": "g003",
-      "status": "fail",
-      "error_count": 23
-    },
-    {
-      "severity": "error",
-      "code": "d2e_only_completion_audit_not_pass",
-      "audit_key": "g004",
-      "status": "fail",
-      "error_count": 46
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_not_pass",
-      "status": "blocked",
-      "error_count": 3
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_source_not_pass",
+      "code": "namespace_source_path_mismatch",
       "source_id": "atari_head_zenodo_v4",
-      "status": "blocked"
+      "expected_prefix": "outputs/aux/atari_head_zenodo_v4/",
+      "actual": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4"
     },
     {
       "severity": "error",
-      "code": "aux_examples_split_empty",
-      "source_id": "atari_head_zenodo_v4",
-      "split": "test"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_file_missing",
-      "source_id": "atari_head_zenodo_v4",
-      "split": "test"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_empty",
-      "source_id": "atari_head_zenodo_v4",
-      "split": "train"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_file_missing",
-      "source_id": "atari_head_zenodo_v4",
-      "split": "train"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_empty",
-      "source_id": "atari_head_zenodo_v4",
-      "split": "val"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_file_missing",
-      "source_id": "atari_head_zenodo_v4",
-      "split": "val"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_source_not_pass",
+      "code": "namespace_source_path_mismatch",
       "source_id": "minerl_2019_zenodo_v2",
-      "status": "blocked"
+      "expected_prefix": "outputs/aux/minerl_2019_zenodo_v2/",
+      "actual": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2"
     },
     {
       "severity": "error",
-      "code": "aux_examples_split_empty",
-      "source_id": "minerl_2019_zenodo_v2",
-      "split": "test"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_file_missing",
-      "source_id": "minerl_2019_zenodo_v2",
-      "split": "test"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_empty",
-      "source_id": "minerl_2019_zenodo_v2",
-      "split": "train"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_file_missing",
-      "source_id": "minerl_2019_zenodo_v2",
-      "split": "train"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_empty",
-      "source_id": "minerl_2019_zenodo_v2",
-      "split": "val"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_file_missing",
-      "source_id": "minerl_2019_zenodo_v2",
-      "split": "val"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_source_not_pass",
+      "code": "namespace_source_path_mismatch",
       "source_id": "p_doom_atari_breakout_hf",
-      "status": "blocked"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_empty",
-      "source_id": "p_doom_atari_breakout_hf",
-      "split": "test"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_file_missing",
-      "source_id": "p_doom_atari_breakout_hf",
-      "split": "test"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_empty",
-      "source_id": "p_doom_atari_breakout_hf",
-      "split": "train"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_file_missing",
-      "source_id": "p_doom_atari_breakout_hf",
-      "split": "train"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_empty",
-      "source_id": "p_doom_atari_breakout_hf",
-      "split": "val"
-    },
-    {
-      "severity": "error",
-      "code": "aux_examples_split_file_missing",
-      "source_id": "p_doom_atari_breakout_hf",
-      "split": "val"
+      "expected_prefix": "outputs/aux/p_doom_atari_breakout_hf/",
+      "actual": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf"
     }
   ],
-  "error_count": 51,
+  "error_count": 20,
   "claim_boundary": "This audit is required before checkpointing G005 complete; it proves passing full-corpus D2E-only G003/G004 audits, aux provenance/storage policy, separated namespaces, D2E-only vs D2E+aux ablations, target split tags, and run evidence."
 }
