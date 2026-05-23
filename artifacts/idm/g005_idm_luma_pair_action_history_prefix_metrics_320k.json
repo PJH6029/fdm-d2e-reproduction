@@ -1,0 +1,457 @@
+{
+  "schema": "g005_idm_candidate_prefix_paper_metrics.v1",
+  "status": "pass",
+  "error_count": 0,
+  "model_name": "streaming_idm_d2e_full_luma_pair_action_history_candidate",
+  "sample_method": "first 20000 prediction rows per parallel prediction part aligned with corresponding target shard chunks",
+  "prediction_part_paths": [
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_000/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_001/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_002/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_003/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_004/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_005/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_006/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_007/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_008/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_009/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_010/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_011/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_012/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_013/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_014/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_015/predictions.jsonl"
+  ],
+  "target_record_paths": [
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_0/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_1/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_10/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_11/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_12/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_13/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_14/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_15/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_16/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_17/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_18/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_19/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_2/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_20/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_21/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_22/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_23/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_24/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_25/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_26/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_27/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_28/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_29/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_3/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_30/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_31/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_32/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_33/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_34/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_35/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_36/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_37/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_38/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_39/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_4/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_40/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_41/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_42/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_43/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_44/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_45/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_46/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_47/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_48/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_49/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_5/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_50/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_51/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_52/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_53/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_54/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_55/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_56/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_57/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_58/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_59/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_6/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_60/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_61/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_62/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_63/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_7/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_8/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_9/target_all_eval.jsonl"
+  ],
+  "parts": [
+    {
+      "part_index": 0,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_000/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_0/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_1/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_10/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_11/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 1,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_001/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_12/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_13/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_14/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_15/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 2,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_002/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_16/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_17/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_18/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_19/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 3,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_003/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_2/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_20/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_21/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_22/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 4,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_004/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_23/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_24/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_25/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_26/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 5,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_005/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_27/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_28/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_29/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_3/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 6,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_006/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_30/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_31/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_32/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_33/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 7,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_007/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_34/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_35/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_36/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_37/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 8,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_008/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_38/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_39/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_4/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_40/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 9,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_009/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_41/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_42/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_43/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_44/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 10,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_010/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_45/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_46/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_47/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_48/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 11,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_011/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_49/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_5/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_50/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_51/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 12,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_012/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_52/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_53/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_54/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_55/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 13,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_013/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_56/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_57/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_58/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_59/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 14,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_014/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_6/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_60/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_61/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_62/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    },
+    {
+      "part_index": 15,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/prediction_recovery_parts/part_015/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_63/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_7/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_8/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_9/target_all_eval.jsonl"
+      ],
+      "rows": 20000
+    }
+  ],
+  "alignment": {
+    "rows_seen": 320000,
+    "rows_per_part": 20000,
+    "sequence_id_mismatches": 0,
+    "missing_prediction_rows": 0,
+    "missing_target_rows": 0,
+    "examples": []
+  },
+  "paper_targets": {
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "groups": {
+    "all": {
+      "rows": 320000,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.041536868190151864,
+          "pearson_y": 0.0026853104857235367,
+          "scale_ratio_x": 2.5068573042899533,
+          "scale_ratio_y": 5.0310115054392135,
+          "sample_count": 267288,
+          "scale_sample_count": 320000
+        },
+        "keyboard": {
+          "key_accuracy": 0.0007409622109272428,
+          "sample_count": 76927
+        },
+        "mouse_button": {
+          "button_accuracy": 0.0021737312933701194,
+          "sample_count": 23922
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.0008368200836820083,
+          "num_examples": 53775
+        },
+        "mouse_button": {
+          "accuracy": 0.0033364473508608033,
+          "num_examples": 14986,
+          "predicted_examples": 8441,
+          "exact_true_positive_examples": 50,
+          "false_positive_examples": 8391,
+          "false_negative_examples": 14936,
+          "precision": 0.005923468783319512,
+          "recall": 0.0033364473508608033,
+          "f1": 0.004268578990054211,
+          "no_button_examples": 305014,
+          "no_button_false_positive_examples": 8231,
+          "no_button_false_positive_rate": 0.026985646560485747
+        }
+      }
+    },
+    "eval_split:heldout_game": {
+      "rows": 112577,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.0678793115968979,
+          "pearson_y": 0.00619203899152509,
+          "scale_ratio_x": 2.202880789225583,
+          "scale_ratio_y": 3.494772295489519,
+          "sample_count": 105464,
+          "scale_sample_count": 112577
+        },
+        "keyboard": {
+          "key_accuracy": 0.0005698208625663307,
+          "sample_count": 28079
+        },
+        "mouse_button": {
+          "button_accuracy": 0.0011496285815351963,
+          "sample_count": 11308
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.0004700904924197908,
+          "num_examples": 17018
+        },
+        "mouse_button": {
+          "accuracy": 0.0012257212898359419,
+          "num_examples": 10606,
+          "predicted_examples": 484,
+          "exact_true_positive_examples": 13,
+          "false_positive_examples": 471,
+          "false_negative_examples": 10593,
+          "precision": 0.026859504132231406,
+          "recall": 0.0012257212898359419,
+          "f1": 0.002344454463480613,
+          "no_button_examples": 101971,
+          "no_button_false_positive_examples": 445,
+          "no_button_false_positive_rate": 0.00436398583911112
+        }
+      }
+    },
+    "eval_split:heldout_recording": {
+      "rows": 52797,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": -0.004085854192186798,
+          "pearson_y": -0.0037046895360970523,
+          "scale_ratio_x": 3.083969877082928,
+          "scale_ratio_y": 3.883394448500559,
+          "sample_count": 40469,
+          "scale_sample_count": 52797
+        },
+        "keyboard": {
+          "key_accuracy": 0.00012663036596175764,
+          "sample_count": 7897
+        },
+        "mouse_button": {
+          "button_accuracy": 0.001694915254237288,
+          "sample_count": 2950
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.0,
+          "num_examples": 4497
+        },
+        "mouse_button": {
+          "accuracy": 0.0015479876160990713,
+          "num_examples": 2584,
+          "predicted_examples": 326,
+          "exact_true_positive_examples": 4,
+          "false_positive_examples": 322,
+          "false_negative_examples": 2580,
+          "precision": 0.012269938650306749,
+          "recall": 0.0015479876160990713,
+          "f1": 0.0027491408934707906,
+          "no_button_examples": 50213,
+          "no_button_false_positive_examples": 318,
+          "no_button_false_positive_rate": 0.006333021329137873
+        }
+      }
+    },
+    "eval_split:temporal": {
+      "rows": 168101,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.032471431182276383,
+          "pearson_y": 0.0022313703446757787,
+          "scale_ratio_x": 2.5917182260731404,
+          "scale_ratio_y": 6.886177273005948,
+          "sample_count": 130777,
+          "scale_sample_count": 168101
+        },
+        "keyboard": {
+          "key_accuracy": 0.0009517177344475395,
+          "sample_count": 43080
+        },
+        "mouse_button": {
+          "button_accuracy": 0.003226369026857342,
+          "sample_count": 11468
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.0010994562148991176,
+          "num_examples": 33653
+        },
+        "mouse_button": {
+          "accuracy": 0.010166619598983339,
+          "num_examples": 3541,
+          "predicted_examples": 7661,
+          "exact_true_positive_examples": 36,
+          "false_positive_examples": 7625,
+          "false_negative_examples": 3505,
+          "precision": 0.00469912544054301,
+          "recall": 0.010166619598983339,
+          "f1": 0.006427423674343867,
+          "no_button_examples": 164560,
+          "no_button_false_positive_examples": 7494,
+          "no_button_false_positive_rate": 0.04553962080700048
+        }
+      }
+    }
+  },
+  "findings": [],
+  "claim_boundary": "Prefix metrics are early-stop diagnostics for candidate selection only; they are not G005 completion evidence."
+}

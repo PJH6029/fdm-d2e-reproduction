@@ -1,0 +1,49 @@
+{
+  "action_history_seed_state_mode": "empty",
+  "artifacts": {
+    "checkpoint": {
+      "bytes": 37843125,
+      "exists": true,
+      "path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/checkpoint.pt",
+      "sha256": "7b40fc3bb2b3b0d13098ccd3a277cf06ca9f71ca9b0f0b4a909d58ab2296da36"
+    },
+    "metadata": {
+      "exists": false,
+      "path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/checkpoint_metadata.json"
+    },
+    "metrics": {
+      "exists": false,
+      "path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/metrics.json"
+    },
+    "paper_audit": {
+      "exists": false,
+      "path": "artifacts/idm/g005_idm_luma_pair_action_history_paper_target_audit.json"
+    },
+    "predictions": {
+      "exists": false,
+      "path": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/predictions.jsonl"
+    },
+    "split_stats": {
+      "exists": false,
+      "path": "artifacts/eval/g005_idm_luma_pair_action_history_split_statistical_comparisons_summary.json"
+    }
+  },
+  "config": "configs/model/idm_streaming_d2e_full_luma_pair_action_history_candidate.yaml",
+  "exit_code": 0,
+  "finished_at": "2026-05-23T21:44:22Z",
+  "git_diff_sha256": "a19c72bbf7dd0d632471a91fef913f099977100b55246c55582f0f70ae9b7612",
+  "git_head": "4316f27893660b146e163ab494e5db8123c90592",
+  "git_status_short": "M configs/eval/g004_idm_exploration.yaml\n M scripts/precompute_streaming_idm_training_cache.py\n M scripts/run_g005_idm_surface_paper_target_4xh200.sh\n M src/fdm_d2e/training/neural_idm.py\n M src/fdm_d2e/training/streaming_idm.py\n M src/fdm_d2e/training/torch_idm.py\n M tests/test_streaming_idm_contract.py\n?? .venv\n?? artifacts/idm/g005_idm_luma_pair_action_history_4xh200.log\n?? artifacts/idm/g005_idm_luma_pair_action_history_4xh200.nohup.log\n?? artifacts/idm/g005_idm_luma_pair_action_history_4xh200_gpu_monitor.csv\n?? artifacts/idm/g005_idm_luma_pair_action_history_4xh200_run.json\n?? artifacts/idm/g005_idm_luma_pair_action_history_cache_precompute.log\n?? artifacts/idm/g005_idm_luma_pair_action_history_cache_precompute_progress.json\n?? artifacts/idm/g005_idm_luma_pair_action_history_cache_precompute_summary.json\n?? artifacts/idm/g005_idm_luma_pair_action_history_interruption_snapshot.json\n?? artifacts/idm/g005_idm_luma_pair_action_history_prefix_metrics_320k.json\n?? artifacts/idm/g005_idm_luma_pair_action_history_prefix_rejection.json\n?? artifacts/idm/g005_idm_luma_pair_action_history_recovery.log\n?? artifacts/idm/g005_idm_luma_pair_action_history_recovery_driver.log\n?? artifacts/idm/g005_idm_luma_pair_action_history_recovery_run.json\n?? artifacts/idm/g005_idm_luma_pair_action_history_train_after_cache_watcher.log\n?? artifacts/idm/g005_idm_luma_pair_paper_sum_4xh200.log\n?? artifacts/idm/g005_idm_luma_pair_paper_sum_4xh200.nohup.log\n?? artifacts/idm/g005_idm_luma_pair_paper_sum_4xh200_gpu_monitor.csv\n?? artifacts/idm/g005_idm_luma_pair_paper_sum_4xh200_run.json\n?? artifacts/idm/g005_idm_luma_pair_paper_sum_cache_precompute.log\n?? artifacts/idm/g005_idm_luma_pair_paper_sum_cache_precompute_progress.json\n?? artifacts/idm/g005_idm_luma_pair_paper_sum_cache_precompute_summary.json\n?? artifacts/idm/g005_idm_luma_pair_paper_sum_prefix_metrics_640k.json\n?? artifacts/idm/g005_idm_luma_pair_train_after_cache_watcher.log\n?? configs/eval/g005_idm_luma_pair_action_history_paper_target.yaml\n?? configs/eval/g005_idm_luma_pair_action_history_split_statistics.yaml\n?? configs/eval/g005_idm_luma_pair_paper_sum_paper_target.yaml\n?? configs/eval/g005_idm_luma_pair_paper_sum_split_statistics.yaml\n?? configs/model/idm_streaming_d2e_full_luma_pair_action_history_candidate.yaml\n?? configs/model/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated.yaml\n?? scripts/build_g005_idm_prefix_paper_metrics.py\n?? scripts/synthesize_streaming_idm_stats.py",
+  "paper_target_config": "configs/eval/g005_idm_luma_pair_action_history_paper_target.yaml",
+  "prediction_cuda_devices": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "prediction_workers": 16,
+  "schema": "g005_action_history_checkpoint_recovery_run.v1",
+  "split_stats_config": "configs/eval/g005_idm_luma_pair_action_history_split_statistics.yaml",
+  "started_at": "2026-05-23T21:37:08+00:00",
+  "status": "pass"
+}

@@ -1,0 +1,74 @@
+{
+  "checkpoint_bytes": 37843125,
+  "checkpoint_exists": true,
+  "created_at": "2026-05-23T21:32:39Z",
+  "processes": [
+    "25600 tee artifacts/idm/g005_idm_luma_pair_action_history_4xh200.log",
+    "25678 uv run torchrun --standalone --nproc-per-node=4 scripts/train_idm_streaming.py --config configs/model/idm_streaming_d2e_full_luma_pair_action_history_candidate.yaml --require-torch",
+    "25681 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-luma-pair/.venv/bin/torchrun --standalone --nproc-per-node=4 scripts/train_idm_streaming.py --config configs/model/idm_streaming_d2e_full_luma_pair_action_history_candidate.yaml --require-torch",
+    "25750 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_idm_streaming.py --config configs/model/idm_streaming_d2e_full_luma_pair_action_history_candidate.yaml --require-torch"
+  ],
+  "reason": "stop idle parent_train_scan after checkpoint; recover with empty action-history seed-state",
+  "schema": "g005_action_history_interruption_snapshot.v1",
+  "train_history_tail": {
+    "history": [
+      {
+        "batches": 4719,
+        "epoch": 1,
+        "examples": 19211006,
+        "loss": 10.452983314967453,
+        "loss_sum": 200812325.18173963
+      },
+      {
+        "batches": 4719,
+        "epoch": 2,
+        "examples": 19211006,
+        "loss": 10.668336037535246,
+        "loss_sum": 204949467.62710583
+      },
+      {
+        "batches": 4719,
+        "epoch": 3,
+        "examples": 19211006,
+        "loss": 9.676810757048832,
+        "loss_sum": 185901269.51452965
+      },
+      {
+        "batches": 4719,
+        "epoch": 4,
+        "examples": 19211006,
+        "loss": 8.983353755031425,
+        "loss_sum": 172579262.88803124
+      },
+      {
+        "batches": 4719,
+        "epoch": 5,
+        "examples": 19211006,
+        "loss": 8.664288408237935,
+        "loss_sum": 166449696.5963894
+      },
+      {
+        "batches": 4719,
+        "epoch": 6,
+        "examples": 19211006,
+        "loss": 8.69254315652201,
+        "loss_sum": 166992498.73520327
+      },
+      {
+        "batches": 4719,
+        "epoch": 7,
+        "examples": 19211006,
+        "loss": 8.505856360968014,
+        "loss_sum": 163406057.58569467
+      },
+      {
+        "batches": 4719,
+        "epoch": 8,
+        "examples": 19211006,
+        "loss": 8.256769394556802,
+        "loss_sum": 158620846.37944707
+      }
+    ],
+    "schema": "streaming_idm_train_history.v1"
+  }
+}
