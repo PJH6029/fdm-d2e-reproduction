@@ -713,6 +713,100 @@ def _load_training_cache_manifests(
     return manifests
 
 
+def _training_cache_manifest_row_count(manifest: dict[str, Any]) -> int:
+    if manifest.get("rows") is not None:
+        return int(manifest.get("rows") or 0)
+    return sum(int(chunk.get("rows") or 0) for chunk in manifest.get("chunks", []))
+
+
+def _training_cache_manifest_byte_count(manifest: dict[str, Any]) -> int:
+    if manifest.get("bytes") is not None:
+        return int(manifest.get("bytes") or 0)
+    total = 0
+    for chunk in manifest.get("chunks", []):
+        if chunk.get("bytes") is not None:
+            total += int(chunk.get("bytes") or 0)
+            continue
+        path = chunk.get("path")
+        if path and Path(path).exists():
+            total += Path(path).stat().st_size
+    return total
+
+
+def _training_cache_rank_assignment(
+    cache_manifests: Sequence[dict[str, Any]],
+    *,
+    rank: int,
+    world_size: int,
+    mode: str = "greedy_rows",
+) -> set[int]:
+    """Return manifest indices assigned to a DDP rank.
+
+    The legacy modulo-by-path scheme can strand one GPU when shard row counts
+    differ.  Greedy assignment is deterministic and uses cache-manifest row
+    counts, keeping DDP join time lower without changing record contents.
+    """
+
+    if world_size <= 1:
+        return set(range(len(cache_manifests)))
+    normalized = mode.replace("-", "_").lower()
+    if normalized in {"round_robin", "path_modulo", "modulo"}:
+        return {idx for idx in range(len(cache_manifests)) if (idx % world_size) == rank}
+    if normalized not in {"greedy_rows", "greedy_bytes"}:
+        raise ValueError(
+            "training_cache_shard_assignment must be one of "
+            "greedy_rows, greedy_bytes, round_robin/path_modulo"
+        )
+    load = [0 for _ in range(world_size)]
+    assigned: list[list[int]] = [[] for _ in range(world_size)]
+    weighted: list[tuple[int, int]] = []
+    for idx, manifest in enumerate(cache_manifests):
+        weight = (
+            _training_cache_manifest_byte_count(manifest)
+            if normalized == "greedy_bytes"
+            else _training_cache_manifest_row_count(manifest)
+        )
+        weighted.append((idx, int(weight)))
+    for idx, weight in sorted(weighted, key=lambda item: (-item[1], item[0])):
+        target_rank = min(range(world_size), key=lambda candidate: (load[candidate], candidate))
+        assigned[target_rank].append(idx)
+        load[target_rank] += int(weight)
+    return set(assigned[rank])
+
+
+def _training_cache_assignment_plan(
+    cache_manifests: Sequence[dict[str, Any]],
+    *,
+    world_size: int,
+    mode: str = "greedy_rows",
+) -> dict[str, Any]:
+    normalized = mode.replace("-", "_").lower()
+    ranks = []
+    for rank in range(max(1, world_size)):
+        assigned = sorted(
+            _training_cache_rank_assignment(
+                cache_manifests,
+                rank=rank,
+                world_size=world_size,
+                mode=normalized,
+            )
+        )
+        rows = sum(_training_cache_manifest_row_count(cache_manifests[idx]) for idx in assigned)
+        bytes_ = sum(_training_cache_manifest_byte_count(cache_manifests[idx]) for idx in assigned)
+        ranks.append({"rank": rank, "manifest_indices": assigned, "rows": rows, "bytes": bytes_})
+    row_loads = [int(row["rows"]) for row in ranks]
+    byte_loads = [int(row["bytes"]) for row in ranks]
+    return {
+        "mode": normalized,
+        "world_size": int(world_size),
+        "ranks": ranks,
+        "row_load_min": min(row_loads) if row_loads else 0,
+        "row_load_max": max(row_loads) if row_loads else 0,
+        "byte_load_min": min(byte_loads) if byte_loads else 0,
+        "byte_load_max": max(byte_loads) if byte_loads else 0,
+    }
+
+
 def _iter_training_cache_batches(
     torch,
     cache_manifests: Sequence[dict[str, Any]],
@@ -723,10 +817,21 @@ def _iter_training_cache_batches(
     rank: int,
     world_size: int,
     shard_by_path: bool,
+    shard_assignment: str = "greedy_rows",
 ) -> Iterable[tuple[Any, Any, Any, Any | None, Any | None, int]]:
     seen = 0
+    assigned_indices = (
+        _training_cache_rank_assignment(
+            cache_manifests,
+            rank=rank,
+            world_size=world_size,
+            mode=shard_assignment,
+        )
+        if shard_by_path and world_size > 1
+        else None
+    )
     for path_idx, manifest in enumerate(cache_manifests):
-        if shard_by_path and world_size > 1 and (path_idx % world_size) != rank:
+        if assigned_indices is not None and path_idx not in assigned_indices:
             continue
         for chunk in manifest.get("chunks", []):
             try:
@@ -805,6 +910,7 @@ def _train_one_epoch(
                 rank=rank,
                 world_size=world_size,
                 shard_by_path=shard_by_path,
+                shard_assignment=str(config.get("training_cache_shard_assignment", "greedy_rows")),
             )
         ):
             if world_size > 1 and not shard_by_path and (batch_idx % world_size) != rank:
@@ -2541,9 +2647,16 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             "enabled": bool(training_cache_manifests),
             "dir": str(config.get("training_cache_dir", "")),
             "manifest_paths": [str(row.get("manifest_path")) for row in training_cache_manifests],
-            "rows": sum(int(row.get("rows", 0)) for row in training_cache_manifests),
+            "rows": sum(_training_cache_manifest_row_count(row) for row in training_cache_manifests),
             "chunk_size": int(config.get("training_cache_chunk_size", config.get("batch_size", 4096) * 2))
             if config.get("training_cache_dir")
+            else None,
+            "shard_assignment": _training_cache_assignment_plan(
+                training_cache_manifests,
+                world_size=int(dist["world_size"]),
+                mode=str(config.get("training_cache_shard_assignment", "greedy_rows")),
+            )
+            if training_cache_manifests
             else None,
         },
     }

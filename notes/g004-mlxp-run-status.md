@@ -93,3 +93,13 @@ At `2026-05-23T01:16:33Z`:
 - GPU monitor showed ranks resident on all four GPUs; at that instant GPU 1–3 were at 100% while rank 0 was likely in rank-0 eval/checkpoint coordination.
 
 Continue monitoring until all epochs/checkpoint/prediction/finalizer complete. Do not checkpoint G004 before the finalization summary and completion audit pass.
+
+## 2026-05-23 GPU rank imbalance diagnosis
+
+The `bfe61db` relaunch is still running and should not be interrupted just to apply local code changes. A live snapshot at `2026-05-23T01:22:05Z` showed GPU 1–3 at 100% while GPU0 was idle after epoch 4 had been recorded. Process topology still showed all four torchrun ranks alive.
+
+Diagnosis: the current active pod code assigns cache shard paths by `path_idx % world_size`. The 16 training-cache manifests contain uneven row counts, so rank0 receives `4,415,873` rows while rank2 receives `5,184,766` rows. With DDP join enabled, rank0 can finish early and keep GPU0 idle while other ranks finish their larger shard sets.
+
+Local follow-up hardening changes the future/recovery default to deterministic `greedy_rows` cache-shard assignment. On the observed G004 cache manifest, expected row spread improves from `768,893` rows (`path_idx % world_size`) to `152,546` rows (`greedy_rows`). Evidence: `artifacts/fdm/g004_gpu_rank_imbalance_diagnosis.json`.
+
+Do not pull this hardening commit into the active pod while parent PID `263344` is still running. Use it only for future G004 recovery/restart, G005, or later training runs.

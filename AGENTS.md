@@ -57,6 +57,7 @@ Latest known live run snapshot: 2026-05-23 10:16 KST.
 - Current pod checkout is `bfe61db`; parent PID `263344`; watcher PID `263368`.
 - Current relaunch reused the existing split summary/shards instead of rewriting materialization. Reusable shard evidence: `fdm_train_shards` 16 files / `400,301,959,913` bytes; `fdm_target_shards` 16 files / `347,089,780,692` bytes.
 - Current progress evidence: `artifacts/fdm/g004_bfe61db_relaunch_training_progress_snapshot.json`. At 2026-05-23T01:16:33Z, `streaming_stats.json`, a 2,369-file ~53GB train cache, and `train_history.json` existed; epoch 1 completed over `19,211,006` examples with validation composite score `0.15456648272454743`.
+- GPU-utilization diagnosis: `artifacts/fdm/g004_gpu_rank_imbalance_diagnosis.json` records that the active `bfe61db` run can idle GPU0 during epoch tails because cache shards are assigned by path modulo. Local/origin hardening after `d9375fa` uses deterministic `greedy_rows` cache-shard assignment for future/recovery runs. Do **not** pull new local commits into the active pod while parent PID `263344` is still running.
 - Claim boundary: this is progress evidence only. G004 remains incomplete until final checkpoint, full predictions, wrapper summary, `artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json` pass, `artifacts/fdm/g004_full_fdm_completion_audit.json` `status=pass`/`error_count=0`, and OMX checkpointing with a fresh `get_goal` snapshot. Do not call `update_goal complete` for G004 in aggregate mode.
 
 Useful G004 monitor command:

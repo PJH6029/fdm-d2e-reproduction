@@ -7,6 +7,8 @@ import pytest
 
 from fdm_d2e.training.streaming_idm import (
     _distributed_runtime,
+    _training_cache_assignment_plan,
+    _training_cache_rank_assignment,
     predict_streaming_idm_checkpoint,
     recover_streaming_idm_outputs_from_checkpoint,
     scan_streaming_idm_stats,
@@ -48,6 +50,45 @@ def _record(idx: int, split: str) -> dict:
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
     path.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
+
+
+def test_training_cache_assignment_balances_manifest_rows():
+    manifests = [
+        {"rows": 1_121_684, "chunks": [{"rows": 1_121_684}]},
+        {"rows": 1_633_458, "chunks": [{"rows": 1_633_458}]},
+        {"rows": 1_698_060, "chunks": [{"rows": 1_698_060}]},
+        {"rows": 1_117_045, "chunks": [{"rows": 1_117_045}]},
+        {"rows": 1_201_218, "chunks": [{"rows": 1_201_218}]},
+        {"rows": 857_970, "chunks": [{"rows": 857_970}]},
+        {"rows": 1_597_891, "chunks": [{"rows": 1_597_891}]},
+        {"rows": 1_144_425, "chunks": [{"rows": 1_144_425}]},
+        {"rows": 1_104_112, "chunks": [{"rows": 1_104_112}]},
+        {"rows": 1_351_897, "chunks": [{"rows": 1_351_897}]},
+        {"rows": 1_078_306, "chunks": [{"rows": 1_078_306}]},
+        {"rows": 1_204_409, "chunks": [{"rows": 1_204_409}]},
+        {"rows": 988_859, "chunks": [{"rows": 988_859}]},
+        {"rows": 1_170_339, "chunks": [{"rows": 1_170_339}]},
+        {"rows": 810_509, "chunks": [{"rows": 810_509}]},
+        {"rows": 1_130_824, "chunks": [{"rows": 1_130_824}]},
+    ]
+
+    modulo_loads = [
+        sum(int(manifests[idx]["rows"]) for idx in range(len(manifests)) if idx % 4 == rank)
+        for rank in range(4)
+    ]
+    plan = _training_cache_assignment_plan(manifests, world_size=4, mode="greedy_rows")
+    greedy_loads = [row["rows"] for row in plan["ranks"]]
+    assigned = [
+        idx
+        for rank in range(4)
+        for idx in _training_cache_rank_assignment(manifests, rank=rank, world_size=4, mode="greedy_rows")
+    ]
+
+    assert sorted(assigned) == list(range(len(manifests)))
+    assert plan["mode"] == "greedy_rows"
+    assert max(greedy_loads) - min(greedy_loads) < max(modulo_loads) - min(modulo_loads)
+    assert plan["row_load_max"] == max(greedy_loads)
+    assert plan["row_load_min"] == min(greedy_loads)
 
 
 def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):

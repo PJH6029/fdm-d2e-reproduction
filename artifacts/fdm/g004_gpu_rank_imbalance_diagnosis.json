@@ -1,0 +1,42 @@
+{
+  "schema": "g004_gpu_rank_imbalance_diagnosis.v1",
+  "captured_at_utc": "2026-05-23T01:22:05Z",
+  "pod": "prod-rsv-jeonghunpark-20260521-76e25a",
+  "namespace": "p-production",
+  "pod_git_head": "bfe61db",
+  "local_fix_commit_pending": true,
+  "claim_boundary": "Throughput diagnosis and future-run hardening only; current G004 remains incomplete until checkpoint, predictions, finalization, audit, and OMX checkpoint pass.",
+  "observed_training_state": {
+    "parent_pid": 263344,
+    "watcher_pid": 263368,
+    "torchrun_rank_pids": [263508, 263509, 263510, 263511],
+    "history_len": 4,
+    "latest_completed_epoch": 4,
+    "train_examples_per_epoch": 19211006,
+    "checkpoint_exists": false,
+    "finalization_summary_exists": false,
+    "completion_audit_passed": false
+  },
+  "gpu_snapshot": {
+    "timestamp": "2026/05/23 01:22:05",
+    "gpu_utilization_percent": {"0": 0, "1": 100, "2": 100, "3": 100},
+    "interpretation": "rank0/GPU0 had finished its assigned cache shards while ranks 1-3 were still training under DDP join; this is not all-GPU idle, but it wastes one reserved GPU during tail portions of each epoch."
+  },
+  "cache_manifest_distribution_rows": {
+    "legacy_path_modulo": {
+      "rank0": 4415873,
+      "rank1": 5013664,
+      "rank2": 5184766,
+      "rank3": 4596703,
+      "max_minus_min": 768893
+    },
+    "greedy_rows_expected": {
+      "rank0": 4757106,
+      "rank1": 4778812,
+      "rank2": 4909652,
+      "rank3": 4765436,
+      "max_minus_min": 152546
+    }
+  },
+  "action_taken": "Local code now uses deterministic greedy_rows training-cache shard assignment by default and records the assignment plan in checkpoint metadata. The active pod run was not interrupted or updated."
+}
