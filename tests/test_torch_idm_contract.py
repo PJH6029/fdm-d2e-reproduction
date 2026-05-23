@@ -49,6 +49,25 @@ class TorchIDMContractTests(unittest.TestCase):
 
         self.assertEqual(tuple(out.shape), (3, 7))
 
+    def test_luma_temporal_conv_model_accepts_compact_luma_pair_features(self):
+        if not torch_available():
+            self.skipTest("torch extra is not installed")
+        torch = require_torch()
+        model = _build_model(
+            torch,
+            input_dim=812,
+            output_dim=7,
+            hidden_dim=8,
+            depth=1,
+            dropout=0.0,
+            config={"model_arch": "luma_temporal_conv", "visual_conv_channels": 2, "visual_conv_pool_hw": 2},
+            feature_mode="summary_compact_luma16_pair_shift_time",
+        )
+
+        out = model(torch.zeros((3, 812), dtype=torch.float32))
+
+        self.assertEqual(tuple(out.shape), (3, 7))
+
     def test_residual_mouse_baselines_are_causal_for_train_and_last_seen_for_target(self):
         train = [
             {"sequence_id": "r#0", "recording_id": "r", "game": "g", "timestamp_ns": 0, "ground_truth_tokens": ["MOUSE_DX_P1", "MOUSE_DY_Z0"]},

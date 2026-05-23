@@ -80,6 +80,8 @@ class NeuralIDMTests(unittest.TestCase):
             surfaced = record_features(row, feature_mode="summary_grid8_shift_surface_time")
             causal = record_features(row, feature_mode="summary_causal_compact_grid8_time_prior_action")
             stacked = record_features(row, feature_mode="summary_luma16_stack5_time")
+            luma_pair = record_features(row, feature_mode="summary_compact_luma16_pair_time")
+            luma_pair_shift = record_features(row, feature_mode="summary_compact_luma16_pair_shift_time")
 
             self.assertEqual(len(summary), 16)
             self.assertEqual(len(rich), 164)
@@ -88,6 +90,8 @@ class NeuralIDMTests(unittest.TestCase):
             self.assertEqual(len(surfaced), 620)
             self.assertEqual(len(causal), 504)
             self.assertEqual(len(stacked), 2332)
+            self.assertEqual(len(luma_pair), 796)
+            self.assertEqual(len(luma_pair_shift), 812)
             self.assertTrue(any(abs(value) > 0 for value in rich[16:]))
             self.assertTrue(any(abs(value) > 0 for value in richer[16:]))
             self.assertTrue(any(abs(value) > 0 for value in timed[596:]))
@@ -96,6 +100,8 @@ class NeuralIDMTests(unittest.TestCase):
             self.assertTrue(any(abs(value) > 0 for value in causal[6:]))
             self.assertTrue(any(abs(value) > 0 for value in stacked[16:2320]))
             self.assertTrue(any(abs(value) > 0 for value in stacked[2320:]))
+            self.assertTrue(any(abs(value) > 0 for value in luma_pair[16:784]))
+            self.assertTrue(any(abs(value) > 0 for value in luma_pair_shift[784:800]))
 
 
 if __name__ == "__main__":

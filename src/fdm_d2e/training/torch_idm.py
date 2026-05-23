@@ -62,20 +62,41 @@ def _build_mlp(torch, input_dim: int, output_dim: int, hidden_dim: int, depth: i
 
 
 def _luma_temporal_layout(input_dim: int, feature_mode: str, config: dict[str, Any]) -> dict[str, int]:
-    if feature_mode != "summary_luma16_stack5_time":
-        raise ValueError("model_arch=luma_temporal_conv requires feature_mode=summary_luma16_stack5_time")
+    supported_modes = {
+        "summary_luma16_stack5_time",
+        "summary_compact_luma16_pair_time",
+        "summary_compact_luma16_pair_shift_time",
+    }
+    if feature_mode not in supported_modes:
+        raise ValueError(f"model_arch=luma_temporal_conv requires one of: {sorted(supported_modes)}")
     luma_size = int(config.get("visual_luma_size", 16))
-    stack_frames = int(config.get("visual_stack_frames", 5))
-    if luma_size <= 0 or stack_frames < 2:
-        raise ValueError("visual_luma_size must be positive and visual_stack_frames must be >=2")
-    if luma_size != 16 or stack_frames != 5:
-        raise ValueError("summary_luma16_stack5_time requires visual_luma_size=16 and visual_stack_frames=5")
     summary_dim = 16
     temporal_dim = 12
     plane_dim = luma_size * luma_size
-    visual_planes = stack_frames + (stack_frames - 1)
+    if luma_size <= 0:
+        raise ValueError("visual_luma_size must be positive")
+    if feature_mode == "summary_luma16_stack5_time":
+        stack_frames = int(config.get("visual_stack_frames", 5))
+        if stack_frames < 2:
+            raise ValueError("visual_stack_frames must be >=2")
+        if luma_size != 16 or stack_frames != 5:
+            raise ValueError("summary_luma16_stack5_time requires visual_luma_size=16 and visual_stack_frames=5")
+        visual_planes = stack_frames + (stack_frames - 1)
+        expected_feature_dim = summary_dim + (visual_planes * plane_dim) + temporal_dim
+    elif feature_mode == "summary_compact_luma16_pair_time":
+        if luma_size != 16:
+            raise ValueError(f"{feature_mode} requires visual_luma_size=16")
+        stack_frames = 2
+        visual_planes = 3
+        expected_feature_dim = summary_dim + (visual_planes * plane_dim) + temporal_dim
+    else:
+        if luma_size != 16:
+            raise ValueError(f"{feature_mode} requires visual_luma_size=16")
+        stack_frames = 2
+        visual_planes = 3
+        shift_surface_dim = 16
+        expected_feature_dim = summary_dim + (visual_planes * plane_dim) + shift_surface_dim + temporal_dim
     visual_dim = visual_planes * plane_dim
-    expected_feature_dim = summary_dim + visual_dim + temporal_dim
     if input_dim < expected_feature_dim:
         raise ValueError(
             f"input_dim {input_dim} is too small for {feature_mode} visual layout "
@@ -90,7 +111,7 @@ def _luma_temporal_layout(input_dim: int, feature_mode: str, config: dict[str, A
         "visual_offset": summary_dim,
         "visual_dim": visual_dim,
         "expected_feature_dim": expected_feature_dim,
-        "aux_dim": summary_dim + temporal_dim + max(0, input_dim - expected_feature_dim),
+        "aux_dim": max(0, input_dim - visual_dim),
     }
 
 

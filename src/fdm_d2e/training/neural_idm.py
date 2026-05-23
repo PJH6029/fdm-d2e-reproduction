@@ -266,6 +266,48 @@ def _compact_frame_pair_features(
     return cur_grid + next_grid + delta_grid + shift
 
 
+def _compact_luma_pair_features(
+    row: dict[str, Any],
+    *,
+    grid_size: int = 8,
+    luma_size: int = 16,
+    shift_surface: bool = False,
+) -> list[float]:
+    compact = _compact_grid_luma(row, grid_size=grid_size, luma_size=luma_size)
+    plane_len = luma_size * luma_size
+    if compact is None:
+        current_path = str(row.get("frame", {}).get("path", ""))
+        if not current_path or not Path(current_path).exists():
+            visual = [0.0] * (plane_len * 3)
+            shift = [0.0] * (16 if shift_surface else 0)
+            return visual + shift
+        try:
+            _cur_grid, cur_luma = _ppm_grid_and_luma(current_path, grid_size=grid_size, luma_size=luma_size)
+        except (OSError, ValueError):
+            visual = [0.0] * (plane_len * 3)
+            shift = [0.0] * (16 if shift_surface else 0)
+            return visual + shift
+        next_path = _next_frame_path(row)
+        if next_path:
+            try:
+                _next_grid, next_luma = _ppm_grid_and_luma(next_path, grid_size=grid_size, luma_size=luma_size)
+            except (OSError, ValueError):
+                next_luma = tuple(0.0 for _ in range(plane_len))
+        else:
+            next_luma = tuple(0.0 for _ in range(plane_len))
+        delta = [float(n - c) for c, n in zip(cur_luma, next_luma)]
+        visual = list(cur_luma) + list(next_luma) + delta
+        if not shift_surface:
+            return visual
+        return visual + _coarse_shift_surface_features(tuple(cur_luma), tuple(next_luma), luma_size=luma_size)
+    _cur_grid, _next_grid, cur_luma, next_luma = compact
+    delta = [float(n - c) for c, n in zip(cur_luma, next_luma)]
+    visual = cur_luma + next_luma + delta
+    if not shift_surface:
+        return visual
+    return visual + _coarse_shift_surface_features(tuple(cur_luma), tuple(next_luma), luma_size=luma_size)
+
+
 def _compact_current_frame_features(
     row: dict[str, Any],
     *,
@@ -424,6 +466,10 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
         return base + _frame_pair_features(row, grid_size=8, luma_size=16, shift_surface=True) + _temporal_basis_features(row)
     if feature_mode == "summary_compact_grid8_shift_surface_time":
         return base + _compact_frame_pair_features(row, grid_size=8, luma_size=16, shift_surface=True) + _temporal_basis_features(row)
+    if feature_mode == "summary_compact_luma16_pair_time":
+        return base + _compact_luma_pair_features(row, grid_size=8, luma_size=16, shift_surface=False) + _temporal_basis_features(row)
+    if feature_mode == "summary_compact_luma16_pair_shift_time":
+        return base + _compact_luma_pair_features(row, grid_size=8, luma_size=16, shift_surface=True) + _temporal_basis_features(row)
     if feature_mode == "summary_causal_compact_grid8_time_prior_action":
         return (
             _current_summary_features(row)
