@@ -1,0 +1,457 @@
+{
+  "schema": "g005_idm_candidate_prefix_paper_metrics.v1",
+  "status": "pass",
+  "error_count": 0,
+  "model_name": "streaming_idm_d2e_full_luma_pair_paper_sum_calibrated",
+  "sample_method": "first 40000 prediction rows per parallel prediction part aligned with corresponding target shard chunks",
+  "prediction_part_paths": [
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_000/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_001/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_002/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_003/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_004/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_005/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_006/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_007/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_008/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_009/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_010/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_011/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_012/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_013/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_014/predictions.jsonl",
+    "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_015/predictions.jsonl"
+  ],
+  "target_record_paths": [
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_0/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_1/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_10/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_11/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_12/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_13/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_14/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_15/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_16/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_17/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_18/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_19/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_2/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_20/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_21/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_22/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_23/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_24/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_25/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_26/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_27/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_28/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_29/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_3/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_30/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_31/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_32/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_33/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_34/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_35/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_36/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_37/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_38/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_39/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_4/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_40/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_41/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_42/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_43/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_44/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_45/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_46/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_47/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_48/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_49/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_5/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_50/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_51/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_52/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_53/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_54/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_55/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_56/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_57/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_58/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_59/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_6/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_60/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_61/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_62/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_63/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_7/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_8/target_all_eval.jsonl",
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_9/target_all_eval.jsonl"
+  ],
+  "parts": [
+    {
+      "part_index": 0,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_000/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_0/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_1/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_10/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_11/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 1,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_001/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_12/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_13/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_14/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_15/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 2,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_002/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_16/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_17/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_18/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_19/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 3,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_003/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_2/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_20/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_21/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_22/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 4,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_004/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_23/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_24/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_25/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_26/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 5,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_005/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_27/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_28/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_29/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_3/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 6,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_006/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_30/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_31/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_32/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_33/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 7,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_007/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_34/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_35/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_36/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_37/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 8,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_008/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_38/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_39/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_4/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_40/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 9,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_009/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_41/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_42/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_43/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_44/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 10,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_010/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_45/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_46/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_47/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_48/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 11,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_011/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_49/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_5/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_50/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_51/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 12,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_012/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_52/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_53/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_54/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_55/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 13,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_013/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_56/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_57/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_58/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_59/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 14,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_014/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_6/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_60/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_61/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_62/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    },
+    {
+      "part_index": 15,
+      "prediction_path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/prediction_recovery_parts/part_015/predictions.jsonl",
+      "target_paths": [
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_63/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_7/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_8/target_all_eval.jsonl",
+        "outputs/data/d2e_full_corpus_shards_accel64/shard_9/target_all_eval.jsonl"
+      ],
+      "rows": 40000
+    }
+  ],
+  "alignment": {
+    "rows_seen": 640000,
+    "rows_per_part": 40000,
+    "sequence_id_mismatches": 0,
+    "missing_prediction_rows": 0,
+    "missing_target_rows": 0,
+    "examples": []
+  },
+  "paper_targets": {
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "groups": {
+    "all": {
+      "rows": 640000,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.2278401876047037,
+          "pearson_y": 0.00377538677466493,
+          "scale_ratio_x": 1.5992438858343174,
+          "scale_ratio_y": 5.169108687777271,
+          "sample_count": 598622,
+          "scale_sample_count": 640000
+        },
+        "keyboard": {
+          "key_accuracy": 0.01146398064147583,
+          "sample_count": 3226279
+        },
+        "mouse_button": {
+          "button_accuracy": 0.006703709535914337,
+          "sample_count": 88906
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.0009210038942447268,
+          "num_examples": 99891
+        },
+        "mouse_button": {
+          "accuracy": 0.005203550658096113,
+          "num_examples": 32670,
+          "predicted_examples": 35423,
+          "exact_true_positive_examples": 170,
+          "false_positive_examples": 35253,
+          "false_negative_examples": 32500,
+          "precision": 0.004799141800525083,
+          "recall": 0.005203550658096113,
+          "f1": 0.004993171104225104,
+          "no_button_examples": 607330,
+          "no_button_false_positive_examples": 34284,
+          "no_button_false_positive_rate": 0.056450364711112574
+        }
+      }
+    },
+    "eval_split:heldout_game": {
+      "rows": 276750,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.2775262315444716,
+          "pearson_y": -0.0014354931802045947,
+          "scale_ratio_x": 1.3545034188703393,
+          "scale_ratio_y": 5.107117184526884,
+          "sample_count": 267581,
+          "scale_sample_count": 276750
+        },
+        "keyboard": {
+          "key_accuracy": 0.009406810392820843,
+          "sample_count": 1566312
+        },
+        "mouse_button": {
+          "button_accuracy": 0.003147844636957257,
+          "sample_count": 38439
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.00028300187810337285,
+          "num_examples": 38869
+        },
+        "mouse_button": {
+          "accuracy": 0.0013475988239137536,
+          "num_examples": 24488,
+          "predicted_examples": 8887,
+          "exact_true_positive_examples": 33,
+          "false_positive_examples": 8854,
+          "false_negative_examples": 24455,
+          "precision": 0.0037132890739282097,
+          "recall": 0.0013475988239137536,
+          "f1": 0.0019775280898876404,
+          "no_button_examples": 252262,
+          "no_button_false_positive_examples": 8487,
+          "no_button_false_positive_rate": 0.03364359277259357
+        }
+      }
+    },
+    "eval_split:heldout_recording": {
+      "rows": 159359,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.034470645476575086,
+          "pearson_y": 0.004994055764924715,
+          "scale_ratio_x": 3.482359852730223,
+          "scale_ratio_y": 8.998766203104294,
+          "sample_count": 142499,
+          "scale_sample_count": 159359
+        },
+        "keyboard": {
+          "key_accuracy": 0.007657905949867155,
+          "sample_count": 847229
+        },
+        "mouse_button": {
+          "button_accuracy": 0.007904698285459809,
+          "sample_count": 35928
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.0012405548663584076,
+          "num_examples": 17734
+        },
+        "mouse_button": {
+          "accuracy": 0.005973120955699353,
+          "num_examples": 10045,
+          "predicted_examples": 15857,
+          "exact_true_positive_examples": 60,
+          "false_positive_examples": 15797,
+          "false_negative_examples": 9985,
+          "precision": 0.003783817872233083,
+          "recall": 0.005973120955699353,
+          "f1": 0.0046328468844104706,
+          "no_button_examples": 149314,
+          "no_button_false_positive_examples": 15321,
+          "no_button_false_positive_rate": 0.10260926637823647
+        }
+      }
+    },
+    "eval_split:temporal": {
+      "rows": 265852,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.23355371551011964,
+          "pearson_y": 0.014434989610202705,
+          "scale_ratio_x": 1.9166110032996977,
+          "scale_ratio_y": 5.34817564167086,
+          "sample_count": 249202,
+          "scale_sample_count": 265852
+        },
+        "keyboard": {
+          "key_accuracy": 0.014490799451773288,
+          "sample_count": 1171778
+        },
+        "mouse_button": {
+          "button_accuracy": 0.008731497095746674,
+          "sample_count": 26685
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.001202878753899162,
+          "num_examples": 49049
+        },
+        "mouse_button": {
+          "accuracy": 0.015312336871411172,
+          "num_examples": 5747,
+          "predicted_examples": 13389,
+          "exact_true_positive_examples": 88,
+          "false_positive_examples": 13301,
+          "false_negative_examples": 5659,
+          "precision": 0.0065725595638210475,
+          "recall": 0.015312336871411172,
+          "f1": 0.00919732441471572,
+          "no_button_examples": 260105,
+          "no_button_false_positive_examples": 13027,
+          "no_button_false_positive_rate": 0.050083620076507566
+        }
+      }
+    }
+  },
+  "findings": [],
+  "claim_boundary": "Prefix metrics are early-stop diagnostics for candidate selection only; they are not G005 completion evidence."
+}
