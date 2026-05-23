@@ -281,6 +281,7 @@ class _FramePairProvider:
         self.fps = int(fps)
         self.next_frame_offset = int(next_frame_offset)
         self.missing_frame_policy = str(missing_frame_policy)
+        self.max_open_streams = 2
         self.streams: dict[str, _VideoFrameStream] = {}
         self.missing_frames = 0
         self.video_restarts = 0
@@ -306,6 +307,10 @@ class _FramePairProvider:
     def _stream_frame(self, source: str, index: int) -> bytes | None:
         stream = self.streams.get(source)
         if stream is None:
+            if len(self.streams) >= self.max_open_streams:
+                for old_source, old_stream in list(self.streams.items()):
+                    old_stream.close()
+                    self.streams.pop(old_source, None)
             stream = _VideoFrameStream(source, image_size=self.image_size, fps=self.fps)
             self.streams[source] = stream
             self.video_restarts += 1
