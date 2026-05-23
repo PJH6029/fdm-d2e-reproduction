@@ -12,6 +12,21 @@ from fdm_d2e.training.streaming_idm import train_streaming_idm
 from fdm_d2e.training.torch_idm import torch_available
 
 
+def _summary_message(summary: dict) -> str:
+    if "metadata" not in summary:
+        return (
+            "streaming IDM worker complete: "
+            f"rank={summary.get('rank')} world_size={summary.get('world_size')} "
+            f"status={summary.get('status')}"
+        )
+    return (
+        "trained streaming IDM: "
+        f"model={summary['metadata']['model']} device={summary['device']} "
+        f"train={summary['metadata']['train_records']} target={summary['metadata']['target_records']} "
+        f"metrics={summary['metadata']['metrics_path']}"
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Train a streaming compact-feature IDM without loading full D2E into GPU memory.")
     parser.add_argument("--config", default="configs/model/idm_streaming_d2e_full_compact.yaml")
@@ -26,12 +41,7 @@ def main() -> int:
     config = load_config(args.config)
     config.setdefault("config_path", args.config)
     summary = train_streaming_idm(config)
-    print(
-        "trained streaming IDM: "
-        f"model={summary['metadata']['model']} device={summary['device']} "
-        f"train={summary['metadata']['train_records']} target={summary['metadata']['target_records']} "
-        f"metrics={summary['metadata']['metrics_path']}"
-    )
+    print(_summary_message(summary))
     return 0
 
 
