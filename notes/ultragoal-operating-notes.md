@@ -25,14 +25,15 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Current completed gates:
   - `G001-data-universe-audit`: full D2E-480p + D2E-Original universe manifest and storage/license report.
   - `G002-split-leakage-contract`: temporal, heldout-recording, and heldout-game split/leakage contract.
+  - `G003-d2e-only-idm`: full-corpus D2E-only IDM train/eval, canonical/accel64 promotion, split stats, and completion audit checkpointed in OMX.
   - `G007-runtime-sdk-adapter`: reusable SDK/action decoder/safety adapter/latency logger/deterministic replay contract only; this is not G008 live-game success.
 - G008 live-suite protocol exists (`docs/live_open_game_suite.md`, `configs/harness/g008_live_open_game_suite.yaml`, `scripts/validate_live_game_suite.py`) and requires >=3 open-source graphical games, >=3 tasks, 5 seeds/task, video/replay/latency/failure logs, and statistical comparison; protocol/readiness evidence is not G008 completion.
 - Final completion audit now exists (`configs/eval/final_quality_gates.yaml`, `scripts/validate_final_quality_gates.py`, `artifacts/reproducibility/final_quality_gate_audit.json`) and must pass before aggregate goal completion; current expected status is fail while G003-G009 remain incomplete.
 - G006 evaluation readiness audit exists (`configs/eval/g006_evaluation_readiness.yaml`, `scripts/validate_g006_evaluation_readiness.py`, `artifacts/eval/g006_evaluation_readiness_audit.json`) and must pass before G006 checkpoint; current expected status is fail until final split-aware endpoint stats, failure analysis, and claim taxonomy exist.
 - Current active gate:
-  - `G003-d2e-only-idm`: full-corpus D2E-only IDM extraction/training/evaluation.
+  - `G004-d2e-only-fdm-4xh200`: D2E-only FDM 4×H200 run on the existing MLXP pod.
 - Pending gates:
-  - `G004-d2e-only-fdm-4xh200`, `G005-aux-data-best-model`, `G006-evaluation-failure-analysis`, `G008-live-game-suite`, `G009-report-repro-package`.
+  - `G005-aux-data-best-model`, `G006-evaluation-failure-analysis`, `G008-live-game-suite`, `G009-report-repro-package`.
 - D2E-only gates must finish before D2E+aux or runtime success claims. D2E+aux may become the primary/best final model, but D2E-only results/ablations remain mandatory and separately reported.
 - Strong FDM/IDM evidence should include keyboard, mouse movement, and mouse-button endpoints; mouse-button claims must report precision/F1 and no-button false-positive rate, not only positive-class accuracy.
 
@@ -55,11 +56,14 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 
 - Current reservation/pod: `rsv-jeonghunpark-20260521-76e25a` / `prod-rsv-jeonghunpark-20260521-76e25a` in namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
-- Current G003 full-corpus IDM run path: `NUM_SHARDS=16 bash scripts/run_g003_d2e_full_idm_parallel.sh`.
+- G003 is complete in OMX; do not treat older G003 run/watcher notes as active blockers.
+- Current G004 run path: `bash scripts/run_g004_d2e_full_fdm_4xh200.sh` on pod checkout `d38a3b1`, parent PID `262618`, watcher PID `262772`.
+- Latest G004 progress snapshot is committed at `artifacts/fdm/g004_deferred_materialization_progress_snapshot.json`; as of 2026-05-23T00:21:04Z materialization was actively growing (train parts `16` / `368,945,307,285` bytes; target parts `11` / `63,658,038,599` bytes), GPUs were still 0% because this was pre-DDP CPU/IO materialization, and no split summary/train history existed yet.
+- Do not pull latest origin into the pod while G004 parent PID `262618` or child rank/materialization workers are alive. Monitor until split summary/cache/train-history appears, then verify GPU utilization during DDP training and final prediction.
 - G003 progress monitor exists (`scripts/monitor_g003_progress.py`, `docs/g003_progress_monitoring.md`) for non-mutating shard/PID/stale-progress summaries; monitor output is progress evidence only, not G003 completion.
 - G003 live health audit exists (`scripts/audit_g003_live_health.py`) for non-mutating parent/extractor/watcher/GPU-monitor process-topology summaries; use it for handoff/recovery evidence but not for completion claims.
-- For the current authoritative accel64 G003 process, parent PID `251593` is running `torchrun --nproc-per-node=4` from pod checkout `9a9f099`; accel64 monitor evidence paths are `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv` and `artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64_attached.json`. Do not pull latest origin into the pod while worker PIDs `252006..252009` are active; after accel64 audit pass, use `scripts/promote_g003_accel64_to_canonical.py` to produce canonical monitor/train-run/audit evidence.
-- G003 resume planner exists (`scripts/plan_g003_resume.py`, `artifacts/idm/g003_resume_plan.json`) and defers while the original parent PID is active; use only for operator-reviewed recovery if G003 stops before all shard summaries exist.
+- Historical G003 accel64 process notes for parent PID `251593` are no longer current; keep them only as provenance for the completed G003 checkpoint. Do not block G004 on old G003 worker/PID state.
+- G003 resume planner exists (`scripts/plan_g003_resume.py`, `artifacts/idm/g003_resume_plan.json`) but should not be used unless the completed G003 evidence is later found corrupt or missing.
 - G004 FDM training now requires explicit train-core pseudo-labels from the completed G003 IDM checkpoint (`scripts/predict_idm_streaming.py` + `configs/model/idm_streaming_d2e_full_compact_predict_fdm_train.yaml`) and evaluates on untouched `target_all_eval`; do not revert to target_all_eval recording-tail training for completion evidence. The G004 model feature mode is `summary_causal_compact_grid8_time_prior_action` to avoid next-frame inverse-dynamics leakage and include previous-action context.
 - G004 post-run watcher exists (`scripts/watch_g004_then_finalize.py`) and consumes `outputs/cluster/g004_d2e_full_fdm_4xh200.pid`; it runs the non-mutating finalizer after the parent exits but never checkpoints OMX/Codex state.
 - G003→G004 chain watcher exists (`scripts/watch_g003_then_launch_g004.py`) and may run in the pod with `--launch --start-g004-watcher`; it launches G004 only after G003 finalization and G003 audit pass, then starts the G004 post-run watcher. It never checkpoints OMX/Codex state. As of 2026-05-22 14:09 KST, the pod still had a stale `outputs/cluster/g003_to_g004_chain_watcher.pid` and `artifacts/fdm/g003_to_g004_chain_summary.json`, but no running watcher process; after G003 is promoted and OMX-checkpointed, start a fresh current watcher with `--require-g003-goal-checkpoint`.
@@ -82,6 +86,6 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - G008 readiness planner exists (`scripts/plan_g008_readiness.py`, `artifacts/harness/g008_readiness_plan.json`) for live open-source graphical-game collection prep; it is non-mutating, does not launch games, and currently blocks as expected until D2E-only prerequisites/checkpoint metadata and live-game host binaries are available.
 - G009 readiness planner exists (`scripts/plan_g009_readiness.py`, `artifacts/reproducibility/g009_readiness_plan.json`) for final report/repro package prep; it is non-mutating, does not refresh audits/packages, and currently blocks as expected until G003-G008 are complete.
 - Runtime adapter contract evidence: `artifacts/runtime/g007_runtime_replay_adapter_contract.json`; commits `34cddb7` and `e858114`; OMX checkpointed `G007-runtime-sdk-adapter` complete locally.
-- Do not checkpoint `G003-d2e-only-idm` complete until all 918 source variants are decoded/merged, streaming IDM training finishes, reports/metrics are validated, and evidence summaries are committed.
+- `G003-d2e-only-idm` is already checkpointed complete in OMX. Do not repeat the G003 checkpoint unless reconciling a ledger corruption.
 - Streaming IDM metadata now records config/data/split/source provenance (`checkpoint_metadata.json`, `resolved_config.json`); ensure the pod checkout includes this before the G003 extraction reaches training.
-- Commit `6974f38` adds automatic split-stat generation to future G003/G004 run wrappers, but the current active accel64 parent PID `251593` is on checkout `9a9f099` and local/origin are ahead. If the active run exits without the accel64 split-stat summary, pull latest origin after workers exit and run the accel64 finalization/recovery/promotion path before G003 completion audit/checkpoint.
+- Commit `6974f38` adds automatic split-stat generation to future G003/G004 run wrappers. The old accel64 G003 parent PID `251593` is historical; current live monitoring should focus on G004 parent PID `262618`.

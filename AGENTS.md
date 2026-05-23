@@ -25,7 +25,7 @@ These instructions apply to this repository and all child paths unless a deeper 
 - Keep claims evidence-bound. If a metric/harness claim lacks committed evidence, phrase it as pending/future work.
 - Do not commit secrets, tokens, kubeconfigs, private reservation payloads, or unredacted sensitive MLXP data.
 
-## Current ultragoal state (2026-05-22 KST)
+## Current ultragoal state (authoritative as of 2026-05-23 KST)
 
 Active aggregate Codex objective:
 
@@ -35,8 +35,8 @@ Current `.omx/ultragoal/goals.json` status:
 
 - `G001-data-universe-audit` — complete.
 - `G002-split-leakage-contract` — complete.
-- `G003-d2e-only-idm` — **in_progress** and active.
-- `G004-d2e-only-fdm-4xh200` — pending.
+- `G003-d2e-only-idm` — complete and checkpointed in OMX.
+- `G004-d2e-only-fdm-4xh200` — pending in OMX; active MLXP run is in progress.
 - `G005-aux-data-best-model` — pending.
 - `G006-evaluation-failure-analysis` — pending.
 - `G007-runtime-sdk-adapter` — complete for the adapter-contract slice only.
@@ -45,7 +45,39 @@ Current `.omx/ultragoal/goals.json` status:
 
 Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 are all complete and final quality gates pass.
 
-## Current G003 MLXP run
+## Current G004 MLXP run
+
+Latest known live run snapshot: 2026-05-23 09:21 KST.
+
+- Reservation: `rsv-jeonghunpark-20260521-76e25a`.
+- Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
+- Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
+- Active pod checkout for the running G004 parent is `d38a3b1`.
+- Current parent PID file: `outputs/cluster/g004_d2e_full_fdm_4xh200.pid`, observed parent PID `262618`.
+- Current watcher PID: `262772`, command `scripts/watch_g004_then_finalize.py`; it finalizes after parent exit but never checkpoints OMX/Codex state.
+- Current stage: rank-0 CPU/IO FDM materialization with 16 spawned workers. This is expected to show 0% GPU utilization until split summary, stats/cache build, and DDP training begin, but sustained idle without file growth is a blocker.
+- Latest committed progress snapshot: `artifacts/fdm/g004_deferred_materialization_progress_snapshot.json`. At 2026-05-23T00:21:04Z it showed train materialization parts `16` / `368,945,307,285` bytes, target parts `11` / `63,658,038,599` bytes, all four GPUs at 0%, no split summary or train history yet.
+- Active code defers audit-facing canonical train/target monolith construction until after GPU-relevant sharded training/prediction. Do **not** pull local/origin updates into the pod while parent PID `262618` or its Python rank/worker children are alive.
+- Claim boundary: this is active-run evidence only. G004 remains incomplete until `artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json` reports pass and `artifacts/fdm/g004_full_fdm_completion_audit.json` reports `status=pass`, `error_count=0`, followed by OMX checkpointing with a fresh `get_goal` snapshot. Do not call `update_goal complete` for G004 in aggregate mode.
+
+Useful G004 monitor command:
+
+```bash
+KUBECONFIG=/home/top321902/.kube/mlxp/jeonghunpark/debug-kubeconfig.yaml \
+  kubectl --request-timeout=600s -n p-production exec -i prod-rsv-jeonghunpark-20260521-76e25a -- bash -s <<'REMOTE'
+set -euo pipefail
+export PATH="$HOME/.local/bin:$PATH"
+cd /root/work/code/continuous-gui-poc/fdm-d2e-reproduction
+date -Iseconds
+cat outputs/cluster/g004_d2e_full_fdm_4xh200.pid 2>/dev/null || true
+pgrep -af 'run_g004|torchrun|train_fdm_streaming|watch_g004|multiprocessing.spawn' || true
+nvidia-smi --query-gpu=timestamp,index,utilization.gpu,utilization.memory,memory.used,memory.total,power.draw --format=csv,noheader,nounits || true
+REMOTE
+```
+
+## Historical G003 MLXP run (complete; do not treat as active)
+
+The bullets in this section are preserved historical context from before G003 completion. Do not follow their active-process/pull/checkpoint instructions as current state; G003 is complete in OMX and the live pod work is G004.
 
 Latest known live run snapshot: 2026-05-22 16:45 KST.
 

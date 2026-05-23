@@ -1,0 +1,192 @@
+{
+    "artifacts": {
+        "checkpoint": {
+            "bytes": 0,
+            "exists": false,
+            "files": 0
+        },
+        "completion_audit": {
+            "bytes": 14059,
+            "exists": true,
+            "files": 1
+        },
+        "finalization_summary": {
+            "bytes": 0,
+            "exists": false,
+            "files": 0
+        },
+        "gpu_monitor": {
+            "bytes": 17607,
+            "exists": true,
+            "files": 1
+        },
+        "predictions": {
+            "bytes": 0,
+            "exists": false,
+            "files": 0
+        },
+        "split_summary": {
+            "bytes": 0,
+            "exists": false,
+            "files": 0
+        },
+        "streaming_stats": {
+            "bytes": 0,
+            "exists": false,
+            "files": 0
+        },
+        "summary": {
+            "bytes": 0,
+            "exists": false,
+            "files": 0
+        },
+        "train_cache": {
+            "bytes": 0,
+            "exists": false,
+            "files": 0
+        },
+        "train_history": {
+            "bytes": 0,
+            "exists": false,
+            "files": 0
+        }
+    },
+    "captured_at": "2026-05-23T00:21:04Z",
+    "claim_boundary": "Progress snapshot only: CPU/IO materialization is active; G004 remains incomplete until finalization and completion audit pass, then OMX checkpoint.",
+    "git_head": "d38a3b1",
+    "gpu_csv": "2026/05/23 00:21:04.877, 0, 0, 0, 529, 143771, 118.93\n2026/05/23 00:21:04.879, 1, 0, 0, 623, 143771, 116.17\n2026/05/23 00:21:04.881, 2, 0, 0, 623, 143771, 113.95\n2026/05/23 00:21:04.883, 3, 0, 0, 623, 143771, 114.57",
+    "materialization_parts": {
+        "target": {
+            "bytes": 63658038599,
+            "count": 11,
+            "newest_mtime": 1779495664.0
+        },
+        "train": {
+            "bytes": 368945307285,
+            "count": 16,
+            "newest_mtime": 1779495664.0
+        }
+    },
+    "namespace": "p-production",
+    "parent_pid_file": "262618",
+    "pod": "prod-rsv-jeonghunpark-20260521-76e25a",
+    "processes": [
+        {
+            "cmd": "bash scripts/run_g004_d2e_full_fdm_4xh200.sh ",
+            "pid": 262618
+        },
+        {
+            "cmd": "bash scripts/run_g004_d2e_full_fdm_4xh200.sh ",
+            "pid": 262627
+        },
+        {
+            "cmd": "uv run torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 262701
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 262704
+        },
+        {
+            "cmd": "uv run python scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid ",
+            "pid": 262768
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid ",
+            "pid": 262772
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 262778
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 262779
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 262780
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 262781
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=58) --multiprocessing-fork ",
+            "pid": 262819
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=60) --multiprocessing-fork ",
+            "pid": 262822
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=62) --multiprocessing-fork ",
+            "pid": 262823
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=64) --multiprocessing-fork ",
+            "pid": 262824
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=66) --multiprocessing-fork ",
+            "pid": 262825
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=68) --multiprocessing-fork ",
+            "pid": 262826
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=70) --multiprocessing-fork ",
+            "pid": 262827
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=72) --multiprocessing-fork ",
+            "pid": 262828
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=74) --multiprocessing-fork ",
+            "pid": 262829
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=76) --multiprocessing-fork ",
+            "pid": 262830
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=78) --multiprocessing-fork ",
+            "pid": 262831
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=80) --multiprocessing-fork ",
+            "pid": 262832
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=82) --multiprocessing-fork ",
+            "pid": 262833
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=84) --multiprocessing-fork ",
+            "pid": 262834
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=86) --multiprocessing-fork ",
+            "pid": 262835
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=54, pipe_handle=88) --multiprocessing-fork ",
+            "pid": 262836
+        }
+    ],
+    "schema": "g004_deferred_materialization_progress_snapshot.v1",
+    "shards": {
+        "target": {
+            "bytes": 0,
+            "count": 0,
+            "newest_mtime": 0
+        },
+        "train": {
+            "bytes": 0,
+            "count": 0,
+            "newest_mtime": 0
+        }
+    }
+}

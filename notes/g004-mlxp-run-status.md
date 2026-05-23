@@ -40,3 +40,19 @@ After the aggregate Codex goal was restored, the user made GPU utilization an ex
 The pod was reset to commit `d38a3b1`, which persists the GPU-utilization rule and defers G004 audit-facing train/target monolith construction until after GPU-relevant sharded training/prediction work. Fresh G004 parent PID: `262618`; watcher PID: `262772`. Mirrored local evidence: `artifacts/fdm/g004_gpu_idle_restart_decision.json` and `artifacts/fdm/g004_gpu_idle_restart_launch.json`.
 
 Claim boundary: this restart improves GPU wall-clock utilization strategy but is not G004 completion evidence. G004 remains incomplete until finalization and `g004_full_fdm_completion_audit.json` pass, followed by OMX checkpointing.
+
+## 2026-05-23 deferred materialization progress
+
+The current `d38a3b1` G004 run is still alive and making CPU/IO progress. Latest committed snapshot:
+`artifacts/fdm/g004_deferred_materialization_progress_snapshot.json`.
+
+At `2026-05-23T00:21:04Z`:
+
+- Parent PID: `262618`; watcher PID: `262772`.
+- Materialization workers: 16 spawned workers plus four torchrun ranks waiting behind the rank-0 materialization barrier.
+- Train materialization parts: 16 files, `368,945,307,285` bytes and still growing.
+- Target materialization parts: 11 files, `63,658,038,599` bytes and still growing.
+- Sharded train/target symlinks, split summary, streaming stats, train cache, train history, checkpoint, predictions, wrapper summary, and finalizer output were not present yet.
+- All four H200 GPUs were at 0% utilization, which is expected only for the active CPU/IO materialization phase. If bytes stop growing or if GPUs remain idle after split summary/cache completion, treat it as a blocker and diagnose immediately.
+
+Do not launch another G004 run or pull newer local commits into the pod while PID `262618` and its children are alive. Continue monitoring until DDP training starts, then verify GPU utilization and train-history creation.
