@@ -1407,7 +1407,11 @@ def _predicted_tokens_from_output(
     mouse_axis_classes: list[str],
 ) -> list[str]:
     category_threshold = float(config.get("category_threshold", 0.35))
-    category_thresholds = {token: category_threshold for token in category_vocab}
+    configured_thresholds = config.get("category_thresholds", {})
+    category_thresholds = {
+        token: float(configured_thresholds.get(token, category_threshold))
+        for token in category_vocab
+    } if isinstance(configured_thresholds, dict) else {token: category_threshold for token in category_vocab}
     _dx, _dy, tokens = _prediction_from_output(
         output,
         base_dx=0.0,
@@ -1423,6 +1427,275 @@ def _predicted_tokens_from_output(
         mouse_output_gain=float(config.get("mouse_output_gain", 1.0)),
     )
     return tokens
+
+
+def _stream_category_group(token: str) -> str:
+    if token.startswith("KEY_"):
+        return "keyboard"
+    if token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")):
+        return "mouse_button"
+    return "other"
+
+
+def _default_calibration_grid(config: dict[str, Any]) -> list[float]:
+    raw_grid = config.get("category_calibration_grid")
+    if isinstance(raw_grid, list) and raw_grid:
+        grid = [float(value) for value in raw_grid]
+    else:
+        grid = [round(value / 100.0, 4) for value in range(5, 96, 5)]
+    return sorted({min(0.99, max(0.01, value)) for value in grid})
+
+
+def _fbeta_score(tp: float, fp: float, fn: float, beta: float) -> tuple[float, float, float]:
+    precision = tp / (tp + fp) if (tp + fp) else 0.0
+    recall = tp / (tp + fn) if (tp + fn) else 0.0
+    beta2 = beta * beta
+    score = (
+        (1.0 + beta2) * precision * recall / ((beta2 * precision) + recall)
+        if precision or recall
+        else 0.0
+    )
+    return score, precision, recall
+
+
+def _calibrate_streaming_category_thresholds(
+    torch,
+    model,
+    *,
+    train_records: str | Path | Sequence[str | Path],
+    stats: dict[str, Any],
+    config: dict[str, Any],
+    device: str,
+    category_vocab: list[str],
+) -> tuple[dict[str, float], dict[str, Any]]:
+    default_threshold = float(config.get("category_threshold", 0.35))
+    thresholds = {token: default_threshold for token in category_vocab}
+    mode = str(config.get("category_threshold_mode", "global"))
+    base_info: dict[str, Any] = {
+        "mode": "global_threshold_streaming" if mode == "global" else mode,
+        "category_threshold": default_threshold,
+        "category_thresholds": thresholds,
+    }
+    if mode == "global" or not category_vocab:
+        return thresholds, base_info
+    if mode not in {"per_token_fbeta_calibrated", "group_fbeta_calibrated"}:
+        raise ValueError(f"unsupported streaming category_threshold_mode: {mode}")
+
+    grid = _default_calibration_grid(config)
+    beta = float(config.get("category_calibration_beta", 1.0))
+    batch_size = int(config.get("category_calibration_batch_size", config.get("eval_batch_size", config.get("batch_size", 2048))))
+    max_examples = config.get("category_calibration_max_examples")
+    vocab_index = {token: idx for idx, token in enumerate(category_vocab)}
+    mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
+    groups = {
+        group: [idx for idx, token in enumerate(category_vocab) if _stream_category_group(token) == group]
+        for group in sorted({_stream_category_group(token) for token in category_vocab})
+    }
+    per_token_counts = {
+        token: {threshold: {"tp": 0, "fp": 0, "fn": 0} for threshold in grid}
+        for token in category_vocab
+    }
+    per_group_counts = {
+        group: {threshold: {"tp": 0, "fp": 0, "fn": 0} for threshold in grid}
+        for group in groups
+    }
+    observed_examples = 0
+    model.eval()
+    with torch.no_grad():
+        for rows in _iter_batches(train_records, batch_size, max_examples):
+            if not rows:
+                continue
+            x = _batch_features(
+                torch,
+                rows,
+                feature_mode=str(stats["feature_mode"]),
+                mean=stats["mean"],
+                std=stats["std"],
+                device=device,
+                mean_t=mean_t,
+                std_t=std_t,
+            )
+            outputs = model(x)
+            category_end = 2 + len(category_vocab)
+            probs = torch.sigmoid(outputs[:, 2:category_end]).detach()
+            labels = _category_targets(torch, rows, category_vocab, device=device, vocab_index=vocab_index).bool()
+            observed_examples += len(rows)
+            for threshold in grid:
+                pred = probs >= float(threshold)
+                tp_vec = (pred & labels).sum(dim=0).detach().cpu().tolist()
+                fp_vec = (pred & ~labels).sum(dim=0).detach().cpu().tolist()
+                fn_vec = (~pred & labels).sum(dim=0).detach().cpu().tolist()
+                for idx, token in enumerate(category_vocab):
+                    counts = per_token_counts[token][threshold]
+                    counts["tp"] += int(tp_vec[idx])
+                    counts["fp"] += int(fp_vec[idx])
+                    counts["fn"] += int(fn_vec[idx])
+                for group, indices in groups.items():
+                    counts = per_group_counts[group][threshold]
+                    counts["tp"] += sum(int(tp_vec[idx]) for idx in indices)
+                    counts["fp"] += sum(int(fp_vec[idx]) for idx in indices)
+                    counts["fn"] += sum(int(fn_vec[idx]) for idx in indices)
+
+    diagnostics: dict[str, Any] = {
+        "mode": mode,
+        "category_threshold": default_threshold,
+        "grid": grid,
+        "beta": beta,
+        "observed_examples": observed_examples,
+        "max_examples": max_examples,
+    }
+    if observed_examples == 0:
+        diagnostics["status"] = "no_calibration_examples"
+        diagnostics["category_thresholds"] = thresholds
+        return thresholds, diagnostics
+
+    if mode == "per_token_fbeta_calibrated":
+        per_token: dict[str, Any] = {}
+        for token in category_vocab:
+            best_key = (-1.0, -1.0, -1.0, default_threshold)
+            best_threshold = default_threshold
+            best_counts: dict[str, int] = {}
+            for threshold in grid:
+                counts = per_token_counts[token][threshold]
+                score, precision, recall = _fbeta_score(counts["tp"], counts["fp"], counts["fn"], beta)
+                key = (score, precision, recall, threshold)
+                if key > best_key:
+                    best_key = key
+                    best_threshold = float(threshold)
+                    best_counts = dict(counts)
+                    best_counts.update({"score": score, "precision": precision, "recall": recall})
+            thresholds[token] = best_threshold
+            per_token[token] = {"threshold": best_threshold, **best_counts}
+        diagnostics["per_token"] = per_token
+    else:
+        per_group: dict[str, Any] = {}
+        for group, indices in groups.items():
+            best_key = (-1.0, -1.0, -1.0, default_threshold)
+            best_threshold = default_threshold
+            best_counts: dict[str, int] = {}
+            for threshold in grid:
+                counts = per_group_counts[group][threshold]
+                score, precision, recall = _fbeta_score(counts["tp"], counts["fp"], counts["fn"], beta)
+                # Prefer precision before recall when scores tie; click/key
+                # spam poisons downstream pseudo-labeling more than abstention.
+                key = (score, precision, recall, threshold)
+                if key > best_key:
+                    best_key = key
+                    best_threshold = float(threshold)
+                    best_counts = dict(counts)
+                    best_counts.update({"score": score, "precision": precision, "recall": recall})
+            for idx in indices:
+                thresholds[category_vocab[idx]] = best_threshold
+            per_group[group] = {"threshold": best_threshold, "token_count": len(indices), **best_counts}
+        diagnostics["per_group"] = per_group
+    diagnostics["status"] = "computed"
+    diagnostics["category_thresholds"] = thresholds
+    return thresholds, diagnostics
+
+
+def _calibrate_streaming_mouse_output_gain(
+    torch,
+    model,
+    *,
+    train_records: str | Path | Sequence[str | Path],
+    stats: dict[str, Any],
+    config: dict[str, Any],
+    device: str,
+    category_vocab: list[str],
+    mouse_axis_classes: list[str],
+) -> tuple[float, dict[str, Any]]:
+    configured_gain = float(config.get("mouse_output_gain", 1.0))
+    mode = str(config.get("mouse_output_gain_mode", "fixed"))
+    min_gain = float(config.get("mouse_output_gain_min", 0.25))
+    max_gain = float(config.get("mouse_output_gain_max", 4.0))
+    if min_gain <= 0 or max_gain <= 0 or min_gain > max_gain:
+        raise ValueError("mouse_output_gain_min/max must be positive and ordered")
+    if mode == "fixed":
+        return configured_gain, {
+            "mode": "fixed",
+            "configured_gain": configured_gain,
+            "gain": configured_gain,
+            "min_gain": min_gain,
+            "max_gain": max_gain,
+        }
+    if mode != "train_abs_ratio":
+        raise ValueError(f"unsupported streaming mouse_output_gain_mode: {mode}")
+    batch_size = int(config.get("mouse_gain_calibration_batch_size", config.get("eval_batch_size", config.get("batch_size", 2048))))
+    max_examples = config.get("mouse_gain_calibration_max_examples", config.get("category_calibration_max_examples"))
+    category_threshold = float(config.get("category_threshold", 0.35))
+    configured_thresholds = config.get("category_thresholds", {})
+    category_thresholds = {
+        token: float(configured_thresholds.get(token, category_threshold))
+        for token in category_vocab
+    } if isinstance(configured_thresholds, dict) else {token: category_threshold for token in category_vocab}
+    mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
+    predicted_abs_sum = 0.0
+    target_abs_sum = 0.0
+    value_count = 0
+    model.eval()
+    with torch.no_grad():
+        for rows in _iter_batches(train_records, batch_size, max_examples):
+            x = _batch_features(
+                torch,
+                rows,
+                feature_mode=str(stats["feature_mode"]),
+                mean=stats["mean"],
+                std=stats["std"],
+                device=device,
+                mean_t=mean_t,
+                std_t=std_t,
+            )
+            outputs = model(x).detach().cpu().tolist()
+            for row, output in zip(rows, outputs):
+                dx, dy, _tokens = _prediction_from_output(
+                    output,
+                    base_dx=0.0,
+                    base_dy=0.0,
+                    residual_mouse=False,
+                    category_vocab=category_vocab,
+                    category_thresholds=category_thresholds,
+                    category_threshold=category_threshold,
+                    mouse_head_mode=str(config.get("mouse_head_mode", "axis_softmax")),
+                    mouse_axis_classes=mouse_axis_classes,
+                    mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
+                    mouse_axis_temperature=float(config.get("mouse_axis_temperature", 1.0)),
+                    mouse_output_gain=1.0,
+                )
+                target_dx, target_dy = target_mouse_delta(row)
+                predicted_abs_sum += abs(float(dx)) + abs(float(dy))
+                target_abs_sum += abs(float(target_dx)) + abs(float(target_dy))
+                value_count += 2
+    predicted_abs_mean = predicted_abs_sum / value_count if value_count else None
+    target_abs_mean = target_abs_sum / value_count if value_count else None
+    if not predicted_abs_mean or not target_abs_mean:
+        return configured_gain, {
+            "mode": mode,
+            "status": "insufficient_nonzero_mouse",
+            "configured_gain": configured_gain,
+            "gain": configured_gain,
+            "min_gain": min_gain,
+            "max_gain": max_gain,
+            "predicted_abs_mean": predicted_abs_mean,
+            "target_abs_mean": target_abs_mean,
+            "value_count": value_count,
+        }
+    raw_ratio = target_abs_mean / max(predicted_abs_mean, 1e-9)
+    unclipped_gain = configured_gain * raw_ratio
+    gain = min(max_gain, max(min_gain, unclipped_gain))
+    return gain, {
+        "mode": mode,
+        "status": "computed",
+        "configured_gain": configured_gain,
+        "raw_ratio": raw_ratio,
+        "unclipped_gain": unclipped_gain,
+        "gain": gain,
+        "min_gain": min_gain,
+        "max_gain": max_gain,
+        "predicted_abs_mean": predicted_abs_mean,
+        "target_abs_mean": target_abs_mean,
+        "value_count": value_count,
+        "max_examples": max_examples,
+    }
 
 
 def _metric_path_value(metrics: dict[str, Any], path: str) -> float | None:
@@ -1877,9 +2150,12 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "batch_size",
         "max_target_examples",
         "category_threshold",
+        "category_thresholds",
+        "category_threshold_mode",
         "mouse_axis_decode_mode",
         "mouse_axis_temperature",
         "mouse_output_gain",
+        "mouse_output_gain_mode",
         "resume_predictions",
         "force_cpu",
     ):
@@ -2106,9 +2382,12 @@ def _predict_streaming_idm_checkpoint_parallel(
         "batch_size",
         "max_target_examples",
         "category_threshold",
+        "category_thresholds",
+        "category_threshold_mode",
         "mouse_axis_decode_mode",
         "mouse_axis_temperature",
         "mouse_output_gain",
+        "mouse_output_gain_mode",
         "force_cpu",
         "validate_pseudolabels",
     ):
@@ -2262,9 +2541,12 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         "batch_size",
         "max_target_examples",
         "category_threshold",
+        "category_thresholds",
+        "category_threshold_mode",
         "mouse_axis_decode_mode",
         "mouse_axis_temperature",
         "mouse_output_gain",
+        "mouse_output_gain_mode",
     ):
         if key in config:
             prediction_config[key] = config[key]
@@ -2336,8 +2618,15 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         "convergence_report_path": str(convergence_report_path),
         "convergence_plateau_met": bool(convergence_report.get("plateau_met", False)),
         "calibration": {
-            "mode": "global_threshold_streaming",
+            "mode": (
+                "global_threshold_streaming"
+                if str(checkpoint_config.get("category_threshold_mode", "global")) == "global"
+                else str(checkpoint_config.get("category_threshold_mode", "global_threshold_streaming"))
+            ),
             "category_threshold": float(checkpoint_config.get("category_threshold", 0.35)),
+            "category_thresholds": dict(checkpoint_config.get("category_thresholds", {})),
+            "mouse_output_gain": float(checkpoint_config.get("mouse_output_gain", 1.0)),
+            "mouse_output_gain_mode": str(checkpoint_config.get("mouse_output_gain_mode", "fixed")),
             "last_train_loss": history[-1]["loss"] if history else None,
             "prediction_fingerprint": prediction["prediction_fingerprint"],
         },
@@ -2544,6 +2833,27 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             "world_size": int(dist["world_size"]),
             "status": "worker_complete",
         }
+    category_thresholds, calibration_info = _calibrate_streaming_category_thresholds(
+        torch,
+        model,
+        train_records=train_record_paths if len(train_record_paths) > 1 else train_record_paths[0],
+        stats=stats,
+        config=config,
+        device=device,
+        category_vocab=category_vocab,
+    )
+    config["category_thresholds"] = category_thresholds
+    mouse_output_gain, mouse_output_gain_info = _calibrate_streaming_mouse_output_gain(
+        torch,
+        model,
+        train_records=train_record_paths if len(train_record_paths) > 1 else train_record_paths[0],
+        stats=stats,
+        config=config,
+        device=device,
+        category_vocab=category_vocab,
+        mouse_axis_classes=mouse_axis_classes,
+    )
+    config["mouse_output_gain"] = mouse_output_gain
     checkpoint_path = out_dir / "checkpoint.pt"
     checkpoint_payload = {
         "model_state_dict": model.state_dict(),
@@ -2627,8 +2937,9 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "convergence_report_path": str(out_dir / "convergence_report.json"),
         "convergence_plateau_met": bool(convergence_report.get("plateau_met", False)),
         "calibration": {
-            "mode": "global_threshold_streaming",
-            "category_threshold": float(config.get("category_threshold", 0.35)),
+            **calibration_info,
+            "mouse_output_gain": mouse_output_gain,
+            "mouse_output_gain_info": mouse_output_gain_info,
             "last_train_loss": history[-1]["loss"] if history else None,
             "prediction_fingerprint": prediction["prediction_fingerprint"],
         },

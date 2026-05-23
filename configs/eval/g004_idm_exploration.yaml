@@ -1,0 +1,106 @@
+{
+  "schema": "g004_idm_exploration_config.v1",
+  "output_path": "artifacts/idm/g004_idm_exploration_summary.json",
+  "prerequisites": {
+    "g002_failure_root_cause": "artifacts/eval/g002_failure_root_cause_audit.json",
+    "g003_gidm_baseline_contract": "artifacts/eval/g003_gidm_baseline_contract.json"
+  },
+  "current_full_idm_metrics": "outputs/idm_streaming_d2e_full_compact/metrics.json",
+  "diagnosed_failure_links": [
+    {
+      "cause": "teacher_label_quality_too_low",
+      "g004_response": "replace fixed global threshold with streaming group F-beta calibration and add mouse train-absolute-ratio gain calibration"
+    },
+    {
+      "cause": "d2e_metric_compatibility",
+      "g004_response": "bind candidate gates to G003 paper/repo targets and local exact-split postprocessing"
+    },
+    {
+      "cause": "feature_sufficiency",
+      "g004_response": "carry both surface/grid MLP and luma temporal convolution full-corpus candidates into G005"
+    }
+  ],
+  "sweep_evidence": [
+    {
+      "id": "shooter32_surface_motion",
+      "scale": "small_h200",
+      "path": "artifacts/idm/idm_torch_shooter32_surface_motion_sweep_h200.json"
+    },
+    {
+      "id": "shooter32_luma_temporal_conv",
+      "scale": "small_h200",
+      "path": "artifacts/idm/idm_torch_shooter32_luma_temporal_conv_h256_sweep_h200.json"
+    },
+    {
+      "id": "shooter32_axis_softmax_motion",
+      "scale": "small_h200",
+      "path": "artifacts/idm/idm_torch_shooter32_axis_softmax_motion_sweep_h200.json"
+    },
+    {
+      "id": "shooter64_surface_motion",
+      "scale": "medium_h200",
+      "path": "artifacts/idm/idm_torch_shooter64_surface_motion_sweep_h200.json"
+    }
+  ],
+  "portfolio_evidence": [
+    {
+      "id": "shooter32_softmax_click_residual_motion_portfolio",
+      "scale": "small_h200",
+      "path": "artifacts/idm/idm_shooter32_softmax_click_residual_motion_portfolio_h200.json"
+    }
+  ],
+  "progress_criteria": {
+    "min_small_medium_mouse_button_f1": 0.20,
+    "max_small_medium_no_button_fpr": 0.10,
+    "min_small_medium_mouse_pearson": 0.25,
+    "requires_medium_candidate": true,
+    "requires_non_global_streaming_calibration": true
+  },
+  "full_corpus_candidate_configs": [
+    "configs/model/idm_streaming_d2e_full_surface_calibrated.yaml",
+    "configs/model/idm_streaming_d2e_full_luma_temporal_calibrated.yaml"
+  ],
+  "selected_g005_order": [
+    {
+      "rank": 1,
+      "config": "configs/model/idm_streaming_d2e_full_surface_calibrated.yaml",
+      "reason": "Best medium H200 evidence uses surface/grid features with axis-softmax motion, low no-button FPR, and stronger mouse Pearson than luma on shooter64."
+    },
+    {
+      "rank": 2,
+      "config": "configs/model/idm_streaming_d2e_full_luma_temporal_calibrated.yaml",
+      "reason": "Backup architecture if surface MLP plateaus; keeps temporal luma convolution candidate from shooter32 sweeps."
+    }
+  ],
+  "implementation_hooks": {
+    "streaming_category_calibration": {
+      "path": "src/fdm_d2e/training/streaming_idm.py",
+      "patterns": [
+        "_calibrate_streaming_category_thresholds",
+        "group_fbeta_calibrated",
+        "category_thresholds"
+      ]
+    },
+    "streaming_mouse_gain_calibration": {
+      "path": "src/fdm_d2e/training/streaming_idm.py",
+      "patterns": [
+        "_calibrate_streaming_mouse_output_gain",
+        "train_abs_ratio",
+        "mouse_output_gain_info"
+      ]
+    },
+    "luma_temporal_conv": {
+      "path": "src/fdm_d2e/training/torch_idm.py",
+      "patterns": [
+        "luma_temporal_conv",
+        "_build_luma_temporal_conv_model"
+      ]
+    }
+  },
+  "budget": {
+    "g004_gpu_policy": "No active reservation is held after code/artifact work; reuse existing small/medium H200 evidence and reserve 4xH200 only for G005 full-corpus run.",
+    "g005_full_run_gpu_target": "4xH200",
+    "candidate_limit": 2,
+    "early_abort_rule": "Abort a full candidate only if train/eval artifacts show no improvement over current full IDM after at least one full epoch plus calibrated prediction on the convergence sample."
+  }
+}

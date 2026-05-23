@@ -1,0 +1,684 @@
+{
+  "schema": "idm_exploration_summary.v1",
+  "status": "pass",
+  "error_count": 0,
+  "findings": [],
+  "prerequisites": {
+    "g002_failure_root_cause": {
+      "artifact": {
+        "path": "artifacts/eval/g002_failure_root_cause_audit.json",
+        "exists": true,
+        "bytes": 221651,
+        "sha256": "c16e652a2de8059c5f8adc08fe0fe0a31efdc2b5919a6bbd8e1fea84a91170d0"
+      },
+      "status": "pass",
+      "error_count": 0
+    },
+    "g003_gidm_baseline_contract": {
+      "artifact": {
+        "path": "artifacts/eval/g003_gidm_baseline_contract.json",
+        "exists": true,
+        "bytes": 12708,
+        "sha256": "f3e4c1a7b5aa1194e7ea54d35c8ba077cc158522b8372532d50e93426c982ac3"
+      },
+      "status": "pass",
+      "error_count": 0
+    }
+  },
+  "diagnosed_failure_links": [
+    {
+      "cause": "teacher_label_quality_too_low",
+      "g004_response": "replace fixed global threshold with streaming group F-beta calibration and add mouse train-absolute-ratio gain calibration"
+    },
+    {
+      "cause": "d2e_metric_compatibility",
+      "g004_response": "bind candidate gates to G003 paper/repo targets and local exact-split postprocessing"
+    },
+    {
+      "cause": "feature_sufficiency",
+      "g004_response": "carry both surface/grid MLP and luma temporal convolution full-corpus candidates into G005"
+    }
+  ],
+  "current_full_idm": {
+    "metrics_path": "outputs/idm_streaming_d2e_full_compact/metrics.json",
+    "artifact": {
+      "path": "outputs/idm_streaming_d2e_full_compact/metrics.json",
+      "exists": true,
+      "bytes": 893,
+      "sha256": "278f6cfbc338fe7d40b5a65194aa10ee63900659585adfa83e2ccebe97789342"
+    },
+    "metrics": {
+      "num_examples": 16698646,
+      "keyboard_accuracy": 0.012223072565834329,
+      "mouse_button_accuracy": 0.007444106661119354,
+      "mouse_button_f1": 0.010283898532443663,
+      "no_button_false_positive_rate": 0.01989626904724157,
+      "mouse_move_pearson": 0.17248849180857093,
+      "mouse_move_scale_ratio": 1.9342231905794876
+    }
+  },
+  "sweep_evidence": [
+    {
+      "id": "shooter32_surface_motion",
+      "scale": "small_h200",
+      "path": "artifacts/idm/idm_torch_shooter32_surface_motion_sweep_h200.json",
+      "artifact": {
+        "path": "artifacts/idm/idm_torch_shooter32_surface_motion_sweep_h200.json",
+        "exists": true,
+        "bytes": 640469,
+        "sha256": "2fe1e7f75040831cb1b3313782d46a100e509a7b8484cb511d6d7072785b4a10"
+      },
+      "num_runs": 32,
+      "top_variant": {
+        "variant": "lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4",
+        "model_name": "torch_mlp_idm_shooter32_surface_motion_lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4",
+        "config": {
+          "categorical_loss_weight": 0.5,
+          "categorical_pos_weight_cap": 20.0,
+          "category_threshold": 0.35,
+          "hidden_dim": 128,
+          "depth": 2,
+          "categorical_loss": "focal",
+          "focal_gamma": 2.0,
+          "category_threshold_mode": "group_exact_calibrated",
+          "category_calibration_beta": 1.0,
+          "category_calibration_fraction": 0.2,
+          "button_head_mode": "softmax",
+          "button_softmax_threshold": 0.5,
+          "button_softmax_threshold_mode": "fbeta_calibrated",
+          "button_softmax_loss_weight": 0.5,
+          "button_softmax_class_weight_cap": 4.0,
+          "button_softmax_no_button_weight": 1.5,
+          "button_softmax_positive_weight": 1.0,
+          "mouse_head_mode": "axis_softmax",
+          "mouse_axis_loss_weight": 1.0,
+          "mouse_regression_loss_weight": 0.1,
+          "mouse_axis_class_weight_cap": 4.0,
+          "epochs": 80,
+          "feature_mode": "summary_grid8_shift_surface_time",
+          "train_records": "outputs/data/real_multi_shooter32/train.jsonl",
+          "target_records": "outputs/data/real_multi_shooter32/heldout.jsonl"
+        },
+        "metrics_snapshot": {
+          "num_examples": 768,
+          "keyboard_accuracy": 0.10963455149501661,
+          "mouse_button_accuracy": 0.125,
+          "mouse_button_f1": 0.15384615384615385,
+          "no_button_false_positive_rate": 0.027472527472527472,
+          "mouse_move_pearson": 0.2446628577741008,
+          "mouse_move_scale_ratio": 1.2634794899362043
+        },
+        "score": 0.5081435631152713,
+        "metadata": {
+          "train_records": 2304,
+          "target_records": 768,
+          "dataset_fingerprint": "b678bc8c6f83ac9686811bd6e11ad174d394829e9edef6e5eb6750fa1ab3d791",
+          "checkpoint_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4/checkpoint.pt",
+          "metrics_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4/metrics.json"
+        }
+      }
+    },
+    {
+      "id": "shooter32_luma_temporal_conv",
+      "scale": "small_h200",
+      "path": "artifacts/idm/idm_torch_shooter32_luma_temporal_conv_h256_sweep_h200.json",
+      "artifact": {
+        "path": "artifacts/idm/idm_torch_shooter32_luma_temporal_conv_h256_sweep_h200.json",
+        "exists": true,
+        "bytes": 522695,
+        "sha256": "4391332312688a99396f2dadca31d4b73c563c74ad9e4528c9377641225eda87"
+      },
+      "num_runs": 24,
+      "top_variant": {
+        "variant": "lw0.5_pc20_th0.35_h256_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw2_mrlw0.1_macw4",
+        "model_name": "torch_mlp_idm_shooter32_luma_temporal_conv_lw0.5_pc20_th0.35_h256_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw2_mrlw0.1_macw4",
+        "config": {
+          "categorical_loss_weight": 0.5,
+          "categorical_pos_weight_cap": 20.0,
+          "category_threshold": 0.35,
+          "hidden_dim": 256,
+          "depth": 2,
+          "categorical_loss": "focal",
+          "focal_gamma": 2.0,
+          "category_threshold_mode": "group_exact_calibrated",
+          "category_calibration_beta": 1.0,
+          "category_calibration_fraction": 0.2,
+          "button_head_mode": "softmax",
+          "button_softmax_threshold": 0.5,
+          "button_softmax_threshold_mode": "fbeta_calibrated",
+          "button_softmax_loss_weight": 0.25,
+          "button_softmax_class_weight_cap": 4.0,
+          "button_softmax_no_button_weight": 1.5,
+          "button_softmax_positive_weight": 1.0,
+          "mouse_head_mode": "axis_softmax",
+          "mouse_axis_loss_weight": 2.0,
+          "mouse_regression_loss_weight": 0.1,
+          "mouse_axis_class_weight_cap": 4.0,
+          "epochs": 80,
+          "feature_mode": "summary_luma16_stack5_time",
+          "model_arch": "luma_temporal_conv",
+          "train_records": "outputs/data/real_multi_shooter32/train.jsonl",
+          "target_records": "outputs/data/real_multi_shooter32/heldout.jsonl"
+        },
+        "metrics_snapshot": {
+          "num_examples": 768,
+          "keyboard_accuracy": 0.17275747508305647,
+          "mouse_button_accuracy": 0.15,
+          "mouse_button_f1": 0.14285714285714285,
+          "no_button_false_positive_rate": 0.04807692307692308,
+          "mouse_move_pearson": 0.2579287976524461,
+          "mouse_move_scale_ratio": 1.8564674784654234
+        },
+        "score": 0.5735434155926453,
+        "metadata": {
+          "train_records": 2304,
+          "target_records": 768,
+          "dataset_fingerprint": "a2bc506fa963077bfef6f6c438e381d3e9fb2f0722ea316e7f3ebb73c554376d",
+          "checkpoint_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_luma_temporal_conv/lw0.5_pc20_th0.35_h256_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw2_mrlw0.1_macw4/checkpoint.pt",
+          "metrics_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_luma_temporal_conv/lw0.5_pc20_th0.35_h256_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw2_mrlw0.1_macw4/metrics.json"
+        }
+      }
+    },
+    {
+      "id": "shooter32_axis_softmax_motion",
+      "scale": "small_h200",
+      "path": "artifacts/idm/idm_torch_shooter32_axis_softmax_motion_sweep_h200.json",
+      "artifact": {
+        "path": "artifacts/idm/idm_torch_shooter32_axis_softmax_motion_sweep_h200.json",
+        "exists": true,
+        "bytes": 641148,
+        "sha256": "82252ba5ba9e5cb2ee28cac6c5af3f72913adb1d7999569464b9cbcb274c2eb2"
+      },
+      "num_runs": 32,
+      "top_variant": {
+        "variant": "lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4",
+        "model_name": "torch_mlp_idm_shooter32_axis_softmax_motion_lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4",
+        "config": {
+          "categorical_loss_weight": 0.5,
+          "categorical_pos_weight_cap": 20.0,
+          "category_threshold": 0.35,
+          "hidden_dim": 128,
+          "depth": 2,
+          "categorical_loss": "focal",
+          "focal_gamma": 2.0,
+          "category_threshold_mode": "group_exact_calibrated",
+          "category_calibration_beta": 1.0,
+          "category_calibration_fraction": 0.2,
+          "button_head_mode": "softmax",
+          "button_softmax_threshold": 0.5,
+          "button_softmax_threshold_mode": "fbeta_calibrated",
+          "button_softmax_loss_weight": 0.25,
+          "button_softmax_class_weight_cap": 4.0,
+          "button_softmax_no_button_weight": 1.5,
+          "button_softmax_positive_weight": 1.0,
+          "mouse_head_mode": "axis_softmax",
+          "mouse_axis_loss_weight": 1.0,
+          "mouse_regression_loss_weight": 0.1,
+          "mouse_axis_class_weight_cap": 4.0,
+          "epochs": 80,
+          "feature_mode": "summary_grid8_shift_time",
+          "train_records": "outputs/data/real_multi_shooter32/train.jsonl",
+          "target_records": "outputs/data/real_multi_shooter32/heldout.jsonl"
+        },
+        "metrics_snapshot": {
+          "num_examples": 768,
+          "keyboard_accuracy": 0.1760797342192691,
+          "mouse_button_accuracy": 0.15,
+          "mouse_button_f1": 0.18181818181818182,
+          "no_button_false_positive_rate": 0.0260989010989011,
+          "mouse_move_pearson": 0.145233637454755,
+          "mouse_move_scale_ratio": 1.3492500441875988
+        },
+        "score": 0.503131553492206,
+        "metadata": {
+          "train_records": 2304,
+          "target_records": 768,
+          "dataset_fingerprint": "96ce66cb43d9b8a763f5e5ec56e76ce8e8c8bf9e418cdd605f2d4d8cb4e458d5",
+          "checkpoint_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_axis_softmax_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4/checkpoint.pt",
+          "metrics_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_axis_softmax_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4/metrics.json"
+        }
+      }
+    },
+    {
+      "id": "shooter64_surface_motion",
+      "scale": "medium_h200",
+      "path": "artifacts/idm/idm_torch_shooter64_surface_motion_sweep_h200.json",
+      "artifact": {
+        "path": "artifacts/idm/idm_torch_shooter64_surface_motion_sweep_h200.json",
+        "exists": true,
+        "bytes": 680467,
+        "sha256": "12287a1ac6493fdac92a7fabce46143f6b04916bc933b877aaf3f0dcf43bb746"
+      },
+      "num_runs": 32,
+      "top_variant": {
+        "variant": "lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4",
+        "model_name": "torch_mlp_idm_shooter64_surface_motion_lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4",
+        "config": {
+          "categorical_loss_weight": 0.5,
+          "categorical_pos_weight_cap": 20.0,
+          "category_threshold": 0.35,
+          "hidden_dim": 128,
+          "depth": 2,
+          "categorical_loss": "focal",
+          "focal_gamma": 2.0,
+          "category_threshold_mode": "group_exact_calibrated",
+          "category_calibration_beta": 1.0,
+          "category_calibration_fraction": 0.2,
+          "button_head_mode": "softmax",
+          "button_softmax_threshold": 0.5,
+          "button_softmax_threshold_mode": "fbeta_calibrated",
+          "button_softmax_loss_weight": 0.25,
+          "button_softmax_class_weight_cap": 4.0,
+          "button_softmax_no_button_weight": 1.5,
+          "button_softmax_positive_weight": 1.0,
+          "mouse_head_mode": "axis_softmax",
+          "mouse_axis_loss_weight": 0.5,
+          "mouse_regression_loss_weight": 0.25,
+          "mouse_axis_class_weight_cap": 4.0,
+          "epochs": 80,
+          "feature_mode": "summary_grid8_shift_surface_time",
+          "model_arch": "mlp",
+          "train_records": "outputs/data/real_multi_shooter64/train.jsonl",
+          "target_records": "outputs/data/real_multi_shooter64/heldout.jsonl"
+        },
+        "metrics_snapshot": {
+          "num_examples": 1536,
+          "keyboard_accuracy": 0.19047619047619047,
+          "mouse_button_accuracy": 0.22058823529411764,
+          "mouse_button_f1": 0.24193548387096775,
+          "no_button_false_positive_rate": 0.02656675749318801,
+          "mouse_move_pearson": 0.30395693874115204,
+          "mouse_move_scale_ratio": 1.2007217193927018
+        },
+        "score": 0.7363686130883103,
+        "metadata": {
+          "train_records": 4608,
+          "target_records": 1536,
+          "dataset_fingerprint": "1bc7d9a5988936b29f607709728dde8dab26daa3b6caa99dfebde58c27e1de76",
+          "checkpoint_path": "outputs/idm_torch_sweeps/idm_torch_shooter64_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4/checkpoint.pt",
+          "metrics_path": "outputs/idm_torch_sweeps/idm_torch_shooter64_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4/metrics.json"
+        }
+      }
+    }
+  ],
+  "portfolio_evidence": [
+    {
+      "id": "shooter32_softmax_click_residual_motion_portfolio",
+      "scale": "small_h200",
+      "path": "artifacts/idm/idm_shooter32_softmax_click_residual_motion_portfolio_h200.json",
+      "artifact": {
+        "path": "artifacts/idm/idm_shooter32_softmax_click_residual_motion_portfolio_h200.json",
+        "exists": true,
+        "bytes": 9537,
+        "sha256": "e115f5f466c80d5453ab04eb51f18fd5e3ec5762d8a0f738089db5274765f5f4"
+      },
+      "portfolio": {
+        "model_name": "idm_shooter32_softmax_click_residual_motion_portfolio",
+        "metrics": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 768,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.10963455149501661,
+            "num_examples": 301
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.125,
+            "num_examples": 40,
+            "predicted_examples": 22,
+            "exact_true_positive_examples": 5,
+            "false_positive_examples": 17,
+            "false_negative_examples": 35,
+            "precision": 0.22727272727272727,
+            "recall": 0.125,
+            "f1": 0.16129032258064516,
+            "no_button_examples": 728,
+            "no_button_false_positive_examples": 14,
+            "no_button_false_positive_rate": 0.019230769230769232
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.24319224465952247,
+            "scale_ratio": 1.2572950266691278,
+            "num_values": 1408
+          },
+          "failure_count": 768
+        },
+        "metrics_snapshot": {
+          "num_examples": 768,
+          "keyboard_accuracy": 0.10963455149501661,
+          "mouse_button_accuracy": 0.125,
+          "mouse_button_f1": 0.16129032258064516,
+          "no_button_false_positive_rate": 0.019230769230769232,
+          "mouse_move_pearson": 0.24319224465952247,
+          "mouse_move_scale_ratio": 1.2572950266691278
+        },
+        "score": 0.5141171187351843,
+        "schema": "idm_prediction_portfolio_summary.v1"
+      }
+    }
+  ],
+  "ranked_candidates": [
+    {
+      "source": "shooter64_surface_motion",
+      "variant": "lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4",
+      "model_name": "torch_mlp_idm_shooter64_surface_motion_lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4",
+      "config": {
+        "categorical_loss_weight": 0.5,
+        "categorical_pos_weight_cap": 20.0,
+        "category_threshold": 0.35,
+        "hidden_dim": 128,
+        "depth": 2,
+        "categorical_loss": "focal",
+        "focal_gamma": 2.0,
+        "category_threshold_mode": "group_exact_calibrated",
+        "category_calibration_beta": 1.0,
+        "category_calibration_fraction": 0.2,
+        "button_head_mode": "softmax",
+        "button_softmax_threshold": 0.5,
+        "button_softmax_threshold_mode": "fbeta_calibrated",
+        "button_softmax_loss_weight": 0.25,
+        "button_softmax_class_weight_cap": 4.0,
+        "button_softmax_no_button_weight": 1.5,
+        "button_softmax_positive_weight": 1.0,
+        "mouse_head_mode": "axis_softmax",
+        "mouse_axis_loss_weight": 0.5,
+        "mouse_regression_loss_weight": 0.25,
+        "mouse_axis_class_weight_cap": 4.0,
+        "epochs": 80,
+        "feature_mode": "summary_grid8_shift_surface_time",
+        "model_arch": "mlp",
+        "train_records": "outputs/data/real_multi_shooter64/train.jsonl",
+        "target_records": "outputs/data/real_multi_shooter64/heldout.jsonl"
+      },
+      "metrics_snapshot": {
+        "num_examples": 1536,
+        "keyboard_accuracy": 0.19047619047619047,
+        "mouse_button_accuracy": 0.22058823529411764,
+        "mouse_button_f1": 0.24193548387096775,
+        "no_button_false_positive_rate": 0.02656675749318801,
+        "mouse_move_pearson": 0.30395693874115204,
+        "mouse_move_scale_ratio": 1.2007217193927018
+      },
+      "score": 0.7363686130883103,
+      "metadata": {
+        "train_records": 4608,
+        "target_records": 1536,
+        "dataset_fingerprint": "1bc7d9a5988936b29f607709728dde8dab26daa3b6caa99dfebde58c27e1de76",
+        "checkpoint_path": "outputs/idm_torch_sweeps/idm_torch_shooter64_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4/checkpoint.pt",
+        "metrics_path": "outputs/idm_torch_sweeps/idm_torch_shooter64_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw0.5_mrlw0.25_macw4/metrics.json"
+      }
+    },
+    {
+      "source": "shooter32_luma_temporal_conv",
+      "variant": "lw0.5_pc20_th0.35_h256_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw2_mrlw0.1_macw4",
+      "model_name": "torch_mlp_idm_shooter32_luma_temporal_conv_lw0.5_pc20_th0.35_h256_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw2_mrlw0.1_macw4",
+      "config": {
+        "categorical_loss_weight": 0.5,
+        "categorical_pos_weight_cap": 20.0,
+        "category_threshold": 0.35,
+        "hidden_dim": 256,
+        "depth": 2,
+        "categorical_loss": "focal",
+        "focal_gamma": 2.0,
+        "category_threshold_mode": "group_exact_calibrated",
+        "category_calibration_beta": 1.0,
+        "category_calibration_fraction": 0.2,
+        "button_head_mode": "softmax",
+        "button_softmax_threshold": 0.5,
+        "button_softmax_threshold_mode": "fbeta_calibrated",
+        "button_softmax_loss_weight": 0.25,
+        "button_softmax_class_weight_cap": 4.0,
+        "button_softmax_no_button_weight": 1.5,
+        "button_softmax_positive_weight": 1.0,
+        "mouse_head_mode": "axis_softmax",
+        "mouse_axis_loss_weight": 2.0,
+        "mouse_regression_loss_weight": 0.1,
+        "mouse_axis_class_weight_cap": 4.0,
+        "epochs": 80,
+        "feature_mode": "summary_luma16_stack5_time",
+        "model_arch": "luma_temporal_conv",
+        "train_records": "outputs/data/real_multi_shooter32/train.jsonl",
+        "target_records": "outputs/data/real_multi_shooter32/heldout.jsonl"
+      },
+      "metrics_snapshot": {
+        "num_examples": 768,
+        "keyboard_accuracy": 0.17275747508305647,
+        "mouse_button_accuracy": 0.15,
+        "mouse_button_f1": 0.14285714285714285,
+        "no_button_false_positive_rate": 0.04807692307692308,
+        "mouse_move_pearson": 0.2579287976524461,
+        "mouse_move_scale_ratio": 1.8564674784654234
+      },
+      "score": 0.5735434155926453,
+      "metadata": {
+        "train_records": 2304,
+        "target_records": 768,
+        "dataset_fingerprint": "a2bc506fa963077bfef6f6c438e381d3e9fb2f0722ea316e7f3ebb73c554376d",
+        "checkpoint_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_luma_temporal_conv/lw0.5_pc20_th0.35_h256_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw2_mrlw0.1_macw4/checkpoint.pt",
+        "metrics_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_luma_temporal_conv/lw0.5_pc20_th0.35_h256_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw2_mrlw0.1_macw4/metrics.json"
+      }
+    },
+    {
+      "source": "shooter32_softmax_click_residual_motion_portfolio",
+      "model_name": "idm_shooter32_softmax_click_residual_motion_portfolio",
+      "metrics": {
+        "schema": "metrics.v1",
+        "stage": "fdm_eval",
+        "num_examples": 768,
+        "keyboard": {
+          "status": "computed",
+          "accuracy": 0.10963455149501661,
+          "num_examples": 301
+        },
+        "mouse_button": {
+          "status": "computed",
+          "accuracy": 0.125,
+          "num_examples": 40,
+          "predicted_examples": 22,
+          "exact_true_positive_examples": 5,
+          "false_positive_examples": 17,
+          "false_negative_examples": 35,
+          "precision": 0.22727272727272727,
+          "recall": 0.125,
+          "f1": 0.16129032258064516,
+          "no_button_examples": 728,
+          "no_button_false_positive_examples": 14,
+          "no_button_false_positive_rate": 0.019230769230769232
+        },
+        "mouse_move": {
+          "status": "computed",
+          "pearson": 0.24319224465952247,
+          "scale_ratio": 1.2572950266691278,
+          "num_values": 1408
+        },
+        "failure_count": 768
+      },
+      "metrics_snapshot": {
+        "num_examples": 768,
+        "keyboard_accuracy": 0.10963455149501661,
+        "mouse_button_accuracy": 0.125,
+        "mouse_button_f1": 0.16129032258064516,
+        "no_button_false_positive_rate": 0.019230769230769232,
+        "mouse_move_pearson": 0.24319224465952247,
+        "mouse_move_scale_ratio": 1.2572950266691278
+      },
+      "score": 0.5141171187351843,
+      "schema": "idm_prediction_portfolio_summary.v1"
+    },
+    {
+      "source": "shooter32_surface_motion",
+      "variant": "lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4",
+      "model_name": "torch_mlp_idm_shooter32_surface_motion_lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4",
+      "config": {
+        "categorical_loss_weight": 0.5,
+        "categorical_pos_weight_cap": 20.0,
+        "category_threshold": 0.35,
+        "hidden_dim": 128,
+        "depth": 2,
+        "categorical_loss": "focal",
+        "focal_gamma": 2.0,
+        "category_threshold_mode": "group_exact_calibrated",
+        "category_calibration_beta": 1.0,
+        "category_calibration_fraction": 0.2,
+        "button_head_mode": "softmax",
+        "button_softmax_threshold": 0.5,
+        "button_softmax_threshold_mode": "fbeta_calibrated",
+        "button_softmax_loss_weight": 0.5,
+        "button_softmax_class_weight_cap": 4.0,
+        "button_softmax_no_button_weight": 1.5,
+        "button_softmax_positive_weight": 1.0,
+        "mouse_head_mode": "axis_softmax",
+        "mouse_axis_loss_weight": 1.0,
+        "mouse_regression_loss_weight": 0.1,
+        "mouse_axis_class_weight_cap": 4.0,
+        "epochs": 80,
+        "feature_mode": "summary_grid8_shift_surface_time",
+        "train_records": "outputs/data/real_multi_shooter32/train.jsonl",
+        "target_records": "outputs/data/real_multi_shooter32/heldout.jsonl"
+      },
+      "metrics_snapshot": {
+        "num_examples": 768,
+        "keyboard_accuracy": 0.10963455149501661,
+        "mouse_button_accuracy": 0.125,
+        "mouse_button_f1": 0.15384615384615385,
+        "no_button_false_positive_rate": 0.027472527472527472,
+        "mouse_move_pearson": 0.2446628577741008,
+        "mouse_move_scale_ratio": 1.2634794899362043
+      },
+      "score": 0.5081435631152713,
+      "metadata": {
+        "train_records": 2304,
+        "target_records": 768,
+        "dataset_fingerprint": "b678bc8c6f83ac9686811bd6e11ad174d394829e9edef6e5eb6750fa1ab3d791",
+        "checkpoint_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4/checkpoint.pt",
+        "metrics_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_surface_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.5_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4/metrics.json"
+      }
+    },
+    {
+      "source": "shooter32_axis_softmax_motion",
+      "variant": "lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4",
+      "model_name": "torch_mlp_idm_shooter32_axis_softmax_motion_lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4",
+      "config": {
+        "categorical_loss_weight": 0.5,
+        "categorical_pos_weight_cap": 20.0,
+        "category_threshold": 0.35,
+        "hidden_dim": 128,
+        "depth": 2,
+        "categorical_loss": "focal",
+        "focal_gamma": 2.0,
+        "category_threshold_mode": "group_exact_calibrated",
+        "category_calibration_beta": 1.0,
+        "category_calibration_fraction": 0.2,
+        "button_head_mode": "softmax",
+        "button_softmax_threshold": 0.5,
+        "button_softmax_threshold_mode": "fbeta_calibrated",
+        "button_softmax_loss_weight": 0.25,
+        "button_softmax_class_weight_cap": 4.0,
+        "button_softmax_no_button_weight": 1.5,
+        "button_softmax_positive_weight": 1.0,
+        "mouse_head_mode": "axis_softmax",
+        "mouse_axis_loss_weight": 1.0,
+        "mouse_regression_loss_weight": 0.1,
+        "mouse_axis_class_weight_cap": 4.0,
+        "epochs": 80,
+        "feature_mode": "summary_grid8_shift_time",
+        "train_records": "outputs/data/real_multi_shooter32/train.jsonl",
+        "target_records": "outputs/data/real_multi_shooter32/heldout.jsonl"
+      },
+      "metrics_snapshot": {
+        "num_examples": 768,
+        "keyboard_accuracy": 0.1760797342192691,
+        "mouse_button_accuracy": 0.15,
+        "mouse_button_f1": 0.18181818181818182,
+        "no_button_false_positive_rate": 0.0260989010989011,
+        "mouse_move_pearson": 0.145233637454755,
+        "mouse_move_scale_ratio": 1.3492500441875988
+      },
+      "score": 0.503131553492206,
+      "metadata": {
+        "train_records": 2304,
+        "target_records": 768,
+        "dataset_fingerprint": "96ce66cb43d9b8a763f5e5ec56e76ce8e8c8bf9e418cdd605f2d4d8cb4e458d5",
+        "checkpoint_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_axis_softmax_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4/checkpoint.pt",
+        "metrics_path": "outputs/idm_torch_sweeps/idm_torch_shooter32_axis_softmax_motion/lw0.5_pc20_th0.35_h128_d2_lossfocal_fg2_calgroup_exact_calibrated_cb1_cf0.2_bhsoftmax_bth0.5_btmfbeta_calibrated_blw0.25_bcw4_bnw1.5_bpw1_mhaxis_softmax_malw1_mrlw0.1_macw4/metrics.json"
+      }
+    }
+  ],
+  "progress_criteria": {
+    "min_small_medium_mouse_button_f1": 0.2,
+    "max_small_medium_no_button_fpr": 0.1,
+    "min_small_medium_mouse_pearson": 0.25,
+    "requires_medium_candidate": true,
+    "requires_non_global_streaming_calibration": true
+  },
+  "full_corpus_candidate_configs": [
+    {
+      "artifact": {
+        "path": "configs/model/idm_streaming_d2e_full_surface_calibrated.yaml",
+        "exists": true,
+        "bytes": 2514,
+        "sha256": "6f0fa70d2c63e5451a4f14a98a28985283e7a49fca49b4657749be1e851e8ac2"
+      },
+      "config": {
+        "model_name": "streaming_idm_d2e_full_surface_calibrated",
+        "feature_mode": "summary_compact_grid8_shift_surface_time",
+        "model_arch": "mlp",
+        "epochs": 5,
+        "category_threshold_mode": "group_fbeta_calibrated",
+        "category_calibration_beta": 0.5,
+        "category_calibration_max_examples": 1048576,
+        "mouse_output_gain_mode": "train_abs_ratio",
+        "mouse_gain_calibration_max_examples": 1048576,
+        "training_cache_shard_assignment": "greedy_rows",
+        "prediction_workers": 16,
+        "train_records_glob": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/train_core.jsonl",
+        "target_records_glob": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/target_all_eval.jsonl"
+      }
+    },
+    {
+      "artifact": {
+        "path": "configs/model/idm_streaming_d2e_full_luma_temporal_calibrated.yaml",
+        "exists": true,
+        "bytes": 2650,
+        "sha256": "66b583690f846f01b9b38bb06b5c3f28085bfe011cc9dd22e2ad96d9f4e63440"
+      },
+      "config": {
+        "model_name": "streaming_idm_d2e_full_luma_temporal_calibrated",
+        "feature_mode": "summary_luma16_stack5_time",
+        "model_arch": "luma_temporal_conv",
+        "epochs": 5,
+        "category_threshold_mode": "group_fbeta_calibrated",
+        "category_calibration_beta": 0.5,
+        "category_calibration_max_examples": 1048576,
+        "mouse_output_gain_mode": "train_abs_ratio",
+        "mouse_gain_calibration_max_examples": 1048576,
+        "training_cache_shard_assignment": "greedy_rows",
+        "prediction_workers": 16,
+        "train_records_glob": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/train_core.jsonl",
+        "target_records_glob": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/target_all_eval.jsonl"
+      }
+    }
+  ],
+  "selected_g005_order": [
+    {
+      "rank": 1,
+      "config": "configs/model/idm_streaming_d2e_full_surface_calibrated.yaml",
+      "reason": "Best medium H200 evidence uses surface/grid features with axis-softmax motion, low no-button FPR, and stronger mouse Pearson than luma on shooter64."
+    },
+    {
+      "rank": 2,
+      "config": "configs/model/idm_streaming_d2e_full_luma_temporal_calibrated.yaml",
+      "reason": "Backup architecture if surface MLP plateaus; keeps temporal luma convolution candidate from shooter32 sweeps."
+    }
+  ],
+  "budget": {
+    "g004_gpu_policy": "No active reservation is held after code/artifact work; reuse existing small/medium H200 evidence and reserve 4xH200 only for G005 full-corpus run.",
+    "g005_full_run_gpu_target": "4xH200",
+    "candidate_limit": 2,
+    "early_abort_rule": "Abort a full candidate only if train/eval artifacts show no improvement over current full IDM after at least one full epoch plus calibrated prediction on the convergence sample."
+  },
+  "claim_boundary": "G004 ranks bounded IDM exploration evidence and publishes full-corpus candidates; it does not claim paper-target/full-corpus success."
+}

@@ -118,7 +118,13 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
             "training_cache_dir": str(tmp_path / "idm_train_cache"),
             "training_cache_chunk_size": 3,
             "categorical_min_count": 1,
+            "category_threshold_mode": "group_fbeta_calibrated",
+            "category_calibration_beta": 0.5,
+            "category_calibration_grid": [0.1, 0.5, 0.9],
+            "category_calibration_max_examples": 8,
             "mouse_head_mode": "axis_softmax",
+            "mouse_output_gain_mode": "train_abs_ratio",
+            "mouse_gain_calibration_max_examples": 8,
             "seed": 7,
             "force_cpu": True,
         }
@@ -138,6 +144,11 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
     assert summary["metadata"]["training_cache"]["enabled"] is True
     assert summary["metadata"]["training_cache"]["rows"] == 8
     assert summary["metadata"]["training_cache"]["chunk_size"] == 3
+    assert summary["metadata"]["calibration"]["mode"] == "group_fbeta_calibrated"
+    assert summary["metadata"]["calibration"]["status"] == "computed"
+    assert "KEY_PRESS_87" in summary["metadata"]["calibration"]["category_thresholds"]
+    assert summary["metadata"]["calibration"]["mouse_output_gain_info"]["mode"] == "train_abs_ratio"
+    assert summary["metadata"]["calibration"]["mouse_output_gain"] > 0
     assert all(Path(path).exists() for path in summary["metadata"]["training_cache"]["manifest_paths"])
     assert Path(summary["metadata"]["resolved_config_path"]).exists()
     assert Path(summary["metadata"]["train_records_path"]).exists()
