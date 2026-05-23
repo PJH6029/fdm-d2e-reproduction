@@ -65,6 +65,7 @@ set +e
   echo "config=$CONFIG"
   echo "nproc_per_node=$NPROC_PER_NODE"
   echo "gpu_monitor_log=$GPU_MONITOR_LOG"
+  echo "runtime_overrides=max_target_examples=${MAX_TARGET_EXAMPLES:-none} skip_prediction=$SKIP_PREDICTION epochs=${EPOCHS_OVERRIDE:-none} batch_size=${BATCH_SIZE_OVERRIDE:-none} eval_batch_size=${EVAL_BATCH_SIZE_OVERRIDE:-none}"
   RUN_CONFIG="$CONFIG"
   if [[ -n "$MAX_TARGET_EXAMPLES" || "$SKIP_PREDICTION" != "0" || -n "$EPOCHS_OVERRIDE" || -n "$BATCH_SIZE_OVERRIDE" || -n "$EVAL_BATCH_SIZE_OVERRIDE" ]]; then
     RUN_CONFIG="$RUNTIME_CONFIG"
@@ -104,6 +105,7 @@ dst.parent.mkdir(parents=True, exist_ok=True)
 dst.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
   fi
+  echo "effective_config=$RUN_CONFIG"
   uv run python scripts/cluster_gpu_smoke.py --expected-gpus "$EXPECTED_GPUS" --report "$GPU_SMOKE_REPORT"
   uv run torchrun --standalone --nproc-per-node="$NPROC_PER_NODE" scripts/train_idm_video.py \
     --config "$RUN_CONFIG" \
@@ -223,6 +225,15 @@ paper_metrics = _load(paper_metrics_path)
 payload = {
     "schema": "${MODEL_SLUG}_4xh200_run.v1",
     "config": "$CONFIG",
+    "runtime_config": "$RUNTIME_CONFIG",
+    "runtime_config_exists": Path("$RUNTIME_CONFIG").exists(),
+    "runtime_overrides": {
+        "max_target_examples": int("$MAX_TARGET_EXAMPLES") if "$MAX_TARGET_EXAMPLES" else None,
+        "skip_prediction": "$SKIP_PREDICTION" != "0",
+        "epochs": int("$EPOCHS_OVERRIDE") if "$EPOCHS_OVERRIDE" else None,
+        "batch_size": int("$BATCH_SIZE_OVERRIDE") if "$BATCH_SIZE_OVERRIDE" else None,
+        "eval_batch_size": int("$EVAL_BATCH_SIZE_OVERRIDE") if "$EVAL_BATCH_SIZE_OVERRIDE" else None,
+    },
     "log_path": "$LOG_PATH",
     "gpu_monitor_log": "$GPU_MONITOR_LOG",
     "pid_file": "$PID_FILE",
