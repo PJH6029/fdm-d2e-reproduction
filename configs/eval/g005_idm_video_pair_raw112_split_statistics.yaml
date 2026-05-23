@@ -1,0 +1,21 @@
+{
+  "schema": "split_statistical_comparison_builder_config.v1",
+  "model_name": "video_pair_idm_d2e_full_raw112_paper_target",
+  "predictions_path": "outputs/idm_video_pair_d2e_full_raw112_paper_target/predictions.jsonl",
+  "ground_truth_path": "outputs/data/d2e_full_corpus_accel64/target_all_eval.jsonl",
+  "train_records_path": "outputs/data/d2e_full_corpus_accel64/train_core.jsonl",
+  "streaming": true,
+  "train_stats_path": "outputs/idm_video_pair_d2e_full_raw112_paper_target/video_idm_stats.json",
+  "output_dir": "outputs/idm_video_pair_d2e_full_raw112_paper_target",
+  "summary_out": "artifacts/eval/g005_idm_video_pair_raw112_split_statistical_comparisons_summary.json",
+  "endpoints": "configs/eval/primary_endpoints.yaml",
+  "baseline_names": [
+    "noop",
+    "global_majority"
+  ],
+  "split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ]
+}
