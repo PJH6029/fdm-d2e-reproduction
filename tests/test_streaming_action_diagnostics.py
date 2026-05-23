@@ -59,3 +59,19 @@ def test_streaming_action_diagnostics_writes_output(tmp_path):
     payload = write_streaming_action_diagnostics(prediction_paths=[preds], target_paths=[targets], output_path=out)
     assert payload["schema"] == "g002_streaming_action_diagnostics.v1"
     assert out.is_file()
+
+
+def test_streaming_action_diagnostics_writes_progress(tmp_path):
+    preds = tmp_path / "preds.jsonl"
+    targets = tmp_path / "targets.jsonl"
+    progress = tmp_path / "progress.json"
+    write_jsonl(preds, [{"sequence_id": "a#0", "predicted_tokens": ["NOOP"]}])
+    write_jsonl(targets, [{"sequence_id": "a#0", "ground_truth_tokens": ["NOOP"]}])
+    payload = build_streaming_action_diagnostics(
+        prediction_paths=[preds],
+        target_paths=[targets],
+        progress_output_path=progress,
+        progress_rows=1,
+    )
+    assert payload["status"] == "pass"
+    assert progress.is_file()

@@ -27,6 +27,8 @@ def main() -> int:
     parser.add_argument("--output", default="artifacts/eval/g002_pvc_action_error_diagnostics.json")
     parser.add_argument("--max-rows", type=int, default=None)
     parser.add_argument("--top-k", type=int, default=20)
+    parser.add_argument("--progress-output", default="artifacts/eval/g002_pvc_action_error_diagnostics_progress.json")
+    parser.add_argument("--progress-rows", type=int, default=1000000)
     parser.add_argument("--allow-fail", action="store_true")
     args = parser.parse_args()
     payload = write_streaming_action_diagnostics(
@@ -35,6 +37,8 @@ def main() -> int:
         output_path=args.output,
         max_rows=args.max_rows,
         top_k=args.top_k,
+        progress_output_path=args.progress_output,
+        progress_rows=args.progress_rows,
     )
     print(
         "g002 pvc action diagnostics: "

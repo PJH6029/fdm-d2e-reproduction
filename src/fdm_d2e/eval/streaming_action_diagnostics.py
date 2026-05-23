@@ -223,6 +223,8 @@ def build_streaming_action_diagnostics(
     target_paths: list[str | Path],
     max_rows: int | None = None,
     top_k: int = 20,
+    progress_output_path: str | Path | None = None,
+    progress_rows: int = 1_000_000,
 ) -> dict[str, Any]:
     predictions = _expand_paths(prediction_paths)
     targets = _expand_paths(target_paths)
@@ -263,6 +265,19 @@ def build_streaming_action_diagnostics(
                 group_keys.append(f"eval_split:{tag}")
             for key in group_keys:
                 groups.setdefault(key, ActionAccumulator()).update(predicted_tokens, ground_truth_tokens)
+            if progress_output_path and progress_rows > 0 and alignment["rows_seen"] % progress_rows == 0:
+                write_json(
+                    progress_output_path,
+                    {
+                        "schema": "g002_streaming_action_diagnostics_progress.v1",
+                        "status": "running",
+                        "rows_seen": alignment["rows_seen"],
+                        "sequence_id_mismatches": alignment["sequence_id_mismatches"],
+                        "group_count": len(groups),
+                        "prediction_paths": [str(path) for path in predictions],
+                        "target_paths": [str(path) for path in targets],
+                    },
+                )
     if alignment["sequence_id_mismatches"]:
         findings.append(
             {
@@ -293,12 +308,16 @@ def write_streaming_action_diagnostics(
     output_path: str | Path,
     max_rows: int | None = None,
     top_k: int = 20,
+    progress_output_path: str | Path | None = None,
+    progress_rows: int = 1_000_000,
 ) -> dict[str, Any]:
     payload = build_streaming_action_diagnostics(
         prediction_paths=prediction_paths,
         target_paths=target_paths,
         max_rows=max_rows,
         top_k=top_k,
+        progress_output_path=progress_output_path,
+        progress_rows=progress_rows,
     )
     write_json(output_path, payload)
     return payload
