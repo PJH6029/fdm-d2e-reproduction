@@ -1,0 +1,1023 @@
+{
+  "schema": "live_game_suite_evidence_validation.v1",
+  "suite_id": "g008_repo_live_open_game_suite_v1",
+  "evidence_mode": "live_desktop_control",
+  "claim_boundary": "Pass here is required before any G008 live open-source graphical-game claim; deterministic game-adjacent harnesses cannot satisfy this gate.",
+  "quality_gate": {
+    "status": "pass",
+    "planned_games": 3,
+    "games_with_passed_episode": 3,
+    "min_games": 3,
+    "planned_tasks": 3,
+    "passed_tasks": 3,
+    "min_tasks": 3,
+    "task_pass_rate": 1.0,
+    "min_task_pass_rate": 0.67,
+    "episodes_observed": 15,
+    "findings_count": 0
+  },
+  "task_summaries": [
+    {
+      "game_id": "repo_click_target",
+      "task_id": "move_crosshair_and_activate_target",
+      "planned_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_episodes": 5,
+      "pass_count": 5,
+      "pass_rate": 1.0,
+      "baseline_win_rate": 1.0,
+      "passed": true
+    },
+    {
+      "game_id": "repo_grid_chase",
+      "task_id": "reach_green_goal",
+      "planned_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_episodes": 5,
+      "pass_count": 5,
+      "pass_rate": 1.0,
+      "baseline_win_rate": 1.0,
+      "passed": true
+    },
+    {
+      "game_id": "repo_lane_align",
+      "task_id": "align_and_advance_through_gate",
+      "planned_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_episodes": 5,
+      "pass_count": 5,
+      "pass_rate": 1.0,
+      "baseline_win_rate": 1.0,
+      "passed": true
+    }
+  ],
+  "episode_results": [
+    {
+      "episode_index": 0,
+      "game_id": "repo_grid_chase",
+      "task_id": "reach_green_goal",
+      "seed": 0,
+      "status": "pass",
+      "passed": true,
+      "score": 3.243404435126153,
+      "baseline_score": 0.1,
+      "p95_latency_ms": 146.8249075114727,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/episode.gif",
+          "exists": true,
+          "bytes": 24414,
+          "sha256": "53f1710aae902b57f3468c09c225ce7341bd824ec850de7b3ff57d2359f1ce41"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/replay.jsonl",
+          "exists": true,
+          "bytes": 18440,
+          "sha256": "908f78737b42776fc1fbecf2aaaa4c876a7d0c6ae36b054e10e0fe0fcd41e503"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/latency.jsonl",
+          "exists": true,
+          "bytes": 3111,
+          "sha256": "df555392b2234409cea014e10a8329977777c1b1cb90445f44958da2a1c9bb26"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Grid Chase",
+        "action_count": 20,
+        "started_at_unix": 1779515224.0490563,
+        "ended_at_unix": 1779515228.9639256,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 20,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 1,
+      "game_id": "repo_grid_chase",
+      "task_id": "reach_green_goal",
+      "seed": 1,
+      "status": "pass",
+      "passed": true,
+      "score": 3.4007936507936507,
+      "baseline_score": 0.12000000000000001,
+      "p95_latency_ms": 145.2807392925024,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/episode.gif",
+          "exists": true,
+          "bytes": 20008,
+          "sha256": "da52cc04a2dec0f7816881fbb9a539f681d4aea3ed27ed271f948dca9a294d3f"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/replay.jsonl",
+          "exists": true,
+          "bytes": 14712,
+          "sha256": "adaf85844549f982ef3fa09fb6dd1e5133e82478f71a58a47619506862351e44"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/latency.jsonl",
+          "exists": true,
+          "bytes": 2488,
+          "sha256": "6fa3748a72b466cc2326d3976db9a34bb333811863f367f8e06deaa7929a902f"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Grid Chase",
+        "action_count": 16,
+        "started_at_unix": 1779515229.3608706,
+        "ended_at_unix": 1779515233.5296772,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 16,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 2,
+      "game_id": "repo_grid_chase",
+      "task_id": "reach_green_goal",
+      "seed": 2,
+      "status": "pass",
+      "passed": true,
+      "score": 3.3862615779832956,
+      "baseline_score": 0.14,
+      "p95_latency_ms": 145.63864096999168,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/episode.gif",
+          "exists": true,
+          "bytes": 19879,
+          "sha256": "3b1f1f2f15cd5244ca91f6a333f8195025e16428ef6a56959baf9ed362d96394"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/replay.jsonl",
+          "exists": true,
+          "bytes": 14710,
+          "sha256": "a3d055958bb51763772483c7128c51dad49d477954cc184b526c82e2f20de334"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/latency.jsonl",
+          "exists": true,
+          "bytes": 2490,
+          "sha256": "ace9a619460b9e7be3947b419e11a34c041bd76ecc4032f4abf93c39a74513c9"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Grid Chase",
+        "action_count": 16,
+        "started_at_unix": 1779515233.831379,
+        "ended_at_unix": 1779515237.91611,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 16,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 3,
+      "game_id": "repo_grid_chase",
+      "task_id": "reach_green_goal",
+      "seed": 3,
+      "status": "pass",
+      "passed": true,
+      "score": 3.3293650793650795,
+      "baseline_score": 0.1,
+      "p95_latency_ms": 146.87434397637844,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/episode.gif",
+          "exists": true,
+          "bytes": 22303,
+          "sha256": "059d37e5622e5564b848c792078a1a4370a68950d8d0f674a735fb17be9f10f9"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/replay.jsonl",
+          "exists": true,
+          "bytes": 16570,
+          "sha256": "68e1ca9c1afdb9dd6188194081c931b2ad4e19ef934de815b30b43c56356f620"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/latency.jsonl",
+          "exists": true,
+          "bytes": 2807,
+          "sha256": "d2e8cd0774b55bd52569beb277ec2963fd70c39e154cf24ad82cc4e597aea9db"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Grid Chase",
+        "action_count": 18,
+        "started_at_unix": 1779515238.2035527,
+        "ended_at_unix": 1779515242.856341,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 18,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 4,
+      "game_id": "repo_grid_chase",
+      "task_id": "reach_green_goal",
+      "seed": 4,
+      "status": "pass",
+      "passed": true,
+      "score": 3.3148330065547245,
+      "baseline_score": 0.12000000000000001,
+      "p95_latency_ms": 147.56370335817337,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/episode.gif",
+          "exists": true,
+          "bytes": 22109,
+          "sha256": "78bfeecefa1571719d7befa9c51ed8615a5678f1b2400bf314534dddba3bb79b"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/replay.jsonl",
+          "exists": true,
+          "bytes": 16573,
+          "sha256": "5678ab7a93a1d6752aa574964647881b15c70702847aa57708156599f04c3ffe"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/latency.jsonl",
+          "exists": true,
+          "bytes": 2782,
+          "sha256": "d9ec69ca2734d4fa8460ce92932dc684f69cd09d464efbad00a9ae829ae5f418"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Grid Chase",
+        "action_count": 18,
+        "started_at_unix": 1779515243.144696,
+        "ended_at_unix": 1779515247.2175615,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 18,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 5,
+      "game_id": "repo_lane_align",
+      "task_id": "align_and_advance_through_gate",
+      "seed": 0,
+      "status": "pass",
+      "passed": true,
+      "score": 3.344971528678037,
+      "baseline_score": 0.1,
+      "p95_latency_ms": 93.35794113576412,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/episode.gif",
+          "exists": true,
+          "bytes": 24032,
+          "sha256": "6b45eae217445eeae2107122d074a19cda791622623c8e2cbdb505f36e924b5b"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/replay.jsonl",
+          "exists": true,
+          "bytes": 17074,
+          "sha256": "bb3342d3be685455748a71493f6bd40a3d7a52094fa18e4b58b5312b4416129e"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/latency.jsonl",
+          "exists": true,
+          "bytes": 2924,
+          "sha256": "0047c9ed1bcacbb5b644a9963999229a5ebf348598c9e6242123cf2338b546ee"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Lane Align",
+        "action_count": 19,
+        "started_at_unix": 1779515247.4569254,
+        "ended_at_unix": 1779515251.3975437,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 19,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 6,
+      "game_id": "repo_lane_align",
+      "task_id": "align_and_advance_through_gate",
+      "seed": 1,
+      "status": "pass",
+      "passed": true,
+      "score": 3.447024811633707,
+      "baseline_score": 0.12000000000000001,
+      "p95_latency_ms": 146.20629139244556,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/episode.gif",
+          "exists": true,
+          "bytes": 19840,
+          "sha256": "c330cbf55b43a1d6873a374b10543093bd37478521c05c70e1fdce8057d9f101"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/replay.jsonl",
+          "exists": true,
+          "bytes": 14416,
+          "sha256": "611a0e09a756fa9eaa22080068f20a1113d7c256fd40ee630350e831c1aa155e"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/latency.jsonl",
+          "exists": true,
+          "bytes": 2469,
+          "sha256": "18d41064f1683b7789974a9a5e62b35728e3131d3dabed3690f11c667ef64c98"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Lane Align",
+        "action_count": 16,
+        "started_at_unix": 1779515251.6415858,
+        "ended_at_unix": 1779515255.1364083,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 16,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 7,
+      "game_id": "repo_lane_align",
+      "task_id": "align_and_advance_through_gate",
+      "seed": 2,
+      "status": "pass",
+      "passed": true,
+      "score": 3.5488802104515758,
+      "baseline_score": 0.14,
+      "p95_latency_ms": 146.80970460176468,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/episode.gif",
+          "exists": true,
+          "bytes": 17372,
+          "sha256": "5d8fe997b85db7796830df7601067a2ced22908ab67edd5e050660be78ed6be3"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/replay.jsonl",
+          "exists": true,
+          "bytes": 11677,
+          "sha256": "9ac41e5827639e0819671a0b3a986469ec3dee9d692658472f564a08386e8f34"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/latency.jsonl",
+          "exists": true,
+          "bytes": 2004,
+          "sha256": "10d645efd05d41798de2c02ccbfbaf04fe065766e5d18dc8327fbe52c49e1584"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Lane Align",
+        "action_count": 13,
+        "started_at_unix": 1779515255.375948,
+        "ended_at_unix": 1779515258.3192167,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 13,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 8,
+      "game_id": "repo_lane_align",
+      "task_id": "align_and_advance_through_gate",
+      "seed": 3,
+      "status": "pass",
+      "passed": true,
+      "score": 3.448106828632585,
+      "baseline_score": 0.1,
+      "p95_latency_ms": 93.24614889919758,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/episode.gif",
+          "exists": true,
+          "bytes": 19239,
+          "sha256": "27d76ade5b2023da96f125b9ba0902e800f54f79316a4e6a033dec5f064e98d3"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/replay.jsonl",
+          "exists": true,
+          "bytes": 13448,
+          "sha256": "aa32175322e6723e0062d306abdeab37f3ed6203ecb2f6d3be97ceab18e2663b"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/latency.jsonl",
+          "exists": true,
+          "bytes": 2307,
+          "sha256": "3e1f330c57113243d0343fcf7bcbc49f029a92f9276b52292ae7849c23e8612c"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Lane Align",
+        "action_count": 15,
+        "started_at_unix": 1779515258.5427206,
+        "ended_at_unix": 1779515261.6633449,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 15,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 9,
+      "game_id": "repo_lane_align",
+      "task_id": "align_and_advance_through_gate",
+      "seed": 4,
+      "status": "pass",
+      "passed": true,
+      "score": 3.409437985369326,
+      "baseline_score": 0.12000000000000001,
+      "p95_latency_ms": 143.8536699861288,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/episode.gif",
+          "exists": true,
+          "bytes": 21932,
+          "sha256": "a7f01d3870c3954acd8303a4cdc404a6b5393bcd4998a7d1bb730baedd469986"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/replay.jsonl",
+          "exists": true,
+          "bytes": 15273,
+          "sha256": "3ce8b72e9e1f243d036c93cb1c56da03b32057d181349588ca7b214a72ab4d88"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/latency.jsonl",
+          "exists": true,
+          "bytes": 2623,
+          "sha256": "98e93e5ece217f2e526ed7afc32cc8cfddc84e88a083cec949c6c33e709b857e"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Lane Align",
+        "action_count": 17,
+        "started_at_unix": 1779515261.8923845,
+        "ended_at_unix": 1779515265.5716188,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 17,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 10,
+      "game_id": "repo_click_target",
+      "task_id": "move_crosshair_and_activate_target",
+      "seed": 0,
+      "status": "pass",
+      "passed": true,
+      "score": 3.417156612900586,
+      "baseline_score": 0.1,
+      "p95_latency_ms": 150.45752562582493,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/episode.gif",
+          "exists": true,
+          "bytes": 22467,
+          "sha256": "0a189a5344f02ee01be38619bc9aacac0822fac4a5a441cd308c7e95ea35aa23"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/replay.jsonl",
+          "exists": true,
+          "bytes": 16234,
+          "sha256": "eac575cc5ea586b0fd9e28a1ca410fc0a7fe3a07c1d1e2fa6e637f6baf139714"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/latency.jsonl",
+          "exists": true,
+          "bytes": 2799,
+          "sha256": "7201987b4b3886e7be8e7fc2b0130de7d832043a2653490388916e10cea79fbb"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Click Target",
+        "action_count": 18,
+        "started_at_unix": 1779515265.8722749,
+        "ended_at_unix": 1779515270.5243418,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 18,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 11,
+      "game_id": "repo_click_target",
+      "task_id": "move_crosshair_and_activate_target",
+      "seed": 1,
+      "status": "pass",
+      "passed": true,
+      "score": 3.5997549725129496,
+      "baseline_score": 0.12000000000000001,
+      "p95_latency_ms": 145.08426375687122,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/episode.gif",
+          "exists": true,
+          "bytes": 15811,
+          "sha256": "71824ca3c43539296de37a1c6ae42803311f4192b4e58cc98dce3f8d943998c8"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/replay.jsonl",
+          "exists": true,
+          "bytes": 10820,
+          "sha256": "ed2c315fb78811e4f36ceb81703f7249da8e1b01ee71d0a04a1608db305f9c40"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/latency.jsonl",
+          "exists": true,
+          "bytes": 1859,
+          "sha256": "e2441ff929fdf9f8cd2ffc8bd6f2cb85ee0ce680bd19699e75d0ec51a720c118"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Click Target",
+        "action_count": 12,
+        "started_at_unix": 1779515270.7558014,
+        "ended_at_unix": 1779515273.492601,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 12,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 12,
+      "game_id": "repo_click_target",
+      "task_id": "move_crosshair_and_activate_target",
+      "seed": 2,
+      "status": "pass",
+      "passed": true,
+      "score": 3.59538917009125,
+      "baseline_score": 0.14,
+      "p95_latency_ms": 144.35895904898643,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/episode.gif",
+          "exists": true,
+          "bytes": 15720,
+          "sha256": "2ff03c5818a96f12ab2dc65cbadf870f94652cfbd364935e385c17ee3a2aea4a"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/replay.jsonl",
+          "exists": true,
+          "bytes": 10749,
+          "sha256": "045175e1f84fbf8cf90f40cc613cc5c8a2fab37592a9f70d140da3a146c23058"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/latency.jsonl",
+          "exists": true,
+          "bytes": 1868,
+          "sha256": "4a045cf5f0cad23e7d6d15bf7374cc400278d11c4b00955f29550ff69a6b88b1"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Click Target",
+        "action_count": 12,
+        "started_at_unix": 1779515273.7531846,
+        "ended_at_unix": 1779515276.7807283,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 12,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 13,
+      "game_id": "repo_click_target",
+      "task_id": "move_crosshair_and_activate_target",
+      "seed": 3,
+      "status": "pass",
+      "passed": true,
+      "score": 3.5271519898256773,
+      "baseline_score": 0.1,
+      "p95_latency_ms": 145.9306087344885,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/episode.gif",
+          "exists": true,
+          "bytes": 19227,
+          "sha256": "99459e5dcff07f4e5bf69b71c82f91b39dfbc7e2aaa854276facbcf5a588e879"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/replay.jsonl",
+          "exists": true,
+          "bytes": 13520,
+          "sha256": "fd4f7c846656f3178a4aeac3d5ebc179c5e3d54956b58f7ecf2715917c0f689b"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/latency.jsonl",
+          "exists": true,
+          "bytes": 2336,
+          "sha256": "7f5727c6beb10aef708890520d17bee0fe41cb6f36ba7e86eea7ec4e3b9c4cc3"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Click Target",
+        "action_count": 15,
+        "started_at_unix": 1779515277.03775,
+        "ended_at_unix": 1779515280.987062,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 15,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    },
+    {
+      "episode_index": 14,
+      "game_id": "repo_click_target",
+      "task_id": "move_crosshair_and_activate_target",
+      "seed": 4,
+      "status": "pass",
+      "passed": true,
+      "score": 3.510232263621387,
+      "baseline_score": 0.12000000000000001,
+      "p95_latency_ms": 144.34419944882393,
+      "artifacts": {
+        "video": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/episode.gif",
+          "exists": true,
+          "bytes": 19049,
+          "sha256": "2dc6cb24a6ffcbba0ea0051d95b4428bce5b56dc35b2734e2fe5a7fe8bffc799"
+        },
+        "replay": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/replay.jsonl",
+          "exists": true,
+          "bytes": 13470,
+          "sha256": "3a13dcdf5af565e2dd49afeea6597fedc26552aad54e43078cf547081e9403f1"
+        },
+        "latency_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/latency.jsonl",
+          "exists": true,
+          "bytes": 2338,
+          "sha256": "1b2c8726d1cd9f99ec13b8541502a88437424befc677103a83a4362eca2e48a6"
+        },
+        "failure_log": {
+          "path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/failures.jsonl",
+          "exists": true,
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "missing_required_artifacts": []
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Click Target",
+        "action_count": 15,
+        "started_at_unix": 1779515281.2621305,
+        "ended_at_unix": 1779515285.223473,
+        "checkpoint": {
+          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
+        },
+        "adapter_config": {
+          "path": "configs/runtime/game_adapter_demo.yaml",
+          "exists": true,
+          "bytes": 1349,
+          "sha256": "a5bd0887e849a69afd1319719cd13721132142d722260d8e865ab5c38379d1c7"
+        },
+        "model_forward_pass_count": 15,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+      }
+    }
+  ],
+  "statistical_comparison_artifact": {
+    "path": "artifacts/harness/g008_repo_live_suite/statistical_comparison.json",
+    "exists": true,
+    "bytes": 415,
+    "sha256": "9b1841e7bef11b1e5033ad0a7f6cb8802d033556287edf018d55b119c43172b6"
+  },
+  "statistical_comparison_summary": {
+    "path": "artifacts/harness/g008_repo_live_suite/statistical_comparison.json",
+    "exists": true,
+    "method": "one_sided_sign_test_holm",
+    "baseline_name": "no_op_smoke_baseline",
+    "adjusted_p_value": 3.0517578125e-05,
+    "max_adjusted_p_value": 0.05,
+    "effect_size": 34.65184910986893,
+    "min_effect_size": 0.0,
+    "agent_mean_score": 3.4348509415693322,
+    "baseline_mean_score": 0.11600000000000005,
+    "mean_score_delta": 3.318850941569332,
+    "episode_count": 15.0,
+    "holm_adjusted_p_lt_0_05": true
+  },
+  "findings": []
+}

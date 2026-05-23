@@ -1,7 +1,7 @@
 {
   "schema": "g008_readiness_plan.v1",
-  "status": "blocked",
-  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "status": "ready",
+  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
   "allow_precheckpoint": false,
   "skip_system_checks": false,
   "goal_statuses": {
@@ -10,9 +10,9 @@
     "G003-d2e-only-idm": "complete",
     "G004-d2e-only-fdm-4xh200": "complete",
     "G005-aux-data-best-model": "complete",
-    "G006-evaluation-failure-analysis": "complete",
+    "G006-evaluation-failure-analysis": "in_progress",
     "G007-runtime-sdk-adapter": "complete",
-    "G008-live-game-suite": "in_progress",
+    "G008-live-game-suite": "pending",
     "G009-report-repro-package": "pending"
   },
   "prerequisite_goal_statuses": {
@@ -60,7 +60,7 @@
         "command": "python scripts/run_g008_repo_live_suite.py --game repo_grid_chase --seeds 1",
         "executable": "python",
         "found": true,
-        "resolved": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/.venv/bin/python"
+        "resolved": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python"
       },
       "window_title_pattern": "FDM G008 Repo Grid Chase",
       "tasks": [
@@ -75,7 +75,7 @@
         "command": "python scripts/run_g008_repo_live_suite.py --game repo_lane_align --seeds 1",
         "executable": "python",
         "found": true,
-        "resolved": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/.venv/bin/python"
+        "resolved": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python"
       },
       "window_title_pattern": "FDM G008 Repo Lane Align",
       "tasks": [
@@ -90,7 +90,7 @@
         "command": "python scripts/run_g008_repo_live_suite.py --game repo_click_target --seeds 1",
         "executable": "python",
         "found": true,
-        "resolved": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/.venv/bin/python"
+        "resolved": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python"
       },
       "window_title_pattern": "FDM G008 Repo Click Target",
       "tasks": [
@@ -103,8 +103,8 @@
       "backend": "xdotool",
       "skip_system_checks": false,
       "requires_binary": true,
-      "available": false,
-      "resolved": null
+      "available": true,
+      "resolved": "/usr/bin/xdotool"
     }
   ],
   "commands": {
@@ -131,15 +131,7 @@
       "scripts/validate_g008_live_suite_completion.py"
     ]
   },
-  "findings": [
-    {
-      "severity": "error",
-      "code": "no_allowed_control_backend_available",
-      "allowed_control_backends": [
-        "xdotool"
-      ]
-    }
-  ],
+  "findings": [],
   "warnings": [
     {
       "severity": "warning",

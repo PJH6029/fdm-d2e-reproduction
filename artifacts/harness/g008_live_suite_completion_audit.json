@@ -1,19 +1,19 @@
 {
   "schema": "g008_live_suite_completion_audit.v1",
-  "status": "fail",
+  "status": "pass",
   "goal_id": "G008-live-game-suite",
-  "goal_status": "pending",
+  "goal_status": "in_progress",
   "require_goal_checkpoint_complete": false,
   "prerequisite_goal_statuses": {
-    "G003-d2e-only-idm": "in_progress",
-    "G004-d2e-only-fdm-4xh200": "pending",
+    "G003-d2e-only-idm": "complete",
+    "G004-d2e-only-fdm-4xh200": "complete",
     "G007-runtime-sdk-adapter": "complete"
   },
   "d2e_only_audit_report": {
     "g003": {
       "audit_key": "g003",
-      "status": "fail",
-      "error_count": 26,
+      "status": "pass",
+      "error_count": 0,
       "included_recording_variants": 918,
       "source_ids": {
         "d2e_480p": 459,
@@ -23,13 +23,19 @@
         "480p": 459,
         "original_fhd_qhd": 459
       },
-      "decode_source_ids": {},
-      "decode_resolution_tiers": {}
+      "decode_source_ids": {
+        "d2e_480p": 459,
+        "d2e_original": 459
+      },
+      "decode_resolution_tiers": {
+        "480p": 459,
+        "original_fhd_qhd": 459
+      }
     },
     "g004": {
       "audit_key": "g004",
-      "status": "fail",
-      "error_count": 46,
+      "status": "pass",
+      "error_count": 0,
       "included_recording_variants": 918,
       "source_ids": {
         "d2e_480p": 459,
@@ -43,43 +49,43 @@
       "decode_resolution_tiers": {}
     }
   },
-  "g005_audit_status": "fail",
+  "g005_audit_status": "pass",
   "artifacts": {
     "suite_config": {
       "path": "configs/harness/g008_live_open_game_suite.yaml",
       "exists": true,
-      "bytes": 3978,
-      "sha256": "56b2c052017e9e376a48ae1c8d81775e7cac0d5f71302e4c22bf5914cffb13a1"
+      "bytes": 4243,
+      "sha256": "6900a3e1b3fd112f8b36be746728730f01a479e074280f11e874105969c3dc70"
     },
     "evidence_validation": {
       "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 40878,
+      "sha256": "09cda212b788eb5909ff800a986ba5940ba2fba71297f53f4c14cd1cfa9d4a37"
     },
     "trained_checkpoint_metadata": {
       "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 15862,
+      "sha256": "9c3b6525864c139f3f33ce022f323aee62963fe78d74eed48db58baf9466cd16"
     },
     "g003_completion_audit": {
       "path": "artifacts/idm/g003_full_idm_completion_audit.json",
       "exists": true,
-      "bytes": 9361,
-      "sha256": "07e0ab6c11e647d4739614c31e8b343b5678d9d870d3941c5bfcb62a88fa6ed8"
+      "bytes": 5803,
+      "sha256": "7795caf40a57e5fa34bbc6a2beb69daed9139f8da0bcf7d63a375dabbef79be2"
     },
     "g004_completion_audit": {
       "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
       "exists": true,
-      "bytes": 14059,
-      "sha256": "e0bec9eec0b0cfbe1e52210c4a0910c5d9bff8ea6ed16d220d32eec4f01020e8"
+      "bytes": 6058,
+      "sha256": "fc4f922fa0daca8bc345bfb630d8f6ad1ea594b5ea8655c187f15845935f311e"
     },
     "g005_completion_audit": {
       "path": "artifacts/aux/g005_aux_completion_audit.json",
       "exists": true,
-      "bytes": 14739,
-      "sha256": "385f0d603fca26f8c53ebb6c243b53478f9299f08815c309f1f4a2cd14f2ac46"
+      "bytes": 6629,
+      "sha256": "267a8569ae13cbc8fecb0f5f8670f50b8b3b93be2e8fce090b5a37fc5074bfbe"
     },
     "runtime_adapter_contract": {
       "path": "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
@@ -90,86 +96,76 @@
     "live_suite_doc": {
       "path": "docs/live_open_game_suite.md",
       "exists": true,
-      "bytes": 8024,
-      "sha256": "0e38a66ca5c0c3110df7d7317cc69e54f6a88a797b9e9882a8845992cc012595"
+      "bytes": 9323,
+      "sha256": "1ff8c2ab38589d42d975122cf352cea302ec201b54b2fee8746d1499cfd5a552"
     }
   },
-  "episode_artifact_paths": [],
-  "findings": [
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G003-d2e-only-idm",
-      "actual": "in_progress"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "actual": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "evidence_validation",
-      "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "trained_checkpoint_metadata",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
-    },
-    {
-      "severity": "error",
-      "code": "d2e_only_completion_audit_not_pass",
-      "audit_key": "g003",
-      "status": "fail",
-      "error_count": 26
-    },
-    {
-      "severity": "error",
-      "code": "d2e_only_completion_audit_not_pass",
-      "audit_key": "g004",
-      "status": "fail",
-      "error_count": 46
-    },
-    {
-      "severity": "error",
-      "code": "validation_expectation_mismatch",
-      "json_path": "schema",
-      "expected": "live_game_suite_evidence_validation.v1",
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "validation_expectation_mismatch",
-      "json_path": "quality_gate.status",
-      "expected": "pass",
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "checkpoint_expectation_mismatch",
-      "json_path": "oracle_ground_truth_control",
-      "expected": false,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "checkpoint_expectation_mismatch",
-      "json_path": "data_universe.exists",
-      "expected": true,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "checkpoint_expectation_mismatch",
-      "json_path": "split_contract.exists",
-      "expected": true,
-      "actual": null
-    }
+  "episode_artifact_paths": [
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/failures.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+    "configs/runtime/game_adapter_demo.yaml",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/episode.gif",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/replay.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/latency.jsonl",
+    "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/failures.jsonl",
+    "artifacts/harness/g008_repo_live_suite/statistical_comparison.json"
   ],
-  "error_count": 11,
+  "findings": [],
+  "error_count": 0,
   "claim_boundary": "This audit is required before checkpointing G008 complete; protocol-only or dry-run evidence cannot pass without passing full-corpus D2E-only G003/G004 audits, trained checkpoint metadata, and live open-source graphical-game validation evidence. D2E+aux checkpoints additionally require passing G005 evidence."
 }

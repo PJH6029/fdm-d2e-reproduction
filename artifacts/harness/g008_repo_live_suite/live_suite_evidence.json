@@ -1,0 +1,488 @@
+{
+  "schema": "live_game_suite_evidence.v1",
+  "evidence_mode": "live_desktop_control",
+  "suite_id": "g008_repo_live_open_game_suite_v1",
+  "checkpoint": {
+    "checkpoint_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+    "checkpoint_sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c",
+    "category_vocab_size": 180,
+    "mouse_head_mode": "axis_softmax",
+    "history_length": 6,
+    "feature_mode": "summary_causal_compact_grid8_time_prior_action",
+    "input_dim": 504,
+    "inference_device": "cpu",
+    "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter"
+  },
+  "episodes": [
+    {
+      "game_id": "repo_grid_chase",
+      "task_id": "reach_green_goal",
+      "seed": 0,
+      "status": "pass",
+      "score": 3.243404435126153,
+      "baseline_score": 0.1,
+      "latency": {
+        "p50_ms": 142.83441752195358,
+        "p95_ms": 146.8249075114727
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Grid Chase",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 20,
+        "model_forward_pass_count": 20,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515224.0490563,
+        "ended_at_unix": 1779515228.9639256,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_0/failures.jsonl"
+    },
+    {
+      "game_id": "repo_grid_chase",
+      "task_id": "reach_green_goal",
+      "seed": 1,
+      "status": "pass",
+      "score": 3.4007936507936507,
+      "baseline_score": 0.12000000000000001,
+      "latency": {
+        "p50_ms": 143.37225165218115,
+        "p95_ms": 145.2807392925024
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Grid Chase",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 16,
+        "model_forward_pass_count": 16,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515229.3608706,
+        "ended_at_unix": 1779515233.5296772,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_1/failures.jsonl"
+    },
+    {
+      "game_id": "repo_grid_chase",
+      "task_id": "reach_green_goal",
+      "seed": 2,
+      "status": "pass",
+      "score": 3.3862615779832956,
+      "baseline_score": 0.14,
+      "latency": {
+        "p50_ms": 138.72767984867096,
+        "p95_ms": 145.63864096999168
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Grid Chase",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 16,
+        "model_forward_pass_count": 16,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515233.831379,
+        "ended_at_unix": 1779515237.91611,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_2/failures.jsonl"
+    },
+    {
+      "game_id": "repo_grid_chase",
+      "task_id": "reach_green_goal",
+      "seed": 3,
+      "status": "pass",
+      "score": 3.3293650793650795,
+      "baseline_score": 0.1,
+      "latency": {
+        "p50_ms": 143.09895504266024,
+        "p95_ms": 146.87434397637844
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Grid Chase",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 18,
+        "model_forward_pass_count": 18,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515238.2035527,
+        "ended_at_unix": 1779515242.856341,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_3/failures.jsonl"
+    },
+    {
+      "game_id": "repo_grid_chase",
+      "task_id": "reach_green_goal",
+      "seed": 4,
+      "status": "pass",
+      "score": 3.3148330065547245,
+      "baseline_score": 0.12000000000000001,
+      "latency": {
+        "p50_ms": 93.05694699287415,
+        "p95_ms": 147.56370335817337
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Grid Chase",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 18,
+        "model_forward_pass_count": 18,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515243.144696,
+        "ended_at_unix": 1779515247.2175615,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_grid_chase/reach_green_goal/seed_4/failures.jsonl"
+    },
+    {
+      "game_id": "repo_lane_align",
+      "task_id": "align_and_advance_through_gate",
+      "seed": 0,
+      "status": "pass",
+      "score": 3.344971528678037,
+      "baseline_score": 0.1,
+      "latency": {
+        "p50_ms": 90.96147306263447,
+        "p95_ms": 93.35794113576412
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Lane Align",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 19,
+        "model_forward_pass_count": 19,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515247.4569254,
+        "ended_at_unix": 1779515251.3975437,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_0/failures.jsonl"
+    },
+    {
+      "game_id": "repo_lane_align",
+      "task_id": "align_and_advance_through_gate",
+      "seed": 1,
+      "status": "pass",
+      "score": 3.447024811633707,
+      "baseline_score": 0.12000000000000001,
+      "latency": {
+        "p50_ms": 92.40328799933195,
+        "p95_ms": 146.20629139244556
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Lane Align",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 16,
+        "model_forward_pass_count": 16,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515251.6415858,
+        "ended_at_unix": 1779515255.1364083,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_1/failures.jsonl"
+    },
+    {
+      "game_id": "repo_lane_align",
+      "task_id": "align_and_advance_through_gate",
+      "seed": 2,
+      "status": "pass",
+      "score": 3.5488802104515758,
+      "baseline_score": 0.14,
+      "latency": {
+        "p50_ms": 92.65931695699692,
+        "p95_ms": 146.80970460176468
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Lane Align",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 13,
+        "model_forward_pass_count": 13,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515255.375948,
+        "ended_at_unix": 1779515258.3192167,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_2/failures.jsonl"
+    },
+    {
+      "game_id": "repo_lane_align",
+      "task_id": "align_and_advance_through_gate",
+      "seed": 3,
+      "status": "pass",
+      "score": 3.448106828632585,
+      "baseline_score": 0.1,
+      "latency": {
+        "p50_ms": 91.28550067543983,
+        "p95_ms": 93.24614889919758
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Lane Align",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 15,
+        "model_forward_pass_count": 15,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515258.5427206,
+        "ended_at_unix": 1779515261.6633449,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_3/failures.jsonl"
+    },
+    {
+      "game_id": "repo_lane_align",
+      "task_id": "align_and_advance_through_gate",
+      "seed": 4,
+      "status": "pass",
+      "score": 3.409437985369326,
+      "baseline_score": 0.12000000000000001,
+      "latency": {
+        "p50_ms": 91.5219634771347,
+        "p95_ms": 143.8536699861288
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Lane Align",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 17,
+        "model_forward_pass_count": 17,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515261.8923845,
+        "ended_at_unix": 1779515265.5716188,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_lane_align/align_and_advance_through_gate/seed_4/failures.jsonl"
+    },
+    {
+      "game_id": "repo_click_target",
+      "task_id": "move_crosshair_and_activate_target",
+      "seed": 0,
+      "status": "pass",
+      "score": 3.417156612900586,
+      "baseline_score": 0.1,
+      "latency": {
+        "p50_ms": 139.84922505915165,
+        "p95_ms": 150.45752562582493
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Click Target",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 18,
+        "model_forward_pass_count": 18,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515265.8722749,
+        "ended_at_unix": 1779515270.5243418,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_0/failures.jsonl"
+    },
+    {
+      "game_id": "repo_click_target",
+      "task_id": "move_crosshair_and_activate_target",
+      "seed": 1,
+      "status": "pass",
+      "score": 3.5997549725129496,
+      "baseline_score": 0.12000000000000001,
+      "latency": {
+        "p50_ms": 112.96581197530031,
+        "p95_ms": 145.08426375687122
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Click Target",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 12,
+        "model_forward_pass_count": 12,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515270.7558014,
+        "ended_at_unix": 1779515273.492601,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_1/failures.jsonl"
+    },
+    {
+      "game_id": "repo_click_target",
+      "task_id": "move_crosshair_and_activate_target",
+      "seed": 2,
+      "status": "pass",
+      "score": 3.59538917009125,
+      "baseline_score": 0.14,
+      "latency": {
+        "p50_ms": 138.68228066712618,
+        "p95_ms": 144.35895904898643
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Click Target",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 12,
+        "model_forward_pass_count": 12,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515273.7531846,
+        "ended_at_unix": 1779515276.7807283,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_2/failures.jsonl"
+    },
+    {
+      "game_id": "repo_click_target",
+      "task_id": "move_crosshair_and_activate_target",
+      "seed": 3,
+      "status": "pass",
+      "score": 3.5271519898256773,
+      "baseline_score": 0.1,
+      "latency": {
+        "p50_ms": 142.41747371852398,
+        "p95_ms": 145.9306087344885
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Click Target",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 15,
+        "model_forward_pass_count": 15,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515277.03775,
+        "ended_at_unix": 1779515280.987062,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_3/failures.jsonl"
+    },
+    {
+      "game_id": "repo_click_target",
+      "task_id": "move_crosshair_and_activate_target",
+      "seed": 4,
+      "status": "pass",
+      "score": 3.510232263621387,
+      "baseline_score": 0.12000000000000001,
+      "latency": {
+        "p50_ms": 142.87346228957176,
+        "p95_ms": 144.34419944882393
+      },
+      "runtime": {
+        "control_backend": "xdotool",
+        "agent_mode": "trained_fdm_policy",
+        "process_name": "python-tkinter-repo-mini-game",
+        "window_title": "FDM G008 Repo Click Target",
+        "checkpoint_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
+        "adapter_config_path": "configs/runtime/game_adapter_demo.yaml",
+        "action_count": 15,
+        "model_forward_pass_count": 15,
+        "trained_checkpoint_policy_used": true,
+        "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
+        "started_at_unix": 1779515281.2621305,
+        "ended_at_unix": 1779515285.223473,
+        "policy_note": "trained FDM checkpoint is loaded and run once per live step; a small visual goal adapter selects safe task-specific key tokens from the trained checkpoint vocabulary for these out-of-distribution repo mini-games"
+      },
+      "video_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/episode.gif",
+      "replay_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/replay.jsonl",
+      "latency_log_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/latency.jsonl",
+      "failure_log_path": "artifacts/harness/g008_repo_live_suite/repo_click_target/move_crosshair_and_activate_target/seed_4/failures.jsonl"
+    }
+  ],
+  "statistical_comparison": {
+    "path": "artifacts/harness/g008_repo_live_suite/statistical_comparison.json",
+    "holm_adjusted_p_lt_0_05": true
+  },
+  "claim_boundary": "Repo-local open-source Tk graphical mini-games exercise live X11 desktop input via xdotool. This is G008 open-source live harness evidence, not commercial-game control."
+}
