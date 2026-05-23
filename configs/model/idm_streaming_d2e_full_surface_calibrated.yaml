@@ -38,8 +38,8 @@
   "category_threshold": 0.35,
   "category_threshold_mode": "group_fbeta_calibrated",
   "category_calibration_beta": 0.5,
-  "category_calibration_max_examples": 1048576,
-  "category_calibration_batch_size": 8192,
+  "category_calibration_max_examples": 262144,
+  "category_calibration_batch_size": 32768,
   "mouse_head_mode": "axis_softmax",
   "mouse_axis_decode_mode": "expected",
   "mouse_axis_temperature": 1.0,
@@ -49,7 +49,8 @@
   "mouse_output_gain": 1.0,
   "mouse_output_gain_min": 0.25,
   "mouse_output_gain_max": 4.0,
-  "mouse_gain_calibration_max_examples": 1048576,
+  "mouse_gain_calibration_max_examples": 262144,
+  "mouse_gain_calibration_batch_size": 32768,
   "seed": 20260523,
   "distributed_timeout_seconds": 21600,
   "training_cache_dir": "outputs/idm_streaming_d2e_full_compact_accel64/train_cache",
@@ -59,5 +60,6 @@
   "training_cache_shard_by_path": false,
   "training_progress_interval_batches": 50,
   "resume_predictions": true,
-  "prediction_workers": 16
+  "prediction_workers": 16,
+  "prediction_cuda_devices": [0, 1, 2, 3]
 }
