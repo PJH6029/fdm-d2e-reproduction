@@ -82,15 +82,16 @@ def _check_threshold(actual: float | None, gate: dict[str, Any], *, source: str)
     return row
 
 
-def _latest_glob(root: Path, pattern: str) -> str | None:
+def _glob_matches(root: Path, pattern: str) -> list[str]:
     matches = sorted(glob.glob(str(root / pattern)))
-    if not matches:
-        return None
-    path = Path(matches[-1])
-    try:
-        return str(path.relative_to(root))
-    except ValueError:
-        return str(path)
+    rel_matches = []
+    for match in matches:
+        path = Path(match)
+        try:
+            rel_matches.append(str(path.relative_to(root)))
+        except ValueError:
+            rel_matches.append(str(path))
+    return rel_matches
 
 
 def _comparison_rows(path: Path, split: str, model_name: str) -> dict[str, dict[str, Any]]:
@@ -126,6 +127,21 @@ def _old_goal_statuses(root: Path, goals_path: str | None) -> dict[str, str]:
     if not isinstance(payload, dict):
         return {}
     return {str(goal.get("id")): str(goal.get("status")) for goal in payload.get("goals", []) if isinstance(goal, dict)}
+
+
+def _select_old_archive_goals_path(root: Path, pattern: str | None, required_goal_ids: list[str]) -> tuple[str | None, dict[str, str]]:
+    if not pattern:
+        return None, {}
+    fallback_path: str | None = None
+    fallback_statuses: dict[str, str] = {}
+    for rel_path in reversed(_glob_matches(root, pattern)):
+        statuses = _old_goal_statuses(root, rel_path)
+        if fallback_path is None:
+            fallback_path = rel_path
+            fallback_statuses = statuses
+        if required_goal_ids and all(statuses.get(goal_id) == "complete" for goal_id in required_goal_ids):
+            return rel_path, statuses
+    return fallback_path, fallback_statuses
 
 
 def validate_renewed_metric_gates(config: dict[str, Any], *, root: str | Path = ".") -> dict[str, Any]:
@@ -174,13 +190,17 @@ def validate_renewed_metric_gates(config: dict[str, Any], *, root: str | Path = 
                 }
             )
 
+    old_goal_ids = [str(goal_id) for goal_id in config.get("old_goal_ids", [])]
     archive_glob = config.get("old_ultragoal_archive_glob")
-    archive_goals_path = _latest_glob(root_path, str(archive_glob)) if archive_glob else None
-    old_goal_statuses = _old_goal_statuses(root_path, archive_goals_path)
-    for goal_id in config.get("old_goal_ids", []):
-        actual = old_goal_statuses.get(str(goal_id))
+    archive_goals_path, old_goal_statuses = _select_old_archive_goals_path(
+        root_path,
+        str(archive_glob) if archive_glob else None,
+        old_goal_ids,
+    )
+    for goal_id in old_goal_ids:
+        actual = old_goal_statuses.get(goal_id)
         if actual != "complete":
-            old_evidence_findings.append({"severity": "error", "code": "old_goal_not_complete_in_archive", "goal_id": str(goal_id), "actual": actual})
+            old_evidence_findings.append({"severity": "error", "code": "old_goal_not_complete_in_archive", "goal_id": goal_id, "actual": actual})
 
     hard_gates = list(config.get("hard_gates", []))
     aggregate_gate_rows: list[dict[str, Any]] = []

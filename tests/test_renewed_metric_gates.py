@@ -144,3 +144,17 @@ def test_renewed_gate_audit_writes_output(tmp_path):
     written = (tmp_path / "artifact.json").read_text(encoding="utf-8")
     assert payload["schema"] == "renewed_metric_gate_audit.v1"
     assert '"gate_status": "fail"' in written
+
+
+def test_renewed_gate_audit_uses_archive_with_required_old_goal_ids(tmp_path):
+    config = _fixture(tmp_path, good=False)
+    write_json(
+        tmp_path / ".omx/ultragoal/archive/fdm-d2e-renewal-newer/goals.json",
+        {"goals": [{"id": "renewed-goal", "status": "in_progress"}]},
+    )
+    payload = validate_renewed_metric_gates(config, root=tmp_path)
+    assert payload["status"] == "pass"
+    assert payload["old_evidence"]["old_ultragoal_archive_goals_path"].endswith(
+        "fdm-d2e-renewal-test/goals.json"
+    )
+    assert payload["old_evidence"]["old_goal_statuses"] == {"old-goal": "complete"}
