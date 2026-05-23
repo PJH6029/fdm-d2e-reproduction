@@ -39,7 +39,7 @@ Current `.omx/ultragoal/goals.json` status:
 - `G003-d2e-only-idm` — complete and checkpointed in OMX.
 - `G004-d2e-only-fdm-4xh200` — complete and checkpointed in OMX.
 - `G005-aux-data-best-model` — complete and checkpointed in OMX.
-- `G006-evaluation-failure-analysis` — pending.
+- `G006-evaluation-failure-analysis` — complete and checkpointed in OMX.
 - `G007-runtime-sdk-adapter` — complete for the adapter-contract slice only.
 - `G008-live-game-suite` — pending.
 - `G009-report-repro-package` — pending.
@@ -63,7 +63,7 @@ Terminal snapshot: 2026-05-23 13:00 KST.
   - `artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv` — 4×H200 monitor evidence.
 - Raw checkpoint, predictions, train/target JSONLs, caches, and large output files remain on the MLXP PVC under the pod repo path; only small audit/evidence artifacts are committed locally.
 - GPU-utilization diagnosis: `artifacts/fdm/g004_gpu_rank_imbalance_diagnosis.json` records that the completed `bfe61db` run could idle GPU0 during epoch tails because cache shards were assigned by path modulo. Local/origin hardening after `d9375fa` uses deterministic `greedy_rows` cache-shard assignment for future/recovery runs, including G005+ training.
-- Claim boundary: G004 is D2E-only offline FDM training/evaluation evidence. It does not prove D2E+aux best-model, G006 final failure analysis, G008 live-game control, or final G009 reproducibility package completion.
+- Claim boundary: G004 is D2E-only offline FDM training/evaluation evidence. It does not prove D2E+aux best-model, G008 live-game control, or final G009 reproducibility package completion.
 
 ## Completed G005 MLXP run/finalization state
 
@@ -83,7 +83,7 @@ Terminal snapshot: 2026-05-23 14:14 KST.
   - `artifacts/aux/g005_aux_completion_audit.json` — `status=pass`, `error_count=0`, `target_records=16,698,646`, `predictions=16,698,646`.
 - Raw G005 `predictions.jsonl`, target-record symlink, prediction parts, and larger PVC outputs remain on the MLXP PVC; the audit records their counts/hashes.
 - Two hardenings were required before finalization: `3868187` added 16-worker prediction and full-target symlink handling; `7d3098f` treated zombie `uv` wrapper PIDs as inactive and normalized absolute aux namespace evidence to repo-relative paths.
-- Claim boundary: G005 proves a D2E+aux candidate and D2E-only-vs-D2E+aux ablation evidence. It does not complete G006 final failure analysis, G008 live-game evidence, or G009 final report/repro package.
+- Claim boundary: G005 proves a D2E+aux candidate and D2E-only-vs-D2E+aux ablation evidence. It does not complete G008 live-game evidence or G009 final report/repro package.
 
 Useful G004 monitor command:
 
@@ -357,6 +357,14 @@ artifacts exist, run `uv run python scripts/finalize_g006_evaluation.py`. It
 rebuilds final endpoint statistics, failure analysis, and claim taxonomy, runs
 readiness plus completion audits, writes a finalization summary, and does not
 mutate OMX state.
+
+Current terminal G006 evidence: `G006-evaluation-failure-analysis` is complete
+and checkpointed in OMX at commit `0dd5828`. `artifacts/eval/g006_finalization_summary.json`,
+`artifacts/eval/g006_completion_audit.json`, and
+`artifacts/eval/g006_evaluation_readiness_audit.json` all report pass. The final
+endpoint table keeps 53 `no_shared_clusters` rows as explicit unavailable
+stat-test non-rejections instead of fabricating p-values; do not promote those
+rows into claimed wins.
 
 ## G007 completion gate
 
