@@ -5,6 +5,7 @@ import json
 import os
 import glob
 import multiprocessing as mp
+import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import timedelta
 from contextlib import nullcontext
@@ -820,6 +821,7 @@ def _iter_training_cache_batches(
     shard_assignment: str = "greedy_rows",
 ) -> Iterable[tuple[Any, Any, Any, Any | None, Any | None, int]]:
     seen = 0
+    source_batch_idx = 0
     assigned_indices = (
         _training_cache_rank_assignment(
             cache_manifests,
@@ -845,6 +847,11 @@ def _iter_training_cache_batches(
                 end = min(rows, start + batch_size)
                 if max_examples is not None:
                     end = min(end, start + (max_examples - seen))
+                batch_rows = int(end - start)
+                current_source_batch_idx = source_batch_idx
+                source_batch_idx += 1
+                if not shard_by_path and world_size > 1 and (current_source_batch_idx % world_size) != rank:
+                    continue
                 x = payload["x"][start:end].to(device)
                 mouse_y = payload["mouse_y"][start:end].to(device)
                 cat_y = payload["cat_y"][start:end].to(device)
@@ -853,7 +860,6 @@ def _iter_training_cache_batches(
                 if dx_y is not None and dy_y is not None:
                     dx_y = dx_y[start:end].to(device)
                     dy_y = dy_y[start:end].to(device)
-                batch_rows = int(end - start)
                 seen += batch_rows
                 yield x, mouse_y, cat_y, dx_y, dy_y, batch_rows
             if max_examples is not None and seen >= max_examples:
@@ -900,6 +906,10 @@ def _train_one_epoch(
     record_paths = list(train_record_paths or _record_paths_from_value(train_records))
     shard_by_path = len(record_paths) > 1
     if training_cache_manifests:
+        cache_shard_by_path = bool(config.get("training_cache_shard_by_path", shard_by_path))
+        progress_interval = int(config.get("training_progress_interval_batches", 0) or 0)
+        progress_dir = ensure_dir(Path(config.get("output_dir", "outputs/idm_streaming_full")) / "rank_progress")
+        heartbeat_path = progress_dir / f"train_rank{rank}.json"
         for batch_idx, (x, mouse_y, cat_y, dx_y, dy_y, batch_rows) in enumerate(
             _iter_training_cache_batches(
                 torch,
@@ -909,12 +919,10 @@ def _train_one_epoch(
                 max_examples=config.get("max_train_examples"),
                 rank=rank,
                 world_size=world_size,
-                shard_by_path=shard_by_path,
+                shard_by_path=cache_shard_by_path,
                 shard_assignment=str(config.get("training_cache_shard_assignment", "greedy_rows")),
             )
         ):
-            if world_size > 1 and not shard_by_path and (batch_idx % world_size) != rank:
-                continue
             pred = model(x)
             mouse_loss = torch.nn.functional.smooth_l1_loss(pred[:, :2], mouse_y)
             category_end = 2 + len(category_vocab)
@@ -948,12 +956,29 @@ def _train_one_epoch(
             loss_sum += loss_value * batch_rows
             batches += 1
             examples += batch_rows
+            if progress_interval > 0 and (batches == 1 or batches % progress_interval == 0):
+                write_json(
+                    heartbeat_path,
+                    {
+                        "schema": "streaming_idm_train_rank_progress.v1",
+                        "rank": int(rank),
+                        "world_size": int(world_size),
+                        "batches": int(batches),
+                        "examples": int(examples),
+                        "last_local_batch_index": int(batch_idx),
+                        "loss": loss_value,
+                        "updated_at_epoch": time.time(),
+                        "training_cache": True,
+                        "training_cache_shard_by_path": cache_shard_by_path,
+                    },
+                )
         return {
             "loss": sum(losses) / len(losses) if losses else None,
             "loss_sum": loss_sum,
             "batches": batches,
             "examples": examples,
             "training_cache": True,
+            "training_cache_shard_by_path": cache_shard_by_path,
         }
     mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
     vocab_index = {token: idx for idx, token in enumerate(category_vocab)}
@@ -2962,6 +2987,8 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             "chunk_size": int(config.get("training_cache_chunk_size", config.get("batch_size", 4096) * 2))
             if config.get("training_cache_dir")
             else None,
+            "shard_by_path": bool(config.get("training_cache_shard_by_path", len(train_record_paths) > 1)),
+            "progress_interval_batches": int(config.get("training_progress_interval_batches", 0) or 0),
             "shard_assignment": _training_cache_assignment_plan(
                 training_cache_manifests,
                 world_size=int(dist["world_size"]),

@@ -117,6 +117,8 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
             "batch_size": 4,
             "training_cache_dir": str(tmp_path / "idm_train_cache"),
             "training_cache_chunk_size": 3,
+            "training_cache_shard_by_path": False,
+            "training_progress_interval_batches": 1,
             "categorical_min_count": 1,
             "category_threshold_mode": "group_fbeta_calibrated",
             "category_calibration_beta": 0.5,
@@ -144,6 +146,11 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
     assert summary["metadata"]["training_cache"]["enabled"] is True
     assert summary["metadata"]["training_cache"]["rows"] == 8
     assert summary["metadata"]["training_cache"]["chunk_size"] == 3
+    assert summary["metadata"]["training_cache"]["shard_by_path"] is False
+    assert summary["metadata"]["training_cache"]["progress_interval_batches"] == 1
+    progress = json.loads((tmp_path / "idm" / "rank_progress" / "train_rank0.json").read_text())
+    assert progress["training_cache_shard_by_path"] is False
+    assert progress["batches"] >= 1
     assert summary["metadata"]["calibration"]["mode"] == "group_fbeta_calibrated"
     assert summary["metadata"]["calibration"]["status"] == "computed"
     assert "KEY_PRESS_87" in summary["metadata"]["calibration"]["category_thresholds"]
