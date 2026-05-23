@@ -96,6 +96,7 @@ def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):
         "video_frame_fps": 20,
         "video_cache_chunk_size": 2,
         "video_cache_num_workers": 1,
+        "video_input_mode": "pair_delta_abs",
         "missing_frame_policy": "zero",
         "force_cpu": True,
         "seed": 7,

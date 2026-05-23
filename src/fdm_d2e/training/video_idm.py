@@ -829,6 +829,29 @@ def _class_weight(torch, counts: dict[str, int], *, class_count: int, cap: float
     return torch.tensor(values, dtype=torch.float32, device=device)
 
 
+def _video_input_channels(mode: str) -> int:
+    if mode == "pair":
+        return 2
+    if mode == "pair_delta":
+        return 3
+    if mode == "pair_delta_abs":
+        return 4
+    raise ValueError(f"unsupported video_input_mode: {mode}")
+
+
+def _augment_video_inputs(torch, frames, *, mode: str):
+    if mode == "pair":
+        return frames
+    if frames.shape[1] != 2:
+        raise ValueError(f"video_input_mode={mode} requires two cached frame channels")
+    delta = frames[:, 1:2] - frames[:, 0:1]
+    if mode == "pair_delta":
+        return torch.cat([frames, delta], dim=1)
+    if mode == "pair_delta_abs":
+        return torch.cat([frames, delta, delta.abs()], dim=1)
+    raise ValueError(f"unsupported video_input_mode: {mode}")
+
+
 def _build_video_pair_model(torch, *, output_dim: int, aux_dim: int, config: dict[str, Any]):
     channels = [int(value) for value in config.get("video_conv_channels", [32, 64, 128, 256])]
     if not channels:
@@ -836,6 +859,8 @@ def _build_video_pair_model(torch, *, output_dim: int, aux_dim: int, config: dic
     dropout = float(config.get("dropout", 0.05))
     hidden_dim = int(config.get("hidden_dim", 1024))
     depth = int(config.get("depth", 2))
+    video_input_mode = str(config.get("video_input_mode", "pair"))
+    input_channels = _video_input_channels(video_input_mode)
 
     class ResidualBlock(torch.nn.Module):
         def __init__(self, dim: int) -> None:
@@ -856,7 +881,7 @@ def _build_video_pair_model(torch, *, output_dim: int, aux_dim: int, config: dic
         def __init__(self) -> None:
             super().__init__()
             layers = []
-            in_channels = 2
+            in_channels = input_channels
             for out_channels in channels:
                 layers.extend(
                     [
@@ -878,7 +903,7 @@ def _build_video_pair_model(torch, *, output_dim: int, aux_dim: int, config: dic
             self.head = torch.nn.Sequential(*head_layers)
 
         def forward(self, frames, aux):
-            encoded = self.encoder(frames)
+            encoded = self.encoder(_augment_video_inputs(torch, frames, mode=video_input_mode))
             return self.head(torch.cat([encoded, aux], dim=1))
 
     return VideoPairIDM()
