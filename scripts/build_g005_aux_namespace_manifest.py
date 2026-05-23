@@ -85,12 +85,24 @@ def _template_source_row(source_id: str, candidate: dict[str, Any]) -> dict[str,
     }
 
 
+def _normalize_namespace(source_id: str, value: Any) -> str:
+    marker = f"outputs/aux/{source_id}"
+    namespace = str(value or marker)
+    marker_index = namespace.find(marker)
+    if marker_index >= 0:
+        namespace = namespace[marker_index:]
+    if namespace == marker:
+        namespace = f"{marker}/"
+    return namespace
+
+
 def _normalize_source_row(source_id: str, candidate: dict[str, Any], row: dict[str, Any]) -> dict[str, Any]:
     merged = dict(row)
     merged.setdefault("id", source_id)
     merged.setdefault("source_url", candidate.get("source_url"))
     merged.setdefault("license_id", candidate.get("license_id"))
     merged.setdefault("namespace", f"outputs/aux/{source_id}/")
+    merged["namespace"] = _normalize_namespace(source_id, merged.get("namespace"))
     merged.setdefault("action_head", _action_head_for_candidate(source_id, candidate))
     merged.setdefault("d2e_heldout_overlap_recording_ids", [])
     merged.setdefault("materialized", True)

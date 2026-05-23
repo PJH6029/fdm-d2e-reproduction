@@ -74,7 +74,7 @@ def test_g005_namespace_builder_completion_ready_requires_materialized_sources_a
             "aux_sources": [
                 {
                     "id": "aux_a",
-                    "namespace": "outputs/aux/aux_a/train/",
+                    "namespace": str(tmp_path / "outputs/aux/aux_a"),
                     "source_url": "https://example.invalid/aux-a",
                     "license_id": "mit",
                     "provenance_sha256": "abc123",
@@ -114,6 +114,7 @@ def test_g005_namespace_builder_completion_ready_requires_materialized_sources_a
 
     payload = json.loads(output.read_text())
     assert payload["completion_ready"] is True
+    assert payload["aux_sources"][0]["namespace"] == "outputs/aux/aux_a/"
     assert payload["d2e_eval_manifests"]["same_as_d2e_only"] is True
     assert payload["d2e_eval_manifests"]["splits"]["heldout_game"]["same_hash"] is True
     assert payload["aux_sources"][0]["materialized"] is True

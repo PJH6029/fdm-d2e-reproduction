@@ -56,3 +56,16 @@ Snapshot command evidence from the pod showed:
 A completion-blocking bug was identified in the pre-hardening code path: for multi-shard target evaluation, `outputs/fdm_aux/d2e_aux_best/d2e_target_records.jsonl` was linked to only the first target shard. `scripts/validate_g005_aux_completion.py` counts this file and would reject a full prediction file whose row count exceeds that first shard. Local hardening now links target records to the full monolithic D2E target JSONL and adds `d2e_only_prediction_paths` + `prediction_workers=16` so G005 prediction/metrics/split-stat collection processes G004 prediction recovery parts and target shards in parallel.
 
 Next safe action after commit/push: capture a fresh pod snapshot, terminate the pre-hardening G005 parent/watcher only after backing up partial outputs, pull latest origin in the pod, relaunch `scripts/run_g005_aux_prior_candidate.py`, and restart `scripts/watch_g005_then_finalize.py`.
+
+## 2026-05-23 14:03 KST fixed run completed; finalizer blocked by watcher/namespace hardening
+
+The `3868187` relaunch completed the G005 candidate run itself:
+
+- `artifacts/aux/g005_d2e_aux_train_run.json` reported `status=pass`, `exit_code=0`.
+- `outputs/fdm_aux/d2e_aux_best/prediction_build_summary.json` reported `status=pass`, `rows=16,698,646`, `parallel_prediction=true`, `prediction_workers=16`.
+- `artifacts/eval/g005_split_statistical_comparisons_summary.json` and `artifacts/aux/d2e_aux_ablation_summary.json` reported `status=pass`.
+- `outputs/fdm_aux/d2e_aux_best/d2e_target_records.jsonl` was a symlink to the full monolithic D2E target JSONL, not the first target shard.
+
+The post-run watcher did not finalize because the `uv` wrapper PID in `outputs/cluster/g005_d2e_aux_best.pid` remained as a zombie (`STAT=Z`), and the watcher treated `os.kill(pid, 0)` as alive. Local hardening now treats zombie PIDs as inactive. A second finalization blocker was also identified: namespace source evidence can contain absolute `.../outputs/aux/<dataset>` paths, while the G005 completion audit requires repo-relative `outputs/aux/<dataset>/...` namespaces. Local hardening now normalizes absolute namespace values back to repo-relative paths.
+
+Next safe action after commit/push: pull latest origin in the pod, run `scripts/finalize_g005_aux_best_model.py --force-namespace --source-evidence artifacts/aux/g005_aux_source_materialization_evidence.json --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json --completion-ready`, then inspect `artifacts/aux/g005_aux_finalization_summary.json` and `artifacts/aux/g005_aux_completion_audit.json` before any OMX checkpoint.

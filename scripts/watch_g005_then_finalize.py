@@ -37,6 +37,14 @@ def _read_pid(path: Path) -> int | None:
 def _pid_running(pid: int | None) -> bool:
     if pid is None or pid <= 0:
         return False
+    stat_path = Path(f"/proc/{pid}/stat")
+    if stat_path.exists():
+        try:
+            parts = stat_path.read_text(encoding="utf-8").split()
+            if len(parts) > 2 and parts[2] == "Z":
+                return False
+        except OSError:
+            pass
     try:
         os.kill(pid, 0)
     except ProcessLookupError:
