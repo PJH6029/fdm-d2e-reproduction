@@ -250,7 +250,7 @@ def test_streaming_idm_action_history_prediction_does_not_peek_target_labels(tmp
     target_part_b = tmp_path / "target_part_b.jsonl"
     _write_jsonl(target_part_a, target_rows[:2])
     _write_jsonl(target_part_b, target_rows[2:])
-    with pytest.raises(ValueError, match="parallel prediction is not supported when action_history_len>0"):
+    with pytest.raises(ValueError, match="parallel prediction with action_history_len>0 requires"):
         predict_streaming_idm_checkpoint(
             {
                 "checkpoint_path": str(idm_out / "checkpoint.pt"),
@@ -262,6 +262,27 @@ def test_streaming_idm_action_history_prediction_does_not_peek_target_labels(tmp
                 "validate_pseudolabels": False,
             }
         )
+    safe_part_a = tmp_path / "target_part_safe_a.jsonl"
+    safe_part_b = tmp_path / "target_part_safe_b.jsonl"
+    safe_rows_a = [{**row, "recording_id": "d2e_480p:Apex/rec_a", "sequence_id": row["sequence_id"].replace("rec#", "rec_a#")} for row in target_rows[:2]]
+    safe_rows_b = [{**row, "recording_id": "d2e_480p:Apex/rec_b", "sequence_id": row["sequence_id"].replace("rec#", "rec_b#")} for row in target_rows[2:]]
+    _write_jsonl(safe_part_a, safe_rows_a)
+    _write_jsonl(safe_part_b, safe_rows_b)
+    parallel_prediction = predict_streaming_idm_checkpoint(
+        {
+            "checkpoint_path": str(idm_out / "checkpoint.pt"),
+            "records_path": str(safe_part_a),
+            "record_paths": [str(safe_part_a), str(safe_part_b)],
+            "output_dir": str(tmp_path / "predict_parallel_allowed"),
+            "prediction_workers": 2,
+            "action_history_parallel_by_path": True,
+            "force_cpu": True,
+            "validate_pseudolabels": False,
+        }
+    )
+    assert parallel_prediction["records"] == 4
+    assert "_action_history_seed_state" not in parallel_prediction["prediction_config"]
+    assert parallel_prediction["prediction_config"]["action_history_seed_state_summary"]["source"] == "parent_train_scan"
 
 
 def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):

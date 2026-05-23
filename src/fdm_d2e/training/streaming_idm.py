@@ -140,6 +140,52 @@ def _ensure_history_state(
     return histories[recording_id], button_states[recording_id]
 
 
+def _action_history_parallel_by_path(config: dict[str, Any]) -> bool:
+    return bool(config.get("action_history_parallel_by_path", config.get("action_history_parallel_prediction_by_path", False)))
+
+
+def _action_history_seed_state_from_records(
+    record_paths: Sequence[str | Path],
+    *,
+    history_len: int,
+) -> dict[str, Any]:
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+    if history_len <= 0:
+        return {"schema": "streaming_idm_action_history_seed_state.v1", "history_len": 0, "histories": {}, "button_states": {}}
+    for row in _iter_records(record_paths):
+        history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
+        _append_history(history, button_state, _tokens(row), history_len=history_len)
+    return {
+        "schema": "streaming_idm_action_history_seed_state.v1",
+        "history_len": int(history_len),
+        "recordings": len(histories),
+        "histories": histories,
+        "button_states": button_states,
+    }
+
+
+def _load_action_history_seed_state(seed_state: Any) -> tuple[dict[str, list[list[str]]], dict[str, dict[str, float]]]:
+    if not isinstance(seed_state, dict):
+        return {}, {}
+    raw_histories = seed_state.get("histories", {})
+    raw_button_states = seed_state.get("button_states", {})
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+    if isinstance(raw_histories, dict):
+        for recording_id, rows in raw_histories.items():
+            if not isinstance(rows, list):
+                continue
+            histories[str(recording_id)] = [[str(token) for token in tokens] for tokens in rows if isinstance(tokens, list)]
+    if isinstance(raw_button_states, dict):
+        for recording_id, state in raw_button_states.items():
+            if isinstance(state, dict):
+                button_states[str(recording_id)] = {str(key): float(value) for key, value in state.items()}
+    for recording_id in histories:
+        button_states.setdefault(recording_id, _empty_button_state())
+    return histories, button_states
+
+
 def _empty_stats_accumulator() -> dict[str, Any]:
     return {
         "count": 0,
@@ -711,6 +757,7 @@ def _training_cache_identity(
         "action_history_len": int(stats.get("action_history_len", _action_history_len_from_config(config))),
         "action_history_vocab": list(stats.get("action_history_vocab", [])),
         "action_history_dim": int(stats.get("action_history_dim", 0)),
+        "action_history_parallel_by_path": _action_history_parallel_by_path(config),
         "cache_version": 3,
     }
 
@@ -922,7 +969,8 @@ def _build_training_cache_manifests(
             mouse_axis_classes=mouse_axis_classes,
         )
         tasks.append((path, manifest_path, identity))
-    if int(stats.get("action_history_len", _action_history_len_from_config(config))) > 0:
+    action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
+    if action_history_len > 0 and not _action_history_parallel_by_path(config):
         histories: dict[str, list[list[str]]] = {}
         button_states: dict[str, dict[str, float]] = {}
         return [
@@ -2540,18 +2588,17 @@ def _predict_stream(
     resume_existing_rows = 0
     action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
     history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
-    histories: dict[str, list[list[str]]] = {}
-    button_states: dict[str, dict[str, float]] = {}
+    histories, button_states = _load_action_history_seed_state(config.get("_action_history_seed_state"))
     if action_history_len > 0:
-        train_paths = _record_paths_from_config(
-            config,
-            primary_key="train_records",
-            paths_key="train_record_paths",
-            glob_key="train_records_glob",
-        )
-        for train_row in _iter_records(train_paths):
-            history, button_state = _ensure_history_state(histories, button_states, str(train_row.get("recording_id", "")))
-            _append_history(history, button_state, _tokens(train_row), history_len=action_history_len)
+        if not histories:
+            train_paths = _record_paths_from_config(
+                config,
+                primary_key="train_records",
+                paths_key="train_record_paths",
+                glob_key="train_records_glob",
+            )
+            seed_state = _action_history_seed_state_from_records(train_paths, history_len=action_history_len)
+            histories, button_states = _load_action_history_seed_state(seed_state)
     if resume_predictions:
         pseudo_exists = pseudo_path.exists()
         predictions_exists = predictions_path.exists()
@@ -2811,8 +2858,12 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     except TypeError:  # pragma: no cover - older torch releases.
         checkpoint = torch.load(checkpoint_path, map_location=checkpoint_device)
     checkpoint_config = dict(checkpoint.get("config", {}))
-    if parallel_prediction and int(checkpoint.get("stats", {}).get("action_history_len", checkpoint_config.get("action_history_len", 0)) or 0) > 0:
-        raise ValueError("parallel prediction is not supported when action_history_len>0 because autoregressive ordering is required")
+    action_history_len = int(checkpoint.get("stats", {}).get("action_history_len", checkpoint_config.get("action_history_len", 0)) or 0)
+    if parallel_prediction and action_history_len > 0 and not _action_history_parallel_by_path({**checkpoint_config, **config}):
+        raise ValueError(
+            "parallel prediction with action_history_len>0 requires action_history_parallel_by_path=true "
+            "and target record paths that preserve complete recording order"
+        )
     prediction_config = dict(checkpoint_config)
     for key, value in config.get("prediction_overrides", {}).items():
         prediction_config[key] = value
@@ -2838,6 +2889,20 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         if key in config:
             prediction_config[key] = config[key]
     if parallel_prediction:
+        if action_history_len > 0:
+            train_paths = _record_paths_from_config(
+                prediction_config,
+                primary_key="train_records",
+                paths_key="train_record_paths",
+                glob_key="train_records_glob",
+            )
+            seed_state = _action_history_seed_state_from_records(train_paths, history_len=action_history_len)
+            prediction_config["_action_history_seed_state"] = seed_state
+            prediction_config["action_history_seed_state_summary"] = {
+                "source": "parent_train_scan",
+                "recordings": int(seed_state.get("recordings", 0)),
+                "history_len": int(seed_state.get("history_len", action_history_len)),
+            }
         prediction = _predict_streaming_idm_checkpoint_parallel(
             config,
             checkpoint=checkpoint,
@@ -2875,6 +2940,8 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
             checkpoint_path=checkpoint_path,
             output_dir=output_dir,
         )
+    summary_prediction_config = dict(prediction_config)
+    summary_prediction_config.pop("_action_history_seed_state", None)
     summary = {
         "schema": "streaming_idm_predict_summary.v1",
         "source_checkpoint_path": str(checkpoint_path),
@@ -2884,7 +2951,7 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "record_paths": [str(path) for path in record_paths],
         "records_glob": config.get("records_glob"),
         "output_dir": str(output_dir),
-        "prediction_config": prediction_config,
+        "prediction_config": summary_prediction_config,
         "records": int(prediction["target_records"]),
         "pseudo_label_path": prediction["pseudo_label_path"],
         "predictions_path": prediction["predictions_path"],
@@ -3583,7 +3650,18 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     prediction_workers = int(config.get("prediction_workers", 1))
     if prediction_workers > 1 and len(target_record_paths) > 1:
         if int(stats.get("action_history_len", 0) or 0) > 0:
-            raise ValueError("parallel prediction is not supported when action_history_len>0 because autoregressive ordering is required")
+            if not _action_history_parallel_by_path(config):
+                raise ValueError(
+                    "parallel prediction with action_history_len>0 requires action_history_parallel_by_path=true "
+                    "and target record paths that preserve complete recording order"
+                )
+            seed_state = _action_history_seed_state_from_records(train_record_paths, history_len=int(stats.get("action_history_len", 0) or 0))
+            config["_action_history_seed_state"] = seed_state
+            config["action_history_seed_state_summary"] = {
+                "source": "parent_train_scan",
+                "recordings": int(seed_state.get("recordings", 0)),
+                "history_len": int(seed_state.get("history_len", int(stats.get("action_history_len", 0) or 0))),
+            }
         if str(device).startswith("cuda"):
             model.to("cpu")
             torch.cuda.empty_cache()
@@ -3608,6 +3686,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             checkpoint_path=checkpoint_path,
             output_dir=out_dir,
         )
+    config.pop("_action_history_seed_state", None)
     config_fingerprint = stable_hash_json(config)
     resolved_config_path = out_dir / "resolved_config.json"
     write_json(

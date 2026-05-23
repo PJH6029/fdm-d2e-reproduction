@@ -29,8 +29,8 @@
   "batch_size": 4096,
   "eval_batch_size": 4096,
   "convergence_eval_max_examples": 524288,
-  "precompute_num_workers": 1,
-  "stats_num_workers": 1,
+  "precompute_num_workers": 32,
+  "stats_num_workers": 32,
   "lr": 0.0003,
   "weight_decay": 0.0001,
   "grad_clip": 1.0,
@@ -60,10 +60,12 @@
   "distributed_timeout_seconds": 21600,
   "training_cache_dir": "outputs/idm_streaming_d2e_full_luma_pair_action_history_candidate/train_cache",
   "training_cache_chunk_size": 4096,
-  "training_cache_num_workers": 1,
+  "training_cache_num_workers": 32,
   "training_cache_shard_assignment": "greedy_rows",
   "training_cache_shard_by_path": true,
+  "action_history_parallel_by_path": true,
   "training_progress_interval_batches": 100,
   "resume_predictions": true,
-  "prediction_workers": 1
+  "prediction_workers": 16,
+  "prediction_cuda_devices": [0, 1, 2, 3]
 }
