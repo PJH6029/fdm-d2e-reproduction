@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 443,
+  "entry_count": 451,
   "entries": [
     {
       "path": "AGENTS.md",
@@ -20,6 +20,12 @@
       "kind": "evidence_artifact",
       "bytes": 90844,
       "sha256": "d02a6477a1add5ad7c4a577ef5aaea82f5f7b967ce37c3444efc5dd13df42d3c"
+    },
+    {
+      "path": "artifacts/aux/d2e_aux_ablation_summary.json",
+      "kind": "evidence_artifact",
+      "bytes": 3853,
+      "sha256": "fcd727aec13afea5099063560f856f630811add63bc5c8edef196238a89e9b5a"
     },
     {
       "path": "artifacts/aux/d2e_eval_manifest_hashes.json",
@@ -42,8 +48,8 @@
     {
       "path": "artifacts/aux/g005_aux_completion_audit.json",
       "kind": "evidence_artifact",
-      "bytes": 10342,
-      "sha256": "4582a0c5bda8cd3a8cac2a2ea6b7d7606e615cc1a921a7bcc4af916a52dbd0b8"
+      "bytes": 6629,
+      "sha256": "267a8569ae13cbc8fecb0f5f8670f50b8b3b93be2e8fce090b5a37fc5074bfbe"
     },
     {
       "path": "artifacts/aux/g005_aux_examples_summary.json",
@@ -54,8 +60,8 @@
     {
       "path": "artifacts/aux/g005_aux_finalization_summary.json",
       "kind": "evidence_artifact",
-      "bytes": 1617,
-      "sha256": "9167d52d04afff05d67a13435dc7854fbcfad1a43717186b2880df0f6457a6c0"
+      "bytes": 2035,
+      "sha256": "0d6bf06b4e64f3d3989d0976c249fd96ea7bdd6e89b2ac1f282b979ed1b8ccc0"
     },
     {
       "path": "artifacts/aux/g005_aux_loader_manifest.json",
@@ -90,8 +96,8 @@
     {
       "path": "artifacts/aux/g005_aux_namespace_manifest.json",
       "kind": "evidence_artifact",
-      "bytes": 329970,
-      "sha256": "62bb015d2b69e9a526a13c837b334aba0fbea969787a3e30f0df592150ea7456"
+      "bytes": 329742,
+      "sha256": "901e360ae2aeef3568cbad5f45503d34d5cfe3434ee37764370f1e3d306a038b"
     },
     {
       "path": "artifacts/aux/g005_aux_runtime_env.json",
@@ -104,6 +110,12 @@
       "kind": "evidence_artifact",
       "bytes": 327911,
       "sha256": "10031890a006d721ba0f11cdee46f8c44c88afe8b4aa9418987eccbfe3526389"
+    },
+    {
+      "path": "artifacts/aux/g005_d2e_aux_train_run.json",
+      "kind": "evidence_artifact",
+      "bytes": 796,
+      "sha256": "6cce09dd93a8c4107c3d225057aaad24bd33f302c831efc41d71a689d6ff2b39"
     },
     {
       "path": "artifacts/aux/g005_launch_readiness.json",
@@ -1140,8 +1152,8 @@
     {
       "path": "notes/g005-mlxp-run-status.md",
       "kind": "other",
-      "bytes": 6479,
-      "sha256": "532a0fb6160321e15c105d1fc2c012d57996d354e944d0f5404aeef98b176bd9"
+      "bytes": 7624,
+      "sha256": "dec7d5e75353be2cec8bc02c26e86506518253f5d976b21bf5b81daff7933592"
     },
     {
       "path": "notes/gpu-utilization-operating-rule.md",
@@ -1160,6 +1172,42 @@
       "kind": "other",
       "bytes": 17018,
       "sha256": "9604560704d68d101e6d5000df72819eb0568a7a02297c4e429d905db01109ec"
+    },
+    {
+      "path": "outputs/fdm_aux/d2e_aux_best/checkpoint.pt",
+      "kind": "other",
+      "bytes": 21503,
+      "sha256": "2f43a483f1b1877aed25fa4b1b175581de7b08ec044f94625708f84b195dd91f"
+    },
+    {
+      "path": "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json",
+      "kind": "other",
+      "bytes": 28351,
+      "sha256": "1b667bf86be6637f1db57f256a7dab0ded13b8d5a8e87322949ad286b051370e"
+    },
+    {
+      "path": "outputs/fdm_aux/d2e_aux_best/metrics.json",
+      "kind": "other",
+      "bytes": 894,
+      "sha256": "5d3fcd7b600c5f4703c901981281f5f2ea761a4710c58b956533f07f7ce4b407"
+    },
+    {
+      "path": "outputs/fdm_aux/d2e_aux_best/prediction_build_summary.json",
+      "kind": "other",
+      "bytes": 15696,
+      "sha256": "0c89acd3b2935a10de99b0c3df424b622f3c833b976d174ee566c14df919b235"
+    },
+    {
+      "path": "outputs/fdm_aux/d2e_aux_best/resolved_config.json",
+      "kind": "other",
+      "bytes": 5084,
+      "sha256": "9247f23b56efd876b6130a558a58d6781e037b5be0ad6417674c534d47a889b3"
+    },
+    {
+      "path": "outputs/fdm_aux/d2e_aux_best/statistical_comparison.json",
+      "kind": "other",
+      "bytes": 1207,
+      "sha256": "858f1339868f7671fc07173ab3d4de9c25350747197747213c39dcf859be388a"
     },
     {
       "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
@@ -1380,8 +1428,8 @@
     {
       "path": "scripts/build_repro_package_manifest.py",
       "kind": "reproduction_script",
-      "bytes": 16888,
-      "sha256": "c0494008efd56a7f7721876167104762d868928cb63ec8da7695a58a5f550896"
+      "bytes": 17235,
+      "sha256": "5b0aaba6533f622610d9d55a5877bd63822bc75ce21de59226ef02e568705f68"
     },
     {
       "path": "scripts/build_split_contract.py",

@@ -1,0 +1,17 @@
+{
+  "schema": "g005_d2e_aux_train_run.v1",
+  "status": "pass",
+  "exit_code": 0,
+  "expected_gpus": 4,
+  "gpu_active_required": false,
+  "gpu_utilization_note": "This G005 candidate trains CPU/IO source-specific aux action priors and evaluates D2E predictions; future neural aux-pretraining candidates should use 4xH200 and monitor GPU utilization.",
+  "output_dir": "outputs/fdm_aux/d2e_aux_best",
+  "aux_training_status": "pass",
+  "prediction_status": "pass",
+  "split_statistics_status": "pass",
+  "ablation_status": "pass",
+  "metadata_source_namespace": "d2e_aux",
+  "started_at_unix": 1779511629.7187586,
+  "duration_seconds": 662.3258669376373,
+  "claim_boundary": "Run summary for a D2E+aux candidate; it does not checkpoint G005 and does not claim FDM-1 parity or live-game control."
+}

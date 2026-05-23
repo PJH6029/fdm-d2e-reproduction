@@ -1,50 +1,50 @@
 {
   "schema": "g005_aux_finalization.v1",
-  "status": "fail",
-  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "status": "pass",
+  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
   "actions": [
     {
       "name": "namespace_manifest",
-      "status": "blocked_missing_source_evidence",
-      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/artifacts/aux/g005_aux_namespace_manifest.json",
-      "exists": false
+      "status": "built",
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/aux/g005_aux_namespace_manifest.json",
+      "exists": true,
+      "completion_ready": true
     },
     {
       "name": "run_summary",
       "path": "artifacts/aux/g005_d2e_aux_train_run.json",
-      "exists": false,
-      "exit_code": null
+      "exists": true,
+      "exit_code": 0
     },
     {
       "name": "g005_completion_audit",
       "output": "artifacts/aux/g005_aux_completion_audit.json",
-      "status": "fail",
-      "error_count": 27
+      "status": "pass",
+      "error_count": 0
     }
   ],
   "namespace_manifest_path": "artifacts/aux/g005_aux_namespace_manifest.json",
-  "namespace_manifest_status": "blocked_missing_source_evidence",
-  "namespace_completion_ready": null,
-  "run_summary": null,
-  "g005_audit_status": "fail",
-  "g005_audit_error_count": 27,
-  "findings": [
-    {
-      "severity": "error",
-      "code": "namespace_manifest_not_ready",
-      "status": "blocked_missing_source_evidence",
-      "error": null
-    },
-    {
-      "severity": "error",
-      "code": "missing_run_summary",
-      "path": "artifacts/aux/g005_d2e_aux_train_run.json"
-    },
-    {
-      "severity": "error",
-      "code": "g005_completion_audit_not_pass",
-      "error_count": 27
-    }
-  ],
+  "namespace_manifest_status": "built",
+  "namespace_completion_ready": true,
+  "run_summary": {
+    "schema": "g005_d2e_aux_train_run.v1",
+    "status": "pass",
+    "exit_code": 0,
+    "expected_gpus": 4,
+    "gpu_active_required": false,
+    "gpu_utilization_note": "This G005 candidate trains CPU/IO source-specific aux action priors and evaluates D2E predictions; future neural aux-pretraining candidates should use 4xH200 and monitor GPU utilization.",
+    "output_dir": "outputs/fdm_aux/d2e_aux_best",
+    "aux_training_status": "pass",
+    "prediction_status": "pass",
+    "split_statistics_status": "pass",
+    "ablation_status": "pass",
+    "metadata_source_namespace": "d2e_aux",
+    "started_at_unix": 1779511629.7187586,
+    "duration_seconds": 662.3258669376373,
+    "claim_boundary": "Run summary for a D2E+aux candidate; it does not checkpoint G005 and does not claim FDM-1 parity or live-game control."
+  },
+  "g005_audit_status": "pass",
+  "g005_audit_error_count": 0,
+  "findings": [],
   "claim_boundary": "Finalizes artifacts for the G005 D2E+aux best-model lane after D2E-only gates and aux training/ablation evidence exist; it does not checkpoint G005 or weaken D2E-only prerequisites."
 }

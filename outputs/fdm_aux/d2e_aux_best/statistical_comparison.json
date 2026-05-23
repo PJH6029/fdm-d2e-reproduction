@@ -1,0 +1,32 @@
+{
+  "schema": "g005_aux_statistical_comparison.v1",
+  "status": "pass",
+  "model": "g005_aux_action_prior_d2e_aux_best",
+  "split_statistics_summary": {
+    "schema": "split_statistical_comparison_build.v1",
+    "status": "pass",
+    "model_name": "g005_aux_action_prior_d2e_aux_best",
+    "outputs": [
+      {
+        "split": "temporal",
+        "path": "outputs/fdm_aux/d2e_aux_best/split_temporal_statistical_comparison.json",
+        "status": "pass",
+        "comparisons": 21
+      },
+      {
+        "split": "heldout_recording",
+        "path": "outputs/fdm_aux/d2e_aux_best/split_heldout_recording_statistical_comparison.json",
+        "status": "pass",
+        "comparisons": 21
+      },
+      {
+        "split": "heldout_game",
+        "path": "outputs/fdm_aux/d2e_aux_best/split_heldout_game_statistical_comparison.json",
+        "status": "pass",
+        "comparisons": 21
+      }
+    ],
+    "claim_boundary": "Builder creates split-specific comparison artifacts inline during G005 prediction generation; G006 still requires final artifact synthesis."
+  },
+  "claim_boundary": "G005 D2E+aux candidate split statistics; compare against D2E-only in the ablation summary before making claims."
+}

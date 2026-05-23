@@ -69,3 +69,25 @@ The `3868187` relaunch completed the G005 candidate run itself:
 The post-run watcher did not finalize because the `uv` wrapper PID in `outputs/cluster/g005_d2e_aux_best.pid` remained as a zombie (`STAT=Z`), and the watcher treated `os.kill(pid, 0)` as alive. Local hardening now treats zombie PIDs as inactive. A second finalization blocker was also identified: namespace source evidence can contain absolute `.../outputs/aux/<dataset>` paths, while the G005 completion audit requires repo-relative `outputs/aux/<dataset>/...` namespaces. Local hardening now normalizes absolute namespace values back to repo-relative paths.
 
 Next safe action after commit/push: pull latest origin in the pod, run `scripts/finalize_g005_aux_best_model.py --force-namespace --source-evidence artifacts/aux/g005_aux_source_materialization_evidence.json --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json --completion-ready`, then inspect `artifacts/aux/g005_aux_finalization_summary.json` and `artifacts/aux/g005_aux_completion_audit.json` before any OMX checkpoint.
+
+## 2026-05-23 14:12 KST G005 finalization/audit pass
+
+After pulling `7d3098f` in the pod, G005 finalization was run with:
+
+```bash
+uv run python scripts/finalize_g005_aux_best_model.py \
+  --force-namespace \
+  --source-evidence artifacts/aux/g005_aux_source_materialization_evidence.json \
+  --eval-manifest-hashes artifacts/aux/d2e_eval_manifest_hashes.json \
+  --completion-ready
+```
+
+Result:
+
+- `artifacts/aux/g005_aux_finalization_summary.json`: `status=pass`, `g005_audit_status=pass`, `g005_audit_error_count=0`.
+- `artifacts/aux/g005_aux_completion_audit.json`: `status=pass`, `error_count=0`.
+- Audit counts: `target_records=16,698,646`, `predictions=16,698,646`.
+- `artifacts/aux/g005_aux_namespace_manifest.json`: `completion_ready=true`, namespaces normalized to `outputs/aux/<source>/` for all selected aux sources.
+- Small G005 evidence files were copied locally; raw `predictions.jsonl`, target records, and large PVC outputs remain on the MLXP pod/PVC.
+
+G005 is ready for an OMX checkpoint with a fresh active aggregate `get_goal` snapshot. Do not call `update_goal complete`; only checkpoint `G005-aux-data-best-model` in OMX.

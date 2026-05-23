@@ -1,6 +1,6 @@
 {
   "schema": "g005_aux_completion_audit.v1",
-  "status": "fail",
+  "status": "pass",
   "goal_id": "G005-aux-data-best-model",
   "goal_status": "in_progress",
   "require_goal_checkpoint_complete": false,
@@ -13,7 +13,11 @@
     "heldout_recording",
     "temporal"
   ],
-  "ablation_splits": [],
+  "ablation_splits": [
+    "heldout_game",
+    "heldout_recording",
+    "temporal"
+  ],
   "d2e_only_audit_report": {
     "g003": {
       "audit_key": "g003",
@@ -135,14 +139,14 @@
     "namespace_manifest": {
       "path": "artifacts/aux/g005_aux_namespace_manifest.json",
       "exists": true,
-      "bytes": 329970,
-      "sha256": "62bb015d2b69e9a526a13c837b334aba0fbea969787a3e30f0df592150ea7456"
+      "bytes": 329742,
+      "sha256": "901e360ae2aeef3568cbad5f45503d34d5cfe3434ee37764370f1e3d306a038b"
     },
     "ablation_summary": {
       "path": "artifacts/aux/d2e_aux_ablation_summary.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 3853,
+      "sha256": "fcd727aec13afea5099063560f856f630811add63bc5c8edef196238a89e9b5a"
     },
     "g003_completion_audit": {
       "path": "artifacts/idm/g003_full_idm_completion_audit.json",
@@ -158,198 +162,58 @@
     },
     "checkpoint_metadata": {
       "path": "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 28351,
+      "sha256": "1b667bf86be6637f1db57f256a7dab0ded13b8d5a8e87322949ad286b051370e"
     },
     "resolved_config": {
       "path": "outputs/fdm_aux/d2e_aux_best/resolved_config.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 5084,
+      "sha256": "9247f23b56efd876b6130a558a58d6781e037b5be0ad6417674c534d47a889b3"
     },
     "checkpoint": {
       "path": "outputs/fdm_aux/d2e_aux_best/checkpoint.pt",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 21503,
+      "sha256": "2f43a483f1b1877aed25fa4b1b175581de7b08ec044f94625708f84b195dd91f"
     },
     "target_records": {
       "path": "outputs/fdm_aux/d2e_aux_best/d2e_target_records.jsonl",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 347089780692,
+      "sha256": "da121cc0c931121f15e51b075c86cef08fc6f9568b05ddd2dd6f119169bf053d"
     },
     "predictions": {
       "path": "outputs/fdm_aux/d2e_aux_best/predictions.jsonl",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 7632715547,
+      "sha256": "dabbe206b612e300987f7d3f4795a5e91f97bb64cebe552c398578797265bd78"
     },
     "metrics": {
       "path": "outputs/fdm_aux/d2e_aux_best/metrics.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 894,
+      "sha256": "5d3fcd7b600c5f4703c901981281f5f2ea761a4710c58b956533f07f7ce4b407"
     },
     "statistical_comparison": {
       "path": "outputs/fdm_aux/d2e_aux_best/statistical_comparison.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 1207,
+      "sha256": "858f1339868f7671fc07173ab3d4de9c25350747197747213c39dcf859be388a"
     },
     "run_summary": {
       "path": "artifacts/aux/g005_d2e_aux_train_run.json",
-      "exists": false,
-      "bytes": 0,
-      "sha256": null
+      "exists": true,
+      "bytes": 796,
+      "sha256": "6cce09dd93a8c4107c3d225057aaad24bd33f302c831efc41d71a689d6ff2b39"
     }
   },
   "counts": {
-    "target_records": null,
-    "predictions": null
+    "target_records": 16698646,
+    "predictions": 16698646
   },
-  "findings": [
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "ablation_summary",
-      "path": "artifacts/aux/d2e_aux_ablation_summary.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "checkpoint_metadata",
-      "path": "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "resolved_config",
-      "path": "outputs/fdm_aux/d2e_aux_best/resolved_config.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "checkpoint",
-      "path": "outputs/fdm_aux/d2e_aux_best/checkpoint.pt"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "target_records",
-      "path": "outputs/fdm_aux/d2e_aux_best/d2e_target_records.jsonl"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "predictions",
-      "path": "outputs/fdm_aux/d2e_aux_best/predictions.jsonl"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "metrics",
-      "path": "outputs/fdm_aux/d2e_aux_best/metrics.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "statistical_comparison",
-      "path": "outputs/fdm_aux/d2e_aux_best/statistical_comparison.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "artifact_key": "run_summary",
-      "path": "artifacts/aux/g005_d2e_aux_train_run.json"
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "ablation_summary",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "ablation_summary",
-      "json_path": "same_d2e_eval_manifests",
-      "expected": true,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "ablation_summary",
-      "json_path": "no_aux_in_d2e_heldout",
-      "expected": true,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "ablation_summary",
-      "json_path": "claim_boundary.d2e_only_separately_reported",
-      "expected": true,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "checkpoint_metadata",
-      "json_path": "source_namespace",
-      "expected": "d2e_aux",
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "checkpoint_metadata",
-      "json_path": "d2e_eval_split_contract.exists",
-      "expected": true,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "checkpoint_metadata",
-      "json_path": "data_universe.exists",
-      "expected": true,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "json_expectation_mismatch",
-      "source": "checkpoint_metadata",
-      "json_path": "claim_boundary.no_aux_in_d2e_heldout",
-      "expected": true,
-      "actual": null
-    },
-    {
-      "severity": "error",
-      "code": "namespace_source_path_mismatch",
-      "source_id": "atari_head_zenodo_v4",
-      "expected_prefix": "outputs/aux/atari_head_zenodo_v4/",
-      "actual": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/atari_head_zenodo_v4"
-    },
-    {
-      "severity": "error",
-      "code": "namespace_source_path_mismatch",
-      "source_id": "minerl_2019_zenodo_v2",
-      "expected_prefix": "outputs/aux/minerl_2019_zenodo_v2/",
-      "actual": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/minerl_2019_zenodo_v2"
-    },
-    {
-      "severity": "error",
-      "code": "namespace_source_path_mismatch",
-      "source_id": "p_doom_atari_breakout_hf",
-      "expected_prefix": "outputs/aux/p_doom_atari_breakout_hf/",
-      "actual": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/aux/p_doom_atari_breakout_hf"
-    }
-  ],
-  "error_count": 20,
+  "findings": [],
+  "error_count": 0,
   "claim_boundary": "This audit is required before checkpointing G005 complete; it proves passing full-corpus D2E-only G003/G004 audits, aux provenance/storage policy, separated namespaces, D2E-only vs D2E+aux ablations, target split tags, and run evidence."
 }

@@ -1,0 +1,597 @@
+{
+  "schema": "g005_d2e_aux_checkpoint_metadata.v1",
+  "model": "g005_aux_action_prior_d2e_aux_best",
+  "model_type": "aux_action_prior_calibrated_fdm",
+  "source_namespace": "d2e_aux",
+  "aux_sources": [
+    "atari_head_zenodo_v4",
+    "minerl_2019_zenodo_v2",
+    "p_doom_atari_breakout_hf"
+  ],
+  "source_aux_datasets": [
+    "atari_head_zenodo_v4",
+    "minerl_2019_zenodo_v2",
+    "p_doom_atari_breakout_hf"
+  ],
+  "target_eval_split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
+  "d2e_eval_split_contract": {
+    "path": "artifacts/sources/d2e_full_split_contract.json",
+    "exists": true,
+    "sha256": "e64e90f3745108a2813d4d4f84ee69a08f4cb7e46923371983006c481dadde98"
+  },
+  "data_universe": {
+    "path": "artifacts/sources/d2e_full_data_universe_manifest.json",
+    "exists": true,
+    "sha256": "549cd16aa992bc76c3bea9f571100fe5cc721ca706e7d50f2c9e40fd2d21c8f8"
+  },
+  "namespace_manifest": {
+    "path": "artifacts/aux/g005_aux_namespace_manifest.json",
+    "completion_ready": true,
+    "source_namespace": "d2e_aux"
+  },
+  "d2e_eval_manifests": {
+    "temporal": {
+      "split": "temporal",
+      "sha256": "0a11aeb5a529c5d2309544f34ec17b621ff22fcd7d2a112af4462e221a23ff45",
+      "d2e_only_manifest_path": "artifacts/sources/d2e_full_temporal_split_manifest.json",
+      "d2e_only_manifest_bytes": 283305,
+      "d2e_only_manifest_sha256": "0a11aeb5a529c5d2309544f34ec17b621ff22fcd7d2a112af4462e221a23ff45",
+      "d2e_aux_manifest_path": "artifacts/sources/d2e_full_temporal_split_manifest.json",
+      "d2e_aux_manifest_bytes": 283305,
+      "d2e_aux_manifest_sha256": "0a11aeb5a529c5d2309544f34ec17b621ff22fcd7d2a112af4462e221a23ff45",
+      "same_hash": true
+    },
+    "heldout_recording": {
+      "split": "heldout_recording",
+      "sha256": "5120cf7abcb78c005407479f52643748bcd3e125388daf8c8ddd79f28cdd08c3",
+      "d2e_only_manifest_path": "artifacts/sources/d2e_full_heldout_recording_split_manifest.json",
+      "d2e_only_manifest_bytes": 72346,
+      "d2e_only_manifest_sha256": "5120cf7abcb78c005407479f52643748bcd3e125388daf8c8ddd79f28cdd08c3",
+      "d2e_aux_manifest_path": "artifacts/sources/d2e_full_heldout_recording_split_manifest.json",
+      "d2e_aux_manifest_bytes": 72346,
+      "d2e_aux_manifest_sha256": "5120cf7abcb78c005407479f52643748bcd3e125388daf8c8ddd79f28cdd08c3",
+      "same_hash": true
+    },
+    "heldout_game": {
+      "split": "heldout_game",
+      "sha256": "16bca1616ab35f23f6ac1d028889def00cc271b8f48808dcddb8579e277d6b11",
+      "d2e_only_manifest_path": "artifacts/sources/d2e_full_heldout_game_split_manifest.json",
+      "d2e_only_manifest_bytes": 66791,
+      "d2e_only_manifest_sha256": "16bca1616ab35f23f6ac1d028889def00cc271b8f48808dcddb8579e277d6b11",
+      "d2e_aux_manifest_path": "artifacts/sources/d2e_full_heldout_game_split_manifest.json",
+      "d2e_aux_manifest_bytes": 66791,
+      "d2e_aux_manifest_sha256": "16bca1616ab35f23f6ac1d028889def00cc271b8f48808dcddb8579e277d6b11",
+      "same_hash": true
+    }
+  },
+  "aux_training": {
+    "schema": "g005_aux_action_prior_training.v1",
+    "status": "pass",
+    "split": "train",
+    "aux_examples_summary": "artifacts/aux/g005_aux_examples_summary.json",
+    "sources": [
+      {
+        "source_id": "atari_head_zenodo_v4",
+        "split": "train",
+        "path": "outputs/aux_examples/atari_head_zenodo_v4/train.jsonl",
+        "rows_consumed": 6186950,
+        "max_examples_per_source": null,
+        "unique_action_keys": 18,
+        "top_actions": [
+          {
+            "action_key": "atari:0",
+            "count": 1455684,
+            "rate": 0.23528297464825157
+          },
+          {
+            "action_key": "atari:4",
+            "count": 1245386,
+            "rate": 0.2012923977080791
+          },
+          {
+            "action_key": "atari:3",
+            "count": 1109241,
+            "rate": 0.17928720936810544
+          },
+          {
+            "action_key": "atari:1",
+            "count": 770386,
+            "rate": 0.12451789654029853
+          },
+          {
+            "action_key": "atari:2",
+            "count": 566037,
+            "rate": 0.09148885961580423
+          },
+          {
+            "action_key": "atari:5",
+            "count": 435405,
+            "rate": 0.07037474038096315
+          },
+          {
+            "action_key": "atari:9",
+            "count": 104836,
+            "rate": 0.01694469811457988
+          },
+          {
+            "action_key": "atari:7",
+            "count": 104600,
+            "rate": 0.016906553309789154
+          },
+          {
+            "action_key": "atari:12",
+            "count": 96269,
+            "rate": 0.01556000937457067
+          },
+          {
+            "action_key": "atari:11",
+            "count": 94715,
+            "rate": 0.015308835532855445
+          },
+          {
+            "action_key": "atari:6",
+            "count": 92659,
+            "rate": 0.014976523165695537
+          },
+          {
+            "action_key": "atari:8",
+            "count": 83173,
+            "rate": 0.013443295969742764
+          },
+          {
+            "action_key": "atari:10",
+            "count": 14550,
+            "rate": 0.0023517241936656997
+          },
+          {
+            "action_key": "atari:13",
+            "count": 8035,
+            "rate": 0.0012987012987012987
+          },
+          {
+            "action_key": "atari:14",
+            "count": 2189,
+            "rate": 0.00035380922748688774
+          },
+          {
+            "action_key": "atari:17",
+            "count": 1825,
+            "rate": 0.00029497571501305164
+          },
+          {
+            "action_key": "atari:16",
+            "count": 1592,
+            "rate": 0.0002573158018086456
+          },
+          {
+            "action_key": "atari:null",
+            "count": 368,
+            "rate": 5.948003458893316e-05
+          }
+        ],
+        "minecraft_rates": {},
+        "elapsed_seconds": 24.938859701156616
+      },
+      {
+        "source_id": "minerl_2019_zenodo_v2",
+        "split": "train",
+        "path": "outputs/aux_examples/minerl_2019_zenodo_v2/train.jsonl",
+        "rows_consumed": 3337802,
+        "max_examples_per_source": null,
+        "unique_action_keys": 1093,
+        "top_actions": [
+          {
+            "action_key": "minecraft:attack,camera:zero:zero",
+            "count": 884055,
+            "rate": 0.26486142677127045
+          },
+          {
+            "action_key": "minecraft:camera:zero:zero",
+            "count": 724422,
+            "rate": 0.21703564201831024
+          },
+          {
+            "action_key": "minecraft:forward,camera:zero:zero",
+            "count": 144166,
+            "rate": 0.04319189694295827
+          },
+          {
+            "action_key": "minecraft:forward,jump,camera:zero:zero",
+            "count": 83965,
+            "rate": 0.02515577616647123
+          },
+          {
+            "action_key": "minecraft:attack,camera:pos:neg",
+            "count": 67687,
+            "rate": 0.02027891408777393
+          },
+          {
+            "action_key": "minecraft:attack,camera:neg:pos",
+            "count": 65461,
+            "rate": 0.01961200814188499
+          },
+          {
+            "action_key": "minecraft:attack,camera:pos:pos",
+            "count": 62598,
+            "rate": 0.018754258041669337
+          },
+          {
+            "action_key": "minecraft:attack,camera:neg:neg",
+            "count": 57478,
+            "rate": 0.017220314446453083
+          },
+          {
+            "action_key": "minecraft:camera:pos:neg",
+            "count": 52803,
+            "rate": 0.015819692120742933
+          },
+          {
+            "action_key": "minecraft:camera:neg:pos",
+            "count": 51567,
+            "rate": 0.015449388549710258
+          },
+          {
+            "action_key": "minecraft:attack,forward,camera:zero:zero",
+            "count": 51128,
+            "rate": 0.015317864870354803
+          },
+          {
+            "action_key": "minecraft:attack,camera:pos:zero",
+            "count": 51095,
+            "rate": 0.01530797812452626
+          },
+          {
+            "action_key": "minecraft:camera:neg:neg",
+            "count": 49488,
+            "rate": 0.014826523562512097
+          },
+          {
+            "action_key": "minecraft:camera:pos:pos",
+            "count": 49149,
+            "rate": 0.014724959719000707
+          },
+          {
+            "action_key": "minecraft:forward,jump,sprint,camera:zero:zero",
+            "count": 42660,
+            "rate": 0.01278086597107917
+          },
+          {
+            "action_key": "minecraft:forward,camera:pos:neg",
+            "count": 42520,
+            "rate": 0.012738922200897477
+          },
+          {
+            "action_key": "minecraft:attack,camera:neg:zero",
+            "count": 40980,
+            "rate": 0.012277540728898839
+          },
+          {
+            "action_key": "minecraft:forward,camera:pos:pos",
+            "count": 39971,
+            "rate": 0.011975245985232197
+          },
+          {
+            "action_key": "minecraft:forward,camera:neg:pos",
+            "count": 38956,
+            "rate": 0.011671153651414913
+          },
+          {
+            "action_key": "minecraft:forward,camera:neg:neg",
+            "count": 38718,
+            "rate": 0.011599849242106032
+          },
+          {
+            "action_key": "minecraft:forward,sprint,camera:zero:zero",
+            "count": 34475,
+            "rate": 0.01032865340724225
+          },
+          {
+            "action_key": "minecraft:attack,camera:zero:pos",
+            "count": 29983,
+            "rate": 0.00898285758112674
+          },
+          {
+            "action_key": "minecraft:attack,camera:zero:neg",
+            "count": 27944,
+            "rate": 0.008371976528266207
+          },
+          {
+            "action_key": "minecraft:attack,sneak,camera:zero:zero",
+            "count": 24176,
+            "rate": 0.007243089913661745
+          },
+          {
+            "action_key": "minecraft:forward,camera:zero:neg",
+            "count": 22313,
+            "rate": 0.006684938171886768
+          }
+        ],
+        "minecraft_rates": {
+          "attack": 0.4439220780621499,
+          "back": 0.00960482377324958,
+          "camera_dx_abs": 0.6491959756296442,
+          "camera_dy_abs": 1.0833880234523772,
+          "camera_nonzero": 0.37393320514518236,
+          "forward": 0.26997167597119304,
+          "jump": 0.07505777754342528,
+          "left": 0.030820881526225943,
+          "right": 0.027473469067368285,
+          "sneak": 0.02309483905875783,
+          "sprint": 0.05036697802925398
+        },
+        "elapsed_seconds": 33.247103691101074
+      },
+      {
+        "source_id": "p_doom_atari_breakout_hf",
+        "split": "train",
+        "path": "outputs/aux_examples/p_doom_atari_breakout_hf/train.jsonl",
+        "rows_consumed": 10000392,
+        "max_examples_per_source": null,
+        "unique_action_keys": 4,
+        "top_actions": [
+          {
+            "action_key": "atari:LEFT",
+            "count": 3855611,
+            "rate": 0.38554598659732536
+          },
+          {
+            "action_key": "atari:RIGHT",
+            "count": 2223674,
+            "rate": 0.22235868353960525
+          },
+          {
+            "action_key": "atari:FIRE",
+            "count": 2083108,
+            "rate": 0.20830263453672615
+          },
+          {
+            "action_key": "atari:NOOP",
+            "count": 1837999,
+            "rate": 0.1837926953263432
+          }
+        ],
+        "minecraft_rates": {},
+        "elapsed_seconds": 34.31696939468384
+      }
+    ],
+    "selected_source_ids": [
+      "atari_head_zenodo_v4",
+      "minerl_2019_zenodo_v2",
+      "p_doom_atari_breakout_hf"
+    ],
+    "total_rows_consumed": 19525144,
+    "claim_boundary": "Source-specific aux action-prior training evidence; D2E endpoint claims require D2E eval and G005 completion audit."
+  },
+  "prediction_summary": {
+    "schema": "g005_aux_prior_prediction_build.v1",
+    "status": "pass",
+    "source_predictions_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+    "source_prediction_paths": [
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_000/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_001/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_002/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_003/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_004/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_005/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_006/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_007/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_008/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_009/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_010/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_011/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_012/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_013/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_014/predictions.jsonl",
+      "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_015/predictions.jsonl"
+    ],
+    "output_predictions_path": "outputs/fdm_aux/d2e_aux_best/predictions.jsonl",
+    "output_target_records_path": "outputs/fdm_aux/d2e_aux_best/d2e_target_records.jsonl",
+    "target_link": {
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/d2e_target_records.jsonl",
+      "status": "symlink",
+      "target": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl"
+    },
+    "rows": 16698646,
+    "changed_predictions": 0,
+    "button_predictions_dropped": 0,
+    "prediction_workers": 16,
+    "parallel_prediction": true,
+    "prediction_parts": [
+      {
+        "index": 0,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_000/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00000.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00000.jsonl",
+        "rows": 1089390
+      },
+      {
+        "index": 1,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_001/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00001.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00001.jsonl",
+        "rows": 1018173
+      },
+      {
+        "index": 2,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_002/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00002.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00002.jsonl",
+        "rows": 898692
+      },
+      {
+        "index": 3,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_003/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00003.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00003.jsonl",
+        "rows": 986551
+      },
+      {
+        "index": 4,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_004/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00004.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00004.jsonl",
+        "rows": 681790
+      },
+      {
+        "index": 5,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_005/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00005.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00005.jsonl",
+        "rows": 907924
+      },
+      {
+        "index": 6,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_006/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00006.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00006.jsonl",
+        "rows": 769740
+      },
+      {
+        "index": 7,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_007/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00007.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00007.jsonl",
+        "rows": 898715
+      },
+      {
+        "index": 8,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_008/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00008.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00008.jsonl",
+        "rows": 888529
+      },
+      {
+        "index": 9,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_009/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00009.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00009.jsonl",
+        "rows": 1015028
+      },
+      {
+        "index": 10,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_010/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00010.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00010.jsonl",
+        "rows": 1519495
+      },
+      {
+        "index": 11,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_011/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00011.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00011.jsonl",
+        "rows": 861540
+      },
+      {
+        "index": 12,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_012/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00012.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00012.jsonl",
+        "rows": 1186839
+      },
+      {
+        "index": 13,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_013/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00013.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00013.jsonl",
+        "rows": 1381352
+      },
+      {
+        "index": 14,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_014/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00014.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00014.jsonl",
+        "rows": 1246917
+      },
+      {
+        "index": 15,
+        "pred_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/prediction_recovery_parts/part_015/predictions.jsonl",
+        "target_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00015.jsonl",
+        "out_part": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_aux/d2e_aux_best/prediction_parts/part_00015.jsonl",
+        "rows": 1347971
+      }
+    ],
+    "policy": {
+      "name": "minerl_attack_rate_mouse_button_stride",
+      "button_stride": 1,
+      "max_button_stride": 4,
+      "source_d2e_button_prediction_rate": 0.32591492747376044,
+      "source_prediction_button_rate_source": "provided",
+      "minerl_attack_rate": 0.4439220780621499,
+      "min_aux_attack_rate": 0.02
+    },
+    "metrics": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 16698646,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.002659524222253231,
+        "num_examples": 3017081
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.05210611341005652,
+        "num_examples": 759527,
+        "predicted_examples": 5442338,
+        "exact_true_positive_examples": 39576,
+        "false_positive_examples": 5402762,
+        "false_negative_examples": 719951,
+        "precision": 0.00727187469796988,
+        "recall": 0.05210611341005652,
+        "f1": 0.012762612536712747,
+        "no_button_examples": 15939119,
+        "no_button_false_positive_examples": 5012697,
+        "no_button_false_positive_rate": 0.31449021743297106
+      },
+      "mouse_move": {
+        "status": "computed",
+        "pearson": 0.34817355680270057,
+        "scale_ratio": 1.6277335085623454,
+        "num_values": 14661338
+      },
+      "failure_count": 16698490
+    },
+    "d2e_only_source_metrics_on_same_rows": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 16698646,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.002659524222253231,
+        "num_examples": 3017081
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.05210611341005652,
+        "num_examples": 759527,
+        "predicted_examples": 5442338,
+        "exact_true_positive_examples": 39576,
+        "false_positive_examples": 5402762,
+        "false_negative_examples": 719951,
+        "precision": 0.00727187469796988,
+        "recall": 0.05210611341005652,
+        "f1": 0.012762612536712747,
+        "no_button_examples": 15939119,
+        "no_button_false_positive_examples": 5012697,
+        "no_button_false_positive_rate": 0.31449021743297106
+      },
+      "mouse_move": {
+        "status": "computed",
+        "pearson": 0.34817355680270057,
+        "scale_ratio": 1.6277335085623454,
+        "num_values": 14661338
+      },
+      "failure_count": 16698490
+    }
+  },
+  "claim_boundary": {
+    "no_aux_in_d2e_heldout": true,
+    "no_d2e_aux_claim_before_d2e_only_gates": true,
+    "d2e_only_separately_reported": true
+  },
+  "checkpoint_serialization": "torch_save"
+}
