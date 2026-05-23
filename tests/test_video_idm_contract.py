@@ -125,6 +125,7 @@ def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):
     assert summary["metadata"]["train_records"] == len(train_rows)
     assert summary["metadata"]["target_records"] == len(target_rows)
     assert Path(summary["metadata"]["checkpoint_path"]).exists()
+    assert Path(summary["metadata"]["train_state_path"]).exists()
     assert Path(summary["prediction"]["predictions_path"]).exists()
     predictions = Path(summary["prediction"]["predictions_path"]).read_text(encoding="utf-8").strip().splitlines()
     assert len(predictions) == len(target_rows)
@@ -144,3 +145,8 @@ def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):
     )
     assert predict_summary["target_records"] == 1
     assert Path(predict_summary["prediction"]["predictions_path"]).exists()
+
+    resumed_summary = train_video_idm({**config, "epochs": 2, "skip_prediction": True})
+    assert resumed_summary["resumed_from_train_state"] is True
+    assert resumed_summary["start_epoch"] == 1
+    assert len(resumed_summary["metadata"]["calibration"]) > 0

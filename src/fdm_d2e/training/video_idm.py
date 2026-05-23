@@ -909,6 +909,68 @@ def _build_video_pair_model(torch, *, output_dim: int, aux_dim: int, config: dic
     return VideoPairIDM()
 
 
+def _video_model_signature(config: dict[str, Any], *, output_dim: int, aux_dim: int, stats: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "schema": "video_idm_model_signature.v1",
+        "output_dim": int(output_dim),
+        "aux_dim": int(aux_dim),
+        "dataset_fingerprint": str(stats["dataset_fingerprint"]),
+        "video_input_mode": str(config.get("video_input_mode", "pair")),
+        "video_conv_channels": [int(value) for value in config.get("video_conv_channels", [32, 64, 128, 256])],
+        "hidden_dim": int(config.get("hidden_dim", 1024)),
+        "depth": int(config.get("depth", 2)),
+        "button_head_mode": str(config.get("button_head_mode", stats.get("button_head_mode", "softmax"))),
+        "mouse_head_mode": str(config.get("mouse_head_mode", stats.get("mouse_head_mode", "regression"))),
+        "category_vocab_sha256": hashlib.sha256(
+            json.dumps(list(stats.get("category_vocab", [])), sort_keys=True).encode("utf-8")
+        ).hexdigest(),
+        "button_classes_sha256": hashlib.sha256(
+            json.dumps(list(stats.get("button_classes", [])), sort_keys=True).encode("utf-8")
+        ).hexdigest(),
+    }
+
+
+def _load_video_train_state(torch, path: Path, *, device: str) -> dict[str, Any] | None:
+    if not path.exists() or not path.is_file():
+        return None
+    try:
+        payload = torch.load(path, map_location=device, weights_only=False)
+    except TypeError:
+        payload = torch.load(path, map_location=device)
+    if not isinstance(payload, dict) or payload.get("schema") != "video_idm_train_state.v1":
+        raise ValueError(f"invalid video IDM train state: {path}")
+    return payload
+
+
+def _save_video_train_state(
+    torch,
+    path: Path,
+    *,
+    model,
+    optimizer,
+    epoch: int,
+    history: list[dict[str, Any]],
+    signature: dict[str, Any],
+    config: dict[str, Any],
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    torch.save(
+        {
+            "schema": "video_idm_train_state.v1",
+            "epoch": int(epoch),
+            "model_state": model.state_dict(),
+            "optimizer_state": optimizer.state_dict(),
+            "history": history,
+            "signature": signature,
+            "runtime_overrides": config.get("runtime_overrides", {}),
+            "saved_at_epoch": time.time(),
+        },
+        tmp_path,
+    )
+    os.replace(tmp_path, path)
+
+
 def _iter_video_cache_batches(
     torch,
     cache_manifests: Sequence[dict[str, Any]],
@@ -1571,7 +1633,26 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
     button_output_dim = len(button_classes) if button_head_mode == "softmax" else 0
     axis_output_dim = (2 * len(mouse_axis_classes)) if mouse_head_mode == "axis_softmax" else 0
     output_dim = 2 + len(category_vocab) + button_output_dim + axis_output_dim
-    model = _build_video_pair_model(torch, output_dim=output_dim, aux_dim=int(stats.get("aux_dim", 13)), config=config).to(device)
+    aux_dim = int(stats.get("aux_dim", 13))
+    signature = _video_model_signature(config, output_dim=output_dim, aux_dim=aux_dim, stats=stats)
+    model = _build_video_pair_model(torch, output_dim=output_dim, aux_dim=aux_dim, config=config).to(device)
+    train_state_path = Path(config.get("train_state_path", Path(out_dir) / "train_state.pt"))
+    resume_state = (
+        _load_video_train_state(torch, train_state_path, device=device)
+        if bool(config.get("resume_train_state", True))
+        else None
+    )
+    start_epoch = 0
+    history: list[dict[str, Any]] = []
+    if resume_state is not None:
+        if resume_state.get("signature") != signature:
+            raise ValueError(
+                f"video IDM train state signature mismatch for {train_state_path}; "
+                "set resume_train_state=false or use a matching config"
+            )
+        model.load_state_dict(resume_state["model_state"])
+        start_epoch = int(resume_state.get("epoch", 0))
+        history = [dict(row) for row in resume_state.get("history", [])]
     train_model = model
     if dist["enabled"]:
         ddp_kwargs = {"device_ids": [int(dist["local_rank"])]} if str(device).startswith("cuda") else {}
@@ -1581,6 +1662,8 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
         lr=float(config.get("lr", 3e-4)),
         weight_decay=float(config.get("weight_decay", 1e-4)),
     )
+    if resume_state is not None:
+        opt.load_state_dict(resume_state["optimizer_state"])
     cat_pos_weight = _soft_pos_weight(
         torch,
         {str(k): int(v) for k, v in stats.get("category_counts", {}).items()},
@@ -1603,8 +1686,7 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
         cap=float(config.get("mouse_axis_class_weight_cap", 20.0)),
         device=device,
     )
-    history = []
-    for epoch in range(int(config.get("epochs", 3))):
+    for epoch in range(start_epoch, int(config.get("epochs", 3))):
         join_context = train_model.join() if dist["enabled"] else nullcontext()
         with join_context:
             epoch_stats = _train_one_epoch(
@@ -1636,6 +1718,16 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
                     "history": [{"epoch": item["epoch"], "train_loss": item.get("loss")} for item in history],
                     "report_path": str(out_dir / "convergence_report.json"),
                 },
+            )
+            _save_video_train_state(
+                torch,
+                train_state_path,
+                model=model,
+                optimizer=opt,
+                epoch=epoch + 1,
+                history=history,
+                signature=signature,
+                config=config,
             )
         _barrier(torch, dist)
     if dist["enabled"] and torch.distributed.is_initialized():
@@ -1715,6 +1807,7 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
         "pseudo_label_path": prediction["pseudo_label_path"],
         "filtered_pseudo_label_path": prediction["pseudo_label_path"],
         "checkpoint_path": str(checkpoint_path),
+        "train_state_path": str(train_state_path),
         "metrics_path": prediction["metrics_path"],
         "calibration": calibration,
     }
@@ -1727,6 +1820,9 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
         "distributed": {key: value for key, value in dist.items() if key != "device"},
         "stats_path": str(stats_path),
         "checkpoint_path": str(checkpoint_path),
+        "train_state_path": str(train_state_path),
+        "resumed_from_train_state": resume_state is not None,
+        "start_epoch": int(start_epoch),
         "metadata": metadata,
         "train_history_path": str(Path(out_dir) / "train_history.json"),
         "convergence_report_path": str(Path(out_dir) / "convergence_report.json"),
