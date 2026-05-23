@@ -4,8 +4,16 @@
   "endpoint_statistics_path": "artifacts/eval/final_endpoint_statistics.json",
   "failure_analysis_path": "artifacts/eval/final_failure_analysis.json",
   "claim_taxonomy_path": "artifacts/eval/final_claim_taxonomy.json",
-  "prerequisite_goals": ["G003-d2e-only-idm", "G004-d2e-only-fdm-4xh200", "G005-aux-data-best-model"],
-  "required_splits": ["temporal", "heldout_recording", "heldout_game"],
+  "prerequisite_goals": [
+    "G003-d2e-only-idm",
+    "G004-d2e-only-fdm-4xh200",
+    "G005-aux-data-best-model"
+  ],
+  "required_splits": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
   "required_endpoints": [
     "keyboard_accuracy",
     "mouse_button_accuracy",
@@ -28,6 +36,17 @@
     "reject_holm_0_05",
     "artifact_path",
     "artifact_sha256"
+  ],
+  "allow_unavailable_comparison_statuses": [
+    "no_shared_clusters",
+    "insufficient"
+  ],
+  "allowed_unavailable_missing_fields": [
+    "candidate_value",
+    "baseline_value",
+    "delta",
+    "p_value",
+    "p_adjusted_holm"
   ],
   "comparison_sources": [
     {
@@ -65,14 +84,45 @@
       "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
       "split": "heldout_game",
       "model_namespace": "d2e_only_fdm"
+    },
+    {
+      "id": "g005_aux_temporal",
+      "path": "outputs/fdm_aux/d2e_aux_best/split_temporal_statistical_comparison.json",
+      "split": "temporal",
+      "model_namespace": "d2e_aux_comparison"
+    },
+    {
+      "id": "g005_aux_heldout_recording",
+      "path": "outputs/fdm_aux/d2e_aux_best/split_heldout_recording_statistical_comparison.json",
+      "split": "heldout_recording",
+      "model_namespace": "d2e_aux_comparison"
+    },
+    {
+      "id": "g005_aux_heldout_game",
+      "path": "outputs/fdm_aux/d2e_aux_best/split_heldout_game_statistical_comparison.json",
+      "split": "heldout_game",
+      "model_namespace": "d2e_aux_comparison"
     }
   ],
   "metadata_sources": [
     "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-    "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
+    "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json"
   ],
-  "required_failure_axes": ["action", "game", "resolution", "source", "calibration"],
-  "required_claim_taxonomy": ["d2e_only_idm", "d2e_only_fdm", "d2e_aux_comparison", "live_open_game_suite", "negative_results"],
+  "required_failure_axes": [
+    "action",
+    "game",
+    "resolution",
+    "source",
+    "calibration"
+  ],
+  "required_claim_taxonomy": [
+    "d2e_only_idm",
+    "d2e_only_fdm",
+    "d2e_aux_comparison",
+    "live_open_game_suite",
+    "negative_results"
+  ],
   "required_claim_states": {
     "d2e_only_idm": "claimable",
     "d2e_only_fdm": "claimable",
@@ -80,7 +130,10 @@
     "live_open_game_suite": "not_claimed_until_g008",
     "negative_results": "documented"
   },
-  "claim_states_requiring_evidence": ["claimable", "documented"],
+  "claim_states_requiring_evidence": [
+    "claimable",
+    "documented"
+  ],
   "require_non_rejections": true,
   "require_examples": true,
   "claim_taxonomy": {
@@ -88,7 +141,10 @@
       "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
       "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
       "artifacts/aux/d2e_aux_ablation_summary.json",
-      "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
+      "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
+      "outputs/fdm_aux/d2e_aux_best/checkpoint_metadata.json",
+      "artifacts/aux/g005_aux_completion_audit.json",
+      "artifacts/eval/g005_split_statistical_comparisons_summary.json"
     ]
   }
 }

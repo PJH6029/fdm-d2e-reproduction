@@ -145,6 +145,42 @@ def test_build_g006_final_artifacts_passes_with_split_coverage_and_non_rejection
     assert aux_claim["evidence_paths"]
 
 
+def test_build_g006_final_artifacts_keeps_unavailable_tests_as_explicit_non_rejections(tmp_path: Path):
+    _write_complete_fixture(tmp_path)
+    temporal_path = tmp_path / "artifacts/eval/temporal_stats.json"
+    temporal = json.loads(temporal_path.read_text())
+    temporal["comparisons"][2].update(
+        {
+            "status": "no_shared_clusters",
+            "candidate_value": 0.12,
+            "baseline_value": None,
+            "candidate_clusters": 7,
+            "reference_clusters": 0,
+            "delta": None,
+            "p_value": None,
+            "p_adjusted_holm": None,
+            "reject_holm_0_05": False,
+        }
+    )
+    write_json(temporal_path, temporal)
+
+    summary = build_g006_final_artifacts(_config(tmp_path), root=tmp_path)
+    endpoint = json.loads((tmp_path / "artifacts/eval/final_endpoint_statistics.json").read_text())
+    failure = json.loads((tmp_path / "artifacts/eval/final_failure_analysis.json").read_text())
+    unavailable = [
+        row
+        for row in endpoint["comparisons"]
+        if row["split"] == "temporal" and row["endpoint"] == ENDPOINTS[2]
+    ][0]
+
+    assert summary["status"] == "pass"
+    assert endpoint["status"] == "pass"
+    assert unavailable["stat_test_available"] is False
+    assert unavailable["unavailable_reason"].startswith("statistical_test_unavailable:no_shared_clusters")
+    assert unavailable["reject_holm_0_05"] is False
+    assert any(row.get("unavailable_reason") == unavailable["unavailable_reason"] for row in failure["non_rejections"])
+
+
 def test_build_g006_final_artifacts_fails_without_prereqs_and_split_sources(tmp_path: Path):
     write_json(tmp_path / ".omx/ultragoal/goals.json", {"goals": [{"id": "G003-d2e-only-idm", "status": "in_progress"}]})
     summary = build_g006_final_artifacts(_config(tmp_path), root=tmp_path)

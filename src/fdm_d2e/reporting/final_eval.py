@@ -6,6 +6,15 @@ from typing import Any
 
 from fdm_d2e.io_utils import sha256_file, write_json
 
+DEFAULT_UNAVAILABLE_COMPARISON_STATUSES = {"no_shared_clusters", "insufficient"}
+DEFAULT_UNAVAILABLE_ALLOWED_MISSING_FIELDS = {
+    "candidate_value",
+    "baseline_value",
+    "delta",
+    "p_value",
+    "p_adjusted_holm",
+}
+
 
 def _load_json(path: Path) -> dict[str, Any] | None:
     if not path.exists() or not path.is_file():
@@ -34,10 +43,76 @@ def _first_present(row: dict[str, Any], names: list[str]) -> Any:
     return None
 
 
-def _required_field_findings(row: dict[str, Any], required_fields: list[str], *, index: int) -> list[dict[str, Any]]:
+def _allowed_statuses(config: dict[str, Any]) -> set[str]:
+    configured = config.get("allow_unavailable_comparison_statuses")
+    if configured is None:
+        return set(DEFAULT_UNAVAILABLE_COMPARISON_STATUSES)
+    return {str(item) for item in configured}
+
+
+def _allowed_unavailable_missing_fields(config: dict[str, Any]) -> set[str]:
+    configured = config.get("allowed_unavailable_missing_fields")
+    if configured is None:
+        return set(DEFAULT_UNAVAILABLE_ALLOWED_MISSING_FIELDS)
+    return {str(item) for item in configured}
+
+
+def _unavailable_reason(row: dict[str, Any], status: str) -> str:
+    candidate_clusters = row.get("candidate_clusters")
+    reference_clusters = row.get("reference_clusters")
+    if status == "no_shared_clusters":
+        return (
+            "statistical_test_unavailable:no_shared_clusters"
+            f":candidate_clusters={candidate_clusters}:reference_clusters={reference_clusters}"
+        )
+    if status == "insufficient":
+        return "statistical_test_unavailable:insufficient_cluster_samples"
+    return f"statistical_test_unavailable:{status}"
+
+
+def _required_field_findings(
+    row: dict[str, Any],
+    required_fields: list[str],
+    *,
+    index: int,
+    allowed_unavailable_statuses: set[str],
+    allowed_unavailable_missing_fields: set[str],
+) -> list[dict[str, Any]]:
     missing = [field for field in required_fields if row.get(field) is None]
     if not missing:
         return []
+    status = str(row.get("status") or "")
+    if status in allowed_unavailable_statuses:
+        disallowed_missing = sorted(set(missing) - allowed_unavailable_missing_fields)
+        unavailable_evidence_missing = []
+        if row.get("stat_test_available") is not False:
+            unavailable_evidence_missing.append("stat_test_available=false")
+        if not row.get("unavailable_reason"):
+            unavailable_evidence_missing.append("unavailable_reason")
+        if row.get("reject_holm_0_05") is not False:
+            unavailable_evidence_missing.append("reject_holm_0_05=false")
+        if not disallowed_missing and not unavailable_evidence_missing:
+            return [
+                {
+                    "severity": "warning",
+                    "code": "comparison_stat_test_unavailable",
+                    "index": index,
+                    "status": status,
+                    "missing": missing,
+                    "unavailable_reason": row.get("unavailable_reason"),
+                }
+            ]
+        return [
+            {
+                "severity": "error",
+                "code": "comparison_unavailable_row_incomplete",
+                "index": index,
+                "status": status,
+                "missing": missing,
+                "disallowed_missing": disallowed_missing,
+                "unavailable_evidence_missing": unavailable_evidence_missing,
+            }
+        ]
     return [{"severity": "error", "code": "comparison_missing_required_fields", "index": index, "missing": missing}]
 
 
@@ -47,6 +122,15 @@ def _normalise_comparison(row: dict[str, Any], *, source: dict[str, Any], artifa
     reference = row.get("reference") or row.get("reference_baseline") or source.get("reference") or source.get("reference_baseline")
     candidate_value = _first_present(row, ["candidate_value", "candidate_mean", "candidate_metric", "model_value"])
     baseline_value = _first_present(row, ["baseline_value", "reference_value", "reference_mean", "baseline_metric"])
+    status = str(row.get("status") or ("computed" if row.get("p_value") is not None else "unknown"))
+    stat_test_available = row.get("p_value") is not None and row.get("delta") is not None
+    unavailable_reason = None if stat_test_available else _unavailable_reason(row, status)
+    non_rejection_reason = None
+    if row.get("reject_holm_0_05") is not True:
+        if not stat_test_available:
+            non_rejection_reason = unavailable_reason
+        else:
+            non_rejection_reason = "holm_adjusted_test_not_rejected"
     return {
         "split": split,
         "endpoint": row.get("endpoint") or row.get("metric") or row.get("metric_name"),
@@ -60,7 +144,13 @@ def _normalise_comparison(row: dict[str, Any], *, source: dict[str, Any], artifa
         "reject_holm_0_05": row.get("reject_holm_0_05"),
         "direction": row.get("direction"),
         "num_clusters": row.get("num_clusters"),
-        "status": row.get("status"),
+        "candidate_clusters": row.get("candidate_clusters"),
+        "reference_clusters": row.get("reference_clusters"),
+        "ci": row.get("ci"),
+        "status": status,
+        "stat_test_available": stat_test_available,
+        "unavailable_reason": unavailable_reason,
+        "non_rejection_reason": non_rejection_reason,
         "artifact_path": artifact["path"],
         "artifact_sha256": artifact["sha256"],
         "source_id": source.get("id") or source.get("path"),
@@ -109,8 +199,18 @@ def build_final_endpoint_statistics(config: dict[str, Any], *, root: str | Path 
         findings.append({"severity": "error", "code": "missing_required_endpoints", "missing": missing_endpoints})
 
     required_fields = list(config.get("required_comparison_fields", []))
+    allowed_unavailable_statuses = _allowed_statuses(config)
+    allowed_unavailable_missing_fields = _allowed_unavailable_missing_fields(config)
     for idx, row in enumerate(comparisons):
-        findings.extend(_required_field_findings(row, required_fields, index=idx))
+        findings.extend(
+            _required_field_findings(
+                row,
+                required_fields,
+                index=idx,
+                allowed_unavailable_statuses=allowed_unavailable_statuses,
+                allowed_unavailable_missing_fields=allowed_unavailable_missing_fields,
+            )
+        )
 
     errors = [item for item in findings if item.get("severity") == "error"]
     return {
@@ -120,6 +220,8 @@ def build_final_endpoint_statistics(config: dict[str, Any], *, root: str | Path 
         "prerequisite_goal_statuses": {goal_id: statuses.get(goal_id, "missing") for goal_id in config.get("prerequisite_goals", [])},
         "required_splits": sorted(required_splits),
         "required_endpoints": sorted(required_endpoints),
+        "allow_unavailable_comparison_statuses": sorted(allowed_unavailable_statuses),
+        "allowed_unavailable_missing_fields": sorted(allowed_unavailable_missing_fields),
         "comparisons": comparisons,
         "comparison_sources": source_reports,
         "findings": findings,

@@ -6,6 +6,15 @@ from typing import Any
 
 from fdm_d2e.io_utils import sha256_file, write_json
 
+DEFAULT_UNAVAILABLE_COMPARISON_STATUSES = {"no_shared_clusters", "insufficient"}
+DEFAULT_UNAVAILABLE_ALLOWED_MISSING_FIELDS = {
+    "candidate_value",
+    "baseline_value",
+    "delta",
+    "p_value",
+    "p_adjusted_holm",
+}
+
 
 def _load_json(path: Path) -> dict[str, Any] | None:
     if not path.exists() or not path.is_file():
@@ -32,6 +41,54 @@ def _comparison_key(row: dict[str, Any], field_names: list[str]) -> str | None:
     return None
 
 
+def _allowed_statuses(config: dict[str, Any]) -> set[str]:
+    configured = config.get("allow_unavailable_comparison_statuses")
+    if configured is None:
+        return set(DEFAULT_UNAVAILABLE_COMPARISON_STATUSES)
+    return {str(item) for item in configured}
+
+
+def _allowed_unavailable_missing_fields(config: dict[str, Any]) -> set[str]:
+    configured = config.get("allowed_unavailable_missing_fields")
+    if configured is None:
+        return set(DEFAULT_UNAVAILABLE_ALLOWED_MISSING_FIELDS)
+    return {str(item) for item in configured}
+
+
+def _comparison_missing_field_finding(
+    row: dict[str, Any],
+    missing: list[str],
+    *,
+    index: int,
+    allowed_unavailable_statuses: set[str],
+    allowed_unavailable_missing_fields: set[str],
+) -> dict[str, Any] | None:
+    if not missing:
+        return None
+    status = str(row.get("status") or "")
+    if status in allowed_unavailable_statuses:
+        disallowed_missing = sorted(set(missing) - allowed_unavailable_missing_fields)
+        unavailable_evidence_missing = []
+        if row.get("stat_test_available") is not False:
+            unavailable_evidence_missing.append("stat_test_available=false")
+        if not row.get("unavailable_reason"):
+            unavailable_evidence_missing.append("unavailable_reason")
+        if row.get("reject_holm_0_05") is not False:
+            unavailable_evidence_missing.append("reject_holm_0_05=false")
+        if not disallowed_missing and not unavailable_evidence_missing:
+            return None
+        return {
+            "severity": "error",
+            "code": "endpoint_comparison_unavailable_row_incomplete",
+            "index": index,
+            "status": status,
+            "missing": missing,
+            "disallowed_missing": disallowed_missing,
+            "unavailable_evidence_missing": unavailable_evidence_missing,
+        }
+    return {"severity": "error", "code": "endpoint_comparison_missing_fields", "index": index, "missing": missing}
+
+
 def _validate_endpoint_statistics(payload: dict[str, Any] | None, config: dict[str, Any]) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     if payload is None:
@@ -53,13 +110,22 @@ def _validate_endpoint_statistics(payload: dict[str, Any] | None, config: dict[s
     if missing_endpoints:
         findings.append({"severity": "error", "code": "endpoint_statistics_missing_endpoints", "missing": missing_endpoints})
     required_fields = list(config.get("required_comparison_fields", []))
+    allowed_unavailable_statuses = _allowed_statuses(config)
+    allowed_unavailable_missing_fields = _allowed_unavailable_missing_fields(config)
     for idx, row in enumerate(comparisons):
         if not isinstance(row, dict):
             findings.append({"severity": "error", "code": "endpoint_comparison_not_object", "index": idx})
             continue
         missing = [field for field in required_fields if row.get(field) is None]
-        if missing:
-            findings.append({"severity": "error", "code": "endpoint_comparison_missing_fields", "index": idx, "missing": missing})
+        finding = _comparison_missing_field_finding(
+            row,
+            missing,
+            index=idx,
+            allowed_unavailable_statuses=allowed_unavailable_statuses,
+            allowed_unavailable_missing_fields=allowed_unavailable_missing_fields,
+        )
+        if finding is not None:
+            findings.append(finding)
     return findings
 
 
@@ -137,6 +203,8 @@ def validate_g006_evaluation_readiness(config: dict[str, Any], *, root: str | Pa
         },
         "required_splits": list(config.get("required_splits", [])),
         "required_endpoints": list(config.get("required_endpoints", [])),
+        "allow_unavailable_comparison_statuses": sorted(_allowed_statuses(config)),
+        "allowed_unavailable_missing_fields": sorted(_allowed_unavailable_missing_fields(config)),
         "required_failure_axes": list(config.get("required_failure_axes", [])),
         "findings": findings,
         "error_count": len(errors),

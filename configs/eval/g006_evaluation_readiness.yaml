@@ -30,6 +30,17 @@
     "artifact_path",
     "artifact_sha256"
   ],
+  "allow_unavailable_comparison_statuses": [
+    "no_shared_clusters",
+    "insufficient"
+  ],
+  "allowed_unavailable_missing_fields": [
+    "candidate_value",
+    "baseline_value",
+    "delta",
+    "p_value",
+    "p_adjusted_holm"
+  ],
   "required_failure_axes": ["action", "game", "resolution", "source", "calibration"],
   "required_claim_taxonomy": [
     "d2e_only_idm",

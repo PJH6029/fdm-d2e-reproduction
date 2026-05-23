@@ -74,6 +74,29 @@ def test_g006_readiness_passes_with_split_endpoint_failure_and_claim_artifacts(t
     assert payload["artifacts"]["endpoint_statistics"]["exists"] is True
 
 
+def test_g006_readiness_allows_explicit_unavailable_comparison_rows(tmp_path):
+    _complete_fixture(tmp_path)
+    endpoint = json.loads((tmp_path / "artifacts/eval/final_endpoint_statistics.json").read_text())
+    endpoint["comparisons"][0].update(
+        {
+            "status": "no_shared_clusters",
+            "candidate_value": 0.12,
+            "baseline_value": None,
+            "delta": None,
+            "p_value": None,
+            "p_adjusted_holm": None,
+            "reject_holm_0_05": False,
+            "stat_test_available": False,
+            "unavailable_reason": "statistical_test_unavailable:no_shared_clusters:candidate_clusters=4:reference_clusters=0",
+        }
+    )
+    write_json(tmp_path / "artifacts/eval/final_endpoint_statistics.json", endpoint)
+
+    payload = validate_g006_evaluation_readiness(_config(), root=tmp_path)
+    assert payload["status"] == "pass"
+    assert payload["error_count"] == 0
+
+
 def test_g006_readiness_fails_when_prereqs_and_final_artifacts_are_missing(tmp_path):
     write_json(tmp_path / ".omx/ultragoal/goals.json", {"goals": [{"id": "G003", "status": "in_progress"}]})
     payload = validate_g006_evaluation_readiness(_config(), root=tmp_path)
