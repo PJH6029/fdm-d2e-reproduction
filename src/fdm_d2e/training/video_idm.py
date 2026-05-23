@@ -1613,16 +1613,30 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
     if dist["enabled"]:
         _barrier(torch, dist)
     stats = read_json(stats_path)
+    skip_prediction_requested = bool(config.get("skip_prediction", False))
     if bool(config.get("require_precomputed_video_cache", False)):
         train_manifests = load_video_idm_cache_manifests(train_paths, stats=stats, config=config, split_name="train")
-        target_manifests = load_video_idm_cache_manifests(target_paths, stats=stats, config=config, split_name="target")
+        target_manifests = (
+            []
+            if skip_prediction_requested
+            else load_video_idm_cache_manifests(target_paths, stats=stats, config=config, split_name="target")
+        )
     elif dist["enabled"] and not dist["is_rank0"]:
         _barrier(torch, dist)
         train_manifests = load_video_idm_cache_manifests(train_paths, stats=stats, config=config, split_name="train")
-        target_manifests = load_video_idm_cache_manifests(target_paths, stats=stats, config=config, split_name="target")
+        target_manifests = (
+            []
+            if skip_prediction_requested
+            else load_video_idm_cache_manifests(target_paths, stats=stats, config=config, split_name="target")
+        )
     else:
         train_manifests = build_video_idm_cache_manifests(train_paths, stats=stats, config=config, split_name="train")
-        target_manifests = build_video_idm_cache_manifests(target_paths, stats=stats, config=config, split_name="target")
+        target_manifests = [] if skip_prediction_requested else build_video_idm_cache_manifests(
+            target_paths,
+            stats=stats,
+            config=config,
+            split_name="target",
+        )
         if dist["enabled"]:
             _barrier(torch, dist)
     category_vocab = [str(token) for token in stats.get("category_vocab", [])]
