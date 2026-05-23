@@ -29,6 +29,7 @@ def main() -> int:
     parser.add_argument("--top-k", type=int, default=20)
     parser.add_argument("--progress-output", default="artifacts/eval/g002_pvc_action_error_diagnostics_progress.json")
     parser.add_argument("--progress-rows", type=int, default=1000000)
+    parser.add_argument("--fast-field-extract", action="store_true", help="Parse only required JSONL fields instead of whole target rows.")
     parser.add_argument("--allow-fail", action="store_true")
     args = parser.parse_args()
     payload = write_streaming_action_diagnostics(
@@ -39,6 +40,7 @@ def main() -> int:
         top_k=args.top_k,
         progress_output_path=args.progress_output,
         progress_rows=args.progress_rows,
+        fast_field_extract=args.fast_field_extract,
     )
     print(
         "g002 pvc action diagnostics: "

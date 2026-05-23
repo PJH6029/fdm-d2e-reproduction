@@ -16,6 +16,9 @@ except Exception:  # pragma: no cover - fallback is covered.
     orjson = None
 
 
+_JSON_DECODER = json.JSONDecoder()
+
+
 def _loads(line: str) -> dict[str, Any]:
     if orjson is not None:
         payload = orjson.loads(line)
@@ -24,6 +27,30 @@ def _loads(line: str) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("JSONL row must be an object")
     return payload
+
+
+def _extract_value(line: str, key: str) -> Any:
+    needle = f'"{key}":'
+    idx = line.find(needle)
+    if idx < 0:
+        return None
+    start = idx + len(needle)
+    while start < len(line) and line[start].isspace():
+        start += 1
+    try:
+        value, _end = _JSON_DECODER.raw_decode(line[start:])
+    except json.JSONDecodeError:
+        return None
+    return value
+
+
+def _extract_fields(line: str, fields: list[str]) -> dict[str, Any]:
+    row: dict[str, Any] = {}
+    for field in fields:
+        value = _extract_value(line, field)
+        if value is not None:
+            row[field] = value
+    return row
 
 
 def _expand_paths(patterns: Iterable[str | Path]) -> list[Path]:
@@ -40,12 +67,12 @@ def _expand_paths(patterns: Iterable[str | Path]) -> list[Path]:
     return paths
 
 
-def _iter_jsonl(paths: list[Path]) -> Iterable[dict[str, Any]]:
+def _iter_jsonl(paths: list[Path], *, fields: list[str] | None = None) -> Iterable[dict[str, Any]]:
     for path in paths:
         with path.open("r", encoding="utf-8", buffering=1024 * 1024) as handle:
             for line in handle:
                 if line.strip():
-                    yield _loads(line)
+                    yield _extract_fields(line, fields) if fields else _loads(line)
 
 
 def _category(tokens: list[str], prefixes: tuple[str, ...]) -> tuple[str, ...]:
@@ -225,6 +252,7 @@ def build_streaming_action_diagnostics(
     top_k: int = 20,
     progress_output_path: str | Path | None = None,
     progress_rows: int = 1_000_000,
+    fast_field_extract: bool = False,
 ) -> dict[str, Any]:
     predictions = _expand_paths(prediction_paths)
     targets = _expand_paths(target_paths)
@@ -242,7 +270,9 @@ def build_streaming_action_diagnostics(
         "examples": [],
     }
     if predictions and targets:
-        for pred, target in zip_longest(_iter_jsonl(predictions), _iter_jsonl(targets)):
+        pred_fields = ["sequence_id", "game", "predicted_tokens"] if fast_field_extract else None
+        target_fields = ["sequence_id", "game", "eval_split_tags", "ground_truth_tokens"] if fast_field_extract else None
+        for pred, target in zip_longest(_iter_jsonl(predictions, fields=pred_fields), _iter_jsonl(targets, fields=target_fields)):
             if max_rows is not None and alignment["rows_seen"] >= max_rows:
                 break
             if pred is None:
@@ -295,6 +325,7 @@ def build_streaming_action_diagnostics(
         "prediction_paths": [str(path) for path in predictions],
         "target_paths": [str(path) for path in targets],
         "max_rows": max_rows,
+        "fast_field_extract": fast_field_extract,
         "alignment": alignment,
         "groups": {key: value.metrics(top_k=top_k) for key, value in sorted(groups.items())},
         "findings": findings,
@@ -310,6 +341,7 @@ def write_streaming_action_diagnostics(
     top_k: int = 20,
     progress_output_path: str | Path | None = None,
     progress_rows: int = 1_000_000,
+    fast_field_extract: bool = False,
 ) -> dict[str, Any]:
     payload = build_streaming_action_diagnostics(
         prediction_paths=prediction_paths,
@@ -318,6 +350,7 @@ def write_streaming_action_diagnostics(
         top_k=top_k,
         progress_output_path=progress_output_path,
         progress_rows=progress_rows,
+        fast_field_extract=fast_field_extract,
     )
     write_json(output_path, payload)
     return payload

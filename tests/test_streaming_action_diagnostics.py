@@ -75,3 +75,25 @@ def test_streaming_action_diagnostics_writes_progress(tmp_path):
     )
     assert payload["status"] == "pass"
     assert progress.is_file()
+
+
+def test_streaming_action_diagnostics_fast_field_extract(tmp_path):
+    preds = tmp_path / "preds.jsonl"
+    targets = tmp_path / "targets.jsonl"
+    write_jsonl(preds, [{"sequence_id": "a#0", "game": "GameA", "predicted_tokens": ["MOUSE_LEFT_DOWN"]}])
+    write_jsonl(
+        targets,
+        [
+            {
+                "sequence_id": "a#0",
+                "game": "GameA",
+                "eval_split_tags": ["temporal"],
+                "ground_truth_tokens": [],
+                "large_unused_feature": list(range(20)),
+            }
+        ],
+    )
+    payload = build_streaming_action_diagnostics(prediction_paths=[preds], target_paths=[targets], fast_field_extract=True)
+    assert payload["status"] == "pass"
+    assert payload["fast_field_extract"] is True
+    assert payload["groups"]["game:GameA"]["mouse_button"]["no_button_false_positive_rate"] == 1.0
