@@ -76,3 +76,20 @@ Reusable pod artifacts after the failure:
 The fix preserves `timeout_seconds` when the process group is already initialized and enables fail-closed
 reuse of an existing materialized split summary/shards on restart. After pulling the fixed commit in the pod,
 relaunch G004; it should skip the expensive materialization rewrite and proceed to stats/cache/DDP.
+
+## 2026-05-23 bfe61db relaunch progress
+
+The pod was reset to `bfe61db` and G004 was relaunched with the reusable split/shards intact.
+New parent PID: `263344`; watcher PID: `263368`.
+
+Committed progress snapshot: `artifacts/fdm/g004_bfe61db_relaunch_training_progress_snapshot.json`.
+At `2026-05-23T01:16:33Z`:
+
+- `streaming_stats.json` exists.
+- Training cache exists with 2,369 files and ~53.0GB.
+- `train_history.json` exists with epoch 1 complete over 19,211,006 examples.
+- Epoch 1 validation composite score: `0.15456648272454743`; mouse-move Pearson `0.44881119880172465`; mouse-button F1 `0.014543470740080368`; keyboard accuracy `0.0003447786318372645`.
+- The run is still incomplete: no final checkpoint, full prediction output, wrapper summary, finalization summary, passing G004 audit, or OMX checkpoint yet.
+- GPU monitor showed ranks resident on all four GPUs; at that instant GPU 1–3 were at 100% while rank 0 was likely in rank-0 eval/checkpoint coordination.
+
+Continue monitoring until all epochs/checkpoint/prediction/finalizer complete. Do not checkpoint G004 before the finalization summary and completion audit pass.

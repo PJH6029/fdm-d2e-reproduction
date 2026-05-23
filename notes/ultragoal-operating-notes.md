@@ -49,6 +49,7 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Use the `mlxp-reservation-api` skill for SNUPI MLXP GPU reservation workflows.
 - User authorized cluster GPU reservations/scheduling without further confirmation during this ultragoal; use up to 4×H200 and design multi-GPU-capable training paths.
 - Treat sustained 4×H200 GPU idle time as a serious execution blocker/risk across the ultragoal, not merely expected overhead. For every cluster training run, monitor GPU utilization, label CPU/IO-only phases explicitly, and prefer sharded/parallel materialization, tensor-cache, prediction-worker, and recovery paths that get DDP training onto GPUs sooner while preserving audit/reproducibility artifacts.
+- Canonical goal-wide GPU-utilization rule is persisted in `notes/gpu-utilization-operating-rule.md`; use it during every G004–G009 launch/monitor/recovery handoff.
 - Cluster workflow: edit locally, push, then pull in the pod PVC path `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction` before running GPU jobs.
 - Docker registry username: `pjh6029`; auth is already configured.
 
@@ -57,9 +58,9 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Current reservation/pod: `rsv-jeonghunpark-20260521-76e25a` / `prod-rsv-jeonghunpark-20260521-76e25a` in namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
 - G003 is complete in OMX; do not treat older G003 run/watcher notes as active blockers.
-- Latest G004 run on pod checkout `d38a3b1` completed split materialization, then failed before stats/cache/DDP with `_distributed_runtime()` `timeout_seconds` `UnboundLocalError`; committed evidence: `artifacts/fdm/g004_ddp_runtime_failure_snapshot.json`.
-- At failure, no active G004 parent/watcher processes were observed, and reusable pod artifacts existed: split summary plus 16 train shards (`400,301,959,913` bytes) and 16 target shards (`347,089,780,692` bytes).
-- Pull the fixed local/origin commit into the pod, then relaunch `bash scripts/run_g004_d2e_full_fdm_4xh200.sh`. The fixed trainer should reuse `outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json` and shard paths instead of rematerializing, then proceed to stats/cache/DDP. Monitor until GPU utilization is nonzero during DDP training and final prediction.
+- G004 run on pod checkout `d38a3b1` completed split materialization, then failed before stats/cache/DDP with `_distributed_runtime()` `timeout_seconds` `UnboundLocalError`; committed evidence: `artifacts/fdm/g004_ddp_runtime_failure_snapshot.json`.
+- The pod was reset to fixed commit `bfe61db` and relaunched. Current parent PID `263344`; watcher PID `263368`.
+- Relaunch reused `outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json` and shard paths instead of rematerializing. Training has begun: `artifacts/fdm/g004_bfe61db_relaunch_training_progress_snapshot.json` shows stats, a 2,369-file ~53GB cache, and epoch 1 train history over 19,211,006 examples. Continue monitoring until all epochs/checkpoint/prediction/finalization/audit pass.
 - G003 progress monitor exists (`scripts/monitor_g003_progress.py`, `docs/g003_progress_monitoring.md`) for non-mutating shard/PID/stale-progress summaries; monitor output is progress evidence only, not G003 completion.
 - G003 live health audit exists (`scripts/audit_g003_live_health.py`) for non-mutating parent/extractor/watcher/GPU-monitor process-topology summaries; use it for handoff/recovery evidence but not for completion claims.
 - Historical G003 accel64 process notes for parent PID `251593` are no longer current; keep them only as provenance for the completed G003 checkpoint. Do not block G004 on old G003 worker/PID state.

@@ -20,6 +20,7 @@ These instructions apply to this repository and all child paths unless a deeper 
 - Prefer `uv` for dependency sync, Python execution, tests, and training/cluster commands.
 - Commit regularly after coherent, verified milestones. Do not accumulate one huge commit.
 - Treat sustained 4×H200 GPU idle time as a blocker/risk for this research ultragoal. During MLXP runs, actively monitor utilization, separate expected CPU/IO materialization from real GPU training, and prefer sharded/parallel/cache/prediction implementations that minimize idle GPU wall-clock while preserving completion audits and reproducibility artifacts.
+- Canonical GPU-utilization operating rule: `notes/gpu-utilization-operating-rule.md`. Future agents must keep this rule in scope across G004–G009, especially when diagnosing materialization/cache/prediction bottlenecks.
 - Use the Lore commit protocol for every commit: intent-first subject plus meaningful trailers (`Constraint:`, `Rejected:`, `Confidence:`, `Scope-risk:`, `Directive:`, `Tested:`, `Not-tested:`). Include `Co-authored-by: OmX <omx@oh-my-codex.dev>` when appropriate.
 - Preserve configs, manifests, hashes, dataset fingerprints, split contracts, checkpoints, predictions, metrics, reports, and monitor artifacts. Future agents should resume from committed files, not chat history.
 - Keep claims evidence-bound. If a metric/harness claim lacks committed evidence, phrase it as pending/future work.
@@ -36,7 +37,7 @@ Current `.omx/ultragoal/goals.json` status:
 - `G001-data-universe-audit` — complete.
 - `G002-split-leakage-contract` — complete.
 - `G003-d2e-only-idm` — complete and checkpointed in OMX.
-- `G004-d2e-only-fdm-4xh200` — pending in OMX; latest MLXP run failed after reusable split materialization and must be relaunched from the fixed commit.
+- `G004-d2e-only-fdm-4xh200` — pending in OMX; current MLXP relaunch is training from reusable split/cache evidence.
 - `G005-aux-data-best-model` — pending.
 - `G006-evaluation-failure-analysis` — pending.
 - `G007-runtime-sdk-adapter` — complete for the adapter-contract slice only.
@@ -47,17 +48,16 @@ Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 a
 
 ## Current G004 MLXP run/restart state
 
-Latest known live run snapshot: 2026-05-23 09:48 KST.
+Latest known live run snapshot: 2026-05-23 10:16 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
-- The last pod checkout was `d38a3b1`; it failed after completing split materialization.
-- No active `run_g004`/`torchrun`/`watch_g004` processes were observed at 2026-05-23T00:48:00Z.
-- Failure evidence: `artifacts/fdm/g004_ddp_runtime_failure_snapshot.json`; root cause was `timeout_seconds` unbound in `_distributed_runtime()` when `train_streaming_fdm` had already initialized the process group.
-- Reusable materialization artifacts remain on the pod: split summary exists; `fdm_train_shards` has 16 files / `400,301,959,913` bytes; `fdm_target_shards` has 16 files / `347,089,780,692` bytes.
-- Fixed code must be pulled into the pod before relaunch. The fixed trainer preserves `timeout_seconds` for already-initialized process groups and reuses the existing split summary/shards by default (`reuse_materialized_split_summary=true`), so relaunch should skip the expensive materialization rewrite and move to stats/cache/DDP.
-- Claim boundary: this is failure/restart evidence only. G004 remains incomplete until `artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json` reports pass and `artifacts/fdm/g004_full_fdm_completion_audit.json` reports `status=pass`, `error_count=0`, followed by OMX checkpointing with a fresh `get_goal` snapshot. Do not call `update_goal complete` for G004 in aggregate mode.
+- Previous `d38a3b1` run failed after reusable split materialization; failure evidence is `artifacts/fdm/g004_ddp_runtime_failure_snapshot.json`.
+- Current pod checkout is `bfe61db`; parent PID `263344`; watcher PID `263368`.
+- Current relaunch reused the existing split summary/shards instead of rewriting materialization. Reusable shard evidence: `fdm_train_shards` 16 files / `400,301,959,913` bytes; `fdm_target_shards` 16 files / `347,089,780,692` bytes.
+- Current progress evidence: `artifacts/fdm/g004_bfe61db_relaunch_training_progress_snapshot.json`. At 2026-05-23T01:16:33Z, `streaming_stats.json`, a 2,369-file ~53GB train cache, and `train_history.json` existed; epoch 1 completed over `19,211,006` examples with validation composite score `0.15456648272454743`.
+- Claim boundary: this is progress evidence only. G004 remains incomplete until final checkpoint, full predictions, wrapper summary, `artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json` pass, `artifacts/fdm/g004_full_fdm_completion_audit.json` `status=pass`/`error_count=0`, and OMX checkpointing with a fresh `get_goal` snapshot. Do not call `update_goal complete` for G004 in aggregate mode.
 
 Useful G004 monitor command:
 

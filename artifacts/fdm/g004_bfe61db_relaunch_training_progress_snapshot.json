@@ -1,0 +1,308 @@
+{
+    "active_processes": [
+        {
+            "cmd": "bash scripts/run_g004_d2e_full_fdm_4xh200.sh ",
+            "pid": 263344
+        },
+        {
+            "cmd": "nvidia-smi --query-gpu=timestamp,index,name,utilization.gpu,utilization.memory,memory.used,memory.total,power.draw --format=csv -l 30 ",
+            "pid": 263352
+        },
+        {
+            "cmd": "bash scripts/run_g004_d2e_full_fdm_4xh200.sh ",
+            "pid": 263353
+        },
+        {
+            "cmd": "uv run python scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid ",
+            "pid": 263364
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/watch_g004_then_finalize.py --replace-existing-watcher --poll-seconds 60 --pid-file outputs/cluster/g004_d2e_full_fdm_4xh200.pid --watcher-pid-file outputs/cluster/g004_postrun_watcher.pid ",
+            "pid": 263368
+        },
+        {
+            "cmd": "uv run torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 263436
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/torchrun --standalone --nproc-per-node=4 scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 263439
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 263508
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 263509
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 263510
+        },
+        {
+            "cmd": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 -u scripts/train_fdm_streaming.py --config configs/model/fdm_streaming_d2e_full_compact.yaml ",
+            "pid": 263511
+        }
+    ],
+    "artifacts": {
+        "checkpoint": {
+            "bytes": 0,
+            "exists": false,
+            "is_dir": false,
+            "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt"
+        },
+        "convergence_report": {
+            "bytes": 871,
+            "exists": true,
+            "is_dir": false,
+            "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json"
+        },
+        "finalization_summary": {
+            "bytes": 0,
+            "exists": false,
+            "is_dir": false,
+            "path": "artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json"
+        },
+        "run_summary": {
+            "bytes": 1264,
+            "exists": true,
+            "is_dir": false,
+            "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json"
+        },
+        "split_summary": {
+            "bytes": 34473,
+            "exists": true,
+            "is_dir": false,
+            "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json"
+        },
+        "streaming_stats": {
+            "bytes": 147908,
+            "exists": true,
+            "is_dir": false,
+            "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/streaming_stats.json"
+        },
+        "summary": {
+            "bytes": 0,
+            "exists": false,
+            "is_dir": false,
+            "path": "outputs/fdm_streaming_d2e_full_compact/summary.json"
+        },
+        "train_cache": {
+            "bytes": 53029449748,
+            "exists": true,
+            "files": 2369,
+            "is_dir": true,
+            "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/train_cache"
+        },
+        "train_history": {
+            "bytes": 1797,
+            "exists": true,
+            "is_dir": false,
+            "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/train_history.json"
+        }
+    },
+    "canonical_materialization": {
+        "claim_boundary": "Canonical monoliths are audit/repro artifacts; sharded paths are the training and streaming-eval inputs.",
+        "deferred": true,
+        "status": "deferred",
+        "target_records_path": "outputs/fdm_streaming_d2e_full_compact/fdm_target_ground_truth_records.jsonl",
+        "target_source_paths": [
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00000.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00001.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00002.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00003.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00004.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00005.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00006.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00007.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00008.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00009.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00010.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00011.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00012.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00013.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00014.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_target_shards/shard_00015.jsonl"
+        ],
+        "train_records_path": "outputs/fdm_streaming_d2e_full_compact/fdm_train_pseudolabeled_records.jsonl",
+        "train_source_paths": [
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00000.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00001.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00002.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00003.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00004.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00005.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00006.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00007.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00008.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00009.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00010.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00011.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00012.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00013.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00014.jsonl",
+            "outputs/fdm_streaming_d2e_full_compact/fdm_train_shards/shard_00015.jsonl"
+        ]
+    },
+    "captured_at": "2026-05-23T01:16:33Z",
+    "claim_boundary": "Progress snapshot only: G004 is training but incomplete until checkpoint, predictions, finalization, completion audit, and OMX checkpoint pass.",
+    "convergence": {
+        "num_validation_checkpoints": 1,
+        "plateau_met": false,
+        "recent_relative_improvements": []
+    },
+    "git_head": "bfe61db",
+    "gpu_csv": "2026/05/23 01:16:32.996, 0, 0, 0, 1827, 143771, 119.18\n2026/05/23 01:16:32.999, 1, 100, 0, 1825, 143771, 116.61\n2026/05/23 01:16:33.001, 2, 100, 0, 1831, 143771, 114.37\n2026/05/23 01:16:33.003, 3, 100, 0, 1827, 143771, 115.02",
+    "history_len": 1,
+    "history_tail": [
+        {
+            "batches": 4699,
+            "epoch": 1,
+            "examples": 19211006,
+            "loss": 0.8501569711240883,
+            "loss_sum": 16332370.673206687,
+            "validation": {
+                "metrics": {
+                    "failure_count": 262144,
+                    "keyboard": {
+                        "accuracy": 0.0003447786318372645,
+                        "num_examples": 49307,
+                        "status": "computed"
+                    },
+                    "mouse_button": {
+                        "accuracy": 0.13202077545597293,
+                        "exact_true_positive_examples": 1093,
+                        "f1": 0.014543470740080368,
+                        "false_negative_examples": 7186,
+                        "false_positive_examples": 140936,
+                        "no_button_examples": 253865,
+                        "no_button_false_positive_examples": 135863,
+                        "no_button_false_positive_rate": 0.5351781458649282,
+                        "num_examples": 8279,
+                        "precision": 0.007695611459631484,
+                        "predicted_examples": 142029,
+                        "recall": 0.13202077545597293,
+                        "status": "computed"
+                    },
+                    "mouse_move": {
+                        "num_values": 221634,
+                        "pearson": 0.44881119880172465,
+                        "scale_ratio": 2.102624798011385,
+                        "status": "computed"
+                    },
+                    "num_examples": 262144,
+                    "schema": "metrics.v1",
+                    "stage": "fdm_eval"
+                },
+                "score": {
+                    "components": {
+                        "keyboard_accuracy": 0.0003447786318372645,
+                        "mouse_button_accuracy": 0.13202077545597293,
+                        "mouse_button_f1": 0.014543470740080368,
+                        "mouse_move_pearson": 0.44881119880172465
+                    },
+                    "mode": "composite_primary",
+                    "value": 0.15456648272454743
+                },
+                "target_records": 262144
+            }
+        }
+    ],
+    "namespace": "p-production",
+    "parent_pid_file": "263344",
+    "pod": "prod-rsv-jeonghunpark-20260521-76e25a",
+    "schema": "g004_relaunch_training_progress_snapshot.v1",
+    "split_counts": {
+        "eval_split_tags": {},
+        "games": {
+            "Apex_Legends": 2510223,
+            "Battlefield_6_Open_Beta": 219053,
+            "Brotato": 591420,
+            "Core_Keeper": 650201,
+            "Counter-Strike_2": 823481,
+            "Cyberpunk_2077": 948920,
+            "Dinkum": 895053,
+            "Euro_Truck_Simulator_2": 1935761,
+            "Grand_Theft_Auto_V": 895786,
+            "Grounded": 1016246,
+            "MapleStory_Worlds_Southperry": 842281,
+            "Medieval_Dynasty": 1084394,
+            "Minecraft_1.21.8": 778676,
+            "Monster_Hunter_Wilds": 687025,
+            "PEAK": 125027,
+            "PUBG": 282291,
+            "Raft": 971150,
+            "Ready_Or_Not": 923596,
+            "Satisfactory": 1013706,
+            "Slime_Rancher": 944937,
+            "Stardew_Valley": 968780,
+            "Super_Bunny_Man": 76851,
+            "VALORANT": 26148
+        },
+        "mode": "explicit_target",
+        "pairs": 19211006,
+        "recordings": 642,
+        "resolution_tiers": {
+            "480p": 10314784,
+            "original_fhd_qhd": 8896222
+        },
+        "source_ids": {
+            "d2e_480p": 10314784,
+            "d2e_original": 8896222
+        },
+        "split_names": {
+            "train_core": 19211006
+        },
+        "target": 16698646,
+        "target_eval_split_tags": {
+            "heldout_game": 6198922,
+            "heldout_recording": 7477199,
+            "temporal": 7181939
+        },
+        "target_games": {
+            "Apex_Legends": 998189,
+            "Barony": 1137036,
+            "Battlefield_6_Open_Beta": 95955,
+            "Brotato": 234355,
+            "Core_Keeper": 606270,
+            "Counter-Strike_2": 504920,
+            "Cyberpunk_2077": 705108,
+            "Dinkum": 518355,
+            "Eternal_Return": 2383693,
+            "Euro_Truck_Simulator_2": 759887,
+            "Grand_Theft_Auto_V": 487021,
+            "Grounded": 284693,
+            "MapleStory_Worlds_Southperry": 740962,
+            "Medieval_Dynasty": 467571,
+            "Minecraft_1.21.8": 460142,
+            "Monster_Hunter_Wilds": 381982,
+            "OguForest": 121248,
+            "PEAK": 118595,
+            "PUBG": 382693,
+            "Raft": 456287,
+            "Rainbow_Six": 1875264,
+            "Ready_Or_Not": 448663,
+            "Satisfactory": 272469,
+            "Skul": 282766,
+            "Slime_Rancher": 483847,
+            "Stardew_Valley": 1063404,
+            "Super_Bunny_Man": 21818,
+            "VALORANT": 6538,
+            "Vampire_Survivors": 398915
+        },
+        "target_resolution_tiers": {
+            "480p": 8765872,
+            "original_fhd_qhd": 7932774
+        },
+        "target_source_ids": {
+            "d2e_480p": 8765872,
+            "d2e_original": 7932774
+        },
+        "target_split_names": {
+            "eval": 16698646
+        },
+        "train": 19211006
+    },
+    "watcher_pid_file": "263368"
+}
