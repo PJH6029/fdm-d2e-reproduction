@@ -1,0 +1,96 @@
+{
+  "schema": "external_artifact_manifest.v1",
+  "status": "pass",
+  "storage_root": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction",
+  "entry_count": 6,
+  "entries": [
+    {
+      "path": "outputs/data/d2e_full_corpus/train_core.jsonl",
+      "exists": true,
+      "bytes": 393034990563,
+      "sha256": "31eca0eeb09305bee2dbecacbd52111376d1b91051268ca3714cbac320845597",
+      "fingerprint": null,
+      "fingerprint_type": null,
+      "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_full_corpus/train_core.jsonl",
+      "source_artifact": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "source_artifacts": [
+        "artifacts/idm/g003_full_idm_completion_audit.json"
+      ],
+      "proof": "sha256"
+    },
+    {
+      "path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+      "exists": true,
+      "bytes": 341543678522,
+      "sha256": "08c416b873f6785f643bc1397c60d872f5a17aff945fa0d1ae245aa4a2b55c24",
+      "fingerprint": null,
+      "fingerprint_type": null,
+      "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+      "source_artifact": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "source_artifacts": [
+        "artifacts/idm/g003_full_idm_completion_audit.json"
+      ],
+      "proof": "sha256"
+    },
+    {
+      "path": "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
+      "exists": true,
+      "bytes": 10101581690,
+      "sha256": "990cdb9f7c652f96e58b09404427b8ad35dd49ce743ef6c74caa1b0425323399",
+      "fingerprint": null,
+      "fingerprint_type": null,
+      "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
+      "source_artifact": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "source_artifacts": [
+        "artifacts/idm/g003_full_idm_completion_audit.json"
+      ],
+      "proof": "sha256"
+    },
+    {
+      "path": "outputs/idm_streaming_d2e_full_compact/predictions.jsonl",
+      "exists": true,
+      "bytes": 6371662344,
+      "sha256": "27cdd34250629a5f433b4da2adbbdea61f01a8f417c7c8e471066d6c54b0f17e",
+      "fingerprint": null,
+      "fingerprint_type": null,
+      "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_compact/predictions.jsonl",
+      "source_artifact": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "source_artifacts": [
+        "artifacts/idm/g003_full_idm_completion_audit.json"
+      ],
+      "proof": "sha256"
+    },
+    {
+      "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+      "exists": true,
+      "bytes": 11638487567,
+      "sha256": null,
+      "fingerprint": "a540983e102967be39cd11e95a7c6eaa35c4b28df848cf55e6bf9cda14515d50",
+      "fingerprint_type": "streaming_idm_prediction_fingerprint",
+      "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+      "source_artifact": "artifacts/fdm/g004_safe_restart_live_snapshot.json",
+      "source_artifacts": [
+        "artifacts/fdm/g004_safe_restart_live_snapshot.json",
+        "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json"
+      ],
+      "proof": "fingerprint"
+    },
+    {
+      "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+      "exists": true,
+      "bytes": 7162080964,
+      "sha256": "51a0ca9be81f2d996df37b3e7e4da9fc1b136451fb9004f4f8eac949f373797b",
+      "fingerprint": null,
+      "fingerprint_type": null,
+      "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+      "source_artifact": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+      "source_artifacts": [
+        "artifacts/fdm/g004_full_fdm_completion_audit.json"
+      ],
+      "proof": "sha256"
+    }
+  ],
+  "findings": [],
+  "error_count": 0,
+  "claim_boundary": "Large full-corpus JSONL artifacts are retained on the MLXP PVC; this manifest records path/size/hash-or-fingerprint evidence instead of placing multi-GB/TB files in git."
+}

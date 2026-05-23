@@ -16,6 +16,7 @@ from fdm_d2e.io_utils import write_json
 from fdm_d2e.reporting.claim_audit import audit_claim_boundaries
 from fdm_d2e.reporting.g009_completion import write_g009_completion_audit
 from fdm_d2e.reporting.quality_gates import write_final_quality_gate_audit
+from build_external_artifact_manifest import DEFAULT_SOURCE_ARTIFACTS, DEFAULT_STORAGE_ROOT, build_external_manifest
 from build_repro_package_manifest import DEFAULT_PATTERNS, classify, iter_paths, sha256_file
 
 
@@ -100,6 +101,29 @@ def finalize(args: argparse.Namespace) -> dict[str, Any]:
     if claim.get("status") != "pass":
         findings.append({"severity": "error", "code": "claim_boundary_audit_not_pass", "status": claim.get("status")})
 
+    final_quality_config = load_config(_path(root, args.final_quality_config))
+    external_source_artifacts = getattr(args, "external_source_artifacts", DEFAULT_SOURCE_ARTIFACTS)
+    external_storage_root = getattr(args, "external_storage_root", DEFAULT_STORAGE_ROOT)
+    external_manifest_output = getattr(args, "external_manifest_output", "artifacts/reproducibility/external_artifact_manifest.json")
+    with _pushd(root):
+        external_manifest = build_external_manifest(
+            config=final_quality_config,
+            source_paths=[Path(source) for source in external_source_artifacts],
+            storage_root=external_storage_root,
+        )
+    write_json(_path(root, external_manifest_output), external_manifest)
+    actions.append(
+        {
+            "name": "external_artifact_manifest",
+            "output": _rel_or_abs(root, external_manifest_output),
+            "status": external_manifest.get("status"),
+            "entry_count": external_manifest.get("entry_count"),
+            "error_count": external_manifest.get("error_count"),
+        }
+    )
+    if external_manifest.get("status") != "pass":
+        findings.append({"severity": "error", "code": "external_artifact_manifest_not_pass", "error_count": external_manifest.get("error_count")})
+
     package: dict[str, Any] | None = None
     try:
         package = _build_package_manifest(root, output=args.package_manifest_output, patterns=_bootstrap_patterns(root, patterns))
@@ -115,7 +139,7 @@ def finalize(args: argparse.Namespace) -> dict[str, Any]:
         actions.append({"name": "package_manifest_bootstrap", "status": "failed", "error": str(exc)})
 
     final_quality = write_final_quality_gate_audit(
-        load_config(_path(root, args.final_quality_config)),
+        final_quality_config,
         root=root,
         output_path=args.final_quality_output,
     )
@@ -209,6 +233,9 @@ def main() -> int:
     parser.add_argument("--claim-audit-output", default="artifacts/reproducibility/claim_boundary_audit.json")
     parser.add_argument("--final-quality-config", default="configs/eval/final_quality_gates.yaml")
     parser.add_argument("--final-quality-output", default="artifacts/reproducibility/final_quality_gate_audit.json")
+    parser.add_argument("--external-manifest-output", default="artifacts/reproducibility/external_artifact_manifest.json")
+    parser.add_argument("--external-storage-root", default=DEFAULT_STORAGE_ROOT)
+    parser.add_argument("--external-source-artifacts", nargs="*", default=DEFAULT_SOURCE_ARTIFACTS)
     parser.add_argument("--package-manifest-output", default="artifacts/reproducibility/package_manifest.json")
     parser.add_argument("--package-patterns", nargs="*", help="Override package-manifest path/glob patterns; mainly for tests.")
     parser.add_argument("--g009-completion-config", default="configs/eval/g009_completion.yaml")

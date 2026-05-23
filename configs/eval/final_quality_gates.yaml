@@ -2,10 +2,14 @@
   "schema": "final_quality_gates_config.v1",
   "goals_path": ".omx/ultragoal/goals.json",
   "package_manifest_path": "artifacts/reproducibility/package_manifest.json",
+  "external_artifact_manifest_path": "artifacts/reproducibility/external_artifact_manifest.json",
   "claim_boundary_audit_path": "artifacts/reproducibility/claim_boundary_audit.json",
   "live_suite_evidence_validation_path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
   "output_path": "artifacts/reproducibility/final_quality_gate_audit.json",
   "require_all_goals_complete": true,
+  "allow_in_progress_goal_ids": [
+    "G009-report-repro-package"
+  ],
   "require_live_suite_pass": true,
   "require_package_manifest_for_configured_paths": true,
   "goal_gates": [
@@ -58,6 +62,12 @@
         "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
         "artifacts/eval/g003_split_statistical_comparisons_summary.json",
         "artifacts/idm/g003_full_idm_completion_audit.json"
+      ],
+      "external_artifact_paths": [
+        "outputs/data/d2e_full_corpus/train_core.jsonl",
+        "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+        "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
+        "outputs/idm_streaming_d2e_full_compact/predictions.jsonl"
       ],
       "json_assertions": [
         {
@@ -204,6 +214,10 @@
         "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
         "artifacts/eval/g004_split_statistical_comparisons_summary.json",
         "artifacts/fdm/g004_full_fdm_completion_audit.json"
+      ],
+      "external_artifact_paths": [
+        "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl"
       ],
       "json_assertions": [
         {
@@ -496,6 +510,7 @@
         "docs/evidence_index.md",
         "docs/reproducibility_runbook.md",
         "artifacts/reproducibility/package_manifest.json",
+        "artifacts/reproducibility/external_artifact_manifest.json",
         "artifacts/reproducibility/claim_boundary_audit.json"
       ],
       "json_assertions": [

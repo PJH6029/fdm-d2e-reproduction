@@ -36,6 +36,69 @@ def _manifest_paths(package_manifest: dict[str, Any] | None) -> set[str]:
     return {str(entry.get("path")) for entry in package_manifest.get("entries", [])}
 
 
+def _package_manifest_evidence(path: Path, rel_path: str, package_manifest: dict[str, Any] | None) -> dict[str, Any]:
+    """Summarize the package manifest without hashing it.
+
+    The package manifest includes the final-quality audit hash, so placing the
+    package-manifest hash back into the final-quality audit creates an
+    unsatisfiable hash cycle. The gate still loads and validates manifest
+    coverage; this evidence row intentionally records only stable metadata.
+    """
+
+    if not path.exists() or not path.is_file():
+        return {"path": rel_path, "exists": False, "bytes": 0, "sha256": None, "entry_count": 0}
+    return {
+        "path": rel_path,
+        "exists": True,
+        "bytes": path.stat().st_size,
+        "sha256": None,
+        "schema": (package_manifest or {}).get("schema"),
+        "entry_count": len((package_manifest or {}).get("entries", [])),
+        "hash_omitted_reason": "avoid_final_quality_package_manifest_hash_cycle",
+    }
+
+
+def _external_manifest_entries(external_manifest: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
+    if not external_manifest:
+        return {}
+    entries = external_manifest.get("entries", [])
+    if isinstance(entries, dict):
+        return {str(key): dict(value) for key, value in entries.items() if isinstance(value, dict)}
+    return {str(entry.get("path")): dict(entry) for entry in entries if isinstance(entry, dict) and entry.get("path")}
+
+
+def _external_evidence(entry: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Return normalized external evidence only when it is strong enough.
+
+    Final packages intentionally do not git-track multi-GB/TB full-corpus JSONL
+    artifacts. They still need positive proof that those artifacts exist at the
+    MLXP/PVC location used for training/evaluation. Accept either a full sha256
+    or a deterministic run-specific fingerprint, but require non-zero bytes and
+    an explicit external storage URI.
+    """
+
+    if not entry:
+        return None
+    exists = bool(entry.get("exists", True))
+    bytes_value = int(entry.get("bytes") or 0)
+    sha = entry.get("sha256")
+    fingerprint = entry.get("fingerprint")
+    storage_uri = entry.get("storage_uri")
+    if not exists or bytes_value <= 0 or not storage_uri or not (sha or fingerprint):
+        return None
+    return {
+        "path": str(entry.get("path")),
+        "exists": True,
+        "bytes": bytes_value,
+        "sha256": sha,
+        "fingerprint": fingerprint,
+        "fingerprint_type": entry.get("fingerprint_type"),
+        "storage_uri": storage_uri,
+        "source_artifact": entry.get("source_artifact"),
+        "proof": entry.get("proof"),
+    }
+
+
 def _get_nested(data: dict[str, Any], dotted: str) -> Any:
     cur: Any = data
     for part in dotted.split("."):
@@ -104,6 +167,9 @@ def validate_final_quality_gates(config: dict[str, Any], *, root: str | Path = "
     package_manifest_rel_path = str(config.get("package_manifest_path", "artifacts/reproducibility/package_manifest.json"))
     package_manifest = _load_json_if_exists(package_manifest_path)
     manifest_entries = _manifest_paths(package_manifest)
+    external_manifest_rel_path = config.get("external_artifact_manifest_path")
+    external_manifest = _load_json_if_exists(root_path / str(external_manifest_rel_path)) if external_manifest_rel_path else None
+    external_entries = _external_manifest_entries(external_manifest)
 
     findings: list[dict[str, Any]] = []
     goal_reports: list[dict[str, Any]] = []
@@ -113,15 +179,21 @@ def validate_final_quality_gates(config: dict[str, Any], *, root: str | Path = "
         findings.append({"severity": "error", "code": "missing_goals_file", "path": str(config.get("goals_path"))})
     if package_manifest is None:
         findings.append({"severity": "error", "code": "missing_package_manifest", "path": str(config.get("package_manifest_path"))})
+    if external_manifest_rel_path and external_manifest is None:
+        findings.append({"severity": "error", "code": "missing_external_artifact_manifest", "path": str(external_manifest_rel_path)})
 
     complete_statuses = set(config.get("complete_statuses", list(DEFAULT_COMPLETE_STATUSES)))
+    allow_in_progress_goal_ids = {str(item) for item in config.get("allow_in_progress_goal_ids", [])}
     for gate in config.get("goal_gates", []):
         goal_id = str(gate["id"])
         goal = goals_by_id.get(goal_id)
         status = str(goal.get("status", "missing")) if goal else "missing"
         goal_findings: list[dict[str, Any]] = []
         requires_status = str(gate.get("requires_status", "complete"))
-        if status != requires_status:
+        status_allowed_by_final_precheckpoint = (
+            status == "in_progress" and requires_status == "complete" and goal_id in allow_in_progress_goal_ids
+        )
+        if status != requires_status and not status_allowed_by_final_precheckpoint:
             goal_findings.append(
                 {
                     "severity": "error",
@@ -132,15 +204,39 @@ def validate_final_quality_gates(config: dict[str, Any], *, root: str | Path = "
                 }
             )
         path_reports = []
+        external_paths = {str(path) for path in gate.get("external_artifact_paths", [])}
         for rel_path in gate.get("required_paths", []):
             rel_path = str(rel_path)
             required_paths_seen.append(rel_path)
-            evidence = _file_evidence(root_path / rel_path, rel_path)
+            if rel_path == package_manifest_rel_path:
+                evidence = _package_manifest_evidence(root_path / rel_path, rel_path, package_manifest)
+            else:
+                evidence = _file_evidence(root_path / rel_path, rel_path)
+            external = None
+            if not evidence["exists"] and rel_path in external_paths:
+                external = _external_evidence(external_entries.get(rel_path))
+                if external:
+                    evidence = {
+                        **evidence,
+                        "external_satisfied": True,
+                        "external": external,
+                    }
             path_reports.append(evidence)
-            if not evidence["exists"]:
+            if not evidence["exists"] and not evidence.get("external_satisfied"):
                 goal_findings.append({"severity": "error", "code": "missing_required_artifact", "goal_id": goal_id, "path": rel_path})
+                if rel_path in external_paths:
+                    goal_findings.append(
+                        {
+                            "severity": "error",
+                            "code": "external_artifact_evidence_missing_or_weak",
+                            "goal_id": goal_id,
+                            "path": rel_path,
+                            "external_manifest_path": str(external_manifest_rel_path),
+                        }
+                    )
             elif (
                 rel_path != package_manifest_rel_path
+                and not evidence.get("external_satisfied")
                 and gate.get("require_package_manifest_coverage", True)
                 and package_manifest is not None
                 and rel_path not in manifest_entries
@@ -162,7 +258,12 @@ def validate_final_quality_gates(config: dict[str, Any], *, root: str | Path = "
         findings.extend(goal_findings)
 
     if config.get("require_all_goals_complete", True) and goals:
-        not_complete = [str(goal.get("id")) for goal in goals if str(goal.get("status")) not in complete_statuses]
+        not_complete = [
+            str(goal.get("id"))
+            for goal in goals
+            if str(goal.get("status")) not in complete_statuses
+            and not (str(goal.get("id")) in allow_in_progress_goal_ids and str(goal.get("status")) == "in_progress")
+        ]
         if not_complete:
             findings.append({"severity": "error", "code": "not_all_ultragoal_stories_complete", "goal_ids": not_complete})
 
@@ -200,7 +301,16 @@ def validate_final_quality_gates(config: dict[str, Any], *, root: str | Path = "
         "goals_path": str(config.get("goals_path", ".omx/ultragoal/goals.json")),
         "goal_status_counts": _status_counts(goals),
         "goal_reports": goal_reports,
-        "package_manifest": _file_evidence(package_manifest_path, str(config.get("package_manifest_path", "artifacts/reproducibility/package_manifest.json"))),
+        "package_manifest": _package_manifest_evidence(
+            package_manifest_path,
+            str(config.get("package_manifest_path", "artifacts/reproducibility/package_manifest.json")),
+            package_manifest,
+        ),
+        "external_artifact_manifest": (
+            _file_evidence(root_path / str(external_manifest_rel_path), str(external_manifest_rel_path))
+            if external_manifest_rel_path
+            else None
+        ),
         "claim_boundary_audit_status": claim_payload.get("status") if claim_payload else None,
         "live_suite_validation_status": _get_nested(live_payload, "quality_gate.status") if live_payload else None,
         "findings": findings,

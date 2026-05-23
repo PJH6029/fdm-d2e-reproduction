@@ -1,29 +1,29 @@
 {
   "schema": "g009_readiness_plan.v1",
-  "status": "blocked",
-  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
-  "allow_precheckpoint": false,
+  "status": "ready",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
+  "allow_precheckpoint": true,
   "require_existing_final_outputs": false,
   "goal_statuses": {
     "G001-data-universe-audit": "complete",
     "G002-split-leakage-contract": "complete",
-    "G003-d2e-only-idm": "in_progress",
-    "G004-d2e-only-fdm-4xh200": "pending",
-    "G005-aux-data-best-model": "pending",
-    "G006-evaluation-failure-analysis": "pending",
+    "G003-d2e-only-idm": "complete",
+    "G004-d2e-only-fdm-4xh200": "complete",
+    "G005-aux-data-best-model": "complete",
+    "G006-evaluation-failure-analysis": "complete",
     "G007-runtime-sdk-adapter": "complete",
-    "G008-live-game-suite": "pending",
-    "G009-report-repro-package": "pending"
+    "G008-live-game-suite": "complete",
+    "G009-report-repro-package": "in_progress"
   },
   "prerequisite_goal_statuses": {
     "G001-data-universe-audit": "complete",
     "G002-split-leakage-contract": "complete",
-    "G003-d2e-only-idm": "in_progress",
-    "G004-d2e-only-fdm-4xh200": "pending",
-    "G005-aux-data-best-model": "pending",
-    "G006-evaluation-failure-analysis": "pending",
+    "G003-d2e-only-idm": "complete",
+    "G004-d2e-only-fdm-4xh200": "complete",
+    "G005-aux-data-best-model": "complete",
+    "G006-evaluation-failure-analysis": "complete",
     "G007-runtime-sdk-adapter": "complete",
-    "G008-live-game-suite": "pending"
+    "G008-live-game-suite": "complete"
   },
   "required_docs": {
     "final_report": {
@@ -41,8 +41,8 @@
     "reproducibility_runbook": {
       "path": "docs/reproducibility_runbook.md",
       "exists": true,
-      "bytes": 4315,
-      "sha256": "e1bed682b25fd1df2b8ce6bc46b00c6741b732ba09c5d59c8dabc2156ecb1630"
+      "bytes": 4621,
+      "sha256": "b0d8551b9a2823323d8862b58d60c8be0d9943796b3c9385449de9b453f5801b"
     },
     "failure_analysis_doc": {
       "path": "docs/failure_analysis.md",
@@ -53,8 +53,8 @@
     "final_quality_doc": {
       "path": "docs/final_quality_gates.md",
       "exists": true,
-      "bytes": 4279,
-      "sha256": "d58dbabb54b6cb318c4342655fa45a1eda6b92c4299a56025edc23095ea34947"
+      "bytes": 4702,
+      "sha256": "1dc08834ce4edf91afd6b09554921c08f47ef12e243d3b61c09c3d48d40597cb"
     }
   },
   "refreshable_outputs": {
@@ -62,7 +62,7 @@
       "path": "artifacts/reproducibility/claim_boundary_audit.json",
       "exists": true,
       "bytes": 850,
-      "sha256": "23d9ee62c70743703bf7991d1570ffec09e2a38520ecac03199c2959ed36bd71",
+      "sha256": "4a6c1aac5b059592e37b4454dbd121405b2fb0941d5bb1fac613071db4c70bb1",
       "schema": "claim_boundary_audit.v1",
       "status": "pass",
       "error_count": null,
@@ -71,29 +71,29 @@
     "final_quality_audit": {
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "exists": true,
-      "bytes": 60454,
-      "sha256": "425e035b73d55776c67277a320a0f4f27d2c71cccc3811572caa2b1047a02a56",
+      "bytes": 46129,
+      "sha256": "8d70805f7ba4d4227cdb9f006538a9f72e2c06a16ad06be9ebf2d575ec76d41a",
       "schema": "final_quality_gate_audit.v1",
       "status": "fail",
-      "error_count": 97,
+      "error_count": 62,
       "entry_count": null
     },
     "package_manifest": {
       "path": "artifacts/reproducibility/package_manifest.json",
       "exists": true,
-      "bytes": 47330,
-      "sha256": "ffe81f51be8d11f69560aebedcfbd802037d72594064d28fdfdf18c62bd7ab08",
+      "bytes": 95472,
+      "sha256": "3dd28eb7cd65203660086cd3efeb69330bdbdad19cef2c93c10d88b86b531287",
       "schema": "repro_package_manifest.v1",
       "status": null,
       "error_count": null,
-      "entry_count": 226
+      "entry_count": 462
     }
   },
   "current_g009_audit": {
     "path": "artifacts/reproducibility/g009_completion_audit.json",
     "exists": true,
     "bytes": 3901,
-    "sha256": "8500774b3e75cacf0b971088ddf1c52140623ebdfdb54ba27aeb95b7e8d602c7",
+    "sha256": "9c14cd7bbed781566b974daa9fa5e081d44e8ebaa1ad373ba3a8f025195993b7",
     "schema": "g009_completion_audit.v1",
     "status": "fail",
     "error_count": 6,
@@ -102,8 +102,8 @@
   "current_finalization_summary": {
     "path": "artifacts/reproducibility/g009_finalization_summary.json",
     "exists": true,
-    "bytes": 1805,
-    "sha256": "c8bd659e7b5a005f5e3a529f6fd8229765bdf0967cbbb2d15a8dc4ac66a59e48",
+    "bytes": 1808,
+    "sha256": "4b8ace9a49ed0e041653c3aaaad7079d39b1323a033a655bde71a14faa234144",
     "schema": "g009_report_package_finalization.v1",
     "status": "fail",
     "error_count": null,
@@ -130,8 +130,8 @@
       "path": "docs/reproducibility_runbook.md",
       "in_manifest": true,
       "file_exists": true,
-      "manifest_sha256": "e1bed682b25fd1df2b8ce6bc46b00c6741b732ba09c5d59c8dabc2156ecb1630",
-      "actual_sha256": "e1bed682b25fd1df2b8ce6bc46b00c6741b732ba09c5d59c8dabc2156ecb1630",
+      "manifest_sha256": "b0d8551b9a2823323d8862b58d60c8be0d9943796b3c9385449de9b453f5801b",
+      "actual_sha256": "b0d8551b9a2823323d8862b58d60c8be0d9943796b3c9385449de9b453f5801b",
       "hash_matches": true
     },
     {
@@ -146,29 +146,29 @@
       "path": "docs/final_quality_gates.md",
       "in_manifest": true,
       "file_exists": true,
-      "manifest_sha256": "d58dbabb54b6cb318c4342655fa45a1eda6b92c4299a56025edc23095ea34947",
-      "actual_sha256": "d58dbabb54b6cb318c4342655fa45a1eda6b92c4299a56025edc23095ea34947",
+      "manifest_sha256": "1dc08834ce4edf91afd6b09554921c08f47ef12e243d3b61c09c3d48d40597cb",
+      "actual_sha256": "1dc08834ce4edf91afd6b09554921c08f47ef12e243d3b61c09c3d48d40597cb",
       "hash_matches": true
     },
     {
       "path": "artifacts/reproducibility/claim_boundary_audit.json",
       "in_manifest": true,
       "file_exists": true,
-      "manifest_sha256": "23d9ee62c70743703bf7991d1570ffec09e2a38520ecac03199c2959ed36bd71",
-      "actual_sha256": "23d9ee62c70743703bf7991d1570ffec09e2a38520ecac03199c2959ed36bd71",
+      "manifest_sha256": "4a6c1aac5b059592e37b4454dbd121405b2fb0941d5bb1fac613071db4c70bb1",
+      "actual_sha256": "4a6c1aac5b059592e37b4454dbd121405b2fb0941d5bb1fac613071db4c70bb1",
       "hash_matches": true
     },
     {
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "in_manifest": true,
       "file_exists": true,
-      "manifest_sha256": "425e035b73d55776c67277a320a0f4f27d2c71cccc3811572caa2b1047a02a56",
-      "actual_sha256": "425e035b73d55776c67277a320a0f4f27d2c71cccc3811572caa2b1047a02a56",
+      "manifest_sha256": "8d70805f7ba4d4227cdb9f006538a9f72e2c06a16ad06be9ebf2d575ec76d41a",
+      "actual_sha256": "8d70805f7ba4d4227cdb9f006538a9f72e2c06a16ad06be9ebf2d575ec76d41a",
       "hash_matches": true
     }
   ],
   "completion_projection_status": "fail",
-  "completion_projection_error_count": 6,
+  "completion_projection_error_count": 1,
   "commands": {
     "finalize": [
       "uv",
@@ -204,38 +204,7 @@
       "scripts/validate_final_quality_gates.py"
     ]
   },
-  "findings": [
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G003-d2e-only-idm",
-      "actual": "in_progress"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "actual": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G005-aux-data-best-model",
-      "actual": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G006-evaluation-failure-analysis",
-      "actual": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G008-live-game-suite",
-      "actual": "pending"
-    }
-  ],
+  "findings": [],
   "warnings": [],
   "claim_boundary": "G009 readiness planning is read-only; it does not refresh audits, rebuild the package, checkpoint G009, or complete the aggregate goal."
 }

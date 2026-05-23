@@ -59,10 +59,13 @@ The audit checks, without mutating OMX/Codex goal state:
 8. G008 live open-source graphical-game evidence validation exists and has
    `quality_gate.status == pass`, and `g008_live_suite_completion_audit.status=pass`; protocol readiness does not count.
 9. G009 final report, evidence index, reproducibility runbook, package manifest,
-   claim-boundary audit, final-quality audit with `status == pass`, and
-   `g009_completion_audit.status=pass` exist.
+   external-artifact manifest, claim-boundary audit, final-quality audit with
+   `status == pass`, and `g009_completion_audit.status=pass` exist.
 10. Required configured artifacts that already exist are represented in the
-    reproducibility package manifest.
+    reproducibility package manifest; configured PVC-resident large JSONL
+    artifacts are represented in
+    `artifacts/reproducibility/external_artifact_manifest.json` with byte
+    counts and hash or deterministic fingerprint evidence.
 11. The claim-boundary audit reports `status == pass`.
 
 ## Current expected state
@@ -72,10 +75,14 @@ useful: it enumerates exactly which gates and artifacts remain unproven and
 prevents accidental aggregate goal completion.
 
 The aggregate Codex goal should only be completed after this audit passes on
-fresh artifacts and OMX checkpoints for all G001–G009 are complete.
+fresh artifacts, the final cleanup/review gate is clean, and the final G009
+checkpoint is ready to be written.
 
 Story-level completion audits are configured as pre-checkpoint evidence gates
 (`require_goal_checkpoint_complete=false`) so they can pass on real artifacts
 before the corresponding OMX checkpoint is written. They still report the
 current story status. The final quality gate is the layer that requires every
-story status to be `complete`.
+non-final story status to be `complete`. The final story
+(`G009-report-repro-package`) may be `in_progress` only during the pre-checkpoint
+audit window because the OMX checkpoint is written after the Codex aggregate
+goal is marked complete.

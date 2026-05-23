@@ -1,0 +1,108 @@
+{
+  "schema": "streaming_convergence_report.v1",
+  "score_mode": "composite_primary",
+  "direction": "higher",
+  "eval_interval_epochs": 1,
+  "patience": 3,
+  "min_relative_improvement": 0.01,
+  "plateau_met": true,
+  "num_validation_checkpoints": 6,
+  "recent_relative_improvements": [
+    -0.02771465043665761,
+    -0.10598958423150283,
+    -0.004530733328254983
+  ],
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.8501569711240883,
+      "validation_score": {
+        "mode": "composite_primary",
+        "value": 0.15456648272454743,
+        "components": {
+          "keyboard_accuracy": 0.0003447786318372645,
+          "mouse_button_f1": 0.014543470740080368,
+          "mouse_button_accuracy": 0.13202077545597293,
+          "mouse_move_pearson": 0.44881119880172465
+        }
+      },
+      "validation_examples": 262144
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.7310070104246197,
+      "validation_score": {
+        "mode": "composite_primary",
+        "value": 0.16200300274293702,
+        "components": {
+          "keyboard_accuracy": 0.0028596345346502527,
+          "mouse_button_f1": 0.007408758073339027,
+          "mouse_button_accuracy": 0.04662398840439667,
+          "mouse_move_pearson": 0.4757406156208218
+        }
+      },
+      "validation_examples": 262144
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.7121042077683276,
+      "validation_score": {
+        "mode": "composite_primary",
+        "value": 0.17133087013552742,
+        "components": {
+          "keyboard_accuracy": 0.00020281095990427322,
+          "mouse_button_f1": 0.007868561770980522,
+          "mouse_button_accuracy": 0.05145548979345332,
+          "mouse_move_pearson": 0.5059212376756975
+        }
+      },
+      "validation_examples": 262144
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.7039599932847829,
+      "validation_score": {
+        "mode": "composite_primary",
+        "value": 0.1665824949607129,
+        "components": {
+          "keyboard_accuracy": 0.00628713975703247,
+          "mouse_button_f1": 0.01216829768337525,
+          "mouse_button_accuracy": 0.0885372629544631,
+          "mouse_move_pearson": 0.481292047441731
+        }
+      },
+      "validation_examples": 262144
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.6965871328590297,
+      "validation_score": {
+        "mode": "composite_primary",
+        "value": 0.14892648557958052,
+        "components": {
+          "keyboard_accuracy": 0.0006692761676841016,
+          "mouse_button_f1": 0.012075484552236265,
+          "mouse_button_accuracy": 0.08563836212102911,
+          "mouse_move_pearson": 0.43403469601882116
+        }
+      },
+      "validation_examples": 262144
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.6913180771952429,
+      "validation_score": {
+        "mode": "composite_primary",
+        "value": 0.14825173938790523,
+        "components": {
+          "keyboard_accuracy": 0.0010546169915022208,
+          "mouse_button_f1": 0.010232339826331847,
+          "mouse_button_accuracy": 0.052663365140717476,
+          "mouse_move_pearson": 0.43346826134588157
+        }
+      },
+      "validation_examples": 262144
+    }
+  ],
+  "report_path": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json"
+}

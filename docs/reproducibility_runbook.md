@@ -86,8 +86,8 @@ Prefer the fail-closed finalizer for terminal and handoff runs:
 uv run python scripts/finalize_g009_report_package.py
 ```
 
-It refreshes the claim-boundary audit, final-quality audit, package manifest,
-and G009 completion audit, then writes
+It refreshes the claim-boundary audit, external-artifact manifest,
+final-quality audit, package manifest, and G009 completion audit, then writes
 `artifacts/reproducibility/g009_finalization_summary.json`. It does not mutate
 OMX state or checkpoint G009.
 
@@ -108,6 +108,18 @@ The default manifest patterns intentionally include the full repo-native
 reproduction surface (`AGENTS.md`, docs, notes, configs, schemas, scripts, src,
 tests, `pyproject.toml`, and `uv.lock`) in addition to evidence artifacts, so a
 final package cannot silently omit a newly added code/test/config file.
+
+Large full-corpus JSONL outputs are not committed to git. Build their PVC
+evidence manifest with:
+
+```bash
+uv run python scripts/build_external_artifact_manifest.py
+```
+
+The finalizer runs this automatically and writes
+`artifacts/reproducibility/external_artifact_manifest.json`. That manifest is
+the authoritative package pointer for PVC-resident train/eval JSONLs,
+prediction streams, and pseudolabel streams.
 
 ## MLXP/PVC path
 

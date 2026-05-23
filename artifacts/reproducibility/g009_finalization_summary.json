@@ -1,13 +1,13 @@
 {
   "schema": "g009_report_package_finalization.v1",
-  "status": "fail",
+  "status": "pass",
   "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
   "claim_audit_status": "pass",
-  "final_quality_status": "fail",
-  "final_quality_error_count": 105,
-  "package_manifest_entry_count": 409,
-  "g009_audit_status": "fail",
-  "g009_audit_error_count": 6,
+  "final_quality_status": "pass",
+  "final_quality_error_count": 0,
+  "package_manifest_entry_count": 549,
+  "g009_audit_status": "pass",
+  "g009_audit_error_count": 0,
   "actions": [
     {
       "name": "claim_boundary_audit",
@@ -15,45 +15,41 @@
       "status": "pass"
     },
     {
+      "name": "external_artifact_manifest",
+      "output": "artifacts/reproducibility/external_artifact_manifest.json",
+      "status": "pass",
+      "entry_count": 6,
+      "error_count": 0
+    },
+    {
       "name": "package_manifest_bootstrap",
       "output": "artifacts/reproducibility/package_manifest.json",
-      "entry_count": 409
+      "entry_count": 549
     },
     {
       "name": "final_quality_gate_audit",
       "output": "artifacts/reproducibility/final_quality_gate_audit.json",
-      "status": "fail",
-      "error_count": 105
+      "status": "pass",
+      "error_count": 0
     },
     {
       "name": "g009_completion_audit_pre_final_manifest",
       "output": "artifacts/reproducibility/g009_completion_audit.json",
       "status": "fail",
-      "error_count": 7
+      "error_count": 1
     },
     {
       "name": "package_manifest_final",
       "output": "artifacts/reproducibility/package_manifest.json",
-      "entry_count": 409
+      "entry_count": 549
     },
     {
       "name": "g009_completion_audit",
       "output": "artifacts/reproducibility/g009_completion_audit.json",
-      "status": "fail",
-      "error_count": 6
+      "status": "pass",
+      "error_count": 0
     }
   ],
-  "findings": [
-    {
-      "severity": "error",
-      "code": "final_quality_gate_audit_not_pass",
-      "error_count": 105
-    },
-    {
-      "severity": "error",
-      "code": "g009_completion_audit_not_pass",
-      "error_count": 6
-    }
-  ],
+  "findings": [],
   "claim_boundary": "Finalizes report/package evidence by refreshing claim audit, final quality gates, package manifest, and G009 completion audit; it does not checkpoint G009 or complete the aggregate goal."
 }

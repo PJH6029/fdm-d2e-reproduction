@@ -1,37 +1,37 @@
 {
   "schema": "g009_completion_audit.v1",
-  "status": "fail",
+  "status": "pass",
   "goal_id": "G009-report-repro-package",
-  "goal_status": "pending",
+  "goal_status": "in_progress",
   "require_goal_checkpoint_complete": false,
   "prerequisite_goal_statuses": {
     "G001-data-universe-audit": "complete",
     "G002-split-leakage-contract": "complete",
-    "G003-d2e-only-idm": "in_progress",
-    "G004-d2e-only-fdm-4xh200": "pending",
-    "G005-aux-data-best-model": "pending",
-    "G006-evaluation-failure-analysis": "pending",
+    "G003-d2e-only-idm": "complete",
+    "G004-d2e-only-fdm-4xh200": "complete",
+    "G005-aux-data-best-model": "complete",
+    "G006-evaluation-failure-analysis": "complete",
     "G007-runtime-sdk-adapter": "complete",
-    "G008-live-game-suite": "pending"
+    "G008-live-game-suite": "complete"
   },
   "artifacts": {
     "final_report": {
       "path": "docs/final_research_report.md",
       "exists": true,
-      "bytes": 6862,
-      "sha256": "38292857070cfc43b9b185f1c7192b675da0d85e4fde4db3e77b72f4e07f3ce4"
+      "bytes": 7323,
+      "sha256": "ecd075e9c963c50838cbbe4b9c82e75dc54fa6ab8918b3d3fdf70c40a5baed8c"
     },
     "evidence_index": {
       "path": "docs/evidence_index.md",
       "exists": true,
-      "bytes": 4843,
-      "sha256": "784fe6cb8a5896dfba9ee01afa3a6b1908f7e0baa7cb6796e9f1ab8925d9f17a"
+      "bytes": 5187,
+      "sha256": "8d6125891b3b61d659ed06795d208e98efc11d2ef15f82cb6f2a6a3f3e1bc42f"
     },
     "reproducibility_runbook": {
       "path": "docs/reproducibility_runbook.md",
       "exists": true,
-      "bytes": 4621,
-      "sha256": "b0d8551b9a2823323d8862b58d60c8be0d9943796b3c9385449de9b453f5801b"
+      "bytes": 5062,
+      "sha256": "630b29d3c493277d1843fd9836ad158448edb063cb4c0b6ba9018e0e62d4fb81"
     },
     "failure_analysis_doc": {
       "path": "docs/failure_analysis.md",
@@ -42,26 +42,32 @@
     "final_quality_doc": {
       "path": "docs/final_quality_gates.md",
       "exists": true,
-      "bytes": 4702,
-      "sha256": "1dc08834ce4edf91afd6b09554921c08f47ef12e243d3b61c09c3d48d40597cb"
+      "bytes": 5183,
+      "sha256": "16f9b974627a729dc9bbd4c93d44f59a3571da0dfd934a62d5c46d5d992fd5ed"
     },
     "package_manifest": {
       "path": "artifacts/reproducibility/package_manifest.json",
       "exists": true,
-      "bytes": 83944,
-      "sha256": "42546f9791534f17fda72594573ff8eb8ad101df0f1590dc432ef1a7750d3432"
+      "bytes": 117867,
+      "sha256": "81846f1a4f7bbc3107d8ef4584598c2b02a9f3c390ef10cc3afd0686619ddd86"
+    },
+    "external_artifact_manifest": {
+      "path": "artifacts/reproducibility/external_artifact_manifest.json",
+      "exists": true,
+      "bytes": 4726,
+      "sha256": "bb515dfe2231fe9d793929d453655ce4d0b7143654c9e6d236489c5d2be66455"
     },
     "claim_boundary_audit": {
       "path": "artifacts/reproducibility/claim_boundary_audit.json",
       "exists": true,
-      "bytes": 850,
-      "sha256": "4a6c1aac5b059592e37b4454dbd121405b2fb0941d5bb1fac613071db4c70bb1"
+      "bytes": 863,
+      "sha256": "6ebc83b05b521715908453d39c4bfc734df9a83625b195f0b82b265f61624318"
     },
     "final_quality_audit": {
       "path": "artifacts/reproducibility/final_quality_gate_audit.json",
       "exists": true,
-      "bytes": 64475,
-      "sha256": "926278e4cef782619e52e270d2b880e845de037f52b62ced843b3b1bb193abf7"
+      "bytes": 25298,
+      "sha256": "eb4856976bef62e6daf682984c83629c1270df33eb78a1af540fcf970407d7d0"
     }
   },
   "required_manifest_paths": [
@@ -70,49 +76,12 @@
     "docs/reproducibility_runbook.md",
     "docs/failure_analysis.md",
     "docs/final_quality_gates.md",
+    "artifacts/reproducibility/external_artifact_manifest.json",
     "artifacts/reproducibility/claim_boundary_audit.json",
     "artifacts/reproducibility/final_quality_gate_audit.json"
   ],
-  "manifest_entry_count": 409,
-  "findings": [
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G003-d2e-only-idm",
-      "actual": "in_progress"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "actual": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G005-aux-data-best-model",
-      "actual": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G006-evaluation-failure-analysis",
-      "actual": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G008-live-game-suite",
-      "actual": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "final_quality_expectation_mismatch",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "fail"
-    }
-  ],
-  "error_count": 6,
+  "manifest_entry_count": 549,
+  "findings": [],
+  "error_count": 0,
   "claim_boundary": "This audit is required before checkpointing G009 complete; final report, evidence index, runbook, package manifest, claim-boundary audit, manifest hashes, and prerequisite goal statuses must all be current."
 }

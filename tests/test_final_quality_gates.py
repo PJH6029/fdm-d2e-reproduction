@@ -106,9 +106,105 @@ def test_final_quality_gate_writes_output_without_requiring_self_reference(tmp_p
     assert written["schema"] == "final_quality_gate_audit.v1"
 
 
+def test_final_quality_gate_accepts_configured_external_artifact_manifest(tmp_path):
+    config = _config()
+    config["external_artifact_manifest_path"] = "artifacts/reproducibility/external_artifact_manifest.json"
+    config["goal_gates"][0]["required_paths"].append("outputs/huge.jsonl")
+    config["goal_gates"][0]["external_artifact_paths"] = ["outputs/huge.jsonl"]
+    _complete_fixture(tmp_path)
+    entries = json.loads((tmp_path / "artifacts/reproducibility/package_manifest.json").read_text())["entries"]
+    entries.append(
+        {
+            "path": "artifacts/reproducibility/external_artifact_manifest.json",
+            "kind": "evidence_artifact",
+            "bytes": 2,
+            "sha256": "stub",
+        }
+    )
+    write_json(tmp_path / "artifacts/reproducibility/package_manifest.json", {"schema": "repro_package_manifest.v1", "entries": entries})
+    write_json(
+        tmp_path / "artifacts/reproducibility/external_artifact_manifest.json",
+        {
+            "schema": "external_artifact_manifest.v1",
+            "status": "pass",
+            "entries": [
+                {
+                    "path": "outputs/huge.jsonl",
+                    "exists": True,
+                    "bytes": 123456,
+                    "sha256": "abc123",
+                    "storage_uri": "mlxp-pvc://pod/repo/outputs/huge.jsonl",
+                }
+            ],
+        },
+    )
+    payload = validate_final_quality_gates(config, root=tmp_path)
+    assert payload["status"] == "pass"
+    g001 = next(row for row in payload["goal_reports"] if row["goal_id"] == "G001")
+    huge = next(row for row in g001["artifacts"] if row["path"] == "outputs/huge.jsonl")
+    assert huge["external_satisfied"] is True
+    assert huge["external"]["sha256"] == "abc123"
+
+
+def test_final_quality_gate_rejects_weak_external_artifact_manifest_entry(tmp_path):
+    config = _config()
+    config["external_artifact_manifest_path"] = "artifacts/reproducibility/external_artifact_manifest.json"
+    config["goal_gates"][0]["required_paths"].append("outputs/huge.jsonl")
+    config["goal_gates"][0]["external_artifact_paths"] = ["outputs/huge.jsonl"]
+    _complete_fixture(tmp_path)
+    write_json(
+        tmp_path / "artifacts/reproducibility/external_artifact_manifest.json",
+        {"schema": "external_artifact_manifest.v1", "entries": [{"path": "outputs/huge.jsonl", "exists": True, "bytes": 0}]},
+    )
+    payload = validate_final_quality_gates(config, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "external_artifact_evidence_missing_or_weak" in codes
+
+
+def test_final_quality_gate_allows_configured_final_story_in_progress(tmp_path):
+    write_json(
+        tmp_path / ".omx/ultragoal/goals.json",
+        {"goals": [{"id": "G001", "status": "complete"}, {"id": "G009", "status": "in_progress"}]},
+    )
+    _write(tmp_path / "artifacts/g001.json", "{}")
+    _write(tmp_path / "artifacts/g009.json", "{}")
+    write_json(tmp_path / "artifacts/reproducibility/claim_boundary_audit.json", {"status": "pass"})
+    write_json(tmp_path / "artifacts/harness/live_validation.json", {"quality_gate": {"status": "pass"}})
+    write_json(
+        tmp_path / "artifacts/reproducibility/package_manifest.json",
+        {
+            "schema": "repro_package_manifest.v1",
+            "entries": [
+                {"path": "artifacts/g001.json", "kind": "evidence_artifact", "bytes": 2, "sha256": "stub"},
+                {"path": "artifacts/g009.json", "kind": "evidence_artifact", "bytes": 2, "sha256": "stub"},
+            ],
+        },
+    )
+    config = {
+        **_config(),
+        "allow_in_progress_goal_ids": ["G009"],
+        "goal_gates": [
+            {"id": "G001", "requires_status": "complete", "required_paths": ["artifacts/g001.json"]},
+            {"id": "G009", "requires_status": "complete", "required_paths": ["artifacts/g009.json"]},
+        ],
+    }
+    payload = validate_final_quality_gates(config, root=tmp_path)
+    assert payload["status"] == "pass"
+    assert payload["goal_status_counts"]["in_progress"] == 1
+
+
 def test_repro_manifest_covers_configured_g006_build_summary():
     text = Path("scripts/build_repro_package_manifest.py").read_text()
     assert '"artifacts/eval/g006_final_artifact_build_summary.json"' in text
+
+
+def test_repro_manifest_covers_external_and_nested_runtime_artifacts():
+    text = Path("scripts/build_repro_package_manifest.py").read_text()
+    assert '"artifacts/reproducibility/external_artifact_manifest.json"' in text
+    assert '"outputs/fdm_streaming_d2e_full_compact/torch_model/*"' in text
+    assert '"artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor*"' in text
+    assert '"artifacts/harness/g008_repo_live_suite/**/*"' in text
 
 
 def test_final_quality_config_does_not_require_self_referential_g009_artifacts():
@@ -141,3 +237,19 @@ def test_final_quality_config_requires_g003_gpu_monitor_coverage():
     assert '"json_path": "expected_gpus"' in g003_section
     assert '"json_path": "gpu_monitor_status.covers_expected_gpus"' in g003_section
     assert '"artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"' in g003_section
+
+
+def test_final_quality_config_uses_external_manifest_for_pvc_resident_large_jsonls():
+    text = Path("configs/eval/final_quality_gates.yaml").read_text()
+    assert '"external_artifact_manifest_path": "artifacts/reproducibility/external_artifact_manifest.json"' in text
+    assert '"allow_in_progress_goal_ids"' in text
+    assert '"G009-report-repro-package"' in text
+    for path in [
+        "outputs/data/d2e_full_corpus/train_core.jsonl",
+        "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+        "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
+        "outputs/idm_streaming_d2e_full_compact/predictions.jsonl",
+        "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+        "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+    ]:
+        assert path in text

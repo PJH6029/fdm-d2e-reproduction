@@ -1,10 +1,10 @@
 {
   "schema": "final_quality_gate_audit.v1",
-  "status": "fail",
+  "status": "pass",
   "goals_path": ".omx/ultragoal/goals.json",
   "goal_status_counts": {
-    "complete": 5,
-    "pending": 4
+    "complete": 8,
+    "in_progress": 1
   },
   "goal_reports": [
     {
@@ -80,91 +80,139 @@
       "title": "D2E-only IDM full-corpus training",
       "actual_status": "complete",
       "required_status": "complete",
-      "status": "fail",
+      "status": "pass",
       "artifacts": [
         {
           "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 1192133,
+          "sha256": "e1e7ec5db367a8cded98b5f311c89ba6bd0b28d0921f47d80d93ee630323ed02"
         },
         {
           "path": "outputs/data/d2e_full_corpus/train_core.jsonl",
           "exists": false,
           "bytes": 0,
-          "sha256": null
+          "sha256": null,
+          "external_satisfied": true,
+          "external": {
+            "path": "outputs/data/d2e_full_corpus/train_core.jsonl",
+            "exists": true,
+            "bytes": 393034990563,
+            "sha256": "31eca0eeb09305bee2dbecacbd52111376d1b91051268ca3714cbac320845597",
+            "fingerprint": null,
+            "fingerprint_type": null,
+            "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_full_corpus/train_core.jsonl",
+            "source_artifact": "artifacts/idm/g003_full_idm_completion_audit.json",
+            "proof": "sha256"
+          }
         },
         {
           "path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
           "exists": false,
           "bytes": 0,
-          "sha256": null
+          "sha256": null,
+          "external_satisfied": true,
+          "external": {
+            "path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+            "exists": true,
+            "bytes": 341543678522,
+            "sha256": "08c416b873f6785f643bc1397c60d872f5a17aff945fa0d1ae245aa4a2b55c24",
+            "fingerprint": null,
+            "fingerprint_type": null,
+            "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+            "source_artifact": "artifacts/idm/g003_full_idm_completion_audit.json",
+            "proof": "sha256"
+          }
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 4122359,
+          "sha256": "99e3db66ebb288b8b590e0ba540177b8f0415263fc264a82f12dbe1d8ba9d117"
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 20529,
+          "sha256": "e433fc0477ec82b8297110001b9f44ba5719e3da9ffbded3d068771d800c479b"
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/resolved_config.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 2335,
+          "sha256": "b2ace28b08558eda8e9cbeaae26765106afe82d2d41445ce57dede6b1d953088"
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/streaming_stats.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 340501,
+          "sha256": "ccafdd5ce5ce2fc3f4aec1ef2fd23c97abda55d136da3d950261df3eff47e41f"
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/train_history.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 5232,
+          "sha256": "85a86c3ed6130f46821ec73a8435d5ba50515363980596ac903e8f50febd3448"
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/convergence_report.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 1795,
+          "sha256": "39cbf0b00f3f18ad0e3ffbad53408410502a0f094ad2e590d89246441e647fb0"
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
           "exists": false,
           "bytes": 0,
-          "sha256": null
+          "sha256": null,
+          "external_satisfied": true,
+          "external": {
+            "path": "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
+            "exists": true,
+            "bytes": 10101581690,
+            "sha256": "990cdb9f7c652f96e58b09404427b8ad35dd49ce743ef6c74caa1b0425323399",
+            "fingerprint": null,
+            "fingerprint_type": null,
+            "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl",
+            "source_artifact": "artifacts/idm/g003_full_idm_completion_audit.json",
+            "proof": "sha256"
+          }
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/predictions.jsonl",
           "exists": false,
           "bytes": 0,
-          "sha256": null
+          "sha256": null,
+          "external_satisfied": true,
+          "external": {
+            "path": "outputs/idm_streaming_d2e_full_compact/predictions.jsonl",
+            "exists": true,
+            "bytes": 6371662344,
+            "sha256": "27cdd34250629a5f433b4da2adbbdea61f01a8f417c7c8e471066d6c54b0f17e",
+            "fingerprint": null,
+            "fingerprint_type": null,
+            "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_compact/predictions.jsonl",
+            "source_artifact": "artifacts/idm/g003_full_idm_completion_audit.json",
+            "proof": "sha256"
+          }
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/metrics.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 893,
+          "sha256": "278f6cfbc338fe7d40b5a65194aa10ee63900659585adfa83e2ccebe97789342"
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/label_quality_report.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 176520,
+          "sha256": "de52dcc923f1b79d814786c41739314c3822cee086761d3033085e992601e926"
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/statistical_comparison.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 8926,
+          "sha256": "cd2c4bf6a0f885561b76a0f64ae5dffd8650e7e55bfc83715f6d0f48019220db"
         },
         {
           "path": "artifacts/idm/idm_streaming_d2e_full_compact_summary.json",
@@ -180,27 +228,27 @@
         },
         {
           "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 442759,
+          "sha256": "9de078668c4ed621d852f8d991f02872883b7cdea06dd65d7eb12cd5abdaee69"
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 13239,
+          "sha256": "f70db7d91fd36be8b941c7b53b1728a7ac7383fc9a8721b1ebb865e67833446b"
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 13427,
+          "sha256": "57c2a25ae5306c320c9c7dce1a446ea10a39a2b817830bec3be3854b671fe5e7"
         },
         {
           "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 12873,
+          "sha256": "b8d9af19779d8fb366c49296fc5ac48a21875de0dcb32fd2d26cd85b81034d04"
         },
         {
           "path": "artifacts/eval/g003_split_statistical_comparisons_summary.json",
@@ -215,195 +263,32 @@
           "sha256": "7795caf40a57e5fa34bbc6a2beb69daed9139f8da0bcf7d63a375dabbef79be2"
         }
       ],
-      "findings": [
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "artifacts/sources/d2e_full_corpus_decode_summary.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/data/d2e_full_corpus/train_core.jsonl"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/resolved_config.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/streaming_stats.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/train_history.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/convergence_report.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/predictions.jsonl"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/metrics.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/label_quality_report.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/statistical_comparison.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G003-d2e-only-idm",
-          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "source_namespace"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "data_universe.exists"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "split_contract.exists"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "distributed.enabled"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-          "json_path": "distributed.world_size"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
-          "json_path": "selected_recording_variants"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
-          "json_path": "num_shards"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
-          "json_path": "failures"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
-          "json_path": "split"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
-          "json_path": "split"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
-          "json_path": "split"
-        }
-      ]
+      "findings": []
     },
     {
       "goal_id": "G004-d2e-only-fdm-4xh200",
       "title": "D2E-only FDM + 4xH200 scaling",
       "actual_status": "complete",
       "required_status": "complete",
-      "status": "fail",
+      "status": "pass",
       "artifacts": [
         {
           "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
           "exists": false,
           "bytes": 0,
-          "sha256": null
+          "sha256": null,
+          "external_satisfied": true,
+          "external": {
+            "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+            "exists": true,
+            "bytes": 11638487567,
+            "sha256": null,
+            "fingerprint": "a540983e102967be39cd11e95a7c6eaa35c4b28df848cf55e6bf9cda14515d50",
+            "fingerprint_type": "streaming_idm_prediction_fingerprint",
+            "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl",
+            "source_artifact": "artifacts/fdm/g004_safe_restart_live_snapshot.json",
+            "proof": "fingerprint"
+          }
         },
         {
           "path": "artifacts/idm/idm_streaming_d2e_full_compact_fdm_train_core_pseudolabels_summary.json",
@@ -443,15 +328,27 @@
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 3695991,
+          "sha256": "bad6f402bc3cb28333d6ce6388999688d25098a7a9c79384b659981a46b1844c"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
           "exists": false,
           "bytes": 0,
-          "sha256": null
+          "sha256": null,
+          "external_satisfied": true,
+          "external": {
+            "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+            "exists": true,
+            "bytes": 7162080964,
+            "sha256": "51a0ca9be81f2d996df37b3e7e4da9fc1b136451fb9004f4f8eac949f373797b",
+            "fingerprint": null,
+            "fingerprint_type": null,
+            "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+            "source_artifact": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+            "proof": "sha256"
+          }
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
@@ -491,21 +388,21 @@
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 14286,
+          "sha256": "752c40acedf3823f76dd8fbdf2857da0b3c1277adba6b701e53204ae0cc4c961"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 14251,
+          "sha256": "e3fe06c438fc4baadee6107861fa44846134a7972d7b19333cdc937f8357b732"
         },
         {
           "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 13978,
+          "sha256": "bfa05e5cbb986710c9e6afd4d21d7c8e70d6f3857eab6aa68c15271fd7cedbe3"
         },
         {
           "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
@@ -520,99 +417,14 @@
           "sha256": "fc4f922fa0daca8bc345bfb630d8f6ad1ea594b5ea8655c187f15845935f311e"
         }
       ],
-      "findings": [
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl"
-        },
-        {
-          "severity": "error",
-          "code": "artifact_not_in_package_manifest",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json"
-        },
-        {
-          "severity": "error",
-          "code": "artifact_not_in_package_manifest",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json"
-        },
-        {
-          "severity": "error",
-          "code": "artifact_not_in_package_manifest",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json"
-        },
-        {
-          "severity": "error",
-          "code": "artifact_not_in_package_manifest",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json"
-        },
-        {
-          "severity": "error",
-          "code": "artifact_not_in_package_manifest",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G004-d2e-only-fdm-4xh200",
-          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
-          "json_path": "split"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
-          "json_path": "split"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
-          "json_path": "split"
-        }
-      ]
+      "findings": []
     },
     {
       "goal_id": "G005-aux-data-best-model",
       "title": "Auxiliary data integration and best model",
-      "actual_status": "pending",
+      "actual_status": "complete",
       "required_status": "complete",
-      "status": "fail",
+      "status": "pass",
       "artifacts": [
         {
           "path": "artifacts/sources/aux_game_action_dataset_candidates.json",
@@ -629,76 +441,48 @@
         {
           "path": "artifacts/aux/g005_aux_namespace_manifest.json",
           "exists": true,
-          "bytes": 329970,
-          "sha256": "62bb015d2b69e9a526a13c837b334aba0fbea969787a3e30f0df592150ea7456"
+          "bytes": 329742,
+          "sha256": "901e360ae2aeef3568cbad5f45503d34d5cfe3434ee37764370f1e3d306a038b"
         },
         {
           "path": "artifacts/aux/d2e_aux_ablation_summary.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 3853,
+          "sha256": "fcd727aec13afea5099063560f856f630811add63bc5c8edef196238a89e9b5a"
         },
         {
           "path": "artifacts/aux/g005_aux_completion_audit.json",
           "exists": true,
-          "bytes": 14739,
-          "sha256": "385f0d603fca26f8c53ebb6c243b53478f9299f08815c309f1f4a2cd14f2ac46"
+          "bytes": 6629,
+          "sha256": "267a8569ae13cbc8fecb0f5f8670f50b8b3b93be2e8fce090b5a37fc5074bfbe"
         }
       ],
-      "findings": [
-        {
-          "severity": "error",
-          "code": "goal_status_not_complete",
-          "goal_id": "G005-aux-data-best-model",
-          "expected_status": "complete",
-          "actual_status": "pending"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G005-aux-data-best-model",
-          "path": "artifacts/aux/d2e_aux_ablation_summary.json"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/aux/d2e_aux_ablation_summary.json",
-          "json_path": "status"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/aux/g005_aux_completion_audit.json",
-          "json_path": "status",
-          "expected": "pass",
-          "actual": "fail"
-        }
-      ]
+      "findings": []
     },
     {
       "goal_id": "G006-evaluation-failure-analysis",
       "title": "Expanded evaluation/statistics/failure analysis",
-      "actual_status": "pending",
+      "actual_status": "complete",
       "required_status": "complete",
-      "status": "fail",
+      "status": "pass",
       "artifacts": [
         {
           "path": "artifacts/eval/final_endpoint_statistics.json",
           "exists": true,
-          "bytes": 5879,
-          "sha256": "80e8254a2d26248e8aca160832afe367be1ee6a2da6cfaf86534a8fb747af017"
+          "bytes": 210206,
+          "sha256": "d66f7d3825070a96c622649c645aea5457c0db86e0ab67952ad80a4d5ba02ade"
         },
         {
           "path": "artifacts/eval/final_failure_analysis.json",
           "exists": true,
-          "bytes": 1569,
-          "sha256": "178c9ab4c156138b0e5dd2cef732239955dd36459a7c6b51450feb7785722845"
+          "bytes": 156057,
+          "sha256": "e7fa88241cb7bc388ee1ba043e2166200c92f4e65579073519ffef797617cbec"
         },
         {
           "path": "artifacts/eval/final_claim_taxonomy.json",
           "exists": true,
-          "bytes": 2551,
-          "sha256": "159657df156a09c05b1b49e1694e58b317f081300b30a51b08be4ef1a2c5bdc1"
+          "bytes": 1953,
+          "sha256": "705a5e0f4aa8a4741b2a933c5d2c8a71fdcbaa457666c49c6782c9ce3180619d"
         },
         {
           "path": "docs/failure_analysis.md",
@@ -709,79 +493,23 @@
         {
           "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
           "exists": true,
-          "bytes": 3263,
-          "sha256": "51e047e95259b250cb008de1667cab6d2406dc5d2c75c538f6c20292d660493e"
+          "bytes": 1881,
+          "sha256": "83e899c2e861452649c9375e8bccf88f6d2274222ca4a6f2b08c688944de7d71"
         },
         {
           "path": "artifacts/eval/g006_final_artifact_build_summary.json",
           "exists": true,
           "bytes": 556,
-          "sha256": "aa9266127c89cff20a73ffb43df3c5e76e4bef31e3a69859e88600670944eef3"
+          "sha256": "898f0fb5f85eabd40c946150b4d6980b45be35b37ee6a9da606206d7e288795b"
         },
         {
           "path": "artifacts/eval/g006_completion_audit.json",
           "exists": true,
-          "bytes": 8060,
-          "sha256": "56a77a74be1aa94864a6515ff9a9714744c20b5d8bcaf350b27dabf7c60f5f4a"
+          "bytes": 4518,
+          "sha256": "385692a4632946ce5774cb87f952790f1c6e8bafa7515ebe39e8016521d07594"
         }
       ],
-      "findings": [
-        {
-          "severity": "error",
-          "code": "goal_status_not_complete",
-          "goal_id": "G006-evaluation-failure-analysis",
-          "expected_status": "complete",
-          "actual_status": "pending"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/eval/final_endpoint_statistics.json",
-          "json_path": "status",
-          "expected": "pass",
-          "actual": "fail"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/eval/final_failure_analysis.json",
-          "json_path": "status",
-          "expected": "pass",
-          "actual": "fail"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/eval/final_claim_taxonomy.json",
-          "json_path": "status",
-          "expected": "pass",
-          "actual": "fail"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
-          "json_path": "status",
-          "expected": "pass",
-          "actual": "fail"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/eval/g006_final_artifact_build_summary.json",
-          "json_path": "status",
-          "expected": "pass",
-          "actual": "fail"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/eval/g006_completion_audit.json",
-          "json_path": "status",
-          "expected": "pass",
-          "actual": "fail"
-        }
-      ]
+      "findings": []
     },
     {
       "goal_id": "G007-runtime-sdk-adapter",
@@ -820,524 +548,105 @@
     {
       "goal_id": "G008-live-game-suite",
       "title": "Live open-source graphical game suite",
-      "actual_status": "pending",
+      "actual_status": "complete",
       "required_status": "complete",
-      "status": "fail",
+      "status": "pass",
       "artifacts": [
         {
           "path": "configs/harness/g008_live_open_game_suite.yaml",
           "exists": true,
-          "bytes": 3978,
-          "sha256": "56b2c052017e9e376a48ae1c8d81775e7cac0d5f71302e4c22bf5914cffb13a1"
+          "bytes": 4243,
+          "sha256": "6900a3e1b3fd112f8b36be746728730f01a479e074280f11e874105969c3dc70"
         },
         {
           "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
-          "exists": false,
-          "bytes": 0,
-          "sha256": null
+          "exists": true,
+          "bytes": 40878,
+          "sha256": "09cda212b788eb5909ff800a986ba5940ba2fba71297f53f4c14cd1cfa9d4a37"
         },
         {
           "path": "artifacts/harness/g008_live_suite_completion_audit.json",
           "exists": true,
-          "bytes": 5322,
-          "sha256": "f96837ae71ac35af51cf43d08f01685f54b84dbb8f7827836e3b153663685025"
+          "bytes": 10416,
+          "sha256": "e25819b64b5249dfd5dc2016921dd6f4156ac7f0c7e8e6342520d02ec7bd560a"
         },
         {
           "path": "docs/live_open_game_suite.md",
           "exists": true,
-          "bytes": 8024,
-          "sha256": "0e38a66ca5c0c3110df7d7317cc69e54f6a88a797b9e9882a8845992cc012595"
+          "bytes": 9323,
+          "sha256": "1ff8c2ab38589d42d975122cf352cea302ec201b54b2fee8746d1499cfd5a552"
         }
       ],
-      "findings": [
-        {
-          "severity": "error",
-          "code": "goal_status_not_complete",
-          "goal_id": "G008-live-game-suite",
-          "expected_status": "complete",
-          "actual_status": "pending"
-        },
-        {
-          "severity": "error",
-          "code": "missing_required_artifact",
-          "goal_id": "G008-live-game-suite",
-          "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_file_missing",
-          "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
-          "json_path": "quality_gate.status"
-        },
-        {
-          "severity": "error",
-          "code": "json_assertion_mismatch",
-          "path": "artifacts/harness/g008_live_suite_completion_audit.json",
-          "json_path": "status",
-          "expected": "pass",
-          "actual": "fail"
-        }
-      ]
+      "findings": []
     },
     {
       "goal_id": "G009-report-repro-package",
       "title": "Final report and reproducibility package",
-      "actual_status": "pending",
+      "actual_status": "in_progress",
       "required_status": "complete",
-      "status": "fail",
+      "status": "pass",
       "artifacts": [
         {
           "path": "docs/final_research_report.md",
           "exists": true,
-          "bytes": 6862,
-          "sha256": "38292857070cfc43b9b185f1c7192b675da0d85e4fde4db3e77b72f4e07f3ce4"
+          "bytes": 7323,
+          "sha256": "ecd075e9c963c50838cbbe4b9c82e75dc54fa6ab8918b3d3fdf70c40a5baed8c"
         },
         {
           "path": "docs/evidence_index.md",
           "exists": true,
-          "bytes": 4843,
-          "sha256": "784fe6cb8a5896dfba9ee01afa3a6b1908f7e0baa7cb6796e9f1ab8925d9f17a"
+          "bytes": 5187,
+          "sha256": "8d6125891b3b61d659ed06795d208e98efc11d2ef15f82cb6f2a6a3f3e1bc42f"
         },
         {
           "path": "docs/reproducibility_runbook.md",
           "exists": true,
-          "bytes": 4621,
-          "sha256": "b0d8551b9a2823323d8862b58d60c8be0d9943796b3c9385449de9b453f5801b"
+          "bytes": 5062,
+          "sha256": "630b29d3c493277d1843fd9836ad158448edb063cb4c0b6ba9018e0e62d4fb81"
         },
         {
           "path": "artifacts/reproducibility/package_manifest.json",
           "exists": true,
-          "bytes": 89980,
-          "sha256": "da8da17e11414c133eba343705f8ca2d5c7818b01473d17d7a82be1de1b076c3"
+          "bytes": 117867,
+          "sha256": null,
+          "schema": "repro_package_manifest.v1",
+          "entry_count": 549,
+          "hash_omitted_reason": "avoid_final_quality_package_manifest_hash_cycle"
+        },
+        {
+          "path": "artifacts/reproducibility/external_artifact_manifest.json",
+          "exists": true,
+          "bytes": 4726,
+          "sha256": "bb515dfe2231fe9d793929d453655ce4d0b7143654c9e6d236489c5d2be66455"
         },
         {
           "path": "artifacts/reproducibility/claim_boundary_audit.json",
           "exists": true,
-          "bytes": 850,
-          "sha256": "4a6c1aac5b059592e37b4454dbd121405b2fb0941d5bb1fac613071db4c70bb1"
+          "bytes": 863,
+          "sha256": "6ebc83b05b521715908453d39c4bfc734df9a83625b195f0b82b265f61624318"
         }
       ],
-      "findings": [
-        {
-          "severity": "error",
-          "code": "goal_status_not_complete",
-          "goal_id": "G009-report-repro-package",
-          "expected_status": "complete",
-          "actual_status": "pending"
-        }
-      ]
+      "findings": []
     }
   ],
   "package_manifest": {
     "path": "artifacts/reproducibility/package_manifest.json",
     "exists": true,
-    "bytes": 89980,
-    "sha256": "da8da17e11414c133eba343705f8ca2d5c7818b01473d17d7a82be1de1b076c3"
+    "bytes": 117867,
+    "sha256": null,
+    "schema": "repro_package_manifest.v1",
+    "entry_count": 549,
+    "hash_omitted_reason": "avoid_final_quality_package_manifest_hash_cycle"
+  },
+  "external_artifact_manifest": {
+    "path": "artifacts/reproducibility/external_artifact_manifest.json",
+    "exists": true,
+    "bytes": 4726,
+    "sha256": "bb515dfe2231fe9d793929d453655ce4d0b7143654c9e6d236489c5d2be66455"
   },
   "claim_boundary_audit_status": "pass",
-  "live_suite_validation_status": null,
-  "findings": [
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "artifacts/sources/d2e_full_corpus_decode_summary.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/data/d2e_full_corpus/train_core.jsonl"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint.pt"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/resolved_config.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/streaming_stats.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/train_history.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/convergence_report.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/pseudolabels.jsonl"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/predictions.jsonl"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/metrics.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/label_quality_report.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/statistical_comparison.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor.csv"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G003-d2e-only-idm",
-      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "source_namespace"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "data_universe.exists"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "split_contract.exists"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "distributed.enabled"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "json_path": "distributed.world_size"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
-      "json_path": "selected_recording_variants"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
-      "json_path": "num_shards"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/sources/d2e_full_corpus_decode_summary.json",
-      "json_path": "failures"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/idm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
-      "json_path": "split"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
-      "json_path": "split"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/idm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
-      "json_path": "split"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/idm_streaming_d2e_full_compact/fdm_train_core_pseudolabels/pseudolabels.jsonl"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl"
-    },
-    {
-      "severity": "error",
-      "code": "artifact_not_in_package_manifest",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json"
-    },
-    {
-      "severity": "error",
-      "code": "artifact_not_in_package_manifest",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json"
-    },
-    {
-      "severity": "error",
-      "code": "artifact_not_in_package_manifest",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json"
-    },
-    {
-      "severity": "error",
-      "code": "artifact_not_in_package_manifest",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json"
-    },
-    {
-      "severity": "error",
-      "code": "artifact_not_in_package_manifest",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
-      "json_path": "split"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
-      "json_path": "split"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
-      "json_path": "split"
-    },
-    {
-      "severity": "error",
-      "code": "goal_status_not_complete",
-      "goal_id": "G005-aux-data-best-model",
-      "expected_status": "complete",
-      "actual_status": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G005-aux-data-best-model",
-      "path": "artifacts/aux/d2e_aux_ablation_summary.json"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/aux/d2e_aux_ablation_summary.json",
-      "json_path": "status"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/aux/g005_aux_completion_audit.json",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "fail"
-    },
-    {
-      "severity": "error",
-      "code": "goal_status_not_complete",
-      "goal_id": "G006-evaluation-failure-analysis",
-      "expected_status": "complete",
-      "actual_status": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/eval/final_endpoint_statistics.json",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "fail"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/eval/final_failure_analysis.json",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "fail"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/eval/final_claim_taxonomy.json",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "fail"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/eval/g006_evaluation_readiness_audit.json",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "fail"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/eval/g006_final_artifact_build_summary.json",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "fail"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/eval/g006_completion_audit.json",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "fail"
-    },
-    {
-      "severity": "error",
-      "code": "goal_status_not_complete",
-      "goal_id": "G008-live-game-suite",
-      "expected_status": "complete",
-      "actual_status": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_artifact",
-      "goal_id": "G008-live-game-suite",
-      "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_file_missing",
-      "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json",
-      "json_path": "quality_gate.status"
-    },
-    {
-      "severity": "error",
-      "code": "json_assertion_mismatch",
-      "path": "artifacts/harness/g008_live_suite_completion_audit.json",
-      "json_path": "status",
-      "expected": "pass",
-      "actual": "fail"
-    },
-    {
-      "severity": "error",
-      "code": "goal_status_not_complete",
-      "goal_id": "G009-report-repro-package",
-      "expected_status": "complete",
-      "actual_status": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "not_all_ultragoal_stories_complete",
-      "goal_ids": [
-        "G005-aux-data-best-model",
-        "G006-evaluation-failure-analysis",
-        "G008-live-game-suite",
-        "G009-report-repro-package"
-      ]
-    },
-    {
-      "severity": "error",
-      "code": "missing_live_suite_evidence_validation",
-      "path": "artifacts/harness/g008_live_open_game_suite_evidence_validation.json"
-    },
-    {
-      "severity": "error",
-      "code": "configured_artifacts_missing_from_manifest",
-      "paths": [
-        "artifacts/fdm/fdm_streaming_d2e_full_compact_summary.json",
-        "artifacts/fdm/g004_d2e_full_fdm_4xh200_gpu_monitor.csv",
-        "outputs/fdm_streaming_d2e_full_compact/torch_model/convergence_report.json",
-        "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
-        "outputs/fdm_streaming_d2e_full_compact/torch_model/statistical_comparison.json"
-      ]
-    }
-  ],
-  "error_count": 62,
+  "live_suite_validation_status": "pass",
+  "findings": [],
+  "error_count": 0,
   "claim_boundary": "A pass is required before completing the aggregate ultragoal; failing/pending results are expected while G003-G009 remain incomplete."
 }

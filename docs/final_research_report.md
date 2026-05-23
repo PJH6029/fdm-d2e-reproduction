@@ -82,17 +82,27 @@ Key findings:
 
 ## Harness execution
 
-`docs/harness_selection_and_execution.md` and `artifacts/harness/g008_game_harness_eval.json` provide a bounded game-adjacent action-sequence replay gate:
+`docs/live_open_game_suite.md` and
+`artifacts/harness/g008_repo_live_suite/live_suite_evidence.json` provide the
+live open-source graphical-game gate:
 
-- Five candidate game/game-adjacent harnesses selected.
-- Five install/control probes pass.
-- The trained FDM prediction stream passes five tasks across five environments.
+- Three repo-local open-source Tk graphical mini-games/tasks are exercised
+  through live X11/xdotool keyboard/mouse input.
+- Five seeds per task produce video/replay, latency, failure, and action logs.
+- The runtime performs trained D2E-only FDM checkpoint forward passes and the
+  task-safe visual adapter maps model output into bounded live actions.
+- The suite reports a statistically significant improvement over the scripted
+  baseline (`adjusted_p_value=3.0517578125e-05` in the G008 evidence
+  validation artifact).
 
-This proves stable execution of trained keyboard/mouse token streams in deterministic game-like harnesses. It does not prove live commercial-game control.
+This proves stable closed-loop execution in the repository's open-source live
+graphical harness suite. It does not prove commercial-game control.
 
 ## Reproducibility assets
 
 - Final package manifest: `artifacts/reproducibility/package_manifest.json`.
+- PVC-resident large-artifact manifest:
+  `artifacts/reproducibility/external_artifact_manifest.json`.
 - Source/resource validation: `docs/source_validation.md`, `docs/mlxp_resource_plan.md`.
 - Real data ingestion: `docs/d2e_real_ingestion.md`.
 - Baselines/statistics: `docs/baselines_statistics.md`.
@@ -107,5 +117,6 @@ This proves stable execution of trained keyboard/mouse token streams in determin
 
 1. No FDM-1 parity claim: this is a scaled recipe reproduction over a much smaller public dataset.
 2. The final all-endpoint FDM win depends on train-split D2E scale calibration plus transductive heldout prediction-distribution normalization; the strict train-prediction denominator variant remains 3/4 endpoints.
-3. Harness evidence is deterministic and game-adjacent, not live commercial-game play.
+3. Harness evidence is live for repo-local open-source graphical mini-games,
+   not commercial-game play.
 4. D2E-derived artifacts remain under upstream non-commercial constraints.
