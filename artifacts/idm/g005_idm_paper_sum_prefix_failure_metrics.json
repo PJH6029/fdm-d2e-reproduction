@@ -1,0 +1,65 @@
+{
+  "schema": "g005_idm_candidate_prefix_failure_metrics.v1",
+  "status": "fail",
+  "model_name": "streaming_idm_d2e_full_paper_sum_calibrated",
+  "source_run_commit": "4316f27",
+  "reservation_id": "rsv-jeonghunpark-20260524-6148af",
+  "pod": "prod-rsv-jeonghunpark-20260524-6148af",
+  "worktree": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction-g005-paper-sum",
+  "sample_method": "first 50000 prediction rows per parallel prediction part aligned with corresponding target shard chunks",
+  "rows": 800000,
+  "sequence_id_mismatches": 0,
+  "missing_rows": 0,
+  "paper_targets": {
+    "pearson_x_min": 0.796,
+    "pearson_y_min": 0.783,
+    "keyboard_accuracy_min": 0.73,
+    "mouse_button_accuracy_min": 0.957,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "paper_compatible": {
+    "mouse_move": {
+      "pearson_x": 0.3184767518639251,
+      "pearson_y": 0.08033481377453633,
+      "scale_ratio_x": 1.4197259600301269,
+      "scale_ratio_y": 4.182952055308496,
+      "sample_count": 569978,
+      "scale_sample_count": 800000
+    },
+    "keyboard": {
+      "key_accuracy": 0.014644532902899353,
+      "sample_count": 3620532
+    },
+    "mouse_button": {
+      "button_accuracy": 0.009040192205888342,
+      "sample_count": 73671
+    }
+  },
+  "strict_local": {
+    "keyboard": {
+      "accuracy": 0.0018209503477073293,
+      "num_examples": 127406
+    },
+    "mouse_button": {
+      "accuracy": 0.0026983400390295613,
+      "num_examples": 41507,
+      "predicted_examples": 20192,
+      "exact_true_positive_examples": 112,
+      "false_positive_examples": 20080,
+      "false_negative_examples": 41395,
+      "precision": 0.005546751188589541,
+      "recall": 0.0026983400390295613,
+      "f1": 0.0036305288578421043,
+      "no_button_examples": 758493,
+      "no_button_false_positive_examples": 19099,
+      "no_button_false_positive_rate": 0.025180192829729477
+    }
+  },
+  "decision": {
+    "action": "abort_candidate_before_full_prediction_completion",
+    "reason": "prefix metrics are orders of magnitude below paper targets after completed full-corpus 4xH200 training, while remaining work is CPU/IO prediction with idle GPUs",
+    "next_candidate": "configs/model/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated.yaml"
+  },
+  "claim_boundary": "This is failure evidence for aborting the paper-sum surface/MLP candidate only; it is not G005 completion evidence."
+}
