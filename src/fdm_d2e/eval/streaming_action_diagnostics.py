@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import glob
 import json
-import math
 from collections import Counter
 from itertools import zip_longest
 from pathlib import Path
@@ -58,29 +57,6 @@ def _axis_values(tokens: list[str], axis_prefix: str) -> list[float]:
     return [float(value) for value in values if value is not None]
 
 
-def _pearson(xs: list[float], ys: list[float]) -> float | None:
-    if len(xs) < 2 or len(ys) < 2:
-        return None
-    mx = sum(xs) / len(xs)
-    my = sum(ys) / len(ys)
-    num = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
-    denx = math.sqrt(sum((x - mx) ** 2 for x in xs))
-    deny = math.sqrt(sum((y - my) ** 2 for y in ys))
-    if denx == 0 or deny == 0:
-        return None
-    return num / (denx * deny)
-
-
-def _scale_ratio(xs: list[float], ys: list[float]) -> float | None:
-    if not xs or not ys:
-        return None
-    ax = sum(abs(x) for x in xs) / len(xs)
-    ay = sum(abs(y) for y in ys) / len(ys)
-    if ax == 0 or ay == 0:
-        return None
-    return max(ax, ay) / min(ax, ay)
-
-
 class ActionAccumulator:
     def __init__(self) -> None:
         self.rows = 0
@@ -94,8 +70,14 @@ class ActionAccumulator:
         self.button_false_negative = 0
         self.no_button_total = 0
         self.no_button_false_positive = 0
-        self.pred_mouse: list[float] = []
-        self.gt_mouse: list[float] = []
+        self.mouse_n = 0
+        self.mouse_sum_pred = 0.0
+        self.mouse_sum_gt = 0.0
+        self.mouse_sum_pred_sq = 0.0
+        self.mouse_sum_gt_sq = 0.0
+        self.mouse_sum_cross = 0.0
+        self.mouse_sum_abs_pred = 0.0
+        self.mouse_sum_abs_gt = 0.0
         self.failures = 0
         self.predicted_tokens: Counter[str] = Counter()
         self.ground_truth_tokens: Counter[str] = Counter()
@@ -133,14 +115,36 @@ class ActionAccumulator:
             pred_values = _axis_values(ptokens, axis_prefix)
             gt_values = _axis_values(gtokens, axis_prefix)
             if pred_values and gt_values:
-                self.pred_mouse.append(sum(pred_values) / len(pred_values))
-                self.gt_mouse.append(sum(gt_values) / len(gt_values))
+                pred_value = sum(pred_values) / len(pred_values)
+                gt_value = sum(gt_values) / len(gt_values)
+                self.mouse_n += 1
+                self.mouse_sum_pred += pred_value
+                self.mouse_sum_gt += gt_value
+                self.mouse_sum_pred_sq += pred_value * pred_value
+                self.mouse_sum_gt_sq += gt_value * gt_value
+                self.mouse_sum_cross += pred_value * gt_value
+                self.mouse_sum_abs_pred += abs(pred_value)
+                self.mouse_sum_abs_gt += abs(gt_value)
         if ptokens != gtokens:
             self.failures += 1
 
     def metrics(self, *, top_k: int = 20) -> dict[str, Any]:
         denom = (2 * self.button_exact_tp) + self.button_false_positive + self.button_false_negative
-        mouse_status = "computed" if self.pred_mouse and self.gt_mouse else "absent"
+        mouse_status = "computed" if self.mouse_n else "absent"
+        pearson = None
+        scale_ratio = None
+        if self.mouse_n >= 2:
+            n = float(self.mouse_n)
+            numerator = self.mouse_sum_cross - (self.mouse_sum_pred * self.mouse_sum_gt / n)
+            pred_var = self.mouse_sum_pred_sq - (self.mouse_sum_pred * self.mouse_sum_pred / n)
+            gt_var = self.mouse_sum_gt_sq - (self.mouse_sum_gt * self.mouse_sum_gt / n)
+            denominator = (pred_var * gt_var) ** 0.5 if pred_var > 0 and gt_var > 0 else 0.0
+            pearson = numerator / denominator if denominator else None
+        if self.mouse_n:
+            pred_abs = self.mouse_sum_abs_pred / self.mouse_n
+            gt_abs = self.mouse_sum_abs_gt / self.mouse_n
+            if pred_abs > 0 and gt_abs > 0:
+                scale_ratio = max(pred_abs, gt_abs) / min(pred_abs, gt_abs)
         return {
             "rows": self.rows,
             "keyboard": {
@@ -173,9 +177,9 @@ class ActionAccumulator:
             },
             "mouse_move": {
                 "status": mouse_status,
-                "pearson": _pearson(self.pred_mouse, self.gt_mouse) if mouse_status == "computed" else None,
-                "scale_ratio": _scale_ratio(self.pred_mouse, self.gt_mouse) if mouse_status == "computed" else None,
-                "num_values": len(self.pred_mouse),
+                "pearson": pearson,
+                "scale_ratio": scale_ratio,
+                "num_values": self.mouse_n,
             },
             "failure_count": self.failures,
             "top_predicted_tokens": self.predicted_tokens.most_common(top_k),
