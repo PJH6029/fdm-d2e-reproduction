@@ -9,17 +9,21 @@ RUN_SUMMARY="${RUN_SUMMARY:-artifacts/idm/g005_idm_surface_4xh200_run.json}"
 GPU_MONITOR_LOG="${GPU_MONITOR_LOG:-artifacts/idm/g005_idm_surface_4xh200_gpu_monitor.csv}"
 PID_FILE="${PID_FILE:-outputs/cluster/g005_idm_surface_4xh200.pid}"
 GPU_SMOKE_REPORT="${GPU_SMOKE_REPORT:-outputs/cluster/g005_idm_surface_gpu_smoke.json}"
+RUN_CONFIG_RECORD="${RUN_CONFIG_RECORD:-outputs/cluster/g005_idm_surface_runtime_config_path.txt}"
 SPLIT_STATS_CONFIG="${SPLIT_STATS_CONFIG:-configs/eval/g005_idm_surface_split_statistics.yaml}"
 PAPER_TARGET_CONFIG="${PAPER_TARGET_CONFIG:-configs/eval/g005_idm_surface_paper_target.yaml}"
 STATS_SEED_PATH="${STATS_SEED_PATH:-outputs/idm_streaming_d2e_full_compact_accel64/streaming_stats.json}"
 OUTPUT_DIR="${OUTPUT_DIR:-outputs/idm_streaming_d2e_full_surface_calibrated}"
 PRESEED_STATS="${PRESEED_STATS:-1}"
+ALLOW_CACHE_BUILD="${ALLOW_CACHE_BUILD:-0}"
 BUILD_SPLIT_STATS="${BUILD_SPLIT_STATS:-1}"
 BUILD_PAPER_METRICS="${BUILD_PAPER_METRICS:-1}"
 VALIDATE_G005="${VALIDATE_G005:-1}"
 
 mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$RUN_SUMMARY")" "$(dirname "$GPU_MONITOR_LOG")" "$(dirname "$PID_FILE")" outputs/cluster "$OUTPUT_DIR"
 echo "$$" >"$PID_FILE"
+RUN_CONFIG="$CONFIG"
+rm -f "$RUN_CONFIG_RECORD"
 
 START_EPOCH="$(date +%s)"
 MONITOR_PID=""
@@ -66,8 +70,40 @@ set +e
     echo "preseeding streaming stats from $STATS_SEED_PATH"
     cp "$STATS_SEED_PATH" "$OUTPUT_DIR/streaming_stats.json"
   fi
+  RUN_CONFIG="$CONFIG"
+  if [[ "$ALLOW_CACHE_BUILD" == "0" ]]; then
+    CACHE_DIR="$(uv run python - "$CONFIG" <<'PY'
+from __future__ import annotations
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as handle:
+    print(json.load(handle).get("training_cache_dir", ""))
+PY
+)"
+    if [[ -n "$CACHE_DIR" && ! -d "$CACHE_DIR" ]]; then
+      RUN_CONFIG="outputs/cluster/g005_idm_surface_runtime_no_cache.yaml"
+      echo "training cache $CACHE_DIR is absent; writing no-cache runtime config to $RUN_CONFIG"
+      uv run python - "$CONFIG" "$RUN_CONFIG" <<'PY'
+from __future__ import annotations
+import json, sys
+from pathlib import Path
+src = Path(sys.argv[1])
+dst = Path(sys.argv[2])
+config = json.loads(src.read_text(encoding="utf-8"))
+config["source_config_path"] = str(src)
+config["runtime_cache_policy"] = {
+    "training_cache_dir_removed": config.pop("training_cache_dir", None),
+    "reason": "cache_missing_and_ALLOW_CACHE_BUILD_0",
+}
+config.pop("training_cache_num_workers", None)
+config.pop("training_cache_shard_assignment", None)
+dst.parent.mkdir(parents=True, exist_ok=True)
+dst.write_text(json.dumps(config, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
+      echo "$RUN_CONFIG" > "$RUN_CONFIG_RECORD"
+    fi
+  fi
   uv run torchrun --standalone --nproc-per-node="$NPROC_PER_NODE" scripts/train_idm_streaming.py \
-    --config "$CONFIG" \
+    --config "$RUN_CONFIG" \
     --require-torch
   if [[ "$BUILD_SPLIT_STATS" != "0" ]]; then
     uv run python scripts/build_split_statistical_comparisons.py --config "$SPLIT_STATS_CONFIG"
@@ -81,6 +117,9 @@ RUN_STATUS="${PIPESTATUS[0]}"
 set -e
 cleanup_monitor
 END_EPOCH="$(date +%s)"
+if [[ -s "$RUN_CONFIG_RECORD" ]]; then
+  RUN_CONFIG="$(cat "$RUN_CONFIG_RECORD")"
+fi
 
 uv run python - <<PY
 from __future__ import annotations
@@ -146,6 +185,7 @@ paper_metrics = _load(paper_metrics_path)
 payload = {
     "schema": "g005_idm_surface_4xh200_run.v1",
     "config": "$CONFIG",
+    "runtime_config": "${RUN_CONFIG:-$CONFIG}",
     "log_path": "$LOG_PATH",
     "gpu_monitor_log": "$GPU_MONITOR_LOG",
     "pid_file": "$PID_FILE",
