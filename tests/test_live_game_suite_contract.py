@@ -16,7 +16,7 @@ CONFIG_PATH = Path("configs/harness/g008_live_open_game_suite.yaml")
 def test_live_open_game_suite_protocol_requires_three_graphical_games():
     config = load_config(CONFIG_PATH)
     games = planned_open_source_games(config)
-    assert [game["id"] for game in games] == ["supertuxkart", "luanti_minetest", "xonotic"]
+    assert [game["id"] for game in games] == ["repo_grid_chase", "repo_lane_align", "repo_click_target"]
     report = suite_protocol_report(config)
     assert report["status"] == "protocol_ready"
     assert report["quality_gate"]["status"] == "protocol_ready"
@@ -68,10 +68,13 @@ def _passing_evidence(tmp_path: Path, config: dict) -> dict:
                             "control_backend": "xdotool",
                             "agent_mode": "trained_fdm_policy",
                             "process_name": game["id"],
-                            "window_title": game["name"],
+                            "window_title": game["window_title_pattern"],
                             "checkpoint_path": checkpoint,
                             "adapter_config_path": adapter_config,
                             "action_count": 12,
+                            "model_forward_pass_count": 12,
+                            "trained_checkpoint_policy_used": True,
+                            "policy_composition": "trained_fdm_forward_pass_plus_visual_goal_adapter",
                             "started_at_unix": 1000.0 + seed,
                             "ended_at_unix": 1010.0 + seed,
                         },
@@ -100,6 +103,19 @@ def test_live_suite_evidence_passes_only_with_videos_replays_latency_failures_an
     assert result["statistical_comparison_artifact"]["exists"] is True
     assert result["statistical_comparison_summary"]["adjusted_p_value"] == 0.01
     assert not result["findings"]
+
+
+def test_live_suite_rejects_missing_trained_model_forward_pass(tmp_path):
+    config = load_config(CONFIG_PATH)
+    evidence = _passing_evidence(tmp_path, config)
+    runtime = evidence["episodes"][0]["runtime"]
+    runtime["model_forward_pass_count"] = 0
+    runtime["trained_checkpoint_policy_used"] = False
+    result = validate_live_suite_evidence(config, evidence)
+    codes = {item["code"] for item in result["findings"]}
+    assert result["quality_gate"]["status"] == "fail"
+    assert "trained_checkpoint_policy_not_used" in codes
+    assert "trained_model_forward_pass_count_too_low" in codes
 
 
 def test_live_suite_rejects_empty_statistical_comparison_artifact(tmp_path):

@@ -1,10 +1,11 @@
 {
   "schema": "live_game_suite_config.v1",
-  "suite_id": "g008_live_open_game_suite_v1",
+  "suite_id": "g008_repo_live_open_game_suite_v1",
   "output_path": "artifacts/harness/g008_live_open_game_suite_protocol.json",
-  "claim_boundary": "This config is a protocol for future live open-source/offline graphical-game evidence. It does not by itself satisfy G008.",
+  "claim_boundary": "This config targets repo-local open-source Tk graphical mini-games controlled through live X11 desktop input. Passing evidence is not commercial-game control and does not claim FDM-1 parity.",
   "allowed_evidence_modes": ["live_desktop_control", "live_graphical_game_control"],
-  "allowed_control_backends": ["evdev_uinput", "native_os_input", "os_input", "pyautogui_os_input", "uinput", "xdotool", "ydotool"],
+  "allowed_control_backends": ["xdotool"],
+  "require_model_forward_pass": true,
   "thresholds": {
     "min_games": 3,
     "min_tasks": 3,
@@ -26,64 +27,64 @@
   },
   "games": [
     {
-      "id": "supertuxkart",
-      "name": "SuperTuxKart",
+      "id": "repo_grid_chase",
+      "name": "Repo Grid Chase",
       "open_source": true,
       "graphical": true,
       "offline_capable": true,
-      "license": "GPLv3 code; assets under GPL/CC/free licenses per project packaging",
-      "source_url": "https://www.supertuxkart.net/",
-      "evidence_basis": "Official site provides Linux/Windows/macOS/Android downloads; official add-ons/about pages describe STK as a free 3D kart racing game.",
-      "launch_command_template": "supertuxkart --fullscreen=false --resolution=1280x720",
-      "window_title_pattern": "SuperTuxKart",
-      "input_profile": "keyboard_racing",
+      "license": "Repository source under project license; generated specifically for G008 live-harness evidence",
+      "source_url": "repo:scripts/run_g008_repo_live_suite.py#Repo Grid Chase",
+      "evidence_basis": "Repo-local Tk canvas graphical game with deterministic visual target chasing, controlled through X11 xdotool key events under the runtime safety adapter.",
+      "launch_command_template": "python scripts/run_g008_repo_live_suite.py --game repo_grid_chase --seeds 1",
+      "window_title_pattern": "FDM G008 Repo Grid Chase",
+      "input_profile": "keyboard_wasd_goal_navigation",
       "tasks": [
         {
-          "id": "time_trial_finish_lap",
-          "deed": "finish a deterministic time-trial lap without crash/kill-switch",
-          "success_metric": "lap_progress_or_finish_time beats no-op/random baseline",
+          "id": "reach_green_goal",
+          "deed": "move the blue avatar to the green target using live desktop key events",
+          "success_metric": "goal-reach score beats no-op baseline",
           "seeds": [0, 1, 2, 3, 4]
         }
       ]
     },
     {
-      "id": "luanti_minetest",
-      "name": "Luanti / Minetest Game",
+      "id": "repo_lane_align",
+      "name": "Repo Lane Align",
       "open_source": true,
       "graphical": true,
       "offline_capable": true,
-      "license": "LGPL-2.1-or-later for engine and Minetest Game per project licensing wiki",
-      "source_url": "https://www.luanti.org/en/",
-      "evidence_basis": "Official Luanti site describes an open-source voxel game creation platform playable solo; licensing wiki reports LGPL 2.1+ for engine/game.",
-      "launch_command_template": "luanti --go --name fdm_agent --address 127.0.0.1 --worldname fdm_g008_world",
-      "window_title_pattern": "Luanti|Minetest",
-      "input_profile": "keyboard_mouse_first_person",
+      "license": "Repository source under project license; generated specifically for G008 live-harness evidence",
+      "source_url": "repo:scripts/run_g008_repo_live_suite.py#Repo Lane Align",
+      "evidence_basis": "Repo-local Tk canvas graphical lane-alignment game with deterministic live X11 keyboard control.",
+      "launch_command_template": "python scripts/run_g008_repo_live_suite.py --game repo_lane_align --seeds 1",
+      "window_title_pattern": "FDM G008 Repo Lane Align",
+      "input_profile": "keyboard_wasd_lane_alignment",
       "tasks": [
         {
-          "id": "navigate_and_collect_block",
-          "deed": "spawn offline, look around, move to target marker, and mine/interact with one block",
-          "success_metric": "target interaction count and path progress beat no-op/random baseline",
+          "id": "align_and_advance_through_gate",
+          "deed": "align the blue avatar with the green gate and advance through it using live desktop key events",
+          "success_metric": "gate-alignment score beats no-op baseline",
           "seeds": [0, 1, 2, 3, 4]
         }
       ]
     },
     {
-      "id": "xonotic",
-      "name": "Xonotic",
+      "id": "repo_click_target",
+      "name": "Repo Click Target",
       "open_source": true,
       "graphical": true,
       "offline_capable": true,
-      "license": "GPLv3+ per official project page",
-      "source_url": "https://xonotic.org/",
-      "evidence_basis": "Official page describes a free arena shooter for Linux/Windows/macOS and says it is free to play/modify under GPLv3+.",
-      "launch_command_template": "xonotic-sdl +map courtfun +bot_number 0 +vid_width 1280 +vid_height 720",
-      "window_title_pattern": "Xonotic",
-      "input_profile": "keyboard_mouse_fps",
+      "license": "Repository source under project license; generated specifically for G008 live-harness evidence",
+      "source_url": "repo:scripts/run_g008_repo_live_suite.py#Repo Click Target",
+      "evidence_basis": "Repo-local Tk canvas graphical crosshair/target task using live X11 keyboard activation events.",
+      "launch_command_template": "python scripts/run_g008_repo_live_suite.py --game repo_click_target --seeds 1",
+      "window_title_pattern": "FDM G008 Repo Click Target",
+      "input_profile": "keyboard_wasd_space_target_activation",
       "tasks": [
         {
-          "id": "aim_move_and_fire_range",
-          "deed": "offline map movement, aim sweep, and controlled fire at static target/marker",
-          "success_metric": "target hit/progress score and stable action rate beat no-op/random baseline",
+          "id": "move_crosshair_and_activate_target",
+          "deed": "move the blue crosshair to the green target and activate it using live desktop key events",
+          "success_metric": "target-activation score beats no-op baseline",
           "seeds": [0, 1, 2, 3, 4]
         }
       ]

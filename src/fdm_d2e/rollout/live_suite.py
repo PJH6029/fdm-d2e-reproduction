@@ -283,6 +283,34 @@ def _runtime_metadata_status(
                 "actual": action_count,
             }
         )
+    model_forward_pass_count = int(_numeric(runtime.get("model_forward_pass_count"), default=0.0))
+    if bool(config.get("require_model_forward_pass", False)):
+        if runtime.get("trained_checkpoint_policy_used") is not True:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "trained_checkpoint_policy_not_used",
+                    "actual": runtime.get("trained_checkpoint_policy_used"),
+                }
+            )
+        policy_composition = str(runtime.get("policy_composition", "")).lower()
+        if "trained_fdm" not in policy_composition:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "policy_composition_not_trained_fdm",
+                    "actual": runtime.get("policy_composition"),
+                }
+            )
+        if model_forward_pass_count < action_count:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "trained_model_forward_pass_count_too_low",
+                    "expected_min": action_count,
+                    "actual": model_forward_pass_count,
+                }
+            )
     start = _numeric(runtime.get("started_at_unix"), default=0.0)
     end = _numeric(runtime.get("ended_at_unix"), default=0.0)
     if thresholds["require_runtime_metadata"] and (start <= 0.0 or end <= start):
@@ -298,6 +326,9 @@ def _runtime_metadata_status(
             "ended_at_unix": runtime.get("ended_at_unix"),
             "checkpoint": checkpoint,
             "adapter_config": adapter_config,
+            "model_forward_pass_count": model_forward_pass_count,
+            "trained_checkpoint_policy_used": runtime.get("trained_checkpoint_policy_used"),
+            "policy_composition": runtime.get("policy_composition"),
         },
         findings,
     )

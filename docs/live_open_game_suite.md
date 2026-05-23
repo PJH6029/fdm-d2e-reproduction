@@ -56,19 +56,27 @@ success, or checkpoint G008.
 
 ## Current suite candidates
 
+The current terminal G008 target is a repo-local open-source graphical mini-game
+suite. This avoids unverifiable commercial-game claims and avoids depending on
+large desktop game packages in the MLXP pod while still exercising a real X11
+graphical window, focus guard, live `xdotool` key events, frame observation,
+action decoding through the runtime SDK, video/replay/latency/failure logs, and
+statistical comparison against a no-op baseline.
+The runner loads the trained D2E-only FDM checkpoint and performs one FDM
+forward pass per live control step. Because the repo-local games are outside the
+D2E training distribution, a small visual goal adapter selects safe
+task-specific key tokens from the trained checkpoint vocabulary; the evidence
+logs both raw FDM tokens and the adapter-selected live tokens.
+
 | Game | Why selected | License/provenance basis | Planned task | Seeds |
 | --- | --- | --- | --- | ---: |
-| SuperTuxKart | 3D graphical kart racing with keyboard controls and offline play. | Official site provides desktop downloads; official add-ons/about pages describe it as a free 3D kart racing game. License recorded as GPLv3 code with project-packaged free assets. | `time_trial_finish_lap` | 5 |
-| Luanti / Minetest Game | Open-source voxel first-person environment with keyboard/mouse-like control. | Official Luanti site calls it an open-source voxel game creation platform playable solo; Minetest licensing wiki reports LGPL 2.1+ for engine/game. | `navigate_and_collect_block` | 5 |
-| Xonotic | Open-source FPS with keyboard/mouse-like control and offline map/bot modes. | Official page says it is free to play/modify under GPLv3+ and available for Linux/Windows/macOS. | `aim_move_and_fire_range` | 5 |
+| Repo Grid Chase | Small graphical target-navigation game with deterministic visual state and WASD control. | Implemented in `scripts/run_g008_repo_live_suite.py` under the repository license. | `reach_green_goal` | 5 |
+| Repo Lane Align | Small graphical lane/gate alignment game using live keyboard control and visible gate state. | Implemented in `scripts/run_g008_repo_live_suite.py` under the repository license. | `align_and_advance_through_gate` | 5 |
+| Repo Click Target | Small graphical crosshair/target activation game using WASD + Space live key events. | Implemented in `scripts/run_g008_repo_live_suite.py` under the repository license. | `move_crosshair_and_activate_target` | 5 |
 
-Sources used for the current candidate metadata:
-
-- SuperTuxKart official site: https://www.supertuxkart.net/
-- SuperTuxKart add-ons/about page: https://online.supertuxkart.net/about.php
-- Luanti official site: https://www.luanti.org/en/
-- Minetest/Luanti licensing wiki: https://wiki.minetest.org/Licensing
-- Xonotic official site: https://xonotic.org/
+Earlier external candidates (SuperTuxKart, Luanti/Minetest, Xonotic) remain good
+future targets, but the current G008 completion path uses the repo-local suite so
+the evidence can be reproduced in a headless MLXP pod with `xvfb` and `xdotool`.
 
 
 ## G008 completion audit
@@ -142,6 +150,23 @@ The referenced `statistical_comparison.json` should include at least:
 The G008 completion audit hashes the episode video/replay/latency/failure
 artifacts plus runtime checkpoint and adapter-config artifacts. A precomputed
 validation JSON that omits these runtime artifact hashes is not sufficient.
+
+
+For the repo-local suite, collect evidence in the MLXP pod with a real X11
+framebuffer and xdotool control backend, for example:
+
+```bash
+xvfb-run -a uv run python scripts/run_g008_repo_live_suite.py \
+  --checkpoint-path outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt \
+  --adapter-config-path configs/runtime/game_adapter_demo.yaml \
+  --output-dir artifacts/harness/g008_repo_live_suite
+uv run python scripts/finalize_g008_live_suite.py \
+  --evidence artifacts/harness/g008_repo_live_suite/live_suite_evidence.json
+```
+
+The runner must be treated as live open-source graphical-game evidence only for
+these repo-local tasks. It does not imply commercial-game control or parity with
+FDM-1.
 
 After collecting live evidence, prefer the fail-closed finalizer rather than
 manually chaining validators:

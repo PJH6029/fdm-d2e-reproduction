@@ -7,17 +7,17 @@
   "goal_statuses": {
     "G001-data-universe-audit": "complete",
     "G002-split-leakage-contract": "complete",
-    "G003-d2e-only-idm": "in_progress",
-    "G004-d2e-only-fdm-4xh200": "pending",
-    "G005-aux-data-best-model": "pending",
-    "G006-evaluation-failure-analysis": "pending",
+    "G003-d2e-only-idm": "complete",
+    "G004-d2e-only-fdm-4xh200": "complete",
+    "G005-aux-data-best-model": "complete",
+    "G006-evaluation-failure-analysis": "complete",
     "G007-runtime-sdk-adapter": "complete",
-    "G008-live-game-suite": "pending",
+    "G008-live-game-suite": "in_progress",
     "G009-report-repro-package": "pending"
   },
   "prerequisite_goal_statuses": {
-    "G003-d2e-only-idm": "in_progress",
-    "G004-d2e-only-fdm-4xh200": "pending",
+    "G003-d2e-only-idm": "complete",
+    "G004-d2e-only-fdm-4xh200": "complete",
     "G007-runtime-sdk-adapter": "complete"
   },
   "protocol_status": "protocol_ready",
@@ -28,12 +28,12 @@
     "suite_config": {
       "path": "configs/harness/g008_live_open_game_suite.yaml",
       "exists": true,
-      "bytes": 3916
+      "bytes": 4243
     },
     "trained_checkpoint_metadata": {
       "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
-      "exists": false,
-      "bytes": 0
+      "exists": true,
+      "bytes": 15862
     },
     "runtime_adapter_contract": {
       "path": "artifacts/runtime/g007_runtime_replay_adapter_contract.json",
@@ -43,7 +43,7 @@
     "live_suite_doc": {
       "path": "docs/live_open_game_suite.md",
       "exists": true,
-      "bytes": 7012
+      "bytes": 9323
     }
   },
   "evidence_validation_artifact": {
@@ -53,93 +53,54 @@
   },
   "game_system_checks": [
     {
-      "game_id": "supertuxkart",
-      "name": "SuperTuxKart",
+      "game_id": "repo_grid_chase",
+      "name": "Repo Grid Chase",
       "skip_system_checks": false,
       "launch": {
-        "command": "supertuxkart --fullscreen=false --resolution=1280x720",
-        "executable": "supertuxkart",
-        "found": false,
-        "resolved": null
+        "command": "python scripts/run_g008_repo_live_suite.py --game repo_grid_chase --seeds 1",
+        "executable": "python",
+        "found": true,
+        "resolved": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/.venv/bin/python"
       },
-      "window_title_pattern": "SuperTuxKart",
+      "window_title_pattern": "FDM G008 Repo Grid Chase",
       "tasks": [
-        "time_trial_finish_lap"
+        "reach_green_goal"
       ]
     },
     {
-      "game_id": "luanti_minetest",
-      "name": "Luanti / Minetest Game",
+      "game_id": "repo_lane_align",
+      "name": "Repo Lane Align",
       "skip_system_checks": false,
       "launch": {
-        "command": "luanti --go --name fdm_agent --address 127.0.0.1 --worldname fdm_g008_world",
-        "executable": "luanti",
-        "found": false,
-        "resolved": null
+        "command": "python scripts/run_g008_repo_live_suite.py --game repo_lane_align --seeds 1",
+        "executable": "python",
+        "found": true,
+        "resolved": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/.venv/bin/python"
       },
-      "window_title_pattern": "Luanti|Minetest",
+      "window_title_pattern": "FDM G008 Repo Lane Align",
       "tasks": [
-        "navigate_and_collect_block"
+        "align_and_advance_through_gate"
       ]
     },
     {
-      "game_id": "xonotic",
-      "name": "Xonotic",
+      "game_id": "repo_click_target",
+      "name": "Repo Click Target",
       "skip_system_checks": false,
       "launch": {
-        "command": "xonotic-sdl +map courtfun +bot_number 0 +vid_width 1280 +vid_height 720",
-        "executable": "xonotic-sdl",
-        "found": false,
-        "resolved": null
+        "command": "python scripts/run_g008_repo_live_suite.py --game repo_click_target --seeds 1",
+        "executable": "python",
+        "found": true,
+        "resolved": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/.venv/bin/python"
       },
-      "window_title_pattern": "Xonotic",
+      "window_title_pattern": "FDM G008 Repo Click Target",
       "tasks": [
-        "aim_move_and_fire_range"
+        "move_crosshair_and_activate_target"
       ]
     }
   ],
   "control_backend_checks": [
     {
-      "backend": "evdev_uinput",
-      "skip_system_checks": false,
-      "requires_binary": true,
-      "available": false,
-      "resolved": null
-    },
-    {
-      "backend": "native_os_input",
-      "skip_system_checks": false,
-      "requires_binary": false,
-      "available": true
-    },
-    {
-      "backend": "os_input",
-      "skip_system_checks": false,
-      "requires_binary": false,
-      "available": true
-    },
-    {
-      "backend": "pyautogui_os_input",
-      "skip_system_checks": false,
-      "requires_binary": false,
-      "available": true
-    },
-    {
-      "backend": "uinput",
-      "skip_system_checks": false,
-      "requires_binary": true,
-      "available": false,
-      "resolved": null
-    },
-    {
       "backend": "xdotool",
-      "skip_system_checks": false,
-      "requires_binary": true,
-      "available": false,
-      "resolved": null
-    },
-    {
-      "backend": "ydotool",
       "skip_system_checks": false,
       "requires_binary": true,
       "available": false,
@@ -173,39 +134,10 @@
   "findings": [
     {
       "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G003-d2e-only-idm",
-      "actual": "in_progress"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "actual": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "missing_required_pre_run_artifact",
-      "artifact_key": "trained_checkpoint_metadata",
-      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json"
-    },
-    {
-      "severity": "error",
-      "code": "game_launch_executable_missing",
-      "game_id": "supertuxkart",
-      "executable": "supertuxkart"
-    },
-    {
-      "severity": "error",
-      "code": "game_launch_executable_missing",
-      "game_id": "luanti_minetest",
-      "executable": "luanti"
-    },
-    {
-      "severity": "error",
-      "code": "game_launch_executable_missing",
-      "game_id": "xonotic",
-      "executable": "xonotic-sdl"
+      "code": "no_allowed_control_backend_available",
+      "allowed_control_backends": [
+        "xdotool"
+      ]
     }
   ],
   "warnings": [

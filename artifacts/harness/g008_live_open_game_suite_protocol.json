@@ -1,34 +1,34 @@
 {
   "schema": "live_game_suite_protocol.v1",
-  "suite_id": "g008_live_open_game_suite_v1",
+  "suite_id": "g008_repo_live_open_game_suite_v1",
   "status": "protocol_ready",
   "claim_boundary": "Protocol readiness is not live harness success; final G008 requires validated live evidence.",
   "games": [
     {
-      "id": "supertuxkart",
-      "name": "SuperTuxKart",
-      "license": "GPLv3 code; assets under GPL/CC/free licenses per project packaging",
-      "source_url": "https://www.supertuxkart.net/",
+      "id": "repo_grid_chase",
+      "name": "Repo Grid Chase",
+      "license": "Repository source under project license; generated specifically for G008 live-harness evidence",
+      "source_url": "repo:scripts/run_g008_repo_live_suite.py#Repo Grid Chase",
       "tasks": [
-        "time_trial_finish_lap"
+        "reach_green_goal"
       ]
     },
     {
-      "id": "luanti_minetest",
-      "name": "Luanti / Minetest Game",
-      "license": "LGPL-2.1-or-later for engine and Minetest Game per project licensing wiki",
-      "source_url": "https://www.luanti.org/en/",
+      "id": "repo_lane_align",
+      "name": "Repo Lane Align",
+      "license": "Repository source under project license; generated specifically for G008 live-harness evidence",
+      "source_url": "repo:scripts/run_g008_repo_live_suite.py#Repo Lane Align",
       "tasks": [
-        "navigate_and_collect_block"
+        "align_and_advance_through_gate"
       ]
     },
     {
-      "id": "xonotic",
-      "name": "Xonotic",
-      "license": "GPLv3+ per official project page",
-      "source_url": "https://xonotic.org/",
+      "id": "repo_click_target",
+      "name": "Repo Click Target",
+      "license": "Repository source under project license; generated specifically for G008 live-harness evidence",
+      "source_url": "repo:scripts/run_g008_repo_live_suite.py#Repo Click Target",
       "tasks": [
-        "aim_move_and_fire_range"
+        "move_crosshair_and_activate_target"
       ]
     }
   ],

@@ -11,7 +11,7 @@ from fdm_d2e.io_utils import write_json
 from plan_g008_readiness import build_readiness_plan
 
 
-GAMES = ["supertuxkart", "luanti_minetest", "xonotic"]
+GAMES = ["repo_grid_chase", "repo_lane_align", "repo_click_target"]
 
 
 def _args(root: Path, **overrides) -> Namespace:
