@@ -181,6 +181,26 @@ def validate_final_quality_gates(config: dict[str, Any], *, root: str | Path = "
         findings.append({"severity": "error", "code": "missing_package_manifest", "path": str(config.get("package_manifest_path"))})
     if external_manifest_rel_path and external_manifest is None:
         findings.append({"severity": "error", "code": "missing_external_artifact_manifest", "path": str(external_manifest_rel_path)})
+    elif external_manifest_rel_path and external_manifest is not None:
+        if external_manifest.get("schema") != "external_artifact_manifest.v1":
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "external_artifact_manifest_schema_mismatch",
+                    "path": str(external_manifest_rel_path),
+                    "actual": external_manifest.get("schema"),
+                }
+            )
+        if external_manifest.get("status") != "pass":
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "external_artifact_manifest_not_pass",
+                    "path": str(external_manifest_rel_path),
+                    "status": external_manifest.get("status"),
+                    "error_count": external_manifest.get("error_count"),
+                }
+            )
 
     complete_statuses = set(config.get("complete_statuses", list(DEFAULT_COMPLETE_STATUSES)))
     allow_in_progress_goal_ids = {str(item) for item in config.get("allow_in_progress_goal_ids", [])}

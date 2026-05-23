@@ -162,6 +162,20 @@ def test_final_quality_gate_rejects_weak_external_artifact_manifest_entry(tmp_pa
     assert "external_artifact_evidence_missing_or_weak" in codes
 
 
+def test_final_quality_gate_rejects_failed_external_artifact_manifest_status(tmp_path):
+    config = _config()
+    config["external_artifact_manifest_path"] = "artifacts/reproducibility/external_artifact_manifest.json"
+    _complete_fixture(tmp_path)
+    write_json(
+        tmp_path / "artifacts/reproducibility/external_artifact_manifest.json",
+        {"schema": "external_artifact_manifest.v1", "status": "fail", "entries": [], "error_count": 1},
+    )
+    payload = validate_final_quality_gates(config, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "external_artifact_manifest_not_pass" in codes
+
+
 def test_final_quality_gate_allows_configured_final_story_in_progress(tmp_path):
     write_json(
         tmp_path / ".omx/ultragoal/goals.json",
