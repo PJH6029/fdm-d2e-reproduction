@@ -557,6 +557,46 @@ def test_distributed_runtime_passes_configured_timeout(monkeypatch):
     assert dist["timeout_seconds"] == 21600
 
 
+def test_distributed_runtime_preserves_timeout_when_already_initialized(monkeypatch):
+    calls = {}
+
+    class FakeCuda:
+        @staticmethod
+        def is_available():
+            return True
+
+        @staticmethod
+        def set_device(local_rank):
+            calls["set_device"] = local_rank
+
+    class FakeDistributed:
+        @staticmethod
+        def is_available():
+            return True
+
+        @staticmethod
+        def is_initialized():
+            return True
+
+        @staticmethod
+        def init_process_group(**_kwargs):
+            raise AssertionError("process group should not be initialized twice")
+
+    class FakeTorch:
+        cuda = FakeCuda()
+        distributed = FakeDistributed()
+
+    monkeypatch.setenv("WORLD_SIZE", "4")
+    monkeypatch.setenv("RANK", "1")
+    monkeypatch.setenv("LOCAL_RANK", "1")
+
+    dist = _distributed_runtime(FakeTorch(), {"distributed_timeout_seconds": 86400})
+
+    assert calls["set_device"] == 1
+    assert dist["enabled"] is True
+    assert dist["timeout_seconds"] == 86400
+
+
 def test_streaming_idm_stats_can_scan_multiple_record_files(tmp_path: Path):
     shard_a = tmp_path / "shard_a.jsonl"
     shard_b = tmp_path / "shard_b.jsonl"

@@ -56,3 +56,23 @@ At `2026-05-23T00:21:04Z`:
 - All four H200 GPUs were at 0% utilization, which is expected only for the active CPU/IO materialization phase. If bytes stop growing or if GPUs remain idle after split summary/cache completion, treat it as a blocker and diagnose immediately.
 
 Do not launch another G004 run or pull newer local commits into the pod while PID `262618` and its children are alive. Continue monitoring until DDP training starts, then verify GPU utilization and train-history creation.
+
+## 2026-05-23 DDP runtime failure and reuse fix
+
+The `d38a3b1` run completed FDM split materialization, then failed before stats/cache/training with:
+`UnboundLocalError: cannot access local variable 'timeout_seconds' where it is not associated with a value`.
+Root cause: `train_streaming_fdm` initialized the torch distributed process group before calling the shared
+`train_streaming_idm` trainer; `_distributed_runtime()` then skipped `init_process_group()` and returned a
+`timeout_seconds` value that had never been assigned.
+
+Committed failure evidence: `artifacts/fdm/g004_ddp_runtime_failure_snapshot.json`.
+Reusable pod artifacts after the failure:
+
+- `outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json` exists.
+- `fdm_train_shards`: 16 files, `400,301,959,913` bytes.
+- `fdm_target_shards`: 16 files, `347,089,780,692` bytes.
+- No streaming stats, train cache, train history, checkpoint, summary, finalization, or passing audit yet.
+
+The fix preserves `timeout_seconds` when the process group is already initialized and enables fail-closed
+reuse of an existing materialized split summary/shards on restart. After pulling the fixed commit in the pod,
+relaunch G004; it should skip the expensive materialization rewrite and proceed to stats/cache/DDP.

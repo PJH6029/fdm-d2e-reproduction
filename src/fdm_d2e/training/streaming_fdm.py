@@ -787,6 +787,72 @@ def materialize_fdm_streaming_splits(config: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
+def _load_reusable_fdm_split_summary(config: dict[str, Any], output_dir: Path) -> dict[str, Any] | None:
+    """Return an existing split summary when it is safe to reuse for restart.
+
+    Full-corpus G004 materialization can write hundreds of GiB before DDP
+    starts.  If a run fails after split materialization, a restart should reuse
+    the verified shard summary instead of spending another reserved GPU window
+    rewriting the same train/target JSONLs.  Reuse is fail-closed: any
+    provenance, hash, path, or shard-existence mismatch returns ``None`` and
+    lets the caller rematerialize.
+    """
+
+    if bool(config.get("force_rematerialize_split", False)):
+        return None
+    if not bool(config.get("reuse_materialized_split_summary", True)):
+        return None
+    split_summary_path = output_dir / "fdm_streaming_split_summary.json"
+    if not split_summary_path.exists():
+        return None
+    try:
+        summary = read_json(split_summary_path)
+    except Exception:
+        return None
+    if summary.get("schema") != "streaming_fdm_split_summary.v1":
+        return None
+
+    labels_path = Path(config["labels_path"])
+    records_path = Path(config["records_path"])
+    if str(summary.get("labels_path")) != str(labels_path):
+        return None
+    if str(summary.get("records_path")) != str(records_path):
+        return None
+    if config.get("target_records_path") and str(summary.get("target_records_source_path")) != str(Path(config["target_records_path"])):
+        return None
+    try:
+        if str(summary.get("labels_sha256")) != sha256_file(labels_path):
+            return None
+    except FileNotFoundError:
+        return None
+
+    parallel = summary.get("parallel_materialization") or {}
+    if config.get("train_prediction_summary_path") and str(parallel.get("train_prediction_summary_path")) != str(
+        Path(config["train_prediction_summary_path"])
+    ):
+        return None
+    if config.get("target_records_glob") and str(parallel.get("target_records_glob")) != str(config.get("target_records_glob")):
+        return None
+
+    counts = summary.get("counts") or {}
+    if int(counts.get("train") or 0) <= 0 or int(counts.get("target") or 0) <= 0:
+        return None
+    train_paths = [Path(path) for path in summary.get("train_record_paths") or []]
+    target_paths = [Path(path) for path in summary.get("target_record_paths") or []]
+    if not train_paths or not target_paths:
+        return None
+    if not all(path.exists() for path in [*train_paths, *target_paths]):
+        return None
+
+    canonical = summary.get("canonical_materialization") or {}
+    if not bool(canonical.get("deferred", False)):
+        for key in ("train_records_path", "target_records_path"):
+            path = Path(summary.get(key) or "")
+            if not path.exists():
+                return None
+    return summary
+
+
 def _fdm_torch_config(config: dict[str, Any], split_summary: dict[str, Any], *, output_dir: Path) -> tuple[dict[str, Any], list[str], list[str], str]:
     model_name = str(config.get("model_name", "streaming_compact_fdm"))
     torch_cfg = dict(config.get("torch_idm_config", {}))
@@ -1007,7 +1073,7 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
                 init_kwargs["timeout"] = timedelta(seconds=timeout)
             torch.distributed.init_process_group(**init_kwargs)
     if rank == 0:
-        split_summary = materialize_fdm_streaming_splits(config)
+        split_summary = _load_reusable_fdm_split_summary(config, output_dir) or materialize_fdm_streaming_splits(config)
     if world_size > 1:
         assert torch is not None
         torch.distributed.barrier()

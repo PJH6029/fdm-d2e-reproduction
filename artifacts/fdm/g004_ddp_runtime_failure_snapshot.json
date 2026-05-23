@@ -1,0 +1,54 @@
+{
+    "active_processes": [],
+    "captured_at": "2026-05-23T00:48:34Z",
+    "claim_boundary": "Failure/restart evidence only. G004 is not complete; restart should reuse fdm_streaming_split_summary and shards after code fix.",
+    "failure": {
+        "detected_in_log": true,
+        "kind": "UnboundLocalError",
+        "message": "timeout_seconds unbound when train_streaming_fdm initialized torch.distributed before train_streaming_idm._distributed_runtime"
+    },
+    "git_head": "d38a3b1",
+    "log_tail_excerpt": "_seconds\": float(timeout_seconds) if enabled and timeout_seconds is not None else None,\n[rank0]:                                                              ^^^^^^^^^^^^^^^\n[rank0]: UnboundLocalError: cannot access local variable 'timeout_seconds' where it is not associated with a value\n[rank0]:[W523 00:36:39.842484863 ProcessGroupNCCL.cpp:1647] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())\nW0523 00:36:40.749000 262704 torch/distributed/elastic/multiprocessing/api.py:1014] Sending process 262778 closing signal SIGTERM\nW0523 00:36:40.751000 262704 torch/distributed/elastic/multiprocessing/api.py:1014] Sending process 262779 closing signal SIGTERM\nW0523 00:36:40.752000 262704 torch/distributed/elastic/multiprocessing/api.py:1014] Sending process 262781 closing signal SIGTERM\nE0523 00:36:40.916000 262704 torch/distributed/elastic/multiprocessing/api.py:988] failed (exitcode: 1) local_rank: 2 (pid: 262780) of binary: /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3\nTraceback (most recent call last):\n  File \"/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/torchrun\", line 10, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py\", line 367, in wrapper\n    return f(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/run.py\", line 1016, in main\n    run(args)\n  File \"/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/run.py\", line 1007, in run\n    elastic_launch(\n  File \"/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/launcher/api.py\", line 191, in __call__\n    return launch_agent(self._config, self._entrypoint, list(args))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/launcher/api.py\", line 371, in launch_agent\n    raise ChildFailedError(\ntorch.distributed.elastic.multiprocessing.errors.ChildFailedError: \n============================================================\nscripts/train_fdm_streaming.py FAILED\n------------------------------------------------------------\nFailures:\n[1]:\n  time      : 2026-05-23_00:36:40\n  host      : prod-rsv-jeonghunpark-20260521-76e25a\n  rank      : 0 (local_rank: 0)\n  exitcode  : 1 (pid: 262778) \n  error_file: <N/A>\n  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html\n[2]:\n  time      : 2026-05-23_00:36:40\n  host      : prod-rsv-jeonghunpark-20260521-76e25a\n  rank      : 1 (local_rank: 1)\n  exitcode  : 1 (pid: 262779) \n  error_file: <N/A>\n  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html\n[3]:\n  time      : 2026-05-23_00:36:40\n  host      : prod-rsv-jeonghunpark-20260521-76e25a\n  rank      : 3 (local_rank: 3)\n  exitcode  : 1 (pid: 262781) \n  error_file: <N/A>\n  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html\n------------------------------------------------------------\nRoot Cause (first observed failure):\n[0]:\n  time      : 2026-05-23_00:36:40\n  host      : prod-rsv-jeonghunpark-20260521-76e25a\n  rank      : 2 (local_rank: 2)\n  exitcode  : 1 (pid: 262780) \n  error_file: <N/A>\n  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n",
+    "materialization_reusable": {
+        "split_summary": {
+            "bytes": 34473,
+            "exists": true,
+            "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json"
+        },
+        "target_shard_bytes": 347089780692,
+        "target_shard_count": 16,
+        "train_shard_bytes": 400301959913,
+        "train_shard_count": 16
+    },
+    "namespace": "p-production",
+    "parent_pid_file": null,
+    "pod": "prod-rsv-jeonghunpark-20260521-76e25a",
+    "schema": "g004_ddp_runtime_failure_snapshot.v1",
+    "terminal_artifacts": {
+        "checkpoint": {
+            "bytes": 0,
+            "exists": false,
+            "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/checkpoint.pt"
+        },
+        "finalization_summary": {
+            "bytes": 0,
+            "exists": false,
+            "path": "artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json"
+        },
+        "streaming_stats": {
+            "bytes": 0,
+            "exists": false,
+            "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/streaming_stats.json"
+        },
+        "summary": {
+            "bytes": 0,
+            "exists": false,
+            "path": "outputs/fdm_streaming_d2e_full_compact/summary.json"
+        },
+        "train_history": {
+            "bytes": 0,
+            "exists": false,
+            "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/train_history.json"
+        }
+    }
+}

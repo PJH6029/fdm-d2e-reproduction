@@ -1235,17 +1235,19 @@ def _distributed_runtime(torch, config: dict[str, Any]) -> dict[str, Any]:
             raise RuntimeError("distributed_backend=nccl requires CUDA")
         if torch.cuda.is_available() and not force_cpu:
             torch.cuda.set_device(local_rank)
+        timeout_seconds = config.get("distributed_timeout_seconds")
+        if timeout_seconds is None:
+            timeout_seconds = os.environ.get("TORCH_DISTRIBUTED_TIMEOUT_SECONDS") or os.environ.get("TORCH_DIST_TIMEOUT_SECONDS")
         if not torch.distributed.is_initialized():
             init_kwargs: dict[str, Any] = {"backend": backend}
-            timeout_seconds = config.get("distributed_timeout_seconds")
-            if timeout_seconds is None:
-                timeout_seconds = os.environ.get("TORCH_DISTRIBUTED_TIMEOUT_SECONDS") or os.environ.get("TORCH_DIST_TIMEOUT_SECONDS")
             if timeout_seconds is not None:
                 timeout = float(timeout_seconds)
                 if timeout <= 0:
                     raise ValueError("distributed_timeout_seconds must be positive")
                 init_kwargs["timeout"] = timedelta(seconds=timeout)
             torch.distributed.init_process_group(**init_kwargs)
+    else:
+        timeout_seconds = None
     if torch.cuda.is_available() and not force_cpu:
         device = f"cuda:{local_rank}" if enabled else "cuda"
     else:

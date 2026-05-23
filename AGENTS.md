@@ -36,7 +36,7 @@ Current `.omx/ultragoal/goals.json` status:
 - `G001-data-universe-audit` — complete.
 - `G002-split-leakage-contract` — complete.
 - `G003-d2e-only-idm` — complete and checkpointed in OMX.
-- `G004-d2e-only-fdm-4xh200` — pending in OMX; active MLXP run is in progress.
+- `G004-d2e-only-fdm-4xh200` — pending in OMX; latest MLXP run failed after reusable split materialization and must be relaunched from the fixed commit.
 - `G005-aux-data-best-model` — pending.
 - `G006-evaluation-failure-analysis` — pending.
 - `G007-runtime-sdk-adapter` — complete for the adapter-contract slice only.
@@ -45,20 +45,19 @@ Current `.omx/ultragoal/goals.json` status:
 
 Do **not** mark the Codex goal or aggregate ultragoal complete until G001-G009 are all complete and final quality gates pass.
 
-## Current G004 MLXP run
+## Current G004 MLXP run/restart state
 
-Latest known live run snapshot: 2026-05-23 09:21 KST.
+Latest known live run snapshot: 2026-05-23 09:48 KST.
 
 - Reservation: `rsv-jeonghunpark-20260521-76e25a`.
 - Pod: `prod-rsv-jeonghunpark-20260521-76e25a`, namespace `p-production`.
 - Pod repo path: `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`.
-- Active pod checkout for the running G004 parent is `d38a3b1`.
-- Current parent PID file: `outputs/cluster/g004_d2e_full_fdm_4xh200.pid`, observed parent PID `262618`.
-- Current watcher PID: `262772`, command `scripts/watch_g004_then_finalize.py`; it finalizes after parent exit but never checkpoints OMX/Codex state.
-- Current stage: rank-0 CPU/IO FDM materialization with 16 spawned workers. This is expected to show 0% GPU utilization until split summary, stats/cache build, and DDP training begin, but sustained idle without file growth is a blocker.
-- Latest committed progress snapshot: `artifacts/fdm/g004_deferred_materialization_progress_snapshot.json`. At 2026-05-23T00:21:04Z it showed train materialization parts `16` / `368,945,307,285` bytes, target parts `11` / `63,658,038,599` bytes, all four GPUs at 0%, no split summary or train history yet.
-- Active code defers audit-facing canonical train/target monolith construction until after GPU-relevant sharded training/prediction. Do **not** pull local/origin updates into the pod while parent PID `262618` or its Python rank/worker children are alive.
-- Claim boundary: this is active-run evidence only. G004 remains incomplete until `artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json` reports pass and `artifacts/fdm/g004_full_fdm_completion_audit.json` reports `status=pass`, `error_count=0`, followed by OMX checkpointing with a fresh `get_goal` snapshot. Do not call `update_goal complete` for G004 in aggregate mode.
+- The last pod checkout was `d38a3b1`; it failed after completing split materialization.
+- No active `run_g004`/`torchrun`/`watch_g004` processes were observed at 2026-05-23T00:48:00Z.
+- Failure evidence: `artifacts/fdm/g004_ddp_runtime_failure_snapshot.json`; root cause was `timeout_seconds` unbound in `_distributed_runtime()` when `train_streaming_fdm` had already initialized the process group.
+- Reusable materialization artifacts remain on the pod: split summary exists; `fdm_train_shards` has 16 files / `400,301,959,913` bytes; `fdm_target_shards` has 16 files / `347,089,780,692` bytes.
+- Fixed code must be pulled into the pod before relaunch. The fixed trainer preserves `timeout_seconds` for already-initialized process groups and reuses the existing split summary/shards by default (`reuse_materialized_split_summary=true`), so relaunch should skip the expensive materialization rewrite and move to stats/cache/DDP.
+- Claim boundary: this is failure/restart evidence only. G004 remains incomplete until `artifacts/fdm/g004_d2e_full_fdm_finalization_summary.json` reports pass and `artifacts/fdm/g004_full_fdm_completion_audit.json` reports `status=pass`, `error_count=0`, followed by OMX checkpointing with a fresh `get_goal` snapshot. Do not call `update_goal complete` for G004 in aggregate mode.
 
 Useful G004 monitor command:
 
