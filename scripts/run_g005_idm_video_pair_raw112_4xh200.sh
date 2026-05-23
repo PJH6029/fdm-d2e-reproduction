@@ -15,6 +15,11 @@ PAPER_TARGET_CONFIG="${PAPER_TARGET_CONFIG:-configs/eval/g005_idm_video_pair_raw
 BUILD_SPLIT_STATS="${BUILD_SPLIT_STATS:-1}"
 BUILD_PAPER_METRICS="${BUILD_PAPER_METRICS:-1}"
 VALIDATE_G005="${VALIDATE_G005:-1}"
+MAX_TARGET_EXAMPLES="${MAX_TARGET_EXAMPLES:-}"
+SKIP_PREDICTION="${SKIP_PREDICTION:-0}"
+PAPER_MAX_ROWS="${PAPER_MAX_ROWS:-$MAX_TARGET_EXAMPLES}"
+RUNTIME_CONFIG="${RUNTIME_CONFIG:-outputs/cluster/${MODEL_SLUG}_runtime_config.yaml}"
+RUNTIME_PAPER_TARGET_CONFIG="${RUNTIME_PAPER_TARGET_CONFIG:-outputs/cluster/${MODEL_SLUG}_runtime_paper_target.yaml}"
 
 mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$RUN_SUMMARY")" "$(dirname "$GPU_MONITOR_LOG")" "$(dirname "$PID_FILE")" outputs/cluster
 echo "$$" >"$PID_FILE"
@@ -57,15 +62,63 @@ set +e
   echo "config=$CONFIG"
   echo "nproc_per_node=$NPROC_PER_NODE"
   echo "gpu_monitor_log=$GPU_MONITOR_LOG"
+  RUN_CONFIG="$CONFIG"
+  if [[ -n "$MAX_TARGET_EXAMPLES" || "$SKIP_PREDICTION" != "0" ]]; then
+    RUN_CONFIG="$RUNTIME_CONFIG"
+    uv run python - "$CONFIG" "$RUN_CONFIG" "$MAX_TARGET_EXAMPLES" "$SKIP_PREDICTION" <<'PY'
+from __future__ import annotations
+import json
+import sys
+from pathlib import Path
+
+src = Path(sys.argv[1])
+dst = Path(sys.argv[2])
+max_target = sys.argv[3]
+skip_prediction = sys.argv[4] != "0"
+config = json.loads(src.read_text(encoding="utf-8"))
+config["source_config_path"] = str(src)
+config["runtime_overrides"] = {
+    "max_target_examples": int(max_target) if max_target else None,
+    "skip_prediction": skip_prediction,
+}
+if max_target:
+    config["max_target_examples"] = int(max_target)
+if skip_prediction:
+    config["skip_prediction"] = True
+dst.parent.mkdir(parents=True, exist_ok=True)
+dst.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+PY
+  fi
   uv run python scripts/cluster_gpu_smoke.py --expected-gpus "$EXPECTED_GPUS" --report "$GPU_SMOKE_REPORT"
   uv run torchrun --standalone --nproc-per-node="$NPROC_PER_NODE" scripts/train_idm_video.py \
-    --config "$CONFIG" \
+    --config "$RUN_CONFIG" \
     --require-torch
   if [[ "$BUILD_SPLIT_STATS" != "0" ]]; then
     uv run python scripts/build_split_statistical_comparisons.py --config "$SPLIT_STATS_CONFIG"
   fi
   if [[ "$BUILD_PAPER_METRICS" != "0" ]]; then
-    uv run python scripts/build_g005_idm_paper_metrics.py --config "$PAPER_TARGET_CONFIG"
+    RUN_PAPER_CONFIG="$PAPER_TARGET_CONFIG"
+    if [[ -n "$PAPER_MAX_ROWS" ]]; then
+      RUN_PAPER_CONFIG="$RUNTIME_PAPER_TARGET_CONFIG"
+      uv run python - "$PAPER_TARGET_CONFIG" "$RUN_PAPER_CONFIG" "$PAPER_MAX_ROWS" <<'PY'
+from __future__ import annotations
+import json
+import sys
+from pathlib import Path
+
+src = Path(sys.argv[1])
+dst = Path(sys.argv[2])
+max_rows = int(sys.argv[3])
+config = json.loads(src.read_text(encoding="utf-8"))
+config["source_config_path"] = str(src)
+metrics = dict(config.get("paper_metrics", {}))
+metrics["max_rows"] = max_rows
+config["paper_metrics"] = metrics
+dst.parent.mkdir(parents=True, exist_ok=True)
+dst.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+PY
+    fi
+    uv run python scripts/build_g005_idm_paper_metrics.py --config "$RUN_PAPER_CONFIG"
   fi
   echo "finished_at=$(date -Iseconds)"
 ) 2>&1 | tee "$LOG_PATH"
