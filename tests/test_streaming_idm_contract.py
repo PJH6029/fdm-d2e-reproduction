@@ -725,6 +725,91 @@ def test_streaming_idm_recovers_outputs_with_parallel_prediction_workers(tmp_pat
     assert len((output_dir / "predictions.jsonl").read_text().splitlines()) == 5
 
 
+def test_streaming_idm_recovers_action_history_outputs_with_parallel_prediction_workers(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    train_path = tmp_path / "train.jsonl"
+    target_a = tmp_path / "target_history_a.jsonl"
+    target_b = tmp_path / "target_history_b.jsonl"
+    output_dir = tmp_path / "idm_history_parallel_recover"
+    summary_path = tmp_path / "history_parallel_recovered_summary.json"
+    _write_jsonl(train_path, [_record(idx, "train_core") for idx in range(8)])
+    rows_a = [
+        {**_record(idx + 8, "eval"), "recording_id": "d2e_480p:Apex/rec_a", "sequence_id": f"d2e_480p:Apex/rec_a#{idx:06d}"}
+        for idx in range(3)
+    ]
+    rows_b = [
+        {**_record(idx + 11, "eval"), "recording_id": "d2e_480p:Apex/rec_b", "sequence_id": f"d2e_480p:Apex/rec_b#{idx:06d}"}
+        for idx in range(2)
+    ]
+    _write_jsonl(target_a, rows_a)
+    _write_jsonl(target_b, rows_b)
+
+    train_summary = train_streaming_idm(
+        {
+            "model_name": "tiny_streaming_idm_history_parallel_recover",
+            "train_records": str(train_path),
+            "target_records": str(target_a),
+            "target_record_paths": [str(target_a), str(target_b)],
+            "output_dir": str(output_dir),
+            "summary_out": str(summary_path),
+            "config_path": "test_history_parallel_recover_config",
+            "source_namespace": "unit_d2e_stream",
+            "feature_mode": "summary_compact_grid8_shift_surface_time",
+            "hidden_dim": 8,
+            "depth": 1,
+            "epochs": 1,
+            "eval_interval_epochs": 1,
+            "batch_size": 4,
+            "categorical_min_count": 1,
+            "mouse_head_mode": "axis_softmax",
+            "action_history_len": 2,
+            "action_history_parallel_by_path": True,
+            "prediction_workers": 2,
+            "validate_pseudolabels": False,
+            "seed": 37,
+            "force_cpu": True,
+        }
+    )
+    for rel in [
+        "pseudolabels.jsonl",
+        "predictions.jsonl",
+        "metrics.json",
+        "label_quality_report.json",
+        "statistical_comparison.json",
+        "checkpoint_metadata.json",
+    ]:
+        path = output_dir / rel
+        if path.exists():
+            path.unlink()
+    summary_path.unlink()
+
+    recovery = recover_streaming_idm_outputs_from_checkpoint(
+        {
+            "checkpoint_path": train_summary["metadata"]["checkpoint_path"],
+            "output_dir": str(output_dir),
+            "summary_out": str(summary_path),
+            "prediction_workers": 2,
+            "action_history_parallel_by_path": True,
+            "action_history_seed_state_mode": "empty",
+            "force_cpu": True,
+            "validate_pseudolabels": False,
+        }
+    )
+
+    recovered_summary = json.loads(summary_path.read_text())
+    metadata = json.loads((output_dir / "checkpoint_metadata.json").read_text())
+    assert recovery["status"] == "pass"
+    assert recovery["target_records"] == 5
+    assert recovery["prediction_resume"]["write_mode"] == "parallel_parts"
+    assert recovery["prediction_resume"]["workers"] == 2
+    assert recovery["prediction_resume"]["action_history_seed_state_summary"]["source"] == "empty"
+    assert recovered_summary["prediction_resume"]["workers"] == 2
+    assert metadata["action_history_len"] == 2
+    assert metadata["action_history_feedback"] == "autoregressive_predicted"
+    assert len((output_dir / "predictions.jsonl").read_text().splitlines()) == 5
+
+
 def test_streaming_idm_train_summary_uses_parallel_final_prediction(tmp_path: Path):
     if not torch_available():
         pytest.skip("torch extra is not installed")
