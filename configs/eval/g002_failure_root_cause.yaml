@@ -1,0 +1,46 @@
+{
+  "schema": "g002_failure_root_cause_config.v1",
+  "output_path": "artifacts/eval/g002_failure_root_cause_audit.json",
+  "fdm_model_name": "streaming_fdm_d2e_full_compact",
+  "no_button_false_positive_rate_target": 0.10,
+  "paths": {
+    "idm_metrics": "outputs/idm_streaming_d2e_full_compact/metrics.json",
+    "fdm_metrics": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
+    "aux_metrics": "outputs/fdm_aux/d2e_aux_best/metrics.json",
+    "idm_metadata": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "fdm_metadata": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "fdm_split_summary": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+    "fdm_split_stats_summary": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
+    "renewed_gate_audit": "artifacts/eval/g001_renewed_gate_revalidation.json",
+    "external_artifact_manifest": "artifacts/reproducibility/external_artifact_manifest.json",
+    "raw_diagnostics": "artifacts/eval/g002_pvc_action_error_diagnostics.json"
+  },
+  "required_artifacts": [
+    "outputs/idm_streaming_d2e_full_compact/metrics.json",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
+    "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+    "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+    "artifacts/eval/g001_renewed_gate_revalidation.json",
+    "artifacts/reproducibility/external_artifact_manifest.json"
+  ],
+  "raw_required_paths": [
+    "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+    "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl"
+  ],
+  "required_axes": [
+    "action_distribution",
+    "token_vocabulary",
+    "label_prediction_alignment",
+    "no_op_thresholding",
+    "heldout_split_confusion",
+    "per_game_confusion",
+    "oracle_upper_bound_sanity",
+    "d2e_metric_compatibility",
+    "feature_sufficiency"
+  ],
+  "accepted_axis_statuses": [
+    "computed",
+    "inferred",
+    "pvc_required"
+  ]
+}

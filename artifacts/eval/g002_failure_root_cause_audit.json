@@ -1,0 +1,553 @@
+{
+  "schema": "g002_failure_root_cause_audit.v1",
+  "status": "pass",
+  "error_count": 0,
+  "findings": [],
+  "artifacts": {
+    "idm_metrics": {
+      "path": "outputs/idm_streaming_d2e_full_compact/metrics.json",
+      "exists": true,
+      "bytes": 893,
+      "sha256": "278f6cfbc338fe7d40b5a65194aa10ee63900659585adfa83e2ccebe97789342"
+    },
+    "fdm_metrics": {
+      "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
+      "exists": true,
+      "bytes": 894,
+      "sha256": "5d3fcd7b600c5f4703c901981281f5f2ea761a4710c58b956533f07f7ce4b407"
+    },
+    "aux_metrics": {
+      "path": "outputs/fdm_aux/d2e_aux_best/metrics.json",
+      "exists": true,
+      "bytes": 894,
+      "sha256": "5d3fcd7b600c5f4703c901981281f5f2ea761a4710c58b956533f07f7ce4b407"
+    },
+    "idm_metadata": {
+      "path": "outputs/idm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "exists": true,
+      "bytes": 20529,
+      "sha256": "e433fc0477ec82b8297110001b9f44ba5719e3da9ffbded3d068771d800c479b"
+    },
+    "fdm_metadata": {
+      "path": "outputs/fdm_streaming_d2e_full_compact/checkpoint_metadata.json",
+      "exists": true,
+      "bytes": 15862,
+      "sha256": "9c3b6525864c139f3f33ce022f323aee62963fe78d74eed48db58baf9466cd16"
+    },
+    "fdm_split_summary": {
+      "path": "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json",
+      "exists": true,
+      "bytes": 34584,
+      "sha256": "f93877d263863394523c8a3eb90aeeabe21578ca87a7bb9b6a5e3a651a5db170"
+    },
+    "fdm_split_stats_summary": {
+      "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
+      "exists": true,
+      "bytes": 877,
+      "sha256": "94c8383ff37e2ef7c903bdee43df8e2b99c3cd91e3e70dd2846aaa8c5e88e9e8"
+    },
+    "renewed_gate_audit": {
+      "path": "artifacts/eval/g001_renewed_gate_revalidation.json",
+      "exists": true,
+      "bytes": 19622,
+      "sha256": "21bcb07373c27345b258a68e729c15f8bc20f9a93e8bac8ef5349084a0fbbc22"
+    },
+    "external_artifact_manifest": {
+      "path": "artifacts/reproducibility/external_artifact_manifest.json",
+      "exists": true,
+      "bytes": 4726,
+      "sha256": "bb515dfe2231fe9d793929d453655ce4d0b7143654c9e6d236489c5d2be66455"
+    },
+    "raw_diagnostics": {
+      "path": "artifacts/eval/g002_pvc_action_error_diagnostics.json",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null
+    }
+  },
+  "metrics": {
+    "idm": {
+      "num_examples": 16698646,
+      "keyboard_accuracy": 0.012223072565834329,
+      "keyboard_examples": 3017081,
+      "mouse_button_accuracy": 0.007444106661119354,
+      "mouse_button_f1": 0.010283898532443663,
+      "mouse_button_precision": 0.016626673253817018,
+      "mouse_button_recall": 0.007444106661119354,
+      "mouse_button_examples": 759527,
+      "mouse_button_predicted_examples": 340056,
+      "mouse_button_false_positive_examples": 334402,
+      "mouse_button_false_negative_examples": 753873,
+      "no_button_examples": 15939119,
+      "no_button_false_positive_examples": 317129,
+      "no_button_false_positive_rate": 0.01989626904724157,
+      "mouse_move_pearson": 0.17248849180857093,
+      "mouse_move_scale_ratio": 1.9342231905794876,
+      "mouse_move_num_values": 14661338,
+      "failure_count": 16697205
+    },
+    "fdm": {
+      "num_examples": 16698646,
+      "keyboard_accuracy": 0.002659524222253231,
+      "keyboard_examples": 3017081,
+      "mouse_button_accuracy": 0.05210611341005652,
+      "mouse_button_f1": 0.012762612536712747,
+      "mouse_button_precision": 0.00727187469796988,
+      "mouse_button_recall": 0.05210611341005652,
+      "mouse_button_examples": 759527,
+      "mouse_button_predicted_examples": 5442338,
+      "mouse_button_false_positive_examples": 5402762,
+      "mouse_button_false_negative_examples": 719951,
+      "no_button_examples": 15939119,
+      "no_button_false_positive_examples": 5012697,
+      "no_button_false_positive_rate": 0.31449021743297106,
+      "mouse_move_pearson": 0.34817355680270057,
+      "mouse_move_scale_ratio": 1.6277335085623454,
+      "mouse_move_num_values": 14661338,
+      "failure_count": 16698490
+    },
+    "aux": {
+      "num_examples": 16698646,
+      "keyboard_accuracy": 0.002659524222253231,
+      "keyboard_examples": 3017081,
+      "mouse_button_accuracy": 0.05210611341005652,
+      "mouse_button_f1": 0.012762612536712747,
+      "mouse_button_precision": 0.00727187469796988,
+      "mouse_button_recall": 0.05210611341005652,
+      "mouse_button_examples": 759527,
+      "mouse_button_predicted_examples": 5442338,
+      "mouse_button_false_positive_examples": 5402762,
+      "mouse_button_false_negative_examples": 719951,
+      "no_button_examples": 15939119,
+      "no_button_false_positive_examples": 5012697,
+      "no_button_false_positive_rate": 0.31449021743297106,
+      "mouse_move_pearson": 0.34817355680270057,
+      "mouse_move_scale_ratio": 1.6277335085623454,
+      "mouse_move_num_values": 14661338,
+      "failure_count": 16698490
+    }
+  },
+  "axes": {
+    "action_distribution": {
+      "status": "computed",
+      "severity": "info",
+      "summary": "Button/no-button imbalance is computed from full eval metrics.",
+      "evidence": {
+        "fdm": {
+          "num_examples": 16698646,
+          "true_button_examples": 759527,
+          "predicted_button_examples": 5442338,
+          "no_button_examples": 15939119,
+          "true_button_rate": 0.045484346455395244,
+          "predicted_button_rate": 0.32591492747376044,
+          "no_button_rate": 0.9545156535446048,
+          "predicted_to_true_button_rate_ratio": 7.16543059035426,
+          "no_button_false_positive_rate": 0.31449021743297106
+        },
+        "idm": {
+          "num_examples": 16698646,
+          "true_button_examples": 759527,
+          "predicted_button_examples": 340056,
+          "no_button_examples": 15939119,
+          "true_button_rate": 0.045484346455395244,
+          "predicted_button_rate": 0.020364285822934387,
+          "no_button_rate": 0.9545156535446048,
+          "predicted_to_true_button_rate_ratio": 0.4477207525209769,
+          "no_button_false_positive_rate": 0.01989626904724157
+        }
+      }
+    },
+    "token_vocabulary": {
+      "status": "computed",
+      "severity": "info",
+      "summary": "Categorical action vocabulary and metric-token compatibility are computed from checkpoint metadata.",
+      "evidence": {
+        "fdm": {
+          "vocab_size": 180,
+          "counts": {
+            "key_press": 86,
+            "key_release": 86,
+            "mouse_button": 8,
+            "mouse_dx": 0,
+            "mouse_dy": 0,
+            "noop": 0
+          },
+          "has_noop_token": false,
+          "x_button_tokens": [
+            "MOUSE_X1_DOWN",
+            "MOUSE_X1_UP"
+          ],
+          "metric_mouse_button_prefixes": [
+            "MOUSE_LEFT_",
+            "MOUSE_RIGHT_",
+            "MOUSE_MIDDLE_"
+          ],
+          "metric_compatibility_note": "Current metric helper counts left/right/middle mouse buttons; X1/X2 tokens are present in the model vocabulary and need explicit accounting if D2E labels use them."
+        },
+        "idm": {
+          "vocab_size": 180,
+          "counts": {
+            "key_press": 86,
+            "key_release": 86,
+            "mouse_button": 8,
+            "mouse_dx": 0,
+            "mouse_dy": 0,
+            "noop": 0
+          },
+          "has_noop_token": false,
+          "x_button_tokens": [
+            "MOUSE_X1_DOWN",
+            "MOUSE_X1_UP"
+          ],
+          "metric_mouse_button_prefixes": [
+            "MOUSE_LEFT_",
+            "MOUSE_RIGHT_",
+            "MOUSE_MIDDLE_"
+          ],
+          "metric_compatibility_note": "Current metric helper counts left/right/middle mouse buttons; X1/X2 tokens are present in the model vocabulary and need explicit accounting if D2E labels use them."
+        }
+      }
+    },
+    "label_prediction_alignment": {
+      "status": "computed",
+      "severity": "info",
+      "summary": "FDM is compared against the IDM teacher used for pseudo-labeling.",
+      "evidence": {
+        "label_source": "idm_pseudolabel",
+        "idm_metrics": {
+          "num_examples": 16698646,
+          "keyboard_accuracy": 0.012223072565834329,
+          "keyboard_examples": 3017081,
+          "mouse_button_accuracy": 0.007444106661119354,
+          "mouse_button_f1": 0.010283898532443663,
+          "mouse_button_precision": 0.016626673253817018,
+          "mouse_button_recall": 0.007444106661119354,
+          "mouse_button_examples": 759527,
+          "mouse_button_predicted_examples": 340056,
+          "mouse_button_false_positive_examples": 334402,
+          "mouse_button_false_negative_examples": 753873,
+          "no_button_examples": 15939119,
+          "no_button_false_positive_examples": 317129,
+          "no_button_false_positive_rate": 0.01989626904724157,
+          "mouse_move_pearson": 0.17248849180857093,
+          "mouse_move_scale_ratio": 1.9342231905794876,
+          "mouse_move_num_values": 14661338,
+          "failure_count": 16697205
+        },
+        "fdm_metrics": {
+          "num_examples": 16698646,
+          "keyboard_accuracy": 0.002659524222253231,
+          "keyboard_examples": 3017081,
+          "mouse_button_accuracy": 0.05210611341005652,
+          "mouse_button_f1": 0.012762612536712747,
+          "mouse_button_precision": 0.00727187469796988,
+          "mouse_button_recall": 0.05210611341005652,
+          "mouse_button_examples": 759527,
+          "mouse_button_predicted_examples": 5442338,
+          "mouse_button_false_positive_examples": 5402762,
+          "mouse_button_false_negative_examples": 719951,
+          "no_button_examples": 15939119,
+          "no_button_false_positive_examples": 5012697,
+          "no_button_false_positive_rate": 0.31449021743297106,
+          "mouse_move_pearson": 0.34817355680270057,
+          "mouse_move_scale_ratio": 1.6277335085623454,
+          "mouse_move_num_values": 14661338,
+          "failure_count": 16698490
+        },
+        "fdm_to_idm_no_button_fpr_ratio": 15.80649199537097
+      }
+    },
+    "no_op_thresholding": {
+      "status": "computed",
+      "severity": "info",
+      "summary": "No-button false-positive control is diagnosed from calibration metadata and renewed gate results.",
+      "evidence": {
+        "fdm_calibration": {
+          "mode": "global_threshold_streaming",
+          "category_threshold": 0.35,
+          "last_train_loss": 0.6913180771952429,
+          "prediction_fingerprint": "bca23fbfb303623fa9675ce8e6770e651562e006b948973b86703f511bce73d8"
+        },
+        "fdm_no_button_false_positive_rate": 0.31449021743297106,
+        "renewed_target": 0.1
+      }
+    },
+    "heldout_split_confusion": {
+      "status": "computed",
+      "severity": "info",
+      "summary": "Split-level confusion endpoints are computed from G004 split statistical comparisons.",
+      "evidence": {
+        "pivot": {
+          "heldout_game": {
+            "keyboard_accuracy": 0.0015895629499965856,
+            "mouse_button_accuracy": 0.042427012107794516,
+            "mouse_button_precision": 0.007532645122203982,
+            "mouse_button_f1": 0.011883564998724734,
+            "no_button_false_positive_rate": 0.3383312747936816,
+            "mouse_move_pearson": 0.3446893890902286,
+            "mouse_move_scale_ratio_distance": 0.7729210260349589
+          },
+          "heldout_recording": {
+            "keyboard_accuracy": 0.006738424614501849,
+            "mouse_button_accuracy": 0.07323790706106517,
+            "mouse_button_precision": 0.007666547583128086,
+            "mouse_button_f1": 0.013144829938133108,
+            "no_button_false_positive_rate": 0.311587090801921,
+            "mouse_move_pearson": 0.33757907947376753,
+            "mouse_move_scale_ratio_distance": 0.6520577441227089
+          },
+          "temporal": {
+            "keyboard_accuracy": 0.004538441212592723,
+            "mouse_button_accuracy": 0.0672873754663892,
+            "mouse_button_precision": 0.006224703739838997,
+            "mouse_button_f1": 0.010691575173748288,
+            "no_button_false_positive_rate": 0.3071439995393068,
+            "mouse_move_pearson": 0.331102147001372,
+            "mouse_move_scale_ratio_distance": 0.6181336974488515
+          }
+        },
+        "worst_no_button_fpr_split": {
+          "split": "heldout_game",
+          "endpoint": "no_button_false_positive_rate",
+          "candidate_value": 0.3383312747936816,
+          "status": "computed",
+          "reference": "noop",
+          "p_adjusted_holm": 1.0,
+          "reject_holm_0_05": false,
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
+        },
+        "worst_mouse_button_f1_split": {
+          "split": "temporal",
+          "endpoint": "mouse_button_f1",
+          "candidate_value": 0.010691575173748288,
+          "status": "computed",
+          "reference": "noop",
+          "p_adjusted_holm": 0.0,
+          "reject_holm_0_05": true,
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json"
+        },
+        "worst_keyboard_split": {
+          "split": "heldout_game",
+          "endpoint": "keyboard_accuracy",
+          "candidate_value": 0.0015895629499965856,
+          "status": "computed",
+          "reference": "noop",
+          "p_adjusted_holm": 0.0,
+          "reject_holm_0_05": true,
+          "path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json"
+        }
+      }
+    },
+    "per_game_confusion": {
+      "status": "pvc_required",
+      "severity": "warning",
+      "summary": "Per-game confusion requires streaming PVC-resident prediction/target rows; local target game counts and external artifact proofs are recorded until the raw diagnostic artifact is present.",
+      "evidence": {
+        "raw_diagnostic_path": "artifacts/eval/g002_pvc_action_error_diagnostics.json",
+        "raw_diagnostic_summary": null,
+        "target_game_counts": {
+          "Apex_Legends": 998189,
+          "Brotato": 234355,
+          "Cyberpunk_2077": 705108,
+          "Euro_Truck_Simulator_2": 759887,
+          "Grounded": 284693,
+          "Monster_Hunter_Wilds": 381982,
+          "Rainbow_Six": 1875264,
+          "Stardew_Valley": 1063404,
+          "Battlefield_6_Open_Beta": 95955,
+          "Eternal_Return": 2383693,
+          "Raft": 456287,
+          "Dinkum": 518355,
+          "Core_Keeper": 606270,
+          "Ready_Or_Not": 448663,
+          "Vampire_Survivors": 398915,
+          "MapleStory_Worlds_Southperry": 740962,
+          "OguForest": 121248,
+          "Super_Bunny_Man": 21818,
+          "PEAK": 118595,
+          "VALORANT": 6538,
+          "Satisfactory": 272469,
+          "Medieval_Dynasty": 467571,
+          "Counter-Strike_2": 504920,
+          "PUBG": 382693,
+          "Minecraft_1.21.8": 460142,
+          "Grand_Theft_Auto_V": 487021,
+          "Barony": 1137036,
+          "Skul": 282766,
+          "Slime_Rancher": 483847
+        },
+        "external_raw_artifacts": {
+          "outputs/data/d2e_full_corpus/target_all_eval.jsonl": {
+            "exists": true,
+            "bytes": 341543678522,
+            "sha256": "08c416b873f6785f643bc1397c60d872f5a17aff945fa0d1ae245aa4a2b55c24",
+            "fingerprint": null,
+            "fingerprint_type": null,
+            "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+            "proof": "sha256"
+          },
+          "outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl": {
+            "exists": true,
+            "bytes": 7162080964,
+            "sha256": "51a0ca9be81f2d996df37b3e7e4da9fc1b136451fb9004f4f8eac949f373797b",
+            "fingerprint": null,
+            "fingerprint_type": null,
+            "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/fdm_streaming_d2e_full_compact/torch_model/predictions.jsonl",
+            "proof": "sha256"
+          }
+        }
+      }
+    },
+    "oracle_upper_bound_sanity": {
+      "status": "inferred",
+      "severity": "info",
+      "summary": "Ground-truth target rows define a trivial oracle upper bound; the current model misses nearly every exact token set.",
+      "evidence": {
+        "target_records": 16698646,
+        "oracle_ground_truth_control": false,
+        "current_failure_count": 16698490,
+        "metric_helper_can_score_ground_truth_tokens": true
+      }
+    },
+    "d2e_metric_compatibility": {
+      "status": "computed",
+      "severity": "info",
+      "summary": "Metric schema and known token-prefix handling are explicit before comparing against paper/released baselines.",
+      "evidence": {
+        "metrics_schema": "metrics.v1",
+        "mouse_button_metric_prefixes": [
+          "MOUSE_LEFT_",
+          "MOUSE_RIGHT_",
+          "MOUSE_MIDDLE_"
+        ],
+        "fdm_vocab_x_button_tokens": [
+          "MOUSE_X1_DOWN",
+          "MOUSE_X1_UP"
+        ],
+        "mouse_move_scale_ratio": 1.6277335085623454
+      }
+    },
+    "feature_sufficiency": {
+      "status": "computed",
+      "severity": "info",
+      "summary": "Existing compact summary-grid features have weak action metrics despite full-corpus training.",
+      "evidence": {
+        "fdm_feature_mode": "summary_causal_compact_grid8_time_prior_action",
+        "fdm_input_dim": 504,
+        "idm_feature_mode": "summary_compact_grid8_shift_surface_time",
+        "idm_input_dim": 620
+      }
+    }
+  },
+  "ranked_root_causes": [
+    {
+      "rank": 1,
+      "id": "fdm_mouse_button_overfire",
+      "severity": "critical",
+      "score": 31.449,
+      "evidence": {
+        "fdm_predicted_button_rate": 0.32591492747376044,
+        "ground_truth_button_rate": 0.045484346455395244,
+        "predicted_to_true_ratio": 7.16543059035426,
+        "fdm_no_button_fpr": 0.31449021743297106,
+        "idm_no_button_fpr": 0.01989626904724157,
+        "fdm_to_idm_no_button_fpr_ratio": 15.80649199537097
+      },
+      "implication": "The current FDM fires mouse buttons on no-button frames far too often; thresholding and objective design must be fixed before larger reruns."
+    },
+    {
+      "rank": 2,
+      "id": "teacher_label_quality_too_low",
+      "severity": "critical",
+      "score": 98.9716,
+      "evidence": {
+        "idm_keyboard_accuracy": 0.012223072565834329,
+        "idm_mouse_button_f1": 0.010283898532443663,
+        "idm_mouse_move_pearson": 0.17248849180857093,
+        "idm_predicted_button_rate": 0.020364285822934387
+      },
+      "implication": "FDM training labels come from an IDM whose action quality is far below the renewed IDM target."
+    },
+    {
+      "rank": 3,
+      "id": "renewed_metric_gap_is_order_of_magnitude",
+      "severity": "critical",
+      "score": 16.0,
+      "evidence": {
+        "renewed_gate_status": "fail",
+        "renewed_gate_error_count": 16,
+        "keyboard_accuracy": 0.002659524222253231,
+        "mouse_button_f1": 0.012762612536712747,
+        "mouse_move_pearson": 0.34817355680270057
+      },
+      "implication": "The old completed FDM is not a weak pass; it fails every renewed aggregate and split hard gate."
+    },
+    {
+      "rank": 4,
+      "id": "global_threshold_not_action_prior_aware",
+      "severity": "high",
+      "score": 35.0,
+      "evidence": {
+        "calibration": {
+          "mode": "global_threshold_streaming",
+          "category_threshold": 0.35,
+          "last_train_loss": 0.6913180771952429,
+          "prediction_fingerprint": "bca23fbfb303623fa9675ce8e6770e651562e006b948973b86703f511bce73d8"
+        },
+        "label_source": "idm_pseudolabel"
+      },
+      "implication": "A single global category threshold is not controlling the highly imbalanced no-button prior."
+    },
+    {
+      "rank": 5,
+      "id": "raw_per_game_confusion_gap",
+      "severity": "high",
+      "score": 20.0,
+      "evidence": {
+        "raw_diagnostic_status": "pvc_required"
+      },
+      "implication": "Per-game confusion must be computed on PVC rows before interpreting heldout-game improvements."
+    },
+    {
+      "rank": 6,
+      "id": "aux_did_not_move_metrics",
+      "severity": "medium",
+      "score": 10.0,
+      "evidence": {
+        "aux_minus_d2e_mouse_button_f1": 0.0,
+        "aux_mouse_button_f1": 0.012762612536712747,
+        "d2e_only_mouse_button_f1": 0.012762612536712747
+      },
+      "implication": "The existing aux candidate should be demoted unless a later renewed ablation proves positive D2E heldout movement."
+    }
+  ],
+  "next_actions": [
+    {
+      "id": "run_pvc_per_game_confusion",
+      "priority": "high",
+      "action": "Run the G002 raw diagnostic streamer on PVC prediction/target rows before interpreting per-game heldout failures.",
+      "blocks": [
+        "per_game_confusion_claims"
+      ]
+    },
+    {
+      "id": "idm_teacher_repair",
+      "priority": "critical",
+      "action": "Do not scale FDM until IDM keyboard/mouse-button/mouse-move quality beats D2E paper/released G-IDM targets.",
+      "blocks": [
+        "G005-idm-full-paper-target",
+        "G007-calibrated-pseudolabels"
+      ]
+    },
+    {
+      "id": "fdm_false_positive_control",
+      "priority": "critical",
+      "action": "Use no-button prior losses, asymmetric thresholds, abstention, and per-head calibration in FDM exploration.",
+      "blocks": [
+        "G008-fdm-recipe-exploration",
+        "G009-fdm-full-hard-gates"
+      ]
+    }
+  ],
+  "claim_boundary": "G002 diagnoses why current artifacts fail renewed gates. A pass does not claim the model is good; it proves the failure modes and raw-artifact gaps are explicitly ranked before new GPU-heavy training."
+}
