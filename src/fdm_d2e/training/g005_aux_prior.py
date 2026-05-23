@@ -8,7 +8,9 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
-from fdm_d2e.eval.split_statistics import write_split_statistical_comparisons
+from fdm_d2e.config import load_config
+from fdm_d2e.eval.split_statistics import _baseline_stats_from_config, _baseline_tokens, _ensure_metric as _ensure_split_metric, _streaming_comparisons
+from fdm_d2e.eval.statistics import cluster_id
 from fdm_d2e.io_utils import sha256_file, stable_hash_json, write_json
 from fdm_d2e.training.streaming_idm import StreamingActionMetrics
 
@@ -244,6 +246,12 @@ def build_aux_prior_predictions(
     max_rows: int | None = None,
     max_button_stride: int = 4,
     min_aux_attack_rate: float = 0.02,
+    split_tags: Sequence[str] | None = None,
+    endpoints_config: dict[str, Any] | None = None,
+    baseline_names: Sequence[str] | None = None,
+    train_stats: dict[str, Any] | None = None,
+    model_name: str = "g005_aux_action_prior_d2e_aux_best",
+    cluster_key: str = "recording_id",
 ) -> dict[str, Any]:
     root_path = Path(root)
     source_pred_path = _path(root_path, d2e_predictions_path)
@@ -262,6 +270,13 @@ def build_aux_prior_predictions(
 
     metrics = StreamingActionMetrics()
     source_metrics = StreamingActionMetrics()
+    split_tags = [str(tag) for tag in (split_tags or [])]
+    baseline_names = [str(name) for name in (baseline_names or [])]
+    train_stats = train_stats or {}
+    split_metrics: dict[str, dict[str, dict[str, StreamingActionMetrics]]] = {
+        split: {name: {} for name in [model_name, *baseline_names]} for split in split_tags
+    }
+    split_counts = {split: 0 for split in split_tags}
     rows = 0
     changed = 0
     button_dropped = 0
@@ -283,10 +298,55 @@ def build_aux_prior_predictions(
             pred_out.write(json.dumps(out_row, sort_keys=True, separators=(",", ":")) + "\n")
             metrics.update(tokens, gt)
             source_metrics.update(original, gt)
+            active_splits = [split for split in split_tags if split in [str(tag) for tag in gt.get("eval_split_tags", []) or []]]
+            if active_splits:
+                tokens_by_name = {model_name: tokens}
+                for baseline in baseline_names:
+                    tokens_by_name[baseline] = _baseline_tokens(baseline, gt, train_stats)
+                cluster = cluster_id(gt, cluster_key)
+                for split in active_splits:
+                    split_counts[split] += 1
+                    for name, named_tokens in tokens_by_name.items():
+                        _ensure_split_metric(split_metrics[split][name], cluster).update(named_tokens, gt)
             if max_rows is not None and rows >= max_rows:
                 break
 
     link_status = _link_or_copy(target_paths[0], out_target)
+    inline_split_statistics = None
+    if endpoints_config is not None and split_tags:
+        inline_split_statistics = {
+            split: {
+                "payload": {
+                    "schema": "stat_comparison.v1",
+                    "reference_baseline": str(endpoints_config.get("reference_baseline", "noop")),
+                    "correction": str(endpoints_config.get("correction", "holm_bonferroni")),
+                    "cluster_key": cluster_key,
+                    "split": split,
+                    "model": model_name,
+                    "ground_truth_path": ",".join(str(path) for path in target_paths),
+                    "predictions_path": str(output_predictions_path),
+                    "train_records_path": None,
+                    "ground_truth_records": split_counts[split],
+                    "model_prediction_records": split_counts[split],
+                    "baseline_names": baseline_names,
+                    "comparisons": _streaming_comparisons(
+                        cluster_metrics_by_model=split_metrics[split],
+                        endpoints_config=endpoints_config,
+                        split_tag=split,
+                    ),
+                    "dataset_fingerprint": stable_hash_json(
+                        {
+                            "split": split,
+                            "model": model_name,
+                            "prediction_count": split_counts[split],
+                        }
+                    ),
+                    "claim_boundary": "Split-specific streaming statistical comparison collected inline during G005 prediction generation.",
+                },
+                "count": split_counts[split],
+            }
+            for split in split_tags
+        }
     return {
         "schema": "g005_aux_prior_prediction_build.v1",
         "status": "pass",
@@ -307,6 +367,7 @@ def build_aux_prior_predictions(
         },
         "metrics": metrics.payload(),
         "d2e_only_source_metrics_on_same_rows": source_metrics.payload(),
+        "inline_split_statistics": inline_split_statistics,
     }
 
 
@@ -471,6 +532,10 @@ def run_g005_aux_prior_candidate(config: dict[str, Any], *, root: str | Path = "
         max_examples_per_source=config.get("max_aux_examples_per_source"),
     )
     write_json(out_dir / "aux_action_prior_training.json", aux_training)
+    split_config_path = config.get("split_stats_config", "configs/eval/g005_split_statistics.yaml")
+    split_config = _load_json(_path(root_path, split_config_path))
+    endpoints = load_config(_path(root_path, split_config.get("endpoints", "configs/eval/primary_endpoints.yaml")))
+    train_stats = _baseline_stats_from_config(root_path, split_config)
     prediction_summary = build_aux_prior_predictions(
         root=root_path,
         aux_training=aux_training,
@@ -481,7 +546,14 @@ def run_g005_aux_prior_candidate(config: dict[str, Any], *, root: str | Path = "
         max_rows=config.get("max_d2e_eval_rows"),
         max_button_stride=int(config.get("max_button_stride", 4)),
         min_aux_attack_rate=float(config.get("min_aux_attack_rate", 0.02)),
+        split_tags=[str(tag) for tag in split_config.get("split_tags", ["temporal", "heldout_recording", "heldout_game"])],
+        endpoints_config=endpoints,
+        baseline_names=[str(name) for name in split_config.get("baseline_names", ["noop", "global_majority", "last_seen_train"])],
+        train_stats=train_stats,
+        model_name=str(split_config.get("model_name", "g005_aux_action_prior_d2e_aux_best")),
+        cluster_key=str(endpoints.get("cluster_key", "recording_id")),
     )
+    inline_split_statistics = prediction_summary.pop("inline_split_statistics", None)
     write_json(out_dir / "prediction_build_summary.json", prediction_summary)
     write_json(out_dir / "metrics.json", prediction_summary["metrics"])
     metadata = write_g005_metadata(
@@ -495,8 +567,25 @@ def run_g005_aux_prior_candidate(config: dict[str, Any], *, root: str | Path = "
         split_contract_path=config.get("split_contract", "artifacts/sources/d2e_full_split_contract.json"),
         config=config,
     )
-    split_config_path = config.get("split_stats_config", "configs/eval/g005_split_statistics.yaml")
-    split_stats = write_split_statistical_comparisons(_load_json(_path(root_path, split_config_path)), root=root_path)
+    outputs = []
+    if not isinstance(inline_split_statistics, dict):
+        raise ValueError("inline split statistics were not collected")
+    split_output_dir = _path(root_path, split_config.get("output_dir", output_dir))
+    split_output_dir.mkdir(parents=True, exist_ok=True)
+    for split, row in inline_split_statistics.items():
+        payload = row["payload"]
+        out_path = split_output_dir / f"split_{split}_statistical_comparison.json"
+        write_json(out_path, payload)
+        outputs.append({"split": split, "path": str(out_path.relative_to(root_path) if out_path.is_relative_to(root_path) else out_path), "status": "pass" if payload["comparisons"] else "empty", "comparisons": len(payload["comparisons"])})
+    split_stats = {
+        "schema": "split_statistical_comparison_build.v1",
+        "status": "pass" if outputs and all(row["status"] == "pass" for row in outputs) else "fail",
+        "model_name": split_config.get("model_name", "g005_aux_action_prior_d2e_aux_best"),
+        "outputs": outputs,
+        "claim_boundary": "Builder creates split-specific comparison artifacts inline during G005 prediction generation; G006 still requires final artifact synthesis.",
+    }
+    if split_config.get("summary_out"):
+        write_json(_path(root_path, split_config["summary_out"]), split_stats)
     statistical = {
         "schema": "g005_aux_statistical_comparison.v1",
         "status": "pass" if split_stats.get("status") == "pass" else "fail",
