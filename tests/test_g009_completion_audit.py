@@ -71,6 +71,8 @@ def test_g009_completion_audit_passes_on_full_fixture(tmp_path: Path):
     payload = validate_g009_completion(_config(), root=tmp_path)
     assert payload["status"] == "pass"
     assert payload["error_count"] == 0
+    assert payload["artifacts"]["package_manifest"]["sha256"] is None
+    assert payload["artifacts"]["package_manifest"]["hash_omitted_reason"] == "avoid_g009_package_manifest_hash_cycle"
 
 
 def test_g009_completion_audit_fails_on_prereq_claim_and_manifest_hash(tmp_path: Path):

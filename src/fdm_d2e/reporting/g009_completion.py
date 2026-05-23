@@ -19,6 +19,28 @@ def _file_status(path: Path, rel_path: str) -> dict[str, Any]:
     return {"path": rel_path, "exists": True, "bytes": path.stat().st_size, "sha256": sha256_file(path)}
 
 
+def _package_manifest_status(path: Path, rel_path: str, manifest: dict[str, Any] | None) -> dict[str, Any]:
+    """Report package-manifest presence without hashing it.
+
+    The package manifest includes the G009 audit hash, so storing the package
+    manifest hash in the G009 audit creates the same fixed-point problem as the
+    final-quality audit. The audit still loads the manifest and verifies the
+    hashes of required entries; this row records stable manifest metadata only.
+    """
+
+    if not path.exists() or not path.is_file():
+        return {"path": rel_path, "exists": False, "bytes": 0, "sha256": None, "entry_count": 0}
+    return {
+        "path": rel_path,
+        "exists": True,
+        "bytes": path.stat().st_size,
+        "sha256": None,
+        "schema": (manifest or {}).get("schema"),
+        "entry_count": len((manifest or {}).get("entries", [])),
+        "hash_omitted_reason": "avoid_g009_package_manifest_hash_cycle",
+    }
+
+
 def _get(data: dict[str, Any] | None, dotted: str) -> Any:
     cur: Any = data
     for part in dotted.split("."):
@@ -57,13 +79,19 @@ def validate_g009_completion(config: dict[str, Any], *, root: str | Path = ".") 
             findings.append({"severity": "error", "code": "prerequisite_goal_not_complete", "goal_id": str(prereq), "actual": actual})
 
     paths = {key: str(value) for key, value in dict(config.get("paths", {})).items()}
-    artifacts = {key: _file_status(root_path / rel_path, rel_path) for key, rel_path in paths.items()}
+    manifest_path = paths.get("package_manifest", "artifacts/reproducibility/package_manifest.json")
+    manifest = _load_json(root_path / manifest_path)
+    artifacts = {}
+    for key, rel_path in paths.items():
+        artifacts[key] = (
+            _package_manifest_status(root_path / rel_path, rel_path, manifest)
+            if key == "package_manifest"
+            else _file_status(root_path / rel_path, rel_path)
+        )
     for key, evidence in artifacts.items():
         if not evidence["exists"]:
             findings.append({"severity": "error", "code": "missing_required_artifact", "artifact_key": key, "path": evidence["path"]})
 
-    manifest_path = paths.get("package_manifest", "artifacts/reproducibility/package_manifest.json")
-    manifest = _load_json(root_path / manifest_path)
     claim_audit = _load_json(root_path / paths.get("claim_boundary_audit", "")) if paths.get("claim_boundary_audit") else None
     final_quality = _load_json(root_path / paths.get("final_quality_audit", "")) if paths.get("final_quality_audit") else None
 
