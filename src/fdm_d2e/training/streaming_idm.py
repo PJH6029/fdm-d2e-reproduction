@@ -3303,15 +3303,18 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         paths_key="target_record_paths",
         glob_key="target_records_glob",
     )
-    prediction_config: dict[str, Any] = {
-        "checkpoint_path": str(checkpoint_path),
-        "checkpoint_metadata_path": str(output_dir / "checkpoint_metadata.json"),
-        "records_path": str(checkpoint_config["target_records"]),
-        "output_dir": str(output_dir),
-        "resume_predictions": bool(config.get("resume_predictions", True)),
-        "force_cpu": force_cpu,
-        "summary_out": str(config.get("prediction_summary_out", output_dir / "prediction_recovery_summary.json")),
-    }
+    prediction_config: dict[str, Any] = dict(checkpoint_config)
+    prediction_config.update(
+        {
+            "checkpoint_path": str(checkpoint_path),
+            "checkpoint_metadata_path": str(output_dir / "checkpoint_metadata.json"),
+            "records_path": str(checkpoint_config["target_records"]),
+            "output_dir": str(output_dir),
+            "resume_predictions": bool(config.get("resume_predictions", True)),
+            "force_cpu": force_cpu,
+            "summary_out": str(config.get("prediction_summary_out", output_dir / "prediction_recovery_summary.json")),
+        }
+    )
     if len(target_record_paths) > 1:
         prediction_config["record_paths"] = [str(path) for path in target_record_paths]
         if checkpoint_config.get("target_records_glob"):
