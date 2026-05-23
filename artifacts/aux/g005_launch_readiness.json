@@ -1,37 +1,37 @@
 {
   "schema": "g005_launch_readiness.v1",
-  "status": "blocked",
-  "root": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction",
+  "status": "ready",
+  "root": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction",
   "allow_precheckpoint": false,
   "goal_statuses": {
     "G001-data-universe-audit": "complete",
     "G002-split-leakage-contract": "complete",
-    "G003-d2e-only-idm": "in_progress",
-    "G004-d2e-only-fdm-4xh200": "pending",
-    "G005-aux-data-best-model": "pending",
+    "G003-d2e-only-idm": "complete",
+    "G004-d2e-only-fdm-4xh200": "complete",
+    "G005-aux-data-best-model": "in_progress",
     "G006-evaluation-failure-analysis": "pending",
     "G007-runtime-sdk-adapter": "complete",
     "G008-live-game-suite": "pending",
     "G009-report-repro-package": "pending"
   },
   "prerequisite_goal_statuses": {
-    "G003-d2e-only-idm": "in_progress",
-    "G004-d2e-only-fdm-4xh200": "pending"
+    "G003-d2e-only-idm": "complete",
+    "G004-d2e-only-fdm-4xh200": "complete"
   },
   "d2e_only_audits": {
     "g003": {
       "path": "artifacts/idm/g003_full_idm_completion_audit.json",
       "exists": true,
-      "bytes": 9409,
-      "status": "fail",
-      "error_count": 26
+      "bytes": 5803,
+      "status": "pass",
+      "error_count": 0
     },
     "g004": {
       "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
       "exists": true,
-      "bytes": 14059,
-      "status": "fail",
-      "error_count": 46
+      "bytes": 6058,
+      "status": "pass",
+      "error_count": 0
     }
   },
   "selected_aux_candidate_ids": [
@@ -134,36 +134,7 @@
       "--completion-ready"
     ]
   },
-  "findings": [
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G003-d2e-only-idm",
-      "actual": "in_progress"
-    },
-    {
-      "severity": "error",
-      "code": "prerequisite_goal_not_complete",
-      "goal_id": "G004-d2e-only-fdm-4xh200",
-      "actual": "pending"
-    },
-    {
-      "severity": "error",
-      "code": "d2e_only_audit_not_pass",
-      "audit": "g003",
-      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
-      "status": "fail",
-      "error_count": 26
-    },
-    {
-      "severity": "error",
-      "code": "d2e_only_audit_not_pass",
-      "audit": "g004",
-      "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
-      "status": "fail",
-      "error_count": 46
-    }
-  ],
+  "findings": [],
   "warnings": [],
   "claim_boundary": "G005 launch readiness is a preflight only; it does not train, checkpoint G005, or weaken G003/G004 D2E-only prerequisites."
 }
