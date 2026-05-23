@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from fdm_d2e.training.video_idm import precompute_video_idm_cache, predict_video_idm_checkpoint, train_video_idm
+from fdm_d2e.training.video_idm import _VideoFrameStream, precompute_video_idm_cache, predict_video_idm_checkpoint, train_video_idm
 from fdm_d2e.training.torch_idm import torch_available
 
 
@@ -48,6 +48,26 @@ def _record(idx: int, *, split: str, frame_dir: Path) -> dict:
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
     path.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+
+def test_video_frame_stream_reuses_next_frame_without_restart():
+    stream = _VideoFrameStream("unused.mkv", image_size=1, fps=20)
+    calls: list[int] = []
+
+    def fake_read_next() -> bytes:
+        frame_index = stream.current_index
+        calls.append(frame_index)
+        frame = bytes([frame_index])
+        stream.current_index += 1
+        stream.last_frame = frame
+        stream.cache[frame_index] = frame
+        return frame
+
+    stream._read_next = fake_read_next  # type: ignore[method-assign]
+    assert stream.get(0) == b"\x00"
+    assert stream.get(1) == b"\x01"
+    assert stream.get(1) == b"\x01"
+    assert calls == [0, 1]
 
 
 def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):

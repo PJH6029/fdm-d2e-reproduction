@@ -201,6 +201,7 @@ class _VideoFrameStream:
         self.proc: subprocess.Popen[bytes] | None = None
         self.current_index = 0
         self.last_frame: bytes | None = None
+        self.cache: dict[int, bytes] = {}
 
     def _open(self) -> None:
         cmd = [
@@ -220,6 +221,7 @@ class _VideoFrameStream:
         self.proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.current_index = 0
         self.last_frame = None
+        self.cache = {}
 
     def close(self) -> None:
         if self.proc is not None:
@@ -227,6 +229,9 @@ class _VideoFrameStream:
                 self.proc.kill()
             self.proc.wait()
             self.proc = None
+        self.current_index = 0
+        self.last_frame = None
+        self.cache = {}
 
     def _read_next(self) -> bytes | None:
         if self.proc is None:
@@ -247,12 +252,19 @@ class _VideoFrameStream:
             if code:
                 raise subprocess.CalledProcessError(code, ["ffmpeg", self.source], stderr=stderr)
             return None
+        frame_index = self.current_index
         frame = b"".join(chunks)
         self.current_index += 1
         self.last_frame = frame
+        self.cache[frame_index] = frame
+        min_keep = self.current_index - 8
+        for old_index in [idx for idx in self.cache if idx < min_keep]:
+            self.cache.pop(old_index, None)
         return frame
 
     def get(self, index: int) -> bytes | None:
+        if index in self.cache:
+            return self.cache[index]
         if index < self.current_index:
             self.close()
         while self.current_index <= index:
