@@ -1,7 +1,7 @@
 {
   "schema": "repro_package_manifest.v1",
   "generated_at_utc": "deterministic-manifest-no-wall-clock",
-  "entry_count": 437,
+  "entry_count": 442,
   "entries": [
     {
       "path": "AGENTS.md",
@@ -616,6 +616,12 @@
       "sha256": "81305684f2eaf6f80e9de04146edb0867bda781da13d25319f8d9a23a53666f6"
     },
     {
+      "path": "configs/eval/g005_split_statistics.yaml",
+      "kind": "configuration",
+      "bytes": 806,
+      "sha256": "b245eb7262d1d405c29e3f2630a68ad7f4bd952c07aca045c847d998675a98ff"
+    },
+    {
       "path": "configs/eval/g006_completion.yaml",
       "kind": "configuration",
       "bytes": 2887,
@@ -752,6 +758,12 @@
       "kind": "configuration",
       "bytes": 2830,
       "sha256": "dba8021028a6c6e9417e14ec61c7f2999dba5987159d7e45fb2017b3419fb656"
+    },
+    {
+      "path": "configs/model/g005_aux_prior_candidate.yaml",
+      "kind": "configuration",
+      "bytes": 2737,
+      "sha256": "8a4ea5144c1541e1629e777c4c0697ea7fad6bdac6d4c86eb13f2c6d1c313158"
     },
     {
       "path": "configs/model/idm_predict_shooter64_train_button_recall.yaml",
@@ -1636,6 +1648,12 @@
       "sha256": "a7d0f3894bdc8964843258f2758897a827ac985bd6855a7140223c120a421be7"
     },
     {
+      "path": "scripts/run_g005_aux_prior_candidate.py",
+      "kind": "reproduction_script",
+      "bytes": 2290,
+      "sha256": "0bf06306b9bdfd7e84e8a831246de98ef4f30c2cc0fd2d5e8506530e56e4f6b1"
+    },
+    {
       "path": "scripts/run_g4_h200_apex8.sh",
       "kind": "reproduction_script",
       "bytes": 3257,
@@ -2134,6 +2152,12 @@
       "sha256": "4ca845236d692917fcba2fff21b7794741511e6682c9dcfe1f0a8a73ccda8619"
     },
     {
+      "path": "src/fdm_d2e/training/g005_aux_prior.py",
+      "kind": "other",
+      "bytes": 24067,
+      "sha256": "c2d2056f726fcbbbd13177219c645634a1375a5cfa40da9cb312c7611bdcf50e"
+    },
+    {
       "path": "src/fdm_d2e/training/knn_fdm.py",
       "kind": "other",
       "bytes": 8253,
@@ -2414,6 +2438,12 @@
       "kind": "other",
       "bytes": 7004,
       "sha256": "afa19c0baf3fcd916d15012d0de3b739fcdf9ed13d79d0480a27c1eed94caa54"
+    },
+    {
+      "path": "tests/test_g005_aux_prior.py",
+      "kind": "other",
+      "bytes": 8009,
+      "sha256": "6dcb1e6788930507cff9e3cc5683914111dfdcb2bec1c02ba4ff230b4c1bf8f3"
     },
     {
       "path": "tests/test_g005_aux_runtime_env.py",
