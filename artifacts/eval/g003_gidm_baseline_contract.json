@@ -1,0 +1,327 @@
+{
+  "schema": "gidm_baseline_contract.v1",
+  "status": "pass",
+  "error_count": 0,
+  "source_evidence": {
+    "d2e_paper": {
+      "title": "D2E: Scaling Vision-Action Pretraining on Desktop Data for Transfer to Embodied AI",
+      "url": "https://arxiv.org/pdf/2510.05684",
+      "pdf_sha256": "8967abde27d3acc1bffb7f7d0d1c0455ad39c23106b589e19f978d4c11b54e2b",
+      "tables": [
+        "Table 4",
+        "Table 5",
+        "Table 6",
+        "Table 18"
+      ],
+      "metric_section": "Appendix F.2",
+      "training_section": "Appendix E"
+    },
+    "d2e_repo": {
+      "url": "https://github.com/worv-ai/D2E",
+      "commit": "80e98e26e4dc584ec76fec5789b4a97c275dd032",
+      "readme_sha256": "b358c2abb539a1eafd0c7b04eadf00ae9ca4834966cdb6821eadc79aae338b8d",
+      "inference_py_sha256": "9a85cb992d91e132073052ae1d6010b6410362aca692655166da258a2ed36e45",
+      "evaluate_py_sha256": "8655dd3c558cd3cca43cc896aee6de538b9ad469bb3dd05263f54e61961742fd"
+    },
+    "d2e_repo_commit": "80e98e26e4dc584ec76fec5789b4a97c275dd032",
+    "hf_model": {
+      "id": "open-world-agents/Generalist-IDM-1B",
+      "url": "https://huggingface.co/open-world-agents/Generalist-IDM-1B",
+      "api_url": "https://huggingface.co/api/models/open-world-agents/Generalist-IDM-1B",
+      "retrieved_at_utc": "2026-05-23T13:38:39Z",
+      "revision": "eae16486df3169aafe4a1d74fb2375185b5dc641",
+      "last_modified": "2026-01-15T10:57:19.000Z",
+      "private": false,
+      "gated": false,
+      "disabled": false,
+      "siblings": [
+        ".gitattributes",
+        "README.md",
+        "added_tokens.json",
+        "chat_template.jinja",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model.safetensors",
+        "preprocessor_config.json",
+        "processor_config.json",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "video_preprocessor_config.json",
+        "vocab.json"
+      ]
+    },
+    "local_paths": {}
+  },
+  "paper_reported_targets": {
+    "source": "D2E paper Tables 4 and 5, six in-distribution G-IDM rows",
+    "row_count": 6,
+    "per_game": [
+      {
+        "game": "Brotato",
+        "model": "G-IDM",
+        "pearson_x": 0.7365,
+        "pearson_y": 0.8203,
+        "scale_ratio_x": 1.37,
+        "scale_ratio_y": 1.29,
+        "keyboard_accuracy": 0.8636,
+        "mouse_button_accuracy": 0.985
+      },
+      {
+        "game": "Stardew Valley",
+        "model": "G-IDM",
+        "pearson_x": 0.8298,
+        "pearson_y": 0.7557,
+        "scale_ratio_x": 1.13,
+        "scale_ratio_y": 1.17,
+        "keyboard_accuracy": 0.7435,
+        "mouse_button_accuracy": 0.9643
+      },
+      {
+        "game": "Core Keeper",
+        "model": "G-IDM",
+        "pearson_x": 0.7725,
+        "pearson_y": 0.6455,
+        "scale_ratio_x": 1.43,
+        "scale_ratio_y": 1.51,
+        "keyboard_accuracy": 0.7,
+        "mouse_button_accuracy": 0.9401
+      },
+      {
+        "game": "Apex Legends",
+        "model": "G-IDM",
+        "pearson_x": 0.839,
+        "pearson_y": 0.8527,
+        "scale_ratio_x": 1.13,
+        "scale_ratio_y": 1.23,
+        "keyboard_accuracy": 0.7655,
+        "mouse_button_accuracy": 0.9967
+      },
+      {
+        "game": "GTA V",
+        "model": "G-IDM",
+        "pearson_x": 0.7944,
+        "pearson_y": 0.8389,
+        "scale_ratio_x": 1.09,
+        "scale_ratio_y": 1.42,
+        "keyboard_accuracy": 0.6983,
+        "mouse_button_accuracy": 0.9411
+      },
+      {
+        "game": "Minecraft",
+        "model": "G-IDM",
+        "pearson_x": 0.8029,
+        "pearson_y": 0.7838,
+        "scale_ratio_x": 1.24,
+        "scale_ratio_y": 1.27,
+        "keyboard_accuracy": 0.6097,
+        "mouse_button_accuracy": 0.9165
+      }
+    ],
+    "aggregate": {
+      "pearson_x": 0.79585,
+      "pearson_y": 0.782817,
+      "scale_ratio_x": 1.231667,
+      "scale_ratio_y": 1.315,
+      "keyboard_accuracy": 0.7301,
+      "mouse_button_accuracy": 0.957283
+    },
+    "unreported_metrics": {
+      "mouse_button_f1": {
+        "status": "not_paper_reported",
+        "required_source": "local exact-split postprocessor over released G-IDM predictions"
+      },
+      "no_button_false_positive_rate": {
+        "status": "not_paper_reported",
+        "required_source": "local exact-split postprocessor over released G-IDM predictions"
+      }
+    }
+  },
+  "official_metric_protocol": {
+    "bin_ms": 50,
+    "empty_bins_as_correct": false,
+    "mouse_move": "sum dx/dy per 50ms bin; report pearson_x, pearson_y, scale_ratio_x, scale_ratio_y",
+    "mouse_button": "exact per-button count match per 50ms bin; report button_accuracy",
+    "keyboard": "exact press/release virtual-key count match per 50ms bin; report key_accuracy",
+    "mouse_scroll": "exact scroll amount match per 50ms bin",
+    "autoregressive": true,
+    "teacher_forcing": false,
+    "local_metric_mapping": {
+      "keyboard_accuracy": "official keyboard.key_accuracy",
+      "mouse_button_accuracy": "official mouse_button.button_accuracy",
+      "mouse_button_f1": "local postprocessor over official predicted MCAP bins; not a paper-reported metric",
+      "mouse_move_pearson": "mean of official mouse_move.pearson_x and mouse_move.pearson_y unless split report keeps axes separate",
+      "mouse_scale_ratio": "mean of official scale_ratio_x and scale_ratio_y plus axis-specific values"
+    }
+  },
+  "official_inference_defaults": {
+    "model": "open-world-agents/Generalist-IDM-1B",
+    "model_revision": "eae16486df3169aafe4a1d74fb2375185b5dc641",
+    "device": "cuda",
+    "max_context_length": 2048,
+    "screen_resample_rate_hz": 20.0,
+    "mouse_resample_rate_hz": 20.0,
+    "keyboard_resample_rate_hz": 0.0,
+    "action_topics": [
+      "keyboard",
+      "mouse/raw"
+    ],
+    "time_shift_seconds": 0.1,
+    "video_filter": "fps=60,scale=448:448",
+    "trust_remote_code": true
+  },
+  "target_sequence": {
+    "phase_1": {
+      "id": "beat_paper_reported_metrics",
+      "applies_to_goal": "G005-idm-full-paper-target",
+      "primary_targets": {
+        "pearson_x": 0.796,
+        "pearson_y": 0.783,
+        "keyboard_accuracy": 0.73,
+        "mouse_button_accuracy": 0.957,
+        "scale_ratio_x_max": 1.23,
+        "scale_ratio_y_max": 1.31
+      },
+      "secondary_targets": {
+        "mouse_button_f1": "not paper-reported; report locally and require improvement over existing IDM baseline",
+        "no_button_false_positive_rate": "not paper-reported; report locally for FDM downstream calibration"
+      }
+    },
+    "phase_2": {
+      "id": "beat_released_gidm_exact_local_splits",
+      "applies_to_goal": "G006-g-idm-exact-split",
+      "prerequisite": "phase_1_pass",
+      "baseline": "released open-world-agents/Generalist-IDM-1B at pinned revision on the same local heldout rows",
+      "require_statistical_comparison": true
+    }
+  },
+  "exact_split_contract": {
+    "dataset_fingerprint": "a4d96c1b35a770a5ce426a3407af4fbd728ddac9a648cdb4746e2f827f803216",
+    "external_artifact_manifest": "artifacts/reproducibility/external_artifact_manifest.json",
+    "split_artifacts": {
+      "split_contract": {
+        "path": "artifacts/sources/d2e_full_split_contract.json",
+        "exists": true,
+        "bytes": 466810,
+        "sha256": "e64e90f3745108a2813d4d4f84ee69a08f4cb7e46923371983006c481dadde98"
+      },
+      "data_universe": {
+        "path": "artifacts/sources/d2e_full_data_universe_manifest.json",
+        "exists": true,
+        "bytes": 1477181,
+        "sha256": "549cd16aa992bc76c3bea9f571100fe5cc721ca706e7d50f2c9e40fd2d21c8f8"
+      },
+      "temporal": {
+        "path": "artifacts/sources/d2e_full_temporal_split_manifest.json",
+        "exists": true,
+        "bytes": 283305,
+        "sha256": "0a11aeb5a529c5d2309544f34ec17b621ff22fcd7d2a112af4462e221a23ff45"
+      },
+      "heldout_recording": {
+        "path": "artifacts/sources/d2e_full_heldout_recording_split_manifest.json",
+        "exists": true,
+        "bytes": 72346,
+        "sha256": "5120cf7abcb78c005407479f52643748bcd3e125388daf8c8ddd79f28cdd08c3"
+      },
+      "heldout_game": {
+        "path": "artifacts/sources/d2e_full_heldout_game_split_manifest.json",
+        "exists": true,
+        "bytes": 66791,
+        "sha256": "16bca1616ab35f23f6ac1d028889def00cc271b8f48808dcddb8579e277d6b11"
+      }
+    },
+    "required_external_artifacts": {
+      "target_all_eval": {
+        "path": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+        "exists": true,
+        "bytes": 341543678522,
+        "sha256": "08c416b873f6785f643bc1397c60d872f5a17aff945fa0d1ae245aa4a2b55c24",
+        "fingerprint": null,
+        "storage_uri": "mlxp-pvc://p-production/prod-rsv-jeonghunpark-20260521-76e25a/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+        "proof": "sha256"
+      }
+    },
+    "required_splits": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ],
+    "resolution_policy": "run against the same full target rows already materialized from 480p and original sources; keep source_id/resolution tags in every work unit",
+    "external_artifact_manifest_artifact": {
+      "path": "artifacts/reproducibility/external_artifact_manifest.json",
+      "exists": true,
+      "bytes": 4726,
+      "sha256": "bb515dfe2231fe9d793929d453655ce4d0b7143654c9e6d236489c5d2be66455"
+    }
+  },
+  "exact_split_inference_plan": {
+    "work_unit_key": [
+      "split",
+      "game",
+      "recording_id",
+      "source_id",
+      "resolution",
+      "segment_index"
+    ],
+    "input_builder": {
+      "source": "target_all_eval rows plus D2E source screen media references",
+      "materialized_work_units": "outputs/gidm_release_exact_split/work_units.jsonl",
+      "requires_original_ground_truth_mcap": true,
+      "requires_video_or_media_ref": true
+    },
+    "commands": {
+      "inference": "uv run inference.py <input_video> <predicted_mcap> --model open-world-agents/Generalist-IDM-1B --device cuda --max-context-length 2048 --time-shift 0.1",
+      "evaluation": "uv run evaluate.py <ground_truth_mcap> <predicted_mcap> --bin-ms 50 --output <metrics_json>"
+    },
+    "outputs": {
+      "root": "outputs/gidm_release_exact_split/",
+      "predicted_mcaps": "outputs/gidm_release_exact_split/predicted_mcap/<split>/<work_unit>.mcap",
+      "official_metrics": "outputs/gidm_release_exact_split/official_metrics/<split>/<work_unit>.json",
+      "local_postprocessed_metrics": "outputs/gidm_release_exact_split/local_metrics/<split>/<work_unit>.json",
+      "summary": "artifacts/eval/g006_gidm_exact_split_baseline_summary.json"
+    },
+    "resume_policy": {
+      "status_file": "outputs/gidm_release_exact_split/work_unit_status.jsonl",
+      "skip_when": "predicted_mcap and metric JSON hashes match status row",
+      "retry_when": "missing output, hash mismatch, nonzero exit, or incomplete metric fields",
+      "shard_by": "work_unit_key hash modulo worker_count"
+    },
+    "parallelization": {
+      "preferred_gpu_count": 4,
+      "execution": "one inference worker per GPU with recording-level shards; keep CPU ffmpeg/evaluate workers bounded to avoid starving GPU inference",
+      "monitoring": "record nvidia-smi utilization, per-worker latency, failures, and completed work units"
+    }
+  },
+  "environment_pinning": {
+    "d2e_repo_commit": "80e98e26e4dc584ec76fec5789b4a97c275dd032",
+    "hf_model_revision": "eae16486df3169aafe4a1d74fb2375185b5dc641",
+    "python_entrypoints": [
+      "inference.py",
+      "evaluate.py"
+    ],
+    "uv_required": true,
+    "system_tools": [
+      "ffmpeg",
+      "ffprobe"
+    ],
+    "gpu_dtype": "bfloat16 where supported by official code",
+    "dependency_source": "official D2E scripts and their inline uv dependencies"
+  },
+  "fallback_semantics": {
+    "released_gidm_unavailable": "block_exact_split_goal",
+    "paper_metrics_substitute_for_exact_split": false,
+    "requires_error_log": true,
+    "allowed_diagnostic_fallbacks": [
+      "record HF API/model download failure with revision and timestamp",
+      "run a short official inference smoke only as dependency diagnosis",
+      "continue G004/G005 paper-target work only if it does not claim exact-split released G-IDM comparison"
+    ]
+  },
+  "claim_boundaries": [
+    "This contract pins a public released G-IDM baseline and paper targets; it is not evidence that our model beat either target.",
+    "Paper-reported metrics cannot substitute for released-model exact-split inference on local heldout rows.",
+    "Mouse-button F1 and no-button false-positive rate are local additional metrics because D2E paper/repo report mouse-button accuracy, not F1 or FPR."
+  ],
+  "findings": []
+}
