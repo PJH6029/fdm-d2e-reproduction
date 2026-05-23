@@ -146,6 +146,21 @@ def _load(path: Path) -> dict | None:
         return None
     return json.loads(path.read_text())
 
+def _git_output(args: list[str]) -> str | None:
+    try:
+        return subprocess.check_output(["git", *args], text=True, stderr=subprocess.DEVNULL).strip()
+    except Exception:
+        return None
+
+def _git_diff_sha256() -> str | None:
+    try:
+        diff = subprocess.check_output(["git", "diff", "--binary", "HEAD", "--"], stderr=subprocess.DEVNULL)
+    except Exception:
+        return None
+    if not diff:
+        return None
+    return hashlib.sha256(diff).hexdigest()
+
 def _gpu_monitor_status(path: Path, expected_gpus: int) -> dict:
     status = {
         "rows": 0,
@@ -202,7 +217,9 @@ payload = {
     "expected_gpus": int("$EXPECTED_GPUS"),
     "exit_code": int("$RUN_STATUS"),
     "wall_clock_seconds": int("$END_EPOCH") - int("$START_EPOCH"),
-    "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+    "git_head": _git_output(["rev-parse", "HEAD"]),
+    "git_status_short": _git_output(["status", "--short"]),
+    "git_diff_sha256": _git_diff_sha256(),
     "gpu_smoke_report": "$GPU_SMOKE_REPORT",
     "gpu_monitor_sha256": _sha256(gpu_monitor_path),
     "gpu_monitor_status": _gpu_monitor_status(gpu_monitor_path, int("$EXPECTED_GPUS")),
