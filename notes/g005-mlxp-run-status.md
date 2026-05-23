@@ -91,3 +91,7 @@ Result:
 - Small G005 evidence files were copied locally; raw `predictions.jsonl`, target records, and large PVC outputs remain on the MLXP pod/PVC.
 
 G005 is ready for an OMX checkpoint with a fresh active aggregate `get_goal` snapshot. Do not call `update_goal complete`; only checkpoint `G005-aux-data-best-model` in OMX.
+
+## 2026-05-23 14:14 KST G005 OMX checkpoint complete
+
+`G005-aux-data-best-model` was checkpointed complete in OMX with fresh active aggregate `get_goal` snapshot. Evidence string referenced commit `2b97079`, passing finalization/audit artifacts, 16,698,646 prediction/target counts, 16-worker parallel prediction summary, split-stat summary, and ablation summary. The aggregate Codex goal remains active; do not call `update_goal complete` until G009/final quality gates complete.

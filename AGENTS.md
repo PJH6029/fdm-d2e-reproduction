@@ -38,7 +38,7 @@ Current `.omx/ultragoal/goals.json` status:
 - `G002-split-leakage-contract` — complete.
 - `G003-d2e-only-idm` — complete and checkpointed in OMX.
 - `G004-d2e-only-fdm-4xh200` — complete and checkpointed in OMX.
-- `G005-aux-data-best-model` — in_progress.
+- `G005-aux-data-best-model` — complete and checkpointed in OMX.
 - `G006-evaluation-failure-analysis` — pending.
 - `G007-runtime-sdk-adapter` — complete for the adapter-contract slice only.
 - `G008-live-game-suite` — pending.
@@ -65,19 +65,25 @@ Terminal snapshot: 2026-05-23 13:00 KST.
 - GPU-utilization diagnosis: `artifacts/fdm/g004_gpu_rank_imbalance_diagnosis.json` records that the completed `bfe61db` run could idle GPU0 during epoch tails because cache shards were assigned by path modulo. Local/origin hardening after `d9375fa` uses deterministic `greedy_rows` cache-shard assignment for future/recovery runs, including G005+ training.
 - Claim boundary: G004 is D2E-only offline FDM training/evaluation evidence. It does not prove D2E+aux best-model, G006 final failure analysis, G008 live-game control, or final G009 reproducibility package completion.
 
-## Current G005 MLXP run/restart state
+## Completed G005 MLXP run/finalization state
 
-Latest snapshot: 2026-05-23 13:37 KST.
+Terminal snapshot: 2026-05-23 14:14 KST.
 
-- G005 is active in OMX, not checkpointed complete.
-- Pod checkout at snapshot: `06b69c0`; local/origin are being hardened beyond that checkout to parallelize G005 target prediction.
-- Active pre-hardening parent: PID `266056`, command `uv run python scripts/run_g005_aux_prior_candidate.py --config configs/model/g005_aux_prior_candidate.yaml --output artifacts/aux/g005_d2e_aux_train_run.json`.
-- Active watcher: PID `266067`, command `uv run python scripts/watch_g005_then_finalize.py ... --completion-ready`.
-- The active candidate is CPU/IO-heavy source-specific auxiliary action-prior evidence, not a neural 4×H200 training run. GPU utilization at 0% is expected for this candidate only; future neural/visual aux candidates still must follow `notes/gpu-utilization-operating-rule.md`.
-- Snapshot progress: `outputs/fdm_aux/d2e_aux_best/aux_action_prior_training.json` status=`pass`, `total_rows_consumed=19,525,144`; `outputs/fdm_aux/d2e_aux_best/predictions.jsonl` had `1,156,193` rows / `540,530,377` bytes and was still growing; watcher summary status was `waiting_active_parent`.
-- Do not use the pre-hardening active run for G005 completion: local/origin hardening adds 16-worker prediction over G004 `prediction_recovery_parts/part_*/predictions.jsonl`, links `outputs/fdm_aux/d2e_aux_best/d2e_target_records.jsonl` to the full monolithic D2E target file instead of only the first target shard, and preserves inline split-stat collection.
-- After that hardening is committed/pushed, capture a pod snapshot, terminate only the pre-hardening G005 parent/watcher, back up partial `outputs/fdm_aux/d2e_aux_best` and `artifacts/aux/g005_*` outputs, pull latest origin, relaunch G005, and restart the watcher.
-- Do **not** checkpoint `G005-aux-data-best-model` complete until `artifacts/aux/g005_aux_finalization_summary.json` reports `status=pass` and `artifacts/aux/g005_aux_completion_audit.json` reports `status=pass`, `error_count=0`. Then checkpoint OMX with a fresh active aggregate `get_goal` snapshot; do not call `update_goal complete` for G005.
+- G005 is complete and checkpointed in OMX. Evidence commit: `2b97079`.
+- Pod run checkout: `3868187` for the candidate run; finalization pulled `7d3098f` for watcher/namespace hardening.
+- Candidate type: CPU/IO-heavy source-specific D2E+aux action-prior candidate, not a neural 4×H200 aux pretraining run. GPU utilization at 0% was expected for this candidate only and was handled by 16-worker prediction parallelization over full target shards.
+- Run evidence copied locally:
+  - `artifacts/aux/g005_d2e_aux_train_run.json` — `status=pass`, `exit_code=0`.
+  - `outputs/fdm_aux/d2e_aux_best/prediction_build_summary.json` — `status=pass`, `rows=16,698,646`, `parallel_prediction=true`, `prediction_workers=16`.
+  - `outputs/fdm_aux/d2e_aux_best/checkpoint.pt`, `checkpoint_metadata.json`, `resolved_config.json`, `metrics.json`, `statistical_comparison.json` — small reusable G005 checkpoint/metadata artifacts.
+  - `artifacts/eval/g005_split_statistical_comparisons_summary.json` — `status=pass`.
+  - `artifacts/aux/d2e_aux_ablation_summary.json` — `status=pass`.
+  - `artifacts/aux/g005_aux_namespace_manifest.json` — `completion_ready=true` with source namespaces normalized to `outputs/aux/<source>/`.
+  - `artifacts/aux/g005_aux_finalization_summary.json` — `status=pass`, `g005_audit_status=pass`, `g005_audit_error_count=0`.
+  - `artifacts/aux/g005_aux_completion_audit.json` — `status=pass`, `error_count=0`, `target_records=16,698,646`, `predictions=16,698,646`.
+- Raw G005 `predictions.jsonl`, target-record symlink, prediction parts, and larger PVC outputs remain on the MLXP PVC; the audit records their counts/hashes.
+- Two hardenings were required before finalization: `3868187` added 16-worker prediction and full-target symlink handling; `7d3098f` treated zombie `uv` wrapper PIDs as inactive and normalized absolute aux namespace evidence to repo-relative paths.
+- Claim boundary: G005 proves a D2E+aux candidate and D2E-only-vs-D2E+aux ablation evidence. It does not complete G006 final failure analysis, G008 live-game evidence, or G009 final report/repro package.
 
 Useful G004 monitor command:
 
