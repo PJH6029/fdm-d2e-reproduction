@@ -310,7 +310,9 @@ def build_failure_root_cause_audit(config: dict[str, Any], *, root: str | Path =
     target_game_counts = _get(split_summary, "counts.target_games") or {}
     raw_required_paths = [str(path) for path in config.get("raw_required_paths", [])]
     raw_artifacts = {path: _external_proof(external_by_path.get(path)) for path in raw_required_paths}
-    raw_status = "computed" if raw_diag and raw_diag.get("status") == "pass" else "pvc_required"
+    expected_raw_rows = int(config.get("expected_raw_rows") or _get(fdm_metrics, "num_examples") or 0)
+    raw_diag_rows = int(_get(raw_diag, "alignment.rows_seen") or 0) if raw_diag else 0
+    raw_status = "computed" if raw_diag and raw_diag.get("status") == "pass" and raw_diag_rows >= expected_raw_rows else "pvc_required"
     if raw_status != "computed" and not all(item.get("exists") for item in raw_artifacts.values()):
         findings.append({"severity": "error", "code": "raw_artifact_external_proof_missing", "paths": raw_required_paths})
 
@@ -362,6 +364,8 @@ def build_failure_root_cause_audit(config: dict[str, Any], *, root: str | Path =
             {
                 "raw_diagnostic_path": raw_diag_path,
                 "raw_diagnostic_summary": raw_diag,
+                "raw_diagnostic_rows": raw_diag_rows,
+                "expected_raw_rows": expected_raw_rows,
                 "target_game_counts": target_game_counts,
                 "external_raw_artifacts": raw_artifacts,
             },

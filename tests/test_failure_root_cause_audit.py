@@ -80,6 +80,7 @@ def _fixture(root: Path) -> dict:
     )
     return {
         "fdm_model_name": "candidate",
+        "expected_raw_rows": 100,
         "paths": {
             "idm_metrics": "idm_metrics.json",
             "fdm_metrics": "fdm_metrics.json",
@@ -120,10 +121,18 @@ def test_failure_root_cause_audit_passes_with_ranked_evidence_and_external_raw_g
 
 def test_failure_root_cause_audit_uses_raw_diagnostic_when_present(tmp_path):
     config = _fixture(tmp_path)
-    write_json(tmp_path / "raw.json", {"status": "pass", "groups": {"game": {"GameA": {}}}})
+    write_json(tmp_path / "raw.json", {"status": "pass", "alignment": {"rows_seen": 100}, "groups": {"game": {"GameA": {}}}})
     payload = build_failure_root_cause_audit(config, root=tmp_path)
     assert payload["status"] == "pass"
     assert payload["axes"]["per_game_confusion"]["status"] == "computed"
+
+
+def test_failure_root_cause_audit_keeps_sampled_raw_diagnostic_as_pvc_required(tmp_path):
+    config = _fixture(tmp_path)
+    write_json(tmp_path / "raw.json", {"status": "pass", "alignment": {"rows_seen": 10}, "groups": {"game": {"GameA": {}}}})
+    payload = build_failure_root_cause_audit(config, root=tmp_path)
+    assert payload["status"] == "pass"
+    assert payload["axes"]["per_game_confusion"]["status"] == "pvc_required"
 
 
 def test_failure_root_cause_audit_fails_without_external_raw_proof(tmp_path):
