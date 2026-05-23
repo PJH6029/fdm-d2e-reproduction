@@ -1,0 +1,130 @@
+{
+  "schema": "renewed_metric_gates_config.v1",
+  "output_path": "artifacts/eval/g001_renewed_gate_revalidation.json",
+  "expected_gate_status": "fail",
+  "candidate_model": "d2e_only_full_fdm_current",
+  "model_name": "streaming_fdm_d2e_full_compact",
+  "target_context": {
+    "renewed_gate_source": "2026-05-23 user hard gates",
+    "fdm_no_button_false_positive_rate_max": 0.10,
+    "bounded_metric_rule": "fourfold remaining-error reduction from current full FDM baseline",
+    "claim_boundary": "This audit proves prior completion evidence is insufficient for renewed metric success."
+  },
+  "paths": {
+    "candidate_metrics": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
+    "aux_metrics": "outputs/fdm_aux/d2e_aux_best/metrics.json",
+    "split_stats_summary": "artifacts/eval/g004_split_statistical_comparisons_summary.json"
+  },
+  "old_ultragoal_archive_glob": ".omx/ultragoal/archive/fdm-d2e-renewal-*/goals.json",
+  "old_goal_ids": [
+    "G001-data-universe-audit",
+    "G002-split-leakage-contract",
+    "G003-d2e-only-idm",
+    "G004-d2e-only-fdm-4xh200",
+    "G005-aux-data-best-model",
+    "G006-evaluation-failure-analysis",
+    "G007-runtime-sdk-adapter",
+    "G008-live-game-suite",
+    "G009-report-repro-package"
+  ],
+  "required_evidence_files": [
+    "artifacts/sources/d2e_full_data_universe_manifest.json",
+    "artifacts/sources/d2e_full_split_contract.json",
+    "artifacts/eval/g004_split_statistical_comparisons_summary.json"
+  ],
+  "old_completion_audits": [
+    {
+      "id": "G003-d2e-only-idm",
+      "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+      "expected_status": "pass"
+    },
+    {
+      "id": "G004-d2e-only-fdm-4xh200",
+      "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+      "expected_status": "pass"
+    },
+    {
+      "id": "G005-aux-data-best-model",
+      "path": "artifacts/aux/g005_aux_completion_audit.json",
+      "expected_status": "pass"
+    },
+    {
+      "id": "G006-evaluation-failure-analysis",
+      "path": "artifacts/eval/g006_completion_audit.json",
+      "expected_status": "pass"
+    },
+    {
+      "id": "G007-runtime-sdk-adapter",
+      "path": "artifacts/runtime/g007_completion_audit.json",
+      "expected_status": "pass"
+    },
+    {
+      "id": "G008-live-game-suite",
+      "path": "artifacts/harness/g008_live_suite_completion_audit.json",
+      "expected_status": "pass"
+    },
+    {
+      "id": "G009-report-repro-package",
+      "path": "artifacts/reproducibility/g009_completion_audit.json",
+      "expected_status": "pass"
+    }
+  ],
+  "required_splits": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
+  "hard_gates": [
+    {
+      "name": "keyboard_accuracy",
+      "endpoint": "keyboard_accuracy",
+      "metric_path": ["keyboard", "accuracy"],
+      "direction": "higher",
+      "baseline": 0.002659524222253231,
+      "maximum": 1.0,
+      "remaining_error_reduction": 0.75,
+      "target": 0.7506648810555633,
+      "require_all_splits": true
+    },
+    {
+      "name": "mouse_button_f1",
+      "endpoint": "mouse_button_f1",
+      "metric_path": ["mouse_button", "f1"],
+      "direction": "higher",
+      "baseline": 0.012762612536712747,
+      "maximum": 1.0,
+      "remaining_error_reduction": 0.75,
+      "target": 0.7531906531341782,
+      "require_all_splits": true
+    },
+    {
+      "name": "mouse_move_pearson",
+      "endpoint": "mouse_move_pearson",
+      "metric_path": ["mouse_move", "pearson"],
+      "direction": "higher",
+      "baseline": 0.34817355680270057,
+      "maximum": 1.0,
+      "remaining_error_reduction": 0.75,
+      "target": 0.8370433892006751,
+      "require_all_splits": true
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "endpoint": "no_button_false_positive_rate",
+      "metric_path": ["mouse_button", "no_button_false_positive_rate"],
+      "direction": "lower",
+      "target": 0.10,
+      "require_all_splits": true
+    }
+  ],
+  "report_metrics": [
+    {
+      "name": "mouse_button_accuracy",
+      "metric_path": ["mouse_button", "accuracy"]
+    },
+    {
+      "name": "mouse_move_scale_ratio",
+      "metric_path": ["mouse_move", "scale_ratio"]
+    }
+  ]
+}

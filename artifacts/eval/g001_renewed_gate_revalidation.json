@@ -1,0 +1,565 @@
+{
+  "schema": "renewed_metric_gate_audit.v1",
+  "status": "pass",
+  "error_count": 0,
+  "gate_status": "fail",
+  "expected_gate_status": "fail",
+  "gate_error_count": 16,
+  "gate_failures": [
+    {
+      "name": "keyboard_accuracy",
+      "source": "aggregate",
+      "direction": "higher",
+      "actual": 0.002659524222253231,
+      "target": 0.7506648810555633,
+      "status": "fail",
+      "margin": -0.74800535683331
+    },
+    {
+      "name": "mouse_button_f1",
+      "source": "aggregate",
+      "direction": "higher",
+      "actual": 0.012762612536712747,
+      "target": 0.7531906531341782,
+      "status": "fail",
+      "margin": -0.7404280405974655
+    },
+    {
+      "name": "mouse_move_pearson",
+      "source": "aggregate",
+      "direction": "higher",
+      "actual": 0.34817355680270057,
+      "target": 0.8370433892006751,
+      "status": "fail",
+      "margin": -0.48886983239797455
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "source": "aggregate",
+      "direction": "lower",
+      "actual": 0.31449021743297106,
+      "target": 0.1,
+      "status": "fail",
+      "margin": -0.21449021743297106
+    },
+    {
+      "name": "keyboard_accuracy",
+      "source": "split:heldout_game",
+      "direction": "higher",
+      "actual": 0.0015895629499965856,
+      "target": 0.7506648810555633,
+      "status": "fail",
+      "margin": -0.7490753181055667,
+      "endpoint": "keyboard_accuracy",
+      "split": "heldout_game",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_button_f1",
+      "source": "split:heldout_game",
+      "direction": "higher",
+      "actual": 0.011883564998724734,
+      "target": 0.7531906531341782,
+      "status": "fail",
+      "margin": -0.7413070881354534,
+      "endpoint": "mouse_button_f1",
+      "split": "heldout_game",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_move_pearson",
+      "source": "split:heldout_game",
+      "direction": "higher",
+      "actual": 0.3446893890902286,
+      "target": 0.8370433892006751,
+      "status": "fail",
+      "margin": -0.4923540001104465,
+      "endpoint": "mouse_move_pearson",
+      "split": "heldout_game",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "source": "split:heldout_game",
+      "direction": "lower",
+      "actual": 0.3383312747936816,
+      "target": 0.1,
+      "status": "fail",
+      "margin": -0.23833127479368157,
+      "endpoint": "no_button_false_positive_rate",
+      "split": "heldout_game",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "keyboard_accuracy",
+      "source": "split:heldout_recording",
+      "direction": "higher",
+      "actual": 0.006738424614501849,
+      "target": 0.7506648810555633,
+      "status": "fail",
+      "margin": -0.7439264564410615,
+      "endpoint": "keyboard_accuracy",
+      "split": "heldout_recording",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_button_f1",
+      "source": "split:heldout_recording",
+      "direction": "higher",
+      "actual": 0.013144829938133108,
+      "target": 0.7531906531341782,
+      "status": "fail",
+      "margin": -0.7400458231960451,
+      "endpoint": "mouse_button_f1",
+      "split": "heldout_recording",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_move_pearson",
+      "source": "split:heldout_recording",
+      "direction": "higher",
+      "actual": 0.33757907947376753,
+      "target": 0.8370433892006751,
+      "status": "fail",
+      "margin": -0.4994643097269076,
+      "endpoint": "mouse_move_pearson",
+      "split": "heldout_recording",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "source": "split:heldout_recording",
+      "direction": "lower",
+      "actual": 0.311587090801921,
+      "target": 0.1,
+      "status": "fail",
+      "margin": -0.21158709080192098,
+      "endpoint": "no_button_false_positive_rate",
+      "split": "heldout_recording",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "keyboard_accuracy",
+      "source": "split:temporal",
+      "direction": "higher",
+      "actual": 0.004538441212592723,
+      "target": 0.7506648810555633,
+      "status": "fail",
+      "margin": -0.7461264398429706,
+      "endpoint": "keyboard_accuracy",
+      "split": "temporal",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_button_f1",
+      "source": "split:temporal",
+      "direction": "higher",
+      "actual": 0.010691575173748288,
+      "target": 0.7531906531341782,
+      "status": "fail",
+      "margin": -0.7424990779604299,
+      "endpoint": "mouse_button_f1",
+      "split": "temporal",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_move_pearson",
+      "source": "split:temporal",
+      "direction": "higher",
+      "actual": 0.331102147001372,
+      "target": 0.8370433892006751,
+      "status": "fail",
+      "margin": -0.505941242199303,
+      "endpoint": "mouse_move_pearson",
+      "split": "temporal",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "source": "split:temporal",
+      "direction": "lower",
+      "actual": 0.3071439995393068,
+      "target": 0.1,
+      "status": "fail",
+      "margin": -0.20714399953930682,
+      "endpoint": "no_button_false_positive_rate",
+      "split": "temporal",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "comparison_status": "computed"
+    }
+  ],
+  "findings": [],
+  "target_context": {
+    "renewed_gate_source": "2026-05-23 user hard gates",
+    "fdm_no_button_false_positive_rate_max": 0.1,
+    "bounded_metric_rule": "fourfold remaining-error reduction from current full FDM baseline",
+    "claim_boundary": "This audit proves prior completion evidence is insufficient for renewed metric success."
+  },
+  "candidate_model": "d2e_only_full_fdm_current",
+  "model_name": "streaming_fdm_d2e_full_compact",
+  "candidate_metrics_artifact": {
+    "path": "outputs/fdm_streaming_d2e_full_compact/torch_model/metrics.json",
+    "exists": true,
+    "bytes": 894,
+    "sha256": "5d3fcd7b600c5f4703c901981281f5f2ea761a4710c58b956533f07f7ce4b407"
+  },
+  "aux_metrics_artifact": {
+    "path": "outputs/fdm_aux/d2e_aux_best/metrics.json",
+    "exists": true,
+    "bytes": 894,
+    "sha256": "5d3fcd7b600c5f4703c901981281f5f2ea761a4710c58b956533f07f7ce4b407"
+  },
+  "aggregate_gates": [
+    {
+      "name": "keyboard_accuracy",
+      "source": "aggregate",
+      "direction": "higher",
+      "actual": 0.002659524222253231,
+      "target": 0.7506648810555633,
+      "status": "fail",
+      "margin": -0.74800535683331
+    },
+    {
+      "name": "mouse_button_f1",
+      "source": "aggregate",
+      "direction": "higher",
+      "actual": 0.012762612536712747,
+      "target": 0.7531906531341782,
+      "status": "fail",
+      "margin": -0.7404280405974655
+    },
+    {
+      "name": "mouse_move_pearson",
+      "source": "aggregate",
+      "direction": "higher",
+      "actual": 0.34817355680270057,
+      "target": 0.8370433892006751,
+      "status": "fail",
+      "margin": -0.48886983239797455
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "source": "aggregate",
+      "direction": "lower",
+      "actual": 0.31449021743297106,
+      "target": 0.1,
+      "status": "fail",
+      "margin": -0.21449021743297106
+    }
+  ],
+  "split_gates": [
+    {
+      "name": "keyboard_accuracy",
+      "source": "split:heldout_game",
+      "direction": "higher",
+      "actual": 0.0015895629499965856,
+      "target": 0.7506648810555633,
+      "status": "fail",
+      "margin": -0.7490753181055667,
+      "endpoint": "keyboard_accuracy",
+      "split": "heldout_game",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_button_f1",
+      "source": "split:heldout_game",
+      "direction": "higher",
+      "actual": 0.011883564998724734,
+      "target": 0.7531906531341782,
+      "status": "fail",
+      "margin": -0.7413070881354534,
+      "endpoint": "mouse_button_f1",
+      "split": "heldout_game",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_move_pearson",
+      "source": "split:heldout_game",
+      "direction": "higher",
+      "actual": 0.3446893890902286,
+      "target": 0.8370433892006751,
+      "status": "fail",
+      "margin": -0.4923540001104465,
+      "endpoint": "mouse_move_pearson",
+      "split": "heldout_game",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "source": "split:heldout_game",
+      "direction": "lower",
+      "actual": 0.3383312747936816,
+      "target": 0.1,
+      "status": "fail",
+      "margin": -0.23833127479368157,
+      "endpoint": "no_button_false_positive_rate",
+      "split": "heldout_game",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_game_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "keyboard_accuracy",
+      "source": "split:heldout_recording",
+      "direction": "higher",
+      "actual": 0.006738424614501849,
+      "target": 0.7506648810555633,
+      "status": "fail",
+      "margin": -0.7439264564410615,
+      "endpoint": "keyboard_accuracy",
+      "split": "heldout_recording",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_button_f1",
+      "source": "split:heldout_recording",
+      "direction": "higher",
+      "actual": 0.013144829938133108,
+      "target": 0.7531906531341782,
+      "status": "fail",
+      "margin": -0.7400458231960451,
+      "endpoint": "mouse_button_f1",
+      "split": "heldout_recording",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_move_pearson",
+      "source": "split:heldout_recording",
+      "direction": "higher",
+      "actual": 0.33757907947376753,
+      "target": 0.8370433892006751,
+      "status": "fail",
+      "margin": -0.4994643097269076,
+      "endpoint": "mouse_move_pearson",
+      "split": "heldout_recording",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "source": "split:heldout_recording",
+      "direction": "lower",
+      "actual": 0.311587090801921,
+      "target": 0.1,
+      "status": "fail",
+      "margin": -0.21158709080192098,
+      "endpoint": "no_button_false_positive_rate",
+      "split": "heldout_recording",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_heldout_recording_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "keyboard_accuracy",
+      "source": "split:temporal",
+      "direction": "higher",
+      "actual": 0.004538441212592723,
+      "target": 0.7506648810555633,
+      "status": "fail",
+      "margin": -0.7461264398429706,
+      "endpoint": "keyboard_accuracy",
+      "split": "temporal",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_button_f1",
+      "source": "split:temporal",
+      "direction": "higher",
+      "actual": 0.010691575173748288,
+      "target": 0.7531906531341782,
+      "status": "fail",
+      "margin": -0.7424990779604299,
+      "endpoint": "mouse_button_f1",
+      "split": "temporal",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "mouse_move_pearson",
+      "source": "split:temporal",
+      "direction": "higher",
+      "actual": 0.331102147001372,
+      "target": 0.8370433892006751,
+      "status": "fail",
+      "margin": -0.505941242199303,
+      "endpoint": "mouse_move_pearson",
+      "split": "temporal",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "comparison_status": "computed"
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "source": "split:temporal",
+      "direction": "lower",
+      "actual": 0.3071439995393068,
+      "target": 0.1,
+      "status": "fail",
+      "margin": -0.20714399953930682,
+      "endpoint": "no_button_false_positive_rate",
+      "split": "temporal",
+      "split_comparison_path": "outputs/fdm_streaming_d2e_full_compact/split_temporal_statistical_comparison.json",
+      "comparison_status": "computed"
+    }
+  ],
+  "report_metrics": {
+    "mouse_button_accuracy": 0.05210611341005652,
+    "mouse_move_scale_ratio": 1.6277335085623454
+  },
+  "aux_delta_report": {
+    "keyboard_accuracy": {
+      "d2e_only": 0.002659524222253231,
+      "d2e_aux": 0.002659524222253231,
+      "delta": 0.0
+    },
+    "mouse_button_f1": {
+      "d2e_only": 0.012762612536712747,
+      "d2e_aux": 0.012762612536712747,
+      "delta": 0.0
+    },
+    "mouse_move_pearson": {
+      "d2e_only": 0.34817355680270057,
+      "d2e_aux": 0.34817355680270057,
+      "delta": 0.0
+    },
+    "no_button_false_positive_rate": {
+      "d2e_only": 0.31449021743297106,
+      "d2e_aux": 0.31449021743297106,
+      "delta": 0.0
+    }
+  },
+  "old_evidence": {
+    "required_files": [
+      {
+        "path": "artifacts/sources/d2e_full_data_universe_manifest.json",
+        "exists": true,
+        "bytes": 1477181,
+        "sha256": "549cd16aa992bc76c3bea9f571100fe5cc721ca706e7d50f2c9e40fd2d21c8f8"
+      },
+      {
+        "path": "artifacts/sources/d2e_full_split_contract.json",
+        "exists": true,
+        "bytes": 466810,
+        "sha256": "e64e90f3745108a2813d4d4f84ee69a08f4cb7e46923371983006c481dadde98"
+      },
+      {
+        "path": "artifacts/eval/g004_split_statistical_comparisons_summary.json",
+        "exists": true,
+        "bytes": 877,
+        "sha256": "94c8383ff37e2ef7c903bdee43df8e2b99c3cd91e3e70dd2846aaa8c5e88e9e8"
+      }
+    ],
+    "old_completion_audits": [
+      {
+        "id": "G003-d2e-only-idm",
+        "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+        "expected_status": "pass",
+        "actual_status": "pass",
+        "artifact": {
+          "path": "artifacts/idm/g003_full_idm_completion_audit.json",
+          "exists": true,
+          "bytes": 5803,
+          "sha256": "7795caf40a57e5fa34bbc6a2beb69daed9139f8da0bcf7d63a375dabbef79be2"
+        }
+      },
+      {
+        "id": "G004-d2e-only-fdm-4xh200",
+        "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+        "expected_status": "pass",
+        "actual_status": "pass",
+        "artifact": {
+          "path": "artifacts/fdm/g004_full_fdm_completion_audit.json",
+          "exists": true,
+          "bytes": 6058,
+          "sha256": "fc4f922fa0daca8bc345bfb630d8f6ad1ea594b5ea8655c187f15845935f311e"
+        }
+      },
+      {
+        "id": "G005-aux-data-best-model",
+        "path": "artifacts/aux/g005_aux_completion_audit.json",
+        "expected_status": "pass",
+        "actual_status": "pass",
+        "artifact": {
+          "path": "artifacts/aux/g005_aux_completion_audit.json",
+          "exists": true,
+          "bytes": 6629,
+          "sha256": "267a8569ae13cbc8fecb0f5f8670f50b8b3b93be2e8fce090b5a37fc5074bfbe"
+        }
+      },
+      {
+        "id": "G006-evaluation-failure-analysis",
+        "path": "artifacts/eval/g006_completion_audit.json",
+        "expected_status": "pass",
+        "actual_status": "pass",
+        "artifact": {
+          "path": "artifacts/eval/g006_completion_audit.json",
+          "exists": true,
+          "bytes": 4518,
+          "sha256": "385692a4632946ce5774cb87f952790f1c6e8bafa7515ebe39e8016521d07594"
+        }
+      },
+      {
+        "id": "G007-runtime-sdk-adapter",
+        "path": "artifacts/runtime/g007_completion_audit.json",
+        "expected_status": "pass",
+        "actual_status": "pass",
+        "artifact": {
+          "path": "artifacts/runtime/g007_completion_audit.json",
+          "exists": true,
+          "bytes": 1519,
+          "sha256": "20c31a2a39d8d783a7ab6a89bf4fd4fcf2fa372901c5331b7c82899649ac523a"
+        }
+      },
+      {
+        "id": "G008-live-game-suite",
+        "path": "artifacts/harness/g008_live_suite_completion_audit.json",
+        "expected_status": "pass",
+        "actual_status": "pass",
+        "artifact": {
+          "path": "artifacts/harness/g008_live_suite_completion_audit.json",
+          "exists": true,
+          "bytes": 10416,
+          "sha256": "e25819b64b5249dfd5dc2016921dd6f4156ac7f0c7e8e6342520d02ec7bd560a"
+        }
+      },
+      {
+        "id": "G009-report-repro-package",
+        "path": "artifacts/reproducibility/g009_completion_audit.json",
+        "expected_status": "pass",
+        "actual_status": "pass",
+        "artifact": {
+          "path": "artifacts/reproducibility/g009_completion_audit.json",
+          "exists": true,
+          "bytes": 3325,
+          "sha256": "24a2d79ce2db58534d3dcaa77b6bc740fcef7dc0eb5bb60d38b66e79c4e5de22"
+        }
+      }
+    ],
+    "old_ultragoal_archive_goals_path": ".omx/ultragoal/archive/fdm-d2e-renewal-20260523T121653Z/goals.json",
+    "old_goal_statuses": {
+      "G001-data-universe-audit": "complete",
+      "G002-split-leakage-contract": "complete",
+      "G003-d2e-only-idm": "complete",
+      "G004-d2e-only-fdm-4xh200": "complete",
+      "G005-aux-data-best-model": "complete",
+      "G006-evaluation-failure-analysis": "complete",
+      "G007-runtime-sdk-adapter": "complete",
+      "G008-live-game-suite": "complete",
+      "G009-report-repro-package": "complete"
+    }
+  }
+}
