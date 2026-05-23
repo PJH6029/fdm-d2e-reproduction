@@ -997,6 +997,8 @@ def _prediction_from_output(
     mouse_axis_decode_mode: str = "argmax",
     mouse_axis_temperature: float = 1.0,
     mouse_output_gain: float = 1.0,
+    mouse_emit_mode: str = "single",
+    mouse_max_tokens_per_axis: int = 8,
 ) -> tuple[float, float, list[str]]:
     dx, dy = float(output[0]), float(output[1])
     if residual_mouse:
@@ -1027,7 +1029,12 @@ def _prediction_from_output(
                 raise ValueError(f"unsupported mouse_axis_decode_mode: {mouse_axis_decode_mode}")
     dx *= float(mouse_output_gain)
     dy *= float(mouse_output_gain)
-    tokens = tokens_from_delta(float(dx), float(dy))
+    tokens = tokens_from_delta(
+        float(dx),
+        float(dy),
+        emit_mode=mouse_emit_mode,
+        max_tokens_per_axis=int(mouse_max_tokens_per_axis),
+    )
     for token, logit in zip(category_vocab, output[2:category_end]):
         prob = _sigmoid(float(logit))
         if prob >= float(category_thresholds.get(token, category_threshold)):
@@ -1068,6 +1075,8 @@ def _predict_autoregressive_target(
     mouse_axis_decode_mode: str = "argmax",
     mouse_axis_temperature: float = 1.0,
     mouse_output_gain: float = 1.0,
+    mouse_emit_mode: str = "single",
+    mouse_max_tokens_per_axis: int = 8,
 ) -> dict[str, dict[str, Any]]:
     histories: dict[str, list[list[str]]] = {}
     button_states: dict[str, dict[str, float]] = {}
@@ -1126,6 +1135,8 @@ def _predict_autoregressive_target(
             mouse_axis_decode_mode=mouse_axis_decode_mode,
             mouse_axis_temperature=mouse_axis_temperature,
             mouse_output_gain=mouse_output_gain,
+            mouse_emit_mode=mouse_emit_mode,
+            mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
         )
         outputs[sequence_id] = {"output": output, "dx": dx, "dy": dy, "tokens": tokens}
         _append_history(history, button_state, tokens, history_len=action_history_len)
@@ -1276,6 +1287,10 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     mouse_output_gain = float(config.get("mouse_output_gain", 1.0))
     if mouse_output_gain <= 0:
         raise ValueError("mouse_output_gain must be positive")
+    mouse_emit_mode = str(config.get("mouse_emit_mode", "single"))
+    mouse_max_tokens_per_axis = int(config.get("mouse_max_tokens_per_axis", 8))
+    if mouse_max_tokens_per_axis <= 0:
+        raise ValueError("mouse_max_tokens_per_axis must be positive")
     mouse_output_gain_min = float(config.get("mouse_output_gain_min", 0.25))
     mouse_output_gain_max = float(config.get("mouse_output_gain_max", 4.0))
     if mouse_output_gain_min <= 0 or mouse_output_gain_max <= 0 or mouse_output_gain_min > mouse_output_gain_max:
@@ -1535,6 +1550,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             "mouse_output_gain": mouse_output_gain,
             "mouse_output_gain_mode": mouse_output_gain_mode,
             "mouse_output_gain_info": mouse_output_gain_info,
+            "mouse_emit_mode": mouse_emit_mode,
+            "mouse_max_tokens_per_axis": mouse_max_tokens_per_axis,
             "model_arch": str(config.get("model_arch", "mlp")),
         },
         checkpoint_path,
@@ -1571,6 +1588,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             mouse_axis_decode_mode=mouse_axis_decode_mode,
             mouse_axis_temperature=mouse_axis_temperature,
             mouse_output_gain=mouse_output_gain,
+            mouse_emit_mode=mouse_emit_mode,
+            mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
         )
         deltas = [autoregressive_outputs[str(row["sequence_id"])]["output"] for row in target_records]
     else:
@@ -1632,6 +1651,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 mouse_axis_decode_mode=mouse_axis_decode_mode,
                 mouse_axis_temperature=mouse_axis_temperature,
                 mouse_output_gain=mouse_output_gain,
+                mouse_emit_mode=mouse_emit_mode,
+                mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
             )
         confidence = max(0.05, min(0.99, 1.0 / (1.0 + abs(float(dx)) + abs(float(dy)))))
         pseudo = {
@@ -1688,6 +1709,8 @@ def train_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
         "mouse_output_gain": mouse_output_gain,
         "mouse_output_gain_mode": mouse_output_gain_mode,
         "mouse_output_gain_info": mouse_output_gain_info,
+        "mouse_emit_mode": mouse_emit_mode,
+        "mouse_max_tokens_per_axis": mouse_max_tokens_per_axis,
         "mouse_axis_loss_weight": float(config.get("mouse_axis_loss_weight", 1.0 if mouse_head_mode == "axis_softmax" else 0.0)),
         "mouse_regression_loss_weight": float(config.get("mouse_regression_loss_weight", 1.0)),
         "mouse_axis_class_weight_cap": float(config.get("mouse_axis_class_weight_cap", 20.0)),
@@ -1752,6 +1775,13 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
     mouse_axis_decode_mode = str(checkpoint.get("mouse_axis_decode_mode", model_config.get("mouse_axis_decode_mode", "argmax")))
     mouse_axis_temperature = float(checkpoint.get("mouse_axis_temperature", model_config.get("mouse_axis_temperature", 1.0)))
     mouse_output_gain = float(config.get("mouse_output_gain_override", checkpoint.get("mouse_output_gain", 1.0)))
+    mouse_emit_mode = str(config.get("mouse_emit_mode_override", checkpoint.get("mouse_emit_mode", model_config.get("mouse_emit_mode", "single"))))
+    mouse_max_tokens_per_axis = int(
+        config.get(
+            "mouse_max_tokens_per_axis_override",
+            checkpoint.get("mouse_max_tokens_per_axis", model_config.get("mouse_max_tokens_per_axis", 8)),
+        )
+    )
     mean = [float(value) for value in checkpoint["mean"]]
     std = [float(value) for value in checkpoint["std"]]
     output_dim = 2 + len(category_vocab)
@@ -1807,6 +1837,8 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
             mouse_axis_decode_mode=mouse_axis_decode_mode,
             mouse_axis_temperature=mouse_axis_temperature,
             mouse_output_gain=mouse_output_gain,
+            mouse_emit_mode=mouse_emit_mode,
+            mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
         )
         for row in records:
             pred = outputs_by_id[str(row["sequence_id"])]
@@ -1840,6 +1872,8 @@ def predict_torch_idm(config: dict[str, Any]) -> dict[str, Any]:
                 mouse_axis_decode_mode=mouse_axis_decode_mode,
                 mouse_axis_temperature=mouse_axis_temperature,
                 mouse_output_gain=mouse_output_gain,
+                mouse_emit_mode=mouse_emit_mode,
+                mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
             )
             predicted.append({"dx": dx, "dy": dy, "tokens": tokens})
     out_dir = Path(config.get("output_dir", "outputs/idm_torch_predict"))

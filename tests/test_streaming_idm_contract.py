@@ -7,6 +7,7 @@ import pytest
 
 from fdm_d2e.training.streaming_idm import (
     _distributed_runtime,
+    _training_cache_identity,
     _training_cache_assignment_plan,
     _training_cache_rank_assignment,
     predict_streaming_idm_checkpoint,
@@ -89,6 +90,38 @@ def test_training_cache_assignment_balances_manifest_rows():
     assert max(greedy_loads) - min(greedy_loads) < max(modulo_loads) - min(modulo_loads)
     assert plan["row_load_max"] == max(greedy_loads)
     assert plan["row_load_min"] == min(greedy_loads)
+
+
+def test_training_cache_identity_includes_mouse_target_mode(tmp_path: Path):
+    records = tmp_path / "train.jsonl"
+    _write_jsonl(records, [_record(0, "train_core")])
+    stats = {
+        "feature_mode": "summary_compact_grid8_shift_surface_time",
+        "input_dim": 620,
+        "dataset_fingerprint": "abc123",
+    }
+    common = {
+        "mouse_head_mode": "axis_softmax",
+    }
+
+    mean_identity = _training_cache_identity(
+        records,
+        stats=stats,
+        config={**common, "mouse_target_mode": "mean"},
+        category_vocab=["KEY_PRESS_87"],
+        mouse_axis_classes=["N1", "Z0", "P1"],
+    )
+    sum_identity = _training_cache_identity(
+        records,
+        stats=stats,
+        config={**common, "mouse_target_mode": "sum"},
+        category_vocab=["KEY_PRESS_87"],
+        mouse_axis_classes=["N1", "Z0", "P1"],
+    )
+
+    assert mean_identity["mouse_target_mode"] == "mean"
+    assert sum_identity["mouse_target_mode"] == "sum"
+    assert mean_identity != sum_identity
 
 
 def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):

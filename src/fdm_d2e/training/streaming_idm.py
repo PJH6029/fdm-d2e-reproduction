@@ -364,15 +364,28 @@ def _category_targets(torch, rows: list[dict[str, Any]], vocab: list[str], *, de
     return y
 
 
-def _mouse_targets(torch, rows: list[dict[str, Any]], *, device: str):
-    return torch.tensor([target_mouse_delta(row) for row in rows], dtype=torch.float32, device=device)
+def _mouse_target_mode(config: dict[str, Any]) -> str:
+    return str(config.get("mouse_target_mode", "mean"))
 
 
-def _axis_class_indices_with_index(records: list[dict[str, Any]], class_index: dict[str, int]) -> tuple[list[int], list[int]]:
+def _mouse_targets(torch, rows: list[dict[str, Any]], *, device: str, mouse_target_mode: str = "mean"):
+    return torch.tensor(
+        [target_mouse_delta(row, mode=mouse_target_mode) for row in rows],
+        dtype=torch.float32,
+        device=device,
+    )
+
+
+def _axis_class_indices_with_index(
+    records: list[dict[str, Any]],
+    class_index: dict[str, int],
+    *,
+    mouse_target_mode: str = "mean",
+) -> tuple[list[int], list[int]]:
     dx_indices: list[int] = []
     dy_indices: list[int] = []
     for row in records:
-        dx, dy = target_mouse_delta(row)
+        dx, dy = target_mouse_delta(row, mode=mouse_target_mode)
         dx_indices.append(class_index[_axis_suffix_from_delta(dx, "MOUSE_DX_")])
         dy_indices.append(class_index[_axis_suffix_from_delta(dy, "MOUSE_DY_")])
     return dx_indices, dy_indices
@@ -385,11 +398,13 @@ def _axis_targets(
     *,
     device: str,
     class_index: dict[str, int] | None = None,
+    mouse_target_mode: str = "mean",
 ):
     if class_index is None:
-        dx, dy = _axis_class_indices(rows, axis_classes)
+        class_index = {label: idx for idx, label in enumerate(axis_classes)}
+        dx, dy = _axis_class_indices_with_index(rows, class_index, mouse_target_mode=mouse_target_mode)
     else:
-        dx, dy = _axis_class_indices_with_index(rows, class_index)
+        dx, dy = _axis_class_indices_with_index(rows, class_index, mouse_target_mode=mouse_target_mode)
     return (
         torch.tensor(dx, dtype=torch.long, device=device),
         torch.tensor(dy, dtype=torch.long, device=device),
@@ -455,8 +470,9 @@ def _training_cache_identity(
         "dataset_fingerprint": str(stats["dataset_fingerprint"]),
         "category_vocab": list(category_vocab),
         "mouse_head_mode": str(config.get("mouse_head_mode", "axis_softmax")),
+        "mouse_target_mode": _mouse_target_mode(config),
         "mouse_axis_classes": list(mouse_axis_classes),
-        "cache_version": 1,
+        "cache_version": 2,
     }
 
 
@@ -481,8 +497,8 @@ def _training_cache_manifest_path(
     return Path(cache_dir) / f"{safe_stem}-{key[:20]}.manifest.json"
 
 
-def _cache_axis_indices(row: dict[str, Any], class_index: dict[str, int]) -> tuple[int, int]:
-    dx, dy = target_mouse_delta(row)
+def _cache_axis_indices(row: dict[str, Any], class_index: dict[str, int], *, mouse_target_mode: str = "mean") -> tuple[int, int]:
+    dx, dy = target_mouse_delta(row, mode=mouse_target_mode)
     return (
         class_index[_axis_suffix_from_delta(dx, "MOUSE_DX_")],
         class_index[_axis_suffix_from_delta(dy, "MOUSE_DY_")],
@@ -499,6 +515,7 @@ def _flush_training_cache_chunk(
     vocab_index: dict[str, int],
     axis_class_index: dict[str, int],
     mouse_head_mode: str,
+    mouse_target_mode: str,
 ) -> dict[str, Any]:
     feature_mode = str(stats["feature_mode"])
     x = torch.tensor(
@@ -507,7 +524,7 @@ def _flush_training_cache_chunk(
     )
     mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device="cpu")
     x = (x - mean_t) / std_t
-    mouse_y = torch.tensor([target_mouse_delta(row) for row in rows], dtype=torch.float32)
+    mouse_y = torch.tensor([target_mouse_delta(row, mode=mouse_target_mode) for row in rows], dtype=torch.float32)
     cat_y = torch.zeros((len(rows), len(category_vocab)), dtype=torch.float32)
     for row_idx, row in enumerate(rows):
         for token in set(row.get("ground_truth_tokens", [])):
@@ -522,7 +539,7 @@ def _flush_training_cache_chunk(
         "cat_y": cat_y,
     }
     if mouse_head_mode == "axis_softmax":
-        axis = [_cache_axis_indices(row, axis_class_index) for row in rows]
+        axis = [_cache_axis_indices(row, axis_class_index, mouse_target_mode=mouse_target_mode) for row in rows]
         payload["dx_y"] = torch.tensor([item[0] for item in axis], dtype=torch.long)
         payload["dy_y"] = torch.tensor([item[1] for item in axis], dtype=torch.long)
     tmp_path = chunk_path.with_suffix(chunk_path.suffix + ".tmp")
@@ -557,6 +574,7 @@ def _build_training_cache_for_path(
     vocab_index = {token: idx for idx, token in enumerate(category_vocab)}
     axis_class_index = {label: idx for idx, label in enumerate(mouse_axis_classes)}
     mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
+    mouse_target_mode = _mouse_target_mode(config)
     chunks: list[dict[str, Any]] = []
     batch: list[dict[str, Any]] = []
     count = 0
@@ -574,6 +592,7 @@ def _build_training_cache_for_path(
                     vocab_index=vocab_index,
                     axis_class_index=axis_class_index,
                     mouse_head_mode=mouse_head_mode,
+                    mouse_target_mode=mouse_target_mode,
                 )
             )
             batch = []
@@ -588,6 +607,7 @@ def _build_training_cache_for_path(
                 vocab_index=vocab_index,
                 axis_class_index=axis_class_index,
                 mouse_head_mode=mouse_head_mode,
+                mouse_target_mode=mouse_target_mode,
             )
         )
     manifest = {
@@ -899,6 +919,7 @@ def _train_one_epoch(
     batch_size = int(config.get("batch_size", 2048))
     feature_mode = str(stats["feature_mode"])
     mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
+    mouse_target_mode = _mouse_target_mode(config)
     losses: list[float] = []
     batches = 0
     examples = 0
@@ -1005,7 +1026,7 @@ def _train_one_epoch(
             mean_t=mean_t,
             std_t=std_t,
         )
-        mouse_y = _mouse_targets(torch, rows, device=device)
+        mouse_y = _mouse_targets(torch, rows, device=device, mouse_target_mode=mouse_target_mode)
         cat_y = _category_targets(torch, rows, category_vocab, device=device, vocab_index=vocab_index)
         pred = model(x)
         mouse_loss = torch.nn.functional.smooth_l1_loss(pred[:, :2], mouse_y)
@@ -1015,7 +1036,14 @@ def _train_one_epoch(
         else:
             cat_loss = torch.tensor(0.0, device=device)
         if mouse_head_mode == "axis_softmax":
-            dx_y, dy_y = _axis_targets(torch, rows, mouse_axis_classes, device=device, class_index=axis_class_index)
+            dx_y, dy_y = _axis_targets(
+                torch,
+                rows,
+                mouse_axis_classes,
+                device=device,
+                class_index=axis_class_index,
+                mouse_target_mode=mouse_target_mode,
+            )
             axis_count = len(mouse_axis_classes)
             dx_logits = pred[:, category_end : category_end + axis_count]
             dy_logits = pred[:, category_end + axis_count : category_end + (2 * axis_count)]
@@ -1450,6 +1478,8 @@ def _predicted_tokens_from_output(
         mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
         mouse_axis_temperature=float(config.get("mouse_axis_temperature", 1.0)),
         mouse_output_gain=float(config.get("mouse_output_gain", 1.0)),
+        mouse_emit_mode=str(config.get("mouse_emit_mode", "single")),
+        mouse_max_tokens_per_axis=int(config.get("mouse_max_tokens_per_axis", 8)),
     )
     return tokens
 
@@ -1657,6 +1687,7 @@ def _calibrate_streaming_mouse_output_gain(
     predicted_abs_sum = 0.0
     target_abs_sum = 0.0
     value_count = 0
+    mouse_target_mode = _mouse_target_mode(config)
     model.eval()
     with torch.no_grad():
         for rows in _iter_batches(train_records, batch_size, max_examples):
@@ -1686,7 +1717,7 @@ def _calibrate_streaming_mouse_output_gain(
                     mouse_axis_temperature=float(config.get("mouse_axis_temperature", 1.0)),
                     mouse_output_gain=1.0,
                 )
-                target_dx, target_dy = target_mouse_delta(row)
+                target_dx, target_dy = target_mouse_delta(row, mode=mouse_target_mode)
                 predicted_abs_sum += abs(float(dx)) + abs(float(dy))
                 target_abs_sum += abs(float(target_dx)) + abs(float(target_dy))
                 value_count += 2
@@ -2416,6 +2447,8 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "mouse_axis_temperature",
         "mouse_output_gain",
         "mouse_output_gain_mode",
+        "mouse_emit_mode",
+        "mouse_max_tokens_per_axis",
         "resume_predictions",
         "force_cpu",
     ):
@@ -2648,6 +2681,8 @@ def _predict_streaming_idm_checkpoint_parallel(
         "mouse_axis_temperature",
         "mouse_output_gain",
         "mouse_output_gain_mode",
+        "mouse_emit_mode",
+        "mouse_max_tokens_per_axis",
         "force_cpu",
         "validate_pseudolabels",
     ):
@@ -2807,6 +2842,8 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         "mouse_axis_temperature",
         "mouse_output_gain",
         "mouse_output_gain_mode",
+        "mouse_emit_mode",
+        "mouse_max_tokens_per_axis",
     ):
         if key in config:
             prediction_config[key] = config[key]
@@ -2894,6 +2931,9 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         "input_dim": int(stats["input_dim"]),
         "categorical_vocab": category_vocab,
         "mouse_head_mode": mouse_head_mode,
+        "mouse_target_mode": str(checkpoint_config.get("mouse_target_mode", "mean")),
+        "mouse_emit_mode": str(checkpoint_config.get("mouse_emit_mode", "single")),
+        "mouse_max_tokens_per_axis": int(checkpoint_config.get("mouse_max_tokens_per_axis", 8)),
         "mouse_axis_classes": mouse_axis_classes if mouse_head_mode == "axis_softmax" else [],
         "distributed": {
             "enabled": bool(checkpoint_config.get("distributed", {}).get("enabled", False)),
@@ -3144,6 +3184,9 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "stats": stats,
         "category_vocab": category_vocab,
         "mouse_head_mode": mouse_head_mode,
+        "mouse_target_mode": _mouse_target_mode(config),
+        "mouse_emit_mode": str(config.get("mouse_emit_mode", "single")),
+        "mouse_max_tokens_per_axis": int(config.get("mouse_max_tokens_per_axis", 8)),
         "mouse_axis_classes": mouse_axis_classes,
         "history": history,
     }
@@ -3230,6 +3273,9 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "input_dim": int(stats["input_dim"]),
         "categorical_vocab": category_vocab,
         "mouse_head_mode": mouse_head_mode,
+        "mouse_target_mode": _mouse_target_mode(config),
+        "mouse_emit_mode": str(config.get("mouse_emit_mode", "single")),
+        "mouse_max_tokens_per_axis": int(config.get("mouse_max_tokens_per_axis", 8)),
         "mouse_axis_classes": mouse_axis_classes if mouse_head_mode == "axis_softmax" else [],
         "distributed": {
             "enabled": bool(dist["enabled"]),

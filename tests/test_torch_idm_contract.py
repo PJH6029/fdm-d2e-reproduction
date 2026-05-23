@@ -23,6 +23,7 @@ from fdm_d2e.training.torch_idm import (
     require_torch,
     torch_available,
 )
+from fdm_d2e.tokenization.actions import token_to_delta_class
 
 
 class TorchIDMContractTests(unittest.TestCase):
@@ -256,6 +257,24 @@ class TorchIDMContractTests(unittest.TestCase):
 
         self.assertEqual((dx, dy), (6.0, -3.0))
         self.assertEqual(tokens[:2], ["MOUSE_DX_P3", "MOUSE_DY_N2"])
+
+    def test_prediction_can_emit_decomposed_mouse_tokens_for_paper_sums(self):
+        dx, dy, tokens = _prediction_from_output(
+            [30.0, -7.0],
+            base_dx=0.0,
+            base_dy=0.0,
+            residual_mouse=False,
+            category_vocab=[],
+            category_thresholds={},
+            category_threshold=0.5,
+            mouse_emit_mode="decompose",
+            mouse_max_tokens_per_axis=4,
+        )
+
+        self.assertEqual((dx, dy), (30.0, -7.0))
+        self.assertGreater(len([token for token in tokens if token.startswith("MOUSE_DX_")]), 1)
+        self.assertEqual(sum(float(token_to_delta_class(token) or 0.0) for token in tokens if token.startswith("MOUSE_DX_")), 30.0)
+        self.assertEqual(sum(float(token_to_delta_class(token) or 0.0) for token in tokens if token.startswith("MOUSE_DY_")), -7.0)
 
     def test_action_history_features_are_causal_and_seedable(self):
         vocab = ["KEY_PRESS_87", "MOUSE_LEFT_DOWN", "MOUSE_LEFT_UP"]

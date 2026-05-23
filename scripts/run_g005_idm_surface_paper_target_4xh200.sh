@@ -2,6 +2,7 @@
 set -euo pipefail
 
 CONFIG="${CONFIG:-configs/model/idm_streaming_d2e_full_surface_calibrated.yaml}"
+MODEL_SLUG="${MODEL_SLUG:-g005_idm_surface}"
 NPROC_PER_NODE="${NPROC_PER_NODE:-4}"
 EXPECTED_GPUS="${EXPECTED_GPUS:-4}"
 LOG_PATH="${LOG_PATH:-artifacts/idm/g005_idm_surface_4xh200.log}"
@@ -10,6 +11,7 @@ GPU_MONITOR_LOG="${GPU_MONITOR_LOG:-artifacts/idm/g005_idm_surface_4xh200_gpu_mo
 PID_FILE="${PID_FILE:-outputs/cluster/g005_idm_surface_4xh200.pid}"
 GPU_SMOKE_REPORT="${GPU_SMOKE_REPORT:-outputs/cluster/g005_idm_surface_gpu_smoke.json}"
 RUN_CONFIG_RECORD="${RUN_CONFIG_RECORD:-outputs/cluster/g005_idm_surface_runtime_config_path.txt}"
+RUNTIME_NO_CACHE_CONFIG="${RUNTIME_NO_CACHE_CONFIG:-outputs/cluster/${MODEL_SLUG}_runtime_no_cache.yaml}"
 SPLIT_STATS_CONFIG="${SPLIT_STATS_CONFIG:-configs/eval/g005_idm_surface_split_statistics.yaml}"
 PAPER_TARGET_CONFIG="${PAPER_TARGET_CONFIG:-configs/eval/g005_idm_surface_paper_target.yaml}"
 STATS_SEED_PATH="${STATS_SEED_PATH:-outputs/idm_streaming_d2e_full_compact_accel64/streaming_stats.json}"
@@ -80,7 +82,7 @@ with open(sys.argv[1], encoding="utf-8") as handle:
 PY
 )"
     if [[ -n "$CACHE_DIR" && ! -d "$CACHE_DIR" ]]; then
-      RUN_CONFIG="outputs/cluster/g005_idm_surface_runtime_no_cache.yaml"
+      RUN_CONFIG="$RUNTIME_NO_CACHE_CONFIG"
       echo "training cache $CACHE_DIR is absent; writing no-cache runtime config to $RUN_CONFIG"
       uv run python - "$CONFIG" "$RUN_CONFIG" <<'PY'
 from __future__ import annotations
@@ -172,18 +174,25 @@ def _gpu_monitor_status(path: Path, expected_gpus: int) -> dict:
     status["covers_expected_gpus"] = len(status["unique_gpu_indices"]) >= expected_gpus
     return status
 
-summary_path = Path("artifacts/idm/idm_streaming_d2e_full_surface_calibrated_summary.json")
-metadata_path = Path("outputs/idm_streaming_d2e_full_surface_calibrated/checkpoint_metadata.json")
-metrics_path = Path("outputs/idm_streaming_d2e_full_surface_calibrated/metrics.json")
-paper_metrics_path = Path("artifacts/idm/g005_idm_surface_paper_metrics.json")
-split_stats_path = Path("artifacts/eval/g005_idm_surface_split_statistical_comparisons_summary.json")
+config_path = Path("${RUN_CONFIG:-$CONFIG}")
+model_config = _load(config_path) or _load(Path("$CONFIG")) or {}
+output_dir = Path(model_config.get("output_dir", "$OUTPUT_DIR"))
+summary_path = Path(model_config.get("summary_out", output_dir / "summary.json"))
+metadata_path = output_dir / "checkpoint_metadata.json"
+metrics_path = output_dir / "metrics.json"
+paper_config = _load(Path("$PAPER_TARGET_CONFIG")) or {}
+paper_paths = paper_config.get("paths", {}) if isinstance(paper_config.get("paths"), dict) else {}
+paper_metrics_cfg = paper_config.get("paper_metrics", {}) if isinstance(paper_config.get("paper_metrics"), dict) else {}
+paper_metrics_path = Path(paper_paths.get("paper_metrics") or paper_metrics_cfg.get("output_path") or "artifacts/idm/g005_idm_surface_paper_metrics.json")
+split_config = _load(Path("$SPLIT_STATS_CONFIG")) or {}
+split_stats_path = Path(split_config.get("summary_out", "artifacts/eval/g005_idm_surface_split_statistical_comparisons_summary.json"))
 gpu_monitor_path = Path("$GPU_MONITOR_LOG")
 summary = _load(summary_path)
 metadata = _load(metadata_path)
 split_stats = _load(split_stats_path)
 paper_metrics = _load(paper_metrics_path)
 payload = {
-    "schema": "g005_idm_surface_4xh200_run.v1",
+    "schema": "${MODEL_SLUG}_4xh200_run.v1",
     "config": "$CONFIG",
     "runtime_config": "${RUN_CONFIG:-$CONFIG}",
     "log_path": "$LOG_PATH",
@@ -232,7 +241,9 @@ import json
 from pathlib import Path
 run_path = Path("$RUN_SUMMARY")
 payload = json.loads(run_path.read_text())
-audit_path = Path("artifacts/idm/g005_idm_surface_paper_target_audit.json")
+config_path = Path("$PAPER_TARGET_CONFIG")
+target_config = json.loads(config_path.read_text()) if config_path.exists() else {}
+audit_path = Path(target_config.get("output_path", "artifacts/idm/g005_idm_surface_paper_target_audit.json"))
 audit = json.loads(audit_path.read_text()) if audit_path.exists() else None
 payload["validation_exit_code"] = int("$VALIDATION_STATUS")
 payload["g005_audit_path"] = str(audit_path)

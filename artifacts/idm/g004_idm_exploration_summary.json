@@ -35,6 +35,10 @@
       "g004_response": "bind candidate gates to G003 paper/repo targets and local exact-split postprocessing"
     },
     {
+      "cause": "paper_mouse_delta_aggregation",
+      "g004_response": "add a full-corpus paper-sum IDM candidate that trains on summed 50ms mouse bins and emits decomposed mouse tokens for paper-compatible movement metrics"
+    },
+    {
       "cause": "feature_sufficiency",
       "g004_response": "carry both surface/grid MLP and luma temporal convolution full-corpus candidates into G005"
     }
@@ -617,10 +621,37 @@
   "full_corpus_candidate_configs": [
     {
       "artifact": {
+        "path": "configs/model/idm_streaming_d2e_full_paper_sum_calibrated.yaml",
+        "exists": true,
+        "bytes": 2728,
+        "sha256": "7abcbb9f2be379d32153544b263ce8a33a5b5cda6698cdf9b819c3114228470d"
+      },
+      "config": {
+        "model_name": "streaming_idm_d2e_full_paper_sum_calibrated",
+        "feature_mode": "summary_compact_grid8_shift_surface_time",
+        "model_arch": "mlp",
+        "epochs": 6,
+        "category_threshold_mode": "group_fbeta_calibrated",
+        "category_calibration_beta": 1.0,
+        "category_calibration_max_examples": 524288,
+        "mouse_target_mode": "sum",
+        "mouse_head_mode": "regression",
+        "mouse_emit_mode": "decompose",
+        "mouse_max_tokens_per_axis": 32,
+        "mouse_output_gain_mode": "train_abs_ratio",
+        "mouse_gain_calibration_max_examples": 524288,
+        "training_cache_shard_assignment": "greedy_rows",
+        "prediction_workers": 16,
+        "train_records_glob": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/train_core.jsonl",
+        "target_records_glob": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/target_all_eval.jsonl"
+      }
+    },
+    {
+      "artifact": {
         "path": "configs/model/idm_streaming_d2e_full_surface_calibrated.yaml",
         "exists": true,
-        "bytes": 2514,
-        "sha256": "6f0fa70d2c63e5451a4f14a98a28985283e7a49fca49b4657749be1e851e8ac2"
+        "bytes": 2726,
+        "sha256": "78ff91543e21b362b58cc575c42e1ffb414fe901b04106312b898821ae84340f"
       },
       "config": {
         "model_name": "streaming_idm_d2e_full_surface_calibrated",
@@ -629,9 +660,13 @@
         "epochs": 5,
         "category_threshold_mode": "group_fbeta_calibrated",
         "category_calibration_beta": 0.5,
-        "category_calibration_max_examples": 1048576,
+        "category_calibration_max_examples": 262144,
+        "mouse_target_mode": "mean",
+        "mouse_head_mode": "axis_softmax",
+        "mouse_emit_mode": "single",
+        "mouse_max_tokens_per_axis": null,
         "mouse_output_gain_mode": "train_abs_ratio",
-        "mouse_gain_calibration_max_examples": 1048576,
+        "mouse_gain_calibration_max_examples": 262144,
         "training_cache_shard_assignment": "greedy_rows",
         "prediction_workers": 16,
         "train_records_glob": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/train_core.jsonl",
@@ -653,6 +688,10 @@
         "category_threshold_mode": "group_fbeta_calibrated",
         "category_calibration_beta": 0.5,
         "category_calibration_max_examples": 1048576,
+        "mouse_target_mode": "mean",
+        "mouse_head_mode": "axis_softmax",
+        "mouse_emit_mode": "single",
+        "mouse_max_tokens_per_axis": null,
         "mouse_output_gain_mode": "train_abs_ratio",
         "mouse_gain_calibration_max_examples": 1048576,
         "training_cache_shard_assignment": "greedy_rows",
@@ -665,11 +704,16 @@
   "selected_g005_order": [
     {
       "rank": 1,
+      "config": "configs/model/idm_streaming_d2e_full_paper_sum_calibrated.yaml",
+      "reason": "Primary G005 candidate aligns training and prediction with the paper-compatible summed 50ms mouse-bin metric while preserving calibrated category thresholds and full-corpus sharded execution."
+    },
+    {
+      "rank": 2,
       "config": "configs/model/idm_streaming_d2e_full_surface_calibrated.yaml",
       "reason": "Best medium H200 evidence uses surface/grid features with axis-softmax motion, low no-button FPR, and stronger mouse Pearson than luma on shooter64."
     },
     {
-      "rank": 2,
+      "rank": 3,
       "config": "configs/model/idm_streaming_d2e_full_luma_temporal_calibrated.yaml",
       "reason": "Backup architecture if surface MLP plateaus; keeps temporal luma convolution candidate from shooter32 sweeps."
     }

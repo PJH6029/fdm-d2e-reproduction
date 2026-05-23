@@ -16,6 +16,10 @@
       "g004_response": "bind candidate gates to G003 paper/repo targets and local exact-split postprocessing"
     },
     {
+      "cause": "paper_mouse_delta_aggregation",
+      "g004_response": "add a full-corpus paper-sum IDM candidate that trains on summed 50ms mouse bins and emits decomposed mouse tokens for paper-compatible movement metrics"
+    },
+    {
       "cause": "feature_sufficiency",
       "g004_response": "carry both surface/grid MLP and luma temporal convolution full-corpus candidates into G005"
     }
@@ -57,17 +61,23 @@
     "requires_non_global_streaming_calibration": true
   },
   "full_corpus_candidate_configs": [
+    "configs/model/idm_streaming_d2e_full_paper_sum_calibrated.yaml",
     "configs/model/idm_streaming_d2e_full_surface_calibrated.yaml",
     "configs/model/idm_streaming_d2e_full_luma_temporal_calibrated.yaml"
   ],
   "selected_g005_order": [
     {
       "rank": 1,
+      "config": "configs/model/idm_streaming_d2e_full_paper_sum_calibrated.yaml",
+      "reason": "Primary G005 candidate aligns training and prediction with the paper-compatible summed 50ms mouse-bin metric while preserving calibrated category thresholds and full-corpus sharded execution."
+    },
+    {
+      "rank": 2,
       "config": "configs/model/idm_streaming_d2e_full_surface_calibrated.yaml",
       "reason": "Best medium H200 evidence uses surface/grid features with axis-softmax motion, low no-button FPR, and stronger mouse Pearson than luma on shooter64."
     },
     {
-      "rank": 2,
+      "rank": 3,
       "config": "configs/model/idm_streaming_d2e_full_luma_temporal_calibrated.yaml",
       "reason": "Backup architecture if surface MLP plateaus; keeps temporal luma convolution candidate from shooter32 sweeps."
     }
@@ -87,6 +97,14 @@
         "_calibrate_streaming_mouse_output_gain",
         "train_abs_ratio",
         "mouse_output_gain_info"
+      ]
+    },
+    "paper_sum_mouse_tokens": {
+      "path": "src/fdm_d2e/training/neural_idm.py",
+      "patterns": [
+        "target_mouse_delta",
+        "mouse delta target mode",
+        "sum_decompose"
       ]
     },
     "luma_temporal_conv": {

@@ -436,7 +436,14 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
     raise ValueError(f"unsupported IDM feature_mode: {feature_mode}")
 
 
-def target_mouse_delta(row: dict[str, Any]) -> tuple[float, float]:
+def target_mouse_delta(row: dict[str, Any], *, mode: str = "mean") -> tuple[float, float]:
+    normalized = mode.replace("-", "_").lower()
+    if normalized in {"average", "avg"}:
+        normalized = "mean"
+    if normalized in {"paper_sum"}:
+        normalized = "sum"
+    if normalized not in {"mean", "sum"}:
+        raise ValueError("mouse delta target mode must be one of: mean, sum")
     dxs: list[float] = []
     dys: list[float] = []
     for token in row.get("ground_truth_tokens", []):
@@ -447,11 +454,46 @@ def target_mouse_delta(row: dict[str, Any]) -> tuple[float, float]:
             dxs.append(float(value))
         elif token.startswith("MOUSE_DY_"):
             dys.append(float(value))
+    if normalized == "sum":
+        return (sum(dxs) if dxs else 0.0, sum(dys) if dys else 0.0)
     return (sum(dxs) / len(dxs) if dxs else 0.0, sum(dys) / len(dys) if dys else 0.0)
 
 
-def tokens_from_delta(dx: float, dy: float) -> list[str]:
-    return [f"MOUSE_DX_{bin_delta(dx)}", f"MOUSE_DY_{bin_delta(dy)}"]
+def _decomposed_axis_tokens(value: float, *, prefix: str, max_tokens: int) -> list[str]:
+    max_tokens = max(1, int(max_tokens))
+    magnitude = int(round(abs(float(value))))
+    if magnitude <= 0:
+        return [f"{prefix}Z0"]
+    sign = "P" if value >= 0 else "N"
+    buckets = ((5, 24), (4, 12), (3, 6), (2, 2), (1, 1))
+    tokens: list[str] = []
+    remaining = magnitude
+    while remaining > 0 and len(tokens) < max_tokens:
+        for suffix, bucket_value in buckets:
+            if bucket_value <= remaining or suffix == 1:
+                tokens.append(f"{prefix}{sign}{suffix}")
+                remaining -= bucket_value
+                break
+    return tokens
+
+
+def tokens_from_delta(
+    dx: float,
+    dy: float,
+    *,
+    emit_mode: str = "single",
+    max_tokens_per_axis: int = 8,
+) -> list[str]:
+    normalized = emit_mode.replace("-", "_").lower()
+    if normalized in {"single", "bin", "binned"}:
+        return [f"MOUSE_DX_{bin_delta(dx)}", f"MOUSE_DY_{bin_delta(dy)}"]
+    if normalized in {"decompose", "decomposed", "sum_decompose"}:
+        return _decomposed_axis_tokens(dx, prefix="MOUSE_DX_", max_tokens=max_tokens_per_axis) + _decomposed_axis_tokens(
+            dy,
+            prefix="MOUSE_DY_",
+            max_tokens=max_tokens_per_axis,
+        )
+    raise ValueError("mouse token emit mode must be one of: single, decompose")
 
 
 @dataclass

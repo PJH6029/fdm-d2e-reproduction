@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.training.neural_idm import TinyMouseIDM, record_features, target_mouse_delta, tokens_from_delta, train_idm_variant
+from fdm_d2e.tokenization.actions import token_to_delta_class
 
 
 def rec(idx, dx_token, dy_token):
@@ -24,6 +25,22 @@ class NeuralIDMTests(unittest.TestCase):
     def test_target_mouse_delta_reduces_tokens(self):
         self.assertEqual(target_mouse_delta(rec(0, "MOUSE_DX_P2", "MOUSE_DY_N1")), (2.0, -1.0))
         self.assertEqual(tokens_from_delta(2.2, -0.5), ["MOUSE_DX_P2", "MOUSE_DY_N1"])
+
+    def test_target_mouse_delta_can_sum_repeated_paper_bins(self):
+        row = rec(0, "MOUSE_DX_P2", "MOUSE_DY_N1")
+        row["ground_truth_tokens"] = ["MOUSE_DX_P2", "MOUSE_DX_P3", "MOUSE_DY_N1", "MOUSE_DY_N2"]
+
+        self.assertEqual(target_mouse_delta(row), (4.0, -1.5))
+        self.assertEqual(target_mouse_delta(row, mode="sum"), (8.0, -3.0))
+
+    def test_tokens_from_delta_can_emit_decomposed_sum_tokens(self):
+        tokens = tokens_from_delta(30.0, -7.0, emit_mode="decompose", max_tokens_per_axis=4)
+
+        dx_sum = sum(float(token_to_delta_class(token) or 0.0) for token in tokens if token.startswith("MOUSE_DX_"))
+        dy_sum = sum(float(token_to_delta_class(token) or 0.0) for token in tokens if token.startswith("MOUSE_DY_"))
+        self.assertEqual(dx_sum, 30.0)
+        self.assertEqual(dy_sum, -7.0)
+        self.assertGreater(tokens.count("MOUSE_DX_P5"), 0)
 
     def test_tiny_mouse_idm_trains_and_writes_pseudolabels(self):
         train = [rec(i, "MOUSE_DX_P1" if i < 3 else "MOUSE_DX_N1", "MOUSE_DY_Z0") for i in range(6)]
