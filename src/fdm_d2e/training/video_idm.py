@@ -397,6 +397,63 @@ def _iter_records(record_paths: str | Path | Sequence[str | Path]) -> Iterable[d
         yield from iter_jsonl(record_path)
 
 
+def _scan_video_idm_stats_part(path: str | Path) -> dict[str, Any]:
+    category_counts: Counter[str] = Counter()
+    button_counter: Counter[tuple[str, ...]] = Counter({(): 0})
+    game_counts: Counter[str] = Counter()
+    source_ids: set[str] = set()
+    resolution_tiers: set[str] = set()
+    split_names: set[str] = set()
+    eval_split_tags: set[str] = set()
+    global_tokens: Counter[str] = Counter()
+    fingerprint = hashlib.sha256()
+    fingerprint.update(json.dumps(_jsonl_source_metadata(path), sort_keys=True).encode("utf-8"))
+    fingerprint.update(b"\n")
+    examples = 0
+    for row in iter_jsonl(path):
+        examples += 1
+        tokens = _tokens(row)
+        global_tokens.update(tokens or ["NOOP"])
+        for token in tokens:
+            if _is_category_token(token):
+                category_counts[token] += 1
+        button_counter[_button_label(row)] += 1
+        game_counts[str(row.get("game", ""))] += 1
+        if row.get("source_id") is not None:
+            source_ids.add(str(row["source_id"]))
+        if row.get("resolution_tier") is not None:
+            resolution_tiers.add(str(row["resolution_tier"]))
+        if row.get("split") is not None:
+            split_names.add(str(row["split"]))
+        for tag in row.get("eval_split_tags", []) or []:
+            eval_split_tags.add(str(tag))
+        fingerprint.update(
+            json.dumps(
+                {
+                    "sequence_id": row.get("sequence_id"),
+                    "recording_id": row.get("recording_id"),
+                    "game": row.get("game"),
+                    "tokens": tokens,
+                },
+                sort_keys=True,
+            ).encode("utf-8")
+        )
+        fingerprint.update(b"\n")
+    return {
+        "path": str(path),
+        "examples": int(examples),
+        "category_counts": category_counts,
+        "button_counter": button_counter,
+        "game_counts": game_counts,
+        "source_ids": source_ids,
+        "resolution_tiers": resolution_tiers,
+        "split_names": split_names,
+        "eval_split_tags": eval_split_tags,
+        "global_tokens": global_tokens,
+        "fingerprint": fingerprint.hexdigest(),
+    }
+
+
 def scan_video_idm_stats(
     record_paths: str | Path | Sequence[str | Path],
     *,
@@ -414,38 +471,29 @@ def scan_video_idm_stats(
     fingerprint = hashlib.sha256()
     examples = 0
     global_tokens: Counter[str] = Counter()
-    for path in _record_paths_from_value(record_paths):
-        fingerprint.update(json.dumps(_jsonl_source_metadata(path), sort_keys=True).encode("utf-8"))
+    paths = _record_paths_from_value(record_paths)
+    workers = max(1, int(config.get("video_stats_num_workers", config.get("stats_num_workers", 1))))
+    if len(paths) > 1 and workers > 1:
+        parts_by_path: dict[str, dict[str, Any]] = {}
+        with ProcessPoolExecutor(max_workers=min(workers, len(paths))) as pool:
+            futures = {pool.submit(_scan_video_idm_stats_part, path): str(path) for path in paths}
+            for future in as_completed(futures):
+                parts_by_path[futures[future]] = future.result()
+        parts = [parts_by_path[str(path)] for path in paths]
+    else:
+        parts = [_scan_video_idm_stats_part(path) for path in paths]
+    for part in parts:
+        examples += int(part["examples"])
+        category_counts.update(part["category_counts"])
+        button_counter.update(part["button_counter"])
+        game_counts.update(part["game_counts"])
+        source_ids.update(part["source_ids"])
+        resolution_tiers.update(part["resolution_tiers"])
+        split_names.update(part["split_names"])
+        eval_split_tags.update(part["eval_split_tags"])
+        global_tokens.update(part["global_tokens"])
+        fingerprint.update(str(part["fingerprint"]).encode("utf-8"))
         fingerprint.update(b"\n")
-        for row in iter_jsonl(path):
-            examples += 1
-            tokens = _tokens(row)
-            global_tokens.update(tokens or ["NOOP"])
-            for token in tokens:
-                if _is_category_token(token):
-                    category_counts[token] += 1
-            button_counter[_button_label(row)] += 1
-            game_counts[str(row.get("game", ""))] += 1
-            if row.get("source_id") is not None:
-                source_ids.add(str(row["source_id"]))
-            if row.get("resolution_tier") is not None:
-                resolution_tiers.add(str(row["resolution_tier"]))
-            if row.get("split") is not None:
-                split_names.add(str(row["split"]))
-            for tag in row.get("eval_split_tags", []) or []:
-                eval_split_tags.add(str(tag))
-            fingerprint.update(
-                json.dumps(
-                    {
-                        "sequence_id": row.get("sequence_id"),
-                        "recording_id": row.get("recording_id"),
-                        "game": row.get("game"),
-                        "tokens": tokens,
-                    },
-                    sort_keys=True,
-                ).encode("utf-8")
-            )
-            fingerprint.update(b"\n")
     if button_head_mode == "softmax":
         category_vocab = sorted(
             token
@@ -464,6 +512,7 @@ def scan_video_idm_stats(
         "dataset_fingerprint": fingerprint.hexdigest(),
         "image_size": int(config.get("video_image_size", 112)),
         "frame_fps": int(config.get("video_frame_fps", 20)),
+        "stats_num_workers": int(workers),
         "category_vocab": category_vocab,
         "category_counts": {token: int(category_counts.get(token, 0)) for token in category_vocab},
         "button_head_mode": button_head_mode,
