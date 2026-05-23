@@ -70,12 +70,13 @@ def _maybe_build_split_stats(args: argparse.Namespace, root: Path) -> dict[str, 
 
 
 def _maybe_build_canonical_records(args: argparse.Namespace, root: Path) -> dict[str, Any]:
-    split_summary_path = _path(root, args.split_summary)
+    split_summary = getattr(args, "split_summary", "outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json")
+    split_summary_path = _path(root, split_summary)
     if not split_summary_path.exists():
-        return {"status": "skipped", "reason": "missing_split_summary", "split_summary": args.split_summary}
+        return {"status": "skipped", "reason": "missing_split_summary", "split_summary": split_summary}
     split_summary = json.loads(split_summary_path.read_text(encoding="utf-8"))
-    canonical = ensure_fdm_canonical_records(split_summary, force=args.force_canonical_records)
-    return {"status": canonical.get("status", "unknown"), "split_summary": args.split_summary, "canonical": canonical}
+    canonical = ensure_fdm_canonical_records(split_summary, force=bool(getattr(args, "force_canonical_records", False)))
+    return {"status": canonical.get("status", "unknown"), "split_summary": str(split_summary_path.relative_to(root) if split_summary_path.is_relative_to(root) else split_summary_path), "canonical": canonical}
 
 
 def finalize(args: argparse.Namespace) -> dict[str, Any]:

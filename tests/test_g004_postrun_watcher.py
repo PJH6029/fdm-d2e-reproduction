@@ -29,6 +29,8 @@ def _args(root: Path, **overrides) -> Namespace:
         "force_split_stats": False,
         "split_stats_config": "configs/eval/split_stats.json",
         "split_stats_summary": "artifacts/eval/split_summary.json",
+        "split_summary": "outputs/fdm/split_summary.json",
+        "force_canonical_records": False,
         "g004_completion_config": "configs/eval/g004_completion.json",
         "g004_audit_output": "artifacts/fdm/g004_audit.json",
         "run_summary": "artifacts/fdm/run.json",
@@ -70,6 +72,8 @@ def test_g004_watcher_runs_finalizer_once_parent_is_inactive(tmp_path: Path):
     assert len(calls) == 1
     assert calls[0].summary_out == "artifacts/fdm/finalize.json"
     assert calls[0].run_summary == "artifacts/fdm/run.json"
+    assert calls[0].split_summary == "outputs/fdm/split_summary.json"
+    assert calls[0].force_canonical_records is False
 
 
 def test_g004_watcher_reports_failed_finalization(tmp_path: Path):

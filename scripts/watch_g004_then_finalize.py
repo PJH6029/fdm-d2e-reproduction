@@ -87,6 +87,8 @@ def _finalizer_args(args: argparse.Namespace, root: Path) -> Namespace:
         force_split_stats=args.force_split_stats,
         split_stats_config=args.split_stats_config,
         split_stats_summary=args.split_stats_summary,
+        split_summary=args.split_summary,
+        force_canonical_records=args.force_canonical_records,
         g004_completion_config=args.g004_completion_config,
         g004_audit_output=args.g004_audit_output,
         run_summary=args.run_summary,
@@ -199,6 +201,8 @@ def main() -> int:
     parser.add_argument("--force-split-stats", action="store_true")
     parser.add_argument("--split-stats-config", default="configs/eval/g004_split_statistics.yaml")
     parser.add_argument("--split-stats-summary", default="artifacts/eval/g004_split_statistical_comparisons_summary.json")
+    parser.add_argument("--split-summary", default="outputs/fdm_streaming_d2e_full_compact/fdm_streaming_split_summary.json")
+    parser.add_argument("--force-canonical-records", action="store_true")
     parser.add_argument("--g004-completion-config", default="configs/eval/g004_full_fdm_completion.yaml")
     parser.add_argument("--g004-audit-output", default="artifacts/fdm/g004_full_fdm_completion_audit.json")
     parser.add_argument("--run-summary", default="artifacts/fdm/g004_d2e_full_fdm_4xh200_run.json")
