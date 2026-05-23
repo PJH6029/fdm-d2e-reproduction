@@ -280,14 +280,7 @@ def build_aux_prior_predictions(
             out_row = dict(pred)
             out_row["predicted_tokens"] = tokens
             out_row["model"] = "g005_aux_action_prior_d2e_aux_best"
-            out_row["aux_prior_policy"] = {
-                "policy": "minerl_attack_rate_mouse_button_stride",
-                "button_stride": stride,
-                "source_d2e_button_prediction_rate": pred_rate.get("button_prediction_rate"),
-                "minerl_attack_rate": attack_rate,
-                "min_aux_attack_rate": min_aux_attack_rate,
-            }
-            pred_out.write(json.dumps(out_row, sort_keys=True) + "\n")
+            pred_out.write(json.dumps(out_row, sort_keys=True, separators=(",", ":")) + "\n")
             metrics.update(tokens, gt)
             source_metrics.update(original, gt)
             if max_rows is not None and rows >= max_rows:
