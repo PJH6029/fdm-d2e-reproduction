@@ -124,6 +124,146 @@ def test_training_cache_identity_includes_mouse_target_mode(tmp_path: Path):
     assert mean_identity != sum_identity
 
 
+def test_streaming_idm_action_history_changes_stats_and_cache_identity(tmp_path: Path):
+    records = tmp_path / "train.jsonl"
+    rows = [_record(idx, "train_core") for idx in range(4)]
+    _write_jsonl(records, rows)
+
+    base_stats = scan_streaming_idm_stats(
+        records,
+        feature_mode="summary_compact_grid8_shift_surface_time",
+        categorical_min_count=1,
+    )
+    history_stats = scan_streaming_idm_stats(
+        records,
+        feature_mode="summary_compact_grid8_shift_surface_time",
+        categorical_min_count=1,
+        action_history_len=2,
+    )
+
+    assert history_stats["action_history_len"] == 2
+    assert history_stats["action_history_dim"] == 2 * 2 + len(history_stats["action_history_vocab"]) * 2 + 3
+    assert history_stats["input_dim"] == base_stats["input_dim"] + history_stats["action_history_dim"]
+    assert history_stats["dataset_fingerprint"] != base_stats["dataset_fingerprint"]
+
+    common = {
+        "mouse_head_mode": "axis_softmax",
+        "mouse_target_mode": "mean",
+        "action_history_len": 2,
+    }
+    base_identity = _training_cache_identity(
+        records,
+        stats=base_stats,
+        config={**common, "action_history_len": 0},
+        category_vocab=base_stats["category_vocab"],
+        mouse_axis_classes=["N1", "Z0", "P1"],
+    )
+    history_identity = _training_cache_identity(
+        records,
+        stats=history_stats,
+        config=common,
+        category_vocab=history_stats["category_vocab"],
+        mouse_axis_classes=["N1", "Z0", "P1"],
+    )
+
+    assert history_identity["action_history_len"] == 2
+    assert history_identity["input_dim"] == history_stats["input_dim"]
+    assert history_identity != base_identity
+
+
+def test_streaming_idm_action_history_prediction_does_not_peek_target_labels(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    train_path = tmp_path / "train.jsonl"
+    target_path = tmp_path / "target.jsonl"
+    target_mutated_path = tmp_path / "target_mutated.jsonl"
+    _write_jsonl(train_path, [_record(idx, "train_core") for idx in range(8)])
+    target_rows = [_record(idx + 8, "eval") for idx in range(4)]
+    mutated_rows = []
+    for row in target_rows:
+        mutated = dict(row)
+        mutated["ground_truth_tokens"] = ["KEY_PRESS_999", "MOUSE_LEFT_DOWN", "MOUSE_DX_P5", "MOUSE_DY_N5"]
+        mutated_rows.append(mutated)
+    _write_jsonl(target_path, target_rows)
+    _write_jsonl(target_mutated_path, mutated_rows)
+
+    idm_out = tmp_path / "idm_history"
+    summary = train_streaming_idm(
+        {
+            "model_name": "tiny_streaming_idm_history",
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(idm_out),
+            "summary_out": str(tmp_path / "summary.json"),
+            "config_path": "test_action_history_config",
+            "source_namespace": "unit_d2e_stream",
+            "feature_mode": "summary_compact_grid8_shift_surface_time",
+            "hidden_dim": 8,
+            "depth": 1,
+            "epochs": 1,
+            "eval_interval_epochs": 1,
+            "batch_size": 4,
+            "training_cache_dir": str(tmp_path / "idm_history_cache"),
+            "training_cache_chunk_size": 3,
+            "categorical_min_count": 1,
+            "mouse_head_mode": "axis_softmax",
+            "action_history_len": 2,
+            "seed": 41,
+            "force_cpu": True,
+        }
+    )
+    assert summary["metadata"]["action_history_len"] == 2
+    assert summary["metadata"]["action_history_feedback"] == "autoregressive_predicted"
+
+    original_prediction = predict_streaming_idm_checkpoint(
+        {
+            "checkpoint_path": str(idm_out / "checkpoint.pt"),
+            "checkpoint_metadata_path": str(idm_out / "checkpoint_metadata.json"),
+            "records_path": str(target_path),
+            "output_dir": str(tmp_path / "predict_original"),
+            "force_cpu": True,
+            "validate_pseudolabels": False,
+        }
+    )
+    mutated_prediction = predict_streaming_idm_checkpoint(
+        {
+            "checkpoint_path": str(idm_out / "checkpoint.pt"),
+            "checkpoint_metadata_path": str(idm_out / "checkpoint_metadata.json"),
+            "records_path": str(target_mutated_path),
+            "output_dir": str(tmp_path / "predict_mutated"),
+            "force_cpu": True,
+            "validate_pseudolabels": False,
+        }
+    )
+
+    original_tokens = [
+        json.loads(line)["predicted_tokens"]
+        for line in Path(original_prediction["predictions_path"]).read_text().splitlines()
+    ]
+    mutated_tokens = [
+        json.loads(line)["predicted_tokens"]
+        for line in Path(mutated_prediction["predictions_path"]).read_text().splitlines()
+    ]
+    assert original_tokens == mutated_tokens
+
+    target_part_a = tmp_path / "target_part_a.jsonl"
+    target_part_b = tmp_path / "target_part_b.jsonl"
+    _write_jsonl(target_part_a, target_rows[:2])
+    _write_jsonl(target_part_b, target_rows[2:])
+    with pytest.raises(ValueError, match="parallel prediction is not supported when action_history_len>0"):
+        predict_streaming_idm_checkpoint(
+            {
+                "checkpoint_path": str(idm_out / "checkpoint.pt"),
+                "records_path": str(target_part_a),
+                "record_paths": [str(target_part_a), str(target_part_b)],
+                "output_dir": str(tmp_path / "predict_parallel_blocked"),
+                "prediction_workers": 2,
+                "force_cpu": True,
+                "validate_pseudolabels": False,
+            }
+        )
+
+
 def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
     if not torch_available():
         pytest.skip("torch extra is not installed")

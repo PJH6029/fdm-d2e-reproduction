@@ -20,10 +20,13 @@ from fdm_d2e.schema import validate_named
 from fdm_d2e.training.neural_idm import record_features, target_mouse_delta
 from fdm_d2e.training.torch_idm import (
     MOUSE_AXIS_CLASSES,
+    _append_history,
     _axis_class_indices,
     _axis_suffix_from_delta,
     _build_model,
     _categorical_loss,
+    _empty_button_state,
+    _history_vector,
     _prediction_from_output,
     require_torch,
 )
@@ -87,6 +90,54 @@ def _is_category_token(token: str) -> bool:
 
 def _tokens(row: dict[str, Any]) -> list[str]:
     return list(row.get("ground_truth_tokens") or ["NOOP"])
+
+
+def _action_history_len_from_config(config: dict[str, Any]) -> int:
+    history_len = int(config.get("action_history_len", 0) or 0)
+    if history_len < 0:
+        raise ValueError("action_history_len must be non-negative")
+    return history_len
+
+
+def _base_record_features(row: dict[str, Any], *, feature_mode: str) -> list[float]:
+    override = row.get("__streaming_idm_features")
+    if override is not None:
+        return [float(value) for value in override]
+    return [float(value) for value in record_features(row, feature_mode=feature_mode)]
+
+
+def _record_features_with_history(
+    row: dict[str, Any],
+    *,
+    feature_mode: str,
+    history_vocab: list[str],
+    history_len: int,
+    history: list[list[str]] | None = None,
+    button_state: dict[str, float] | None = None,
+) -> list[float]:
+    values = [float(value) for value in record_features(row, feature_mode=feature_mode)]
+    if history_len <= 0:
+        return values
+    if history is None or button_state is None:
+        raise ValueError("action-history features require causal history state")
+    return values + _history_vector(history, button_state, history_vocab, history_len=history_len)
+
+
+def _history_dim(*, history_vocab: list[str], history_len: int) -> int:
+    if history_len <= 0:
+        return 0
+    return (2 * history_len) + (len(history_vocab) * history_len) + 3
+
+
+def _ensure_history_state(
+    histories: dict[str, list[list[str]]],
+    button_states: dict[str, dict[str, float]],
+    recording_id: str,
+) -> tuple[list[list[str]], dict[str, float]]:
+    if recording_id not in histories:
+        histories[recording_id] = []
+        button_states[recording_id] = _empty_button_state()
+    return histories[recording_id], button_states[recording_id]
 
 
 def _empty_stats_accumulator() -> dict[str, Any]:
@@ -157,7 +208,7 @@ def _scan_stats_partition(path: str | Path, feature_mode: str) -> dict[str, Any]
     eval_split_tags: set[str] = set()
     fingerprint = hashlib.sha256()
     for row in iter_jsonl(path):
-        features = [float(value) for value in record_features(row, feature_mode=feature_mode)]
+        features = _base_record_features(row, feature_mode=feature_mode)
         if not mean:
             mean = [0.0 for _ in features]
             m2 = [0.0 for _ in features]
@@ -211,6 +262,133 @@ def _scan_stats_partition(path: str | Path, feature_mode: str) -> dict[str, Any]
         "split_names": split_names,
         "eval_split_tags": eval_split_tags,
         "fingerprint": fingerprint.hexdigest(),
+    }
+
+
+def _history_vocab_from_counts(counts: Counter[str], min_count: int) -> list[str]:
+    return _category_vocab_from_counts(dict(counts), min_count)
+
+
+def _scan_streaming_idm_stats_with_action_history(
+    paths: Sequence[Path],
+    *,
+    train_records: str | Path | Sequence[str | Path],
+    feature_mode: str,
+    categorical_min_count: int,
+    action_history_len: int,
+) -> dict[str, Any]:
+    category_counts: Counter[str] = Counter()
+    for path in paths:
+        for row in iter_jsonl(path):
+            for token in row.get("ground_truth_tokens", []):
+                token = str(token)
+                if _is_category_token(token):
+                    category_counts[token] += 1
+    history_vocab = _history_vocab_from_counts(category_counts, categorical_min_count)
+
+    count = 0
+    mean: list[float] = []
+    m2: list[float] = []
+    sequence_counts: Counter[tuple[str, ...]] = Counter()
+    last_tokens_by_recording: dict[str, tuple[int, list[str]]] = {}
+    last_tokens_by_game: dict[str, tuple[int, list[str]]] = {}
+    source_ids: set[str] = set()
+    resolution_tiers: set[str] = set()
+    split_names: set[str] = set()
+    eval_split_tags: set[str] = set()
+    fingerprint = hashlib.sha256()
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+    fingerprint_parts: list[dict[str, Any]] = []
+    for path in paths:
+        part_count = 0
+        part_fingerprint = hashlib.sha256()
+        for row in iter_jsonl(path):
+            recording_id = str(row.get("recording_id", ""))
+            history, button_state = _ensure_history_state(histories, button_states, recording_id)
+            features = _record_features_with_history(
+                row,
+                feature_mode=feature_mode,
+                history_vocab=history_vocab,
+                history_len=action_history_len,
+                history=history,
+                button_state=button_state,
+            )
+            if not mean:
+                mean = [0.0 for _ in features]
+                m2 = [0.0 for _ in features]
+            if len(features) != len(mean):
+                raise ValueError(f"inconsistent feature dimension in {path}: {len(features)} != {len(mean)}")
+            count += 1
+            part_count += 1
+            for idx, value in enumerate(features):
+                delta = value - mean[idx]
+                mean[idx] += delta / count
+                m2[idx] += delta * (value - mean[idx])
+            tokens = _tokens(row)
+            sequence_counts[tuple(tokens)] += 1
+            timestamp_ns = row.get("timestamp_ns")
+            _latest_token_map_update(last_tokens_by_recording, recording_id, timestamp_ns, tokens)
+            _latest_token_map_update(last_tokens_by_game, str(row.get("game", "unknown")), timestamp_ns, tokens)
+            if row.get("source_id") is not None:
+                source_ids.add(str(row["source_id"]))
+            if row.get("resolution_tier") is not None:
+                resolution_tiers.add(str(row["resolution_tier"]))
+            if row.get("split") is not None:
+                split_names.add(str(row["split"]))
+            for tag in row.get("eval_split_tags", []) or []:
+                eval_split_tags.add(str(tag))
+            fingerprint_row = {
+                "sequence_id": row.get("sequence_id"),
+                "tokens": row.get("ground_truth_tokens", []),
+                "features": features,
+            }
+            encoded = json.dumps(fingerprint_row, ensure_ascii=False, sort_keys=True).encode("utf-8")
+            fingerprint.update(encoded)
+            fingerprint.update(b"\n")
+            part_fingerprint.update(encoded)
+            part_fingerprint.update(b"\n")
+            _append_history(history, button_state, tokens, history_len=action_history_len)
+        fingerprint_parts.append({"path": str(path), "count": part_count, "fingerprint": part_fingerprint.hexdigest()})
+
+    if count == 0:
+        raise ValueError(f"no training rows found in {train_records}")
+    std = [(m2[idx] / max(1, count - 1)) ** 0.5 or 1.0 for idx in range(len(mean))]
+    dataset_fingerprint = hashlib.sha256(
+        json.dumps(
+            {
+                "feature_mode": feature_mode,
+                "action_history_len": action_history_len,
+                "action_history_vocab": history_vocab,
+                "partitions": fingerprint_parts,
+                "rows": fingerprint.hexdigest(),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()
+    return {
+        "schema": "streaming_idm_stats.v1",
+        "train_records": str(train_records) if isinstance(train_records, (str, Path)) else [str(path) for path in train_records],
+        "num_examples": count,
+        "feature_mode": feature_mode,
+        "input_dim": len(mean),
+        "mean": mean,
+        "std": std,
+        "category_vocab": _category_vocab_from_counts(dict(category_counts), categorical_min_count),
+        "category_counts": dict(sorted(dict(category_counts).items())),
+        "global_majority_tokens": list(sequence_counts.most_common(1)[0][0]) if sequence_counts else ["NOOP"],
+        "last_tokens_by_recording": {key: list(tokens) for key, (_ts, tokens) in sorted(last_tokens_by_recording.items())},
+        "last_tokens_by_game": {key: list(tokens) for key, (_ts, tokens) in sorted(last_tokens_by_game.items())},
+        "source_ids": sorted(source_ids),
+        "resolution_tiers": sorted(resolution_tiers),
+        "split_names": sorted(split_names),
+        "eval_split_tags": sorted(eval_split_tags),
+        "dataset_fingerprint": dataset_fingerprint,
+        "action_history_len": int(action_history_len),
+        "action_history_vocab": history_vocab,
+        "action_history_dim": _history_dim(history_vocab=history_vocab, history_len=action_history_len),
+        "action_history_feedback": "teacher_forced_train",
     }
 
 
@@ -293,8 +471,17 @@ def scan_streaming_idm_stats(
     feature_mode: str,
     categorical_min_count: int = 1,
     num_workers: int = 1,
+    action_history_len: int = 0,
 ) -> dict[str, Any]:
     paths = _record_paths_from_value(train_records)
+    if int(action_history_len) > 0:
+        return _scan_streaming_idm_stats_with_action_history(
+            paths,
+            train_records=train_records,
+            feature_mode=feature_mode,
+            categorical_min_count=categorical_min_count,
+            action_history_len=int(action_history_len),
+        )
     if len(paths) > 1 and int(num_workers) > 1:
         workers = min(int(num_workers), len(paths))
         partitions: list[dict[str, Any]] = []
@@ -323,6 +510,7 @@ def scan_streaming_idm_stats_from_config(config: dict[str, Any]) -> dict[str, An
         feature_mode=str(config.get("feature_mode", "summary_compact_grid8_shift_surface_time")),
         categorical_min_count=int(config.get("categorical_min_count", 1)),
         num_workers=int(config.get("precompute_num_workers", config.get("stats_num_workers", 1))),
+        action_history_len=_action_history_len_from_config(config),
     )
 
 
@@ -345,7 +533,7 @@ def _batch_features(
     mean_t=None,
     std_t=None,
 ):
-    xs = [[float(value) for value in record_features(row, feature_mode=feature_mode)] for row in rows]
+    xs = [_base_record_features(row, feature_mode=feature_mode) for row in rows]
     x = torch.tensor(xs, dtype=torch.float32, device=device)
     if mean_t is None or std_t is None:
         mean_t, std_t = _normalizer_tensors(torch, mean=mean, std=std, device=device)
@@ -444,6 +632,54 @@ def _iter_batches(
         yield batch
 
 
+def _iter_causal_feature_batches(
+    path: str | Path | Sequence[str | Path],
+    batch_size: int,
+    max_examples: int | None,
+    *,
+    feature_mode: str,
+    history_vocab: list[str],
+    history_len: int,
+    skip_examples: int = 0,
+) -> Iterable[list[dict[str, Any]]]:
+    if history_len <= 0:
+        yield from _iter_batches(path, batch_size, max_examples, skip_examples=skip_examples)
+        return
+    batch: list[dict[str, Any]] = []
+    seen = 0
+    skipped = 0
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+    for record_path in _record_paths_from_value(path):
+        for row in iter_jsonl(record_path):
+            recording_id = str(row.get("recording_id", ""))
+            history, button_state = _ensure_history_state(histories, button_states, recording_id)
+            features = _record_features_with_history(
+                row,
+                feature_mode=feature_mode,
+                history_vocab=history_vocab,
+                history_len=history_len,
+                history=history,
+                button_state=button_state,
+            )
+            tokens = _tokens(row)
+            _append_history(history, button_state, tokens, history_len=history_len)
+            if skipped < int(skip_examples):
+                skipped += 1
+                continue
+            if max_examples is not None and seen >= max_examples:
+                break
+            batch.append({**row, "__streaming_idm_features": features})
+            seen += 1
+            if len(batch) >= batch_size:
+                yield batch
+                batch = []
+        if max_examples is not None and seen >= max_examples:
+            break
+    if batch:
+        yield batch
+
+
 def _cache_source_metadata(path: str | Path) -> dict[str, Any]:
     record_path = Path(path)
     stat = record_path.stat()
@@ -472,7 +708,10 @@ def _training_cache_identity(
         "mouse_head_mode": str(config.get("mouse_head_mode", "axis_softmax")),
         "mouse_target_mode": _mouse_target_mode(config),
         "mouse_axis_classes": list(mouse_axis_classes),
-        "cache_version": 2,
+        "action_history_len": int(stats.get("action_history_len", _action_history_len_from_config(config))),
+        "action_history_vocab": list(stats.get("action_history_vocab", [])),
+        "action_history_dim": int(stats.get("action_history_dim", 0)),
+        "cache_version": 3,
     }
 
 
@@ -519,7 +758,7 @@ def _flush_training_cache_chunk(
 ) -> dict[str, Any]:
     feature_mode = str(stats["feature_mode"])
     x = torch.tensor(
-        [[float(value) for value in record_features(row, feature_mode=feature_mode)] for row in rows],
+        [_base_record_features(row, feature_mode=feature_mode) for row in rows],
         dtype=torch.float32,
     )
     mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device="cpu")
@@ -559,12 +798,23 @@ def _build_training_cache_for_path(
     mouse_axis_classes: list[str],
     chunk_size: int,
     force_rebuild: bool = False,
+    histories: dict[str, list[list[str]]] | None = None,
+    button_states: dict[str, dict[str, float]] | None = None,
 ) -> dict[str, Any]:
     manifest_path = Path(manifest_path)
+    action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
+    history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
+    if action_history_len > 0:
+        histories = histories if histories is not None else {}
+        button_states = button_states if button_states is not None else {}
     if manifest_path.exists() and not force_rebuild:
         manifest = read_json(manifest_path)
         chunk_rows = manifest.get("chunks", [])
         if manifest.get("identity") == identity and chunk_rows and all(Path(row["path"]).exists() for row in chunk_rows):
+            if action_history_len > 0:
+                for row in iter_jsonl(path):
+                    history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
+                    _append_history(history, button_state, _tokens(row), history_len=action_history_len)
             return manifest
     torch = require_torch()
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -579,6 +829,19 @@ def _build_training_cache_for_path(
     batch: list[dict[str, Any]] = []
     count = 0
     for row in iter_jsonl(path):
+        if action_history_len > 0:
+            recording_id = str(row.get("recording_id", ""))
+            history, button_state = _ensure_history_state(histories, button_states, recording_id)
+            features = _record_features_with_history(
+                row,
+                feature_mode=str(stats["feature_mode"]),
+                history_vocab=history_vocab,
+                history_len=action_history_len,
+                history=history,
+                button_state=button_state,
+            )
+            row = {**row, "__streaming_idm_features": features}
+            _append_history(history, button_state, _tokens(row), history_len=action_history_len)
         batch.append(row)
         count += 1
         if len(batch) >= chunk_size:
@@ -659,6 +922,25 @@ def _build_training_cache_manifests(
             mouse_axis_classes=mouse_axis_classes,
         )
         tasks.append((path, manifest_path, identity))
+    if int(stats.get("action_history_len", _action_history_len_from_config(config))) > 0:
+        histories: dict[str, list[list[str]]] = {}
+        button_states: dict[str, dict[str, float]] = {}
+        return [
+            _build_training_cache_for_path(
+                path,
+                manifest_path=manifest_path,
+                identity=identity,
+                stats=stats,
+                config=config,
+                category_vocab=category_vocab,
+                mouse_axis_classes=mouse_axis_classes,
+                chunk_size=chunk_size,
+                force_rebuild=force_rebuild,
+                histories=histories,
+                button_states=button_states,
+            )
+            for path, manifest_path, identity in tasks
+        ]
     if len(tasks) > 1 and cache_workers > 1:
         manifests: list[dict[str, Any]] = []
         workers = min(cache_workers, len(tasks))
@@ -926,6 +1208,8 @@ def _train_one_epoch(
     loss_sum = 0.0
     record_paths = list(train_record_paths or _record_paths_from_value(train_records))
     shard_by_path = len(record_paths) > 1
+    action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
+    history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
     if training_cache_manifests:
         cache_shard_by_path = bool(config.get("training_cache_shard_by_path", shard_by_path))
         progress_interval = int(config.get("training_progress_interval_batches", 0) or 0)
@@ -1001,17 +1285,19 @@ def _train_one_epoch(
             "training_cache": True,
             "training_cache_shard_by_path": cache_shard_by_path,
         }
+    if action_history_len > 0 and world_size > 1:
+        raise ValueError("action_history_len>0 with distributed streaming IDM training requires training_cache_dir")
     mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
     vocab_index = {token: idx for idx, token in enumerate(category_vocab)}
     axis_class_index = {label: idx for idx, label in enumerate(mouse_axis_classes)}
     for batch_idx, rows in enumerate(
-        _iter_batches(
+        _iter_causal_feature_batches(
             record_paths,
             batch_size,
             config.get("max_train_examples"),
-            rank=rank,
-            world_size=world_size,
-            shard_by_path=shard_by_path,
+            feature_mode=feature_mode,
+            history_vocab=history_vocab,
+            history_len=action_history_len,
         )
     ):
         if world_size > 1 and not shard_by_path and (batch_idx % world_size) != rank:
@@ -1555,9 +1841,18 @@ def _calibrate_streaming_category_thresholds(
         for group in groups
     }
     observed_examples = 0
+    action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
+    history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
     model.eval()
     with torch.no_grad():
-        for rows in _iter_batches(train_records, batch_size, max_examples):
+        for rows in _iter_causal_feature_batches(
+            train_records,
+            batch_size,
+            max_examples,
+            feature_mode=str(stats["feature_mode"]),
+            history_vocab=history_vocab,
+            history_len=action_history_len,
+        ):
             if not rows:
                 continue
             x = _batch_features(
@@ -1688,9 +1983,18 @@ def _calibrate_streaming_mouse_output_gain(
     target_abs_sum = 0.0
     value_count = 0
     mouse_target_mode = _mouse_target_mode(config)
+    action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
+    history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
     model.eval()
     with torch.no_grad():
-        for rows in _iter_batches(train_records, batch_size, max_examples):
+        for rows in _iter_causal_feature_batches(
+            train_records,
+            batch_size,
+            max_examples,
+            feature_mode=str(stats["feature_mode"]),
+            history_vocab=history_vocab,
+            history_len=action_history_len,
+        ):
             x = _batch_features(
                 torch,
                 rows,
@@ -2100,8 +2404,38 @@ def _evaluate_stream_metrics(
     count = 0
     model.eval()
     mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
+    action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
+    history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+    if action_history_len > 0 and config.get("train_records"):
+        train_paths = _record_paths_from_config(
+            config,
+            primary_key="train_records",
+            paths_key="train_record_paths",
+            glob_key="train_records_glob",
+        )
+        for train_row in _iter_records(train_paths):
+            history, button_state = _ensure_history_state(histories, button_states, str(train_row.get("recording_id", "")))
+            _append_history(history, button_state, _tokens(train_row), history_len=action_history_len)
     with torch.no_grad():
-        for rows in _iter_batches(target_records, batch_size, max_examples):
+        if action_history_len > 0:
+            batches: Iterable[list[dict[str, Any]]] = (
+                [{**row, "__streaming_idm_features": _record_features_with_history(
+                    row,
+                    feature_mode=str(stats["feature_mode"]),
+                    history_vocab=history_vocab,
+                    history_len=action_history_len,
+                    history=(state := _ensure_history_state(histories, button_states, str(row.get("recording_id", ""))))[0],
+                    button_state=state[1],
+                )}]
+                for row in _iter_records(target_records)
+            )
+        else:
+            batches = _iter_batches(target_records, batch_size, max_examples)
+        for rows in batches:
+            if max_examples is not None and count >= int(max_examples):
+                break
             x = _batch_features(
                 torch,
                 rows,
@@ -2120,6 +2454,9 @@ def _evaluate_stream_metrics(
                     category_vocab=category_vocab,
                     mouse_axis_classes=mouse_axis_classes,
                 )
+                if action_history_len > 0:
+                    history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
+                    _append_history(history, button_state, tokens, history_len=action_history_len)
                 metric.update(tokens, row)
                 count += 1
     metrics = metric.payload()
@@ -2201,6 +2538,20 @@ def _predict_stream(
     pseudo_path.parent.mkdir(parents=True, exist_ok=True)
     resume_predictions = bool(config.get("resume_predictions", False))
     resume_existing_rows = 0
+    action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
+    history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+    if action_history_len > 0:
+        train_paths = _record_paths_from_config(
+            config,
+            primary_key="train_records",
+            paths_key="train_record_paths",
+            glob_key="train_records_glob",
+        )
+        for train_row in _iter_records(train_paths):
+            history, button_state = _ensure_history_state(histories, button_states, str(train_row.get("recording_id", "")))
+            _append_history(history, button_state, _tokens(train_row), history_len=action_history_len)
     if resume_predictions:
         pseudo_exists = pseudo_path.exists()
         predictions_exists = predictions_path.exists()
@@ -2260,6 +2611,9 @@ def _predict_stream(
                     tokens = [str(token) for token in pred_row.get("predicted_tokens", [])]
                     if [str(token) for token in pseudo_row.get("predicted_tokens", [])] != tokens:
                         raise ValueError(f"resume_predictions token mismatch at row {row_idx}")
+                    if action_history_len > 0:
+                        history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
+                        _append_history(history, button_state, tokens, history_len=action_history_len)
                     _observe_prediction_metrics(
                         row=row,
                         tokens=tokens,
@@ -2278,13 +2632,37 @@ def _predict_stream(
     remaining_max_examples = None
     if max_target_examples is not None:
         remaining_max_examples = max(0, int(max_target_examples) - int(resume_existing_rows))
+
+    def prediction_batches() -> Iterable[list[dict[str, Any]]]:
+        if action_history_len <= 0:
+            yield from _iter_batches(
+                target_records,
+                batch_size,
+                remaining_max_examples,
+                skip_examples=resume_existing_rows,
+            )
+            return
+        row_iter = _iter_records(target_records)
+        for _ in range(resume_existing_rows):
+            next(row_iter, None)
+        emitted = 0
+        for row in row_iter:
+            if remaining_max_examples is not None and emitted >= remaining_max_examples:
+                break
+            history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
+            features = _record_features_with_history(
+                row,
+                feature_mode=str(stats["feature_mode"]),
+                history_vocab=history_vocab,
+                history_len=action_history_len,
+                history=history,
+                button_state=button_state,
+            )
+            emitted += 1
+            yield [{**row, "__streaming_idm_features": features}]
+
     with pseudo_path.open(write_mode) as pseudo_f, predictions_path.open(write_mode) as pred_f, torch.no_grad():
-        for rows in _iter_batches(
-            target_records,
-            batch_size,
-            remaining_max_examples,
-            skip_examples=resume_existing_rows,
-        ):
+        for rows in prediction_batches():
             x = _batch_features(
                 torch,
                 rows,
@@ -2309,6 +2687,9 @@ def _predict_stream(
                     category_vocab=category_vocab,
                     mouse_axis_classes=mouse_axis_classes,
                 )
+                if action_history_len > 0:
+                    history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
+                    _append_history(history, button_state, tokens, history_len=action_history_len)
                 confidence = max(0.05, min(0.99, 1.0 / (1.0 + len(tokens))))
                 pseudo = {
                     "schema": "idm_pseudolabel.v1",
@@ -2430,6 +2811,8 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     except TypeError:  # pragma: no cover - older torch releases.
         checkpoint = torch.load(checkpoint_path, map_location=checkpoint_device)
     checkpoint_config = dict(checkpoint.get("config", {}))
+    if parallel_prediction and int(checkpoint.get("stats", {}).get("action_history_len", checkpoint_config.get("action_history_len", 0)) or 0) > 0:
+        raise ValueError("parallel prediction is not supported when action_history_len>0 because autoregressive ordering is required")
     prediction_config = dict(checkpoint_config)
     for key, value in config.get("prediction_overrides", {}).items():
         prediction_config[key] = value
@@ -2851,6 +3234,8 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
             prediction_config[key] = checkpoint_config[key]
     prediction_workers = int(config.get("prediction_workers", 1))
     if prediction_workers > 1:
+        if int(checkpoint.get("stats", {}).get("action_history_len", checkpoint_config.get("action_history_len", 0)) or 0) > 0:
+            raise ValueError("parallel prediction is not supported when action_history_len>0 because autoregressive ordering is required")
         prediction = _predict_streaming_idm_checkpoint_parallel(
             config,
             checkpoint=checkpoint,
@@ -2929,6 +3314,9 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         },
         "feature_mode": str(stats["feature_mode"]),
         "input_dim": int(stats["input_dim"]),
+        "action_history_len": int(stats.get("action_history_len", checkpoint_config.get("action_history_len", 0)) or 0),
+        "action_history_dim": int(stats.get("action_history_dim", 0) or 0),
+        "action_history_feedback": "autoregressive_predicted" if int(stats.get("action_history_len", checkpoint_config.get("action_history_len", 0)) or 0) > 0 else "none",
         "categorical_vocab": category_vocab,
         "mouse_head_mode": mouse_head_mode,
         "mouse_target_mode": str(checkpoint_config.get("mouse_target_mode", "mean")),
@@ -3017,6 +3405,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
                 feature_mode=feature_mode,
                 categorical_min_count=int(config.get("categorical_min_count", 1)),
                 num_workers=int(config.get("precompute_num_workers", config.get("stats_num_workers", 1))),
+                action_history_len=_action_history_len_from_config(config),
             )
             write_json(stats_path, stats)
         if dist["enabled"]:
@@ -3193,6 +3582,8 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     torch.save(checkpoint_payload, checkpoint_path)
     prediction_workers = int(config.get("prediction_workers", 1))
     if prediction_workers > 1 and len(target_record_paths) > 1:
+        if int(stats.get("action_history_len", 0) or 0) > 0:
+            raise ValueError("parallel prediction is not supported when action_history_len>0 because autoregressive ordering is required")
         if str(device).startswith("cuda"):
             model.to("cpu")
             torch.cuda.empty_cache()
@@ -3271,6 +3662,9 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         },
         "feature_mode": feature_mode,
         "input_dim": int(stats["input_dim"]),
+        "action_history_len": int(stats.get("action_history_len", _action_history_len_from_config(config)) or 0),
+        "action_history_dim": int(stats.get("action_history_dim", 0) or 0),
+        "action_history_feedback": "autoregressive_predicted" if int(stats.get("action_history_len", 0) or 0) > 0 else "none",
         "categorical_vocab": category_vocab,
         "mouse_head_mode": mouse_head_mode,
         "mouse_target_mode": _mouse_target_mode(config),
