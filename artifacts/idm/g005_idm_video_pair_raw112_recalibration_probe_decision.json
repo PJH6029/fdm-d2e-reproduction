@@ -1,0 +1,83 @@
+{
+  "schema": "g005_idm_video_pair_raw112_recalibration_probe_decision.v1",
+  "status": "keep_fpr_control_reject_raw112_completion",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "claim_boundary": "Closed-target 320k recalibration probe only. This is not full target evaluation and is not G005 completion evidence.",
+  "evidence": {
+    "run_summary": "artifacts/idm/g005_idm_video_pair_raw112_recalibration_probe_run.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_video_pair_raw112_recalibration_probe_h200_gpu_monitor.csv",
+    "fpr08_prediction_summary": "artifacts/idm/g005_idm_video_pair_raw112_epoch12_recal_fpr08_closed_target_probe_prediction_summary.json",
+    "fpr08_paper_metrics": "artifacts/idm/g005_idm_video_pair_raw112_epoch12_recal_fpr08_closed_target_probe_paper_metrics.json",
+    "fpr05_prediction_summary": "artifacts/idm/g005_idm_video_pair_raw112_epoch12_recal_fpr05_closed_target_probe_prediction_summary.json",
+    "fpr05_paper_metrics": "artifacts/idm/g005_idm_video_pair_raw112_epoch12_recal_fpr05_closed_target_probe_paper_metrics.json",
+    "reservation_cancelled": "artifacts/mlxp/g005_recalibration_probe_reservation_cancelled.json"
+  },
+  "probe_setup": {
+    "reservation_id": "rsv-jeonghunpark-20260524-f50b9c",
+    "pod": "prod-rsv-jeonghunpark-20260524-f50b9c",
+    "gpus": 1,
+    "target_rows_per_probe": 320000,
+    "recalibration_train_examples": 524288,
+    "available_target_cache_shards": 23,
+    "checkpoint": "outputs/idm_video_pair_d2e_full_raw112_paper_target/checkpoint.pt"
+  },
+  "baseline_epoch12_all": {
+    "pearson_x": 0.6622928593439459,
+    "pearson_y": 0.24871125925816928,
+    "scale_ratio_x": 1.6078792765454935,
+    "scale_ratio_y": 4.402033429177272,
+    "keyboard_key_accuracy": 0.024911322586205334,
+    "mouse_button_accuracy": 0.026040303585448836,
+    "mouse_button_f1": 0.04786102062975027,
+    "mouse_button_precision": 0.029531568228105907,
+    "mouse_button_recall": 0.12617357453629494,
+    "no_button_false_positive_rate": 0.11209062345389474
+  },
+  "recalibrated_fpr08_all": {
+    "button_softmax_threshold": 0.8,
+    "train_no_button_false_positive_rate": 0.02350790126681468,
+    "target_no_button_false_positive_rate": 0.02514890800794176,
+    "pearson_x": 0.6355711520344843,
+    "pearson_y": 0.2490359774586307,
+    "scale_ratio_x": 1.305377721730723,
+    "scale_ratio_y": 1.9593392170702257,
+    "keyboard_key_accuracy": 0.024911322586205334,
+    "mouse_button_accuracy": 0.023428996963968607,
+    "mouse_button_f1": 0.04400300282958942,
+    "mouse_button_precision": 0.044390073400908774,
+    "mouse_button_recall": 0.043622624227158235
+  },
+  "recalibrated_fpr08_split_no_button_false_positive_rate": {
+    "eval_split:temporal": 0.02291391075427958,
+    "eval_split:heldout_recording": 0.04459693357720683,
+    "eval_split:heldout_game": 0.022852888112488902
+  },
+  "delta_recalibrated_fpr08_minus_epoch12": {
+    "pearson_x": -0.02672170730946157,
+    "pearson_y": 0.000324718200461427,
+    "scale_ratio_x": -0.3025015548147704,
+    "scale_ratio_y": -2.4426942121070466,
+    "keyboard_key_accuracy": 0.0,
+    "mouse_button_accuracy": -0.0026113066214802287,
+    "mouse_button_f1": -0.003858017800160853,
+    "mouse_button_precision": 0.014858505172802867,
+    "mouse_button_recall": -0.0825509503091367,
+    "no_button_false_positive_rate": -0.08694171544595297
+  },
+  "paper_target_gaps_after_recalibrated_fpr08": {
+    "pearson_x": -0.16042884796551573,
+    "pearson_y": -0.5339640225413693,
+    "scale_ratio_x_excess": 0.0753777217307231,
+    "scale_ratio_y_excess": 0.6493392170702257,
+    "keyboard_accuracy": -0.7050886774137946,
+    "mouse_button_accuracy": -0.9335710030360314
+  },
+  "decision": {
+    "fpr_control_component_ready": true,
+    "all_probe_splits_no_button_fpr_under_0_10": true,
+    "completion_ready": false,
+    "full_target_prediction_recommended_for_raw112": false,
+    "reason": "Train-cache constrained button calibration fixes the no-button false-positive hard gate on the 320k closed-target probe and improves precision/scale, but it reduces button recall/F1 and leaves keyboard and paper button accuracy far below D2E G-IDM targets.",
+    "next_research_direction": "Carry the FPR-constrained softmax calibration into the next IDM/FDM recipes, but pivot away from raw112-only checkpoint promotion toward stronger sparse-action heads and non-raw112 surface/sequence representations."
+  }
+}
