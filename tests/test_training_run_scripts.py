@@ -59,6 +59,7 @@ def test_g005_exactset_history_uses_precompute_then_fail_closed_training() -> No
     precompute = _script("scripts/run_g005_idm_exactset_history_precompute.sh")
     exactset = _script("scripts/run_g005_idm_exactset_history_4xh200.sh")
     surface = _script("scripts/run_g005_idm_surface_paper_target_4xh200.sh")
+    recovery = _script("scripts/recover_g005_idm_exactset_history_from_checkpoint.sh")
 
     stats_idx = precompute.index("scripts/precompute_streaming_idm_stats.py")
     cache_idx = precompute.index("scripts/precompute_streaming_idm_training_cache.py")
@@ -68,6 +69,12 @@ def test_g005_exactset_history_uses_precompute_then_fail_closed_training() -> No
     assert 'REQUIRE_PRECOMPUTED_CACHE="${REQUIRE_PRECOMPUTED_CACHE:-1}"' in exactset
     assert "--validate-only" in surface
     assert surface.index("validating precomputed streaming IDM stats/cache") < surface.index("uv run torchrun")
+    assert 'PREDICTION_WORKERS="${PREDICTION_WORKERS:-64}"' in recovery
+    assert "--prediction-workers \"$PREDICTION_WORKERS\"" in recovery
+    assert "scripts/build_split_statistical_comparisons.py --config \"$SPLIT_STATS_CONFIG\"" in recovery
+    assert "scripts/build_g005_idm_paper_metrics.py --config \"$PAPER_TARGET_CONFIG\"" in recovery
+    assert "scripts/validate_g005_idm_paper_target.py --config \"$PAPER_TARGET_CONFIG\"" in recovery
+    assert "initial_integrated_process_interrupted_after_checkpoint" in recovery
 
 
 def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
