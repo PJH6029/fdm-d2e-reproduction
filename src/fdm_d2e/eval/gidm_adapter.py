@@ -11,6 +11,8 @@ from fdm_d2e.data.d2e_real import decode_mcap_events
 from fdm_d2e.io_utils import ensure_dir, read_json, stable_hash_json, write_json
 from fdm_d2e.tokenization.actions import tokenize_event
 
+_JSON_DECODER = json.JSONDecoder()
+
 
 def _iter_jsonl(path: str | Path) -> Iterable[dict[str, Any]]:
     with Path(path).open("r", encoding="utf-8", buffering=1024 * 1024) as handle:
@@ -23,6 +25,32 @@ def _iter_jsonl(path: str | Path) -> Iterable[dict[str, Any]]:
                 raise ValueError(f"invalid JSONL at {path}:{line_no}") from exc
             if not isinstance(row, dict):
                 raise ValueError(f"JSONL row must be object at {path}:{line_no}")
+            yield row
+
+
+def _extract_value(line: str, key: str) -> Any:
+    needle = f'"{key}":'
+    idx = line.find(needle)
+    if idx < 0:
+        return None
+    start = idx + len(needle)
+    while start < len(line) and line[start].isspace():
+        start += 1
+    try:
+        value, _end = _JSON_DECODER.raw_decode(line, start)
+    except json.JSONDecodeError:
+        return None
+    return value
+
+
+def _iter_jsonl_fields(path: str | Path, fields: Sequence[str]) -> Iterable[dict[str, Any]]:
+    with Path(path).open("r", encoding="utf-8", buffering=1024 * 1024) as handle:
+        for line_no, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            row = {field: _extract_value(line, field) for field in fields}
+            if row.get("sequence_id") is None and "sequence_id" in fields:
+                raise ValueError(f"missing sequence_id in target JSONL at {path}:{line_no}")
             yield row
 
 
@@ -81,8 +109,23 @@ def build_gidm_inference_manifest(
 
     wanted_tags = {str(tag) for tag in split_tags or []}
     by_recording: dict[str, dict[str, Any]] = {}
+    fields = [
+        "sequence_id",
+        "source_id",
+        "universe_row_id",
+        "cross_resolution_key",
+        "source_recording_id",
+        "recording_id",
+        "game",
+        "timestamp_ns",
+        "bin_index",
+        "eval_split_tags",
+        "split_temporal",
+        "split_heldout_recording",
+        "split_heldout_game",
+    ]
     for path in target_record_paths:
-        for row in _iter_jsonl(path):
+        for row in _iter_jsonl_fields(path, fields):
             tags = set(_split_tags(row))
             if wanted_tags and not (tags & wanted_tags):
                 continue
@@ -242,8 +285,17 @@ def convert_gidm_mcap_predictions(
             raise FileNotFoundError(f"missing predicted MCAP files for {len(missing)} recording(s), first={missing[0]}")
 
     targets_by_key: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    fields = [
+        "sequence_id",
+        "source_id",
+        "universe_row_id",
+        "cross_resolution_key",
+        "recording_id",
+        "game",
+        "timestamp_ns",
+    ]
     for path in target_record_paths:
-        for row in _iter_jsonl(path):
+        for row in _iter_jsonl_fields(path, fields):
             key = _record_key(row)
             if key in available:
                 targets_by_key[key].append(row)
