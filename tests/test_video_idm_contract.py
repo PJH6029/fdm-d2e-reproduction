@@ -258,11 +258,20 @@ def test_keysoftmax_cache_migration_reuses_frame_payloads_and_rewrites_labels(tm
         "video_input_mode": "pair_delta_abs",
         "missing_frame_policy": "zero",
         "force_cpu": True,
+        "seed": 9,
+        "video_conv_channels": [4, 8],
+        "hidden_dim": 16,
+        "depth": 1,
+        "epochs": 1,
+        "batch_size": 2,
+        "eval_batch_size": 2,
         "categorical_min_count": 1,
         "button_head_mode": "softmax",
         "mouse_target_mode": "sum",
         "mouse_head_mode": "regression",
         "mouse_emit_mode": "decompose",
+        "category_calibration_max_examples": 4,
+        "category_calibration_batch_size": 2,
         "require_precomputed_video_cache": True,
     }
     target_config = {
@@ -299,15 +308,21 @@ def test_keysoftmax_cache_migration_reuses_frame_payloads_and_rewrites_labels(tm
     source_payload = torch.load(source_manifest["chunks"][0]["path"], map_location="cpu", weights_only=False)
     target_payload = torch.load(target_manifest["chunks"][0]["path"], map_location="cpu", weights_only=False)
 
-    assert torch.equal(target_payload["frames"], source_payload["frames"])
-    assert torch.equal(target_payload["aux"], source_payload["aux"])
-    assert torch.equal(target_payload["mouse_y"], source_payload["mouse_y"])
-    assert torch.equal(target_payload["button_y"], source_payload["button_y"])
+    assert target_payload["payload_source_path"] == source_manifest["chunks"][0]["path"]
+    assert "frames" not in target_payload
+    assert "aux" not in target_payload
+    assert "mouse_y" not in target_payload
+    assert "button_y" not in target_payload
     assert target_payload["cat_y"].shape[1] == len(target_stats["category_vocab"])
     assert target_payload["keyboard_y"].dtype == torch.long
+    assert target_manifest["chunks"][0]["bytes"] < source_manifest["chunks"][0]["bytes"]
 
     keyboard_classes = [tuple(row) for row in target_stats["keyboard_classes"]]
     expected_first_class = keyboard_classes.index(("KEY_PRESS_87",))
     expected_second_class = keyboard_classes.index(())
     assert int(target_payload["keyboard_y"][0]) == expected_first_class
     assert int(target_payload["keyboard_y"][1]) == expected_second_class
+
+    summary = train_video_idm(target_config)
+    assert summary["metadata"]["train_records"] == len(train_rows)
+    assert Path(summary["prediction"]["predictions_path"]).exists()

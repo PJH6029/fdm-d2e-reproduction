@@ -59,22 +59,16 @@ def _copy_chunk_payload(
     target_category_vocab: list[str],
     keyboard_classes: list[tuple[str, ...]],
 ) -> dict[str, Any]:
-    try:
-        payload = torch.load(source_chunk["path"], map_location="cpu", weights_only=False)
-    except TypeError:
-        payload = torch.load(source_chunk["path"], map_location="cpu")
+    rows_count = int(source_chunk["rows"])
+    if rows_count != len(rows):
+        raise ValueError(f"source chunk row mismatch for {source_chunk['path']}: manifest={rows_count} rows={len(rows)}")
     migrated = {
         "schema": "video_idm_cache_chunk.v1",
-        "rows": int(payload["rows"]),
-        "frames": payload["frames"],
-        "aux": payload["aux"],
-        "mouse_y": payload["mouse_y"],
+        "rows": rows_count,
+        "payload_source_path": str(source_chunk["path"]),
         "cat_y": _category_matrix_from_rows(torch, rows, target_category_vocab),
         "keyboard_y": _keyboard_targets(torch, rows, keyboard_classes),
     }
-    for key in ("button_y", "dx_y", "dy_y"):
-        if key in payload:
-            migrated[key] = payload[key]
     target_chunk_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = target_chunk_path.with_suffix(target_chunk_path.suffix + ".tmp")
     torch.save(migrated, tmp)

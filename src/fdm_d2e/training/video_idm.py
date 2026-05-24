@@ -1043,10 +1043,7 @@ def _iter_video_cache_batches(
         if assigned_indices is not None and path_idx not in assigned_indices:
             continue
         for chunk in manifest.get("chunks", []):
-            try:
-                payload = torch.load(chunk["path"], map_location="cpu", weights_only=False)
-            except TypeError:
-                payload = torch.load(chunk["path"], map_location="cpu")
+            payload = _load_cache_chunk(torch, chunk["path"])
             rows = int(payload["rows"])
             for start in range(0, rows, batch_size):
                 if max_examples is not None and seen >= max_examples:
@@ -1372,9 +1369,21 @@ def _predicted_tokens_from_output(output: list[float], *, stats: dict[str, Any],
 
 def _load_cache_chunk(torch, path: str | Path) -> dict[str, Any]:
     try:
-        return torch.load(path, map_location="cpu", weights_only=False)
+        payload = torch.load(path, map_location="cpu", weights_only=False)
     except TypeError:
-        return torch.load(path, map_location="cpu")
+        payload = torch.load(path, map_location="cpu")
+    source_path = payload.get("payload_source_path")
+    if source_path:
+        try:
+            source_payload = torch.load(source_path, map_location="cpu", weights_only=False)
+        except TypeError:
+            source_payload = torch.load(source_path, map_location="cpu")
+        if int(source_payload["rows"]) != int(payload["rows"]):
+            raise ValueError(f"sidecar cache row mismatch: {path} -> {source_path}")
+        merged = dict(source_payload)
+        merged.update(payload)
+        return merged
+    return payload
 
 
 def _iter_payload_record_batches(
