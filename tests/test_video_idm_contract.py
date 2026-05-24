@@ -166,6 +166,9 @@ def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):
         "mouse_emit_mode": "decompose",
         "category_calibration_max_examples": 4,
         "category_calibration_batch_size": 2,
+        "keyboard_head_mode": "softmax",
+        "keyboard_softmax_min_count": 1,
+        "keyboard_softmax_calibration_max_no_key_fpr": 0.5,
         "require_precomputed_video_cache": True,
     }
 
@@ -179,6 +182,7 @@ def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):
     assert summary["metadata"]["target_records"] == len(target_rows)
     assert Path(summary["metadata"]["checkpoint_path"]).exists()
     assert Path(summary["metadata"]["train_state_path"]).exists()
+    assert "keyboard_softmax_threshold" in summary["metadata"]["calibration"]
     assert Path(summary["prediction"]["predictions_path"]).exists()
     predictions = Path(summary["prediction"]["predictions_path"]).read_text(encoding="utf-8").strip().splitlines()
     assert len(predictions) == len(target_rows)

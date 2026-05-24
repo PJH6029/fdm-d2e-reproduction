@@ -73,6 +73,10 @@ def _is_category_token(token: str) -> bool:
     )
 
 
+def _is_keyboard_token(token: str) -> bool:
+    return token.startswith("KEY_")
+
+
 def _is_mouse_button_token(token: str) -> bool:
     return token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_"))
 
@@ -98,7 +102,7 @@ def _cache_source_identity(
     config: dict[str, Any],
     split_name: str,
 ) -> dict[str, Any]:
-    return {
+    identity = {
         "schema": "video_idm_cache_identity.v1",
         "source": _jsonl_source_metadata(path),
         "split_name": str(split_name),
@@ -115,6 +119,11 @@ def _cache_source_identity(
         "game_vocab": list(stats.get("game_vocab", [])),
         "cache_version": 1,
     }
+    keyboard_head_mode = str(config.get("keyboard_head_mode", stats.get("keyboard_head_mode", "multilabel")))
+    if keyboard_head_mode == "softmax":
+        identity["keyboard_head_mode"] = keyboard_head_mode
+        identity["keyboard_classes"] = list(stats.get("keyboard_classes", []))
+    return identity
 
 
 def _video_cache_manifest_path(
@@ -400,6 +409,10 @@ def _button_label(row: dict[str, Any]) -> tuple[str, ...]:
     return tuple(sorted({token for token in _tokens(row) if _is_mouse_button_token(token)}))
 
 
+def _keyboard_label(row: dict[str, Any]) -> tuple[str, ...]:
+    return tuple(sorted({token for token in _tokens(row) if _is_keyboard_token(token)}))
+
+
 def _button_class_counts(record_paths: Sequence[str | Path], classes: Sequence[Sequence[str]]) -> dict[str, int]:
     class_index = {tuple(str(token) for token in row): idx for idx, row in enumerate(classes)}
     counts = {str(idx): 0 for idx in range(len(classes))}
@@ -416,6 +429,7 @@ def _iter_records(record_paths: str | Path | Sequence[str | Path]) -> Iterable[d
 
 def _scan_video_idm_stats_part(path: str | Path) -> dict[str, Any]:
     category_counts: Counter[str] = Counter()
+    keyboard_counter: Counter[tuple[str, ...]] = Counter({(): 0})
     button_counter: Counter[tuple[str, ...]] = Counter({(): 0})
     game_counts: Counter[str] = Counter()
     source_ids: set[str] = set()
@@ -434,6 +448,7 @@ def _scan_video_idm_stats_part(path: str | Path) -> dict[str, Any]:
         for token in tokens:
             if _is_category_token(token):
                 category_counts[token] += 1
+        keyboard_counter[_keyboard_label(row)] += 1
         button_counter[_button_label(row)] += 1
         game_counts[str(row.get("game", ""))] += 1
         if row.get("source_id") is not None:
@@ -460,6 +475,7 @@ def _scan_video_idm_stats_part(path: str | Path) -> dict[str, Any]:
         "path": str(path),
         "examples": int(examples),
         "category_counts": category_counts,
+        "keyboard_counter": keyboard_counter,
         "button_counter": button_counter,
         "game_counts": game_counts,
         "source_ids": source_ids,
@@ -477,8 +493,10 @@ def scan_video_idm_stats(
     config: dict[str, Any],
 ) -> dict[str, Any]:
     category_min_count = int(config.get("categorical_min_count", 1))
+    keyboard_head_mode = str(config.get("keyboard_head_mode", "multilabel"))
     button_head_mode = str(config.get("button_head_mode", "softmax"))
     category_counts: Counter[str] = Counter()
+    keyboard_counter: Counter[tuple[str, ...]] = Counter({(): 0})
     button_counter: Counter[tuple[str, ...]] = Counter({(): 0})
     game_counts: Counter[str] = Counter()
     source_ids: set[str] = set()
@@ -502,6 +520,7 @@ def scan_video_idm_stats(
     for part in parts:
         examples += int(part["examples"])
         category_counts.update(part["category_counts"])
+        keyboard_counter.update(part["keyboard_counter"])
         button_counter.update(part["button_counter"])
         game_counts.update(part["game_counts"])
         source_ids.update(part["source_ids"])
@@ -511,14 +530,21 @@ def scan_video_idm_stats(
         global_tokens.update(part["global_tokens"])
         fingerprint.update(str(part["fingerprint"]).encode("utf-8"))
         fingerprint.update(b"\n")
-    if button_head_mode == "softmax":
+    if keyboard_head_mode == "softmax" or button_head_mode == "softmax":
         category_vocab = sorted(
             token
             for token, count in category_counts.items()
-            if count >= category_min_count and not _is_mouse_button_token(token)
+            if count >= category_min_count
+            and not (keyboard_head_mode == "softmax" and _is_keyboard_token(token))
+            and not (button_head_mode == "softmax" and _is_mouse_button_token(token))
         )
     else:
         category_vocab = sorted(token for token, count in category_counts.items() if count >= category_min_count)
+    keyboard_classes = [()]
+    if keyboard_head_mode == "softmax":
+        min_count = int(config.get("keyboard_softmax_min_count", 1))
+        for label in sorted(label for label, count in keyboard_counter.items() if label and count >= min_count):
+            keyboard_classes.append(label)
     button_classes = [()]
     for label in sorted(label for label, count in button_counter.items() if label and count >= int(config.get("button_softmax_min_count", 1))):
         button_classes.append(label)
@@ -532,6 +558,9 @@ def scan_video_idm_stats(
         "stats_num_workers": int(workers),
         "category_vocab": category_vocab,
         "category_counts": {token: int(category_counts.get(token, 0)) for token in category_vocab},
+        "keyboard_head_mode": keyboard_head_mode,
+        "keyboard_classes": [list(row) for row in keyboard_classes],
+        "keyboard_class_counts": {str(idx): int(keyboard_counter.get(tuple(tokens), 0)) for idx, tokens in enumerate(keyboard_classes)},
         "button_head_mode": button_head_mode,
         "button_classes": [list(row) for row in button_classes],
         "button_class_counts": {str(idx): int(button_counter.get(tuple(tokens), 0)) for idx, tokens in enumerate(button_classes)},
@@ -562,6 +591,9 @@ def _flush_video_cache_chunk(
     image_size = int(stats["image_size"])
     category_vocab = [str(token) for token in stats.get("category_vocab", [])]
     category_index = {token: idx for idx, token in enumerate(category_vocab)}
+    keyboard_head_mode = str(config.get("keyboard_head_mode", stats.get("keyboard_head_mode", "multilabel")))
+    keyboard_classes = [tuple(str(token) for token in row) for row in stats.get("keyboard_classes", [])]
+    keyboard_class_index = {label: idx for idx, label in enumerate(keyboard_classes)}
     button_head_mode = str(config.get("button_head_mode", stats.get("button_head_mode", "softmax")))
     button_classes = [tuple(str(token) for token in row) for row in stats.get("button_classes", [])]
     button_class_index = {label: idx for idx, label in enumerate(button_classes)}
@@ -589,8 +621,18 @@ def _flush_video_cache_chunk(
         "cat_y": cat_y,
     }
     if button_head_mode == "softmax":
+        if keyboard_head_mode == "softmax":
+            payload["keyboard_y"] = torch.tensor(
+                [keyboard_class_index.get(_keyboard_label(row), 0) for row in rows],
+                dtype=torch.long,
+            )
         payload["button_y"] = torch.tensor(
             [button_class_index.get(_button_label(row), 0) for row in rows],
+            dtype=torch.long,
+        )
+    elif keyboard_head_mode == "softmax":
+        payload["keyboard_y"] = torch.tensor(
+            [keyboard_class_index.get(_keyboard_label(row), 0) for row in rows],
             dtype=torch.long,
         )
     if mouse_head_mode == "axis_softmax":
@@ -910,7 +952,7 @@ def _build_video_pair_model(torch, *, output_dim: int, aux_dim: int, config: dic
 
 
 def _video_model_signature(config: dict[str, Any], *, output_dim: int, aux_dim: int, stats: dict[str, Any]) -> dict[str, Any]:
-    return {
+    signature = {
         "schema": "video_idm_model_signature.v1",
         "output_dim": int(output_dim),
         "aux_dim": int(aux_dim),
@@ -928,6 +970,13 @@ def _video_model_signature(config: dict[str, Any], *, output_dim: int, aux_dim: 
             json.dumps(list(stats.get("button_classes", [])), sort_keys=True).encode("utf-8")
         ).hexdigest(),
     }
+    keyboard_head_mode = str(config.get("keyboard_head_mode", stats.get("keyboard_head_mode", "multilabel")))
+    if keyboard_head_mode == "softmax":
+        signature["keyboard_head_mode"] = keyboard_head_mode
+        signature["keyboard_classes_sha256"] = hashlib.sha256(
+            json.dumps(list(stats.get("keyboard_classes", [])), sort_keys=True).encode("utf-8")
+        ).hexdigest()
+    return signature
 
 
 def _load_video_train_state(torch, path: Path, *, device: str) -> dict[str, Any] | None:
@@ -982,7 +1031,7 @@ def _iter_video_cache_batches(
     world_size: int,
     shard_by_path: bool,
     shard_assignment: str,
-) -> Iterable[tuple[Any, Any, Any, Any, Any | None, Any | None, Any | None, int]]:
+) -> Iterable[tuple[Any, Any, Any, Any, Any | None, Any | None, Any | None, Any | None, int]]:
     seen = 0
     source_batch_idx = 0
     assigned_indices = (
@@ -1014,16 +1063,19 @@ def _iter_video_cache_batches(
                 aux = payload["aux"][start:end].to(device=device, dtype=torch.float32)
                 mouse_y = payload["mouse_y"][start:end].to(device)
                 cat_y = payload["cat_y"][start:end].to(device)
+                keyboard_y = payload.get("keyboard_y")
                 button_y = payload.get("button_y")
                 dx_y = payload.get("dx_y")
                 dy_y = payload.get("dy_y")
+                if keyboard_y is not None:
+                    keyboard_y = keyboard_y[start:end].to(device)
                 if button_y is not None:
                     button_y = button_y[start:end].to(device)
                 if dx_y is not None and dy_y is not None:
                     dx_y = dx_y[start:end].to(device)
                     dy_y = dy_y[start:end].to(device)
                 seen += batch_rows
-                yield frames, aux, mouse_y, cat_y, button_y, dx_y, dy_y, batch_rows
+                yield frames, aux, mouse_y, cat_y, keyboard_y, button_y, dx_y, dy_y, batch_rows
             if max_examples is not None and seen >= max_examples:
                 break
         if max_examples is not None and seen >= max_examples:
@@ -1040,16 +1092,20 @@ def _train_one_epoch(
     config: dict[str, Any],
     device: str,
     cat_pos_weight,
+    keyboard_class_weight,
     button_class_weight,
     axis_class_weight,
     rank: int,
     world_size: int,
 ) -> dict[str, Any]:
     category_vocab = [str(token) for token in stats.get("category_vocab", [])]
+    keyboard_head_mode = str(config.get("keyboard_head_mode", stats.get("keyboard_head_mode", "multilabel")))
+    keyboard_classes = [tuple(str(token) for token in row) for row in stats.get("keyboard_classes", [])]
     button_head_mode = str(config.get("button_head_mode", stats.get("button_head_mode", "softmax")))
     button_classes = [tuple(str(token) for token in row) for row in stats.get("button_classes", [])]
     mouse_head_mode = str(config.get("mouse_head_mode", stats.get("mouse_head_mode", "regression")))
     mouse_axis_classes = [str(value) for value in config.get("mouse_axis_classes", stats.get("mouse_axis_classes", MOUSE_AXIS_CLASSES))]
+    keyboard_output_dim = len(keyboard_classes) if keyboard_head_mode == "softmax" else 0
     button_output_dim = len(button_classes) if button_head_mode == "softmax" else 0
     batch_size = int(config.get("batch_size", 512))
     shard_by_path = bool(config.get("video_cache_shard_by_path", len(train_manifests) > 1))
@@ -1061,7 +1117,7 @@ def _train_one_epoch(
     progress_interval = int(config.get("training_progress_interval_batches", 0) or 0)
     progress_dir = ensure_dir(Path(config.get("output_dir", "outputs/idm_video_pair")) / "rank_progress")
     heartbeat_path = progress_dir / f"train_rank{rank}.json"
-    for batch_idx, (frames, aux, mouse_y, cat_y, button_y, dx_y, dy_y, batch_rows) in enumerate(
+    for batch_idx, (frames, aux, mouse_y, cat_y, keyboard_y, button_y, dx_y, dy_y, batch_rows) in enumerate(
         _iter_video_cache_batches(
             torch,
             train_manifests,
@@ -1077,15 +1133,24 @@ def _train_one_epoch(
         pred = model(frames, aux)
         mouse_loss = torch.nn.functional.smooth_l1_loss(pred[:, :2], mouse_y)
         category_end = 2 + len(category_vocab)
-        button_end = category_end + button_output_dim
+        keyboard_end = category_end + keyboard_output_dim
+        button_end = keyboard_end + button_output_dim
         cat_loss = (
             _categorical_loss(torch, pred[:, 2:category_end], cat_y, cat_pos_weight, config)
             if category_vocab
             else torch.tensor(0.0, device=device)
         )
+        if keyboard_head_mode == "softmax" and keyboard_y is not None and len(keyboard_classes) > 1:
+            keyboard_loss = torch.nn.functional.cross_entropy(
+                pred[:, category_end:keyboard_end],
+                keyboard_y,
+                weight=keyboard_class_weight,
+            )
+        else:
+            keyboard_loss = torch.tensor(0.0, device=device)
         if button_head_mode == "softmax" and button_y is not None and len(button_classes) > 1:
             button_loss = torch.nn.functional.cross_entropy(
-                pred[:, category_end:button_end],
+                pred[:, keyboard_end:button_end],
                 button_y,
                 weight=button_class_weight,
             )
@@ -1104,6 +1169,7 @@ def _train_one_epoch(
         loss = (
             float(config.get("mouse_regression_loss_weight", 1.0)) * mouse_loss
             + float(config.get("categorical_loss_weight", 1.0)) * cat_loss
+            + float(config.get("keyboard_softmax_loss_weight", 1.0)) * keyboard_loss
             + float(config.get("button_softmax_loss_weight", 1.0)) * button_loss
             + float(config.get("mouse_axis_loss_weight", 1.0 if mouse_head_mode == "axis_softmax" else 0.0)) * axis_loss
         )
@@ -1278,6 +1344,7 @@ def _predicted_tokens_from_output(output: list[float], *, stats: dict[str, Any],
         else {token: category_threshold for token in category_vocab}
     )
     button_classes = [tuple(str(token) for token in row) for row in stats.get("button_classes", [])]
+    keyboard_classes = [tuple(str(token) for token in row) for row in stats.get("keyboard_classes", [])]
     _dx, _dy, tokens = _prediction_from_output(
         output,
         base_dx=0.0,
@@ -1286,6 +1353,9 @@ def _predicted_tokens_from_output(output: list[float], *, stats: dict[str, Any],
         category_vocab=category_vocab,
         category_thresholds=category_thresholds,
         category_threshold=category_threshold,
+        keyboard_head_mode=str(config.get("keyboard_head_mode", stats.get("keyboard_head_mode", "multilabel"))),
+        keyboard_classes=keyboard_classes,
+        keyboard_softmax_threshold=float(config.get("keyboard_softmax_threshold", 0.5)),
         button_head_mode=str(config.get("button_head_mode", stats.get("button_head_mode", "softmax"))),
         button_classes=button_classes,
         button_softmax_threshold=float(config.get("button_softmax_threshold", 0.5)),
@@ -1487,6 +1557,8 @@ def _calibrate_from_cache(
 ) -> dict[str, Any]:
     category_vocab = [str(token) for token in stats.get("category_vocab", [])]
     category_threshold = float(config.get("category_threshold", 0.35))
+    keyboard_head_mode = str(config.get("keyboard_head_mode", stats.get("keyboard_head_mode", "multilabel")))
+    keyboard_classes = [tuple(str(token) for token in row) for row in stats.get("keyboard_classes", [])]
     button_head_mode = str(config.get("button_head_mode", stats.get("button_head_mode", "softmax")))
     button_classes = [tuple(str(token) for token in row) for row in stats.get("button_classes", [])]
     grid = [float(value) for value in config.get("category_calibration_grid", [x / 100.0 for x in range(5, 96, 5)])]
@@ -1502,6 +1574,17 @@ def _calibrate_from_cache(
     group_counts = {
         group: {threshold: {"tp": 0, "fp": 0, "fn": 0} for threshold in grid}
         for group in group_indices
+    }
+    keyboard_counts = {
+        threshold: {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "predicted_positive": 0,
+            "no_key_examples": 0,
+            "no_key_false_positive_examples": 0,
+        }
+        for threshold in grid
     }
     button_counts = {
         threshold: {
@@ -1520,7 +1603,7 @@ def _calibrate_from_cache(
     observed = 0
     model.eval()
     with torch.no_grad():
-        for frames, aux, mouse_y, cat_y, button_y, _dx_y, _dy_y, batch_rows in _iter_video_cache_batches(
+        for frames, aux, mouse_y, cat_y, keyboard_y, button_y, _dx_y, _dy_y, batch_rows in _iter_video_cache_batches(
             torch,
             train_manifests,
             batch_size=batch_size,
@@ -1552,8 +1635,23 @@ def _calibrate_from_cache(
                 predicted_abs_sum += abs(float(output[0])) + abs(float(output[1]))
                 target_abs_sum += abs(float(target[0])) + abs(float(target[1]))
                 value_count += 2
+            if keyboard_head_mode == "softmax" and keyboard_y is not None and len(keyboard_classes) > 1:
+                logits = outputs[:, category_end : category_end + len(keyboard_classes)]
+                key_probs = torch.softmax(logits, dim=1).detach()
+                key_labels_idx = keyboard_y.detach()
+                for threshold in grid:
+                    top_probs, top_idx = torch.max(key_probs, dim=1)
+                    pred_idx = torch.where((top_idx != 0) & (top_probs >= float(threshold)), top_idx, torch.zeros_like(top_idx))
+                    counts = keyboard_counts[threshold]
+                    counts["tp"] += int(((pred_idx == key_labels_idx) & (key_labels_idx != 0)).sum().item())
+                    counts["fp"] += int(((pred_idx != 0) & (pred_idx != key_labels_idx)).sum().item())
+                    counts["fn"] += int(((key_labels_idx != 0) & (pred_idx != key_labels_idx)).sum().item())
+                    counts["predicted_positive"] += int((pred_idx != 0).sum().item())
+                    counts["no_key_examples"] += int((key_labels_idx == 0).sum().item())
+                    counts["no_key_false_positive_examples"] += int(((key_labels_idx == 0) & (pred_idx != 0)).sum().item())
             if button_head_mode == "softmax" and button_y is not None and len(button_classes) > 1:
-                logits = outputs[:, category_end : category_end + len(button_classes)]
+                button_start = category_end + (len(keyboard_classes) if keyboard_head_mode == "softmax" else 0)
+                logits = outputs[:, button_start : button_start + len(button_classes)]
                 button_probs = torch.softmax(logits, dim=1).detach()
                 labels_idx = button_y.detach()
                 for threshold in grid:
@@ -1600,6 +1698,35 @@ def _calibrate_from_cache(
         per_group[group] = {"threshold": best_threshold, "token_count": len(indices), **best_counts}
     diagnostics["category_thresholds"] = thresholds
     diagnostics["per_group"] = per_group
+    keyboard_threshold = float(config.get("keyboard_softmax_threshold", 0.5))
+    if keyboard_head_mode == "softmax" and len(keyboard_classes) > 1:
+        max_no_key_fpr = config.get("keyboard_softmax_calibration_max_no_key_fpr")
+        max_no_key_fpr = float(max_no_key_fpr) if max_no_key_fpr is not None else None
+        converted_counts = {
+            threshold: {
+                "tp": counts.get("tp", 0),
+                "fp": counts.get("fp", 0),
+                "fn": counts.get("fn", 0),
+                "predicted_positive": counts.get("predicted_positive", 0),
+                "no_button_examples": counts.get("no_key_examples", 0),
+                "no_button_false_positive_examples": counts.get("no_key_false_positive_examples", 0),
+            }
+            for threshold, counts in keyboard_counts.items()
+        }
+        keyboard_threshold, key_diag = _select_button_softmax_threshold(
+            converted_counts,
+            default_threshold=keyboard_threshold,
+            beta=beta,
+            max_no_button_fpr=max_no_key_fpr,
+        )
+        diagnostics["keyboard_softmax_threshold"] = keyboard_threshold
+        diagnostics["keyboard_softmax_threshold_diagnostics"] = {
+            **key_diag,
+            "no_key_examples": key_diag.get("no_button_examples", 0),
+            "no_key_false_positive_examples": key_diag.get("no_button_false_positive_examples", 0),
+            "no_key_false_positive_rate": key_diag.get("no_button_false_positive_rate", 0.0),
+            "max_no_key_false_positive_rate": max_no_key_fpr,
+        }
     button_threshold = float(config.get("button_softmax_threshold", 0.5))
     if button_head_mode == "softmax" and len(button_classes) > 1:
         max_no_button_fpr = config.get("button_softmax_calibration_max_no_button_fpr")
@@ -1717,13 +1844,16 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
         if dist["enabled"]:
             _barrier(torch, dist)
     category_vocab = [str(token) for token in stats.get("category_vocab", [])]
+    keyboard_head_mode = str(config.get("keyboard_head_mode", stats.get("keyboard_head_mode", "multilabel")))
+    keyboard_classes = [tuple(str(token) for token in row) for row in stats.get("keyboard_classes", [])]
     button_head_mode = str(config.get("button_head_mode", stats.get("button_head_mode", "softmax")))
     button_classes = [tuple(str(token) for token in row) for row in stats.get("button_classes", [])]
     mouse_head_mode = str(config.get("mouse_head_mode", stats.get("mouse_head_mode", "regression")))
     mouse_axis_classes = [str(value) for value in config.get("mouse_axis_classes", stats.get("mouse_axis_classes", MOUSE_AXIS_CLASSES))]
+    keyboard_output_dim = len(keyboard_classes) if keyboard_head_mode == "softmax" else 0
     button_output_dim = len(button_classes) if button_head_mode == "softmax" else 0
     axis_output_dim = (2 * len(mouse_axis_classes)) if mouse_head_mode == "axis_softmax" else 0
-    output_dim = 2 + len(category_vocab) + button_output_dim + axis_output_dim
+    output_dim = 2 + len(category_vocab) + keyboard_output_dim + button_output_dim + axis_output_dim
     aux_dim = int(stats.get("aux_dim", 13))
     signature = _video_model_signature(config, output_dim=output_dim, aux_dim=aux_dim, stats=stats)
     model = _build_video_pair_model(torch, output_dim=output_dim, aux_dim=aux_dim, config=config).to(device)
@@ -1770,6 +1900,13 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
         cap=float(config.get("button_softmax_class_weight_cap", 20.0)),
         device=device,
     )
+    keyboard_class_weight = _class_weight(
+        torch,
+        {str(k): int(v) for k, v in stats.get("keyboard_class_counts", {}).items()},
+        class_count=len(keyboard_classes),
+        cap=float(config.get("keyboard_softmax_class_weight_cap", 20.0)),
+        device=device,
+    )
     axis_class_weight = _class_weight(
         torch,
         {str(idx): 1 for idx, _label in enumerate(mouse_axis_classes)},
@@ -1789,6 +1926,7 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
                 config=config,
                 device=device,
                 cat_pos_weight=cat_pos_weight,
+                keyboard_class_weight=keyboard_class_weight,
                 button_class_weight=button_class_weight,
                 axis_class_weight=axis_class_weight,
                 rank=int(dist["rank"]),
@@ -1841,6 +1979,8 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
     calibrated_config = dict(config)
     if "category_thresholds" in calibration:
         calibrated_config["category_thresholds"] = calibration["category_thresholds"]
+    if "keyboard_softmax_threshold" in calibration:
+        calibrated_config["keyboard_softmax_threshold"] = calibration["keyboard_softmax_threshold"]
     if "button_softmax_threshold" in calibration:
         calibrated_config["button_softmax_threshold"] = calibration["button_softmax_threshold"]
     if "mouse_output_gain" in calibration:
@@ -1984,6 +2124,8 @@ def predict_video_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         )
         if "category_thresholds" in recalibration:
             prediction_config["category_thresholds"] = recalibration["category_thresholds"]
+        if "keyboard_softmax_threshold" in recalibration:
+            prediction_config["keyboard_softmax_threshold"] = recalibration["keyboard_softmax_threshold"]
         if "button_softmax_threshold" in recalibration:
             prediction_config["button_softmax_threshold"] = recalibration["button_softmax_threshold"]
         if "mouse_output_gain" in recalibration:

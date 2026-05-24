@@ -1010,6 +1010,9 @@ def _prediction_from_output(
     category_vocab: list[str],
     category_thresholds: dict[str, float],
     category_threshold: float,
+    keyboard_head_mode: str = "multilabel",
+    keyboard_classes: list[tuple[str, ...]] | None = None,
+    keyboard_softmax_threshold: float = 0.5,
     button_head_mode: str = "multilabel",
     button_classes: list[tuple[str, ...]] | None = None,
     button_softmax_threshold: float = 0.5,
@@ -1026,9 +1029,12 @@ def _prediction_from_output(
         dx += float(base_dx)
         dy += float(base_dy)
     category_end = 2 + len(category_vocab)
-    button_end = category_end
+    keyboard_end = category_end
+    if keyboard_head_mode == "softmax":
+        keyboard_end = category_end + len(keyboard_classes or [])
+    button_end = keyboard_end
     if button_head_mode == "softmax":
-        button_end = category_end + len(button_classes or [])
+        button_end = keyboard_end + len(button_classes or [])
     if mouse_head_mode == "axis_softmax":
         axis_classes = mouse_axis_classes or MOUSE_AXIS_CLASSES
         axis_count = len(axis_classes)
@@ -1060,9 +1066,17 @@ def _prediction_from_output(
         prob = _sigmoid(float(logit))
         if prob >= float(category_thresholds.get(token, category_threshold)):
             tokens.append(token)
+    if keyboard_head_mode == "softmax":
+        classes = keyboard_classes or []
+        keyboard_logits = output[category_end : category_end + len(classes)]
+        probs = _softmax([float(value) for value in keyboard_logits])
+        if probs:
+            best_idx = max(range(len(probs)), key=lambda idx: probs[idx])
+            if best_idx != 0 and probs[best_idx] >= float(keyboard_softmax_threshold):
+                tokens.extend(classes[best_idx])
     if button_head_mode == "softmax":
         classes = button_classes or []
-        button_logits = output[category_end : category_end + len(classes)]
+        button_logits = output[keyboard_end : keyboard_end + len(classes)]
         probs = _softmax([float(value) for value in button_logits])
         if probs:
             best_idx = max(range(len(probs)), key=lambda idx: probs[idx])
