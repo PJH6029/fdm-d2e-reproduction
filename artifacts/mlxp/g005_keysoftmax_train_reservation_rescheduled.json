@@ -1,0 +1,39 @@
+{
+  "active_reservation": {
+    "end_at": "2026-05-25T04:00:00+09:00",
+    "gpu_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "managed_image_key": "codex",
+    "namespace": "p-production",
+    "node_id": "6",
+    "pod_name": "",
+    "project_id": "production",
+    "reservation_id": "rsv-jeonghunpark-20260524-f5414c",
+    "resolved_image_path": "ghcr.io/pjh6029/snupi-personal-codex:20260414",
+    "start_at": "2026-05-24T21:00:00+09:00",
+    "status": "scheduled",
+    "storage_claim_name": "personal-pvc-jeonghunpark"
+  },
+  "cancelled_reservation": {
+    "end_at": "2026-05-25T03:00:00+09:00",
+    "gpu_indices": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "node_id": "5",
+    "project_id": "production",
+    "reservation_id": "rsv-jeonghunpark-20260524-0b457f",
+    "start_at": "2026-05-24T20:00:00+09:00",
+    "status": "cancelled"
+  },
+  "purpose": "G005 key-softmax 4xH200 training/probe rescheduled after train-cache migration ETA update",
+  "reason": "Train-cache migration had converted 2.25M/19.2M rows by 19:27 KST, so the 20:00 4xH200 slot was likely to idle.",
+  "redaction": "omits token, email, member, jupyter, and shell access fields",
+  "schema": "mlxp_reservation_lifecycle.v1"
+}
