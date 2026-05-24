@@ -1,0 +1,36 @@
+   Updating https://github.com/lastdefiance20/open-world-agents.git (HEAD)
+    Updated https://github.com/lastdefiance20/open-world-agents.git (5f86e578b2e76ceb76a26b3d818b6390766ffd8f)
+Downloading opencv-python (69.5MiB)
+Downloading av (34.7MiB)
+Downloading pydantic-core (2.0MiB)
+Downloading lz4 (1.3MiB)
+Downloading pillow (6.8MiB)
+Downloading numpy (16.1MiB)
+Downloading zstandard (5.3MiB)
+   Building mcap-owa-support @ git+https://github.com/lastdefiance20/open-world-agents.git@5f86e578b2e76ceb76a26b3d818b6390766ffd8f#subdirectory=projects/mcap-owa-support
+   Building owa-msgs @ git+https://github.com/lastdefiance20/open-world-agents.git@5f86e578b2e76ceb76a26b3d818b6390766ffd8f#subdirectory=projects/owa-msgs
+   Building owa-core @ git+https://github.com/lastdefiance20/open-world-agents.git@5f86e578b2e76ceb76a26b3d818b6390766ffd8f#subdirectory=projects/owa-core
+      Built mcap-owa-support @ git+https://github.com/lastdefiance20/open-world-agents.git@5f86e578b2e76ceb76a26b3d818b6390766ffd8f#subdirectory=projects/mcap-owa-support
+ Downloaded lz4
+ Downloaded pydantic-core
+ Downloaded zstandard
+      Built owa-msgs @ git+https://github.com/lastdefiance20/open-world-agents.git@5f86e578b2e76ceb76a26b3d818b6390766ffd8f#subdirectory=projects/owa-msgs
+      Built owa-core @ git+https://github.com/lastdefiance20/open-world-agents.git@5f86e578b2e76ceb76a26b3d818b6390766ffd8f#subdirectory=projects/owa-core
+ Downloaded pillow
+ Downloaded av
+ Downloaded opencv-python
+ Downloaded numpy
+Installed 30 packages in 1.10s
+2026-05-24 05:08:56.348 | INFO     | __main__:main:454 - Evaluating: /root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mcap vs /root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/gidm_exact_split/pilot/first_recording_maxdur1.mcap
+2026-05-24 05:08:56.868 | INFO     | __main__:compute_binned_metrics:359 - Source: first_screen_ts=2417098600, first_pts=2417098600, offset=0
+2026-05-24 05:08:56.869 | INFO     | __main__:compute_binned_metrics:360 - Dest:   first_screen_ts=50000000, first_pts=50000000, offset=0
+2026-05-24 05:08:56.869 | INFO     | __main__:compute_binned_metrics:361 - Common pts range: 2417098600 - 1400000000 (duration: -1.02s)
+Traceback (most recent call last):
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/external/D2E/evaluate.py", line 472, in <module>
+    main()
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/external/D2E/evaluate.py", line 455, in main
+    results = compute_binned_metrics(str(gt_path), str(pred_path), cfg)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/external/D2E/evaluate.py", line 365, in compute_binned_metrics
+    raise ValueError(
+ValueError: No temporal overlap between source and destination MCAP files. Source pts range: [2417098600, 1464469717600], Destination pts range: [50000000, 1400000000]

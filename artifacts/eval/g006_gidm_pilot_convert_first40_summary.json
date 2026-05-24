@@ -1,0 +1,22 @@
+{
+  "schema": "gidm_mcap_conversion_summary.v1",
+  "manifest_path": "outputs/gidm_exact_split/pilot/first_recording_pilot_manifest.json",
+  "target_record_paths": [
+    "outputs/gidm_exact_split/pilot/first_recording_first40_target.jsonl"
+  ],
+  "predictions_path": "outputs/gidm_exact_split/pilot/first_recording_first40_predictions.jsonl",
+  "recording_count": 1,
+  "rows_written": 40,
+  "decoded_event_counts": {
+    "d2e_480p:Apex_Legends/0805_01": 45
+  },
+  "missing_prediction_count": 0,
+  "allow_missing": false,
+  "bin_ms": 50,
+  "timestamp_shift_ns": 0,
+  "auto_timestamp_shift_from_screen": true,
+  "timestamp_shifts_by_key": {
+    "d2e_480p:Apex_Legends/0805_01": 2367098600
+  },
+  "claim_boundary": "This converts released G-IDM MCAP predictions to the local predictions.jsonl metric boundary; metric claims require a separate paper-metric/audit artifact."
+}

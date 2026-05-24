@@ -1,0 +1,31 @@
+{
+  "conversion_summary": "artifacts/eval/g006_gidm_pilot_convert_first40_summary.json",
+  "d2e_repo_head": "80e98e26e4dc584ec76fec5789b4a97c275dd032",
+  "decoded_event_counts": {
+    "d2e_480p:Apex_Legends/0805_01": 45
+  },
+  "inference_log": "artifacts/eval/g006_gidm_pilot_inference_maxdur1.log",
+  "inference_run_summary": "artifacts/eval/g006_gidm_pilot_inference_maxdur1_run.json",
+  "max_context_length": 512,
+  "max_duration_seconds": 1,
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "output_mcap": "outputs/gidm_exact_split/pilot/first_recording_maxdur1.mcap",
+  "output_mcap_sha256": "3d56328e962e6265a080c6ff73a97a5fcfebe543e40d18b5f0e39b00ea3d51a4",
+  "output_mcap_size": 8150,
+  "pilot_predictions": "outputs/gidm_exact_split/pilot/first_recording_first40_predictions.jsonl",
+  "pilot_predictions_rows": 40,
+  "pilot_predictions_sha256": "1ee93c18ce75e35d5f9070b09ccdb2c0c88e275a5bd46c5428d695ba3000e719",
+  "pilot_target_rows": "outputs/gidm_exact_split/pilot/first_recording_first40_target.jsonl",
+  "pilot_target_rows_count": 40,
+  "pilot_target_sha256": "e7b49c0ab84cd468a881b30dccc59b49c6e34d24693539889cb627faccde1177",
+  "runtime_notes": [
+    "Upstream D2E inference.py was copied to inference_desktop_minimal.py with owa-cli and owa-env-gst inline dependencies removed; owa-env-desktop kept for VK constants.",
+    "Pod installed linux-libc-dev and build-essential so evdev can build in the isolated uv script environment.",
+    "This is schema/runtime/timestamp-alignment pilot evidence only, not a heldout metric claim."
+  ],
+  "schema": "gidm_pilot_artifact_summary.v1",
+  "status": "pass",
+  "timestamp_shifts_by_key": {
+    "d2e_480p:Apex_Legends/0805_01": 2367098600
+  }
+}
