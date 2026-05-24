@@ -612,6 +612,194 @@ def _scan_streaming_idm_stats_with_action_history(
     }
 
 
+def _scan_action_history_category_counts_partition(path: str | Path) -> dict[str, Any]:
+    category_counts: Counter[str] = Counter()
+    count = 0
+    for row in iter_jsonl(path):
+        count += 1
+        for token in row.get("ground_truth_tokens", []):
+            token = str(token)
+            if _is_category_token(token):
+                category_counts[token] += 1
+    return {"path": str(path), "count": count, "category_counts": dict(category_counts)}
+
+
+def _scan_action_history_stats_partition(
+    path: str | Path,
+    feature_mode: str,
+    history_vocab: list[str],
+    action_history_len: int,
+) -> dict[str, Any]:
+    count = 0
+    mean: list[float] = []
+    m2: list[float] = []
+    category_counts: Counter[str] = Counter()
+    keyboard_class_counts: Counter[str] = Counter()
+    button_class_counts: Counter[str] = Counter()
+    sequence_counts: Counter[tuple[str, ...]] = Counter()
+    last_tokens_by_recording: dict[str, tuple[int, list[str]]] = {}
+    last_tokens_by_game: dict[str, tuple[int, list[str]]] = {}
+    source_ids: set[str] = set()
+    resolution_tiers: set[str] = set()
+    split_names: set[str] = set()
+    eval_split_tags: set[str] = set()
+    fingerprint = hashlib.sha256()
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+    for row in iter_jsonl(path):
+        recording_id = str(row.get("recording_id", ""))
+        history, button_state = _ensure_history_state(histories, button_states, recording_id)
+        features = _record_features_with_history(
+            row,
+            feature_mode=feature_mode,
+            history_vocab=history_vocab,
+            history_len=action_history_len,
+            history=history,
+            button_state=button_state,
+        )
+        if not mean:
+            mean = [0.0 for _ in features]
+            m2 = [0.0 for _ in features]
+        if len(features) != len(mean):
+            raise ValueError(f"inconsistent feature dimension in {path}: {len(features)} != {len(mean)}")
+        count += 1
+        for idx, value in enumerate(features):
+            delta = value - mean[idx]
+            mean[idx] += delta / count
+            m2[idx] += delta * (value - mean[idx])
+        for token in row.get("ground_truth_tokens", []):
+            token = str(token)
+            if _is_category_token(token):
+                category_counts[token] += 1
+        tokens = _tokens(row)
+        keyboard_class_counts[_label_key(_keyboard_label(row))] += 1
+        button_class_counts[_label_key(_button_label(row))] += 1
+        sequence_counts[tuple(tokens)] += 1
+        timestamp_ns = row.get("timestamp_ns")
+        _latest_token_map_update(last_tokens_by_recording, recording_id, timestamp_ns, tokens)
+        _latest_token_map_update(last_tokens_by_game, str(row.get("game", "unknown")), timestamp_ns, tokens)
+        if row.get("source_id") is not None:
+            source_ids.add(str(row["source_id"]))
+        if row.get("resolution_tier") is not None:
+            resolution_tiers.add(str(row["resolution_tier"]))
+        if row.get("split") is not None:
+            split_names.add(str(row["split"]))
+        for tag in row.get("eval_split_tags", []) or []:
+            eval_split_tags.add(str(tag))
+        fingerprint.update(
+            json.dumps(
+                {
+                    "sequence_id": row.get("sequence_id"),
+                    "tokens": row.get("ground_truth_tokens", []),
+                    "features": features,
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            ).encode("utf-8")
+        )
+        fingerprint.update(b"\n")
+        _append_history(history, button_state, tokens, history_len=action_history_len)
+    return {
+        "path": str(path),
+        "count": count,
+        "mean": mean,
+        "m2": m2,
+        "category_counts": dict(category_counts),
+        "keyboard_class_counts": dict(keyboard_class_counts),
+        "button_class_counts": dict(button_class_counts),
+        "sequence_counts": dict(sequence_counts),
+        "last_tokens_by_recording": last_tokens_by_recording,
+        "last_tokens_by_game": last_tokens_by_game,
+        "source_ids": source_ids,
+        "resolution_tiers": resolution_tiers,
+        "split_names": split_names,
+        "eval_split_tags": eval_split_tags,
+        "fingerprint": fingerprint.hexdigest(),
+    }
+
+
+def _merge_action_history_stats_partitions(
+    partitions: Iterable[dict[str, Any]],
+    *,
+    train_records: str | Path | Sequence[str | Path],
+    feature_mode: str,
+    categorical_min_count: int,
+    action_history_len: int,
+    history_vocab: list[str],
+) -> dict[str, Any]:
+    partition_list = list(partitions)
+    merged = _merge_stats_partitions(
+        partition_list,
+        train_records=train_records,
+        feature_mode=feature_mode,
+        categorical_min_count=categorical_min_count,
+    )
+    fingerprint = hashlib.sha256(
+        json.dumps(
+            {
+                "feature_mode": feature_mode,
+                "action_history_len": int(action_history_len),
+                "action_history_vocab": history_vocab,
+                "partitions": sorted(
+                    [
+                        {"path": row.get("path", ""), "count": int(row.get("count", 0)), "fingerprint": row.get("fingerprint", "")}
+                        for row in partition_list
+                    ],
+                    key=lambda row: str(row["path"]),
+                ),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()
+    merged.update(
+        {
+            "dataset_fingerprint": fingerprint,
+            "action_history_len": int(action_history_len),
+            "action_history_vocab": history_vocab,
+            "action_history_dim": _history_dim(history_vocab=history_vocab, history_len=action_history_len),
+            "action_history_feedback": "teacher_forced_train",
+            "action_history_parallel_by_path": True,
+        }
+    )
+    return merged
+
+
+def _scan_streaming_idm_stats_with_action_history_parallel(
+    paths: Sequence[Path],
+    *,
+    train_records: str | Path | Sequence[str | Path],
+    feature_mode: str,
+    categorical_min_count: int,
+    action_history_len: int,
+    num_workers: int,
+) -> dict[str, Any]:
+    workers = min(max(1, int(num_workers)), len(paths))
+    category_counts: Counter[str] = Counter()
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(_scan_action_history_category_counts_partition, path): path for path in paths}
+        for future in as_completed(futures):
+            part = future.result()
+            category_counts.update({str(k): int(v) for k, v in dict(part.get("category_counts", {})).items()})
+    history_vocab = _history_vocab_from_counts(category_counts, categorical_min_count)
+    partitions: list[dict[str, Any]] = []
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        futures = {
+            pool.submit(_scan_action_history_stats_partition, path, feature_mode, history_vocab, int(action_history_len)): path
+            for path in paths
+        }
+        for future in as_completed(futures):
+            partitions.append(future.result())
+    return _merge_action_history_stats_partitions(
+        partitions,
+        train_records=train_records,
+        feature_mode=feature_mode,
+        categorical_min_count=categorical_min_count,
+        action_history_len=int(action_history_len),
+        history_vocab=history_vocab,
+    )
+
+
 def _merge_stats_partitions(partitions: Iterable[dict[str, Any]], *, train_records: str | Path | Sequence[str | Path], feature_mode: str, categorical_min_count: int) -> dict[str, Any]:
     acc = _empty_stats_accumulator()
     for part in partitions:
@@ -700,9 +888,19 @@ def scan_streaming_idm_stats(
     categorical_min_count: int = 1,
     num_workers: int = 1,
     action_history_len: int = 0,
+    action_history_parallel_by_path: bool = False,
 ) -> dict[str, Any]:
     paths = _record_paths_from_value(train_records)
     if int(action_history_len) > 0:
+        if len(paths) > 1 and int(num_workers) > 1 and action_history_parallel_by_path:
+            return _scan_streaming_idm_stats_with_action_history_parallel(
+                paths,
+                train_records=train_records,
+                feature_mode=feature_mode,
+                categorical_min_count=categorical_min_count,
+                action_history_len=int(action_history_len),
+                num_workers=int(num_workers),
+            )
         return _scan_streaming_idm_stats_with_action_history(
             paths,
             train_records=train_records,
@@ -739,6 +937,7 @@ def scan_streaming_idm_stats_from_config(config: dict[str, Any]) -> dict[str, An
         categorical_min_count=int(config.get("categorical_min_count", 1)),
         num_workers=int(config.get("precompute_num_workers", config.get("stats_num_workers", 1))),
         action_history_len=_action_history_len_from_config(config),
+        action_history_parallel_by_path=_action_history_parallel_by_path(config),
     )
 
 

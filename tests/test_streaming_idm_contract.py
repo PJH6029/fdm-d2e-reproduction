@@ -189,6 +189,46 @@ def test_streaming_idm_action_history_changes_stats_and_cache_identity(tmp_path:
     assert history_identity != base_identity
 
 
+def test_streaming_idm_action_history_stats_parallel_by_path(tmp_path: Path):
+    shard_a = tmp_path / "train_a.jsonl"
+    shard_b = tmp_path / "train_b.jsonl"
+    rows_a = [
+        {**_record(idx, "train_core"), "recording_id": "d2e_480p:Apex/rec_a", "sequence_id": f"d2e_480p:Apex/rec_a#{idx:06d}"}
+        for idx in range(4)
+    ]
+    rows_b = [
+        {**_record(idx + 4, "train_core"), "recording_id": "d2e_480p:Apex/rec_b", "sequence_id": f"d2e_480p:Apex/rec_b#{idx:06d}"}
+        for idx in range(4)
+    ]
+    _write_jsonl(shard_a, rows_a)
+    _write_jsonl(shard_b, rows_b)
+
+    serial_stats = scan_streaming_idm_stats(
+        [shard_a, shard_b],
+        feature_mode="summary_compact_grid8_shift_surface_time",
+        categorical_min_count=1,
+        action_history_len=2,
+    )
+    parallel_stats = scan_streaming_idm_stats(
+        [shard_a, shard_b],
+        feature_mode="summary_compact_grid8_shift_surface_time",
+        categorical_min_count=1,
+        num_workers=2,
+        action_history_len=2,
+        action_history_parallel_by_path=True,
+    )
+
+    assert parallel_stats["action_history_parallel_by_path"] is True
+    assert parallel_stats["num_examples"] == serial_stats["num_examples"] == 8
+    assert parallel_stats["input_dim"] == serial_stats["input_dim"]
+    assert parallel_stats["action_history_vocab"] == serial_stats["action_history_vocab"]
+    assert parallel_stats["category_counts"] == serial_stats["category_counts"]
+    assert parallel_stats["keyboard_class_counts"] == serial_stats["keyboard_class_counts"]
+    assert parallel_stats["button_class_counts"] == serial_stats["button_class_counts"]
+    assert parallel_stats["mean"] == pytest.approx(serial_stats["mean"])
+    assert parallel_stats["std"] == pytest.approx(serial_stats["std"])
+
+
 def test_streaming_idm_action_history_prediction_does_not_peek_target_labels(tmp_path: Path):
     if not torch_available():
         pytest.skip("torch extra is not installed")

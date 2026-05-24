@@ -1,0 +1,24 @@
+{
+  "schema": "mlxp_reservation_cancelled_for_gpu_idle_precompute.v1",
+  "reservation_id": "rsv-jeonghunpark-20260524-9c7200",
+  "project_id": "production",
+  "namespace": "p-production",
+  "pod_name": "prod-rsv-jeonghunpark-20260524-9c7200",
+  "node_id": "5",
+  "gpu_indices": [0, 1, 2, 3],
+  "start_at": "2026-05-24T22:00:00+09:00",
+  "end_at": "2026-05-25T10:00:00+09:00",
+  "cancelled_at": "2026-05-24T22:14:49+09:00",
+  "status": "cancelled",
+  "git_head_at_launch": "b654b6e2cef57828c2dae383af4ec2a786fc0f0f",
+  "launched_command": "scripts/run_g005_idm_exactset_history_4xh200.sh",
+  "observed_process_state": {
+    "torchrun_started": true,
+    "rank0_cpu_bound_stats_scan": true,
+    "gpu_utilization_percent": [0, 0, 0, 0],
+    "gpu_memory_mib": [529, 623, 623, 623],
+    "output_dir_size": "4.0K"
+  },
+  "cancellation_reason": "Action-history streaming stats ignored stats_num_workers and scanned the full 393GB train JSONL on rank0 while all 4 H200 GPUs were idle. The run was stopped before training and the reservation was cancelled to avoid sustained idle GPU time.",
+  "followup": "Add action_history_parallel_by_path stats parallelization, recommit, then relaunch the exact-set history IDM run."
+}
