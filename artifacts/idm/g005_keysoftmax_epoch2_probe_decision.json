@@ -1,0 +1,45 @@
+{
+  "schema": "g005_idm_branch_decision.v1",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "branch": "raw112_video_pair_keysoftmax_epoch2",
+  "decision": "rejected",
+  "claim_boundary": "Decision uses a bounded 320k-row probe over 23/64 available target shards; it is not full paper-target evaluation.",
+  "training_evidence": {
+    "run_summary": "artifacts/idm/g005_idm_video_pair_raw112_keysoftmax_trainfirst_4xh200_run.json",
+    "train_history": "artifacts/idm/g005_idm_video_pair_raw112_keysoftmax_trainfirst_train_history.json",
+    "checkpoint_metadata": "artifacts/idm/g005_idm_video_pair_raw112_keysoftmax_trainfirst_checkpoint_metadata.json",
+    "train_records": 19211006,
+    "epochs": 2,
+    "gpu_monitor_covers_expected_gpus": true
+  },
+  "probe_evidence": {
+    "run_summary": "artifacts/idm/g005_keysoftmax_available_target_probe_epoch2_320k_prediction_run.json",
+    "metrics": "artifacts/idm/g005_keysoftmax_available_target_probe_epoch2_320k_metrics.json",
+    "label_quality_report": "artifacts/idm/g005_keysoftmax_available_target_probe_epoch2_320k_label_quality_report.json",
+    "target_records": 320000,
+    "available_target_shards": 23,
+    "missing_full_target_shards": 41
+  },
+  "metrics": {
+    "keyboard_accuracy": 0.0008787491917165454,
+    "mouse_button_accuracy": 0.01717426150675521,
+    "mouse_button_f1": 0.023043244488824027,
+    "no_button_false_positive_rate": 0.012956763668373674,
+    "mouse_move_pearson": null
+  },
+  "paper_reported_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783
+  },
+  "rationale": [
+    "No-button false-positive rate is controlled below 0.10, but keyboard and mouse-button metrics remain orders of magnitude below the D2E paper-reported target.",
+    "Mouse movement Pearson is unavailable because this branch emits no useful motion predictions on the probe.",
+    "Continuing this exact branch would spend 4xH200 time without a plausible path to the paper target; the next branch should add stronger causal action/state structure rather than retune thresholds."
+  ],
+  "next_branch": {
+    "name": "streaming_exactset_causal_action_history",
+    "required_change": "Extend streaming IDM with exact-set keyboard/button softmax heads and causal action-history features, then train/evaluate on full D2E with calibrated FPR."
+  }
+}

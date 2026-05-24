@@ -1,0 +1,32 @@
+started_at=2026-05-24T12:01:35+00:00
+git_head=b3d1d0942ccc92c6d3b5cf8ecac44aa3e6c5d2c1
+config=configs/model/idm_video_pair_d2e_full_raw112_keysoftmax_paper_target.yaml
+nproc_per_node=4
+gpu_monitor_log=artifacts/idm/g005_idm_video_pair_raw112_keysoftmax_trainfirst_4xh200_gpu_monitor.csv
+runtime_overrides=max_target_examples=none skip_prediction=1 epochs=2 batch_size=none eval_batch_size=none
+effective_config=outputs/cluster/g005_idm_video_pair_raw112_keysoftmax_trainfirst_runtime_config.yaml
+{"cuda_available": true, "cuda_device_count": 4, "cuda_visible_devices": null, "expected_gpus": 4, "hostname": "prod-rsv-jeonghunpark-20260524-f5414c", "rank": 0, "schema": "cluster_gpu_smoke.v1", "status": "passed", "torch_imported": true, "torch_version": "2.12.0+cu130", "world_size": 1}
+W0524 12:01:51.179000 291 torch/distributed/run.py:862] 
+W0524 12:01:51.179000 291 torch/distributed/run.py:862] *****************************************
+W0524 12:01:51.179000 291 torch/distributed/run.py:862] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0524 12:01:51.179000 291 torch/distributed/run.py:862] *****************************************
+[W524 12:01:52.128830516 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [localhost]:33659 (errno: 97 - Address family not supported by protocol).
+[W524 12:01:52.134493139 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:33659 (errno: 97 - Address family not supported by protocol).
+[W524 12:01:52.137512829 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:33659 (errno: 97 - Address family not supported by protocol).
+[W524 12:01:53.502160416 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.116]:43893 (errno: 97 - Address family not supported by protocol).
+[W524 12:01:56.192999798 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.116]:43893 (errno: 97 - Address family not supported by protocol).
+[W524 12:01:56.198158161 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.116]:43893 (errno: 97 - Address family not supported by protocol).
+[W524 12:01:56.208333222 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.116]:43893 (errno: 97 - Address family not supported by protocol).
+[W524 12:01:56.229987745 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.116]:43893 (errno: 97 - Address family not supported by protocol).
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W524 12:01:56.268901548 ProcessGroupNCCL.cpp:5324] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+video IDM worker complete: rank=1 world_size=4 status=worker_complete
+video IDM worker complete: rank=2 world_size=4 status=worker_complete
+video IDM worker complete: rank=3 world_size=4 status=worker_complete
+trained video IDM: model=video_pair_idm_d2e_full_raw112_keysoftmax_paper_target device=cuda:0 train=19211006 target=0 metrics=outputs/idm_video_pair_d2e_full_raw112_keysoftmax_paper_target/metrics.json
+finished_at=2026-05-24T12:33:00+00:00

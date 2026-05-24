@@ -1,0 +1,23 @@
+{
+  "schema": "mlxp_reservation_cancel.v1",
+  "http_status": "200",
+  "reservation_id": "rsv-jeonghunpark-20260524-f5414c",
+  "project_id": "production",
+  "namespace": "p-production",
+  "status": "cancelled",
+  "status_label": "cancelled",
+  "pod_name": "prod-rsv-jeonghunpark-20260524-f5414c",
+  "node_id": "6",
+  "gpu_indices": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "start_at": "2026-05-24T21:00:00+09:00",
+  "end_at": "2026-05-25T04:00:00+09:00",
+  "purpose": "G005 key-softmax raw112 full-corpus 4xH200 IDM training/probe after train-cache migration",
+  "updated_at": "2026-05-24T21:48:26+09:00",
+  "reason": "G005 key-softmax 2-epoch training and bounded probe completed; metrics reject branch, so release 4xH200 while implementing next architecture.",
+  "redaction": "omits token, email, member, jupyter, shell access, and controller/private fields"
+}

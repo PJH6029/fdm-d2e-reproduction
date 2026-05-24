@@ -1,0 +1,178 @@
+{
+  "schema": "stat_comparison.v1",
+  "reference_baseline": "noop",
+  "correction": "holm_bonferroni",
+  "cluster_key": "recording_id",
+  "comparisons": [
+    {
+      "model": "video_pair_idm_d2e_full_raw112_keysoftmax_epoch2_available_target_probe_320k",
+      "reference": "noop",
+      "endpoint": "keyboard_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.0014594114535678507,
+      "ci": [
+        0.0003401013502023603,
+        0.0029098258552773815
+      ],
+      "p_value": 0.0015,
+      "num_clusters": 22,
+      "p_adjusted_holm": 0.009000000000000001,
+      "reject_holm_0_05": true
+    },
+    {
+      "model": "global_majority",
+      "reference": "noop",
+      "endpoint": "keyboard_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_value": 1.0,
+      "num_clusters": 22,
+      "p_adjusted_holm": 1.0,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "video_pair_idm_d2e_full_raw112_keysoftmax_epoch2_available_target_probe_320k",
+      "reference": "noop",
+      "endpoint": "mouse_button_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.05965419492350592,
+      "ci": [
+        0.012010626429273242,
+        0.11649930894672875
+      ],
+      "p_value": 0.0,
+      "num_clusters": 21,
+      "p_adjusted_holm": 0.0,
+      "reject_holm_0_05": true
+    },
+    {
+      "model": "global_majority",
+      "reference": "noop",
+      "endpoint": "mouse_button_accuracy",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_value": 1.0,
+      "num_clusters": 21,
+      "p_adjusted_holm": 1.0,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "video_pair_idm_d2e_full_raw112_keysoftmax_epoch2_available_target_probe_320k",
+      "reference": "noop",
+      "endpoint": "mouse_button_precision",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "no_shared_clusters",
+      "delta": null,
+      "ci": [
+        null,
+        null
+      ],
+      "p_value": null,
+      "num_clusters": 0,
+      "p_adjusted_holm": null,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "global_majority",
+      "reference": "noop",
+      "endpoint": "mouse_button_precision",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "no_shared_clusters",
+      "delta": null,
+      "ci": [
+        null,
+        null
+      ],
+      "p_value": null,
+      "num_clusters": 0,
+      "p_adjusted_holm": null,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "video_pair_idm_d2e_full_raw112_keysoftmax_epoch2_available_target_probe_320k",
+      "reference": "noop",
+      "endpoint": "mouse_button_f1",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.017576839723647493,
+      "ci": [
+        0.006778852276931065,
+        0.030765246497703673
+      ],
+      "p_value": 0.0,
+      "num_clusters": 21,
+      "p_adjusted_holm": 0.0,
+      "reject_holm_0_05": true
+    },
+    {
+      "model": "global_majority",
+      "reference": "noop",
+      "endpoint": "mouse_button_f1",
+      "direction": "higher",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_value": 1.0,
+      "num_clusters": 21,
+      "p_adjusted_holm": 1.0,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "video_pair_idm_d2e_full_raw112_keysoftmax_epoch2_available_target_probe_320k",
+      "reference": "noop",
+      "endpoint": "no_button_false_positive_rate",
+      "direction": "lower",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": -0.032265854307571125,
+      "ci": [
+        -0.06395301263626063,
+        -0.008652999955248349
+      ],
+      "p_value": 1.0,
+      "num_clusters": 22,
+      "p_adjusted_holm": 1.0,
+      "reject_holm_0_05": false
+    },
+    {
+      "model": "global_majority",
+      "reference": "noop",
+      "endpoint": "no_button_false_positive_rate",
+      "direction": "lower",
+      "min_effect": 0.05,
+      "status": "computed",
+      "delta": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_value": 1.0,
+      "num_clusters": 22,
+      "p_adjusted_holm": 1.0,
+      "reject_holm_0_05": false
+    }
+  ]
+}

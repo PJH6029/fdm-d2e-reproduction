@@ -1,0 +1,59 @@
+{
+  "claim_boundary": "Bounded 320k-row probe over available target cache only; not full paper-target evaluation.",
+  "config_path": "outputs/cluster/g005_keysoftmax_available_target_probe_epoch2_320k_predict_config.json",
+  "exit_code": 0,
+  "git_head": "b3d1d0942ccc92c6d3b5cf8ecac44aa3e6c5d2c1",
+  "gpu_monitor_log": "artifacts/idm/g005_keysoftmax_available_target_probe_epoch2_320k_gpu_monitor.csv",
+  "gpu_monitor_status": {
+    "rows": 100,
+    "unique_gpu_indices": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  "label_quality_report_path": "outputs/idm_video_pair_d2e_full_raw112_keysoftmax_paper_target/available_target_probe_epoch2_320k/label_quality_report.json",
+  "label_quality_report_sha256": "1981a882622fd4acdab16b1c56ff51a69a886a96c615e275a4808459a7894ed7",
+  "log_path": "artifacts/idm/g005_keysoftmax_available_target_probe_epoch2_320k_prediction.log",
+  "metrics": {
+    "failure_count": 319382,
+    "keyboard": {
+      "accuracy": 0.0008787491917165454,
+      "num_examples": 60313,
+      "status": "computed"
+    },
+    "mouse_button": {
+      "accuracy": 0.01717426150675521,
+      "exact_true_positive_examples": 150,
+      "f1": 0.023043244488824027,
+      "false_negative_examples": 8584,
+      "false_positive_examples": 4135,
+      "no_button_examples": 311266,
+      "no_button_false_positive_examples": 4033,
+      "no_button_false_positive_rate": 0.012956763668373674,
+      "num_examples": 8734,
+      "precision": 0.03500583430571762,
+      "predicted_examples": 4285,
+      "recall": 0.01717426150675521,
+      "status": "computed"
+    },
+    "mouse_move": {
+      "num_values": 240244,
+      "pearson": null,
+      "scale_ratio": null,
+      "status": "computed"
+    },
+    "num_examples": 320000,
+    "schema": "metrics.v1",
+    "stage": "fdm_eval"
+  },
+  "metrics_path": "outputs/idm_video_pair_d2e_full_raw112_keysoftmax_paper_target/available_target_probe_epoch2_320k/metrics.json",
+  "metrics_sha256": "8b737ab780371926bc0116c67dca219c967b22ad5d56fa6158c7c4b163f7ddd4",
+  "output_dir": "outputs/idm_video_pair_d2e_full_raw112_keysoftmax_paper_target/available_target_probe_epoch2_320k",
+  "predictions_path": "outputs/idm_video_pair_d2e_full_raw112_keysoftmax_paper_target/available_target_probe_epoch2_320k/predictions.jsonl",
+  "predictions_sha256": "3ca4a179814d4595ff0d810edb93c89aa58a297af99a715977d88c9cac95afc8",
+  "schema": "g005_keysoftmax_available_target_probe_prediction_run.v1",
+  "target_records": 320000,
+  "wall_clock_seconds": 748
+}
