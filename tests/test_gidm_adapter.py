@@ -75,6 +75,64 @@ def test_build_gidm_manifest_joins_target_rows_to_decode_summary(tmp_path: Path)
     assert row["prediction_mcap_path"].endswith("d2e_480p_Apex_001.mcap")
 
 
+def test_build_gidm_manifest_can_use_decode_summary_split_counts(tmp_path: Path):
+    summary = tmp_path / "summary.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "recordings": [
+                    {
+                        "universe_row_id": "d2e_480p:Apex/001",
+                        "source_id": "d2e_480p",
+                        "cross_resolution_key": "Apex/001",
+                        "game": "Apex",
+                        "recording_id": "001",
+                        "video_source": "/data/Apex/001.mkv",
+                        "mcap_path": "/data/Apex/001.mcap",
+                        "split_counts": {
+                            "train_core": 80,
+                            "target_temporal": 20,
+                            "target_heldout_recording": 100,
+                            "target_heldout_game": 0,
+                        },
+                    },
+                    {
+                        "universe_row_id": "d2e_480p:Apex/002",
+                        "source_id": "d2e_480p",
+                        "cross_resolution_key": "Apex/002",
+                        "game": "Apex",
+                        "recording_id": "002",
+                        "video_source": "/data/Apex/002.mkv",
+                        "mcap_path": "/data/Apex/002.mcap",
+                        "split_counts": {
+                            "train_core": 160,
+                            "target_temporal": 40,
+                            "target_heldout_recording": 0,
+                            "target_heldout_game": 0,
+                        },
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = build_gidm_inference_manifest(
+        target_record_paths=[],
+        decode_summary_path=summary,
+        output_dir=tmp_path / "gidm",
+        use_decode_summary_counts=True,
+    )
+
+    assert payload["source_mode"] == "decode_summary_split_counts"
+    assert payload["recording_count"] == 2
+    assert payload["target_rows"] == 140
+    assert payload["recordings"][0]["split_tags"] == ["heldout_recording", "temporal"]
+    assert payload["recordings"][0]["row_count"] == 100
+    assert payload["recordings"][1]["split_tags"] == ["temporal"]
+    assert payload["recordings"][1]["row_count"] == 40
+
+
 def test_convert_gidm_mcap_predictions_bins_events_to_target_rows(tmp_path: Path):
     target = tmp_path / "target.jsonl"
     _write_jsonl(

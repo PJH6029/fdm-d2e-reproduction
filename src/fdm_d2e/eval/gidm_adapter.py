@@ -12,6 +12,11 @@ from fdm_d2e.io_utils import ensure_dir, read_json, stable_hash_json, write_json
 from fdm_d2e.tokenization.actions import tokenize_event
 
 _JSON_DECODER = json.JSONDecoder()
+_TARGET_SPLIT_COUNT_KEYS = {
+    "temporal": "target_temporal",
+    "heldout_recording": "target_heldout_recording",
+    "heldout_game": "target_heldout_game",
+}
 
 
 def _iter_jsonl(path: str | Path) -> Iterable[dict[str, Any]]:
@@ -76,15 +81,18 @@ def _split_tags(row: dict[str, Any]) -> list[str]:
     return tags
 
 
-def _decode_summary_records(path: str | Path) -> dict[str, dict[str, Any]]:
+def _decode_summary_record_list(path: str | Path) -> list[dict[str, Any]]:
     payload = read_json(path)
     rows = payload.get("recordings", [])
     if not isinstance(rows, list):
         raise ValueError(f"decode summary has no recordings list: {path}")
+    return [row for row in rows if isinstance(row, dict)]
+
+
+def _decode_summary_records(path: str | Path) -> dict[str, dict[str, Any]]:
+    rows = _decode_summary_record_list(path)
     indexed: dict[str, dict[str, Any]] = {}
     for row in rows:
-        if not isinstance(row, dict):
-            continue
         keys = [
             str(row.get("universe_row_id") or ""),
             f"{row.get('source_id')}:{row.get('cross_resolution_key')}",
@@ -96,108 +104,202 @@ def _decode_summary_records(path: str | Path) -> dict[str, dict[str, Any]]:
     return indexed
 
 
+def _target_tags_and_count_from_split_counts(
+    split_counts: dict[str, Any],
+    *,
+    wanted_tags: set[str],
+) -> tuple[list[str], int]:
+    selected: list[tuple[str, int]] = []
+    for tag, key in _TARGET_SPLIT_COUNT_KEYS.items():
+        if wanted_tags and tag not in wanted_tags:
+            continue
+        count = int(split_counts.get(key, 0) or 0)
+        if count > 0:
+            selected.append((tag, count))
+    if not selected:
+        return [], 0
+    # target_all_eval is the union of target_* split memberships. For heldout
+    # recordings/games, the full-record split contains the temporal tail too.
+    return [tag for tag, _count in selected], max(count for _tag, count in selected)
+
+
+def _manifest_row_from_decode_record(
+    *,
+    key: str,
+    decoded: dict[str, Any],
+    row_count: int,
+    split_tags: Sequence[str],
+    output_root: Path,
+    model: str,
+    timestamp_min_ns: int | None = None,
+    timestamp_max_ns: int | None = None,
+    bin_index_min: int | None = None,
+    bin_index_max: int | None = None,
+) -> dict[str, Any]:
+    safe = _safe_name(key)
+    pred_mcap = output_root / "predicted_mcap" / f"{safe}.mcap"
+    return {
+        "universe_row_id": key,
+        "source_id": decoded.get("source_id"),
+        "cross_resolution_key": decoded.get("cross_resolution_key"),
+        "game": decoded.get("game"),
+        "recording_id": decoded.get("source_recording_id") or decoded.get("recording_id"),
+        "row_count": int(row_count),
+        "split_tags": sorted(str(tag) for tag in split_tags),
+        "timestamp_min_ns": timestamp_min_ns,
+        "timestamp_max_ns": timestamp_max_ns,
+        "bin_index_min": bin_index_min,
+        "bin_index_max": bin_index_max,
+        "video_path": decoded.get("video_source") or decoded.get("video_path"),
+        "ground_truth_mcap_path": decoded.get("mcap_path"),
+        "prediction_mcap_path": str(pred_mcap),
+        "upstream_model": model,
+        "inference_command": [
+            "uv",
+            "run",
+            "python",
+            "inference.py",
+            str(decoded.get("video_source") or decoded.get("video_path")),
+            str(pred_mcap),
+            "--model",
+            model,
+            "--device",
+            "cuda",
+            "--max-context-length",
+            "2048",
+        ],
+    }
+
+
 def build_gidm_inference_manifest(
     *,
-    target_record_paths: Sequence[str | Path],
+    target_record_paths: Sequence[str | Path] | None = None,
     decode_summary_path: str | Path,
     output_dir: str | Path,
     model: str = "open-world-agents/Generalist-IDM-1B",
     split_tags: Sequence[str] | None = None,
     max_recordings: int | None = None,
+    use_decode_summary_counts: bool = False,
 ) -> dict[str, Any]:
     """Build a per-recording manifest for upstream D2E Generalist-IDM inference."""
 
     wanted_tags = {str(tag) for tag in split_tags or []}
-    by_recording: dict[str, dict[str, Any]] = {}
-    fields = [
-        "sequence_id",
-        "source_id",
-        "universe_row_id",
-        "cross_resolution_key",
-        "source_recording_id",
-        "recording_id",
-        "game",
-        "timestamp_ns",
-        "bin_index",
-        "eval_split_tags",
-        "split_temporal",
-        "split_heldout_recording",
-        "split_heldout_game",
-    ]
-    for path in target_record_paths:
-        for row in _iter_jsonl_fields(path, fields):
-            tags = set(_split_tags(row))
-            if wanted_tags and not (tags & wanted_tags):
-                continue
-            key = _record_key(row)
-            bucket = by_recording.setdefault(
-                key,
-                {
-                    "universe_row_id": key,
-                    "source_id": row.get("source_id"),
-                    "cross_resolution_key": row.get("cross_resolution_key"),
-                    "game": row.get("game"),
-                    "recording_id": row.get("source_recording_id") or row.get("recording_id"),
-                    "row_count": 0,
-                    "split_tags": set(),
-                    "timestamp_min_ns": None,
-                    "timestamp_max_ns": None,
-                    "bin_index_min": None,
-                    "bin_index_max": None,
-                },
-            )
-            timestamp_ns = int(row.get("timestamp_ns", 0))
-            bin_index = int(row.get("bin_index", 0))
-            bucket["row_count"] += 1
-            bucket["split_tags"].update(tags)
-            bucket["timestamp_min_ns"] = timestamp_ns if bucket["timestamp_min_ns"] is None else min(int(bucket["timestamp_min_ns"]), timestamp_ns)
-            bucket["timestamp_max_ns"] = timestamp_ns if bucket["timestamp_max_ns"] is None else max(int(bucket["timestamp_max_ns"]), timestamp_ns)
-            bucket["bin_index_min"] = bin_index if bucket["bin_index_min"] is None else min(int(bucket["bin_index_min"]), bin_index)
-            bucket["bin_index_max"] = bin_index if bucket["bin_index_max"] is None else max(int(bucket["bin_index_max"]), bin_index)
-
-    decode_records = _decode_summary_records(decode_summary_path)
     output_root = Path(output_dir)
     manifest_rows: list[dict[str, Any]] = []
     missing_decode_rows: list[str] = []
-    for key, row in sorted(by_recording.items(), key=lambda item: item[0]):
-        decoded = decode_records.get(key)
-        if decoded is None:
-            missing_decode_rows.append(key)
-            continue
-        safe = _safe_name(key)
-        pred_mcap = output_root / "predicted_mcap" / f"{safe}.mcap"
-        row_out = {
-            **{k: v for k, v in row.items() if k != "split_tags"},
-            "split_tags": sorted(row["split_tags"]),
-            "video_path": decoded.get("video_source") or decoded.get("video_path"),
-            "ground_truth_mcap_path": decoded.get("mcap_path"),
-            "prediction_mcap_path": str(pred_mcap),
-            "upstream_model": model,
-            "inference_command": [
-                "uv",
-                "run",
-                "python",
-                "inference.py",
-                str(decoded.get("video_source") or decoded.get("video_path")),
-                str(pred_mcap),
-                "--model",
-                model,
-                "--device",
-                "cuda",
-                "--max-context-length",
-                "2048",
-            ],
-        }
-        manifest_rows.append(row_out)
-        if max_recordings is not None and len(manifest_rows) >= int(max_recordings):
-            break
+    target_record_path_strings = [str(path) for path in target_record_paths or []]
+
+    if use_decode_summary_counts:
+        for decoded in sorted(
+            _decode_summary_record_list(decode_summary_path),
+            key=lambda row: str(row.get("universe_row_id") or ""),
+        ):
+            split_count_tags, row_count = _target_tags_and_count_from_split_counts(
+                decoded.get("split_counts", {}) if isinstance(decoded.get("split_counts"), dict) else {},
+                wanted_tags=wanted_tags,
+            )
+            if row_count <= 0:
+                continue
+            key = str(decoded.get("universe_row_id") or f"{decoded.get('source_id')}:{decoded.get('cross_resolution_key')}")
+            manifest_rows.append(
+                _manifest_row_from_decode_record(
+                    key=key,
+                    decoded=decoded,
+                    row_count=row_count,
+                    split_tags=split_count_tags,
+                    output_root=output_root,
+                    model=model,
+                )
+            )
+            if max_recordings is not None and len(manifest_rows) >= int(max_recordings):
+                break
+    else:
+        if not target_record_paths:
+            raise ValueError("target_record_paths is required unless use_decode_summary_counts=True")
+        by_recording: dict[str, dict[str, Any]] = {}
+        fields = [
+            "sequence_id",
+            "source_id",
+            "universe_row_id",
+            "cross_resolution_key",
+            "source_recording_id",
+            "recording_id",
+            "game",
+            "timestamp_ns",
+            "bin_index",
+            "eval_split_tags",
+            "split_temporal",
+            "split_heldout_recording",
+            "split_heldout_game",
+        ]
+        for path in target_record_paths:
+            for row in _iter_jsonl_fields(path, fields):
+                tags = set(_split_tags(row))
+                if wanted_tags and not (tags & wanted_tags):
+                    continue
+                key = _record_key(row)
+                bucket = by_recording.setdefault(
+                    key,
+                    {
+                        "universe_row_id": key,
+                        "source_id": row.get("source_id"),
+                        "cross_resolution_key": row.get("cross_resolution_key"),
+                        "game": row.get("game"),
+                        "recording_id": row.get("source_recording_id") or row.get("recording_id"),
+                        "row_count": 0,
+                        "split_tags": set(),
+                        "timestamp_min_ns": None,
+                        "timestamp_max_ns": None,
+                        "bin_index_min": None,
+                        "bin_index_max": None,
+                    },
+                )
+                timestamp_ns = int(row.get("timestamp_ns", 0))
+                bin_index = int(row.get("bin_index", 0))
+                bucket["row_count"] += 1
+                bucket["split_tags"].update(tags)
+                bucket["timestamp_min_ns"] = timestamp_ns if bucket["timestamp_min_ns"] is None else min(int(bucket["timestamp_min_ns"]), timestamp_ns)
+                bucket["timestamp_max_ns"] = timestamp_ns if bucket["timestamp_max_ns"] is None else max(int(bucket["timestamp_max_ns"]), timestamp_ns)
+                bucket["bin_index_min"] = bin_index if bucket["bin_index_min"] is None else min(int(bucket["bin_index_min"]), bin_index)
+                bucket["bin_index_max"] = bin_index if bucket["bin_index_max"] is None else max(int(bucket["bin_index_max"]), bin_index)
+
+        decode_records = _decode_summary_records(decode_summary_path)
+        for key, row in sorted(by_recording.items(), key=lambda item: item[0]):
+            decoded = decode_records.get(key)
+            if decoded is None:
+                missing_decode_rows.append(key)
+                continue
+            manifest_rows.append(
+                _manifest_row_from_decode_record(
+                    key=key,
+                    decoded={
+                        **decoded,
+                        **{
+                            k: v
+                            for k, v in row.items()
+                            if k in ("source_id", "cross_resolution_key", "game", "recording_id")
+                        },
+                    },
+                    row_count=int(row["row_count"]),
+                    split_tags=sorted(row["split_tags"]),
+                    output_root=output_root,
+                    model=model,
+                    timestamp_min_ns=row["timestamp_min_ns"],
+                    timestamp_max_ns=row["timestamp_max_ns"],
+                    bin_index_min=row["bin_index_min"],
+                    bin_index_max=row["bin_index_max"],
+                )
+            )
+            if max_recordings is not None and len(manifest_rows) >= int(max_recordings):
+                break
 
     payload = {
         "schema": "gidm_inference_manifest.v1",
         "model": model,
-        "target_record_paths": [str(path) for path in target_record_paths],
+        "target_record_paths": target_record_path_strings,
         "decode_summary_path": str(decode_summary_path),
         "output_dir": str(output_root),
+        "source_mode": "decode_summary_split_counts" if use_decode_summary_counts else "target_record_scan",
         "recordings": manifest_rows,
         "recording_count": len(manifest_rows),
         "target_rows": sum(int(row["row_count"]) for row in manifest_rows),
