@@ -4039,6 +4039,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
                 categorical_min_count=int(config.get("categorical_min_count", 1)),
                 num_workers=int(config.get("precompute_num_workers", config.get("stats_num_workers", 1))),
                 action_history_len=_action_history_len_from_config(config),
+                action_history_parallel_by_path=_action_history_parallel_by_path(config),
             )
             write_json(stats_path, stats)
         if dist["enabled"]:

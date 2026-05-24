@@ -19,6 +19,14 @@
     "gpu_memory_mib": [529, 623, 623, 623],
     "output_dir_size": "4.0K"
   },
+  "subsequent_attempts": [
+    {
+      "reservation_id": "rsv-jeonghunpark-20260524-02e9ec",
+      "cancelled_at": "2026-05-24T22:25:14+09:00",
+      "git_head_at_launch": "a92b624e3b6831cec18df70e5dd5260c8d6a8f0f",
+      "reason": "The first parallelization commit connected scan_streaming_idm_stats_from_config but missed the direct train_streaming_idm stats call-site, so full training still entered the serial action-history stats path."
+    }
+  ],
   "cancellation_reason": "Action-history streaming stats ignored stats_num_workers and scanned the full 393GB train JSONL on rank0 while all 4 H200 GPUs were idle. The run was stopped before training and the reservation was cancelled to avoid sustained idle GPU time.",
   "followup": "Add action_history_parallel_by_path stats parallelization, recommit, then relaunch the exact-set history IDM run."
 }
