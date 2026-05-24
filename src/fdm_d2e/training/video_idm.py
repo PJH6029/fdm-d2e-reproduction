@@ -1166,6 +1166,72 @@ def _metric_state(metric: StreamingActionMetrics) -> dict[str, int | float]:
     return {field: getattr(metric, field) for field in fields}
 
 
+def _button_fbeta_key(counts: dict[str, int], *, threshold: float, beta: float) -> tuple[float, float, float, float]:
+    tp = float(counts.get("tp", 0))
+    fp = float(counts.get("fp", 0))
+    fn = float(counts.get("fn", 0))
+    precision = tp / (tp + fp) if (tp + fp) else 0.0
+    recall = tp / (tp + fn) if (tp + fn) else 0.0
+    beta2 = beta * beta
+    score = (1.0 + beta2) * precision * recall / ((beta2 * precision) + recall) if precision or recall else 0.0
+    return score, precision, recall, float(threshold)
+
+
+def _select_button_softmax_threshold(
+    button_counts: dict[float, dict[str, int]],
+    *,
+    default_threshold: float,
+    beta: float,
+    max_no_button_fpr: float | None = None,
+) -> tuple[float, dict[str, Any]]:
+    """Select a train-only button threshold with an optional no-button FPR cap."""
+
+    best_threshold = float(default_threshold)
+    best_key = (-1.0, -1.0, -1.0, best_threshold)
+    best_counts: dict[str, int] = {}
+    eligible: list[tuple[float, dict[str, int]]] = []
+    for threshold, counts in sorted(button_counts.items()):
+        no_gt = float(counts.get("no_button_examples", 0))
+        no_gt_fp = float(counts.get("no_button_false_positive_examples", 0))
+        no_button_fpr = no_gt_fp / no_gt if no_gt else 0.0
+        if max_no_button_fpr is None or no_button_fpr <= float(max_no_button_fpr):
+            eligible.append((float(threshold), counts))
+    if not eligible and max_no_button_fpr is not None:
+        # Fail closed: if the requested cap is unreachable on the train-calibration
+        # sample, choose the least-spammy threshold rather than maximizing recall.
+        eligible = sorted(
+            ((float(threshold), counts) for threshold, counts in button_counts.items()),
+            key=lambda item: (
+                float(item[1].get("no_button_false_positive_examples", 0))
+                / max(1.0, float(item[1].get("no_button_examples", 0))),
+                -item[0],
+            ),
+        )[:1]
+    for threshold, counts in eligible:
+        key = _button_fbeta_key(counts, threshold=threshold, beta=beta)
+        if key > best_key:
+            best_key = key
+            best_threshold = float(threshold)
+            best_counts = dict(counts)
+    no_button_examples = float(best_counts.get("no_button_examples", 0))
+    no_button_fp = float(best_counts.get("no_button_false_positive_examples", 0))
+    score, precision, recall, _threshold = best_key
+    return best_threshold, {
+        **best_counts,
+        "score": score if score >= 0.0 else None,
+        "precision": precision if precision >= 0.0 else None,
+        "recall": recall if recall >= 0.0 else None,
+        "no_button_false_positive_rate": no_button_fp / no_button_examples if no_button_examples else 0.0,
+        "max_no_button_false_positive_rate": max_no_button_fpr,
+        "constraint_satisfied": (
+            True
+            if max_no_button_fpr is None
+            else (no_button_fp / no_button_examples if no_button_examples else 0.0) <= float(max_no_button_fpr)
+        ),
+        "eligible_thresholds": len(eligible),
+    }
+
+
 def _ensure_metric(metrics: dict[str, StreamingActionMetrics], key: str) -> StreamingActionMetrics:
     if key not in metrics:
         metrics[key] = StreamingActionMetrics()
@@ -1437,7 +1503,17 @@ def _calibrate_from_cache(
         group: {threshold: {"tp": 0, "fp": 0, "fn": 0} for threshold in grid}
         for group in group_indices
     }
-    button_counts = {threshold: {"tp": 0, "fp": 0, "fn": 0, "predicted_positive": 0} for threshold in grid}
+    button_counts = {
+        threshold: {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "predicted_positive": 0,
+            "no_button_examples": 0,
+            "no_button_false_positive_examples": 0,
+        }
+        for threshold in grid
+    }
     predicted_abs_sum = 0.0
     target_abs_sum = 0.0
     value_count = 0
@@ -1488,6 +1564,8 @@ def _calibrate_from_cache(
                     counts["fp"] += int(((pred_idx != 0) & (pred_idx != labels_idx)).sum().item())
                     counts["fn"] += int(((labels_idx != 0) & (pred_idx != labels_idx)).sum().item())
                     counts["predicted_positive"] += int((pred_idx != 0).sum().item())
+                    counts["no_button_examples"] += int((labels_idx == 0).sum().item())
+                    counts["no_button_false_positive_examples"] += int(((labels_idx == 0) & (pred_idx != 0)).sum().item())
     diagnostics: dict[str, Any] = {
         "schema": "video_idm_calibration.v1",
         "observed_examples": int(observed),
@@ -1524,15 +1602,14 @@ def _calibrate_from_cache(
     diagnostics["per_group"] = per_group
     button_threshold = float(config.get("button_softmax_threshold", 0.5))
     if button_head_mode == "softmax" and len(button_classes) > 1:
-        best_key = (-1.0, -1.0, -1.0, button_threshold)
-        best_counts: dict[str, int] = {}
-        for threshold in grid:
-            counts = button_counts[threshold]
-            key = fbeta_key(counts, float(threshold))
-            if key > best_key:
-                best_key = key
-                button_threshold = float(threshold)
-                best_counts = dict(counts)
+        max_no_button_fpr = config.get("button_softmax_calibration_max_no_button_fpr")
+        max_no_button_fpr = float(max_no_button_fpr) if max_no_button_fpr is not None else None
+        button_threshold, best_counts = _select_button_softmax_threshold(
+            button_counts,
+            default_threshold=button_threshold,
+            beta=beta,
+            max_no_button_fpr=max_no_button_fpr,
+        )
         diagnostics["button_softmax_threshold"] = button_threshold
         diagnostics["button_softmax_threshold_diagnostics"] = best_counts
     configured_gain = float(config.get("mouse_output_gain", 1.0))
@@ -1881,13 +1958,6 @@ def predict_video_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     prediction_config = dict(checkpoint_config)
     prediction_config.update({key: value for key, value in config.items() if value is not None})
     stats = dict(checkpoint["stats"])
-    target_paths = _record_paths_from_config(
-        prediction_config,
-        primary_key="target_records",
-        paths_key="target_record_paths",
-        glob_key="target_records_glob",
-    )
-    target_manifests = load_video_idm_cache_manifests(target_paths, stats=stats, config=prediction_config, split_name="target")
     model = _build_video_pair_model(
         torch,
         output_dim=int(checkpoint["output_dim"]),
@@ -1895,6 +1965,36 @@ def predict_video_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         config=prediction_config,
     ).to(device)
     model.load_state_dict(checkpoint["model_state"])
+    recalibration = None
+    if bool(prediction_config.get("recalibrate_from_train_cache", False)):
+        train_paths = _record_paths_from_config(
+            prediction_config,
+            primary_key="train_records",
+            paths_key="train_record_paths",
+            glob_key="train_records_glob",
+        )
+        train_manifests = load_video_idm_cache_manifests(train_paths, stats=stats, config=prediction_config, split_name="train")
+        recalibration = _calibrate_from_cache(
+            torch,
+            model,
+            train_manifests=train_manifests,
+            stats=stats,
+            config=prediction_config,
+            device=device,
+        )
+        if "category_thresholds" in recalibration:
+            prediction_config["category_thresholds"] = recalibration["category_thresholds"]
+        if "button_softmax_threshold" in recalibration:
+            prediction_config["button_softmax_threshold"] = recalibration["button_softmax_threshold"]
+        if "mouse_output_gain" in recalibration:
+            prediction_config["mouse_output_gain"] = recalibration["mouse_output_gain"]
+    target_paths = _record_paths_from_config(
+        prediction_config,
+        primary_key="target_records",
+        paths_key="target_record_paths",
+        glob_key="target_records_glob",
+    )
+    target_manifests = load_video_idm_cache_manifests(target_paths, stats=stats, config=prediction_config, split_name="target")
     output_dir = ensure_dir(prediction_config.get("output_dir", checkpoint_path.parent))
     prediction = _predict_from_cache(
         torch,
@@ -1913,6 +2013,7 @@ def predict_video_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "device": device,
         "output_dir": str(output_dir),
         "target_records": int(prediction["target_records"]),
+        "recalibration": recalibration,
         "prediction": prediction,
     }
     summary_out = prediction_config.get("prediction_summary_out") or prediction_config.get("summary_out")

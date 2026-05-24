@@ -3,7 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from fdm_d2e.training.video_idm import _VideoFrameStream, precompute_video_idm_cache, predict_video_idm_checkpoint, train_video_idm
+from fdm_d2e.training.video_idm import (
+    _VideoFrameStream,
+    _select_button_softmax_threshold,
+    precompute_video_idm_cache,
+    predict_video_idm_checkpoint,
+    train_video_idm,
+)
 from fdm_d2e.training.torch_idm import torch_available
 
 
@@ -68,6 +74,53 @@ def test_video_frame_stream_reuses_next_frame_without_restart():
     assert stream.get(1) == b"\x01"
     assert stream.get(1) == b"\x01"
     assert calls == [0, 1]
+
+
+def test_button_softmax_calibration_can_enforce_no_button_fpr_cap():
+    counts = {
+        0.3: {
+            "tp": 9,
+            "fp": 2,
+            "fn": 1,
+            "predicted_positive": 11,
+            "no_button_examples": 100,
+            "no_button_false_positive_examples": 7,
+        },
+        0.5: {
+            "tp": 6,
+            "fp": 2,
+            "fn": 4,
+            "predicted_positive": 8,
+            "no_button_examples": 100,
+            "no_button_false_positive_examples": 2,
+        },
+        0.7: {
+            "tp": 2,
+            "fp": 0,
+            "fn": 8,
+            "predicted_positive": 2,
+            "no_button_examples": 100,
+            "no_button_false_positive_examples": 0,
+        },
+    }
+
+    unconstrained, unconstrained_stats = _select_button_softmax_threshold(
+        counts,
+        default_threshold=0.5,
+        beta=1.0,
+    )
+    constrained, constrained_stats = _select_button_softmax_threshold(
+        counts,
+        default_threshold=0.5,
+        beta=1.0,
+        max_no_button_fpr=0.05,
+    )
+
+    assert unconstrained == 0.3
+    assert unconstrained_stats["no_button_false_positive_rate"] == 0.07
+    assert constrained == 0.5
+    assert constrained_stats["constraint_satisfied"] is True
+    assert constrained_stats["no_button_false_positive_rate"] == 0.02
 
 
 def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):
@@ -145,6 +198,20 @@ def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):
     )
     assert predict_summary["target_records"] == 1
     assert Path(predict_summary["prediction"]["predictions_path"]).exists()
+
+    recalibrated_summary = predict_video_idm_checkpoint(
+        {
+            **config,
+            "checkpoint_path": summary["metadata"]["checkpoint_path"],
+            "output_dir": str(tmp_path / "predict_recalibrated"),
+            "max_target_examples": 1,
+            "recalibrate_from_train_cache": True,
+            "button_softmax_calibration_max_no_button_fpr": 0.0,
+        }
+    )
+    assert recalibrated_summary["recalibration"]["button_softmax_threshold_diagnostics"][
+        "max_no_button_false_positive_rate"
+    ] == 0.0
 
     resumed_summary = train_video_idm({**config, "epochs": 2, "skip_prediction": True})
     assert resumed_summary["resumed_from_train_state"] is True
