@@ -1,0 +1,24 @@
+{
+  "schema": "g006_gidm_short4_paper_metrics_config.v1",
+  "goal_id": "G006-g-idm-exact-split",
+  "model_name": "released_generalist_idm_1b_short4_exact_split",
+  "paper_metrics": {
+    "model_name": "released_generalist_idm_1b_short4_exact_split",
+    "output_path": "artifacts/eval/g006_gidm_short4_paper_metrics.json",
+    "progress_output_path": "artifacts/eval/g006_gidm_short4_paper_metrics_progress.json",
+    "progress_rows": 1000000,
+    "prediction_paths": [
+      "outputs/gidm_exact_split/short4_predictions.jsonl"
+    ],
+    "target_paths": [
+      "outputs/gidm_exact_split/short4_targets.jsonl"
+    ],
+    "split_tags": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ],
+    "empty_bins_as_correct": false
+  },
+  "claim_boundary": "Bounded four-recording released G-IDM exact-split diagnostic only; not full exact-split baseline completion."
+}
