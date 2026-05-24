@@ -326,3 +326,75 @@ def test_keysoftmax_cache_migration_reuses_frame_payloads_and_rewrites_labels(tm
     summary = train_video_idm(target_config)
     assert summary["metadata"]["train_records"] == len(train_rows)
     assert Path(summary["prediction"]["predictions_path"]).exists()
+
+
+def test_video_idm_stack_offsets_parallel_prediction_merges_parts(tmp_path: Path):
+    if not torch_available():
+        return
+    frame_dir = tmp_path / "frames"
+    for idx in range(1, 14):
+        _write_ppm(frame_dir / f"frame_{idx:06d}.ppm", value=60 + idx)
+    train_rows = [_record(idx, split="train_core", frame_dir=frame_dir) for idx in range(6)]
+    target_a_rows = [_record(idx, split="eval", frame_dir=frame_dir) for idx in range(6, 8)]
+    target_b_rows = [_record(idx, split="eval", frame_dir=frame_dir) for idx in range(8, 10)]
+    train_path = tmp_path / "train.jsonl"
+    target_a_path = tmp_path / "target_a.jsonl"
+    target_b_path = tmp_path / "target_b.jsonl"
+    _write_jsonl(train_path, train_rows)
+    _write_jsonl(target_a_path, target_a_rows)
+    _write_jsonl(target_b_path, target_b_rows)
+
+    config = {
+        "model_name": "unit_video_stack_idm",
+        "train_records": str(train_path),
+        "target_record_paths": [str(target_a_path), str(target_b_path)],
+        "output_dir": str(tmp_path / "out"),
+        "summary_out": str(tmp_path / "summary.json"),
+        "stats_path": str(tmp_path / "out" / "video_idm_stats.json"),
+        "cache_summary_out": str(tmp_path / "cache_summary.json"),
+        "video_cache_dir": str(tmp_path / "cache"),
+        "video_image_size": 8,
+        "video_frame_fps": 20,
+        "video_frame_offsets": [0, 1, 2],
+        "next_frame_offset": 2,
+        "video_cache_chunk_size": 2,
+        "video_cache_num_workers": 1,
+        "video_input_mode": "stack_delta_abs",
+        "missing_frame_policy": "zero",
+        "force_cpu": True,
+        "seed": 11,
+        "video_conv_channels": [4, 8],
+        "hidden_dim": 16,
+        "depth": 1,
+        "epochs": 1,
+        "batch_size": 2,
+        "eval_batch_size": 2,
+        "categorical_min_count": 1,
+        "button_head_mode": "softmax",
+        "keyboard_head_mode": "softmax",
+        "keyboard_softmax_min_count": 1,
+        "mouse_target_mode": "sum",
+        "mouse_head_mode": "regression",
+        "mouse_emit_mode": "decompose",
+        "category_calibration_max_examples": 4,
+        "category_calibration_batch_size": 2,
+        "require_precomputed_video_cache": True,
+    }
+    precompute_video_idm_cache(config)
+    train_summary = train_video_idm({**config, "skip_prediction": True})
+    assert train_summary["metadata"]["distributed"]["world_size"] == 1
+
+    predict_summary = predict_video_idm_checkpoint(
+        {
+            **config,
+            "checkpoint_path": train_summary["metadata"]["checkpoint_path"],
+            "output_dir": str(tmp_path / "predict_parallel"),
+            "prediction_workers": 2,
+            "prediction_parts_dir": str(tmp_path / "predict_parallel_parts"),
+        }
+    )
+    assert predict_summary["target_records"] == len(target_a_rows) + len(target_b_rows)
+    assert predict_summary["prediction"]["prediction_parallel"]["enabled"] is True
+    prediction_lines = Path(predict_summary["prediction"]["predictions_path"]).read_text(encoding="utf-8").strip().splitlines()
+    predicted_ids = [json.loads(line)["sequence_id"] for line in prediction_lines]
+    assert predicted_ids == [row["sequence_id"] for row in [*target_a_rows, *target_b_rows]]

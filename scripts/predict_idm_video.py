@@ -18,6 +18,10 @@ def main() -> int:
     parser.add_argument("--checkpoint-path")
     parser.add_argument("--output-dir")
     parser.add_argument("--max-target-examples", type=int)
+    parser.add_argument("--prediction-workers", type=int)
+    parser.add_argument("--prediction-parts-dir")
+    parser.add_argument("--prediction-cuda-devices")
+    parser.add_argument("--prediction-summary-out")
     parser.add_argument("--recalibrate-from-train-cache", action="store_true")
     parser.add_argument("--keyboard-softmax-threshold", type=float)
     parser.add_argument("--keyboard-softmax-calibration-max-no-key-fpr", type=float)
@@ -37,6 +41,16 @@ def main() -> int:
         config["output_dir"] = args.output_dir
     if args.max_target_examples is not None:
         config["max_target_examples"] = args.max_target_examples
+    if args.prediction_workers is not None:
+        config["prediction_workers"] = args.prediction_workers
+    if args.prediction_parts_dir:
+        config["prediction_parts_dir"] = args.prediction_parts_dir
+    if args.prediction_cuda_devices:
+        config["prediction_cuda_devices"] = [
+            item.strip() for item in args.prediction_cuda_devices.split(",") if item.strip()
+        ]
+    if args.prediction_summary_out:
+        config["prediction_summary_out"] = args.prediction_summary_out
     if args.recalibrate_from_train_cache:
         config["recalibrate_from_train_cache"] = True
     if args.keyboard_softmax_threshold is not None:

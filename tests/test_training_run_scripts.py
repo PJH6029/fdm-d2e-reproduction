@@ -77,6 +77,24 @@ def test_g005_exactset_history_uses_precompute_then_fail_closed_training() -> No
     assert "initial_integrated_process_interrupted_after_checkpoint" in recovery
 
 
+def test_g005_video_stack_offset_candidate_separates_precompute_training_and_recovery() -> None:
+    precompute = _script("scripts/run_g005_idm_video_stack_luma96_offsets012_precompute.sh")
+    training = _script("scripts/run_g005_idm_video_stack_luma96_offsets012_4xh200.sh")
+    recovery = _script("scripts/recover_g005_idm_video_stack_luma96_offsets012_from_checkpoint.sh")
+
+    assert "scripts/precompute_video_idm_cache.py --config \"$CONFIG\"" in precompute
+    assert 'SKIP_PREDICTION="${SKIP_PREDICTION:-1}"' in training
+    assert 'BUILD_SPLIT_STATS="${BUILD_SPLIT_STATS:-0}"' in training
+    assert 'BUILD_PAPER_METRICS="${BUILD_PAPER_METRICS:-0}"' in training
+    assert "scripts/run_g005_idm_video_pair_raw112_4xh200.sh" in training
+    assert 'PREDICTION_WORKERS="${PREDICTION_WORKERS:-4}"' in recovery
+    assert "scripts/recover_idm_video_outputs.py" in recovery
+    assert "--prediction-workers \"$PREDICTION_WORKERS\"" in recovery
+    assert "scripts/build_split_statistical_comparisons.py --config \"$SPLIT_STATS_CONFIG\"" in recovery
+    assert "scripts/build_g005_idm_paper_metrics.py --config \"$PAPER_TARGET_CONFIG\"" in recovery
+    assert "scripts/validate_g005_idm_paper_target.py --config \"$PAPER_TARGET_CONFIG\"" in recovery
+
+
 def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
     text = _script("scripts/run_g004_d2e_full_fdm_4xh200.sh")
     assert 'PID_FILE="${PID_FILE:-outputs/cluster/g004_d2e_full_fdm_4xh200.pid}"' in text

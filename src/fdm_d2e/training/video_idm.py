@@ -4,6 +4,7 @@ import glob
 import hashlib
 import json
 import math
+import multiprocessing as mp
 import os
 import re
 import subprocess
@@ -24,6 +25,9 @@ from fdm_d2e.training.streaming_idm import (
     _aggregate_epoch_stats,
     _barrier,
     _group_keys,
+    _merge_named_metric_states,
+    _merge_nested_metric_states,
+    _metric_payloads,
     _nested_metric_state_map,
     _record_paths_from_config,
     _streaming_statistical_comparison,
@@ -55,6 +59,19 @@ def _record_paths_from_value(value: str | Path | Sequence[str | Path]) -> list[P
     return [Path(item) for item in value]
 
 
+def _chunk_sequence(items: Sequence[Path], chunks: int) -> list[list[Path]]:
+    chunks = max(1, min(int(chunks), len(items)))
+    base = len(items) // chunks
+    extra = len(items) % chunks
+    out: list[list[Path]] = []
+    start = 0
+    for idx in range(chunks):
+        size = base + (1 if idx < extra else 0)
+        out.append(list(items[start : start + size]))
+        start += size
+    return [chunk for chunk in out if chunk]
+
+
 def _glob_record_paths(pattern: str | Path | Sequence[str | Path] | None) -> list[Path]:
     if pattern is None:
         return []
@@ -63,6 +80,16 @@ def _glob_record_paths(pattern: str | Path | Sequence[str | Path] | None) -> lis
     for item in patterns:
         paths.extend(Path(match) for match in sorted(glob.glob(str(item))))
     return paths
+
+
+def _video_frame_offsets(config: dict[str, Any]) -> tuple[int, ...]:
+    value = config.get("video_frame_offsets")
+    if value is None:
+        return (0, int(config.get("next_frame_offset", 1)))
+    offsets = tuple(int(item) for item in value)
+    if not offsets:
+        raise ValueError("video_frame_offsets must not be empty")
+    return offsets
 
 
 def _is_category_token(token: str) -> bool:
@@ -123,6 +150,8 @@ def _cache_source_identity(
     if keyboard_head_mode == "softmax":
         identity["keyboard_head_mode"] = keyboard_head_mode
         identity["keyboard_classes"] = list(stats.get("keyboard_classes", []))
+    if "video_frame_offsets" in config:
+        identity["frame_offsets"] = list(_video_frame_offsets(config))
     return identity
 
 
@@ -331,14 +360,38 @@ class _FramePairProvider:
         return _ppm_gray(path, output_size=self.image_size)
 
     def _next_ppm_path(self, path: Path) -> Path | None:
+        return self._ppm_path_with_offset(path, self.next_frame_offset)
+
+    def _ppm_path_with_offset(self, path: Path, offset: int) -> Path | None:
         match = _PPM_FRAME_RE.match(path.name)
         if not match:
             return None
-        number = int(match.group("number")) + self.next_frame_offset
+        number = int(match.group("number")) + int(offset)
         width = len(match.group("number"))
         if number < 0:
             return None
         return path.with_name(f"{match.group('prefix')}{number:0{width}d}{match.group('suffix')}")
+
+    def frames(self, row: dict[str, Any], *, offsets: Sequence[int]) -> list[bytes]:
+        frame = row.get("frame", {}) if isinstance(row.get("frame"), dict) else {}
+        raw_path = str(frame.get("path") or "")
+        if not raw_path:
+            return [self._missing_frame() for _ in offsets]
+        match = _FRAME_REF_RE.match(raw_path)
+        if match:
+            source = self._resolve_source(match.group("source"))
+            index = int(match.group("index"))
+            return [self._resolve_optional_frame(self._stream_frame(source, index + int(offset))) for offset in offsets]
+        path = self._resolve(raw_path)
+        if path.suffix.lower() == ".ppm":
+            frames: list[bytes] = []
+            for offset in offsets:
+                offset_path = self._ppm_path_with_offset(path, int(offset))
+                frames.append(self._resolve_optional_frame(self._frame_from_ppm(offset_path) if offset_path is not None else None))
+            return frames
+        index = int(frame.get("index", row.get("bin_index", 0)) or 0)
+        source = str(path)
+        return [self._resolve_optional_frame(self._stream_frame(source, index + int(offset))) for offset in offsets]
 
     def pair(self, row: dict[str, Any]) -> bytes:
         frame = row.get("frame", {}) if isinstance(row.get("frame"), dict) else {}
@@ -364,12 +417,23 @@ class _FramePairProvider:
         nxt = self._stream_frame(source, index + self.next_frame_offset)
         return self._join_or_missing(current, nxt)
 
+    def _missing_frame(self) -> bytes:
+        self.missing_frames += 1
+        if self.missing_frame_policy == "zero":
+            return self._zero()
+        raise FileNotFoundError("missing video IDM frame reference")
+
     def _missing_pair(self) -> bytes:
         self.missing_frames += 2
         if self.missing_frame_policy == "zero":
             zero = self._zero()
             return zero + zero
         raise FileNotFoundError("missing video IDM frame reference")
+
+    def _resolve_optional_frame(self, frame: bytes | None) -> bytes:
+        if frame is None:
+            return self._missing_frame()
+        return frame
 
     def _join_or_missing(self, current: bytes | None, nxt: bytes | None) -> bytes:
         if current is None:
@@ -555,6 +619,7 @@ def scan_video_idm_stats(
         "dataset_fingerprint": fingerprint.hexdigest(),
         "image_size": int(config.get("video_image_size", 112)),
         "frame_fps": int(config.get("video_frame_fps", 20)),
+        "frame_offsets": list(_video_frame_offsets(config)),
         "stats_num_workers": int(workers),
         "category_vocab": category_vocab,
         "category_counts": {token: int(category_counts.get(token, 0)) for token in category_vocab},
@@ -589,6 +654,7 @@ def _flush_video_cache_chunk(
     config: dict[str, Any],
 ) -> dict[str, Any]:
     image_size = int(stats["image_size"])
+    frame_count = len(_video_frame_offsets(config))
     category_vocab = [str(token) for token in stats.get("category_vocab", [])]
     category_index = {token: idx for idx, token in enumerate(category_vocab)}
     keyboard_head_mode = str(config.get("keyboard_head_mode", stats.get("keyboard_head_mode", "multilabel")))
@@ -603,7 +669,7 @@ def _flush_video_cache_chunk(
     mouse_target_mode = str(config.get("mouse_target_mode", stats.get("mouse_target_mode", "sum")))
     game_vocab = [str(game) for game in stats.get("game_vocab", [])]
     frame_tensors = [
-        torch.frombuffer(bytearray(pair), dtype=torch.uint8).reshape(2, image_size, image_size)
+        torch.frombuffer(bytearray(pair), dtype=torch.uint8).reshape(frame_count, image_size, image_size)
         for pair in frame_pairs
     ]
     cat_y = torch.zeros((len(rows), len(category_vocab)), dtype=torch.float32)
@@ -675,6 +741,7 @@ def _build_video_cache_for_path(
         next_frame_offset=int(config.get("next_frame_offset", 1)),
         missing_frame_policy=str(config.get("missing_frame_policy", "error")),
     )
+    frame_offsets = _video_frame_offsets(config)
     rows: list[dict[str, Any]] = []
     frame_pairs: list[bytes] = []
     chunks: list[dict[str, Any]] = []
@@ -683,7 +750,7 @@ def _build_video_cache_for_path(
     try:
         for row in iter_jsonl(path):
             rows.append(row)
-            frame_pairs.append(provider.pair(row))
+            frame_pairs.append(b"".join(provider.frames(row, offsets=frame_offsets)))
             count += 1
             if len(rows) >= chunk_size:
                 chunks.append(
@@ -871,26 +938,38 @@ def _class_weight(torch, counts: dict[str, int], *, class_count: int, cap: float
     return torch.tensor(values, dtype=torch.float32, device=device)
 
 
-def _video_input_channels(mode: str) -> int:
-    if mode == "pair":
-        return 2
+def _video_input_channels(mode: str, *, frame_count: int) -> int:
+    if mode in {"pair", "stack"}:
+        return int(frame_count)
     if mode == "pair_delta":
         return 3
     if mode == "pair_delta_abs":
         return 4
+    if mode == "stack_delta":
+        return int(frame_count) + max(0, int(frame_count) - 1)
+    if mode == "stack_delta_abs":
+        return int(frame_count) + (2 * max(0, int(frame_count) - 1))
     raise ValueError(f"unsupported video_input_mode: {mode}")
 
 
 def _augment_video_inputs(torch, frames, *, mode: str):
-    if mode == "pair":
+    if mode in {"pair", "stack"}:
         return frames
-    if frames.shape[1] != 2:
+    if mode.startswith("pair") and frames.shape[1] != 2:
         raise ValueError(f"video_input_mode={mode} requires two cached frame channels")
-    delta = frames[:, 1:2] - frames[:, 0:1]
     if mode == "pair_delta":
+        delta = frames[:, 1:2] - frames[:, 0:1]
         return torch.cat([frames, delta], dim=1)
     if mode == "pair_delta_abs":
+        delta = frames[:, 1:2] - frames[:, 0:1]
         return torch.cat([frames, delta, delta.abs()], dim=1)
+    if mode in {"stack_delta", "stack_delta_abs"}:
+        if frames.shape[1] < 2:
+            raise ValueError(f"video_input_mode={mode} requires at least two cached frame channels")
+        deltas = frames[:, 1:] - frames[:, :-1]
+        if mode == "stack_delta":
+            return torch.cat([frames, deltas], dim=1)
+        return torch.cat([frames, deltas, deltas.abs()], dim=1)
     raise ValueError(f"unsupported video_input_mode: {mode}")
 
 
@@ -902,7 +981,7 @@ def _build_video_pair_model(torch, *, output_dim: int, aux_dim: int, config: dic
     hidden_dim = int(config.get("hidden_dim", 1024))
     depth = int(config.get("depth", 2))
     video_input_mode = str(config.get("video_input_mode", "pair"))
-    input_channels = _video_input_channels(video_input_mode)
+    input_channels = _video_input_channels(video_input_mode, frame_count=len(_video_frame_offsets(config)))
 
     class ResidualBlock(torch.nn.Module):
         def __init__(self, dim: int) -> None:
@@ -970,6 +1049,12 @@ def _video_model_signature(config: dict[str, Any], *, output_dim: int, aux_dim: 
             json.dumps(list(stats.get("button_classes", [])), sort_keys=True).encode("utf-8")
         ).hexdigest(),
     }
+    if "video_frame_offsets" in config:
+        signature["video_frame_offsets"] = list(_video_frame_offsets(config))
+        signature["video_input_channels"] = _video_input_channels(
+            str(config.get("video_input_mode", "pair")),
+            frame_count=len(_video_frame_offsets(config)),
+        )
     keyboard_head_mode = str(config.get("keyboard_head_mode", stats.get("keyboard_head_mode", "multilabel")))
     if keyboard_head_mode == "softmax":
         signature["keyboard_head_mode"] = keyboard_head_mode
@@ -1555,6 +1640,216 @@ def _predict_from_cache(
     }
 
 
+def _predict_video_for_parallel_part(payload: dict[str, Any]) -> dict[str, Any]:
+    if payload.get("cuda_visible_devices") is not None:
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(payload["cuda_visible_devices"])
+    else:
+        os.environ.pop("CUDA_VISIBLE_DEVICES", None)
+    torch = require_torch()
+    force_cpu = bool(payload.get("force_cpu", False))
+    device = "cuda" if torch.cuda.is_available() and not force_cpu else "cpu"
+    checkpoint_path = Path(payload["checkpoint_path"])
+    try:
+        checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+    except TypeError:  # pragma: no cover - older torch releases.
+        checkpoint = torch.load(checkpoint_path, map_location="cpu")
+    prediction_config = dict(payload["prediction_config"])
+    stats = dict(checkpoint["stats"])
+    model = _build_video_pair_model(
+        torch,
+        output_dim=int(checkpoint["output_dim"]),
+        aux_dim=int(checkpoint.get("aux_dim", stats.get("aux_dim", 13))),
+        config=prediction_config,
+    ).to(device)
+    model.load_state_dict(checkpoint["model_state"])
+    record_paths = [Path(path) for path in payload["record_paths"]]
+    target_manifests = load_video_idm_cache_manifests(
+        record_paths,
+        stats=stats,
+        config=prediction_config,
+        split_name="target",
+    )
+    output_dir = ensure_dir(payload["output_dir"])
+    prediction = _predict_from_cache(
+        torch,
+        model,
+        target_record_paths=record_paths,
+        target_manifests=target_manifests,
+        stats=stats,
+        config=prediction_config,
+        device=device,
+        output_dir=Path(output_dir),
+        checkpoint_path=checkpoint_path,
+    )
+    return {
+        "part_index": int(payload["part_index"]),
+        "record_paths": [str(path) for path in record_paths],
+        "output_dir": str(output_dir),
+        "pseudo_label_path": prediction["pseudo_label_path"],
+        "predictions_path": prediction["predictions_path"],
+        "records": int(prediction["target_records"]),
+        "target_source_ids": prediction["target_source_ids"],
+        "target_resolution_tiers": prediction["target_resolution_tiers"],
+        "target_eval_split_tags": prediction["target_eval_split_tags"],
+        "metrics_state": prediction["metrics_state"],
+        "group_metrics_state": prediction["group_metrics_state"],
+        "cluster_metrics_state": prediction["cluster_metrics_state"],
+    }
+
+
+def _concatenate_video_prediction_parts(parts: list[dict[str, Any]], *, output_dir: Path) -> dict[str, Any]:
+    pseudo_path = output_dir / "pseudolabels.jsonl"
+    predictions_path = output_dir / "predictions.jsonl"
+    sequence_fingerprint = hashlib.sha256()
+    rows = 0
+    pseudo_path.parent.mkdir(parents=True, exist_ok=True)
+    with pseudo_path.open("w", encoding="utf-8") as pseudo_out, predictions_path.open("w", encoding="utf-8") as pred_out:
+        for part in sorted(parts, key=lambda item: int(item["part_index"])):
+            with Path(part["pseudo_label_path"]).open(encoding="utf-8") as pseudo_in, Path(part["predictions_path"]).open(encoding="utf-8") as pred_in:
+                for pseudo_line, pred_line in zip(pseudo_in, pred_in):
+                    if not pseudo_line.strip() and not pred_line.strip():
+                        continue
+                    if not pseudo_line.strip() or not pred_line.strip():
+                        raise ValueError(f"mismatched blank prediction lines in video part {part['part_index']}")
+                    pseudo = json.loads(pseudo_line)
+                    pred = json.loads(pred_line)
+                    if str(pseudo.get("sequence_id")) != str(pred.get("sequence_id")):
+                        raise ValueError(
+                            f"sequence_id mismatch while merging video part {part['part_index']}: "
+                            f"{pseudo.get('sequence_id')} != {pred.get('sequence_id')}"
+                        )
+                    tokens = [str(token) for token in pred.get("predicted_tokens", [])]
+                    if [str(token) for token in pseudo.get("predicted_tokens", [])] != tokens:
+                        raise ValueError(f"token mismatch while merging video part {part['part_index']}: {pred.get('sequence_id')}")
+                    pseudo_out.write(pseudo_line if pseudo_line.endswith("\n") else pseudo_line + "\n")
+                    pred_out.write(pred_line if pred_line.endswith("\n") else pred_line + "\n")
+                    sequence_fingerprint.update(json.dumps({"id": pred["sequence_id"], "tokens": tokens}, sort_keys=True).encode("utf-8"))
+                    sequence_fingerprint.update(b"\n")
+                    rows += 1
+                remaining_pseudo = [line for line in pseudo_in if line.strip()]
+                remaining_pred = [line for line in pred_in if line.strip()]
+                if remaining_pseudo or remaining_pred:
+                    raise ValueError(f"mismatched prediction row counts while merging video part {part['part_index']}")
+    return {
+        "pseudo_label_path": str(pseudo_path),
+        "predictions_path": str(predictions_path),
+        "target_records": rows,
+        "prediction_fingerprint": sequence_fingerprint.hexdigest(),
+    }
+
+
+def _predict_video_checkpoint_parallel(
+    config: dict[str, Any],
+    *,
+    checkpoint_path: Path,
+    target_record_paths: Sequence[Path],
+    prediction_config_base: dict[str, Any],
+    output_dir: Path,
+) -> dict[str, Any]:
+    workers = int(config.get("prediction_workers", 1))
+    if workers <= 1 or len(target_record_paths) <= 1:
+        raise ValueError("parallel video prediction requested without multiple workers/record paths")
+    if prediction_config_base.get("max_target_examples") is not None:
+        raise ValueError("parallel video prediction does not support max_target_examples; use serial prediction for probes")
+    chunks = _chunk_sequence(list(target_record_paths), workers)
+    parts_root = ensure_dir(config.get("prediction_parts_dir", output_dir / "prediction_parts"))
+    cuda_devices = config.get("prediction_cuda_devices")
+    if isinstance(cuda_devices, str):
+        cuda_devices = [item.strip() for item in cuda_devices.split(",") if item.strip()]
+    if cuda_devices is None:
+        visible_devices = os.environ.get("CUDA_VISIBLE_DEVICES")
+        if visible_devices:
+            cuda_devices = [device.strip() for device in visible_devices.split(",") if device.strip()]
+        else:
+            cuda_devices = list(range(len(chunks)))
+    cuda_devices = list(cuda_devices)
+    if not cuda_devices and not bool(config.get("force_cpu", False)):
+        raise ValueError("prediction_cuda_devices resolved to an empty list")
+    prediction_config = dict(prediction_config_base)
+    prediction_config["resume_predictions"] = False
+    payloads = []
+    for part_index, record_paths in enumerate(chunks):
+        payloads.append(
+            {
+                "part_index": part_index,
+                "record_paths": [str(path) for path in record_paths],
+                "output_dir": str(Path(parts_root) / f"part_{part_index:03d}"),
+                "checkpoint_path": str(checkpoint_path),
+                "prediction_config": prediction_config,
+                "force_cpu": bool(config.get("force_cpu", False)),
+                "cuda_visible_devices": None if bool(config.get("force_cpu", False)) else cuda_devices[part_index % len(cuda_devices)],
+            }
+        )
+    parts: list[dict[str, Any]] = []
+    with ProcessPoolExecutor(max_workers=len(payloads), mp_context=mp.get_context("spawn")) as executor:
+        futures = [executor.submit(_predict_video_for_parallel_part, payload) for payload in payloads]
+        for future in as_completed(futures):
+            parts.append(future.result())
+    parts = sorted(parts, key=lambda item: int(item["part_index"]))
+    merged_paths = _concatenate_video_prediction_parts(parts, output_dir=output_dir)
+    metrics_by_model = _merge_named_metric_states(part["metrics_state"] for part in parts)
+    group_metrics_by_model = _merge_nested_metric_states(part["group_metrics_state"] for part in parts)
+    cluster_metrics_by_model = _merge_nested_metric_states(part["cluster_metrics_state"] for part in parts)
+    model_name = str(prediction_config.get("model_name", "video_pair_idm"))
+    baseline_names = [str(name) for name in prediction_config.get("baseline_names", ["noop", "global_majority"])]
+    metrics_path = output_dir / "metrics.json"
+    metrics_payload = metrics_by_model[model_name].payload()
+    write_json(metrics_path, metrics_payload)
+    label_quality_report = {
+        "schema": "idm_label_quality_report.v1",
+        "model": model_name,
+        "target_records": int(merged_paths["target_records"]),
+        "model_metrics": metrics_payload,
+        "baseline_metrics": {name: metrics_by_model[name].payload() for name in baseline_names if name in metrics_by_model},
+        "groups_by_model": {
+            name: _metric_payloads(group_metrics)
+            for name, group_metrics in group_metrics_by_model.items()
+        },
+        "cluster_count": len(cluster_metrics_by_model.get(model_name, {})),
+    }
+    label_quality_report_path = output_dir / "label_quality_report.json"
+    write_json(label_quality_report_path, label_quality_report)
+    statistical_comparison = None
+    statistical_comparison_path = None
+    if prediction_config.get("endpoints"):
+        statistical_comparison = _streaming_statistical_comparison(
+            cluster_metrics_by_model,
+            load_config(prediction_config["endpoints"]),
+        )
+        statistical_comparison_path = output_dir / "statistical_comparison.json"
+        write_json(statistical_comparison_path, statistical_comparison)
+    return {
+        **merged_paths,
+        "metrics_path": str(metrics_path),
+        "metrics": metrics_payload,
+        "label_quality_report_path": str(label_quality_report_path),
+        "label_quality_report": label_quality_report,
+        "statistical_comparison_path": str(statistical_comparison_path) if statistical_comparison_path else None,
+        "statistical_comparison": statistical_comparison,
+        "target_source_ids": sorted({source for part in parts for source in part.get("target_source_ids", [])}),
+        "target_resolution_tiers": sorted({tier for part in parts for tier in part.get("target_resolution_tiers", [])}),
+        "target_eval_split_tags": sorted({tag for part in parts for tag in part.get("target_eval_split_tags", [])}),
+        "metrics_state": {name: _metric_state(metric) for name, metric in metrics_by_model.items()},
+        "group_metrics_state": _nested_metric_state_map(group_metrics_by_model),
+        "cluster_metrics_state": _nested_metric_state_map(cluster_metrics_by_model),
+        "prediction_parallel": {
+            "enabled": True,
+            "workers": len(parts),
+            "parts_dir": str(parts_root),
+            "parts": [
+                {
+                    "part_index": part["part_index"],
+                    "records": part["records"],
+                    "record_paths": part["record_paths"],
+                    "pseudo_label_path": part["pseudo_label_path"],
+                    "predictions_path": part["predictions_path"],
+                }
+                for part in parts
+            ],
+        },
+    }
+
+
 def _calibrate_from_cache(
     torch,
     model,
@@ -2050,6 +2345,7 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
         "train_state_path": str(train_state_path),
         "metrics_path": prediction["metrics_path"],
         "calibration": calibration,
+        "distributed": {key: value for key, value in dist.items() if key != "device"},
     }
     validate_named(metadata, "idm_checkpoint_metadata.schema.json")
     write_json(Path(out_dir) / "checkpoint_metadata.json", metadata)
@@ -2095,10 +2391,10 @@ def train_video_idm(config: dict[str, Any]) -> dict[str, Any]:
 def predict_video_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     torch = require_torch()
     force_cpu = bool(config.get("force_cpu", False))
-    device = "cuda" if torch.cuda.is_available() and not force_cpu else "cpu"
-    checkpoint_path = Path(config.get("checkpoint_path", config.get("checkpoint", "")))
-    if not checkpoint_path:
+    checkpoint_value = config.get("checkpoint_path", config.get("checkpoint"))
+    if not checkpoint_value:
         raise ValueError("predict_video_idm_checkpoint requires checkpoint_path")
+    checkpoint_path = Path(checkpoint_value)
     try:
         checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     except TypeError:
@@ -2107,15 +2403,29 @@ def predict_video_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     prediction_config = dict(checkpoint_config)
     prediction_config.update({key: value for key, value in config.items() if value is not None})
     stats = dict(checkpoint["stats"])
-    model = _build_video_pair_model(
-        torch,
-        output_dim=int(checkpoint["output_dim"]),
-        aux_dim=int(checkpoint.get("aux_dim", stats.get("aux_dim", 13))),
-        config=prediction_config,
-    ).to(device)
-    model.load_state_dict(checkpoint["model_state"])
+    target_paths = _record_paths_from_config(
+        prediction_config,
+        primary_key="target_records",
+        paths_key="target_record_paths",
+        glob_key="target_records_glob",
+    )
+    output_dir = ensure_dir(prediction_config.get("output_dir", checkpoint_path.parent))
+    prediction_workers = int(prediction_config.get("prediction_workers", 1) or 1)
+    parallel_prediction = (
+        prediction_workers > 1
+        and len(target_paths) > 1
+        and prediction_config.get("max_target_examples") is None
+    )
     recalibration = None
     if bool(prediction_config.get("recalibrate_from_train_cache", False)):
+        device = "cuda" if torch.cuda.is_available() and not force_cpu else "cpu"
+        model = _build_video_pair_model(
+            torch,
+            output_dim=int(checkpoint["output_dim"]),
+            aux_dim=int(checkpoint.get("aux_dim", stats.get("aux_dim", 13))),
+            config=prediction_config,
+        ).to(device)
+        model.load_state_dict(checkpoint["model_state"])
         train_paths = _record_paths_from_config(
             prediction_config,
             primary_key="train_records",
@@ -2139,31 +2449,47 @@ def predict_video_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
             prediction_config["button_softmax_threshold"] = recalibration["button_softmax_threshold"]
         if "mouse_output_gain" in recalibration:
             prediction_config["mouse_output_gain"] = recalibration["mouse_output_gain"]
-    target_paths = _record_paths_from_config(
-        prediction_config,
-        primary_key="target_records",
-        paths_key="target_record_paths",
-        glob_key="target_records_glob",
-    )
-    target_manifests = load_video_idm_cache_manifests(target_paths, stats=stats, config=prediction_config, split_name="target")
-    output_dir = ensure_dir(prediction_config.get("output_dir", checkpoint_path.parent))
-    prediction = _predict_from_cache(
-        torch,
-        model,
-        target_record_paths=target_paths,
-        target_manifests=target_manifests,
-        stats=stats,
-        config=prediction_config,
-        device=device,
-        output_dir=Path(output_dir),
-        checkpoint_path=checkpoint_path,
-    )
+        model.to("cpu")
+        del model
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    if parallel_prediction:
+        device = "parallel"
+        prediction = _predict_video_checkpoint_parallel(
+            prediction_config,
+            checkpoint_path=checkpoint_path,
+            target_record_paths=target_paths,
+            prediction_config_base=prediction_config,
+            output_dir=Path(output_dir),
+        )
+    else:
+        device = "cuda" if torch.cuda.is_available() and not force_cpu else "cpu"
+        model = _build_video_pair_model(
+            torch,
+            output_dim=int(checkpoint["output_dim"]),
+            aux_dim=int(checkpoint.get("aux_dim", stats.get("aux_dim", 13))),
+            config=prediction_config,
+        ).to(device)
+        model.load_state_dict(checkpoint["model_state"])
+        target_manifests = load_video_idm_cache_manifests(target_paths, stats=stats, config=prediction_config, split_name="target")
+        prediction = _predict_from_cache(
+            torch,
+            model,
+            target_record_paths=target_paths,
+            target_manifests=target_manifests,
+            stats=stats,
+            config=prediction_config,
+            device=device,
+            output_dir=Path(output_dir),
+            checkpoint_path=checkpoint_path,
+        )
     summary = {
         "schema": "video_idm_prediction_summary.v1",
         "checkpoint_path": str(checkpoint_path),
         "device": device,
         "output_dir": str(output_dir),
         "target_records": int(prediction["target_records"]),
+        "prediction_workers": prediction_workers,
         "recalibration": recalibration,
         "prediction": prediction,
     }
