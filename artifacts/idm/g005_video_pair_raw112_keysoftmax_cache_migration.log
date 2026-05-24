@@ -1,0 +1,19 @@
+started_at=2026-05-24T10:01:54+00:00
+git_head=c4c38f9f8d0bebc047ad704613d2db00eac5ac40
+source_config=configs/model/idm_video_pair_d2e_full_raw112_paper_target.yaml
+target_config=configs/model/idm_video_pair_d2e_full_raw112_keysoftmax_paper_target.yaml
+output=artifacts/idm/g005_video_pair_raw112_keysoftmax_cache_migration_summary.json
+progress_output=artifacts/idm/g005_video_pair_raw112_keysoftmax_cache_migration_progress.json
+Traceback (most recent call last):
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/migrate_video_idm_cache_keysoftmax.py", line 299, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/migrate_video_idm_cache_keysoftmax.py", line 281, in main
+    summary = migrate_cache(
+              ^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/migrate_video_idm_cache_keysoftmax.py", line 204, in migrate_cache
+    source_target_manifests = load_video_idm_cache_manifests(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/video_idm.py", line 801, in load_video_idm_cache_manifests
+    raise FileNotFoundError(f"missing video IDM cache manifest: {manifest_path}")
+FileNotFoundError: missing video IDM cache manifest: outputs/idm_video_pair_d2e_full_raw112_paper_target/video_cache/target/target_all_eval-5a5c1194b95c41b3a229.manifest.json
