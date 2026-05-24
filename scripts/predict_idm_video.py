@@ -19,6 +19,8 @@ def main() -> int:
     parser.add_argument("--output-dir")
     parser.add_argument("--max-target-examples", type=int)
     parser.add_argument("--recalibrate-from-train-cache", action="store_true")
+    parser.add_argument("--keyboard-softmax-threshold", type=float)
+    parser.add_argument("--keyboard-softmax-calibration-max-no-key-fpr", type=float)
     parser.add_argument("--button-softmax-calibration-max-no-button-fpr", type=float)
     parser.add_argument("--require-torch", action="store_true")
     args = parser.parse_args()
@@ -37,6 +39,10 @@ def main() -> int:
         config["max_target_examples"] = args.max_target_examples
     if args.recalibrate_from_train_cache:
         config["recalibrate_from_train_cache"] = True
+    if args.keyboard_softmax_threshold is not None:
+        config["keyboard_softmax_threshold"] = args.keyboard_softmax_threshold
+    if args.keyboard_softmax_calibration_max_no_key_fpr is not None:
+        config["keyboard_softmax_calibration_max_no_key_fpr"] = args.keyboard_softmax_calibration_max_no_key_fpr
     if args.button_softmax_calibration_max_no_button_fpr is not None:
         config["button_softmax_calibration_max_no_button_fpr"] = args.button_softmax_calibration_max_no_button_fpr
     summary = predict_video_idm_checkpoint(config)
