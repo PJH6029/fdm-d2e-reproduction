@@ -1,0 +1,39 @@
+{
+  "claim_boundary": "Early closed-target probe only; not a full target-cache evaluation. It is sufficient to reject spending more GPU on this exact 2-epoch raw-video checkpoint as the G005 completion candidate, but not a final full-corpus metric claim.",
+  "created_at_epoch": 1779596459.6991265,
+  "decision": "Continue preserving raw target cache for reuse, but pivot G005 exploration toward released G-IDM integration / stronger architecture or calibration rather than extending this 2-epoch raw CNN candidate blindly.",
+  "failures": [
+    "pearson_x_below_paper",
+    "pearson_y_below_paper",
+    "keyboard_below_paper",
+    "mouse_button_below_paper"
+  ],
+  "observed": {
+    "keyboard_key_accuracy": 0.01100688622438757,
+    "mouse_button_accuracy": 0.007035535416169807,
+    "mouse_button_f1": 0.013786431249244165,
+    "no_button_false_positive_rate": 0.0011084592096621763,
+    "pearson_x": 0.4000424446193039,
+    "pearson_y": 0.01987393900234529
+  },
+  "probe_metrics_path": "artifacts/idm/g005_idm_video_pair_raw112_closed_target_probe_paper_metrics.json",
+  "probe_rows": 320000,
+  "runtime_overrides": {
+    "batch_size": null,
+    "epochs": 2,
+    "eval_batch_size": null,
+    "max_target_examples": null,
+    "skip_prediction": true
+  },
+  "schema": "g005_idm_video_pair_raw112_closed_target_probe_rejection.v1",
+  "status": "reject_candidate_for_g005_completion",
+  "targets": {
+    "paper_keyboard_accuracy": 0.73,
+    "paper_mouse_button_accuracy": 0.957,
+    "paper_pearson_x": 0.796,
+    "paper_pearson_y": 0.783,
+    "strict_no_button_fpr_max": 0.1
+  },
+  "train_records": 19211006,
+  "trainfirst_run_summary": "artifacts/idm/g005_idm_video_pair_raw112_trainfirst_4xh200_run.json"
+}
