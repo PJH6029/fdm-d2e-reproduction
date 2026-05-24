@@ -362,6 +362,18 @@ def _tokens_by_bin(
     return bins
 
 
+def _first_screen_timestamp_ns(
+    *,
+    mcap_path: str | Path,
+    decode_fn: Callable[..., list[dict[str, Any]]],
+) -> int:
+    rows = decode_fn(str(mcap_path), topics=["screen"], limit=1)
+    for row in rows:
+        if row.get("type") == "screen" and row.get("timestamp_ns") is not None:
+            return int(row["timestamp_ns"])
+    raise ValueError(f"no screen timestamp found in MCAP: {mcap_path}")
+
+
 def convert_gidm_mcap_predictions(
     *,
     manifest_path: str | Path,
@@ -370,6 +382,7 @@ def convert_gidm_mcap_predictions(
     summary_out: str | Path | None = None,
     bin_ms: int = 50,
     timestamp_shift_ns: int = 0,
+    auto_timestamp_shift_from_screen: bool = False,
     allow_missing: bool = False,
     decode_fn: Callable[..., list[dict[str, Any]]] = decode_mcap_events,
 ) -> dict[str, Any]:
@@ -403,9 +416,23 @@ def convert_gidm_mcap_predictions(
                 targets_by_key[key].append(row)
 
     decoded_counts: dict[str, int] = {}
+    timestamp_shifts_by_key: dict[str, int] = {}
     token_bins_by_key: dict[str, dict[int, list[str]]] = {}
     for key, target_rows in targets_by_key.items():
         mcap_path = str(available[key]["prediction_mcap_path"])
+        effective_shift_ns = int(timestamp_shift_ns)
+        if auto_timestamp_shift_from_screen:
+            gt_mcap_path = available[key].get("ground_truth_mcap_path")
+            if not gt_mcap_path:
+                raise ValueError(f"manifest row lacks ground_truth_mcap_path for auto timestamp shift: {key}")
+            effective_shift_ns += _first_screen_timestamp_ns(
+                mcap_path=str(gt_mcap_path),
+                decode_fn=decode_fn,
+            ) - _first_screen_timestamp_ns(
+                mcap_path=mcap_path,
+                decode_fn=decode_fn,
+            )
+        timestamp_shifts_by_key[key] = effective_shift_ns
         events = decode_fn(mcap_path, topics=["keyboard", "mouse/raw", "mouse"])
         decoded_counts[key] = len(events)
         target_rows.sort(key=lambda row: int(row.get("timestamp_ns", 0)))
@@ -413,7 +440,7 @@ def convert_gidm_mcap_predictions(
             events,
             target_timestamps=[int(row["timestamp_ns"]) for row in target_rows],
             bin_ms=bin_ms,
-            timestamp_shift_ns=timestamp_shift_ns,
+            timestamp_shift_ns=effective_shift_ns,
         )
 
     rows_written = 0
@@ -450,6 +477,8 @@ def convert_gidm_mcap_predictions(
         "allow_missing": bool(allow_missing),
         "bin_ms": int(bin_ms),
         "timestamp_shift_ns": int(timestamp_shift_ns),
+        "auto_timestamp_shift_from_screen": bool(auto_timestamp_shift_from_screen),
+        "timestamp_shifts_by_key": timestamp_shifts_by_key,
         "claim_boundary": "This converts released G-IDM MCAP predictions to the local predictions.jsonl metric boundary; metric claims require a separate paper-metric/audit artifact.",
     }
     if summary_out:
