@@ -84,6 +84,8 @@ def test_g005_video_stack_offset_candidate_separates_precompute_training_and_rec
 
     assert "scripts/precompute_video_idm_cache.py --config \"$CONFIG\"" in precompute
     assert 'PRECOMPUTE_SPLITS="${PRECOMPUTE_SPLITS:-}"' in precompute
+    assert 'INSTALL_FFMPEG_IF_MISSING="${INSTALL_FFMPEG_IF_MISSING:-1}"' in precompute
+    assert "apt-get install -y --no-install-recommends ffmpeg" in precompute
     assert "CMD+=(--splits \"$PRECOMPUTE_SPLITS\")" in precompute
     assert 'SKIP_PREDICTION="${SKIP_PREDICTION:-1}"' in training
     assert 'BUILD_SPLIT_STATS="${BUILD_SPLIT_STATS:-0}"' in training

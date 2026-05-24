@@ -7,6 +7,7 @@ LOG_PATH="${LOG_PATH:-artifacts/idm/g005_idm_video_stack_luma96_offsets012_keyso
 PID_FILE="${PID_FILE:-outputs/cluster/g005_idm_video_stack_luma96_offsets012_keysoftmax_precompute.pid}"
 RUN_SUMMARY="${RUN_SUMMARY:-artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_precompute_run.json}"
 PRECOMPUTE_SPLITS="${PRECOMPUTE_SPLITS:-}"
+INSTALL_FFMPEG_IF_MISSING="${INSTALL_FFMPEG_IF_MISSING:-1}"
 
 mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$PID_FILE")" "$(dirname "$RUN_SUMMARY")" outputs/cluster
 echo "$$" >"$PID_FILE"
@@ -25,6 +26,15 @@ set +e
   echo "started_at=$(date -Iseconds)"
   echo "git_head=$(git rev-parse HEAD)"
   echo "config=$CONFIG"
+  if ! command -v ffmpeg >/dev/null 2>&1; then
+    if [[ "$INSTALL_FFMPEG_IF_MISSING" == "1" ]] && [[ "$(id -u)" == "0" ]] && command -v apt-get >/dev/null 2>&1; then
+      apt-get update
+      apt-get install -y --no-install-recommends ffmpeg
+    else
+      echo "ffmpeg missing and automatic installation is unavailable" >&2
+      exit 127
+    fi
+  fi
   CMD=(uv run python scripts/precompute_video_idm_cache.py --config "$CONFIG")
   if [[ -n "$PRECOMPUTE_SPLITS" ]]; then
     CMD+=(--splits "$PRECOMPUTE_SPLITS")
@@ -74,6 +84,7 @@ payload = {
     "exit_code": int("$STATUS"),
     "config": "$CONFIG",
     "precompute_splits": "$PRECOMPUTE_SPLITS",
+    "install_ffmpeg_if_missing": "$INSTALL_FFMPEG_IF_MISSING",
     "log_path": "$LOG_PATH",
     "wall_clock_seconds": int("$END_EPOCH") - int("$START_EPOCH"),
     "git_head": _git_output(["rev-parse", "HEAD"]),
