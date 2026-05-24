@@ -88,6 +88,134 @@ def _is_category_token(token: str) -> bool:
     )
 
 
+def _is_keyboard_token(token: str) -> bool:
+    return token.startswith("KEY_")
+
+
+def _is_mouse_button_token(token: str) -> bool:
+    return token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_"))
+
+
+def _exact_set_label(row: dict[str, Any], predicate) -> tuple[str, ...]:
+    return tuple(sorted({str(token) for token in row.get("ground_truth_tokens", []) if predicate(str(token))}))
+
+
+def _keyboard_label(row: dict[str, Any]) -> tuple[str, ...]:
+    return _exact_set_label(row, _is_keyboard_token)
+
+
+def _button_label(row: dict[str, Any]) -> tuple[str, ...]:
+    return _exact_set_label(row, _is_mouse_button_token)
+
+
+def _label_key(label: tuple[str, ...]) -> str:
+    return json.dumps(list(label), ensure_ascii=False, separators=(",", ":"))
+
+
+def _label_from_key(key: str) -> tuple[str, ...]:
+    raw = json.loads(key)
+    if not isinstance(raw, list):
+        raise ValueError(f"exact-set class key must encode a list: {key}")
+    return tuple(str(token) for token in raw)
+
+
+def _exact_set_classes_from_counts(counts: dict[str, int], *, min_count: int) -> list[tuple[str, ...]]:
+    classes: list[tuple[str, ...]] = [()]
+    labels = []
+    for key, count in counts.items():
+        label = _label_from_key(str(key))
+        if label and int(count) >= int(min_count):
+            labels.append(label)
+    classes.extend(sorted(set(labels)))
+    return classes
+
+
+def _category_vocab_for_heads(stats: dict[str, Any], config: dict[str, Any]) -> list[str]:
+    keyboard_softmax = str(config.get("keyboard_head_mode", "multilabel")) == "softmax"
+    button_softmax = str(config.get("button_head_mode", "multilabel")) == "softmax"
+    vocab = []
+    for token in [str(value) for value in stats.get("category_vocab", [])]:
+        if keyboard_softmax and _is_keyboard_token(token):
+            continue
+        if button_softmax and _is_mouse_button_token(token):
+            continue
+        vocab.append(token)
+    return vocab
+
+
+def _keyboard_classes_for_heads(stats: dict[str, Any], config: dict[str, Any]) -> list[tuple[str, ...]]:
+    if str(config.get("keyboard_head_mode", "multilabel")) != "softmax":
+        return []
+    if isinstance(config.get("keyboard_classes"), list):
+        return [tuple(str(token) for token in row) for row in config["keyboard_classes"]]
+    return _exact_set_classes_from_counts(
+        {str(k): int(v) for k, v in dict(stats.get("keyboard_class_counts", {})).items()},
+        min_count=int(config.get("keyboard_softmax_min_count", 1)),
+    )
+
+
+def _button_classes_for_heads(stats: dict[str, Any], config: dict[str, Any]) -> list[tuple[str, ...]]:
+    if str(config.get("button_head_mode", "multilabel")) != "softmax":
+        return []
+    if isinstance(config.get("button_classes"), list):
+        return [tuple(str(token) for token in row) for row in config["button_classes"]]
+    return _exact_set_classes_from_counts(
+        {str(k): int(v) for k, v in dict(stats.get("button_class_counts", {})).items()},
+        min_count=int(config.get("button_softmax_min_count", 1)),
+    )
+
+
+def _exact_set_targets(torch, rows: list[dict[str, Any]], classes: list[tuple[str, ...]], label_fn, *, device: str | None = None):
+    class_index = {label: idx for idx, label in enumerate(classes)}
+    values = [int(class_index.get(label_fn(row), 0)) for row in rows]
+    kwargs = {"dtype": torch.long}
+    if device is not None:
+        kwargs["device"] = device
+    return torch.tensor(values, **kwargs)
+
+
+def _exact_set_class_weights(
+    torch,
+    counts: dict[str, int],
+    classes: list[tuple[str, ...]],
+    *,
+    cap: float,
+    empty_weight: float = 1.0,
+    positive_weight: float = 1.0,
+    device: str,
+):
+    if not classes:
+        return None
+    class_counts = [max(1, int(counts.get(_label_key(label), 0))) for label in classes]
+    total = max(1, sum(class_counts))
+    denom = max(1, len(classes))
+    weights = [min(float(cap), float(total) / (float(count) * float(denom))) for count in class_counts]
+    if weights:
+        weights[0] *= float(empty_weight)
+        for idx in range(1, len(weights)):
+            weights[idx] *= float(positive_weight)
+    return torch.tensor(weights, dtype=torch.float32, device=device)
+
+
+def _streaming_output_dim(
+    *,
+    category_vocab: list[str],
+    keyboard_head_mode: str,
+    keyboard_classes: list[tuple[str, ...]],
+    button_head_mode: str,
+    button_classes: list[tuple[str, ...]],
+    mouse_head_mode: str,
+    mouse_axis_classes: list[str],
+) -> int:
+    return (
+        2
+        + len(category_vocab)
+        + (len(keyboard_classes) if keyboard_head_mode == "softmax" else 0)
+        + (len(button_classes) if button_head_mode == "softmax" else 0)
+        + (2 * len(mouse_axis_classes) if mouse_head_mode == "axis_softmax" else 0)
+    )
+
+
 def _tokens(row: dict[str, Any]) -> list[str]:
     return list(row.get("ground_truth_tokens") or ["NOOP"])
 
@@ -224,6 +352,8 @@ def _empty_stats_accumulator() -> dict[str, Any]:
         "mean": [],
         "m2": [],
         "category_counts": Counter(),
+        "keyboard_class_counts": Counter(),
+        "button_class_counts": Counter(),
         "sequence_counts": Counter(),
         "last_tokens_by_recording": {},
         "last_tokens_by_game": {},
@@ -277,6 +407,8 @@ def _scan_stats_partition(path: str | Path, feature_mode: str) -> dict[str, Any]
     mean: list[float] = []
     m2: list[float] = []
     category_counts: Counter[str] = Counter()
+    keyboard_class_counts: Counter[str] = Counter()
+    button_class_counts: Counter[str] = Counter()
     sequence_counts: Counter[tuple[str, ...]] = Counter()
     last_tokens_by_recording: dict[str, tuple[int, list[str]]] = {}
     last_tokens_by_game: dict[str, tuple[int, list[str]]] = {}
@@ -301,6 +433,8 @@ def _scan_stats_partition(path: str | Path, feature_mode: str) -> dict[str, Any]
             token = str(token)
             if _is_category_token(token):
                 category_counts[token] += 1
+        keyboard_class_counts[_label_key(_keyboard_label(row))] += 1
+        button_class_counts[_label_key(_button_label(row))] += 1
         tokens = _tokens(row)
         sequence_counts[tuple(tokens)] += 1
         timestamp_ns = row.get("timestamp_ns")
@@ -332,6 +466,8 @@ def _scan_stats_partition(path: str | Path, feature_mode: str) -> dict[str, Any]
         "mean": mean,
         "m2": m2,
         "category_counts": dict(category_counts),
+        "keyboard_class_counts": dict(keyboard_class_counts),
+        "button_class_counts": dict(button_class_counts),
         "sequence_counts": dict(sequence_counts),
         "last_tokens_by_recording": last_tokens_by_recording,
         "last_tokens_by_game": last_tokens_by_game,
@@ -356,6 +492,8 @@ def _scan_streaming_idm_stats_with_action_history(
     action_history_len: int,
 ) -> dict[str, Any]:
     category_counts: Counter[str] = Counter()
+    keyboard_class_counts: Counter[str] = Counter()
+    button_class_counts: Counter[str] = Counter()
     for path in paths:
         for row in iter_jsonl(path):
             for token in row.get("ground_truth_tokens", []):
@@ -404,6 +542,8 @@ def _scan_streaming_idm_stats_with_action_history(
                 mean[idx] += delta / count
                 m2[idx] += delta * (value - mean[idx])
             tokens = _tokens(row)
+            keyboard_class_counts[_label_key(_keyboard_label(row))] += 1
+            button_class_counts[_label_key(_button_label(row))] += 1
             sequence_counts[tuple(tokens)] += 1
             timestamp_ns = row.get("timestamp_ns")
             _latest_token_map_update(last_tokens_by_recording, recording_id, timestamp_ns, tokens)
@@ -455,6 +595,8 @@ def _scan_streaming_idm_stats_with_action_history(
         "std": std,
         "category_vocab": _category_vocab_from_counts(dict(category_counts), categorical_min_count),
         "category_counts": dict(sorted(dict(category_counts).items())),
+        "keyboard_class_counts": dict(sorted(dict(keyboard_class_counts).items())),
+        "button_class_counts": dict(sorted(dict(button_class_counts).items())),
         "global_majority_tokens": list(sequence_counts.most_common(1)[0][0]) if sequence_counts else ["NOOP"],
         "last_tokens_by_recording": {key: list(tokens) for key, (_ts, tokens) in sorted(last_tokens_by_recording.items())},
         "last_tokens_by_game": {key: list(tokens) for key, (_ts, tokens) in sorted(last_tokens_by_game.items())},
@@ -485,6 +627,12 @@ def _merge_stats_partitions(partitions: Iterable[dict[str, Any]], *, train_recor
         acc["mean"] = mean
         acc["m2"] = m2
         acc["category_counts"].update({str(k): int(v) for k, v in dict(part.get("category_counts", {})).items()})
+        acc["keyboard_class_counts"].update(
+            {str(k): int(v) for k, v in dict(part.get("keyboard_class_counts", {})).items()}
+        )
+        acc["button_class_counts"].update(
+            {str(k): int(v) for k, v in dict(part.get("button_class_counts", {})).items()}
+        )
         acc["sequence_counts"].update({tuple(k): int(v) for k, v in dict(part.get("sequence_counts", {})).items()})
         for key, value in dict(part.get("last_tokens_by_recording", {})).items():
             timestamp, tokens = value
@@ -532,6 +680,8 @@ def _merge_stats_partitions(partitions: Iterable[dict[str, Any]], *, train_recor
         "std": std,
         "category_vocab": _category_vocab_from_counts(dict(acc["category_counts"]), categorical_min_count),
         "category_counts": dict(sorted(dict(acc["category_counts"]).items())),
+        "keyboard_class_counts": dict(sorted(dict(acc["keyboard_class_counts"]).items())),
+        "button_class_counts": dict(sorted(dict(acc["button_class_counts"]).items())),
         "global_majority_tokens": list(acc["sequence_counts"].most_common(1)[0][0]) if acc["sequence_counts"] else ["NOOP"],
         "last_tokens_by_recording": last_tokens_by_recording,
         "last_tokens_by_game": last_tokens_by_game,
@@ -776,6 +926,8 @@ def _training_cache_identity(
     category_vocab: list[str],
     mouse_axis_classes: list[str],
 ) -> dict[str, Any]:
+    keyboard_classes = _keyboard_classes_for_heads(stats, config)
+    button_classes = _button_classes_for_heads(stats, config)
     return {
         "schema": "streaming_idm_training_cache.v1",
         "source": _cache_source_metadata(path),
@@ -783,6 +935,10 @@ def _training_cache_identity(
         "input_dim": int(stats["input_dim"]),
         "dataset_fingerprint": str(stats["dataset_fingerprint"]),
         "category_vocab": list(category_vocab),
+        "keyboard_head_mode": str(config.get("keyboard_head_mode", "multilabel")),
+        "keyboard_classes": [list(tokens) for tokens in keyboard_classes],
+        "button_head_mode": str(config.get("button_head_mode", "multilabel")),
+        "button_classes": [list(tokens) for tokens in button_classes],
         "mouse_head_mode": str(config.get("mouse_head_mode", "axis_softmax")),
         "mouse_target_mode": _mouse_target_mode(config),
         "mouse_axis_classes": list(mouse_axis_classes),
@@ -790,7 +946,7 @@ def _training_cache_identity(
         "action_history_vocab": list(stats.get("action_history_vocab", [])),
         "action_history_dim": int(stats.get("action_history_dim", 0)),
         "action_history_parallel_by_path": _action_history_parallel_by_path(config),
-        "cache_version": 3,
+        "cache_version": 4,
     }
 
 
@@ -829,7 +985,10 @@ def _flush_training_cache_chunk(
     chunk_path: Path,
     rows: list[dict[str, Any]],
     stats: dict[str, Any],
+    config: dict[str, Any],
     category_vocab: list[str],
+    keyboard_classes: list[tuple[str, ...]],
+    button_classes: list[tuple[str, ...]],
     vocab_index: dict[str, int],
     axis_class_index: dict[str, int],
     mouse_head_mode: str,
@@ -856,6 +1015,10 @@ def _flush_training_cache_chunk(
         "mouse_y": mouse_y,
         "cat_y": cat_y,
     }
+    if str(config.get("keyboard_head_mode", "multilabel")) == "softmax":
+        payload["keyboard_y"] = _exact_set_targets(torch, rows, keyboard_classes, _keyboard_label)
+    if str(config.get("button_head_mode", "multilabel")) == "softmax":
+        payload["button_y"] = _exact_set_targets(torch, rows, button_classes, _button_label)
     if mouse_head_mode == "axis_softmax":
         axis = [_cache_axis_indices(row, axis_class_index, mouse_target_mode=mouse_target_mode) for row in rows]
         payload["dx_y"] = torch.tensor([item[0] for item in axis], dtype=torch.long)
@@ -904,6 +1067,8 @@ def _build_training_cache_for_path(
     axis_class_index = {label: idx for idx, label in enumerate(mouse_axis_classes)}
     mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
     mouse_target_mode = _mouse_target_mode(config)
+    keyboard_classes = _keyboard_classes_for_heads(stats, config)
+    button_classes = _button_classes_for_heads(stats, config)
     chunks: list[dict[str, Any]] = []
     batch: list[dict[str, Any]] = []
     count = 0
@@ -930,7 +1095,10 @@ def _build_training_cache_for_path(
                     chunk_path=chunk_dir / f"chunk_{len(chunks):06d}.pt",
                     rows=batch,
                     stats=stats,
+                    config=config,
                     category_vocab=category_vocab,
+                    keyboard_classes=keyboard_classes,
+                    button_classes=button_classes,
                     vocab_index=vocab_index,
                     axis_class_index=axis_class_index,
                     mouse_head_mode=mouse_head_mode,
@@ -945,7 +1113,10 @@ def _build_training_cache_for_path(
                 chunk_path=chunk_dir / f"chunk_{len(chunks):06d}.pt",
                 rows=batch,
                 stats=stats,
+                config=config,
                 category_vocab=category_vocab,
+                keyboard_classes=keyboard_classes,
+                button_classes=button_classes,
                 vocab_index=vocab_index,
                 axis_class_index=axis_class_index,
                 mouse_head_mode=mouse_head_mode,
@@ -1201,7 +1372,7 @@ def _iter_training_cache_batches(
     world_size: int,
     shard_by_path: bool,
     shard_assignment: str = "greedy_rows",
-) -> Iterable[tuple[Any, Any, Any, Any | None, Any | None, int]]:
+) -> Iterable[tuple[Any, Any, Any, Any | None, Any | None, Any | None, Any | None, int]]:
     seen = 0
     source_batch_idx = 0
     assigned_indices = (
@@ -1237,13 +1408,19 @@ def _iter_training_cache_batches(
                 x = payload["x"][start:end].to(device)
                 mouse_y = payload["mouse_y"][start:end].to(device)
                 cat_y = payload["cat_y"][start:end].to(device)
+                keyboard_y = payload.get("keyboard_y")
+                button_y = payload.get("button_y")
+                if keyboard_y is not None:
+                    keyboard_y = keyboard_y[start:end].to(device)
+                if button_y is not None:
+                    button_y = button_y[start:end].to(device)
                 dx_y = payload.get("dx_y")
                 dy_y = payload.get("dy_y")
                 if dx_y is not None and dy_y is not None:
                     dx_y = dx_y[start:end].to(device)
                     dy_y = dy_y[start:end].to(device)
                 seen += batch_rows
-                yield x, mouse_y, cat_y, dx_y, dy_y, batch_rows
+                yield x, mouse_y, cat_y, keyboard_y, button_y, dx_y, dy_y, batch_rows
             if max_examples is not None and seen >= max_examples:
                 break
         if max_examples is not None and seen >= max_examples:
@@ -1272,6 +1449,10 @@ def _train_one_epoch(
     device: str,
     category_vocab: list[str],
     cat_pos_weight,
+    keyboard_classes: list[tuple[str, ...]],
+    keyboard_class_weight,
+    button_classes: list[tuple[str, ...]],
+    button_class_weight,
     mouse_axis_classes: list[str],
     rank: int = 0,
     world_size: int = 1,
@@ -1280,6 +1461,8 @@ def _train_one_epoch(
 ) -> dict[str, Any]:
     batch_size = int(config.get("batch_size", 2048))
     feature_mode = str(stats["feature_mode"])
+    keyboard_head_mode = str(config.get("keyboard_head_mode", "multilabel"))
+    button_head_mode = str(config.get("button_head_mode", "multilabel"))
     mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
     mouse_target_mode = _mouse_target_mode(config)
     losses: list[float] = []
@@ -1295,7 +1478,7 @@ def _train_one_epoch(
         progress_interval = int(config.get("training_progress_interval_batches", 0) or 0)
         progress_dir = ensure_dir(Path(config.get("output_dir", "outputs/idm_streaming_full")) / "rank_progress")
         heartbeat_path = progress_dir / f"train_rank{rank}.json"
-        for batch_idx, (x, mouse_y, cat_y, dx_y, dy_y, batch_rows) in enumerate(
+        for batch_idx, (x, mouse_y, cat_y, keyboard_y, button_y, dx_y, dy_y, batch_rows) in enumerate(
             _iter_training_cache_batches(
                 torch,
                 training_cache_manifests,
@@ -1315,12 +1498,36 @@ def _train_one_epoch(
                 cat_loss = _categorical_loss(torch, pred[:, 2:category_end], cat_y, cat_pos_weight, config)
             else:
                 cat_loss = torch.tensor(0.0, device=device)
+            keyboard_end = category_end
+            if keyboard_head_mode == "softmax":
+                keyboard_end = category_end + len(keyboard_classes)
+                if keyboard_y is None:
+                    raise ValueError("training cache is missing keyboard targets for keyboard_head_mode=softmax")
+                keyboard_loss = torch.nn.functional.cross_entropy(
+                    pred[:, category_end:keyboard_end],
+                    keyboard_y,
+                    weight=keyboard_class_weight,
+                )
+            else:
+                keyboard_loss = torch.tensor(0.0, device=device)
+            button_end = keyboard_end
+            if button_head_mode == "softmax":
+                button_end = keyboard_end + len(button_classes)
+                if button_y is None:
+                    raise ValueError("training cache is missing button targets for button_head_mode=softmax")
+                button_loss = torch.nn.functional.cross_entropy(
+                    pred[:, keyboard_end:button_end],
+                    button_y,
+                    weight=button_class_weight,
+                )
+            else:
+                button_loss = torch.tensor(0.0, device=device)
             if mouse_head_mode == "axis_softmax":
                 if dx_y is None or dy_y is None:
                     raise ValueError("training cache is missing axis targets for mouse_head_mode=axis_softmax")
                 axis_count = len(mouse_axis_classes)
-                dx_logits = pred[:, category_end : category_end + axis_count]
-                dy_logits = pred[:, category_end + axis_count : category_end + (2 * axis_count)]
+                dx_logits = pred[:, button_end : button_end + axis_count]
+                dy_logits = pred[:, button_end + axis_count : button_end + (2 * axis_count)]
                 axis_loss = 0.5 * (
                     torch.nn.functional.cross_entropy(dx_logits, dx_y)
                     + torch.nn.functional.cross_entropy(dy_logits, dy_y)
@@ -1330,6 +1537,8 @@ def _train_one_epoch(
             loss = (
                 float(config.get("mouse_regression_loss_weight", 1.0)) * mouse_loss
                 + float(config.get("categorical_loss_weight", 0.5)) * cat_loss
+                + float(config.get("keyboard_softmax_loss_weight", 1.0)) * keyboard_loss
+                + float(config.get("button_softmax_loss_weight", 1.0)) * button_loss
                 + float(config.get("mouse_axis_loss_weight", 1.0 if mouse_head_mode == "axis_softmax" else 0.0)) * axis_loss
             )
             opt.zero_grad(set_to_none=True)
@@ -1401,6 +1610,28 @@ def _train_one_epoch(
             cat_loss = _categorical_loss(torch, pred[:, 2:category_end], cat_y, cat_pos_weight, config)
         else:
             cat_loss = torch.tensor(0.0, device=device)
+        keyboard_end = category_end
+        if keyboard_head_mode == "softmax":
+            keyboard_end = category_end + len(keyboard_classes)
+            keyboard_y = _exact_set_targets(torch, rows, keyboard_classes, _keyboard_label, device=device)
+            keyboard_loss = torch.nn.functional.cross_entropy(
+                pred[:, category_end:keyboard_end],
+                keyboard_y,
+                weight=keyboard_class_weight,
+            )
+        else:
+            keyboard_loss = torch.tensor(0.0, device=device)
+        button_end = keyboard_end
+        if button_head_mode == "softmax":
+            button_end = keyboard_end + len(button_classes)
+            button_y = _exact_set_targets(torch, rows, button_classes, _button_label, device=device)
+            button_loss = torch.nn.functional.cross_entropy(
+                pred[:, keyboard_end:button_end],
+                button_y,
+                weight=button_class_weight,
+            )
+        else:
+            button_loss = torch.tensor(0.0, device=device)
         if mouse_head_mode == "axis_softmax":
             dx_y, dy_y = _axis_targets(
                 torch,
@@ -1411,8 +1642,8 @@ def _train_one_epoch(
                 mouse_target_mode=mouse_target_mode,
             )
             axis_count = len(mouse_axis_classes)
-            dx_logits = pred[:, category_end : category_end + axis_count]
-            dy_logits = pred[:, category_end + axis_count : category_end + (2 * axis_count)]
+            dx_logits = pred[:, button_end : button_end + axis_count]
+            dy_logits = pred[:, button_end + axis_count : button_end + (2 * axis_count)]
             axis_loss = 0.5 * (
                 torch.nn.functional.cross_entropy(dx_logits, dx_y)
                 + torch.nn.functional.cross_entropy(dy_logits, dy_y)
@@ -1422,6 +1653,8 @@ def _train_one_epoch(
         loss = (
             float(config.get("mouse_regression_loss_weight", 1.0)) * mouse_loss
             + float(config.get("categorical_loss_weight", 0.5)) * cat_loss
+            + float(config.get("keyboard_softmax_loss_weight", 1.0)) * keyboard_loss
+            + float(config.get("button_softmax_loss_weight", 1.0)) * button_loss
             + float(config.get("mouse_axis_loss_weight", 1.0 if mouse_head_mode == "axis_softmax" else 0.0)) * axis_loss
         )
         opt.zero_grad(set_to_none=True)
@@ -1839,6 +2072,12 @@ def _predicted_tokens_from_output(
         category_vocab=category_vocab,
         category_thresholds=category_thresholds,
         category_threshold=category_threshold,
+        keyboard_head_mode=str(config.get("keyboard_head_mode", "multilabel")),
+        keyboard_classes=_keyboard_classes_for_heads({"keyboard_class_counts": {}}, config),
+        keyboard_softmax_threshold=float(config.get("keyboard_softmax_threshold", 0.5)),
+        button_head_mode=str(config.get("button_head_mode", "multilabel")),
+        button_classes=_button_classes_for_heads({"button_class_counts": {}}, config),
+        button_softmax_threshold=float(config.get("button_softmax_threshold", 0.5)),
         mouse_head_mode=str(config.get("mouse_head_mode", "axis_softmax")),
         mouse_axis_classes=mouse_axis_classes,
         mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
@@ -2095,6 +2334,12 @@ def _calibrate_streaming_mouse_output_gain(
                     category_vocab=category_vocab,
                     category_thresholds=category_thresholds,
                     category_threshold=category_threshold,
+                    keyboard_head_mode=str(config.get("keyboard_head_mode", "multilabel")),
+                    keyboard_classes=_keyboard_classes_for_heads({"keyboard_class_counts": {}}, config),
+                    keyboard_softmax_threshold=float(config.get("keyboard_softmax_threshold", 0.5)),
+                    button_head_mode=str(config.get("button_head_mode", "multilabel")),
+                    button_classes=_button_classes_for_heads({"button_class_counts": {}}, config),
+                    button_softmax_threshold=float(config.get("button_softmax_threshold", 0.5)),
                     mouse_head_mode=str(config.get("mouse_head_mode", "axis_softmax")),
                     mouse_axis_classes=mouse_axis_classes,
                     mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
@@ -2181,7 +2426,7 @@ def _calibrate_streaming_category_thresholds_from_cache(
     observed_examples = 0
     model.eval()
     with torch.no_grad():
-        for x, _mouse_y, cat_y, _dx_y, _dy_y, batch_rows in _iter_training_cache_batches(
+        for x, _mouse_y, cat_y, _keyboard_y, _button_y, _dx_y, _dy_y, batch_rows in _iter_training_cache_batches(
             torch,
             training_cache_manifests,
             batch_size=batch_size,
@@ -2306,7 +2551,7 @@ def _calibrate_streaming_mouse_output_gain_from_cache(
     value_count = 0
     model.eval()
     with torch.no_grad():
-        for x, mouse_y, _cat_y, _dx_y, _dy_y, _batch_rows in _iter_training_cache_batches(
+        for x, mouse_y, _cat_y, _keyboard_y, _button_y, _dx_y, _dy_y, _batch_rows in _iter_training_cache_batches(
             torch,
             training_cache_manifests,
             batch_size=batch_size,
@@ -2328,6 +2573,12 @@ def _calibrate_streaming_mouse_output_gain_from_cache(
                     category_vocab=category_vocab,
                     category_thresholds=category_thresholds,
                     category_threshold=category_threshold,
+                    keyboard_head_mode=str(config.get("keyboard_head_mode", "multilabel")),
+                    keyboard_classes=_keyboard_classes_for_heads({"keyboard_class_counts": {}}, config),
+                    keyboard_softmax_threshold=float(config.get("keyboard_softmax_threshold", 0.5)),
+                    button_head_mode=str(config.get("button_head_mode", "multilabel")),
+                    button_classes=_button_classes_for_heads({"button_class_counts": {}}, config),
+                    button_softmax_threshold=float(config.get("button_softmax_threshold", 0.5)),
                     mouse_head_mode=str(config.get("mouse_head_mode", "axis_softmax")),
                     mouse_axis_classes=mouse_axis_classes,
                     mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
@@ -2910,6 +3161,8 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "category_threshold",
         "category_thresholds",
         "category_threshold_mode",
+        "keyboard_softmax_threshold",
+        "button_softmax_threshold",
         "mouse_axis_decode_mode",
         "mouse_axis_temperature",
         "mouse_output_gain",
@@ -2951,13 +3204,29 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     else:
         stats = dict(checkpoint["stats"])
         category_vocab = [str(token) for token in checkpoint.get("category_vocab", [])]
+        keyboard_head_mode = str(checkpoint.get("keyboard_head_mode", prediction_config.get("keyboard_head_mode", "multilabel")))
+        keyboard_classes = [tuple(str(token) for token in row) for row in checkpoint.get("keyboard_classes", prediction_config.get("keyboard_classes", []))]
+        button_head_mode = str(checkpoint.get("button_head_mode", prediction_config.get("button_head_mode", "multilabel")))
+        button_classes = [tuple(str(token) for token in row) for row in checkpoint.get("button_classes", prediction_config.get("button_classes", []))]
         mouse_head_mode = str(checkpoint.get("mouse_head_mode", prediction_config.get("mouse_head_mode", "axis_softmax")))
         mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", prediction_config.get("mouse_axis_classes", MOUSE_AXIS_CLASSES))]
+        prediction_config["keyboard_head_mode"] = keyboard_head_mode
+        prediction_config["keyboard_classes"] = [list(tokens) for tokens in keyboard_classes]
+        prediction_config["button_head_mode"] = button_head_mode
+        prediction_config["button_classes"] = [list(tokens) for tokens in button_classes]
         prediction_config["mouse_head_mode"] = mouse_head_mode
         model = _build_model(
             torch,
             input_dim=int(stats["input_dim"]),
-            output_dim=2 + len(category_vocab) + (2 * len(mouse_axis_classes) if mouse_head_mode == "axis_softmax" else 0),
+            output_dim=_streaming_output_dim(
+                category_vocab=category_vocab,
+                keyboard_head_mode=keyboard_head_mode,
+                keyboard_classes=keyboard_classes,
+                button_head_mode=button_head_mode,
+                button_classes=button_classes,
+                mouse_head_mode=mouse_head_mode,
+                mouse_axis_classes=mouse_axis_classes,
+            ),
             hidden_dim=int(checkpoint_config.get("hidden_dim", prediction_config.get("hidden_dim", 512))),
             depth=int(checkpoint_config.get("depth", prediction_config.get("depth", 3))),
             dropout=float(checkpoint_config.get("dropout", prediction_config.get("dropout", 0.05))),
@@ -3046,13 +3315,29 @@ def _predict_stream_for_parallel_part(payload: dict[str, Any]) -> dict[str, Any]
     prediction_config = dict(payload["prediction_config"])
     stats = dict(checkpoint["stats"])
     category_vocab = [str(token) for token in checkpoint.get("category_vocab", [])]
+    keyboard_head_mode = str(checkpoint.get("keyboard_head_mode", prediction_config.get("keyboard_head_mode", "multilabel")))
+    keyboard_classes = [tuple(str(token) for token in row) for row in checkpoint.get("keyboard_classes", prediction_config.get("keyboard_classes", []))]
+    button_head_mode = str(checkpoint.get("button_head_mode", prediction_config.get("button_head_mode", "multilabel")))
+    button_classes = [tuple(str(token) for token in row) for row in checkpoint.get("button_classes", prediction_config.get("button_classes", []))]
     mouse_head_mode = str(checkpoint.get("mouse_head_mode", prediction_config.get("mouse_head_mode", "axis_softmax")))
     mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", prediction_config.get("mouse_axis_classes", MOUSE_AXIS_CLASSES))]
+    prediction_config["keyboard_head_mode"] = keyboard_head_mode
+    prediction_config["keyboard_classes"] = [list(tokens) for tokens in keyboard_classes]
+    prediction_config["button_head_mode"] = button_head_mode
+    prediction_config["button_classes"] = [list(tokens) for tokens in button_classes]
     prediction_config["mouse_head_mode"] = mouse_head_mode
     model = _build_model(
         torch,
         input_dim=int(stats["input_dim"]),
-        output_dim=2 + len(category_vocab) + (2 * len(mouse_axis_classes) if mouse_head_mode == "axis_softmax" else 0),
+        output_dim=_streaming_output_dim(
+            category_vocab=category_vocab,
+            keyboard_head_mode=keyboard_head_mode,
+            keyboard_classes=keyboard_classes,
+            button_head_mode=button_head_mode,
+            button_classes=button_classes,
+            mouse_head_mode=mouse_head_mode,
+            mouse_axis_classes=mouse_axis_classes,
+        ),
         hidden_dim=int(checkpoint_config.get("hidden_dim", prediction_config.get("hidden_dim", 512))),
         depth=int(checkpoint_config.get("depth", prediction_config.get("depth", 3))),
         dropout=float(checkpoint_config.get("dropout", prediction_config.get("dropout", 0.05))),
@@ -3164,6 +3449,8 @@ def _predict_streaming_idm_checkpoint_parallel(
         "category_threshold",
         "category_thresholds",
         "category_threshold_mode",
+        "keyboard_softmax_threshold",
+        "button_softmax_threshold",
         "mouse_axis_decode_mode",
         "mouse_axis_temperature",
         "mouse_output_gain",
@@ -3385,6 +3672,10 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         prediction = predict_streaming_idm_checkpoint(prediction_config)
     stats = dict(checkpoint["stats"])
     category_vocab = [str(token) for token in checkpoint.get("category_vocab", [])]
+    keyboard_head_mode = str(checkpoint.get("keyboard_head_mode", checkpoint_config.get("keyboard_head_mode", "multilabel")))
+    keyboard_classes = [tuple(str(token) for token in row) for row in checkpoint.get("keyboard_classes", checkpoint_config.get("keyboard_classes", []))]
+    button_head_mode = str(checkpoint.get("button_head_mode", checkpoint_config.get("button_head_mode", "multilabel")))
+    button_classes = [tuple(str(token) for token in row) for row in checkpoint.get("button_classes", checkpoint_config.get("button_classes", []))]
     mouse_head_mode = str(checkpoint.get("mouse_head_mode", checkpoint_config.get("mouse_head_mode", "axis_softmax")))
     mouse_axis_classes = [str(value) for value in checkpoint.get("mouse_axis_classes", checkpoint_config.get("mouse_axis_classes", MOUSE_AXIS_CLASSES))]
     history = list(checkpoint.get("history", []))
@@ -3457,6 +3748,10 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         "action_history_dim": int(stats.get("action_history_dim", 0) or 0),
         "action_history_feedback": "autoregressive_predicted" if int(stats.get("action_history_len", checkpoint_config.get("action_history_len", 0)) or 0) > 0 else "none",
         "categorical_vocab": category_vocab,
+        "keyboard_head_mode": keyboard_head_mode,
+        "keyboard_classes": [list(tokens) for tokens in keyboard_classes],
+        "button_head_mode": button_head_mode,
+        "button_classes": [list(tokens) for tokens in button_classes],
         "mouse_head_mode": mouse_head_mode,
         "mouse_target_mode": str(checkpoint_config.get("mouse_target_mode", "mean")),
         "mouse_emit_mode": str(checkpoint_config.get("mouse_emit_mode", "single")),
@@ -3549,7 +3844,19 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             write_json(stats_path, stats)
         if dist["enabled"]:
             _barrier(torch, dist)
-    category_vocab = [str(token) for token in stats.get("category_vocab", [])]
+    category_vocab = _category_vocab_for_heads(stats, config)
+    keyboard_head_mode = str(config.get("keyboard_head_mode", "multilabel"))
+    if keyboard_head_mode not in {"multilabel", "softmax"}:
+        raise ValueError(f"unsupported keyboard_head_mode: {keyboard_head_mode}")
+    button_head_mode = str(config.get("button_head_mode", "multilabel"))
+    if button_head_mode not in {"multilabel", "softmax"}:
+        raise ValueError(f"unsupported button_head_mode: {button_head_mode}")
+    keyboard_classes = _keyboard_classes_for_heads(stats, config)
+    button_classes = _button_classes_for_heads(stats, config)
+    if keyboard_classes:
+        config["keyboard_classes"] = [list(tokens) for tokens in keyboard_classes]
+    if button_classes:
+        config["button_classes"] = [list(tokens) for tokens in button_classes]
     mouse_axis_classes = [str(value) for value in config.get("mouse_axis_classes", MOUSE_AXIS_CLASSES)]
     mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
     if mouse_head_mode not in {"regression", "axis_softmax"}:
@@ -3575,7 +3882,15 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             )
             if dist["enabled"]:
                 _barrier(torch, dist)
-    output_dim = 2 + len(category_vocab) + (2 * len(mouse_axis_classes) if mouse_head_mode == "axis_softmax" else 0)
+    output_dim = _streaming_output_dim(
+        category_vocab=category_vocab,
+        keyboard_head_mode=keyboard_head_mode,
+        keyboard_classes=keyboard_classes,
+        button_head_mode=button_head_mode,
+        button_classes=button_classes,
+        mouse_head_mode=mouse_head_mode,
+        mouse_axis_classes=mouse_axis_classes,
+    )
     model = _build_model(
         torch,
         input_dim=int(stats["input_dim"]),
@@ -3599,6 +3914,24 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         cap=float(config.get("categorical_pos_weight_cap", 20.0)),
         device=device,
     )
+    keyboard_class_weight = _exact_set_class_weights(
+        torch,
+        {str(k): int(v) for k, v in stats.get("keyboard_class_counts", {}).items()},
+        keyboard_classes,
+        cap=float(config.get("keyboard_softmax_class_weight_cap", 20.0)),
+        empty_weight=float(config.get("keyboard_softmax_no_key_weight", 1.0)),
+        positive_weight=float(config.get("keyboard_softmax_positive_weight", 1.0)),
+        device=device,
+    ) if keyboard_head_mode == "softmax" else None
+    button_class_weight = _exact_set_class_weights(
+        torch,
+        {str(k): int(v) for k, v in stats.get("button_class_counts", {}).items()},
+        button_classes,
+        cap=float(config.get("button_softmax_class_weight_cap", 20.0)),
+        empty_weight=float(config.get("button_softmax_no_button_weight", 1.0)),
+        positive_weight=float(config.get("button_softmax_positive_weight", 1.0)),
+        device=device,
+    ) if button_head_mode == "softmax" else None
     history = []
     convergence_report = {
         "schema": "streaming_convergence_report.v1",
@@ -3627,6 +3960,10 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
                 device=device,
                 category_vocab=category_vocab,
                 cat_pos_weight=cat_pos_weight,
+                keyboard_classes=keyboard_classes,
+                keyboard_class_weight=keyboard_class_weight,
+                button_classes=button_classes,
+                button_class_weight=button_class_weight,
                 mouse_axis_classes=mouse_axis_classes,
                 rank=int(dist["rank"]),
                 world_size=int(dist["world_size"]),
@@ -3711,6 +4048,10 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "config": config,
         "stats": stats,
         "category_vocab": category_vocab,
+        "keyboard_head_mode": keyboard_head_mode,
+        "keyboard_classes": [list(tokens) for tokens in keyboard_classes],
+        "button_head_mode": button_head_mode,
+        "button_classes": [list(tokens) for tokens in button_classes],
         "mouse_head_mode": mouse_head_mode,
         "mouse_target_mode": _mouse_target_mode(config),
         "mouse_emit_mode": str(config.get("mouse_emit_mode", "single")),
@@ -3821,6 +4162,10 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "action_history_dim": int(stats.get("action_history_dim", 0) or 0),
         "action_history_feedback": "autoregressive_predicted" if int(stats.get("action_history_len", 0) or 0) > 0 else "none",
         "categorical_vocab": category_vocab,
+        "keyboard_head_mode": keyboard_head_mode,
+        "keyboard_classes": [list(tokens) for tokens in keyboard_classes],
+        "button_head_mode": button_head_mode,
+        "button_classes": [list(tokens) for tokens in button_classes],
         "mouse_head_mode": mouse_head_mode,
         "mouse_target_mode": _mouse_target_mode(config),
         "mouse_emit_mode": str(config.get("mouse_emit_mode", "single")),

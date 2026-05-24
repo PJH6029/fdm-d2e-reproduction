@@ -49,6 +49,24 @@ def _record(idx: int, split: str) -> dict:
     }
 
 
+def _exactset_record(idx: int, split: str) -> dict:
+    row = _record(idx, split)
+    tokens = [
+        token
+        for token in row["ground_truth_tokens"]
+        if not token.startswith("KEY_")
+        and not token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_"))
+    ]
+    if idx % 2 == 0:
+        tokens.append("KEY_PRESS_87")
+    elif idx % 5 == 0:
+        tokens.append("KEY_PRESS_65")
+    if idx % 3 == 0:
+        tokens.append("MOUSE_LEFT_DOWN")
+    row["ground_truth_tokens"] = tokens
+    return row
+
+
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
     path.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
 
@@ -364,6 +382,91 @@ def test_streaming_idm_trains_tiny_compact_feature_checkpoint(tmp_path: Path):
     assert "game:Apex" in summary["label_quality_report"]["groups_by_model"]["tiny_streaming_idm"]
     assert Path(summary["metadata"]["statistical_comparison_path"]).exists()
     assert summary["statistical_comparison"]["schema"] == "stat_comparison.v1"
+
+
+def test_streaming_idm_softmax_exactset_heads_roundtrip_cache_and_prediction(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    torch = pytest.importorskip("torch")
+    train_path = tmp_path / "train.jsonl"
+    target_path = tmp_path / "target.jsonl"
+    _write_jsonl(train_path, [_exactset_record(idx, "train_core") for idx in range(12)])
+    _write_jsonl(target_path, [_exactset_record(idx + 12, "eval") for idx in range(5)])
+
+    summary = train_streaming_idm(
+        {
+            "model_name": "tiny_streaming_idm_exactset",
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(tmp_path / "idm_exactset"),
+            "summary_out": str(tmp_path / "exactset_summary.json"),
+            "config_path": "test_exactset_config",
+            "source_namespace": "unit_d2e_stream",
+            "feature_mode": "summary_compact_grid8_shift_surface_time",
+            "hidden_dim": 8,
+            "depth": 1,
+            "epochs": 1,
+            "eval_interval_epochs": 1,
+            "batch_size": 4,
+            "training_cache_dir": str(tmp_path / "idm_exactset_cache"),
+            "training_cache_chunk_size": 4,
+            "training_cache_shard_by_path": False,
+            "categorical_min_count": 1,
+            "keyboard_head_mode": "softmax",
+            "keyboard_softmax_min_count": 1,
+            "keyboard_softmax_threshold": 0.0,
+            "button_head_mode": "softmax",
+            "button_softmax_min_count": 1,
+            "button_softmax_threshold": 0.0,
+            "mouse_head_mode": "axis_softmax",
+            "mouse_output_gain_mode": "train_abs_ratio",
+            "mouse_gain_calibration_max_examples": 8,
+            "seed": 43,
+            "force_cpu": True,
+        }
+    )
+
+    metadata = summary["metadata"]
+    assert metadata["keyboard_head_mode"] == "softmax"
+    assert metadata["button_head_mode"] == "softmax"
+    assert ("KEY_PRESS_87",) in {tuple(row) for row in metadata["keyboard_classes"]}
+    assert ("MOUSE_LEFT_DOWN",) in {tuple(row) for row in metadata["button_classes"]}
+    assert "KEY_PRESS_87" not in metadata["categorical_vocab"]
+    assert "KEY_PRESS_65" not in metadata["categorical_vocab"]
+    assert "MOUSE_LEFT_DOWN" not in metadata["categorical_vocab"]
+
+    manifest = json.loads(Path(metadata["training_cache"]["manifest_paths"][0]).read_text())
+    assert manifest["identity"]["keyboard_head_mode"] == "softmax"
+    assert manifest["identity"]["button_head_mode"] == "softmax"
+    payload = torch.load(manifest["chunks"][0]["path"], map_location="cpu", weights_only=False)
+    assert "keyboard_y" in payload
+    assert "button_y" in payload
+    assert payload["keyboard_y"].shape[0] == payload["x"].shape[0]
+    assert payload["button_y"].shape[0] == payload["x"].shape[0]
+    assert int(payload["keyboard_y"].max().item()) > 0
+    assert int(payload["button_y"].max().item()) > 0
+
+    predictions = [
+        json.loads(line)["predicted_tokens"]
+        for line in Path(summary["predictions_path"]).read_text().splitlines()
+    ]
+    assert any(any(token.startswith("KEY_") for token in row) for row in predictions)
+
+    checkpoint_prediction = predict_streaming_idm_checkpoint(
+        {
+            "checkpoint_path": metadata["checkpoint_path"],
+            "checkpoint_metadata_path": str(tmp_path / "idm_exactset" / "checkpoint_metadata.json"),
+            "records_path": str(target_path),
+            "output_dir": str(tmp_path / "exactset_predict"),
+            "keyboard_softmax_threshold": 0.0,
+            "button_softmax_threshold": 0.0,
+            "force_cpu": True,
+            "validate_pseudolabels": False,
+        }
+    )
+    assert checkpoint_prediction["records"] == 5
+    assert checkpoint_prediction["prediction_config"]["keyboard_head_mode"] == "softmax"
+    assert checkpoint_prediction["prediction_config"]["button_head_mode"] == "softmax"
 
 
 def test_streaming_idm_predicts_train_core_pseudolabels_without_retraining(tmp_path: Path):
