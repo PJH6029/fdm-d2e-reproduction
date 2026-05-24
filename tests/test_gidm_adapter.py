@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 from fdm_d2e.eval.gidm_adapter import build_gidm_inference_manifest, convert_gidm_mcap_predictions
-from fdm_d2e.eval.gidm_runner import build_gidm_run_plan, prepare_desktop_minimal_inference_script
+from fdm_d2e.eval.gidm_runner import GidmRunPlan, _run_one, build_gidm_run_plan, prepare_desktop_minimal_inference_script
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
@@ -305,3 +306,50 @@ def test_build_gidm_run_plan_assigns_devices_and_resumes_existing_outputs(tmp_pa
 
     assert [plan.universe_row_id for plan in plans] == ["rec/missing"]
     assert plans[0].cuda_device == "0"
+
+
+def test_gidm_runner_passes_absolute_output_to_upstream(tmp_path: Path, monkeypatch):
+    repo = tmp_path / "repo"
+    d2e_repo = repo / "outputs" / "external" / "D2E"
+    d2e_repo.mkdir(parents=True)
+    script = d2e_repo / "inference_desktop_minimal.py"
+    script.write_text("print('placeholder')\n", encoding="utf-8")
+    output = Path("outputs/gidm_exact_split/predicted_mcap/example.mcap")
+    log = repo / "artifacts/eval/run.log"
+    seen = {}
+
+    def fake_run(cmd, *, cwd, env, stdout, stderr, text):
+        seen["cmd"] = cmd
+        seen["cwd"] = cwd
+        out = Path(cmd[4])
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(b"mcap")
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("fdm_d2e.eval.gidm_runner.subprocess.run", fake_run)
+
+    row = _run_one(
+        GidmRunPlan(
+            index=0,
+            universe_row_id="d2e_480p:Game/rec",
+            video_path="/data/video.mkv",
+            prediction_mcap_path=str(output),
+            cuda_device="0",
+            log_path=str(log),
+        ),
+        script_path=script,
+        d2e_repo=d2e_repo,
+        model="open-world-agents/Generalist-IDM-1B",
+        max_context_length=2048,
+        max_duration=None,
+        uv_cache_dir=repo / "uv-cache",
+        hf_home=repo / "hf-home",
+    )
+
+    assert seen["cwd"] == d2e_repo
+    assert Path(seen["cmd"][4]).is_absolute()
+    assert Path(seen["cmd"][4]) == (repo / output).resolve()
+    assert row["prediction_mcap_path"] == str(output)
+    assert row["resolved_prediction_mcap_path"] == str((repo / output).resolve())
+    assert row["output_exists"] is True

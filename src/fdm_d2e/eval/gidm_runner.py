@@ -102,7 +102,8 @@ def _run_one(
     uv_cache_dir: str | Path,
     hf_home: str | Path,
 ) -> dict[str, Any]:
-    output_path = Path(plan.prediction_mcap_path)
+    manifest_output_path = Path(plan.prediction_mcap_path)
+    output_path = manifest_output_path if manifest_output_path.is_absolute() else (Path.cwd() / manifest_output_path).resolve()
     ensure_dir(output_path.parent)
     ensure_dir(Path(plan.log_path).parent)
     env = os.environ.copy()
@@ -119,7 +120,7 @@ def _run_one(
         "run",
         str(script_path.name),
         plan.video_path,
-        plan.prediction_mcap_path,
+        str(output_path),
         "--model",
         model,
         "--device",
@@ -137,6 +138,7 @@ def _run_one(
         "universe_row_id": plan.universe_row_id,
         "video_path": plan.video_path,
         "prediction_mcap_path": plan.prediction_mcap_path,
+        "resolved_prediction_mcap_path": str(output_path),
         "cuda_device": plan.cuda_device,
         "log_path": plan.log_path,
         "exit_code": int(proc.returncode),
