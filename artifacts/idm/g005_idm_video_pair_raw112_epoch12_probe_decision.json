@@ -1,0 +1,95 @@
+{
+  "schema": "g005_idm_video_pair_raw112_epoch12_probe_decision.v1",
+  "status": "reject_continue_raw112_depth_only",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "claim_boundary": "Closed-target 320k probe only. This is not full target evaluation and is not G005 completion evidence.",
+  "run_evidence": {
+    "training_run": "artifacts/idm/g005_idm_video_pair_raw112_resume_to12_4xh200_run.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_video_pair_raw112_resume_to12_4xh200_gpu_monitor.csv",
+    "prediction_summary": "artifacts/idm/g005_idm_video_pair_raw112_epoch12_closed_target_probe_prediction_summary.json",
+    "paper_metrics": "artifacts/idm/g005_idm_video_pair_raw112_epoch12_closed_target_probe_paper_metrics.json",
+    "previous_epoch6_decision": "artifacts/idm/g005_idm_video_pair_raw112_epoch6_probe_decision.json"
+  },
+  "training": {
+    "git_head": "a1d6e156239f474d008e273efc1c7204cf6bc826",
+    "nproc_per_node": 4,
+    "expected_gpus": 4,
+    "gpu_monitor_covers_expected_gpus": true,
+    "train_records": 19211006,
+    "target_records_during_training": 0,
+    "epochs": 12,
+    "wall_clock_seconds": 5464,
+    "skip_prediction": true
+  },
+  "probe": {
+    "max_rows": 320000,
+    "available_target_cache_shards": 23,
+    "split_tags": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ],
+    "empty_bins_as_correct": false
+  },
+  "paper_targets": {
+    "pearson_x_min": 0.796,
+    "pearson_y_min": 0.783,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31,
+    "keyboard_accuracy_min": 0.73,
+    "mouse_button_accuracy_min": 0.957,
+    "source": "docs/gidm_baseline_contract.md"
+  },
+  "epoch6_all": {
+    "rows": 320000,
+    "pearson_x": 0.6401940094154598,
+    "pearson_y": 0.22020528215367338,
+    "scale_ratio_x": 2.658537195125685,
+    "scale_ratio_y": 7.0867596671561435,
+    "keyboard_key_accuracy": 0.025532347755323478,
+    "mouse_button_accuracy": 0.023717611276832192,
+    "mouse_button_f1": 0.04456563168850969,
+    "no_button_false_positive_rate": 0.07649727242936909
+  },
+  "epoch12_all": {
+    "rows": 320000,
+    "pearson_x": 0.6622928593439459,
+    "pearson_y": 0.24871125925816928,
+    "scale_ratio_x": 1.6078792765454935,
+    "scale_ratio_y": 4.402033429177272,
+    "keyboard_key_accuracy": 0.024911322586205334,
+    "mouse_button_accuracy": 0.026040303585448836,
+    "mouse_button_f1": 0.04786102062975027,
+    "no_button_false_positive_rate": 0.11209062345389474
+  },
+  "epoch12_minus_epoch6": {
+    "pearson_x": 0.02209884992848612,
+    "pearson_y": 0.0285059771044959,
+    "scale_ratio_x": -1.0506579185801914,
+    "scale_ratio_y": -2.6847262379788716,
+    "keyboard_key_accuracy": -0.000621025169118144,
+    "mouse_button_accuracy": 0.0023226923086166437,
+    "mouse_button_f1": 0.003295388941240581,
+    "no_button_false_positive_rate": 0.03559335102452565
+  },
+  "epoch12_target_gaps": {
+    "pearson_x": -0.13370714065605412,
+    "pearson_y": -0.5342887407418308,
+    "scale_ratio_x_excess": 0.3778792765454936,
+    "scale_ratio_y_excess": 3.092033429177272,
+    "keyboard_accuracy": -0.7050886774137946,
+    "mouse_button_accuracy": -0.9309596964145511,
+    "no_button_false_positive_rate_excess": 0.012090623453894733
+  },
+  "epoch12_split_no_button_false_positive_rate": {
+    "eval_split:temporal": 0.10828279917748294,
+    "eval_split:heldout_recording": 0.14785853700452967,
+    "eval_split:heldout_game": 0.1098971906411982
+  },
+  "decision": {
+    "completion_ready": false,
+    "continue_more_epochs": false,
+    "reason": "Epoch12 improves mouse correlation, scale ratio, and button F1 over epoch6, but it remains far below D2E paper G-IDM targets, keyboard paper accuracy regresses slightly, and no-button false-positive rate exceeds the 0.10 hard gate on all heldout split groups.",
+    "next_research_direction": "Pivot away from raw112 depth-only continuation toward explicit no-button/action-set modeling, train-only threshold calibration, and architecture changes that separate sparse keyboard/button endpoints from mouse-motion regression."
+  }
+}
