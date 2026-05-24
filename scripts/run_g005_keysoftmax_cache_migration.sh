@@ -10,6 +10,7 @@ LOG_PATH="${LOG_PATH:-artifacts/idm/g005_video_pair_raw112_keysoftmax_cache_migr
 GPU_MONITOR_LOG="${GPU_MONITOR_LOG:-artifacts/idm/g005_video_pair_raw112_keysoftmax_cache_migration_gpu_monitor.csv}"
 PID_FILE="${PID_FILE:-outputs/cluster/g005_video_pair_raw112_keysoftmax_cache_migration.pid}"
 FORCE="${FORCE:-0}"
+SPLITS="${SPLITS:-train,target}"
 
 mkdir -p "$(dirname "$OUTPUT")" "$(dirname "$PROGRESS_OUTPUT")" "$(dirname "$RUN_SUMMARY")" "$(dirname "$LOG_PATH")" "$(dirname "$GPU_MONITOR_LOG")" "$(dirname "$PID_FILE")"
 echo "$$" >"$PID_FILE"
@@ -44,12 +45,14 @@ set +e
   echo "target_config=$TARGET_CONFIG"
   echo "output=$OUTPUT"
   echo "progress_output=$PROGRESS_OUTPUT"
+  echo "splits=$SPLITS"
   args=(
     scripts/migrate_video_idm_cache_keysoftmax.py
     --source-config "$SOURCE_CONFIG"
     --target-config "$TARGET_CONFIG"
     --output "$OUTPUT"
     --progress-output "$PROGRESS_OUTPUT"
+    --splits "$SPLITS"
   )
   if [[ "$FORCE" != "0" ]]; then
     args+=(--force)
@@ -126,6 +129,7 @@ payload = {
     "schema": "g005_keysoftmax_cache_migration_run.v1",
     "source_config": "$SOURCE_CONFIG",
     "target_config": "$TARGET_CONFIG",
+    "splits": "$SPLITS",
     "output": str(output),
     "progress_output": str(progress),
     "log_path": "$LOG_PATH",

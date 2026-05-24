@@ -6,7 +6,7 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Sequence
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -154,10 +154,14 @@ def migrate_cache(
     *,
     force: bool = False,
     progress_output: str | Path | None = None,
+    splits: Sequence[str] = ("train", "target"),
 ) -> dict[str, Any]:
     torch = require_torch()
     started = time.time()
     progress_path = Path(progress_output) if progress_output else None
+    requested_splits = {str(split).strip() for split in splits if str(split).strip()}
+    if not requested_splits or requested_splits - {"train", "target"}:
+        raise ValueError("splits must contain train and/or target")
 
     def _progress(payload: dict[str, Any]) -> None:
         if progress_path is None:
@@ -195,25 +199,35 @@ def migrate_cache(
         raise ValueError("target config must set keyboard_head_mode=softmax")
     if any(_is_keyboard_token(token) or _is_mouse_button_token(token) for token in target_stats.get("category_vocab", [])):
         raise ValueError("target category_vocab must exclude keyboard/button tokens for exact-set heads")
-    source_train_manifests = load_video_idm_cache_manifests(
-        target_train_paths,
-        stats=source_stats,
-        config=source_config,
-        split_name="train",
+    source_train_manifests = (
+        load_video_idm_cache_manifests(
+            target_train_paths,
+            stats=source_stats,
+            config=source_config,
+            split_name="train",
+        )
+        if "train" in requested_splits
+        else []
     )
-    source_target_manifests = load_video_idm_cache_manifests(
-        target_target_paths,
-        stats=source_stats,
-        config=source_config,
-        split_name="target",
+    source_target_manifests = (
+        load_video_idm_cache_manifests(
+            target_target_paths,
+            stats=source_stats,
+            config=source_config,
+            split_name="target",
+        )
+        if "target" in requested_splits
+        else []
     )
     keyboard_classes = [tuple(str(token) for token in row) for row in target_stats.get("keyboard_classes", [])]
     target_category_vocab = [str(token) for token in target_stats.get("category_vocab", [])]
     migrated: dict[str, list[dict[str, Any]]] = {"train": [], "target": []}
-    for split_name, paths, source_manifests in (
-        ("train", target_train_paths, source_train_manifests),
-        ("target", target_target_paths, source_target_manifests),
-    ):
+    split_jobs = []
+    if "train" in requested_splits:
+        split_jobs.append(("train", target_train_paths, source_train_manifests))
+    if "target" in requested_splits:
+        split_jobs.append(("target", target_target_paths, source_target_manifests))
+    for split_name, paths, source_manifests in split_jobs:
         for record_path, source_manifest in zip(paths, source_manifests):
             target_manifest_path = _video_cache_manifest_path(
                 target_config["video_cache_dir"],
@@ -239,6 +253,7 @@ def migrate_cache(
     summary = {
         "schema": "video_idm_keysoftmax_cache_migration_summary.v1",
         "status": "pass",
+        "splits": sorted(requested_splits),
         "source_stats_path": str(source_config["stats_path"]),
         "target_stats_path": str(target_stats_path),
         "target_keyboard_classes": len(keyboard_classes),
@@ -276,6 +291,7 @@ def main() -> int:
     parser.add_argument("--target-config", default="configs/model/idm_video_pair_d2e_full_raw112_keysoftmax_paper_target.yaml")
     parser.add_argument("--output", default="artifacts/idm/g005_video_pair_raw112_keysoftmax_cache_migration_summary.json")
     parser.add_argument("--progress-output", default="artifacts/idm/g005_video_pair_raw112_keysoftmax_cache_migration_progress.json")
+    parser.add_argument("--splits", default="train,target", help="comma-separated cache splits to migrate: train,target")
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
     summary = migrate_cache(
@@ -283,6 +299,7 @@ def main() -> int:
         load_config(args.target_config),
         force=args.force,
         progress_output=args.progress_output,
+        splits=[item for item in args.splits.split(",") if item],
     )
     if args.progress_output:
         progress_path = Path(args.progress_output)
