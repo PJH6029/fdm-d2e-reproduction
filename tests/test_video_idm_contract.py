@@ -3,10 +3,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.migrate_video_idm_cache_keysoftmax import migrate_cache
+
 from fdm_d2e.training.video_idm import (
+    load_video_idm_cache_manifests,
     _VideoFrameStream,
     _select_button_softmax_threshold,
     precompute_video_idm_cache,
+    scan_video_idm_stats,
     predict_video_idm_checkpoint,
     train_video_idm,
 )
@@ -221,3 +225,89 @@ def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):
     assert resumed_summary["resumed_from_train_state"] is True
     assert resumed_summary["start_epoch"] == 1
     assert len(resumed_summary["metadata"]["calibration"]) > 0
+
+
+def test_keysoftmax_cache_migration_reuses_frame_payloads_and_rewrites_labels(tmp_path: Path):
+    if not torch_available():
+        return
+    import torch
+
+    frame_dir = tmp_path / "frames"
+    for idx in range(1, 12):
+        _write_ppm(frame_dir / f"frame_{idx:06d}.ppm", value=40 + idx)
+    train_rows = [_record(idx, split="train_core", frame_dir=frame_dir) for idx in range(8)]
+    target_rows = [_record(idx, split="eval", frame_dir=frame_dir) for idx in range(8, 10)]
+    train_path = tmp_path / "train.jsonl"
+    target_path = tmp_path / "target.jsonl"
+    _write_jsonl(train_path, train_rows)
+    _write_jsonl(target_path, target_rows)
+
+    source_config = {
+        "model_name": "unit_video_pair_idm_multilabel",
+        "train_records": str(train_path),
+        "target_records": str(target_path),
+        "output_dir": str(tmp_path / "source_out"),
+        "summary_out": str(tmp_path / "source_summary.json"),
+        "stats_path": str(tmp_path / "source_out" / "video_idm_stats.json"),
+        "cache_summary_out": str(tmp_path / "source_cache_summary.json"),
+        "video_cache_dir": str(tmp_path / "source_cache"),
+        "video_image_size": 8,
+        "video_frame_fps": 20,
+        "video_cache_chunk_size": 3,
+        "video_cache_num_workers": 1,
+        "video_input_mode": "pair_delta_abs",
+        "missing_frame_policy": "zero",
+        "force_cpu": True,
+        "categorical_min_count": 1,
+        "button_head_mode": "softmax",
+        "mouse_target_mode": "sum",
+        "mouse_head_mode": "regression",
+        "mouse_emit_mode": "decompose",
+        "require_precomputed_video_cache": True,
+    }
+    target_config = {
+        **source_config,
+        "model_name": "unit_video_pair_idm_keysoftmax",
+        "output_dir": str(tmp_path / "target_out"),
+        "summary_out": str(tmp_path / "target_summary.json"),
+        "stats_path": str(tmp_path / "target_out" / "video_idm_stats.json"),
+        "cache_summary_out": str(tmp_path / "target_cache_summary.json"),
+        "video_cache_dir": str(tmp_path / "target_cache"),
+        "keyboard_head_mode": "softmax",
+        "keyboard_softmax_min_count": 1,
+    }
+
+    precompute_video_idm_cache(source_config)
+    summary = migrate_cache(source_config, target_config)
+    assert summary["status"] == "pass"
+    assert summary["train_cache"]["rows"] == len(train_rows)
+    assert summary["target_cache"]["rows"] == len(target_rows)
+    assert summary["target_keyboard_classes"] >= 2
+
+    source_stats = scan_video_idm_stats([train_path], config=source_config)
+    target_stats = scan_video_idm_stats([train_path], config=target_config)
+    assert "KEY_PRESS_87" in source_stats["category_vocab"]
+    assert "KEY_PRESS_87" not in target_stats["category_vocab"]
+    assert target_stats["keyboard_head_mode"] == "softmax"
+
+    source_manifest = load_video_idm_cache_manifests(
+        [train_path], stats=source_stats, config=source_config, split_name="train"
+    )[0]
+    target_manifest = load_video_idm_cache_manifests(
+        [train_path], stats=target_stats, config=target_config, split_name="train"
+    )[0]
+    source_payload = torch.load(source_manifest["chunks"][0]["path"], map_location="cpu", weights_only=False)
+    target_payload = torch.load(target_manifest["chunks"][0]["path"], map_location="cpu", weights_only=False)
+
+    assert torch.equal(target_payload["frames"], source_payload["frames"])
+    assert torch.equal(target_payload["aux"], source_payload["aux"])
+    assert torch.equal(target_payload["mouse_y"], source_payload["mouse_y"])
+    assert torch.equal(target_payload["button_y"], source_payload["button_y"])
+    assert target_payload["cat_y"].shape[1] == len(target_stats["category_vocab"])
+    assert target_payload["keyboard_y"].dtype == torch.long
+
+    keyboard_classes = [tuple(row) for row in target_stats["keyboard_classes"]]
+    expected_first_class = keyboard_classes.index(("KEY_PRESS_87",))
+    expected_second_class = keyboard_classes.index(())
+    assert int(target_payload["keyboard_y"][0]) == expected_first_class
+    assert int(target_payload["keyboard_y"][1]) == expected_second_class
