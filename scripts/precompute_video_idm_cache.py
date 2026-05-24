@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
 from pathlib import Path
 
@@ -17,6 +18,8 @@ def main() -> int:
     args = parser.parse_args()
     config = load_config(args.config)
     config.setdefault("config_path", args.config)
+    if bool(config.get("require_ffmpeg", False)) and shutil.which("ffmpeg") is None:
+        raise SystemExit("ffmpeg is required for this video IDM cache config but is not on PATH")
     summary = precompute_video_idm_cache(config)
     print(
         "video IDM cache precompute: "
