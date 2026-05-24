@@ -180,6 +180,17 @@ def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):
     assert cache_summary["status"] == "pass"
     assert cache_summary["train_cache"]["rows"] == len(train_rows)
     assert cache_summary["target_cache"]["rows"] == len(target_rows)
+    train_only_summary = precompute_video_idm_cache(
+        {
+            **config,
+            "cache_summary_out": str(tmp_path / "cache_summary_train_only.json"),
+            "video_cache_precompute_splits": ["train"],
+        }
+    )
+    assert train_only_summary["requested_splits"] == ["train"]
+    assert train_only_summary["train_cache"]["precomputed"] is True
+    assert train_only_summary["target_cache"]["precomputed"] is False
+    assert train_only_summary["target_cache"]["rows"] == len(target_rows)
 
     summary = train_video_idm(config)
     assert summary["metadata"]["train_records"] == len(train_rows)

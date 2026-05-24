@@ -15,9 +15,16 @@ from fdm_d2e.training.video_idm import precompute_video_idm_cache
 def main() -> int:
     parser = argparse.ArgumentParser(description="Precompute raw frame-pair tensor caches for video IDM training.")
     parser.add_argument("--config", required=True)
+    parser.add_argument(
+        "--splits",
+        default=None,
+        help="Optional comma-separated split subset to precompute, e.g. train or target. Default: train,target.",
+    )
     args = parser.parse_args()
     config = load_config(args.config)
     config.setdefault("config_path", args.config)
+    if args.splits:
+        config["video_cache_precompute_splits"] = [part.strip() for part in args.splits.split(",") if part.strip()]
     if bool(config.get("require_ffmpeg", False)) and shutil.which("ffmpeg") is None:
         raise SystemExit("ffmpeg is required for this video IDM cache config but is not on PATH")
     summary = precompute_video_idm_cache(config)

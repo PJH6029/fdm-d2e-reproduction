@@ -873,6 +873,34 @@ def load_video_idm_cache_manifests(
     return manifests
 
 
+def _video_cache_precompute_splits(config: dict[str, Any]) -> set[str]:
+    raw_value = config.get("video_cache_precompute_splits", config.get("precompute_splits", ["train", "target"]))
+    if isinstance(raw_value, str):
+        parts = [part.strip() for part in raw_value.split(",")]
+    else:
+        parts = [str(part).strip() for part in raw_value]
+    splits = {part for part in parts if part}
+    unknown = splits - {"train", "target"}
+    if unknown:
+        raise ValueError(f"unsupported video cache precompute split(s): {sorted(unknown)}")
+    if not splits:
+        raise ValueError("video_cache_precompute_splits must include train, target, or both")
+    return splits
+
+
+def _load_existing_video_cache_manifests(
+    record_paths: Sequence[str | Path],
+    *,
+    stats: dict[str, Any],
+    config: dict[str, Any],
+    split_name: str,
+) -> list[dict[str, Any]]:
+    try:
+        return load_video_idm_cache_manifests(record_paths, stats=stats, config=config, split_name=split_name)
+    except FileNotFoundError:
+        return []
+
+
 def precompute_video_idm_cache(config: dict[str, Any]) -> dict[str, Any]:
     output_dir = ensure_dir(config.get("output_dir", "outputs/idm_video_pair"))
     train_paths = _record_paths_from_config(
@@ -893,20 +921,32 @@ def precompute_video_idm_cache(config: dict[str, Any]) -> dict[str, Any]:
     else:
         stats = scan_video_idm_stats(train_paths, config=config)
         write_json(stats_path, stats)
-    train_manifests = build_video_idm_cache_manifests(train_paths, stats=stats, config=config, split_name="train")
-    target_manifests = build_video_idm_cache_manifests(target_paths, stats=stats, config=config, split_name="target")
+    requested_splits = _video_cache_precompute_splits(config)
+    train_manifests = (
+        build_video_idm_cache_manifests(train_paths, stats=stats, config=config, split_name="train")
+        if "train" in requested_splits
+        else _load_existing_video_cache_manifests(train_paths, stats=stats, config=config, split_name="train")
+    )
+    target_manifests = (
+        build_video_idm_cache_manifests(target_paths, stats=stats, config=config, split_name="target")
+        if "target" in requested_splits
+        else _load_existing_video_cache_manifests(target_paths, stats=stats, config=config, split_name="target")
+    )
     summary = {
         "schema": "video_idm_cache_precompute_summary.v1",
         "status": "pass",
         "stats_path": str(stats_path),
+        "requested_splits": sorted(requested_splits),
         "train_record_paths": [str(path) for path in train_paths],
         "target_record_paths": [str(path) for path in target_paths],
         "train_cache": {
+            "precomputed": "train" in requested_splits,
             "manifest_paths": [str(row["manifest_path"]) for row in train_manifests],
             "rows": sum(_training_cache_manifest_row_count(row) for row in train_manifests),
             "bytes": sum(_training_cache_manifest_byte_count(row) for row in train_manifests),
         },
         "target_cache": {
+            "precomputed": "target" in requested_splits,
             "manifest_paths": [str(row["manifest_path"]) for row in target_manifests],
             "rows": sum(_training_cache_manifest_row_count(row) for row in target_manifests),
             "bytes": sum(_training_cache_manifest_byte_count(row) for row in target_manifests),

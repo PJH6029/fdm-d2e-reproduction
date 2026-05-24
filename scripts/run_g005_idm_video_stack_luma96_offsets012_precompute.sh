@@ -6,6 +6,7 @@ MODEL_SLUG="${MODEL_SLUG:-g005_idm_video_stack_luma96_offsets012_keysoftmax}"
 LOG_PATH="${LOG_PATH:-artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_precompute.log}"
 PID_FILE="${PID_FILE:-outputs/cluster/g005_idm_video_stack_luma96_offsets012_keysoftmax_precompute.pid}"
 RUN_SUMMARY="${RUN_SUMMARY:-artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_precompute_run.json}"
+PRECOMPUTE_SPLITS="${PRECOMPUTE_SPLITS:-}"
 
 mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$PID_FILE")" "$(dirname "$RUN_SUMMARY")" outputs/cluster
 echo "$$" >"$PID_FILE"
@@ -24,7 +25,11 @@ set +e
   echo "started_at=$(date -Iseconds)"
   echo "git_head=$(git rev-parse HEAD)"
   echo "config=$CONFIG"
-  uv run python scripts/precompute_video_idm_cache.py --config "$CONFIG"
+  CMD=(uv run python scripts/precompute_video_idm_cache.py --config "$CONFIG")
+  if [[ -n "$PRECOMPUTE_SPLITS" ]]; then
+    CMD+=(--splits "$PRECOMPUTE_SPLITS")
+  fi
+  "${CMD[@]}"
   echo "finished_at=$(date -Iseconds)"
 ) 2>&1 | tee "$LOG_PATH"
 STATUS="${PIPESTATUS[0]}"
@@ -68,6 +73,7 @@ payload = {
     "status": "pass" if int("$STATUS") == 0 else "fail",
     "exit_code": int("$STATUS"),
     "config": "$CONFIG",
+    "precompute_splits": "$PRECOMPUTE_SPLITS",
     "log_path": "$LOG_PATH",
     "wall_clock_seconds": int("$END_EPOCH") - int("$START_EPOCH"),
     "git_head": _git_output(["rev-parse", "HEAD"]),
