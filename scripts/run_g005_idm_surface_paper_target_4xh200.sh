@@ -21,6 +21,8 @@ ALLOW_CACHE_BUILD="${ALLOW_CACHE_BUILD:-0}"
 BUILD_SPLIT_STATS="${BUILD_SPLIT_STATS:-1}"
 BUILD_PAPER_METRICS="${BUILD_PAPER_METRICS:-1}"
 VALIDATE_G005="${VALIDATE_G005:-1}"
+REQUIRE_PRECOMPUTED_CACHE="${REQUIRE_PRECOMPUTED_CACHE:-0}"
+PRECOMPUTE_CACHE_VALIDATION="${PRECOMPUTE_CACHE_VALIDATION:-artifacts/idm/${MODEL_SLUG}_precomputed_cache_validation.json}"
 
 mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$RUN_SUMMARY")" "$(dirname "$GPU_MONITOR_LOG")" "$(dirname "$PID_FILE")" outputs/cluster "$OUTPUT_DIR"
 echo "$$" >"$PID_FILE"
@@ -71,6 +73,13 @@ set +e
   if [[ "$PRESEED_STATS" != "0" && ! -s "$OUTPUT_DIR/streaming_stats.json" && -s "$STATS_SEED_PATH" ]]; then
     echo "preseeding streaming stats from $STATS_SEED_PATH"
     cp "$STATS_SEED_PATH" "$OUTPUT_DIR/streaming_stats.json"
+  fi
+  if [[ "$REQUIRE_PRECOMPUTED_CACHE" != "0" ]]; then
+    echo "validating precomputed streaming IDM stats/cache via $PRECOMPUTE_CACHE_VALIDATION"
+    uv run python scripts/precompute_streaming_idm_training_cache.py \
+      --config "$CONFIG" \
+      --validate-only \
+      --output "$PRECOMPUTE_CACHE_VALIDATION"
   fi
   RUN_CONFIG="$CONFIG"
   if [[ "$ALLOW_CACHE_BUILD" == "0" ]]; then
@@ -206,6 +215,8 @@ summary = _load(summary_path)
 metadata = _load(metadata_path)
 split_stats = _load(split_stats_path)
 paper_metrics = _load(paper_metrics_path)
+precompute_cache_validation_path = Path("$PRECOMPUTE_CACHE_VALIDATION")
+precompute_cache_validation = _load(precompute_cache_validation_path)
 payload = {
     "schema": "${MODEL_SLUG}_4xh200_run.v1",
     "config": "$CONFIG",
@@ -237,6 +248,10 @@ payload = {
     "paper_metrics_path": str(paper_metrics_path),
     "paper_metrics_status": paper_metrics.get("status") if paper_metrics else None,
     "paper_metrics_rows": (paper_metrics or {}).get("alignment", {}).get("rows_seen") if paper_metrics else None,
+    "require_precomputed_cache": "$REQUIRE_PRECOMPUTED_CACHE" != "0",
+    "precompute_cache_validation_path": str(precompute_cache_validation_path),
+    "precompute_cache_validation_status": precompute_cache_validation.get("status") if precompute_cache_validation else None,
+    "precompute_cache_validation_rows": precompute_cache_validation.get("rows") if precompute_cache_validation else None,
     "checkpoint_path": (metadata or {}).get("checkpoint_path"),
     "train_records": (metadata or {}).get("train_records"),
     "target_records": (metadata or {}).get("target_records"),

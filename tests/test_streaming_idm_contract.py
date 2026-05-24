@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -16,6 +18,8 @@ from fdm_d2e.training.streaming_idm import (
     train_streaming_idm,
 )
 from fdm_d2e.training.torch_idm import torch_available
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _record(idx: int, split: str) -> dict:
@@ -227,6 +231,85 @@ def test_streaming_idm_action_history_stats_parallel_by_path(tmp_path: Path):
     assert parallel_stats["button_class_counts"] == serial_stats["button_class_counts"]
     assert parallel_stats["mean"] == pytest.approx(serial_stats["mean"])
     assert parallel_stats["std"] == pytest.approx(serial_stats["std"])
+
+
+def test_streaming_idm_cache_precompute_validate_only_preserves_action_history(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    shard_a = tmp_path / "train_a.jsonl"
+    shard_b = tmp_path / "train_b.jsonl"
+    rows_a = [
+        {**_exactset_record(idx, "train_core"), "recording_id": "d2e_480p:Apex/cache_a", "sequence_id": f"d2e_480p:Apex/cache_a#{idx:06d}"}
+        for idx in range(3)
+    ]
+    rows_b = [
+        {**_exactset_record(idx + 3, "train_core"), "recording_id": "d2e_480p:Apex/cache_b", "sequence_id": f"d2e_480p:Apex/cache_b#{idx:06d}"}
+        for idx in range(3)
+    ]
+    _write_jsonl(shard_a, rows_a)
+    _write_jsonl(shard_b, rows_b)
+    out_dir = tmp_path / "idm_precompute"
+    config_path = tmp_path / "config.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "train_record_paths": [str(shard_a), str(shard_b)],
+                "output_dir": str(out_dir),
+                "training_cache_dir": str(out_dir / "train_cache"),
+                "precompute_num_workers": 2,
+                "training_cache_num_workers": 1,
+                "training_cache_chunk_size": 2,
+                "feature_mode": "summary_compact_grid8_shift_surface_time",
+                "categorical_min_count": 1,
+                "action_history_len": 2,
+                "action_history_parallel_by_path": True,
+                "keyboard_head_mode": "softmax",
+                "button_head_mode": "softmax",
+                "mouse_head_mode": "axis_softmax",
+                "mouse_target_mode": "sum",
+            }
+        )
+    )
+    summary_path = tmp_path / "precompute_summary.json"
+    validation_path = tmp_path / "validation.json"
+
+    build = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/precompute_streaming_idm_training_cache.py"),
+            "--config",
+            str(config_path),
+            "--output",
+            str(summary_path),
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert build.returncode == 0, build.stderr
+    validate = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/precompute_streaming_idm_training_cache.py"),
+            "--config",
+            str(config_path),
+            "--validate-only",
+            "--output",
+            str(validation_path),
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert validate.returncode == 0, validate.stderr
+    stats = json.loads((out_dir / "streaming_stats.json").read_text())
+    validation = json.loads(validation_path.read_text())
+    assert stats["action_history_len"] == 2
+    assert stats["action_history_parallel_by_path"] is True
+    assert validation["validate_only"] is True
+    assert validation["rows"] == len(rows_a) + len(rows_b)
+    assert validation["manifest_count"] == 2
 
 
 def test_streaming_idm_action_history_prediction_does_not_peek_target_labels(tmp_path: Path):

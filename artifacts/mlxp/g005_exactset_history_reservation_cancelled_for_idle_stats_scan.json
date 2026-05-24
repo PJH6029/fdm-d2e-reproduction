@@ -25,6 +25,12 @@
       "cancelled_at": "2026-05-24T22:25:14+09:00",
       "git_head_at_launch": "a92b624e3b6831cec18df70e5dd5260c8d6a8f0f",
       "reason": "The first parallelization commit connected scan_streaming_idm_stats_from_config but missed the direct train_streaming_idm stats call-site, so full training still entered the serial action-history stats path."
+    },
+    {
+      "reservation_id": "rsv-jeonghunpark-20260524-b0e1b1",
+      "cancelled_at": "2026-05-24T22:34:16+09:00",
+      "git_head_at_launch": "6d94f61ced5c3951ad88e6b89d6e33ea5bd50ffd",
+      "reason": "The direct train call-site was fixed and rank0 launched 32 stats workers, but the 4xH200 run still spent repeated probes in CPU-only preprocessing with no stats/cache artifact. The launch path now separates stats/cache precompute from the 4-GPU training lane and fails closed unless the cache is already valid."
     }
   ],
   "cancellation_reason": "Action-history streaming stats ignored stats_num_workers and scanned the full 393GB train JSONL on rank0 while all 4 H200 GPUs were idle. The run was stopped before training and the reservation was cancelled to avoid sustained idle GPU time.",

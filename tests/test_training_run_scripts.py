@@ -55,6 +55,21 @@ def test_standalone_g003_and_g004_wrappers_fail_closed_on_split_statistics() -> 
         assert "split_stats_status" in text
 
 
+def test_g005_exactset_history_uses_precompute_then_fail_closed_training() -> None:
+    precompute = _script("scripts/run_g005_idm_exactset_history_precompute.sh")
+    exactset = _script("scripts/run_g005_idm_exactset_history_4xh200.sh")
+    surface = _script("scripts/run_g005_idm_surface_paper_target_4xh200.sh")
+
+    stats_idx = precompute.index("scripts/precompute_streaming_idm_stats.py")
+    cache_idx = precompute.index("scripts/precompute_streaming_idm_training_cache.py")
+    validate_idx = precompute.rindex("--validate-only")
+    assert stats_idx < cache_idx < validate_idx
+    assert 'ALLOW_CACHE_BUILD="${ALLOW_CACHE_BUILD:-0}"' in exactset
+    assert 'REQUIRE_PRECOMPUTED_CACHE="${REQUIRE_PRECOMPUTED_CACHE:-1}"' in exactset
+    assert "--validate-only" in surface
+    assert surface.index("validating precomputed streaming IDM stats/cache") < surface.index("uv run torchrun")
+
+
 def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
     text = _script("scripts/run_g004_d2e_full_fdm_4xh200.sh")
     assert 'PID_FILE="${PID_FILE:-outputs/cluster/g004_d2e_full_fdm_4xh200.pid}"' in text
