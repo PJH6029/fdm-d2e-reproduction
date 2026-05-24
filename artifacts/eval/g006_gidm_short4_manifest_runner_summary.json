@@ -1,0 +1,83 @@
+{
+  "schema": "gidm_manifest_inference_run.v1",
+  "manifest_path": "artifacts/eval/g006_gidm_exact_split_inference_manifest.json",
+  "d2e_repo": "outputs/external/D2E",
+  "inference_script": "outputs/external/D2E/inference_desktop_minimal.py",
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "workers": 4,
+  "cuda_devices": [
+    "0",
+    "1",
+    "2",
+    "3"
+  ],
+  "max_recordings": null,
+  "recording_keys": [
+    "d2e_480p:Monster_Hunter_Wilds/recording_20250831_142517__e47dac8b_split_11",
+    "d2e_480p:Core_Keeper/recording_20250903_173148__8a072c49_split_01",
+    "d2e_480p:Monster_Hunter_Wilds/recording_20250914_144722__c814c5c6_split_03",
+    "d2e_480p:Super_Bunny_Man/M_0913_01_split_01"
+  ],
+  "max_context_length": 2048,
+  "max_duration": null,
+  "resume": true,
+  "dry_run": false,
+  "planned_recordings": 4,
+  "completed_recordings": 4,
+  "failed_recordings": 0,
+  "rows": [
+    {
+      "universe_row_id": "d2e_480p:Core_Keeper/recording_20250903_173148__8a072c49_split_01",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Core_Keeper/recording_20250903_173148__8a072c49_split_01.mkv",
+      "prediction_mcap_path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Core_Keeper_recording_20250903_173148__8a072c49_split_01.mcap",
+      "resolved_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Core_Keeper_recording_20250903_173148__8a072c49_split_01.mcap",
+      "cuda_device": "0",
+      "log_path": "artifacts/eval/gidm_manifest_inference_logs/00000_d2e_480p_Core_Keeper_recording_20250903_173148__8a072c49_split_01.log",
+      "exit_code": 0,
+      "elapsed_seconds": 237.33142042160034,
+      "output_exists": true,
+      "output_size": 51447,
+      "output_sha256": "a126018dc2d59ed36bd8e6b4cf0a0b5a994e6c4b8afd17a92e0c035087411cb9"
+    },
+    {
+      "universe_row_id": "d2e_480p:Monster_Hunter_Wilds/recording_20250831_142517__e47dac8b_split_11",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Monster_Hunter_Wilds/recording_20250831_142517__e47dac8b_split_11.mkv",
+      "prediction_mcap_path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Monster_Hunter_Wilds_recording_20250831_142517__e47dac8b_split_11.mcap",
+      "resolved_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Monster_Hunter_Wilds_recording_20250831_142517__e47dac8b_split_11.mcap",
+      "cuda_device": "1",
+      "log_path": "artifacts/eval/gidm_manifest_inference_logs/00001_d2e_480p_Monster_Hunter_Wilds_recording_20250831_142517__e47dac8b_split_11.log",
+      "exit_code": 0,
+      "elapsed_seconds": 144.83740091323853,
+      "output_exists": true,
+      "output_size": 31995,
+      "output_sha256": "fc129012b5e39f37cfdd0fcf3ab6fde75625b9ef587a4020ee7ef0c08d8ea893"
+    },
+    {
+      "universe_row_id": "d2e_480p:Monster_Hunter_Wilds/recording_20250914_144722__c814c5c6_split_03",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Monster_Hunter_Wilds/recording_20250914_144722__c814c5c6_split_03.mkv",
+      "prediction_mcap_path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Monster_Hunter_Wilds_recording_20250914_144722__c814c5c6_split_03.mcap",
+      "resolved_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Monster_Hunter_Wilds_recording_20250914_144722__c814c5c6_split_03.mcap",
+      "cuda_device": "2",
+      "log_path": "artifacts/eval/gidm_manifest_inference_logs/00002_d2e_480p_Monster_Hunter_Wilds_recording_20250914_144722__c814c5c6_split_03.log",
+      "exit_code": 0,
+      "elapsed_seconds": 163.4394509792328,
+      "output_exists": true,
+      "output_size": 40806,
+      "output_sha256": "0a1d522598e54763fcdaf439c7e8a591b35acd56681cca00a721dd130266c9fb"
+    },
+    {
+      "universe_row_id": "d2e_480p:Super_Bunny_Man/M_0913_01_split_01",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Super_Bunny_Man/M_0913_01_split_01.mkv",
+      "prediction_mcap_path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Super_Bunny_Man_M_0913_01_split_01.mcap",
+      "resolved_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Super_Bunny_Man_M_0913_01_split_01.mcap",
+      "cuda_device": "3",
+      "log_path": "artifacts/eval/gidm_manifest_inference_logs/00003_d2e_480p_Super_Bunny_Man_M_0913_01_split_01.log",
+      "exit_code": 0,
+      "elapsed_seconds": 109.63105964660645,
+      "output_exists": true,
+      "output_size": 40674,
+      "output_sha256": "7ef77be5fb8e8c6c8530dcff60ba2f50ac7b74549468c0ebe2f83c1768dd5dcb"
+    }
+  ],
+  "claim_boundary": "Released G-IDM inference execution evidence only; metric claims require conversion plus paper-metric artifacts."
+}

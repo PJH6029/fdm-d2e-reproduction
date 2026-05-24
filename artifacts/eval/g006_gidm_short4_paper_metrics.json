@@ -1,0 +1,197 @@
+{
+  "schema": "paper_idm_metrics.v1",
+  "status": "pass",
+  "error_count": 0,
+  "model_name": "released_generalist_idm_1b_short4_exact_split",
+  "prediction_paths": [
+    "outputs/gidm_exact_split/short4_predictions.jsonl"
+  ],
+  "target_paths": [
+    "outputs/gidm_exact_split/short4_targets.jsonl"
+  ],
+  "split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
+  "max_rows": null,
+  "alignment": {
+    "rows_seen": 2836,
+    "sequence_id_mismatches": 0,
+    "missing_prediction_rows": 0,
+    "missing_target_rows": 0,
+    "examples": []
+  },
+  "groups": {
+    "all": {
+      "rows": 2836,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.45212784452487126,
+          "pearson_y": 0.703084421761703,
+          "scale_ratio_x": 2.4790161024470647,
+          "scale_ratio_y": 1.7135558039278302,
+          "sample_count": 756,
+          "scale_sample_count": 2836
+        },
+        "keyboard": {
+          "key_accuracy": 0.07336244541484715,
+          "sample_count": 1145
+        },
+        "mouse_button": {
+          "button_accuracy": 0.17543859649122806,
+          "sample_count": 57
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.07829181494661921,
+          "num_examples": 843
+        },
+        "mouse_button": {
+          "accuracy": 0.30303030303030304,
+          "num_examples": 33,
+          "predicted_examples": 34,
+          "exact_true_positive_examples": 10,
+          "false_positive_examples": 24,
+          "false_negative_examples": 23,
+          "precision": 0.29411764705882354,
+          "recall": 0.30303030303030304,
+          "f1": 0.29850746268656714,
+          "no_button_examples": 2803,
+          "no_button_false_positive_examples": 24,
+          "no_button_false_positive_rate": 0.00856225472707813
+        }
+      }
+    },
+    "eval_split:heldout_game": {
+      "rows": 0,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": null,
+          "pearson_y": null,
+          "scale_ratio_x": null,
+          "scale_ratio_y": null,
+          "sample_count": 0,
+          "scale_sample_count": 0
+        },
+        "keyboard": {
+          "key_accuracy": null,
+          "sample_count": 0
+        },
+        "mouse_button": {
+          "button_accuracy": null,
+          "sample_count": 0
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": null,
+          "num_examples": 0
+        },
+        "mouse_button": {
+          "accuracy": null,
+          "num_examples": 0,
+          "predicted_examples": 0,
+          "exact_true_positive_examples": 0,
+          "false_positive_examples": 0,
+          "false_negative_examples": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "no_button_examples": 0,
+          "no_button_false_positive_examples": 0,
+          "no_button_false_positive_rate": null
+        }
+      }
+    },
+    "eval_split:heldout_recording": {
+      "rows": 2732,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.5673635975120639,
+          "pearson_y": 0.702904526416661,
+          "scale_ratio_x": 2.1495875856284075,
+          "scale_ratio_y": 1.7257123812697883,
+          "sample_count": 672,
+          "scale_sample_count": 2732
+        },
+        "keyboard": {
+          "key_accuracy": 0.08069164265129683,
+          "sample_count": 1041
+        },
+        "mouse_button": {
+          "button_accuracy": 0.17543859649122806,
+          "sample_count": 57
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.08930987821380243,
+          "num_examples": 739
+        },
+        "mouse_button": {
+          "accuracy": 0.30303030303030304,
+          "num_examples": 33,
+          "predicted_examples": 34,
+          "exact_true_positive_examples": 10,
+          "false_positive_examples": 24,
+          "false_negative_examples": 23,
+          "precision": 0.29411764705882354,
+          "recall": 0.30303030303030304,
+          "f1": 0.29850746268656714,
+          "no_button_examples": 2699,
+          "no_button_false_positive_examples": 24,
+          "no_button_false_positive_rate": 0.00889218228973694
+        }
+      }
+    },
+    "eval_split:temporal": {
+      "rows": 651,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.22534291997905978,
+          "pearson_y": 0.6139073549543204,
+          "scale_ratio_x": 2.775812274368231,
+          "scale_ratio_y": 1.5254752851711026,
+          "sample_count": 236,
+          "scale_sample_count": 651
+        },
+        "keyboard": {
+          "key_accuracy": 0.025806451612903226,
+          "sample_count": 310
+        },
+        "mouse_button": {
+          "button_accuracy": 0.0,
+          "sample_count": 9
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.018726591760299626,
+          "num_examples": 267
+        },
+        "mouse_button": {
+          "accuracy": 0.0,
+          "num_examples": 5,
+          "predicted_examples": 4,
+          "exact_true_positive_examples": 0,
+          "false_positive_examples": 4,
+          "false_negative_examples": 5,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "no_button_examples": 646,
+          "no_button_false_positive_examples": 4,
+          "no_button_false_positive_rate": 0.006191950464396285
+        }
+      }
+    }
+  },
+  "findings": [],
+  "claim_boundary": "Paper-compatible metrics approximate public D2E evaluate.py semantics over pre-binned JSONL tokens; exact released G-IDM comparison remains G006."
+}
