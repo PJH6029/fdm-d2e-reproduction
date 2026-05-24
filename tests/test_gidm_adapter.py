@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 from fdm_d2e.eval.gidm_adapter import build_gidm_inference_manifest, convert_gidm_mcap_predictions
 from fdm_d2e.eval.gidm_runner import GidmRunPlan, _run_one, build_gidm_run_plan, prepare_desktop_minimal_inference_script
+from fdm_d2e.eval.gidm_targets import extract_gidm_target_records
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
@@ -353,3 +354,85 @@ def test_gidm_runner_passes_absolute_output_to_upstream(tmp_path: Path, monkeypa
     assert row["prediction_mcap_path"] == str(output)
     assert row["resolved_prediction_mcap_path"] == str((repo / output).resolve())
     assert row["output_exists"] is True
+
+
+def test_extract_gidm_target_records_uses_by_recording_roots(tmp_path: Path):
+    root = tmp_path / "shard_0" / "by_recording"
+    records = root / "d2e_480p" / "Game" / "rec_001" / "all_records.jsonl"
+    _write_jsonl(
+        records,
+        [
+            {
+                "sequence_id": "rec_001#000000",
+                "source_id": "d2e_480p",
+                "universe_row_id": "d2e_480p:Game/rec_001",
+                "cross_resolution_key": "Game/rec_001",
+                "source_recording_id": "rec_001",
+                "recording_id": "d2e_480p:Game/rec_001",
+                "game": "Game",
+                "timestamp_ns": 100,
+                "bin_index": 0,
+                "eval_split_tags": ["heldout_recording"],
+                "ground_truth_tokens": ["KEY_PRESS_87"],
+            },
+            {
+                "sequence_id": "rec_001#000001",
+                "source_id": "d2e_480p",
+                "universe_row_id": "d2e_480p:Game/rec_001",
+                "cross_resolution_key": "Game/rec_001",
+                "source_recording_id": "rec_001",
+                "recording_id": "d2e_480p:Game/rec_001",
+                "game": "Game",
+                "timestamp_ns": 50,
+                "bin_index": 1,
+                "eval_split_tags": ["temporal"],
+                "ground_truth_tokens": ["MOUSE_DX_P1"],
+            },
+            {
+                "sequence_id": "rec_001#train",
+                "source_id": "d2e_480p",
+                "universe_row_id": "d2e_480p:Game/rec_001",
+                "cross_resolution_key": "Game/rec_001",
+                "source_recording_id": "rec_001",
+                "recording_id": "d2e_480p:Game/rec_001",
+                "game": "Game",
+                "timestamp_ns": 0,
+                "eval_split_tags": [],
+                "ground_truth_tokens": [],
+            },
+        ],
+    )
+    pred = tmp_path / "pred.mcap"
+    pred.write_bytes(b"mcap")
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "recordings": [
+                    {
+                        "universe_row_id": "d2e_480p:Game/rec_001",
+                        "source_id": "d2e_480p",
+                        "game": "Game",
+                        "recording_id": "rec_001",
+                        "row_count": 2,
+                        "prediction_mcap_path": str(pred),
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    out = tmp_path / "targets.jsonl"
+    payload = extract_gidm_target_records(
+        manifest_path=manifest,
+        by_recording_roots=[tmp_path / "shard_*" / "by_recording"],
+        output_path=out,
+        summary_out=tmp_path / "summary.json",
+        only_existing_predictions=True,
+    )
+
+    rows = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines()]
+    assert payload["status"] == "pass"
+    assert payload["rows_written"] == 2
+    assert [row["sequence_id"] for row in rows] == ["rec_001#000001", "rec_001#000000"]
