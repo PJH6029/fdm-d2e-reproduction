@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from fdm_d2e.eval.gidm_adapter import build_gidm_inference_manifest, convert_gidm_mcap_predictions
+from fdm_d2e.eval.gidm_runner import build_gidm_run_plan, prepare_desktop_minimal_inference_script
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
@@ -253,3 +254,54 @@ def test_convert_gidm_mcap_predictions_can_auto_align_first_screen_timestamp(tmp
     rows = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines()]
     assert payload["timestamp_shifts_by_key"]["d2e_480p:Game/rec"] == 2_350_000_000
     assert rows[0]["predicted_tokens"] == ["KEY_PRESS_87"]
+
+
+def test_prepare_desktop_minimal_inference_script_keeps_desktop_constants(tmp_path: Path):
+    repo = tmp_path / "D2E"
+    repo.mkdir()
+    source = repo / "inference.py"
+    source.write_text(
+        "\n".join(
+            [
+                '#     "owa-cli @ git+https://example/owa-cli",',
+                '#     "owa-env-desktop @ git+https://example/owa-env-desktop",',
+                '#     "owa-env-gst @ git+https://example/owa-env-gst",',
+                "print('run')",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    target = prepare_desktop_minimal_inference_script(repo)
+    text = target.read_text(encoding="utf-8")
+    assert "owa-env-desktop @" in text
+    assert "owa-cli @" not in text
+    assert "owa-env-gst @" not in text
+
+
+def test_build_gidm_run_plan_assigns_devices_and_resumes_existing_outputs(tmp_path: Path):
+    existing = tmp_path / "existing.mcap"
+    existing.write_text("done", encoding="utf-8")
+    missing = tmp_path / "missing.mcap"
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "recordings": [
+                    {"universe_row_id": "rec/existing", "video_path": "a.mkv", "prediction_mcap_path": str(existing)},
+                    {"universe_row_id": "rec/missing", "video_path": "b.mkv", "prediction_mcap_path": str(missing)},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    plans = build_gidm_run_plan(
+        manifest_path=manifest,
+        cuda_devices=["0", "1"],
+        log_dir=tmp_path / "logs",
+        resume=True,
+    )
+
+    assert [plan.universe_row_id for plan in plans] == ["rec/missing"]
+    assert plans[0].cuda_device == "0"
