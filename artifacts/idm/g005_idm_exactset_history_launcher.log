@@ -1,0 +1,208 @@
+started_at=2026-05-24T16:12:59+00:00
+git_head=5b53f1653dd632a3dcec171e879719eff3a294cc
+config=configs/model/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target.yaml
+nproc_per_node=4
+gpu_monitor_log=artifacts/idm/g005_idm_exactset_history_4xh200_gpu_monitor.csv
+split_stats_config=configs/eval/g005_idm_exactset_history_split_statistics.yaml
+paper_target_config=configs/eval/g005_idm_exactset_history_paper_target.yaml
+{"cuda_available": true, "cuda_device_count": 4, "cuda_visible_devices": null, "expected_gpus": 4, "hostname": "prod-rsv-jeonghunpark-20260525-d7663e", "rank": 0, "schema": "cluster_gpu_smoke.v1", "status": "passed", "torch_imported": true, "torch_version": "2.12.0+cu130", "world_size": 1}
+validating precomputed streaming IDM stats/cache via artifacts/idm/g005_idm_exactset_history_precomputed_cache_validation.json
+{
+  "bytes": 122272052607,
+  "cache_dir": "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache",
+  "claim_boundary": "Standalone cache precompute prepares streaming IDM DDP input; it is not model-quality evidence.",
+  "config": "configs/model/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target.yaml",
+  "force_rebuild": false,
+  "manifest_count": 64,
+  "manifest_paths": [
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-7716bbb3cca4d9f67884.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-5c23f98ea8a60f539d75.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-2dba7dc4fc86878e43e3.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-095fa303761086082b0f.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-2786581aa24eb905c446.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-e9a82ec0fcc51560b94e.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-ef7dae423701ac5ce3ab.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-3534121cd5e5db103671.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-8b997bb1eb5288cf8430.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-9ed35c72076baa19ed3e.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-da63ba4674421948e4a3.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-fd3eb97dd1bebc1b0763.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-968672f506ed20b02908.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-c21146928ffdc6770bdf.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-874112a68ac197691a4a.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-075592bce958066ad894.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-b5fbb0374c524e243a42.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-a068917500df1cd1f5db.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-1f54f63256d3de6a1c9a.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-b9403320347c33774298.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-ddf1d5eb92870b581ac5.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-3b5f0a2dd3d38b3e6984.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-beb498b06204c6b59407.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-37de22f93992a259d7b5.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-74e65ca623e9bad5a2af.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-2aa555635df73c4de039.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-e744230d90f82dabed71.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-2aff955e4e0cba385ba4.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-ae241e40b25242fbbeff.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-2964e046cc9ac2c29bd1.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-a9e21c5428d1357015af.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-6e23070a6877a91cdb40.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-da47fd02e5afde565cb7.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-c1e05c70cb40de70cc46.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-310c1f00c1a203c85863.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-3b5d209ff9dc49cca613.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-e0e8ef1f4af83bc26069.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-ba4829e24f8c67117159.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-04f9ea6348c44cc1802e.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-0065a56f469a7f56a0ac.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-fe73b783d47b52926b26.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-075893b567809c6e2266.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-5f5ed54d7173aed826fa.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-19bb6159871d5fe55485.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-ea42f1b8b26686f17e92.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-6d2256eccf05a07ea388.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-d5312b8ad222d3ba5efc.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-9e0d1c5e7107fcec74ca.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-027569b437bf9a8eef30.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-4bfe3910317ecda8be67.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-e6aaba6530dd101ef7b7.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-0b57c982fed53f01ebd8.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-694d1fbebff829c0f222.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-220d2a2010a8ff38b83a.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-80c858dd260046950c25.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-97aa309885a906b9d221.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-88f78a430b3f312864e1.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-13da2a1e189fab03439c.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-0163aab8975a906fc93b.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-6846e74c083afc72ce71.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-2949852dc50c39147cbd.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-a70470e4402e9e308a50.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-96ae7561a6d3c6b5d260.manifest.json",
+    "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_cache/train_core-67bd81c0758b592bb8fb.manifest.json"
+  ],
+  "record_paths": 64,
+  "rows": 19211006,
+  "schema": "streaming_idm_training_cache_precompute_summary.v1",
+  "stats_path": "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/streaming_stats.json",
+  "stats_precomputed": false,
+  "status": "pass",
+  "validate_only": true,
+  "wall_clock_seconds": 0.9952845573425293,
+  "workers": 32
+}
+W0524 16:13:09.791000 245 torch/distributed/run.py:862] 
+W0524 16:13:09.791000 245 torch/distributed/run.py:862] *****************************************
+W0524 16:13:09.791000 245 torch/distributed/run.py:862] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0524 16:13:09.791000 245 torch/distributed/run.py:862] *****************************************
+[W524 16:13:11.728237076 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [localhost]:40595 (errno: 97 - Address family not supported by protocol).
+[W524 16:13:11.734331576 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:40595 (errno: 97 - Address family not supported by protocol).
+[W524 16:13:11.737637858 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:40595 (errno: 97 - Address family not supported by protocol).
+[W524 16:13:11.998168370 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.19.7.108]:40111 (errno: 97 - Address family not supported by protocol).
+[W524 16:13:15.693024483 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.19.7.108]:40111 (errno: 97 - Address family not supported by protocol).
+[W524 16:13:15.693338852 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.19.7.108]:40111 (errno: 97 - Address family not supported by protocol).
+[W524 16:13:15.730380126 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.19.7.108]:40111 (errno: 97 - Address family not supported by protocol).
+[W524 16:13:15.730459454 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.19.7.108]:40111 (errno: 97 - Address family not supported by protocol).
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W524 16:13:15.747271867 ProcessGroupNCCL.cpp:5324] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+streaming IDM worker complete: rank=2 world_size=4 status=worker_complete
+streaming IDM worker complete: rank=3 world_size=4 status=worker_complete
+streaming IDM worker complete: rank=1 world_size=4 status=worker_complete
+W0524 16:38:52.013000 245 torch/distributed/elastic/agent/server/api.py:753] Received 15 death signal, shutting down workers
+W0524 16:38:52.017000 245 torch/distributed/elastic/multiprocessing/api.py:1014] Sending process 314 closing signal SIGTERM
+/opt/conda/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+Traceback (most recent call last):
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/torchrun", line 10, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 367, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/run.py", line 1016, in main
+    run(args)
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/run.py", line 1007, in run
+    elastic_launch(
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 191, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 362, in launch_agent
+    result = agent.run()
+             ^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/elastic/metrics/api.py", line 134, in wrapper
+    result = f(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/elastic/agent/server/api.py", line 745, in run
+    result = self._invoke_run(role)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/elastic/agent/server/api.py", line 923, in _invoke_run
+    time.sleep(monitor_interval)
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 86, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 245 got signal: 15
+{
+  "checkpoint_path": null,
+  "config": "configs/model/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target.yaml",
+  "exit_code": 1,
+  "expected_gpus": 4,
+  "git_diff_sha256": "da57b7d13f899f194855f9061f6e37a0e78c05ea9ef801599fb2618769e64c2e",
+  "git_head": "5b53f1653dd632a3dcec171e879719eff3a294cc",
+  "git_status_short": "M artifacts/idm/g005_idm_exactset_history_precomputed_cache_validation.json\n?? artifacts/aux/g005_aux_examples_atari_head_probe.json\n?? artifacts/aux/g005_aux_materialization_execute.log\n?? artifacts/aux/g005_aux_materialization_execute_summary.json\n?? artifacts/aux/g005_aux_materialization_watcher.log\n?? artifacts/aux/g005_d2e_aux_train_run.log\n?? artifacts/aux/g005_postrun_watcher.log\n?? artifacts/aux/g005_pre3868187_20260523T044702Z/\n?? artifacts/eval/g002_pvc_action_error_diagnostics_progress.json\n?? artifacts/eval/g002_pvc_action_error_diagnostics_smoke.json\n?? artifacts/eval/g006_gidm_manifest_runner_dry_run.json\n?? artifacts/eval/gidm_manifest_inference_logs/\n?? artifacts/fdm/fdm_bth05_gain_probe_cpu.json\n?? artifacts/fdm/fdm_bth05_gain_probe_cpu.log\n?? artifacts/fdm/fdm_bth05_gain_sweep_h200.json\n?? artifacts/fdm/fdm_bth05_gain_sweep_h200.log\n?? artifacts/fdm/fdm_bth05_pipeline_h200.log\n?? artifacts/fdm/fdm_bth05_regression_h200.log\n?? artifacts/fdm/fdm_knn_shooter64_surface_motion_cpu.log\n?? artifacts/fdm/fdm_knn_shooter64_surface_sweep_h200.log\n?? artifacts/fdm/fdm_regression_gain_probe_cpu.json\n?? artifacts/fdm/fdm_regression_gain_probe_cpu.log\n?? artifacts/fdm/fdm_shooter64_fulltrain_button_sweep_h200.log\n?? artifacts/fdm/fdm_shooter64_recall_beta_sweep_h200.log\n?? artifacts/fdm/fdm_shooter64_surface_motion_fulltrain_h200.log\n?? artifacts/fdm/fdm_shooter64_surface_motion_h200.log\n?? artifacts/fdm/g003_to_g004_chain.log\n?? artifacts/fdm/g003_to_g004_chain_watcher.log\n?? artifacts/fdm/g004_d2e_full_fdm_4xh200.launch.log\n?? artifacts/fdm/g004_d2e_full_fdm_4xh200.log\n?? artifacts/fdm/g004_d2e_full_fdm_4xh200.nohup.log\n?? artifacts/fdm/g004_d2e_full_fdm_4xh200_launcher.log\n?? artifacts/fdm/g004_gpu_idle_restart_backup_20260522T235357Z/\n?? artifacts/fdm/g004_postrun_watcher.log\n?? artifacts/fdm/g004_pull_conflict_backup_20260522T234011Z/\n?? artifacts/fdm/g004_serial_restart_backup_20260522T233926Z/\n?? artifacts/fdm/idm_predict_shooter64_train_from_selected_h200.log\n?? artifacts/idm/g003_accel64_attached_gpu_monitor.log\n?? artifacts/idm/g003_accel64_failed_training_timeout.json\n?? artifacts/idm/g003_accel64_integrated_finalization.log\n?? artifacts/idm/g003_accel64_launch.log\n?? artifacts/idm/g003_accel64_live_health.json\n?? artifacts/idm/g003_accel64_live_health_report.json\n?? artifacts/idm/g003_accel64_parallel_recover_idm_outputs.log\n?? artifacts/idm/g003_accel64_postrun_watcher.log\n?? artifacts/idm/g003_accel64_postrun_watcher_once_probe.json\n?? artifacts/idm/g003_accel64_postrun_watcher_summary.json\n?? artifacts/idm/g003_accel64_progress.json\n?? artifacts/idm/g003_accel64_promotion_backups/\n?? artifacts/idm/g003_accel64_recover_idm_outputs.log\n?? artifacts/idm/g003_accel64_resume_plan.json\n?? artifacts/idm/g003_accel64_shard_29_repair.json\n?? artifacts/idm/g003_accel64_training_resume.log\n?? artifacts/idm/g003_attached_gpu_monitor.log\n?? artifacts/idm/g003_canonical_stop_20260521T171444Z.json\n?? artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv\n?? artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64_attached.json\n?? artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_attached.json\n?? artifacts/idm/g003_d2e_full_idm_run_accel64_isolated.log\n?? artifacts/idm/g003_d2e_full_idm_run_full_compact.log\n?? artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.json\n?? artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.log\n?? artifacts/idm/g003_full_idm_progress.json\n?? artifacts/idm/g003_live_health.json\n?? artifacts/idm/g003_postrun_watcher.log\n?? artifacts/idm/g003_postrun_watcher_summary.json\n?? artifacts/idm/g003_restart_20260521T161028Z.json\n?? artifacts/idm/g003_restart_20260521T161637Z.json\n?? artifacts/idm/g005_idm_exactset_history_4xh200.log\n?? artifacts/idm/g005_idm_exactset_history_4xh200_gpu_monitor.csv\n?? artifacts/idm/g005_idm_exactset_history_4xh200_run.json\n?? artifacts/idm/g005_idm_exactset_history_launcher.log\n?? artifacts/idm/g005_idm_exactset_history_pre_launch_cache_validation.json\n?? artifacts/idm/g005_idm_exactset_history_prediction_recovery_snapshot.json\n?? artifacts/idm/g005_idm_paper_sum_4xh200.log\n?? artifacts/idm/g005_idm_paper_sum_4xh200_gpu_monitor.csv\n?? artifacts/idm/g005_idm_paper_sum_launcher.log\n?? artifacts/idm/g005_idm_video_pair_raw112_epoch12_closed_target_probe_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_video_pair_raw112_epoch12_recal_fpr05_closed_target_probe_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_video_pair_raw112_epoch12_recal_fpr08_closed_target_probe_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_video_pair_raw112_epoch6_closed_target_probe_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_video_pair_raw112_resume_to12_4xh200.log\n?? artifacts/idm/g005_idm_video_pair_raw112_resume_to6_4xh200.log\n?? artifacts/idm/g005_idm_video_pair_raw112_trainfirst_4xh200.log\n?? artifacts/idm/g005_pre_5b53f16_pull_precompute_evidence_backup_20260524T161256Z/\n?? artifacts/idm/g005_pre_b654b6e_pull_conflict_backup_20260524T131152Z/\n?? artifacts/idm/g005_precompute_pause_governor.log\n?? artifacts/idm/g005_video_pair_raw112_cache_precompute.log\n?? artifacts/idm/g005_video_pair_raw112_cache_precompute_bounded.log\n?? artifacts/idm/g005_video_pair_raw112_cache_precompute_restart.log\n?? artifacts/idm/g005_video_pair_raw112_cache_to_prefix_train_watcher.log\n?? artifacts/idm/g4_h200_residual_runs.log\n?? artifacts/idm/g4_h200_richmotion16_run.log\n?? artifacts/idm/g4_h200_richmotion36_run.log\n?? artifacts/idm/g4_h200_richmotion36b_run.log\n?? artifacts/idm/g4_h200_shooter32_run.log\n?? artifacts/idm/idm_streaming_d2e_probe_summary.json\n?? artifacts/idm/idm_torch_apex16_capacity_sweep_h200.log\n?? artifacts/idm/idm_torch_apex16_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_axis_softmax_motion_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_focal_calibrated_sweep_h200.json\n?? artifacts/idm/idm_torch_shooter32_focal_calibrated_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_grid8_group_calibrated_sweep_h200.json\n?? artifacts/idm/idm_torch_shooter32_grid8_group_calibrated_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_grid8_time_group_calibrated_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_luma_temporal_conv_h256_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_luma_temporal_conv_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_motion_only_residual_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_seq_button_softmax_residual_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_seq_button_softmax_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_seq_button_softmax_sweep_h200_rerun.json\n?? artifacts/idm/idm_torch_shooter32_seq_button_softmax_sweep_h200_rerun.log\n?? artifacts/idm/idm_torch_shooter32_seq_history_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_surface_motion_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter64_surface_motion_sweep_h200.log\n?? artifacts/idm/idm_video_pair_d2e_full_raw112_keysoftmax_paper_target_summary.json\n?? artifacts/idm/idm_video_pair_d2e_full_raw112_paper_target_summary.json\n?? artifacts/mlxp/g005_exactset_history_b0e1b1_idle_stop.json\n?? artifacts/sources/d2e_full_corpus_decode_summary_accel64.json\n?? artifacts/sources/d2e_full_corpus_probe_fast_summary.json\n?? artifacts/sources/d2e_full_corpus_probe_summary.json\n?? artifacts/sources/d2e_full_corpus_shard_0.log\n?? artifacts/sources/d2e_full_corpus_shard_1.log\n?? artifacts/sources/d2e_full_corpus_shard_10.log\n?? artifacts/sources/d2e_full_corpus_shard_11.log\n?? artifacts/sources/d2e_full_corpus_shard_12.log\n?? artifacts/sources/d2e_full_corpus_shard_13.log\n?? artifacts/sources/d2e_full_corpus_shard_14.log\n?? artifacts/sources/d2e_full_corpus_shard_15.log\n?? artifacts/sources/d2e_full_corpus_shard_16.log\n?? artifacts/sources/d2e_full_corpus_shard_17.log\n?? artifacts/sources/d2e_full_corpus_shard_18.log\n?? artifacts/sources/d2e_full_corpus_shard_19.log\n?? artifacts/sources/d2e_full_corpus_shard_2.log\n?? artifacts/sources/d2e_full_corpus_shard_20.log\n?? artifacts/sources/d2e_full_corpus_shard_21.log\n?? artifacts/sources/d2e_full_corpus_shard_22.log\n?? artifacts/sources/d2e_full_corpus_shard_23.log\n?? artifacts/sources/d2e_full_corpus_shard_24.log\n?? artifacts/sources/d2e_full_corpus_shard_25.log\n?? artifacts/sources/d2e_full_corpus_shard_26.log\n?? artifacts/sources/d2e_full_corpus_shard_27.log\n?? artifacts/sources/d2e_full_corpus_shard_28.log\n?? artifacts/sources/d2e_full_corpus_shard_29.log\n?? artifacts/sources/d2e_full_corpus_shard_3.log\n?? artifacts/sources/d2e_full_corpus_shard_30.log\n?? artifacts/sources/d2e_full_corpus_shard_31.log\n?? artifacts/sources/d2e_full_corpus_shard_32.log\n?? artifacts/sources/d2e_full_corpus_shard_33.log\n?? artifacts/sources/d2e_full_corpus_shard_34.log\n?? artifacts/sources/d2e_full_corpus_shard_35.log\n?? artifacts/sources/d2e_full_corpus_shard_36.log\n?? artifacts/sources/d2e_full_corpus_shard_37.log\n?? artifacts/sources/d2e_full_corpus_shard_38.log\n?? artifacts/sources/d2e_full_corpus_shard_39.log\n?? artifacts/sources/d2e_full_corpus_shard_4.log\n?? artifacts/sources/d2e_full_corpus_shard_40.log\n?? artifacts/sources/d2e_full_corpus_shard_41.log\n?? artifacts/sources/d2e_full_corpus_shard_42.log\n?? artifacts/sources/d2e_full_corpus_shard_43.log\n?? artifacts/sources/d2e_full_corpus_shard_44.log\n?? artifacts/sources/d2e_full_corpus_shard_45.log\n?? artifacts/sources/d2e_full_corpus_shard_46.log\n?? artifacts/sources/d2e_full_corpus_shard_47.log\n?? artifacts/sources/d2e_full_corpus_shard_48.log\n?? artifacts/sources/d2e_full_corpus_shard_49.log\n?? artifacts/sources/d2e_full_corpus_shard_5.log\n?? artifacts/sources/d2e_full_corpus_shard_50.log\n?? artifacts/sources/d2e_full_corpus_shard_51.log\n?? artifacts/sources/d2e_full_corpus_shard_52.log\n?? artifacts/sources/d2e_full_corpus_shard_53.log\n?? artifacts/sources/d2e_full_corpus_shard_54.log\n?? artifacts/sources/d2e_full_corpus_shard_55.log\n?? artifacts/sources/d2e_full_corpus_shard_56.log\n?? artifacts/sources/d2e_full_corpus_shard_57.log\n?? artifacts/sources/d2e_full_corpus_shard_58.log\n?? artifacts/sources/d2e_full_corpus_shard_59.log\n?? artifacts/sources/d2e_full_corpus_shard_6.log\n?? artifacts/sources/d2e_full_corpus_shard_60.log\n?? artifacts/sources/d2e_full_corpus_shard_61.log\n?? artifacts/sources/d2e_full_corpus_shard_62.log\n?? artifacts/sources/d2e_full_corpus_shard_63.log\n?? artifacts/sources/d2e_full_corpus_shard_7.log\n?? artifacts/sources/d2e_full_corpus_shard_8.log\n?? artifacts/sources/d2e_full_corpus_shard_9.log\n?? artifacts/sources/decode_d2e_shooter64_h200.log\n?? artifacts/sources/g003_accel64/\n?? artifacts/sources/g003_restart_archive_20260521T161028Z/\n?? artifacts/sources/g003_restart_archive_20260521T161637Z/",
+  "gpu_monitor_log": "artifacts/idm/g005_idm_exactset_history_4xh200_gpu_monitor.csv",
+  "gpu_monitor_sha256": "57e035eba80811efa18d4167e2613df63ec7a600175bf7f217dcb442da23d7b1",
+  "gpu_monitor_status": {
+    "covers_expected_gpus": true,
+    "expected_gpus": 4,
+    "rows": 208,
+    "unique_gpu_indices": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  "gpu_smoke_report": "outputs/cluster/g005_idm_exactset_history_gpu_smoke.json",
+  "log_path": "artifacts/idm/g005_idm_exactset_history_4xh200.log",
+  "metadata_exists": false,
+  "metadata_path": "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/checkpoint_metadata.json",
+  "metrics_exists": false,
+  "metrics_path": "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/metrics.json",
+  "nproc_per_node": 4,
+  "paper_metrics_path": "artifacts/idm/g005_idm_exactset_history_paper_metrics.json",
+  "paper_metrics_rows": null,
+  "paper_metrics_status": null,
+  "paper_target_config": "configs/eval/g005_idm_exactset_history_paper_target.yaml",
+  "pid_file": "outputs/cluster/g005_idm_exactset_history_4xh200.pid",
+  "precompute_cache_validation_path": "artifacts/idm/g005_idm_exactset_history_precomputed_cache_validation.json",
+  "precompute_cache_validation_rows": 19211006,
+  "precompute_cache_validation_status": "pass",
+  "prediction_resume": null,
+  "require_precomputed_cache": true,
+  "runtime_config": "configs/model/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target.yaml",
+  "schema": "g005_idm_exactset_history_4xh200_run.v1",
+  "split_stats_config": "configs/eval/g005_idm_exactset_history_split_statistics.yaml",
+  "split_stats_outputs": [],
+  "split_stats_status": null,
+  "split_stats_summary_path": "artifacts/eval/g005_idm_exactset_history_split_statistical_comparisons_summary.json",
+  "summary_exists": false,
+  "summary_path": "artifacts/idm/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target_summary.json",
+  "target_records": null,
+  "train_records": null,
+  "wall_clock_seconds": 1555
+}

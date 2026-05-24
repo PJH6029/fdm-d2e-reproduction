@@ -1,0 +1,36 @@
+{
+  "candidate": "streaming_idm_d2e_full_luma_pair_exactset_history_paper_target",
+  "checkpoint_path": "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/checkpoint.pt",
+  "created_at_unix": 1779643721.3746195,
+  "evidence_paths": {
+    "convergence": "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/convergence_report.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_exactset_history_4xh200_gpu_monitor.csv",
+    "metadata": "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/checkpoint_metadata.json",
+    "metrics": "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/metrics.json",
+    "recovery_snapshot": "artifacts/idm/g005_idm_exactset_history_prediction_recovery_snapshot.json",
+    "summary": "artifacts/idm/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target_summary.json",
+    "train_history": "outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/train_history.json"
+  },
+  "git_head": "5b53f1653dd632a3dcec171e879719eff3a294cc",
+  "metrics": {
+    "keyboard_accuracy": 0.0015591228740627116,
+    "mouse_button_accuracy": 0.04604312947400158,
+    "mouse_button_f1": 0.018868011057190777,
+    "mouse_move_pearson": 0.007138558097545246,
+    "mouse_move_scale_ratio": 1.1031896562535626,
+    "no_button_false_positive_rate": 0.17626996824604924
+  },
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "reservation_action": "cancel_4xh200_after_metric_failure",
+  "schema": "g005_idm_candidate_failure_decision.v1",
+  "stop_reason": "full_prediction_metrics_decisively_below_paper_target_and_strict_local_targets",
+  "target_records": 16698646,
+  "train_records": 19211006
+}
