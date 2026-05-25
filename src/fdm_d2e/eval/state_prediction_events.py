@@ -163,6 +163,7 @@ def convert_state_prediction_file(
     button_press_rows: int = 1,
     button_release_rows: int = 1,
     include_mouse_motion: bool = True,
+    include_state_prediction_tokens: bool = False,
     max_rows: int | None = None,
     progress_output_path: str | Path | None = None,
     progress_rows: int = 1_000_000,
@@ -213,15 +214,17 @@ def convert_state_prediction_file(
                             "sequence_id": row.get("sequence_id"),
                             "recording_id": row.get("recording_id"),
                             "predicted_tokens": converted,
-                            "state_prediction_tokens": _tokens(row),
                             "conversion": {
                                 "key_press_rows": int(key_press_rows),
                                 "key_release_rows": int(key_release_rows),
                                 "button_press_rows": int(button_press_rows),
                                 "button_release_rows": int(button_release_rows),
                                 "include_mouse_motion": bool(include_mouse_motion),
+                                "include_state_prediction_tokens": bool(include_state_prediction_tokens),
                             },
                         }
+                        if include_state_prediction_tokens:
+                            out_row["state_prediction_tokens"] = _tokens(row)
                         handle.write(_dumps(out_row) + "\n")
                         rows += 1
                         key_event_rows += int(any(token.startswith("KEY_") for token in converted))
@@ -262,6 +265,7 @@ def convert_state_prediction_file(
             "button_press_rows": int(button_press_rows),
             "button_release_rows": int(button_release_rows),
             "include_mouse_motion": bool(include_mouse_motion),
+            "include_state_prediction_tokens": bool(include_state_prediction_tokens),
         },
         "wall_clock_seconds": time.time() - started,
         "findings": findings,

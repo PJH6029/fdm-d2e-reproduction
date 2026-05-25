@@ -22,6 +22,7 @@ def main() -> int:
     parser.add_argument("--button-press-rows", type=int, default=1)
     parser.add_argument("--button-release-rows", type=int, default=1)
     parser.add_argument("--drop-mouse-motion", action="store_true")
+    parser.add_argument("--include-source-state-tokens", action="store_true")
     parser.add_argument("--max-rows", type=int)
     parser.add_argument("--progress-output")
     parser.add_argument("--progress-rows", type=int, default=1_000_000)
@@ -35,6 +36,7 @@ def main() -> int:
         button_press_rows=args.button_press_rows,
         button_release_rows=args.button_release_rows,
         include_mouse_motion=not args.drop_mouse_motion,
+        include_state_prediction_tokens=args.include_source_state_tokens,
         max_rows=args.max_rows,
         progress_output_path=args.progress_output,
         progress_rows=args.progress_rows,
