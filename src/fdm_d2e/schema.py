@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,7 @@ class SchemaError(ValueError):
     pass
 
 
+@lru_cache(maxsize=None)
 def load_schema(name: str) -> dict[str, Any]:
     path = SCHEMA_DIR / name
     if not path.exists():
