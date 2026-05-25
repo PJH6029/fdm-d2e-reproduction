@@ -81,10 +81,11 @@ def test_g005_state_luma_pair_materializes_state_corpus_and_logs_wandb() -> None
     text = _script("scripts/run_g005_idm_state_luma_pair_4xh200.sh")
 
     materialize_idx = text.index("scripts/materialize_d2e_state_corpus.py")
+    stats_idx = text.index("scripts/synthesize_state_streaming_stats.py")
     cache_idx = text.index("scripts/precompute_streaming_idm_training_cache.py")
     wandb_idx = text.index("uv run --with wandb python scripts/watch_wandb_training.py")
     train_idx = text.index("scripts/run_g005_idm_surface_paper_target_4xh200.sh")
-    assert materialize_idx < cache_idx < wandb_idx < train_idx
+    assert materialize_idx < stats_idx < cache_idx < wandb_idx < train_idx
     assert 'ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"' in text
     assert "--env-file \"$WANDB_ENV_FILE\"" in text
     assert "--workers \"${STATE_MATERIALIZE_WORKERS:-16}\"" in text

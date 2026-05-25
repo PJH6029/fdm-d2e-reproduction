@@ -12,6 +12,9 @@ STATE_LOG="${STATE_LOG:-artifacts/idm/g005_idm_state_corpus_materialization.log}
 PRECOMPUTE_CACHE_VALIDATION="${PRECOMPUTE_CACHE_VALIDATION:-artifacts/idm/g005_idm_state_luma_pair_precomputed_cache_validation.json}"
 PRECOMPUTE_CACHE_PROGRESS="${PRECOMPUTE_CACHE_PROGRESS:-artifacts/idm/g005_idm_state_luma_pair_precompute_progress.json}"
 PRECOMPUTE_CACHE_LOG="${PRECOMPUTE_CACHE_LOG:-artifacts/idm/g005_idm_state_luma_pair_precompute.log}"
+STATE_FEATURE_STATS_SEED="${STATE_FEATURE_STATS_SEED:-outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/streaming_stats.json}"
+STATE_STATS_SYNTHESIS_SUMMARY="${STATE_STATS_SYNTHESIS_SUMMARY:-artifacts/idm/g005_idm_state_luma_pair_stats_synthesis_summary.json}"
+STATE_STATS_SYNTHESIS_LOG="${STATE_STATS_SYNTHESIS_LOG:-artifacts/idm/g005_idm_state_luma_pair_stats_synthesis.log}"
 SPLIT_STATS_CONFIG="${SPLIT_STATS_CONFIG:-configs/eval/g005_idm_state_luma_pair_split_statistics.yaml}"
 PAPER_TARGET_CONFIG="${PAPER_TARGET_CONFIG:-configs/eval/g005_idm_state_luma_pair_paper_target.yaml}"
 LOG_PATH="${LOG_PATH:-artifacts/idm/g005_idm_state_luma_pair_4xh200.log}"
@@ -58,6 +61,19 @@ if [[ "$needs_state_materialization" != "0" ]]; then
       --workers "${STATE_MATERIALIZE_WORKERS:-16}"
     echo "state_materialization_finished_at=$(date -Iseconds)"
   } 2>&1 | tee "$STATE_LOG"
+fi
+
+if [[ ! -s "$OUTPUT_DIR/streaming_stats.json" || "${FORCE_STATE_STATS_SYNTHESIS:-0}" != "0" ]]; then
+  {
+    echo "stats_synthesis_started_at=$(date -Iseconds)"
+    uv run python scripts/synthesize_state_streaming_stats.py \
+      --config "$CONFIG" \
+      --seed-stats "$STATE_FEATURE_STATS_SEED" \
+      --output "$OUTPUT_DIR/streaming_stats.json" \
+      --summary "$STATE_STATS_SYNTHESIS_SUMMARY" \
+      --workers "${STATE_STATS_SYNTHESIS_WORKERS:-16}"
+    echo "stats_synthesis_finished_at=$(date -Iseconds)"
+  } 2>&1 | tee "$STATE_STATS_SYNTHESIS_LOG"
 fi
 
 needs_cache_precompute=1
