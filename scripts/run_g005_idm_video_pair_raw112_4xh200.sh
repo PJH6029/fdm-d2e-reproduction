@@ -23,6 +23,13 @@ BATCH_SIZE_OVERRIDE="${BATCH_SIZE_OVERRIDE:-}"
 EVAL_BATCH_SIZE_OVERRIDE="${EVAL_BATCH_SIZE_OVERRIDE:-}"
 RUNTIME_CONFIG="${RUNTIME_CONFIG:-outputs/cluster/${MODEL_SLUG}_runtime_config.yaml}"
 RUNTIME_PAPER_TARGET_CONFIG="${RUNTIME_PAPER_TARGET_CONFIG:-outputs/cluster/${MODEL_SLUG}_runtime_paper_target.yaml}"
+MLXP_RESERVATION_ID="${MLXP_RESERVATION_ID:-}"
+MLXP_RESERVATION_START_AT="${MLXP_RESERVATION_START_AT:-}"
+MLXP_RESERVATION_END_AT="${MLXP_RESERVATION_END_AT:-}"
+MLXP_RESERVATION_NODE_ID="${MLXP_RESERVATION_NODE_ID:-}"
+MLXP_RESERVATION_GPU_INDICES="${MLXP_RESERVATION_GPU_INDICES:-}"
+MLXP_RESERVATION_POD_NAME="${MLXP_RESERVATION_POD_NAME:-}"
+MLXP_RESERVATION_CHECKED_AT="${MLXP_RESERVATION_CHECKED_AT:-}"
 
 mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$RUN_SUMMARY")" "$(dirname "$GPU_MONITOR_LOG")" "$(dirname "$PID_FILE")" outputs/cluster
 echo "$$" >"$PID_FILE"
@@ -65,6 +72,8 @@ set +e
   echo "config=$CONFIG"
   echo "nproc_per_node=$NPROC_PER_NODE"
   echo "gpu_monitor_log=$GPU_MONITOR_LOG"
+  echo "mlxp_reservation_id=${MLXP_RESERVATION_ID:-none}"
+  echo "mlxp_reservation_end_at=${MLXP_RESERVATION_END_AT:-none}"
   echo "runtime_overrides=max_target_examples=${MAX_TARGET_EXAMPLES:-none} skip_prediction=$SKIP_PREDICTION epochs=${EPOCHS_OVERRIDE:-none} batch_size=${BATCH_SIZE_OVERRIDE:-none} eval_batch_size=${EVAL_BATCH_SIZE_OVERRIDE:-none}"
   RUN_CONFIG="$CONFIG"
   if [[ -n "$MAX_TARGET_EXAMPLES" || "$SKIP_PREDICTION" != "0" || -n "$EPOCHS_OVERRIDE" || -n "$BATCH_SIZE_OVERRIDE" || -n "$EVAL_BATCH_SIZE_OVERRIDE" ]]; then
@@ -239,6 +248,15 @@ payload = {
     "pid_file": "$PID_FILE",
     "nproc_per_node": int("$NPROC_PER_NODE"),
     "expected_gpus": int("$EXPECTED_GPUS"),
+    "mlxp_reservation": {
+        "reservation_id": "$MLXP_RESERVATION_ID" or None,
+        "start_at": "$MLXP_RESERVATION_START_AT" or None,
+        "end_at": "$MLXP_RESERVATION_END_AT" or None,
+        "node_id": "$MLXP_RESERVATION_NODE_ID" or None,
+        "gpu_indices": "$MLXP_RESERVATION_GPU_INDICES" or None,
+        "pod_name": "$MLXP_RESERVATION_POD_NAME" or None,
+        "checked_at": "$MLXP_RESERVATION_CHECKED_AT" or None,
+    },
     "exit_code": int("$RUN_STATUS"),
     "wall_clock_seconds": int("$END_EPOCH") - int("$START_EPOCH"),
     "git_head": _git_output(["rev-parse", "HEAD"]),
