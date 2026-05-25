@@ -123,3 +123,54 @@ def test_write_split_statistical_comparisons_streams_with_precomputed_train_stat
         assert payload["ground_truth_records"] == 3
         assert payload["model_prediction_records"] == 3
         assert {row["endpoint"] for row in payload["comparisons"]} == {"keyboard_accuracy", "mouse_button_f1"}
+
+
+def test_write_split_statistical_comparisons_streams_with_ground_truth_glob(tmp_path: Path):
+    splits = ["temporal", "heldout_recording", "heldout_game"]
+    target = [_record(i, split) for split in splits for i in range(3)]
+    preds = [{"sequence_id": row["sequence_id"], "predicted_tokens": row["ground_truth_tokens"]} for row in target]
+    endpoints = {
+        "schema": "primary_endpoints.v1",
+        "cluster_key": "recording_id",
+        "bootstrap": {"n_resamples": 20, "confidence": 0.95, "seed": 1},
+        "correction": "holm_bonferroni",
+        "reference_baseline": "noop",
+        "endpoints": [
+            {"name": "keyboard_accuracy", "metric_path": ["keyboard", "accuracy"], "direction": "higher"},
+        ],
+    }
+    shard_dir = tmp_path / "target_shards"
+    shard_dir.mkdir()
+    write_jsonl(shard_dir / "part_0.jsonl", target[:4])
+    write_jsonl(shard_dir / "part_1.jsonl", target[4:])
+    write_jsonl(tmp_path / "predictions.jsonl", preds)
+    write_json(tmp_path / "endpoints.json", endpoints)
+    write_json(
+        tmp_path / "streaming_stats.json",
+        {
+            "schema": "streaming_idm_stats.v1",
+            "global_majority_tokens": ["NOOP"],
+            "last_tokens_by_recording": {},
+            "last_tokens_by_game": {},
+        },
+    )
+    config = {
+        "model_name": "tiny_model",
+        "predictions_path": "predictions.jsonl",
+        "ground_truth_glob": "target_shards/*.jsonl",
+        "streaming": True,
+        "train_stats_path": "streaming_stats.json",
+        "output_dir": "split_stats_streaming_glob",
+        "summary_out": "summary_streaming_glob.json",
+        "endpoints": "endpoints.json",
+        "baseline_names": ["noop", "global_majority"],
+        "split_tags": splits,
+    }
+
+    summary = write_split_statistical_comparisons(config, root=tmp_path)
+
+    assert summary["status"] == "pass"
+    for split in splits:
+        payload = json.loads((tmp_path / "split_stats_streaming_glob" / f"split_{split}_statistical_comparison.json").read_text())
+        assert payload["ground_truth_records"] == 3
+        assert payload["model_prediction_records"] == 3

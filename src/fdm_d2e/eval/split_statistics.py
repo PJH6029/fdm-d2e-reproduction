@@ -387,7 +387,7 @@ def write_split_statistical_comparisons(config: dict[str, Any], *, root: str | P
     root_path = Path(root)
     endpoints = load_config(root_path / str(config.get("endpoints", "configs/eval/primary_endpoints.yaml")))
     predictions_path = root_path / str(config["predictions_path"])
-    ground_truth_path = root_path / str(config["ground_truth_path"])
+    ground_truth_path = root_path / str(config["ground_truth_path"]) if config.get("ground_truth_path") else None
     train_records_path = config.get("train_records_path")
     train_path = root_path / str(train_records_path) if train_records_path else None
     output_dir = root_path / str(config.get("output_dir", Path(config["predictions_path"]).parent))
@@ -414,6 +414,8 @@ def write_split_statistical_comparisons(config: dict[str, Any], *, root: str | P
             write_json(out_path, payload)
             outputs.append({"split": split_tag, "path": str(out_path), "status": "pass" if payload["comparisons"] else "empty", "comparisons": len(payload["comparisons"])})
     else:
+        if ground_truth_path is None:
+            raise ValueError("ground_truth_path is required for non-streaming split statistics")
         for split_tag in split_tags:
             payload = compare_split_predictions(
                 predictions_path=predictions_path,
