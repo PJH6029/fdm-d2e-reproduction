@@ -9,9 +9,11 @@ CONTEXT_OUTPUT_ROOT="${CONTEXT_OUTPUT_ROOT:-outputs/data/d2e_event_state_context
 CONTEXT_SUMMARY="${CONTEXT_SUMMARY:-artifacts/idm/g005_idm_event_state_context_materialization_summary.json}"
 CONTEXT_PROGRESS="${CONTEXT_PROGRESS:-artifacts/idm/g005_idm_event_state_context_materialization_progress.json}"
 CONTEXT_LOG="${CONTEXT_LOG:-artifacts/idm/g005_idm_event_state_context_materialization.log}"
+CONTEXT_WANDB_STATUS="${CONTEXT_WANDB_STATUS:-artifacts/idm/g005_idm_event_state_context_materialization_wandb_status.json}"
 PRECOMPUTE_CACHE_VALIDATION="${PRECOMPUTE_CACHE_VALIDATION:-artifacts/idm/g005_idm_event_state_context_precomputed_cache_validation.json}"
 PRECOMPUTE_CACHE_PROGRESS="${PRECOMPUTE_CACHE_PROGRESS:-artifacts/idm/g005_idm_event_state_context_precompute_progress.json}"
 PRECOMPUTE_CACHE_LOG="${PRECOMPUTE_CACHE_LOG:-artifacts/idm/g005_idm_event_state_context_precompute.log}"
+PRECOMPUTE_CACHE_WANDB_STATUS="${PRECOMPUTE_CACHE_WANDB_STATUS:-artifacts/idm/g005_idm_event_state_context_precompute_wandb_status.json}"
 SPLIT_STATS_CONFIG="${SPLIT_STATS_CONFIG:-configs/eval/g005_idm_event_state_context_split_statistics.yaml}"
 PAPER_TARGET_CONFIG="${PAPER_TARGET_CONFIG:-configs/eval/g005_idm_event_state_context_paper_target.yaml}"
 LOG_PATH="${LOG_PATH:-artifacts/idm/g005_idm_event_state_context_4xh200.log}"
@@ -26,6 +28,26 @@ ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"
 WANDB_ENV_FILE="${WANDB_ENV_FILE:-.env}"
 
 mkdir -p artifacts/idm artifacts/eval outputs/cluster "$OUTPUT_DIR"
+
+log_wandb_artifact_stage() {
+  local run_name="$1"
+  local artifact_name="$2"
+  local output_path="$3"
+  shift 3
+  if [[ "$ENABLE_WANDB_SIDECAR" == "0" ]]; then
+    return 0
+  fi
+  uv run --with wandb python scripts/log_wandb_artifacts.py \
+    --env-file "$WANDB_ENV_FILE" \
+    --run-name "$run_name" \
+    --group "g005-idm-paper-target" \
+    --job-type "pipeline-artifact" \
+    --tags "g005,idm,d2e,event-state-context,pipeline" \
+    --artifact-name "$artifact_name" \
+    --artifact-type "evaluation" \
+    --output "$output_path" \
+    "$@" || true
+}
 
 needs_context_materialization=1
 if [[ -s "$CONTEXT_SUMMARY" ]]; then
@@ -56,6 +78,12 @@ if [[ "$needs_context_materialization" != "0" ]]; then
       --workers "${CONTEXT_MATERIALIZE_WORKERS:-16}"
     echo "event_state_context_materialization_finished_at=$(date -Iseconds)"
   } 2>&1 | tee "$CONTEXT_LOG"
+  log_wandb_artifact_stage \
+    "$MODEL_SLUG-materialization" \
+    "$MODEL_SLUG-materialization" \
+    "$CONTEXT_WANDB_STATUS" \
+    --json "$CONTEXT_SUMMARY" \
+    --json "$CONTEXT_PROGRESS"
 fi
 
 needs_cache_precompute=1
@@ -84,6 +112,12 @@ if [[ "$needs_cache_precompute" != "0" ]]; then
       --progress-output "$PRECOMPUTE_CACHE_PROGRESS"
     echo "cache_precompute_finished_at=$(date -Iseconds)"
   } 2>&1 | tee "$PRECOMPUTE_CACHE_LOG"
+  log_wandb_artifact_stage \
+    "$MODEL_SLUG-cache-precompute" \
+    "$MODEL_SLUG-cache-precompute" \
+    "$PRECOMPUTE_CACHE_WANDB_STATUS" \
+    --json "$PRECOMPUTE_CACHE_VALIDATION" \
+    --json "$PRECOMPUTE_CACHE_PROGRESS"
 fi
 
 SIDECAR_PID=""
