@@ -1,0 +1,26 @@
+{
+  "schema": "state_prediction_eventification_summary.v1",
+  "status": "pass",
+  "error_count": 0,
+  "prediction_paths": [
+    "outputs/idm_streaming_d2e_full_state_luma_pair_paper_target/predictions.jsonl"
+  ],
+  "output_path": "outputs/idm_streaming_d2e_full_state_luma_pair_paper_target/eventified_predictions_d1_prefix1m.jsonl",
+  "rows": 1000000,
+  "recordings": 59,
+  "key_event_rows": 258897,
+  "button_event_rows": 63546,
+  "mouse_motion_rows": 1000000,
+  "max_rows": 1000000,
+  "conversion": {
+    "key_press_rows": 1,
+    "key_release_rows": 1,
+    "button_press_rows": 1,
+    "button_release_rows": 1,
+    "include_mouse_motion": true,
+    "include_state_prediction_tokens": false
+  },
+  "wall_clock_seconds": 9.571701049804688,
+  "findings": [],
+  "claim_boundary": "Postprocesses held-state IDM predictions into D2E event-token predictions; it does not train or change the checkpoint."
+}
