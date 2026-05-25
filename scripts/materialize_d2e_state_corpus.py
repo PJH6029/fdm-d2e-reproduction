@@ -7,6 +7,7 @@ import hashlib
 import json
 import sys
 import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -15,6 +16,24 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from fdm_d2e.io_utils import write_json
 from fdm_d2e.tokenization.actions import state_tokens_from_event_tokens
 
+try:  # pragma: no cover - exercised on the cluster image when present.
+    import orjson  # type: ignore
+except Exception:  # pragma: no cover - fallback is covered.
+    orjson = None
+
+
+def _loads(line: str) -> dict[str, Any]:
+    payload = orjson.loads(line) if orjson is not None else json.loads(line)
+    if not isinstance(payload, dict):
+        raise ValueError("JSONL row must be an object")
+    return payload
+
+
+def _dumps(row: dict[str, Any]) -> str:
+    if orjson is not None:
+        return orjson.dumps(row, option=orjson.OPT_SORT_KEYS).decode("utf-8")
+    return json.dumps(row, ensure_ascii=False, sort_keys=True)
+
 
 def _iter_jsonl(path: Path) -> Iterable[dict[str, Any]]:
     with path.open("r", encoding="utf-8", buffering=1024 * 1024) as handle:
@@ -22,11 +41,9 @@ def _iter_jsonl(path: Path) -> Iterable[dict[str, Any]]:
             if not line.strip():
                 continue
             try:
-                row = json.loads(line)
-            except json.JSONDecodeError as exc:
+                row = _loads(line)
+            except Exception as exc:
                 raise ValueError(f"invalid JSONL row at {path}:{line_no}") from exc
-            if not isinstance(row, dict):
-                raise ValueError(f"JSONL row must be an object at {path}:{line_no}")
             yield row
 
 
@@ -54,6 +71,7 @@ def _materialize_one(
     button_states: dict[str, set[str]],
     mouse_emit_mode: str,
     mouse_max_tokens_per_axis: int,
+    include_raw_event_tokens: bool,
 ) -> dict[str, Any]:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = output_path.with_suffix(output_path.suffix + ".tmp")
@@ -77,10 +95,11 @@ def _materialize_one(
             key_states[recording_id] = next_keys
             button_states[recording_id] = next_buttons
             out_row = dict(row)
-            out_row["raw_event_tokens"] = list(row.get("ground_truth_tokens", []) or [])
+            if include_raw_event_tokens:
+                out_row["raw_event_tokens"] = list(row.get("ground_truth_tokens", []) or [])
             out_row["ground_truth_tokens"] = state_tokens
             out_row["action_state_schema"] = "d2e_50ms_held_state_tokens.v1"
-            out.write(json.dumps(out_row, ensure_ascii=False, sort_keys=True) + "\n")
+            out.write(_dumps(out_row) + "\n")
             rows += 1
             token_rows += int(bool(state_tokens))
             key_state_rows += int(any(token.startswith("KEY_") for token in state_tokens))
@@ -99,6 +118,35 @@ def _materialize_one(
     }
 
 
+def _materialize_pair_task(payload: dict[str, Any]) -> dict[str, Any]:
+    key_states: dict[str, set[str]] = {}
+    button_states: dict[str, set[str]] = {}
+    train = _materialize_one(
+        Path(payload["train_input"]),
+        Path(payload["train_output"]),
+        key_states=key_states,
+        button_states=button_states,
+        mouse_emit_mode=str(payload["mouse_emit_mode"]),
+        mouse_max_tokens_per_axis=int(payload["mouse_max_tokens_per_axis"]),
+        include_raw_event_tokens=bool(payload["include_raw_event_tokens"]),
+    )
+    target = _materialize_one(
+        Path(payload["target_input"]),
+        Path(payload["target_output"]),
+        key_states=key_states,
+        button_states=button_states,
+        mouse_emit_mode=str(payload["mouse_emit_mode"]),
+        mouse_max_tokens_per_axis=int(payload["mouse_max_tokens_per_axis"]),
+        include_raw_event_tokens=bool(payload["include_raw_event_tokens"]),
+    )
+    return {
+        "pair_index": int(payload["pair_index"]),
+        "train_output": train,
+        "target_output": target,
+        "recording_state_count": len(key_states),
+    }
+
+
 def materialize_state_corpus(
     *,
     train_inputs: list[Path],
@@ -108,32 +156,74 @@ def materialize_state_corpus(
     summary_path: Path,
     mouse_emit_mode: str = "decompose",
     mouse_max_tokens_per_axis: int = 32,
+    include_raw_event_tokens: bool = False,
+    workers: int = 1,
+    progress_path: Path | None = None,
 ) -> dict[str, Any]:
     started = time.time()
-    key_states: dict[str, set[str]] = {}
-    button_states: dict[str, set[str]] = {}
-    train_outputs = [
-        _materialize_one(
-            path,
-            _output_path(path, input_root=input_root, output_root=output_root),
-            key_states=key_states,
-            button_states=button_states,
-            mouse_emit_mode=mouse_emit_mode,
-            mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+    if len(train_inputs) != len(target_inputs):
+        raise ValueError("state corpus materialization expects matching train/target shard counts")
+    pairs = []
+    for idx, (train_path, target_path) in enumerate(zip(train_inputs, target_inputs)):
+        pairs.append(
+            {
+                "pair_index": idx,
+                "train_input": str(train_path),
+                "target_input": str(target_path),
+                "train_output": str(_output_path(train_path, input_root=input_root, output_root=output_root)),
+                "target_output": str(_output_path(target_path, input_root=input_root, output_root=output_root)),
+                "mouse_emit_mode": mouse_emit_mode,
+                "mouse_max_tokens_per_axis": int(mouse_max_tokens_per_axis),
+                "include_raw_event_tokens": bool(include_raw_event_tokens),
+            }
         )
-        for path in train_inputs
-    ]
-    target_outputs = [
-        _materialize_one(
-            path,
-            _output_path(path, input_root=input_root, output_root=output_root),
-            key_states=key_states,
-            button_states=button_states,
-            mouse_emit_mode=mouse_emit_mode,
-            mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+    if progress_path:
+        write_json(
+            progress_path,
+            {
+                "schema": "d2e_state_corpus_materialization_progress.v1",
+                "status": "running",
+                "pairs_total": len(pairs),
+                "pairs_completed": 0,
+                "started_at_unix": started,
+            },
         )
-        for path in target_inputs
-    ]
+    completed: list[dict[str, Any]] = []
+    if workers > 1 and len(pairs) > 1:
+        with ProcessPoolExecutor(max_workers=min(int(workers), len(pairs))) as pool:
+            futures = [pool.submit(_materialize_pair_task, payload) for payload in pairs]
+            for future in as_completed(futures):
+                completed.append(future.result())
+                if progress_path:
+                    write_json(
+                        progress_path,
+                        {
+                            "schema": "d2e_state_corpus_materialization_progress.v1",
+                            "status": "running",
+                            "pairs_total": len(pairs),
+                            "pairs_completed": len(completed),
+                            "last_pair_index": int(completed[-1]["pair_index"]),
+                            "updated_at_unix": time.time(),
+                        },
+                    )
+    else:
+        for payload in pairs:
+            completed.append(_materialize_pair_task(payload))
+            if progress_path:
+                write_json(
+                    progress_path,
+                    {
+                        "schema": "d2e_state_corpus_materialization_progress.v1",
+                        "status": "running",
+                        "pairs_total": len(pairs),
+                        "pairs_completed": len(completed),
+                        "last_pair_index": int(completed[-1]["pair_index"]),
+                        "updated_at_unix": time.time(),
+                    },
+                )
+    completed = sorted(completed, key=lambda row: int(row["pair_index"]))
+    train_outputs = [row["train_output"] for row in completed]
+    target_outputs = [row["target_output"] for row in completed]
     total_train = sum(int(row["rows"]) for row in train_outputs)
     total_target = sum(int(row["rows"]) for row in target_outputs)
     payload = {
@@ -143,17 +233,30 @@ def materialize_state_corpus(
         "output_root": str(output_root),
         "mouse_emit_mode": mouse_emit_mode,
         "mouse_max_tokens_per_axis": int(mouse_max_tokens_per_axis),
+        "include_raw_event_tokens": bool(include_raw_event_tokens),
+        "workers": int(workers),
         "train_inputs": [str(path) for path in train_inputs],
         "target_inputs": [str(path) for path in target_inputs],
         "train_outputs": train_outputs,
         "target_outputs": target_outputs,
         "train_rows": total_train,
         "target_rows": total_target,
-        "recording_state_count": len(key_states),
+        "recording_state_count": sum(int(row.get("recording_state_count") or 0) for row in completed),
         "wall_clock_seconds": time.time() - started,
+        "shard_state_assumption": "Each shard pair preserves complete per-recording order; train shard state is carried into the matching target shard.",
         "claim_boundary": "Derived D2E state-token corpus for paper-metric IDM exploration; raw D2E event-token corpus remains unchanged.",
     }
     write_json(summary_path, payload)
+    if progress_path:
+        progress_payload = {
+            "schema": "d2e_state_corpus_materialization_progress.v1",
+            "status": "pass",
+            "pairs_total": len(pairs),
+            "pairs_completed": len(completed),
+            "updated_at_unix": time.time(),
+            "summary_path": str(summary_path),
+        }
+        write_json(progress_path, progress_payload)
     return payload
 
 
@@ -175,8 +278,11 @@ def main() -> int:
     parser.add_argument("--input-root", default="outputs/data/d2e_full_corpus_shards_accel64")
     parser.add_argument("--output-root", default="outputs/data/d2e_state_corpus_shards_accel64")
     parser.add_argument("--summary", default="artifacts/idm/g005_idm_state_corpus_materialization_summary.json")
+    parser.add_argument("--progress-output", default="artifacts/idm/g005_idm_state_corpus_materialization_progress.json")
     parser.add_argument("--mouse-emit-mode", default="decompose", choices=["single", "decompose"])
     parser.add_argument("--mouse-max-tokens-per-axis", type=int, default=32)
+    parser.add_argument("--include-raw-event-tokens", action="store_true")
+    parser.add_argument("--workers", type=int, default=1)
     args = parser.parse_args()
     payload = materialize_state_corpus(
         train_inputs=_expand(args.train_input),
@@ -186,6 +292,9 @@ def main() -> int:
         summary_path=Path(args.summary),
         mouse_emit_mode=args.mouse_emit_mode,
         mouse_max_tokens_per_axis=args.mouse_max_tokens_per_axis,
+        include_raw_event_tokens=bool(args.include_raw_event_tokens),
+        workers=max(1, int(args.workers)),
+        progress_path=Path(args.progress_output) if args.progress_output else None,
     )
     print(json.dumps({"status": payload["status"], "train_rows": payload["train_rows"], "target_rows": payload["target_rows"]}, sort_keys=True))
     return 0 if payload["status"] == "pass" else 2

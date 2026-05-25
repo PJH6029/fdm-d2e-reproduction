@@ -87,6 +87,7 @@ def test_g005_state_luma_pair_materializes_state_corpus_and_logs_wandb() -> None
     assert materialize_idx < cache_idx < wandb_idx < train_idx
     assert 'ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"' in text
     assert "--env-file \"$WANDB_ENV_FILE\"" in text
+    assert "--workers \"${STATE_MATERIALIZE_WORKERS:-16}\"" in text
     assert "outputs/data/d2e_state_corpus_shards_accel64" in text
     assert "ALLOW_CACHE_BUILD=0" in text
     assert "REQUIRE_PRECOMPUTED_CACHE=1" in text

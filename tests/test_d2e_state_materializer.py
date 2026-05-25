@@ -48,6 +48,7 @@ def test_materializer_carries_train_state_into_target_split(tmp_path: Path):
         output_root=tmp_path / "outputs/data/d2e_state_corpus_shards_accel64",
         summary_path=tmp_path / "artifacts/idm/state_summary.json",
         mouse_emit_mode="single",
+        include_raw_event_tokens=True,
     )
     assert summary["status"] == "pass"
     out_target = tmp_path / "outputs/data/d2e_state_corpus_shards_accel64/shard_00/target_all_eval.jsonl"

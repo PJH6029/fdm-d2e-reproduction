@@ -7,6 +7,7 @@ OUTPUT_DIR="${OUTPUT_DIR:-outputs/idm_streaming_d2e_full_state_luma_pair_paper_t
 STATE_INPUT_ROOT="${STATE_INPUT_ROOT:-outputs/data/d2e_full_corpus_shards_accel64}"
 STATE_OUTPUT_ROOT="${STATE_OUTPUT_ROOT:-outputs/data/d2e_state_corpus_shards_accel64}"
 STATE_SUMMARY="${STATE_SUMMARY:-artifacts/idm/g005_idm_state_corpus_materialization_summary.json}"
+STATE_PROGRESS="${STATE_PROGRESS:-artifacts/idm/g005_idm_state_corpus_materialization_progress.json}"
 STATE_LOG="${STATE_LOG:-artifacts/idm/g005_idm_state_corpus_materialization.log}"
 PRECOMPUTE_CACHE_VALIDATION="${PRECOMPUTE_CACHE_VALIDATION:-artifacts/idm/g005_idm_state_luma_pair_precomputed_cache_validation.json}"
 PRECOMPUTE_CACHE_PROGRESS="${PRECOMPUTE_CACHE_PROGRESS:-artifacts/idm/g005_idm_state_luma_pair_precompute_progress.json}"
@@ -51,8 +52,10 @@ if [[ "$needs_state_materialization" != "0" ]]; then
       --input-root "$STATE_INPUT_ROOT" \
       --output-root "$STATE_OUTPUT_ROOT" \
       --summary "$STATE_SUMMARY" \
+      --progress-output "$STATE_PROGRESS" \
       --mouse-emit-mode decompose \
-      --mouse-max-tokens-per-axis 32
+      --mouse-max-tokens-per-axis 32 \
+      --workers "${STATE_MATERIALIZE_WORKERS:-16}"
     echo "state_materialization_finished_at=$(date -Iseconds)"
   } 2>&1 | tee "$STATE_LOG"
 fi
