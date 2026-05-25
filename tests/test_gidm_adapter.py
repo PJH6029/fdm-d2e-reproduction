@@ -350,9 +350,11 @@ def test_gidm_runner_passes_absolute_output_to_upstream(tmp_path: Path, monkeypa
 
     assert seen["cwd"] == d2e_repo
     assert Path(seen["cmd"][4]).is_absolute()
-    assert Path(seen["cmd"][4]) == (repo / output).resolve()
+    assert Path(seen["cmd"][4]).name.startswith(f"{output.name}.tmp.")
     assert row["prediction_mcap_path"] == str(output)
     assert row["resolved_prediction_mcap_path"] == str((repo / output).resolve())
+    assert row["temp_prediction_mcap_path"] == str(Path(seen["cmd"][4]))
+    assert row["success"] is True
     assert row["output_exists"] is True
 
 

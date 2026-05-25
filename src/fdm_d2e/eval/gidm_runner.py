@@ -3,6 +3,7 @@ from __future__ import annotations
 import concurrent.futures
 import json
 import os
+import shutil
 import subprocess
 import time
 from dataclasses import dataclass
@@ -106,6 +107,9 @@ def _run_one(
     output_path = manifest_output_path if manifest_output_path.is_absolute() else (Path.cwd() / manifest_output_path).resolve()
     ensure_dir(output_path.parent)
     ensure_dir(Path(plan.log_path).parent)
+    temp_output_path = output_path.with_name(f"{output_path.name}.tmp.{os.getpid()}.{plan.index}")
+    if temp_output_path.exists():
+        temp_output_path.unlink()
     env = os.environ.copy()
     env.update(
         {
@@ -120,7 +124,7 @@ def _run_one(
         "run",
         str(script_path.name),
         plan.video_path,
-        str(output_path),
+        str(temp_output_path),
         "--model",
         model,
         "--device",
@@ -134,14 +138,21 @@ def _run_one(
     with Path(plan.log_path).open("w", encoding="utf-8") as log_handle:
         proc = subprocess.run(cmd, cwd=d2e_repo, env=env, stdout=log_handle, stderr=subprocess.STDOUT, text=True)
     ended = time.time()
+    if proc.returncode == 0 and temp_output_path.exists() and temp_output_path.stat().st_size > 0:
+        shutil.move(str(temp_output_path), str(output_path))
+    elif temp_output_path.exists() and proc.returncode != 0:
+        temp_output_path.unlink()
+    success = int(proc.returncode) == 0 and output_path.exists() and output_path.stat().st_size > 0
     return {
         "universe_row_id": plan.universe_row_id,
         "video_path": plan.video_path,
         "prediction_mcap_path": plan.prediction_mcap_path,
         "resolved_prediction_mcap_path": str(output_path),
+        "temp_prediction_mcap_path": str(temp_output_path),
         "cuda_device": plan.cuda_device,
         "log_path": plan.log_path,
         "exit_code": int(proc.returncode),
+        "success": bool(success),
         "elapsed_seconds": ended - started,
         "output_exists": output_path.exists(),
         "output_size": output_path.stat().st_size if output_path.exists() else 0,
@@ -214,8 +225,8 @@ def run_gidm_manifest_inference(
         "resume": bool(resume),
         "dry_run": bool(dry_run),
         "planned_recordings": len(plans),
-        "completed_recordings": sum(1 for row in rows if int(row.get("exit_code", 0)) == 0) if not dry_run else 0,
-        "failed_recordings": sum(1 for row in rows if int(row.get("exit_code", 0)) != 0) if not dry_run else 0,
+        "completed_recordings": sum(1 for row in rows if bool(row.get("success", int(row.get("exit_code", 0)) == 0 and row.get("output_exists")))) if not dry_run else 0,
+        "failed_recordings": sum(1 for row in rows if not bool(row.get("success", int(row.get("exit_code", 0)) == 0 and row.get("output_exists")))) if not dry_run else 0,
         "rows": rows,
         "claim_boundary": "Released G-IDM inference execution evidence only; metric claims require conversion plus paper-metric artifacts.",
     }
