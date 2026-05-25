@@ -44,6 +44,7 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 
 def _cache_status(cache_dir: Path) -> dict[str, Any]:
     manifests = sorted(cache_dir.glob("*.manifest.json"))
+    chunk_files = sorted(cache_dir.glob("**/chunk_*.pt")) if cache_dir.exists() else []
     rows = 0
     bytes_total = 0
     chunks = 0
@@ -64,6 +65,8 @@ def _cache_status(cache_dir: Path) -> dict[str, Any]:
         "rows": rows,
         "bytes": bytes_total,
         "chunks": chunks,
+        "chunk_file_count": len(chunk_files),
+        "chunk_file_bytes": sum(path.stat().st_size for path in chunk_files if path.exists()),
     }
 
 
@@ -147,6 +150,8 @@ def main() -> int:
                     "cache/rows": cache["rows"],
                     "cache/bytes": cache["bytes"],
                     "cache/chunks": cache["chunks"],
+                    "cache/chunk_file_count": cache["chunk_file_count"],
+                    "cache/chunk_file_bytes": cache["chunk_file_bytes"],
                     "cache/process_running": process_running,
                     "cache/run_summary_exists": Path(args.run_summary).exists(),
                     "cache/summary_exists": Path(args.summary).exists(),

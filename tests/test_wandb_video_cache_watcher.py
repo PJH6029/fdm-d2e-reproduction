@@ -26,6 +26,9 @@ def test_cache_status_sums_manifest_rows_bytes_chunks(tmp_path: Path) -> None:
         json.dumps({"rows": 5, "bytes": 200, "chunks": [{"path": "c"}]}),
         encoding="utf-8",
     )
+    chunk_dir = cache_dir / "a.manifest"
+    chunk_dir.mkdir()
+    (chunk_dir / "chunk_000000.pt").write_bytes(b"abc")
 
     status = module._cache_status(cache_dir)
 
@@ -35,4 +38,6 @@ def test_cache_status_sums_manifest_rows_bytes_chunks(tmp_path: Path) -> None:
         "rows": 8,
         "bytes": 300,
         "chunks": 3,
+        "chunk_file_count": 1,
+        "chunk_file_bytes": 3,
     }
