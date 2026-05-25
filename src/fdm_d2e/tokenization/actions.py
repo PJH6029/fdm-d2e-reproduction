@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Iterable
 
 from fdm_d2e.schema import validate_named
 
@@ -38,6 +38,91 @@ def token_to_delta_class(token: str) -> int | None:
     bucket = int(suffix[1:])
     representative = {1: 1, 2: 2, 3: 6, 4: 12, 5: 24}[bucket]
     return sign * representative
+
+
+def _decomposed_axis_tokens(value: float, *, prefix: str, max_tokens: int) -> list[str]:
+    max_tokens = max(1, int(max_tokens))
+    magnitude = int(round(abs(float(value))))
+    if magnitude <= 0:
+        return [f"{prefix}Z0"]
+    sign = "P" if value >= 0 else "N"
+    buckets = ((5, 24), (4, 12), (3, 6), (2, 2), (1, 1))
+    tokens: list[str] = []
+    remaining = magnitude
+    while remaining > 0 and len(tokens) < max_tokens:
+        for suffix, bucket_value in buckets:
+            if bucket_value <= remaining or suffix == 1:
+                tokens.append(f"{prefix}{sign}{suffix}")
+                remaining -= bucket_value
+                break
+    return tokens
+
+
+def tokens_from_delta(dx: float, dy: float, *, emit_mode: str = "single", max_tokens_per_axis: int = 8) -> list[str]:
+    normalized = emit_mode.replace("-", "_").lower()
+    if normalized in {"single", "bin", "binned"}:
+        return [f"MOUSE_DX_{bin_delta(dx)}", f"MOUSE_DY_{bin_delta(dy)}"]
+    if normalized in {"decompose", "decomposed", "sum_decompose"}:
+        return _decomposed_axis_tokens(dx, prefix="MOUSE_DX_", max_tokens=max_tokens_per_axis) + _decomposed_axis_tokens(
+            dy,
+            prefix="MOUSE_DY_",
+            max_tokens=max_tokens_per_axis,
+        )
+    raise ValueError("mouse token emit mode must be one of: single, decompose")
+
+
+def _clean_state_key(token: str, prefix: str) -> str:
+    return _clean_key(token[len(prefix) :])
+
+
+def state_tokens_from_event_tokens(
+    tokens: Iterable[str],
+    *,
+    pressed_keys: set[str] | None = None,
+    pressed_buttons: set[str] | None = None,
+    mouse_emit_mode: str = "decompose",
+    mouse_max_tokens_per_axis: int = 32,
+) -> tuple[list[str], set[str], set[str]]:
+    """Convert sparse press/release event tokens into a 50 ms control state.
+
+    The public D2E metric is reported over fixed 50 ms bins.  Raw ocap bins can
+    contain many mouse events plus sparse keyboard/button transitions; this
+    helper turns those transitions into the held key/button state at the end of
+    the bin while preserving summed mouse motion.
+    """
+
+    keys = set(pressed_keys or set())
+    buttons = set(pressed_buttons or set())
+    dx = 0.0
+    dy = 0.0
+    for raw_token in tokens:
+        token = str(raw_token)
+        if token.startswith("KEY_PRESS_"):
+            keys.add(_clean_state_key(token, "KEY_PRESS_"))
+            continue
+        if token.startswith("KEY_RELEASE_"):
+            keys.discard(_clean_state_key(token, "KEY_RELEASE_"))
+            continue
+        if token.startswith("KEY_DOWN_"):
+            keys.add(_clean_state_key(token, "KEY_DOWN_"))
+            continue
+        if token.startswith("MOUSE_") and token.endswith("_DOWN") and not token.startswith(("MOUSE_DX_", "MOUSE_DY_")):
+            buttons.add(token[len("MOUSE_") : -len("_DOWN")])
+            continue
+        if token.startswith("MOUSE_") and token.endswith("_UP") and not token.startswith(("MOUSE_DX_", "MOUSE_DY_")):
+            buttons.discard(token[len("MOUSE_") : -len("_UP")])
+            continue
+        value = token_to_delta_class(token)
+        if value is None:
+            continue
+        if token.startswith("MOUSE_DX_"):
+            dx += float(value)
+        elif token.startswith("MOUSE_DY_"):
+            dy += float(value)
+    state_tokens = tokens_from_delta(dx, dy, emit_mode=mouse_emit_mode, max_tokens_per_axis=mouse_max_tokens_per_axis)
+    state_tokens.extend(f"KEY_DOWN_{key}" for key in sorted(keys))
+    state_tokens.extend(f"MOUSE_{button}_DOWN" for button in sorted(buttons))
+    return state_tokens or ["NOOP"], keys, buttons
 
 
 def tokenize_event(event: dict[str, Any]) -> list[str]:

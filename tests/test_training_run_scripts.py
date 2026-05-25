@@ -77,6 +77,21 @@ def test_g005_exactset_history_uses_precompute_then_fail_closed_training() -> No
     assert "initial_integrated_process_interrupted_after_checkpoint" in recovery
 
 
+def test_g005_state_luma_pair_materializes_state_corpus_and_logs_wandb() -> None:
+    text = _script("scripts/run_g005_idm_state_luma_pair_4xh200.sh")
+
+    materialize_idx = text.index("scripts/materialize_d2e_state_corpus.py")
+    cache_idx = text.index("scripts/precompute_streaming_idm_training_cache.py")
+    wandb_idx = text.index("scripts/watch_wandb_training.py")
+    train_idx = text.index("scripts/run_g005_idm_surface_paper_target_4xh200.sh")
+    assert materialize_idx < cache_idx < wandb_idx < train_idx
+    assert 'ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"' in text
+    assert "--env-file \"$WANDB_ENV_FILE\"" in text
+    assert "outputs/data/d2e_state_corpus_shards_accel64" in text
+    assert "ALLOW_CACHE_BUILD=0" in text
+    assert "REQUIRE_PRECOMPUTED_CACHE=1" in text
+
+
 def test_g005_video_stack_offset_candidate_separates_precompute_training_and_recovery() -> None:
     precompute = _script("scripts/run_g005_idm_video_stack_luma96_offsets012_precompute.sh")
     training = _script("scripts/run_g005_idm_video_stack_luma96_offsets012_4xh200.sh")
