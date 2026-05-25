@@ -90,7 +90,7 @@ fi
 
 SIDECAR_PID=""
 if [[ "$ENABLE_WANDB_SIDECAR" != "0" ]]; then
-  uv run python scripts/watch_wandb_training.py \
+  uv run --with wandb python scripts/watch_wandb_training.py \
     --env-file "$WANDB_ENV_FILE" \
     --train-history "$OUTPUT_DIR/train_history.json" \
     --rank-progress-dir "$OUTPUT_DIR/rank_progress" \
