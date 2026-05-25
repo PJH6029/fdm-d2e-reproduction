@@ -6,9 +6,11 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 from fdm_d2e.eval.paper_idm_metrics import (
-    _PaperMetricAccumulator,
+    _axis_total,
+    _button_tokens,
     _expand_paths,
     _iter_jsonl,
+    _key_tokens,
     _split_tags,
     _tokens,
 )
@@ -16,11 +18,201 @@ from fdm_d2e.io_utils import write_json
 
 
 @dataclass(slots=True)
+class _TokenFeatures:
+    keys: dict[str, int]
+    buttons: dict[str, int]
+    dx: float
+    dy: float
+    strict_keys: tuple[str, ...]
+    strict_buttons: tuple[str, ...]
+
+
+class _FastMetricAccumulator:
+    def __init__(self, *, empty_bins_as_correct: bool = False) -> None:
+        self.empty_bins_as_correct = empty_bins_as_correct
+        self.rows = 0
+        self.key_samples = 0
+        self.key_correct = 0
+        self.button_samples = 0
+        self.button_correct = 0
+        self.move_samples = 0
+        self.scale_samples = 0
+        self.sum_pred_x = 0.0
+        self.sum_gt_x = 0.0
+        self.sum_pred_x_sq = 0.0
+        self.sum_gt_x_sq = 0.0
+        self.sum_x_cross = 0.0
+        self.sum_pred_y = 0.0
+        self.sum_gt_y = 0.0
+        self.sum_pred_y_sq = 0.0
+        self.sum_gt_y_sq = 0.0
+        self.sum_y_cross = 0.0
+        self.sum_abs_pred_x = 0.0
+        self.sum_abs_gt_x = 0.0
+        self.sum_abs_pred_y = 0.0
+        self.sum_abs_gt_y = 0.0
+        self.strict_keyboard_total = 0
+        self.strict_keyboard_correct = 0
+        self.strict_button_total = 0
+        self.strict_button_correct = 0
+        self.strict_button_predicted_total = 0
+        self.strict_button_tp = 0
+        self.strict_button_fp = 0
+        self.strict_button_fn = 0
+        self.strict_no_button_total = 0
+        self.strict_no_button_fp = 0
+
+    @staticmethod
+    def _corr(n: int, sum_pred: float, sum_gt: float, sum_pred_sq: float, sum_gt_sq: float, sum_cross: float) -> float | None:
+        if n < 2:
+            return None
+        numerator = sum_cross - (sum_pred * sum_gt / float(n))
+        pred_var = sum_pred_sq - (sum_pred * sum_pred / float(n))
+        gt_var = sum_gt_sq - (sum_gt * sum_gt / float(n))
+        denominator = (pred_var * gt_var) ** 0.5 if pred_var > 0 and gt_var > 0 else 0.0
+        return numerator / denominator if denominator else None
+
+    @staticmethod
+    def _scale_ratio(sum_abs_pred: float, sum_abs_gt: float, n: int) -> float | None:
+        if n <= 0:
+            return None
+        pred_mean = sum_abs_pred / float(n)
+        gt_mean = sum_abs_gt / float(n)
+        if pred_mean <= 0 or gt_mean <= 0:
+            return None
+        ratio = gt_mean / pred_mean
+        return ratio if ratio >= 1.0 else 1.0 / ratio
+
+    def update_features(self, predicted: _TokenFeatures, ground_truth: _TokenFeatures) -> None:
+        self.rows += 1
+        for token in set(predicted.keys) | set(ground_truth.keys):
+            self.key_samples += 1
+            self.key_correct += int(predicted.keys.get(token, 0) == ground_truth.keys.get(token, 0))
+        if not predicted.keys and not ground_truth.keys and self.empty_bins_as_correct:
+            self.key_samples += 1
+            self.key_correct += 1
+
+        for token in set(predicted.buttons) | set(ground_truth.buttons):
+            self.button_samples += 1
+            self.button_correct += int(predicted.buttons.get(token, 0) == ground_truth.buttons.get(token, 0))
+        if not predicted.buttons and not ground_truth.buttons and self.empty_bins_as_correct:
+            self.button_samples += 1
+            self.button_correct += 1
+
+        if predicted.dx != 0.0 or ground_truth.dx != 0.0 or predicted.dy != 0.0 or ground_truth.dy != 0.0:
+            self.move_samples += 1
+            self.sum_pred_x += predicted.dx
+            self.sum_gt_x += ground_truth.dx
+            self.sum_pred_x_sq += predicted.dx * predicted.dx
+            self.sum_gt_x_sq += ground_truth.dx * ground_truth.dx
+            self.sum_x_cross += predicted.dx * ground_truth.dx
+            self.sum_pred_y += predicted.dy
+            self.sum_gt_y += ground_truth.dy
+            self.sum_pred_y_sq += predicted.dy * predicted.dy
+            self.sum_gt_y_sq += ground_truth.dy * ground_truth.dy
+            self.sum_y_cross += predicted.dy * ground_truth.dy
+        self.scale_samples += 1
+        self.sum_abs_pred_x += abs(predicted.dx)
+        self.sum_abs_gt_x += abs(ground_truth.dx)
+        self.sum_abs_pred_y += abs(predicted.dy)
+        self.sum_abs_gt_y += abs(ground_truth.dy)
+
+        if ground_truth.strict_keys:
+            self.strict_keyboard_total += 1
+            self.strict_keyboard_correct += int(predicted.strict_keys == ground_truth.strict_keys)
+        if predicted.strict_buttons:
+            self.strict_button_predicted_total += 1
+        if ground_truth.strict_buttons:
+            self.strict_button_total += 1
+            if predicted.strict_buttons == ground_truth.strict_buttons:
+                self.strict_button_correct += 1
+                self.strict_button_tp += 1
+            else:
+                self.strict_button_fn += 1
+                if predicted.strict_buttons:
+                    self.strict_button_fp += 1
+        else:
+            self.strict_no_button_total += 1
+            if predicted.strict_buttons:
+                self.strict_button_fp += 1
+                self.strict_no_button_fp += 1
+
+    def metrics(self) -> dict[str, Any]:
+        button_denom = (2 * self.strict_button_tp) + self.strict_button_fp + self.strict_button_fn
+        return {
+            "rows": self.rows,
+            "paper_compatible": {
+                "empty_bins_as_correct": self.empty_bins_as_correct,
+                "mouse_move": {
+                    "pearson_x": self._corr(
+                        self.move_samples,
+                        self.sum_pred_x,
+                        self.sum_gt_x,
+                        self.sum_pred_x_sq,
+                        self.sum_gt_x_sq,
+                        self.sum_x_cross,
+                    ),
+                    "pearson_y": self._corr(
+                        self.move_samples,
+                        self.sum_pred_y,
+                        self.sum_gt_y,
+                        self.sum_pred_y_sq,
+                        self.sum_gt_y_sq,
+                        self.sum_y_cross,
+                    ),
+                    "scale_ratio_x": self._scale_ratio(self.sum_abs_pred_x, self.sum_abs_gt_x, self.scale_samples),
+                    "scale_ratio_y": self._scale_ratio(self.sum_abs_pred_y, self.sum_abs_gt_y, self.scale_samples),
+                    "sample_count": self.move_samples,
+                    "scale_sample_count": self.scale_samples,
+                },
+                "keyboard": {
+                    "key_accuracy": self.key_correct / self.key_samples if self.key_samples else None,
+                    "sample_count": self.key_samples,
+                },
+                "mouse_button": {
+                    "button_accuracy": self.button_correct / self.button_samples if self.button_samples else None,
+                    "sample_count": self.button_samples,
+                },
+            },
+            "strict_local": {
+                "keyboard": {
+                    "accuracy": self.strict_keyboard_correct / self.strict_keyboard_total if self.strict_keyboard_total else None,
+                    "num_examples": self.strict_keyboard_total,
+                },
+                "mouse_button": {
+                    "accuracy": self.strict_button_correct / self.strict_button_total if self.strict_button_total else None,
+                    "num_examples": self.strict_button_total,
+                    "predicted_examples": self.strict_button_predicted_total,
+                    "exact_true_positive_examples": self.strict_button_tp,
+                    "false_positive_examples": self.strict_button_fp,
+                    "false_negative_examples": self.strict_button_fn,
+                    "precision": (
+                        self.strict_button_tp / (self.strict_button_tp + self.strict_button_fp)
+                        if (self.strict_button_tp + self.strict_button_fp)
+                        else None
+                    ),
+                    "recall": (
+                        self.strict_button_tp / (self.strict_button_tp + self.strict_button_fn)
+                        if (self.strict_button_tp + self.strict_button_fn)
+                        else None
+                    ),
+                    "f1": (2 * self.strict_button_tp) / button_denom if button_denom else None,
+                    "no_button_examples": self.strict_no_button_total,
+                    "no_button_false_positive_examples": self.strict_no_button_fp,
+                    "no_button_false_positive_rate": (
+                        self.strict_no_button_fp / self.strict_no_button_total if self.strict_no_button_total else None
+                    ),
+                },
+            },
+        }
+
+
+@dataclass(slots=True)
 class _AlignmentRow:
     sequence_id: str | None
     recording_id: str
-    predicted_tokens: list[str]
-    ground_truth_tokens: list[str]
+    predicted_features: _TokenFeatures
+    ground_truth_features: _TokenFeatures
     split_tags: list[str]
 
 
@@ -36,31 +228,46 @@ def _recording_id(row: dict[str, Any]) -> str:
     return "__unknown_recording__"
 
 
-def _group_accumulators(split_tags: Sequence[str], *, empty_bins_as_correct: bool) -> dict[str, _PaperMetricAccumulator]:
-    groups = {"all": _PaperMetricAccumulator(empty_bins_as_correct=empty_bins_as_correct)}
+def _features(tokens: Sequence[str]) -> _TokenFeatures:
+    token_list = [str(token) for token in tokens]
+    strict_buttons = tuple(
+        sorted(token for token in token_list if token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")))
+    )
+    return _TokenFeatures(
+        keys=dict(_key_tokens(token_list)),
+        buttons=dict(_button_tokens(token_list)),
+        dx=float(_axis_total(token_list, "MOUSE_DX_")),
+        dy=float(_axis_total(token_list, "MOUSE_DY_")),
+        strict_keys=tuple(sorted(token for token in token_list if token.startswith("KEY_"))),
+        strict_buttons=strict_buttons,
+    )
+
+
+def _group_accumulators(split_tags: Sequence[str], *, empty_bins_as_correct: bool) -> dict[str, _FastMetricAccumulator]:
+    groups = {"all": _FastMetricAccumulator(empty_bins_as_correct=empty_bins_as_correct)}
     for tag in split_tags:
-        groups[f"eval_split:{tag}"] = _PaperMetricAccumulator(empty_bins_as_correct=empty_bins_as_correct)
+        groups[f"eval_split:{tag}"] = _FastMetricAccumulator(empty_bins_as_correct=empty_bins_as_correct)
     return groups
 
 
 def _update_groups(
-    groups: dict[str, _PaperMetricAccumulator],
+    groups: dict[str, _FastMetricAccumulator],
     *,
-    predicted_tokens: Sequence[str],
-    ground_truth_tokens: Sequence[str],
+    predicted_features: _TokenFeatures,
+    ground_truth_features: _TokenFeatures,
     target_split_tags: Sequence[str],
 ) -> None:
-    groups["all"].update(predicted_tokens, ground_truth_tokens)
+    groups["all"].update_features(predicted_features, ground_truth_features)
     active = set(target_split_tags)
     for key, accumulator in groups.items():
         if not key.startswith("eval_split:"):
             continue
         tag = key.split(":", 1)[1]
         if tag in active:
-            accumulator.update(predicted_tokens, ground_truth_tokens)
+            accumulator.update_features(predicted_features, ground_truth_features)
 
 
-def _metrics(groups: dict[str, _PaperMetricAccumulator]) -> dict[str, Any]:
+def _metrics(groups: dict[str, _FastMetricAccumulator]) -> dict[str, Any]:
     return {key: value.metrics() for key, value in sorted(groups.items())}
 
 
@@ -77,7 +284,7 @@ def _process_block(
     split_tags: Sequence[str],
     empty_bins_as_correct: bool,
     include_model_shift: bool,
-) -> tuple[dict[int, dict[str, _PaperMetricAccumulator]], dict[int, dict[str, _PaperMetricAccumulator]], dict[int, int]]:
+) -> tuple[dict[int, dict[str, _FastMetricAccumulator]], dict[int, dict[str, _FastMetricAccumulator]], dict[int, int]]:
     target_autocorr = {
         shift: _group_accumulators(split_tags, empty_bins_as_correct=empty_bins_as_correct)
         for shift in shifts
@@ -95,21 +302,21 @@ def _process_block(
             pair_counts[shift] += 1
             _update_groups(
                 target_autocorr[shift],
-                predicted_tokens=base.ground_truth_tokens,
-                ground_truth_tokens=shifted_target.ground_truth_tokens,
+                predicted_features=base.ground_truth_features,
+                ground_truth_features=shifted_target.ground_truth_features,
                 target_split_tags=shifted_target.split_tags,
             )
             if include_model_shift:
                 _update_groups(
                     model_vs_shifted_target[shift],
-                    predicted_tokens=base.predicted_tokens,
-                    ground_truth_tokens=shifted_target.ground_truth_tokens,
+                    predicted_features=base.predicted_features,
+                    ground_truth_features=shifted_target.ground_truth_features,
                     target_split_tags=shifted_target.split_tags,
                 )
     return target_autocorr, model_vs_shifted_target, pair_counts
 
 
-def _merge_accumulators(dest: _PaperMetricAccumulator, src: _PaperMetricAccumulator) -> None:
+def _merge_accumulators(dest: _FastMetricAccumulator, src: _FastMetricAccumulator) -> None:
     for key, value in src.__dict__.items():
         if isinstance(value, bool):
             continue
@@ -117,8 +324,8 @@ def _merge_accumulators(dest: _PaperMetricAccumulator, src: _PaperMetricAccumula
 
 
 def _merge_group_accumulators(
-    dest: dict[int, dict[str, _PaperMetricAccumulator]],
-    src: dict[int, dict[str, _PaperMetricAccumulator]],
+    dest: dict[int, dict[str, _FastMetricAccumulator]],
+    src: dict[int, dict[str, _FastMetricAccumulator]],
 ) -> None:
     for shift, src_groups in src.items():
         for group_name, src_accumulator in src_groups.items():
@@ -162,8 +369,8 @@ def _iter_alignment_rows(
         yield _AlignmentRow(
             sequence_id=str(target_sequence_id) if target_sequence_id is not None else None,
             recording_id=_recording_id(target),
-            predicted_tokens=_tokens(pred or {}, "predicted_tokens"),
-            ground_truth_tokens=_tokens(target, "ground_truth_tokens"),
+            predicted_features=_features(_tokens(pred or {}, "predicted_tokens")),
+            ground_truth_features=_features(_tokens(target, "ground_truth_tokens")),
             split_tags=_split_tags(target),
         )
 
