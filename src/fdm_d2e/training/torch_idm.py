@@ -66,6 +66,7 @@ def _luma_temporal_layout(input_dim: int, feature_mode: str, config: dict[str, A
         "summary_luma16_stack5_time",
         "summary_compact_luma16_pair_time",
         "summary_compact_luma16_pair_shift_time",
+        "summary_compact_luma16_pair_shift_time_prior_action",
     }
     if feature_mode not in supported_modes:
         raise ValueError(f"model_arch=luma_temporal_conv requires one of: {sorted(supported_modes)}")
@@ -95,7 +96,8 @@ def _luma_temporal_layout(input_dim: int, feature_mode: str, config: dict[str, A
         stack_frames = 2
         visual_planes = 3
         shift_surface_dim = 16
-        expected_feature_dim = summary_dim + (visual_planes * plane_dim) + shift_surface_dim + temporal_dim
+        prior_action_dim = int(config.get("prior_action_feature_dim", 38)) if feature_mode.endswith("_prior_action") else 0
+        expected_feature_dim = summary_dim + (visual_planes * plane_dim) + shift_surface_dim + temporal_dim + prior_action_dim
     visual_dim = visual_planes * plane_dim
     if input_dim < expected_feature_dim:
         raise ValueError(

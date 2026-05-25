@@ -470,6 +470,13 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
         return base + _compact_luma_pair_features(row, grid_size=8, luma_size=16, shift_surface=False) + _temporal_basis_features(row)
     if feature_mode == "summary_compact_luma16_pair_shift_time":
         return base + _compact_luma_pair_features(row, grid_size=8, luma_size=16, shift_surface=True) + _temporal_basis_features(row)
+    if feature_mode == "summary_compact_luma16_pair_shift_time_prior_action":
+        return (
+            base
+            + _compact_luma_pair_features(row, grid_size=8, luma_size=16, shift_surface=True)
+            + _temporal_basis_features(row)
+            + _prior_action_features(row)
+        )
     if feature_mode == "summary_causal_compact_grid8_time_prior_action":
         return (
             _current_summary_features(row)
