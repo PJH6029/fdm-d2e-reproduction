@@ -12,12 +12,23 @@ PREDICTION_SUMMARY="${PREDICTION_SUMMARY:-artifacts/idm/g005_idm_video_stack_lum
 RECOVERY_SUMMARY="${RECOVERY_SUMMARY:-artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_checkpoint_recovery_run.json}"
 LOG_PATH="${LOG_PATH:-artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_checkpoint_recovery.log}"
 PID_FILE="${PID_FILE:-outputs/cluster/g005_idm_video_stack_luma96_offsets012_keysoftmax_checkpoint_recovery.pid}"
+PREDICTIONS_PATH="${PREDICTIONS_PATH:-$OUTPUT_DIR/predictions.jsonl}"
+PSEUDOLABELS_PATH="${PSEUDOLABELS_PATH:-$OUTPUT_DIR/pseudolabels.jsonl}"
 SPLIT_STATS_CONFIG="${SPLIT_STATS_CONFIG:-configs/eval/g005_idm_video_stack_luma96_offsets012_keysoftmax_split_statistics.yaml}"
 PAPER_TARGET_CONFIG="${PAPER_TARGET_CONFIG:-configs/eval/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_target.yaml}"
+PAPER_METRICS_PATH="${PAPER_METRICS_PATH:-artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_metrics.json}"
+PAPER_TARGET_AUDIT="${PAPER_TARGET_AUDIT:-artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_target_audit.json}"
 VALIDATE_G005="${VALIDATE_G005:-1}"
+ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"
+WANDB_ENV_FILE="${WANDB_ENV_FILE:-.env}"
+WANDB_PREDICTION_LOG="${WANDB_PREDICTION_LOG:-artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_prediction_wandb_sidecar.log}"
+WANDB_PREDICTION_STATUS="${WANDB_PREDICTION_STATUS:-artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_prediction_wandb_sidecar_status.json}"
+WANDB_PREDICTION_PID_FILE="${WANDB_PREDICTION_PID_FILE:-outputs/cluster/g005_idm_video_stack_luma96_offsets012_keysoftmax_prediction_wandb_sidecar.pid}"
+WANDB_POLL_SECONDS="${WANDB_POLL_SECONDS:-60}"
 
-mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$PID_FILE")" "$(dirname "$RECOVERY_SUMMARY")" outputs/cluster
+mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$PID_FILE")" "$(dirname "$RECOVERY_SUMMARY")" "$(dirname "$WANDB_PREDICTION_LOG")" outputs/cluster
 echo "$$" >"$PID_FILE"
+WANDB_SIDECAR_PID=""
 
 cleanup_pid_file() {
   if [[ -f "$PID_FILE" ]] && [[ "$(cat "$PID_FILE" 2>/dev/null || true)" == "$$" ]]; then
@@ -26,7 +37,60 @@ cleanup_pid_file() {
 }
 trap cleanup_pid_file EXIT
 
+wandb_configured() {
+  [[ -n "${WANDB_PROJECT:-}" ]] && return 0
+  [[ -f "$WANDB_ENV_FILE" ]] && grep -Eq '^[[:space:]]*WANDB_PROJECT=' "$WANDB_ENV_FILE"
+}
+
+start_wandb_sidecar() {
+  if [[ "$ENABLE_WANDB_SIDECAR" == "0" ]]; then
+    echo "wandb_sidecar=disabled"
+    return 0
+  fi
+  if ! wandb_configured; then
+    echo "wandb_sidecar=skipped_no_wandb_project"
+    return 0
+  fi
+  nohup env WANDB_RESUME="${WANDB_RESUME:-allow}" \
+    uv run --no-sync --with wandb python scripts/watch_wandb_prediction.py \
+      --env-file "$WANDB_ENV_FILE" \
+      --prediction-parts-dir "$PREDICTION_PARTS_DIR" \
+      --predictions-path "$PREDICTIONS_PATH" \
+      --pseudolabels-path "$PSEUDOLABELS_PATH" \
+      --prediction-summary "$PREDICTION_SUMMARY" \
+      --recovery-summary "$RECOVERY_SUMMARY" \
+      --paper-metrics "$PAPER_METRICS_PATH" \
+      --audit "$PAPER_TARGET_AUDIT" \
+      --output "$WANDB_PREDICTION_STATUS" \
+      --pid-file "$WANDB_PREDICTION_PID_FILE" \
+      --run-name g005-video-stack-luma96-target-prediction \
+      --group g005-idm-paper-target \
+      --job-type prediction-sidecar \
+      --tags g005,idm,d2e,target-prediction,video-stack,sidecar \
+      --poll-seconds "$WANDB_POLL_SECONDS" \
+      --finish-rows 16698646 \
+      >"$WANDB_PREDICTION_LOG" 2>&1 &
+  WANDB_SIDECAR_PID="$!"
+  echo "wandb_sidecar_pid=$WANDB_SIDECAR_PID"
+  echo "wandb_sidecar_status=$WANDB_PREDICTION_STATUS"
+}
+
+wait_wandb_sidecar() {
+  if [[ -z "$WANDB_SIDECAR_PID" ]]; then
+    return 0
+  fi
+  for _ in $(seq 1 30); do
+    if ! kill -0 "$WANDB_SIDECAR_PID" 2>/dev/null; then
+      wait "$WANDB_SIDECAR_PID" 2>/dev/null || true
+      return 0
+    fi
+    sleep 2
+  done
+  echo "wandb_sidecar_still_running=$WANDB_SIDECAR_PID"
+}
+
 START_EPOCH="$(date +%s)"
+start_wandb_sidecar
 set +e
 (
   set -euo pipefail
@@ -102,6 +166,11 @@ payload = {
     "prediction_summary": "$PREDICTION_SUMMARY",
     "prediction_summary_exists": prediction_summary is not None,
     "prediction_rows": (prediction_summary or {}).get("target_records"),
+    "wandb_sidecar_status_path": "$WANDB_PREDICTION_STATUS",
+    "wandb_sidecar_log_path": "$WANDB_PREDICTION_LOG",
+    "wandb_sidecar_status": (_load(Path("$WANDB_PREDICTION_STATUS")) or {}).get("status"),
+    "wandb_run_id": (_load(Path("$WANDB_PREDICTION_STATUS")) or {}).get("wandb_run_id"),
+    "wandb_run_url": (_load(Path("$WANDB_PREDICTION_STATUS")) or {}).get("wandb_run_url"),
     "paper_target_config": "$PAPER_TARGET_CONFIG",
     "paper_metrics_status": (paper_metrics or {}).get("status"),
     "paper_metrics_rows": (paper_metrics or {}).get("alignment", {}).get("rows_seen") if paper_metrics else None,
@@ -118,6 +187,25 @@ payload = {
 }
 Path("$RECOVERY_SUMMARY").write_text(json.dumps(payload, indent=2, sort_keys=True) + "\\n")
 print(json.dumps(payload, indent=2, sort_keys=True))
+PY
+
+wait_wandb_sidecar
+
+uv run python - <<PY
+from __future__ import annotations
+import json
+from pathlib import Path
+
+summary_path = Path("$RECOVERY_SUMMARY")
+sidecar_path = Path("$WANDB_PREDICTION_STATUS")
+if summary_path.exists() and sidecar_path.exists():
+    payload = json.loads(summary_path.read_text())
+    sidecar = json.loads(sidecar_path.read_text())
+    payload["wandb_sidecar_status"] = sidecar.get("status")
+    payload["wandb_run_id"] = sidecar.get("wandb_run_id")
+    payload["wandb_run_url"] = sidecar.get("wandb_run_url")
+    payload["wandb_sidecar_loop_index"] = sidecar.get("loop_index")
+    summary_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\\n")
 PY
 
 exit "$STATUS"
