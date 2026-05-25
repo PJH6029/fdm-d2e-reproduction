@@ -4198,7 +4198,53 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             "world_size": int(dist["world_size"]),
             "status": "worker_complete",
         }
+    checkpoint_path = out_dir / "checkpoint.pt"
+    pre_calibration_checkpoint_path = out_dir / "checkpoint_pre_calibration.pt"
+    calibration_progress_path = out_dir / "calibration_progress.json"
+
+    def build_checkpoint_payload(stage: str) -> dict[str, Any]:
+        return {
+            "model_state_dict": model.state_dict(),
+            "config": dict(config),
+            "stats": stats,
+            "category_vocab": category_vocab,
+            "keyboard_head_mode": keyboard_head_mode,
+            "keyboard_classes": [list(tokens) for tokens in keyboard_classes],
+            "button_head_mode": button_head_mode,
+            "button_classes": [list(tokens) for tokens in button_classes],
+            "mouse_head_mode": mouse_head_mode,
+            "mouse_target_mode": _mouse_target_mode(config),
+            "mouse_emit_mode": str(config.get("mouse_emit_mode", "single")),
+            "mouse_max_tokens_per_axis": int(config.get("mouse_max_tokens_per_axis", 8)),
+            "mouse_axis_classes": mouse_axis_classes,
+            "history": history,
+            "calibration_stage": stage,
+        }
+
+    def write_calibration_progress(stage: str, **extra: Any) -> None:
+        write_json(
+            calibration_progress_path,
+            {
+                "schema": "streaming_idm_calibration_progress.v1",
+                "status": "running" if stage != "final_checkpoint_saved" else "pass",
+                "stage": stage,
+                "checkpoint_path": str(checkpoint_path),
+                "pre_calibration_checkpoint_path": str(pre_calibration_checkpoint_path),
+                "updated_at_epoch": time.time(),
+                **extra,
+            },
+        )
+
+    if bool(config.get("save_pre_calibration_checkpoint", True)):
+        write_calibration_progress("saving_pre_calibration_checkpoint")
+        torch.save(build_checkpoint_payload("pre_calibration"), pre_calibration_checkpoint_path)
+        write_calibration_progress("pre_calibration_checkpoint_saved")
     use_cache_calibration = bool(training_cache_manifests) and bool(config.get("calibration_use_training_cache", True))
+    write_calibration_progress(
+        "category_calibration_started",
+        use_cache_calibration=use_cache_calibration,
+        category_calibration_max_examples=config.get("category_calibration_max_examples"),
+    )
     if use_cache_calibration:
         category_thresholds, calibration_info = _calibrate_streaming_category_thresholds_from_cache(
             torch,
@@ -4220,6 +4266,17 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             category_vocab=category_vocab,
         )
     config["category_thresholds"] = category_thresholds
+    write_calibration_progress(
+        "category_calibration_finished",
+        use_cache_calibration=use_cache_calibration,
+        calibration_status=calibration_info.get("status"),
+        observed_examples=calibration_info.get("observed_examples"),
+    )
+    write_calibration_progress(
+        "mouse_gain_calibration_started",
+        use_cache_calibration=use_cache_calibration,
+        mouse_gain_calibration_max_examples=config.get("mouse_gain_calibration_max_examples"),
+    )
     if use_cache_calibration:
         mouse_output_gain, mouse_output_gain_info = _calibrate_streaming_mouse_output_gain_from_cache(
             torch,
@@ -4242,24 +4299,17 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             mouse_axis_classes=mouse_axis_classes,
         )
     config["mouse_output_gain"] = mouse_output_gain
-    checkpoint_path = out_dir / "checkpoint.pt"
-    checkpoint_payload = {
-        "model_state_dict": model.state_dict(),
-        "config": config,
-        "stats": stats,
-        "category_vocab": category_vocab,
-        "keyboard_head_mode": keyboard_head_mode,
-        "keyboard_classes": [list(tokens) for tokens in keyboard_classes],
-        "button_head_mode": button_head_mode,
-        "button_classes": [list(tokens) for tokens in button_classes],
-        "mouse_head_mode": mouse_head_mode,
-        "mouse_target_mode": _mouse_target_mode(config),
-        "mouse_emit_mode": str(config.get("mouse_emit_mode", "single")),
-        "mouse_max_tokens_per_axis": int(config.get("mouse_max_tokens_per_axis", 8)),
-        "mouse_axis_classes": mouse_axis_classes,
-        "history": history,
-    }
+    write_calibration_progress(
+        "mouse_gain_calibration_finished",
+        use_cache_calibration=use_cache_calibration,
+        mouse_output_gain=mouse_output_gain,
+        mouse_gain_status=mouse_output_gain_info.get("status"),
+        value_count=mouse_output_gain_info.get("value_count"),
+    )
+    checkpoint_payload = build_checkpoint_payload("post_calibration")
+    write_calibration_progress("saving_final_checkpoint")
     torch.save(checkpoint_payload, checkpoint_path)
+    write_calibration_progress("final_checkpoint_saved")
     prediction_workers = int(config.get("prediction_workers", 1))
     if prediction_workers > 1 and len(target_record_paths) > 1:
         if int(stats.get("action_history_len", 0) or 0) > 0:
