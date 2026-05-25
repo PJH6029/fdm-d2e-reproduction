@@ -18,15 +18,21 @@ def _tokens_key(row: dict[str, Any]) -> tuple[str, ...]:
     return tuple(str(token) for token in row.get("ground_truth_tokens", []) or ["NOOP"])
 
 
-def _train_baseline_stats(train_records: list[dict[str, Any]]) -> dict[str, Any]:
-    counts: Counter[tuple[str, ...]] = Counter(_tokens_key(row) for row in train_records)
-    majority = list(counts.most_common(1)[0][0]) if counts else ["NOOP"]
+def _train_baseline_stats(
+    train_records: Iterable[dict[str, Any]],
+    *,
+    global_majority_tokens: Sequence[str] | None = None,
+) -> dict[str, Any]:
+    counts: Counter[tuple[str, ...]] = Counter()
     last_by_recording: dict[str, list[str]] = {}
     last_by_game: dict[str, list[str]] = {}
     for row in train_records:
         tokens = list(_tokens_key(row))
+        if global_majority_tokens is None:
+            counts[tuple(tokens)] += 1
         last_by_recording[str(row.get("recording_id", ""))] = tokens
         last_by_game[str(row.get("game", "unknown"))] = tokens
+    majority = list(global_majority_tokens) if global_majority_tokens else list(counts.most_common(1)[0][0]) if counts else ["NOOP"]
     return {"global_majority_tokens": majority, "last_tokens_by_recording": last_by_recording, "last_tokens_by_game": last_by_game}
 
 
@@ -71,6 +77,18 @@ def _paths_from_config(root: Path, config: dict[str, Any], *, key: str, paths_ke
     return [path if path.is_absolute() else root / path]
 
 
+def _train_record_paths_from_config(root: Path, config: dict[str, Any]) -> list[Path]:
+    if not (config.get("train_record_paths") or config.get("train_records_glob") or config.get("train_records_path")):
+        return []
+    return _paths_from_config(
+        root,
+        config,
+        key="train_records_path",
+        paths_key="train_record_paths",
+        glob_key="train_records_glob",
+    )
+
+
 def _iter_jsonl_paths(paths: Sequence[str | Path]) -> Iterable[dict[str, Any]]:
     for path in paths:
         with Path(path).open() as handle:
@@ -92,18 +110,20 @@ def _baseline_stats_from_config(root: Path, config: dict[str, Any]) -> dict[str,
     if train_stats_path:
         path = Path(str(train_stats_path))
         stats = read_json(path if path.is_absolute() else root / path)
+        majority = stats.get("global_majority_tokens") or ["NOOP"]
+        last_by_recording = stats.get("last_tokens_by_recording") or {}
+        last_by_game = stats.get("last_tokens_by_game") or {}
+        if "last_seen_train" in [str(name) for name in config.get("baseline_names", [])] and not (last_by_recording or last_by_game):
+            train_paths = _train_record_paths_from_config(root, config)
+            if train_paths:
+                return _train_baseline_stats(_iter_jsonl_paths(train_paths), global_majority_tokens=majority)
         return {
-            "global_majority_tokens": stats.get("global_majority_tokens") or ["NOOP"],
-            "last_tokens_by_recording": stats.get("last_tokens_by_recording") or {},
-            "last_tokens_by_game": stats.get("last_tokens_by_game") or {},
+            "global_majority_tokens": majority,
+            "last_tokens_by_recording": last_by_recording,
+            "last_tokens_by_game": last_by_game,
         }
-    train_records_path = config.get("train_records_path")
-    train_records_glob = config.get("train_records_glob")
-    if train_records_glob:
-        return _train_baseline_stats(list(_iter_jsonl_paths(_paths_from_config(root, config, key="train_records_path", paths_key="train_record_paths", glob_key="train_records_glob"))))
-    train_path = root / str(train_records_path) if train_records_path else None
-    train_records = read_jsonl(train_path) if train_path else []
-    return _train_baseline_stats(train_records)
+    train_paths = _train_record_paths_from_config(root, config)
+    return _train_baseline_stats(_iter_jsonl_paths(train_paths) if train_paths else [])
 
 
 def _ensure_metric(metrics: dict[str, StreamingActionMetrics], key: str) -> StreamingActionMetrics:
