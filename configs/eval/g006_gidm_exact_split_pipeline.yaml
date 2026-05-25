@@ -1,0 +1,53 @@
+{
+  "schema": "g006_gidm_exact_split_pipeline_config.v1",
+  "goal_id": "G006-g-idm-exact-split",
+  "model_name": "released_generalist_idm_1b_exact_split",
+  "manifest_path": "artifacts/eval/g006_gidm_exact_split_inference_manifest.json",
+  "d2e_repo": "outputs/external/D2E",
+  "cuda_devices": ["0", "1", "2", "3"],
+  "workers": 4,
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "max_context_length": 2048,
+  "uv_cache_dir": "outputs/external/uv-cache-desktop-minimal",
+  "hf_home": "outputs/external/hf-home",
+  "inference_log_dir": "artifacts/eval/gidm_exact_split_inference_logs",
+  "inference_summary": "artifacts/eval/g006_gidm_exact_split_manifest_runner_summary.json",
+  "by_recording_roots": [
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_*/by_recording"
+  ],
+  "target_records": "outputs/gidm_exact_split/full_targets.jsonl",
+  "target_summary": "artifacts/eval/g006_gidm_exact_split_target_extraction_summary.json",
+  "predictions": "outputs/gidm_exact_split/full_predictions.jsonl",
+  "conversion_summary": "artifacts/eval/g006_gidm_exact_split_conversion_summary.json",
+  "bin_ms": 50,
+  "auto_timestamp_shift_from_screen": true,
+  "paper_metrics": {
+    "model_name": "released_generalist_idm_1b_exact_split",
+    "output_path": "artifacts/eval/g006_gidm_exact_split_paper_metrics.json",
+    "progress_output_path": "artifacts/eval/g006_gidm_exact_split_paper_metrics_progress.json",
+    "progress_rows": 1000000,
+    "prediction_paths": [
+      "outputs/gidm_exact_split/full_predictions.jsonl"
+    ],
+    "target_paths": [
+      "outputs/gidm_exact_split/full_targets.jsonl"
+    ],
+    "split_tags": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ],
+    "empty_bins_as_correct": false
+  },
+  "summary_out": "artifacts/eval/g006_gidm_exact_split_pipeline_summary.json",
+  "wandb": {
+    "enabled": true,
+    "env_file": ".env",
+    "run_name": "g006-gidm-exact-split",
+    "group": "g006-gidm-exact-split",
+    "job_type": "eval-artifacts",
+    "tags": "g006,gidm,d2e,exact-split",
+    "artifact_name": "g006-gidm-exact-split"
+  },
+  "claim_boundary": "Released G-IDM exact-split pipeline evidence. It is a baseline/evaluation lane and not evidence that our IDM beat the paper target."
+}
