@@ -174,3 +174,82 @@ def test_write_split_statistical_comparisons_streams_with_ground_truth_glob(tmp_
         payload = json.loads((tmp_path / "split_stats_streaming_glob" / f"split_{split}_statistical_comparison.json").read_text())
         assert payload["ground_truth_records"] == 3
         assert payload["model_prediction_records"] == 3
+
+
+def test_write_split_statistical_comparisons_streams_parallel_prediction_parts(tmp_path: Path):
+    splits = ["temporal", "heldout_recording", "heldout_game"]
+    target = [_record(i, split) for split in splits for i in range(3)]
+    preds = [{"sequence_id": row["sequence_id"], "predicted_tokens": row["ground_truth_tokens"]} for row in target]
+    endpoints = {
+        "schema": "primary_endpoints.v1",
+        "cluster_key": "recording_id",
+        "bootstrap": {"n_resamples": 20, "confidence": 0.95, "seed": 1},
+        "correction": "holm_bonferroni",
+        "reference_baseline": "noop",
+        "endpoints": [
+            {"name": "keyboard_accuracy", "metric_path": ["keyboard", "accuracy"], "direction": "higher"},
+        ],
+    }
+    shard_dir = tmp_path / "target_shards"
+    pred_dir = tmp_path / "prediction_parts"
+    shard_dir.mkdir()
+    (pred_dir / "part_000").mkdir(parents=True)
+    (pred_dir / "part_001").mkdir(parents=True)
+    write_jsonl(shard_dir / "part_0.jsonl", target[:4])
+    write_jsonl(shard_dir / "part_1.jsonl", target[4:])
+    write_jsonl(pred_dir / "part_000" / "predictions.jsonl", preds[:4])
+    write_jsonl(pred_dir / "part_001" / "predictions.jsonl", preds[4:])
+    write_json(tmp_path / "endpoints.json", endpoints)
+    write_json(
+        tmp_path / "streaming_stats.json",
+        {
+            "schema": "streaming_idm_stats.v1",
+            "global_majority_tokens": ["NOOP"],
+            "last_tokens_by_recording": {},
+            "last_tokens_by_game": {},
+        },
+    )
+    write_json(
+        tmp_path / "prediction_summary.json",
+        {
+            "schema": "video_idm_prediction_summary.v1",
+            "prediction": {
+                "prediction_parallel": {
+                    "parts": [
+                        {
+                            "part_index": 0,
+                            "predictions_path": "prediction_parts/part_000/predictions.jsonl",
+                            "record_paths": ["target_shards/part_0.jsonl"],
+                        },
+                        {
+                            "part_index": 1,
+                            "predictions_path": "prediction_parts/part_001/predictions.jsonl",
+                            "record_paths": ["target_shards/part_1.jsonl"],
+                        },
+                    ],
+                },
+            },
+        },
+    )
+    config = {
+        "model_name": "tiny_model",
+        "predictions_path": "unused_merged_predictions.jsonl",
+        "prediction_summary_path": "prediction_summary.json",
+        "ground_truth_glob": "target_shards/*.jsonl",
+        "streaming": True,
+        "split_workers": 2,
+        "train_stats_path": "streaming_stats.json",
+        "output_dir": "split_stats_parallel_parts",
+        "summary_out": "summary_parallel_parts.json",
+        "endpoints": "endpoints.json",
+        "baseline_names": ["noop", "global_majority"],
+        "split_tags": splits,
+    }
+
+    summary = write_split_statistical_comparisons(config, root=tmp_path)
+
+    assert summary["status"] == "pass"
+    for split in splits:
+        payload = json.loads((tmp_path / "split_stats_parallel_parts" / f"split_{split}_statistical_comparison.json").read_text())
+        assert payload["ground_truth_records"] == 3
+        assert payload["model_prediction_records"] == 3

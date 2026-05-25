@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import glob
 from collections import Counter
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
@@ -10,7 +11,7 @@ from fdm_d2e.config import load_config
 from fdm_d2e.eval.statistics import cluster_bootstrap_delta, cluster_id, endpoint_value, holm_bonferroni, values_by_cluster
 from fdm_d2e.io_utils import read_json, read_jsonl, stable_hash_json, write_json
 from fdm_d2e.schema import validate_named
-from fdm_d2e.training.streaming_idm import StreamingActionMetrics
+from fdm_d2e.training.streaming_idm import StreamingActionMetrics, _merge_nested_metric_states, _nested_metric_state_map
 
 
 def _tokens_key(row: dict[str, Any]) -> tuple[str, ...]:
@@ -171,6 +172,128 @@ def _streaming_comparisons(
     return holm_bonferroni(comparisons)
 
 
+def _streaming_metric_state_payload(
+    *,
+    predictions_paths: Sequence[str | Path],
+    ground_truth_paths: Sequence[str | Path],
+    split_tags: list[str],
+    model_name: str,
+    baseline_names: list[str],
+    train_stats: dict[str, Any],
+    cluster_key: str,
+) -> dict[str, Any]:
+    model_names = [model_name, *baseline_names]
+    metrics_by_split_model_cluster: dict[str, dict[str, dict[str, StreamingActionMetrics]]] = {
+        split: {name: {} for name in model_names} for split in split_tags
+    }
+    ground_truth_counts = {split: 0 for split in split_tags}
+    prediction_counts = {split: 0 for split in split_tags}
+    first_ids = {split: [] for split in split_tags}
+    gt_iter = iter(_iter_jsonl_paths(ground_truth_paths))
+    pred_iter = iter(_iter_jsonl_paths(predictions_paths))
+    idx = 0
+    while True:
+        try:
+            gt = next(gt_iter)
+            gt_done = False
+        except StopIteration:
+            gt = None
+            gt_done = True
+        try:
+            pred = next(pred_iter)
+            pred_done = False
+        except StopIteration:
+            pred = None
+            pred_done = True
+        if gt_done and pred_done:
+            break
+        if gt_done or pred_done:
+            raise ValueError(
+                "prediction/ground-truth row count mismatch: "
+                f"extra_prediction={not pred_done} extra_ground_truth={not gt_done}"
+            )
+        idx += 1
+        gt_id = str(gt.get("sequence_id"))
+        pred_id = str(pred.get("sequence_id"))
+        if gt_id != pred_id:
+            raise ValueError(f"ordered prediction/ground-truth mismatch at row {idx}: {pred_id} != {gt_id}")
+        active_splits = [split for split in split_tags if split in [str(tag) for tag in gt.get("eval_split_tags", []) or []]]
+        if not active_splits:
+            continue
+        tokens_by_name = {model_name: list(pred.get("predicted_tokens", []))}
+        for baseline in baseline_names:
+            tokens_by_name[baseline] = _baseline_tokens(baseline, gt, train_stats)
+        cluster = cluster_id(gt, cluster_key)
+        for split in active_splits:
+            ground_truth_counts[split] += 1
+            prediction_counts[split] += 1
+            if len(first_ids[split]) < 10000:
+                first_ids[split].append(gt_id)
+            for name, tokens in tokens_by_name.items():
+                _ensure_metric(metrics_by_split_model_cluster[split][name], cluster).update(tokens, gt)
+    return {
+        "metrics_by_split_model_cluster": {
+            split: _nested_metric_state_map(metrics_by_split_model_cluster[split])
+            for split in split_tags
+        },
+        "ground_truth_counts": ground_truth_counts,
+        "prediction_counts": prediction_counts,
+        "first_ids": first_ids,
+    }
+
+
+def _split_stat_payloads_from_metric_states(
+    *,
+    metrics_by_split_model_cluster: dict[str, dict[str, dict[str, StreamingActionMetrics]]],
+    ground_truth_counts: dict[str, int],
+    prediction_counts: dict[str, int],
+    first_ids: dict[str, list[str]],
+    endpoints_config: dict[str, Any],
+    split_tags: list[str],
+    model_name: str,
+    baseline_names: list[str],
+    ground_truth_paths: Sequence[str | Path],
+    predictions_paths: Sequence[str | Path],
+) -> dict[str, dict[str, Any]]:
+    default_reference = str(endpoints_config.get("reference_baseline", "noop"))
+    cluster_key = str(endpoints_config.get("cluster_key", "recording_id"))
+    outputs: dict[str, dict[str, Any]] = {}
+    for split in split_tags:
+        comparisons = _streaming_comparisons(
+            cluster_metrics_by_model=metrics_by_split_model_cluster[split],
+            endpoints_config=endpoints_config,
+            split_tag=split,
+        )
+        payload = {
+            "schema": "stat_comparison.v1",
+            "reference_baseline": default_reference,
+            "correction": str(endpoints_config.get("correction", "holm_bonferroni")),
+            "cluster_key": cluster_key,
+            "split": split,
+            "model": model_name,
+            "ground_truth_path": ",".join(str(path) for path in ground_truth_paths),
+            "predictions_path": ",".join(str(path) for path in predictions_paths),
+            "train_records_path": None,
+            "ground_truth_records": ground_truth_counts[split],
+            "model_prediction_records": prediction_counts[split],
+            "baseline_names": baseline_names,
+            "comparisons": comparisons,
+            "dataset_fingerprint": stable_hash_json(
+                {
+                    "split": split,
+                    "model": model_name,
+                    "ground_truth_ids": first_ids[split],
+                    "prediction_count": prediction_counts[split],
+                    "comparisons": comparisons,
+                }
+            ),
+            "claim_boundary": "Split-specific streaming statistical comparison for G006; it is valid only for the named split and source predictions.",
+        }
+        validate_named(payload, "stat_comparison.schema.json")
+        outputs[split] = payload
+    return outputs
+
+
 def _prediction_rows_by_id(path: str | Path) -> dict[str, dict[str, Any]]:
     return {str(row["sequence_id"]): row for row in read_jsonl(path)}
 
@@ -294,93 +417,119 @@ def compare_split_predictions_streaming(
     baseline_names: list[str],
     train_stats: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
-    default_reference = str(endpoints_config.get("reference_baseline", "noop"))
     cluster_key = str(endpoints_config.get("cluster_key", "recording_id"))
-    model_names = [model_name, *baseline_names]
-    metrics_by_split_model_cluster: dict[str, dict[str, dict[str, StreamingActionMetrics]]] = {
-        split: {name: {} for name in model_names} for split in split_tags
-    }
-    ground_truth_counts = {split: 0 for split in split_tags}
-    prediction_counts = {split: 0 for split in split_tags}
-    first_ids = {split: [] for split in split_tags}
-    gt_iter = iter(_iter_jsonl_paths(ground_truth_paths))
-    pred_iter = iter(_iter_jsonl_paths(predictions_paths))
-    idx = 0
-    while True:
-        try:
-            gt = next(gt_iter)
-            gt_done = False
-        except StopIteration:
-            gt = None
-            gt_done = True
-        try:
-            pred = next(pred_iter)
-            pred_done = False
-        except StopIteration:
-            pred = None
-            pred_done = True
-        if gt_done and pred_done:
-            break
-        if gt_done or pred_done:
-            raise ValueError(
-                "prediction/ground-truth row count mismatch: "
-                f"extra_prediction={not pred_done} extra_ground_truth={not gt_done}"
-            )
-        idx += 1
-        gt_id = str(gt.get("sequence_id"))
-        pred_id = str(pred.get("sequence_id"))
-        if gt_id != pred_id:
-            raise ValueError(f"ordered prediction/ground-truth mismatch at row {idx}: {pred_id} != {gt_id}")
-        active_splits = [split for split in split_tags if split in [str(tag) for tag in gt.get("eval_split_tags", []) or []]]
-        if not active_splits:
-            continue
-        tokens_by_name = {model_name: list(pred.get("predicted_tokens", []))}
-        for baseline in baseline_names:
-            tokens_by_name[baseline] = _baseline_tokens(baseline, gt, train_stats)
-        cluster = cluster_id(gt, cluster_key)
-        for split in active_splits:
-            ground_truth_counts[split] += 1
-            prediction_counts[split] += 1
-            if len(first_ids[split]) < 10000:
-                first_ids[split].append(gt_id)
-            for name, tokens in tokens_by_name.items():
-                _ensure_metric(metrics_by_split_model_cluster[split][name], cluster).update(tokens, gt)
+    state = _streaming_metric_state_payload(
+        predictions_paths=predictions_paths,
+        ground_truth_paths=ground_truth_paths,
+        split_tags=split_tags,
+        model_name=model_name,
+        baseline_names=baseline_names,
+        train_stats=train_stats,
+        cluster_key=cluster_key,
+    )
+    return _split_stat_payloads_from_metric_states(
+        metrics_by_split_model_cluster={
+            split: _merge_nested_metric_states([state["metrics_by_split_model_cluster"][split]])
+            for split in split_tags
+        },
+        ground_truth_counts=state["ground_truth_counts"],
+        prediction_counts=state["prediction_counts"],
+        first_ids=state["first_ids"],
+        endpoints_config=endpoints_config,
+        split_tags=split_tags,
+        model_name=model_name,
+        baseline_names=baseline_names,
+        ground_truth_paths=ground_truth_paths,
+        predictions_paths=predictions_paths,
+    )
 
-    outputs: dict[str, dict[str, Any]] = {}
-    for split in split_tags:
-        comparisons = _streaming_comparisons(
-            cluster_metrics_by_model=metrics_by_split_model_cluster[split],
-            endpoints_config=endpoints_config,
-            split_tag=split,
+
+def _compare_streaming_part_worker(payload: dict[str, Any]) -> dict[str, Any]:
+    return _streaming_metric_state_payload(
+        predictions_paths=payload["predictions_paths"],
+        ground_truth_paths=payload["ground_truth_paths"],
+        split_tags=payload["split_tags"],
+        model_name=payload["model_name"],
+        baseline_names=payload["baseline_names"],
+        train_stats=payload["train_stats"],
+        cluster_key=payload["cluster_key"],
+    )
+
+
+def _part_payloads_from_prediction_summary(root: Path, summary_path: str | Path) -> list[dict[str, list[str]]]:
+    summary_file = Path(summary_path)
+    if not summary_file.is_absolute():
+        summary_file = root / summary_file
+    summary = read_json(summary_file)
+    prediction = summary.get("prediction", {}) if isinstance(summary.get("prediction"), dict) else {}
+    parallel = prediction.get("prediction_parallel", {}) if isinstance(prediction.get("prediction_parallel"), dict) else {}
+    parts = parallel.get("parts", [])
+    if not isinstance(parts, list) or not parts:
+        raise ValueError(f"prediction summary has no prediction_parallel.parts: {summary_file}")
+    payloads = []
+    for part in sorted(parts, key=lambda item: int(item.get("part_index", 0))):
+        pred_path = Path(str(part["predictions_path"]))
+        payloads.append(
+            {
+                "predictions_paths": [str(pred_path if pred_path.is_absolute() else root / pred_path)],
+                "ground_truth_paths": [
+                    str(Path(path) if Path(path).is_absolute() else root / Path(path))
+                    for path in part.get("record_paths", [])
+                ],
+            }
         )
-        payload = {
-            "schema": "stat_comparison.v1",
-            "reference_baseline": default_reference,
-            "correction": str(endpoints_config.get("correction", "holm_bonferroni")),
-            "cluster_key": cluster_key,
-            "split": split,
-            "model": model_name,
-            "ground_truth_path": ",".join(str(path) for path in ground_truth_paths),
-            "predictions_path": ",".join(str(path) for path in predictions_paths),
-            "train_records_path": None,
-            "ground_truth_records": ground_truth_counts[split],
-            "model_prediction_records": prediction_counts[split],
+    return payloads
+
+
+def compare_split_predictions_streaming_parallel_parts(
+    *,
+    part_payloads: list[dict[str, list[str]]],
+    endpoints_config: dict[str, Any],
+    split_tags: list[str],
+    model_name: str,
+    baseline_names: list[str],
+    train_stats: dict[str, Any],
+    workers: int,
+) -> dict[str, dict[str, Any]]:
+    cluster_key = str(endpoints_config.get("cluster_key", "recording_id"))
+    worker_payloads = [
+        {
+            **payload,
+            "split_tags": split_tags,
+            "model_name": model_name,
             "baseline_names": baseline_names,
-            "comparisons": comparisons,
-            "dataset_fingerprint": stable_hash_json(
-                {
-                    "split": split,
-                    "model": model_name,
-                    "ground_truth_ids": first_ids[split],
-                    "prediction_count": prediction_counts[split],
-                    "comparisons": comparisons,
-                }
-            ),
-            "claim_boundary": "Split-specific streaming statistical comparison for G006; it is valid only for the named split and source predictions.",
+            "train_stats": train_stats,
+            "cluster_key": cluster_key,
         }
-        validate_named(payload, "stat_comparison.schema.json")
-        outputs[split] = payload
-    return outputs
+        for payload in part_payloads
+    ]
+    states: list[dict[str, Any]] = []
+    with ProcessPoolExecutor(max_workers=max(1, min(int(workers), len(worker_payloads)))) as executor:
+        futures = [executor.submit(_compare_streaming_part_worker, payload) for payload in worker_payloads]
+        for future in as_completed(futures):
+            states.append(future.result())
+    metrics_by_split_model_cluster = {
+        split: _merge_nested_metric_states(state["metrics_by_split_model_cluster"][split] for state in states)
+        for split in split_tags
+    }
+    ground_truth_counts = {split: sum(int(state["ground_truth_counts"].get(split, 0)) for state in states) for split in split_tags}
+    prediction_counts = {split: sum(int(state["prediction_counts"].get(split, 0)) for state in states) for split in split_tags}
+    first_ids = {
+        split: [item for state in states for item in state["first_ids"].get(split, [])][:10000]
+        for split in split_tags
+    }
+    return _split_stat_payloads_from_metric_states(
+        metrics_by_split_model_cluster=metrics_by_split_model_cluster,
+        ground_truth_counts=ground_truth_counts,
+        prediction_counts=prediction_counts,
+        first_ids=first_ids,
+        endpoints_config=endpoints_config,
+        split_tags=split_tags,
+        model_name=model_name,
+        baseline_names=baseline_names,
+        ground_truth_paths=[path for payload in part_payloads for path in payload["ground_truth_paths"]],
+        predictions_paths=[path for payload in part_payloads for path in payload["predictions_paths"]],
+    )
 
 
 def write_split_statistical_comparisons(config: dict[str, Any], *, root: str | Path = ".") -> dict[str, Any]:
@@ -397,18 +546,29 @@ def write_split_statistical_comparisons(config: dict[str, Any], *, root: str | P
     baseline_names = [str(name) for name in config.get("baseline_names", ["noop", "global_majority", "last_seen_train"])]
     outputs = []
     if bool(config.get("streaming", False)):
-        prediction_paths = _paths_from_config(root_path, config, key="predictions_path", paths_key="prediction_paths", glob_key="predictions_glob")
-        ground_truth_paths = _paths_from_config(root_path, config, key="ground_truth_path", paths_key="ground_truth_paths", glob_key="ground_truth_glob")
         train_stats = _baseline_stats_from_config(root_path, config)
-        payloads = compare_split_predictions_streaming(
-            predictions_paths=prediction_paths,
-            ground_truth_paths=ground_truth_paths,
-            endpoints_config=endpoints,
-            split_tags=split_tags,
-            model_name=model_name,
-            baseline_names=baseline_names,
-            train_stats=train_stats,
-        )
+        if config.get("prediction_summary_path") and int(config.get("split_workers", 1) or 1) > 1:
+            payloads = compare_split_predictions_streaming_parallel_parts(
+                part_payloads=_part_payloads_from_prediction_summary(root_path, config["prediction_summary_path"]),
+                endpoints_config=endpoints,
+                split_tags=split_tags,
+                model_name=model_name,
+                baseline_names=baseline_names,
+                train_stats=train_stats,
+                workers=int(config.get("split_workers", 1) or 1),
+            )
+        else:
+            prediction_paths = _paths_from_config(root_path, config, key="predictions_path", paths_key="prediction_paths", glob_key="predictions_glob")
+            ground_truth_paths = _paths_from_config(root_path, config, key="ground_truth_path", paths_key="ground_truth_paths", glob_key="ground_truth_glob")
+            payloads = compare_split_predictions_streaming(
+                predictions_paths=prediction_paths,
+                ground_truth_paths=ground_truth_paths,
+                endpoints_config=endpoints,
+                split_tags=split_tags,
+                model_name=model_name,
+                baseline_names=baseline_names,
+                train_stats=train_stats,
+            )
         for split_tag, payload in payloads.items():
             out_path = output_dir / f"split_{split_tag}_statistical_comparison.json"
             write_json(out_path, payload)
