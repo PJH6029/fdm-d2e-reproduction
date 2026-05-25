@@ -181,6 +181,66 @@ def test_streaming_train_stats_falls_back_to_train_records_for_last_seen(tmp_pat
     assert model_row["baseline_value"] == 1.0
 
 
+def test_streaming_train_stats_can_merge_last_seen_stats_path(tmp_path: Path):
+    splits = ["temporal", "heldout_recording", "heldout_game"]
+    target = [_record(i, split) for split in splits for i in range(3)]
+    preds = [{"sequence_id": row["sequence_id"], "predicted_tokens": row["ground_truth_tokens"]} for row in target]
+    endpoints = {
+        "schema": "primary_endpoints.v1",
+        "cluster_key": "recording_id",
+        "bootstrap": {"n_resamples": 20, "confidence": 0.95, "seed": 1},
+        "correction": "holm_bonferroni",
+        "reference_baseline": "noop",
+        "endpoints": [
+            {
+                "name": "keyboard_accuracy",
+                "reference_baseline": "last_seen_train",
+                "metric_path": ["keyboard", "accuracy"],
+                "direction": "higher",
+            },
+        ],
+    }
+    write_jsonl(tmp_path / "target.jsonl", target)
+    write_jsonl(tmp_path / "predictions.jsonl", preds)
+    write_json(tmp_path / "endpoints.json", endpoints)
+    write_json(
+        tmp_path / "video_stats.json",
+        {
+            "schema": "video_idm_stats.v1",
+            "global_majority_tokens": ["NOOP"],
+        },
+    )
+    write_json(
+        tmp_path / "streaming_stats.json",
+        {
+            "schema": "streaming_idm_stats.v1",
+            "last_tokens_by_recording": {f"rec_{split}": ["KEY_PRESS_87"] for split in splits},
+            "last_tokens_by_game": {},
+        },
+    )
+    config = {
+        "model_name": "tiny_model",
+        "predictions_path": "predictions.jsonl",
+        "ground_truth_path": "target.jsonl",
+        "streaming": True,
+        "train_stats_path": "video_stats.json",
+        "train_last_seen_stats_path": "streaming_stats.json",
+        "output_dir": "split_stats_last_seen_merge",
+        "summary_out": "summary_last_seen_merge.json",
+        "endpoints": "endpoints.json",
+        "baseline_names": ["noop", "global_majority", "last_seen_train"],
+        "split_tags": splits,
+    }
+
+    summary = write_split_statistical_comparisons(config, root=tmp_path)
+
+    assert summary["status"] == "pass"
+    payload = json.loads((tmp_path / "split_stats_last_seen_merge" / "split_temporal_statistical_comparison.json").read_text())
+    model_row = next(row for row in payload["comparisons"] if row["model"] == "tiny_model")
+    assert model_row["reference"] == "last_seen_train"
+    assert model_row["baseline_value"] == 1.0
+
+
 def test_write_split_statistical_comparisons_streams_with_ground_truth_glob(tmp_path: Path):
     splits = ["temporal", "heldout_recording", "heldout_game"]
     target = [_record(i, split) for split in splits for i in range(3)]

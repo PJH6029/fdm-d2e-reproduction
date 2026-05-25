@@ -89,6 +89,14 @@ def _train_record_paths_from_config(root: Path, config: dict[str, Any]) -> list[
     )
 
 
+def _last_seen_maps_from_path(root: Path, value: str | Path | None) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    if not value:
+        return {}, {}
+    path = Path(str(value))
+    stats = read_json(path if path.is_absolute() else root / path)
+    return stats.get("last_tokens_by_recording") or {}, stats.get("last_tokens_by_game") or {}
+
+
 def _iter_jsonl_paths(paths: Sequence[str | Path]) -> Iterable[dict[str, Any]]:
     for path in paths:
         with Path(path).open() as handle:
@@ -113,6 +121,11 @@ def _baseline_stats_from_config(root: Path, config: dict[str, Any]) -> dict[str,
         majority = stats.get("global_majority_tokens") or ["NOOP"]
         last_by_recording = stats.get("last_tokens_by_recording") or {}
         last_by_game = stats.get("last_tokens_by_game") or {}
+        if not (last_by_recording or last_by_game):
+            last_by_recording, last_by_game = _last_seen_maps_from_path(
+                root,
+                config.get("train_last_seen_stats_path") or config.get("last_seen_stats_path"),
+            )
         if "last_seen_train" in [str(name) for name in config.get("baseline_names", [])] and not (last_by_recording or last_by_game):
             train_paths = _train_record_paths_from_config(root, config)
             if train_paths:
