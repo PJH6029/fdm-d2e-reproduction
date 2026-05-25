@@ -497,6 +497,8 @@ def _part_payloads_from_prediction_summary(root: Path, summary_path: str | Path)
     prediction = summary.get("prediction", {}) if isinstance(summary.get("prediction"), dict) else {}
     parallel = prediction.get("prediction_parallel", {}) if isinstance(prediction.get("prediction_parallel"), dict) else {}
     parts = parallel.get("parts", [])
+    if not parts and isinstance(summary.get("prediction_resume"), dict):
+        parts = summary["prediction_resume"].get("parts", [])
     if not isinstance(parts, list) or not parts:
         raise ValueError(f"prediction summary has no prediction_parallel.parts: {summary_file}")
     payloads = []
