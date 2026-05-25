@@ -1,28 +1,29 @@
 {
-  "schema": "mlxp_me_summary.v1",
   "auth_login": "jeonghunpark",
-  "mlxp_username": "jeonghunpark",
   "auth_type": "token",
   "cluster_account_status": "active",
-  "kubeconfig_ready": true,
-  "debug_group_id": "b",
-  "production_board_enabled": true,
+  "current_reservations_count": 4,
   "debug_board_enabled": true,
+  "debug_group_id": "b",
+  "extra_ddn_pvc_names_count": 1,
+  "kubeconfig_ready": true,
+  "mlxp_username": "<redacted>",
+  "personal_pvc_size": "1Ti",
+  "production_board_enabled": true,
   "production_effective_gpu_quota": 8,
   "production_remaining_approved_gpu_hours": 400.0,
-  "personal_pvc_size": "1Ti",
-  "extra_ddn_pvc_names_count": 1,
-  "current_reservations_count": 4,
+  "redaction_note": "Sensitive identity, token, and storage-claim fields are redacted.",
   "requests_count": 3,
-  "usage": {
-    "reservation_count": 17,
-    "reservation_gpu_hours": 99.03,
-    "utilization_status": "partial",
-    "utilization_avg_percent": 0.28,
-    "utilization_max_percent": 56.0
-  },
+  "schema": "mlxp_me_summary.v1",
   "storage_keys": [
     "claims",
     "generated_at"
-  ]
+  ],
+  "usage": {
+    "reservation_count": 17,
+    "reservation_gpu_hours": 99.03,
+    "utilization_avg_percent": 0.28,
+    "utilization_max_percent": 56.0,
+    "utilization_status": "partial"
+  }
 }

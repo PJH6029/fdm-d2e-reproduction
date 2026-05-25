@@ -12,11 +12,12 @@
     "node_id": "6",
     "pod_name": "",
     "project_id": "production",
+    "redaction_note": "Sensitive identity, token, and storage-claim fields are redacted.",
     "reservation_id": "rsv-jeonghunpark-20260524-f5414c",
     "resolved_image_path": "ghcr.io/pjh6029/snupi-personal-codex:20260414",
     "start_at": "2026-05-24T21:00:00+09:00",
     "status": "scheduled",
-    "storage_claim_name": "personal-pvc-jeonghunpark"
+    "storage_claim_name": "<redacted>"
   },
   "cancelled_reservation": {
     "end_at": "2026-05-25T03:00:00+09:00",
@@ -35,5 +36,6 @@
   "purpose": "G005 key-softmax 4xH200 training/probe rescheduled after train-cache migration ETA update",
   "reason": "Train-cache migration had converted 2.25M/19.2M rows by 19:27 KST, so the 20:00 4xH200 slot was likely to idle.",
   "redaction": "omits token, email, member, jupyter, and shell access fields",
+  "redaction_note": "Sensitive identity, token, and storage-claim fields are redacted.",
   "schema": "mlxp_reservation_lifecycle.v1"
 }

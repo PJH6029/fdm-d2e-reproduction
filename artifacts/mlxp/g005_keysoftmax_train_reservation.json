@@ -1,22 +1,23 @@
 {
-  "schema": "mlxp_reservation_lifecycle.v1",
-  "purpose": "G005 key-softmax 4xH200 training/probe after cache migration",
-  "reservation_id": "rsv-jeonghunpark-20260524-0b457f",
-  "project_id": "production",
-  "status": "scheduled",
-  "node_id": "5",
+  "end_at": "2026-05-25T03:00:00+09:00",
   "gpu_indices": [
     1,
     2,
     3,
     4
   ],
-  "start_at": "2026-05-24T20:00:00+09:00",
-  "end_at": "2026-05-25T03:00:00+09:00",
-  "namespace": "p-production",
-  "pod_name": "",
   "managed_image_key": "codex",
+  "namespace": "p-production",
+  "node_id": "5",
+  "pod_name": "",
+  "project_id": "production",
+  "purpose": "G005 key-softmax 4xH200 training/probe after cache migration",
+  "redaction": "omits token, email, member, jupyter, and shell access fields",
+  "redaction_note": "Sensitive identity, token, and storage-claim fields are redacted.",
+  "reservation_id": "rsv-jeonghunpark-20260524-0b457f",
   "resolved_image_path": "ghcr.io/pjh6029/snupi-personal-codex:20260414",
-  "storage_claim_name": "personal-pvc-jeonghunpark",
-  "redaction": "omits token, email, member, jupyter, and shell access fields"
+  "schema": "mlxp_reservation_lifecycle.v1",
+  "start_at": "2026-05-24T20:00:00+09:00",
+  "status": "scheduled",
+  "storage_claim_name": "<redacted>"
 }
