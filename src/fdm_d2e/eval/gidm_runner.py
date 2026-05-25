@@ -107,6 +107,23 @@ def _run_one(
     output_path = manifest_output_path if manifest_output_path.is_absolute() else (Path.cwd() / manifest_output_path).resolve()
     ensure_dir(output_path.parent)
     ensure_dir(Path(plan.log_path).parent)
+    if output_path.exists() and output_path.stat().st_size > 0:
+        return {
+            "universe_row_id": plan.universe_row_id,
+            "video_path": plan.video_path,
+            "prediction_mcap_path": plan.prediction_mcap_path,
+            "resolved_prediction_mcap_path": str(output_path),
+            "temp_prediction_mcap_path": None,
+            "cuda_device": plan.cuda_device,
+            "log_path": plan.log_path,
+            "exit_code": 0,
+            "success": True,
+            "skipped_existing_at_run": True,
+            "elapsed_seconds": 0.0,
+            "output_exists": True,
+            "output_size": output_path.stat().st_size,
+            "output_sha256": sha256_file(output_path),
+        }
     temp_output_path = output_path.with_name(f"{output_path.name}.tmp.{os.getpid()}.{plan.index}")
     if temp_output_path.exists():
         temp_output_path.unlink()

@@ -358,6 +358,45 @@ def test_gidm_runner_passes_absolute_output_to_upstream(tmp_path: Path, monkeypa
     assert row["output_exists"] is True
 
 
+def test_gidm_runner_skips_existing_output_at_run_time(tmp_path: Path, monkeypatch):
+    repo = tmp_path / "repo"
+    d2e_repo = repo / "outputs" / "external" / "D2E"
+    d2e_repo.mkdir(parents=True)
+    script = d2e_repo / "inference_desktop_minimal.py"
+    script.write_text("print('placeholder')\n", encoding="utf-8")
+    output = repo / "outputs/gidm_exact_split/predicted_mcap/example.mcap"
+    output.parent.mkdir(parents=True)
+    output.write_bytes(b"existing")
+
+    def fail_run(*_args, **_kwargs):
+        raise AssertionError("subprocess.run should not be called for existing output")
+
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("fdm_d2e.eval.gidm_runner.subprocess.run", fail_run)
+
+    row = _run_one(
+        GidmRunPlan(
+            index=0,
+            universe_row_id="d2e_480p:Game/rec",
+            video_path="/data/video.mkv",
+            prediction_mcap_path=str(output),
+            cuda_device="0",
+            log_path=str(repo / "artifacts/eval/run.log"),
+        ),
+        script_path=script,
+        d2e_repo=d2e_repo,
+        model="open-world-agents/Generalist-IDM-1B",
+        max_context_length=2048,
+        max_duration=None,
+        uv_cache_dir=repo / "uv-cache",
+        hf_home=repo / "hf-home",
+    )
+
+    assert row["success"] is True
+    assert row["skipped_existing_at_run"] is True
+    assert row["output_size"] == len(b"existing")
+
+
 def test_extract_gidm_target_records_uses_by_recording_roots(tmp_path: Path):
     root = tmp_path / "shard_0" / "by_recording"
     records = root / "d2e_480p" / "Game" / "rec_001" / "all_records.jsonl"
