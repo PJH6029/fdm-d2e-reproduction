@@ -1,0 +1,507 @@
+{
+  "schema": "g005_idm_paper_target_audit.v1",
+  "status": "fail",
+  "error_count": 6,
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "model_name": "video_stack_idm_d2e_full_luma96_offsets012_keysoftmax_paper_target",
+  "paths": {
+    "gidm_baseline_contract": "artifacts/eval/g003_gidm_baseline_contract.json",
+    "paper_metrics": "artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_metrics.json",
+    "checkpoint": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/checkpoint.pt",
+    "checkpoint_metadata": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/checkpoint_metadata.json",
+    "train_summary": "artifacts/idm/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target_summary.json",
+    "run_summary": "artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_4xh200_run.json",
+    "split_stats_summary": "artifacts/eval/g005_idm_video_stack_luma96_offsets012_keysoftmax_split_statistical_comparisons_summary.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_4xh200_gpu_monitor.csv"
+  },
+  "expected_gpus": 4,
+  "min_train_records": 19211006,
+  "min_target_records": 16698646,
+  "paper_target_margin": 0.0,
+  "require_all_splits_beat_targets": false,
+  "train_records": 19211006,
+  "target_records": 16698646,
+  "checkpoint": {
+    "path": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/checkpoint.pt",
+    "exists": true,
+    "bytes": 144719605,
+    "sha256": "129c89be32798a77dbe84fd0ffb40a95e344b205e0fe88e651ffbe1a21c08a92"
+  },
+  "gpu_monitor_status": {
+    "rows": 1264,
+    "sample_count": 316,
+    "unique_gpu_indices": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "expected_gpus": 4,
+    "covers_expected_gpus": true
+  },
+  "aggregate_target_results": [
+    {
+      "name": "pearson_x",
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "pearson_x"
+      ],
+      "direction": "higher",
+      "target": 0.796,
+      "actual": 0.022820504049940727,
+      "margin": 0.0,
+      "passed": false
+    },
+    {
+      "name": "pearson_y",
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "pearson_y"
+      ],
+      "direction": "higher",
+      "target": 0.783,
+      "actual": 0.03592534713891377,
+      "margin": 0.0,
+      "passed": false
+    },
+    {
+      "name": "keyboard_accuracy",
+      "path": [
+        "paper_compatible",
+        "keyboard",
+        "key_accuracy"
+      ],
+      "direction": "higher",
+      "target": 0.73,
+      "actual": 0.013433329386675543,
+      "margin": 0.0,
+      "passed": false
+    },
+    {
+      "name": "mouse_button_accuracy",
+      "path": [
+        "paper_compatible",
+        "mouse_button",
+        "button_accuracy"
+      ],
+      "direction": "higher",
+      "target": 0.957,
+      "actual": 0.023194842129749264,
+      "margin": 0.0,
+      "passed": false
+    },
+    {
+      "name": "scale_ratio_x",
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "scale_ratio_x"
+      ],
+      "direction": "lower",
+      "target": 1.23,
+      "actual": 1641.9338906563914,
+      "margin": 0.0,
+      "passed": false
+    },
+    {
+      "name": "scale_ratio_y",
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "scale_ratio_y"
+      ],
+      "direction": "lower",
+      "target": 1.31,
+      "actual": 352.9773545461333,
+      "margin": 0.0,
+      "passed": false
+    }
+  ],
+  "split_target_results": {
+    "temporal": [
+      {
+        "name": "pearson_x",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "pearson_x"
+        ],
+        "direction": "higher",
+        "target": 0.796,
+        "actual": 0.023879498197511,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "pearson_y",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "pearson_y"
+        ],
+        "direction": "higher",
+        "target": 0.783,
+        "actual": 0.04539354050482004,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "keyboard_accuracy",
+        "path": [
+          "paper_compatible",
+          "keyboard",
+          "key_accuracy"
+        ],
+        "direction": "higher",
+        "target": 0.73,
+        "actual": 0.015936209825454954,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "mouse_button_accuracy",
+        "path": [
+          "paper_compatible",
+          "mouse_button",
+          "button_accuracy"
+        ],
+        "direction": "higher",
+        "target": 0.957,
+        "actual": 0.02820122993462476,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "scale_ratio_x",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "scale_ratio_x"
+        ],
+        "direction": "lower",
+        "target": 1.23,
+        "actual": 1362.2313420525509,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "scale_ratio_y",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "scale_ratio_y"
+        ],
+        "direction": "lower",
+        "target": 1.31,
+        "actual": 247.37304077097667,
+        "margin": 0.0,
+        "passed": false
+      }
+    ],
+    "heldout_recording": [
+      {
+        "name": "pearson_x",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "pearson_x"
+        ],
+        "direction": "higher",
+        "target": 0.796,
+        "actual": 0.029309176980483034,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "pearson_y",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "pearson_y"
+        ],
+        "direction": "higher",
+        "target": 0.783,
+        "actual": 0.03814710616101397,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "keyboard_accuracy",
+        "path": [
+          "paper_compatible",
+          "keyboard",
+          "key_accuracy"
+        ],
+        "direction": "higher",
+        "target": 0.73,
+        "actual": 0.015765503436831467,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "mouse_button_accuracy",
+        "path": [
+          "paper_compatible",
+          "mouse_button",
+          "button_accuracy"
+        ],
+        "direction": "higher",
+        "target": 0.957,
+        "actual": 0.02454407675974126,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "scale_ratio_x",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "scale_ratio_x"
+        ],
+        "direction": "lower",
+        "target": 1.23,
+        "actual": 1677.7447546578635,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "scale_ratio_y",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "scale_ratio_y"
+        ],
+        "direction": "lower",
+        "target": 1.31,
+        "actual": 351.95948271262404,
+        "margin": 0.0,
+        "passed": false
+      }
+    ],
+    "heldout_game": [
+      {
+        "name": "pearson_x",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "pearson_x"
+        ],
+        "direction": "higher",
+        "target": 0.796,
+        "actual": 0.0029430485661808862,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "pearson_y",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "pearson_y"
+        ],
+        "direction": "higher",
+        "target": 0.783,
+        "actual": 0.0055671810299798945,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "keyboard_accuracy",
+        "path": [
+          "paper_compatible",
+          "keyboard",
+          "key_accuracy"
+        ],
+        "direction": "higher",
+        "target": 0.73,
+        "actual": 0.0019183741364926384,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "mouse_button_accuracy",
+        "path": [
+          "paper_compatible",
+          "mouse_button",
+          "button_accuracy"
+        ],
+        "direction": "higher",
+        "target": 0.957,
+        "actual": 0.00944993369951501,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "scale_ratio_x",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "scale_ratio_x"
+        ],
+        "direction": "lower",
+        "target": 1.23,
+        "actual": 3595.008660267112,
+        "margin": 0.0,
+        "passed": false
+      },
+      {
+        "name": "scale_ratio_y",
+        "path": [
+          "paper_compatible",
+          "mouse_move",
+          "scale_ratio_y"
+        ],
+        "direction": "lower",
+        "target": 1.31,
+        "actual": 1802.1835913097798,
+        "margin": 0.0,
+        "passed": false
+      }
+    ]
+  },
+  "strict_target_results": [
+    {
+      "name": "mouse_button_f1",
+      "path": [
+        "strict_local",
+        "mouse_button",
+        "f1"
+      ],
+      "direction": "higher",
+      "baseline": 0.010283898532443663,
+      "target": 0.030283898532443662,
+      "actual": 0.044285253896334184,
+      "min_delta": 0.02,
+      "passed": true
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "path": [
+        "strict_local",
+        "mouse_button",
+        "no_button_false_positive_rate"
+      ],
+      "direction": "lower",
+      "baseline": null,
+      "target": 0.1,
+      "actual": 0.07470061551080709,
+      "min_delta": 0.0,
+      "passed": true
+    }
+  ],
+  "split_stats_outputs": [
+    {
+      "split": "temporal",
+      "path": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/split_temporal_statistical_comparison.json",
+      "status": "pass",
+      "comparisons": 21
+    },
+    {
+      "split": "heldout_recording",
+      "path": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/split_heldout_recording_statistical_comparison.json",
+      "status": "pass",
+      "comparisons": 21
+    },
+    {
+      "split": "heldout_game",
+      "path": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/split_heldout_game_statistical_comparison.json",
+      "status": "pass",
+      "comparisons": 21
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "paper_target_not_met",
+      "name": "pearson_x",
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "pearson_x"
+      ],
+      "direction": "higher",
+      "target": 0.796,
+      "actual": 0.022820504049940727,
+      "margin": 0.0,
+      "passed": false
+    },
+    {
+      "severity": "error",
+      "code": "paper_target_not_met",
+      "name": "pearson_y",
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "pearson_y"
+      ],
+      "direction": "higher",
+      "target": 0.783,
+      "actual": 0.03592534713891377,
+      "margin": 0.0,
+      "passed": false
+    },
+    {
+      "severity": "error",
+      "code": "paper_target_not_met",
+      "name": "keyboard_accuracy",
+      "path": [
+        "paper_compatible",
+        "keyboard",
+        "key_accuracy"
+      ],
+      "direction": "higher",
+      "target": 0.73,
+      "actual": 0.013433329386675543,
+      "margin": 0.0,
+      "passed": false
+    },
+    {
+      "severity": "error",
+      "code": "paper_target_not_met",
+      "name": "mouse_button_accuracy",
+      "path": [
+        "paper_compatible",
+        "mouse_button",
+        "button_accuracy"
+      ],
+      "direction": "higher",
+      "target": 0.957,
+      "actual": 0.023194842129749264,
+      "margin": 0.0,
+      "passed": false
+    },
+    {
+      "severity": "error",
+      "code": "paper_target_not_met",
+      "name": "scale_ratio_x",
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "scale_ratio_x"
+      ],
+      "direction": "lower",
+      "target": 1.23,
+      "actual": 1641.9338906563914,
+      "margin": 0.0,
+      "passed": false
+    },
+    {
+      "severity": "error",
+      "code": "paper_target_not_met",
+      "name": "scale_ratio_y",
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "scale_ratio_y"
+      ],
+      "direction": "lower",
+      "target": 1.31,
+      "actual": 352.9773545461333,
+      "margin": 0.0,
+      "passed": false
+    }
+  ],
+  "claim_boundary": "G005 passes only when our full-corpus 4xH200 IDM run beats paper-reported G-IDM targets under the local paper-compatible token metric and records split/GPU evidence. It is not the exact released G-IDM comparison; that remains G006."
+}

@@ -1,0 +1,33 @@
+started_at=2026-05-25T17:20:23+00:00
+runtime_git_head=28525d175454334100538c3a60c7aeb56f67c0dd
+working_tree_head=b40e42d6e9719b21854258d3590600f499bf441e
+reservation_end_at=2026-05-26T03:00:00+09:00
+split statistical comparisons: status=pass outputs=3
+g005 paper metrics: status=pass rows=16698646 output=artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_metrics.json
+g005 paper-target audit: status=fail errors=6 output=artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_target_audit.json
+{
+  "audit_error_count": 6,
+  "audit_status": "fail",
+  "claim_boundary": "Post-prediction recovery reuses completed full-target predictions; no checkpoint training or prediction rerun is performed.",
+  "paper_metrics_rows": 16698646,
+  "paper_metrics_status": "pass",
+  "paths": {
+    "audit": "artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_target_audit.json",
+    "paper_metrics": "artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_metrics.json",
+    "prediction_summary": "artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_prediction_summary.json",
+    "split_stats": "artifacts/eval/g005_idm_video_stack_luma96_offsets012_keysoftmax_split_statistical_comparisons_summary.json"
+  },
+  "prediction_rows": 16698646,
+  "runtime_git_head": "28525d175454334100538c3a60c7aeb56f67c0dd",
+  "schema": "g005_post_prediction_metrics_run.v1",
+  "split_stats_status": "pass",
+  "status": "fail",
+  "subprocess_exit_codes": {
+    "audit": 2,
+    "paper_metrics": 0,
+    "split_stats": 0
+  },
+  "wall_clock_seconds": 1616,
+  "working_tree_head": "b40e42d6e9719b21854258d3590600f499bf441e"
+}
+finished_at=2026-05-25T17:47:19+00:00
