@@ -51,6 +51,7 @@ from fdm_d2e.training.torch_idm import (
 
 _FRAME_REF_RE = re.compile(r"^(?P<source>.+)#frame=(?P<index>\d+)$")
 _PPM_FRAME_RE = re.compile(r"^(?P<prefix>.*?)(?P<number>\d+)(?P<suffix>\.ppm)$")
+_JSONL_COMPACT_SEPARATORS = (",", ":")
 
 
 def _record_paths_from_value(value: str | Path | Sequence[str | Path]) -> list[Path]:
@@ -1612,8 +1613,8 @@ def _predict_from_cache(
                         "timestamp_ns": row["timestamp_ns"],
                         "predicted_tokens": tokens,
                     }
-                    pseudo_f.write(json.dumps(pseudo, ensure_ascii=False, sort_keys=True) + "\n")
-                    pred_f.write(json.dumps(pred, ensure_ascii=False, sort_keys=True) + "\n")
+                    pseudo_f.write(json.dumps(pseudo, ensure_ascii=False, separators=_JSONL_COMPACT_SEPARATORS) + "\n")
+                    pred_f.write(json.dumps(pred, ensure_ascii=False, separators=_JSONL_COMPACT_SEPARATORS) + "\n")
                     _observe_metrics(
                         row=row,
                         tokens=tokens,
