@@ -382,11 +382,30 @@ def _empty_action_history_seed_state(*, history_len: int) -> dict[str, Any]:
     }
 
 
+def _action_history_seed_state_from_stats(stats: dict[str, Any], *, history_len: int) -> dict[str, Any]:
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+    if history_len <= 0:
+        return _empty_action_history_seed_state(history_len=history_len)
+    for recording_id, tokens in dict(stats.get("last_tokens_by_recording", {})).items():
+        history, button_state = _ensure_history_state(histories, button_states, str(recording_id))
+        _append_history(history, button_state, [str(token) for token in tokens], history_len=history_len)
+    return {
+        "schema": "streaming_idm_action_history_seed_state.v1",
+        "history_len": int(history_len),
+        "recordings": len(histories),
+        "histories": histories,
+        "button_states": button_states,
+        "source": "stats_tail",
+    }
+
+
 def _action_history_seed_state_for_parallel_prediction(
     config: dict[str, Any],
     *,
     train_paths: Sequence[str | Path],
     history_len: int,
+    stats: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], str]:
     mode = str(
         config.get(
@@ -396,6 +415,10 @@ def _action_history_seed_state_for_parallel_prediction(
     ).replace("-", "_").lower()
     if mode in {"empty", "zero", "none", "target_start"}:
         return _empty_action_history_seed_state(history_len=history_len), "empty"
+    if mode in {"stats_tail", "stats", "last_token"}:
+        if stats is None:
+            raise ValueError("action_history_seed_state_mode=stats_tail requires streaming stats")
+        return _action_history_seed_state_from_stats(stats, history_len=history_len), "stats_tail"
     if mode in {"train_scan", "parent_train_scan", "train_tail"}:
         workers = int(config.get("action_history_seed_state_workers", 1) or 1)
         if bool(config.get("action_history_seed_state_parallel_by_path", workers > 1)) and workers > 1:
@@ -410,7 +433,7 @@ def _action_history_seed_state_for_parallel_prediction(
         return _action_history_seed_state_from_records(train_paths, history_len=history_len), "parent_train_scan"
     raise ValueError(
         "action_history_seed_state_mode must be one of empty/zero/none/target_start "
-        "or train_scan/parent_train_scan/train_tail"
+        "stats_tail or train_scan/parent_train_scan/train_tail"
     )
 
 
@@ -1356,7 +1379,41 @@ def _streaming_mouse_seed_state_for_parallel_prediction(
     config: dict[str, Any],
     *,
     train_paths: Sequence[str | Path],
+    stats: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    mode = str(config.get("streaming_mouse_seed_state_mode", config.get("action_history_seed_state_mode", "train_scan"))).replace(
+        "-",
+        "_",
+    ).lower()
+    if mode in {"empty", "zero", "none", "target_start"}:
+        return _streaming_mouse_seed_state_payload(
+            last_by_recording={},
+            last_by_game={},
+            fallback=(0.0, 0.0),
+            source="empty",
+            workers=0,
+        )
+    if mode in {"stats_tail", "stats", "last_token"}:
+        if stats is None:
+            raise ValueError("streaming_mouse_seed_state_mode=stats_tail requires streaming stats")
+        last_by_recording: dict[str, tuple[float, float]] = {}
+        last_by_game: dict[str, tuple[float, float]] = {}
+        fallback = (0.0, 0.0)
+        for recording_id, tokens in dict(stats.get("last_tokens_by_recording", {})).items():
+            value = _mouse_delta_from_tokens([str(token) for token in tokens])
+            value = (float(value[0]), float(value[1]))
+            last_by_recording[str(recording_id)] = value
+            fallback = value
+        for game, tokens in dict(stats.get("last_tokens_by_game", {})).items():
+            value = _mouse_delta_from_tokens([str(token) for token in tokens])
+            last_by_game[str(game)] = (float(value[0]), float(value[1]))
+        return _streaming_mouse_seed_state_payload(
+            last_by_recording=last_by_recording,
+            last_by_game=last_by_game,
+            fallback=fallback,
+            source="stats_tail",
+            workers=0,
+        )
     workers = int(
         config.get(
             "streaming_mouse_seed_state_workers",
@@ -4659,6 +4716,7 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
                 {**checkpoint_config, **config},
                 train_paths=train_paths,
                 history_len=action_history_len,
+                stats=dict(checkpoint.get("stats", {})),
             )
             prediction_config["_action_history_seed_state"] = seed_state
             prediction_config["action_history_seed_state_summary"] = {
@@ -4676,6 +4734,7 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
             mouse_seed_state = _streaming_mouse_seed_state_for_parallel_prediction(
                 {**checkpoint_config, **config},
                 train_paths=train_paths,
+                stats=dict(checkpoint.get("stats", {})),
             )
             prediction_config["_streaming_mouse_seed_state"] = mouse_seed_state
             prediction_config["streaming_mouse_seed_state_summary"] = {
@@ -5174,6 +5233,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
                 config,
                 train_paths=train_record_paths,
                 history_len=final_action_history_len,
+                stats=stats,
             )
             config["_action_history_seed_state"] = seed_state
             config["action_history_seed_state_summary"] = {
@@ -5185,6 +5245,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             mouse_seed_state = _streaming_mouse_seed_state_for_parallel_prediction(
                 config,
                 train_paths=train_record_paths,
+                stats=stats,
             )
             config["_streaming_mouse_seed_state"] = mouse_seed_state
             config["streaming_mouse_seed_state_summary"] = {

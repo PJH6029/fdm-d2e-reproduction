@@ -10,6 +10,7 @@ import pytest
 from fdm_d2e.training.streaming_idm import (
     MOUSE_AXIS_CLASSES,
     _barrier,
+    _action_history_seed_state_for_parallel_prediction,
     _distributed_runtime,
     _iter_causal_feature_batches,
     _mouse_target_for_row,
@@ -382,6 +383,53 @@ def test_streaming_mouse_seed_state_parallel_matches_serial(tmp_path: Path):
     assert _load_streaming_mouse_seed_state(payload) == serial
     assert payload["source"] == "parent_train_scan_parallel"
     assert payload["recordings"] == 2
+
+
+def test_stats_tail_seed_state_uses_streaming_stats_without_train_scan(tmp_path: Path):
+    records = tmp_path / "train.jsonl"
+    _write_jsonl(records, [_record(idx, "train_core") for idx in range(4)])
+    stats = scan_streaming_idm_stats(
+        records,
+        feature_mode="summary_compact_grid8_shift_surface_time",
+        categorical_min_count=1,
+        action_history_len=2,
+        residual_mouse=True,
+    )
+
+    history_seed, history_source = _action_history_seed_state_for_parallel_prediction(
+        {"action_history_seed_state_mode": "stats_tail"},
+        train_paths=[records],
+        history_len=2,
+        stats=stats,
+    )
+    mouse_seed = _streaming_mouse_seed_state_for_parallel_prediction(
+        {"streaming_mouse_seed_state_mode": "stats_tail"},
+        train_paths=[records],
+        stats=stats,
+    )
+
+    assert history_source == "stats_tail"
+    assert history_seed["recordings"] == 1
+    assert mouse_seed["source"] == "stats_tail"
+    assert mouse_seed["recordings"] == 1
+    assert _load_streaming_mouse_seed_state(mouse_seed)[0]["d2e_480p:Apex/rec"] == _mouse_delta_from_tokens_for_test(
+        stats["last_tokens_by_recording"]["d2e_480p:Apex/rec"]
+    )
+
+
+def _mouse_delta_from_tokens_for_test(tokens: list[str]) -> tuple[float, float]:
+    dx = 0.0
+    dy = 0.0
+    for token in tokens:
+        if token.startswith("MOUSE_DX_N"):
+            dx += -float(token.removeprefix("MOUSE_DX_N"))
+        elif token.startswith("MOUSE_DX_P"):
+            dx += float(token.removeprefix("MOUSE_DX_P"))
+        elif token.startswith("MOUSE_DY_N"):
+            dy += -float(token.removeprefix("MOUSE_DY_N"))
+        elif token.startswith("MOUSE_DY_P"):
+            dy += float(token.removeprefix("MOUSE_DY_P"))
+    return dx, dy
 
 
 def test_streaming_idm_precompute_script_preserves_residual_mouse_stats(tmp_path: Path):
