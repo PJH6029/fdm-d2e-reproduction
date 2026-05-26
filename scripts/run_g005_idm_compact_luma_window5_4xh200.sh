@@ -78,7 +78,7 @@ if [[ "$needs_window_materialization" != "0" ]]; then
       --output-root "$WINDOW_OUTPUT_ROOT" \
       --summary "$WINDOW_SUMMARY" \
       --progress-output "$WINDOW_PROGRESS" \
-      --offsets "${WINDOW_OFFSETS:--2,-1,0,1,2}" \
+      --offsets="${WINDOW_OFFSETS:--2,-1,0,1,2}" \
       --luma-size 16 \
       --workers "${WINDOW_MATERIALIZE_WORKERS:-16}"
     echo "luma_window_materialization_finished_at=$(date -Iseconds)"

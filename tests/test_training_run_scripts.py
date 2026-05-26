@@ -161,7 +161,7 @@ def test_g005_compact_luma_window5_materializes_nep_context_before_training() ->
     cache_idx = text.index("scripts/precompute_streaming_idm_training_cache.py")
     train_idx = text.index("scripts/run_g005_idm_surface_paper_target_4xh200.sh")
     assert materialize_idx < cache_idx < train_idx
-    assert "--offsets \"${WINDOW_OFFSETS:--2,-1,0,1,2}\"" in text
+    assert "--offsets=\"${WINDOW_OFFSETS:--2,-1,0,1,2}\"" in text
     assert "outputs/data/d2e_luma_window5_corpus_shards_accel64" in text
     assert 'WANDB_TAGS="${WANDB_TAGS:-g005,idm,d2e,compact-luma-window5,pipeline}"' in text
     assert config["feature_mode"] == "summary_compact_luma16_window5_time"
