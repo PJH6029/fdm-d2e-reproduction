@@ -68,6 +68,35 @@ class TorchIDMContractTests(unittest.TestCase):
 
         self.assertEqual(tuple(out.shape), (3, 7))
 
+    def test_luma_action_sequence_prior_parses_compact_luma_and_history(self):
+        if not torch_available():
+            self.skipTest("torch extra is not installed")
+        torch = require_torch()
+        history_len = 2
+        history_vocab_dim = 5
+        history_dim = (2 * history_len) + (history_vocab_dim * history_len) + 3
+        model = _build_model(
+            torch,
+            input_dim=812 + history_dim,
+            output_dim=7,
+            hidden_dim=8,
+            depth=1,
+            dropout=0.0,
+            config={
+                "model_arch": "luma_action_sequence_prior",
+                "action_history_len": history_len,
+                "sequence_token_dim": 16,
+                "sequence_transformer_heads": 2,
+                "sequence_transformer_layers": 1,
+                "sequence_transformer_ff_dim": 32,
+            },
+            feature_mode="summary_compact_luma16_pair_shift_time",
+        )
+
+        out = model(torch.zeros((3, 812 + history_dim), dtype=torch.float32))
+
+        self.assertEqual(tuple(out.shape), (3, 7))
+
     def test_residual_mouse_baselines_are_causal_for_train_and_last_seen_for_target(self):
         train = [
             {"sequence_id": "r#0", "recording_id": "r", "game": "g", "timestamp_ns": 0, "ground_truth_tokens": ["MOUSE_DX_P1", "MOUSE_DY_Z0"]},
