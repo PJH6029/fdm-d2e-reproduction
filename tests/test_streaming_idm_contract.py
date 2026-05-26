@@ -14,8 +14,11 @@ from fdm_d2e.training.streaming_idm import (
     _iter_causal_feature_batches,
     _mouse_target_for_row,
     _predicted_tokens_from_output,
+    _load_streaming_mouse_seed_state,
+    _seed_streaming_mouse_delta_state,
     _select_group_fbeta_threshold,
     _build_training_cache_manifests,
+    _streaming_mouse_seed_state_for_parallel_prediction,
     _training_cache_identity,
     _training_cache_assignment_plan,
     _training_cache_rank_assignment,
@@ -352,6 +355,33 @@ def test_streaming_idm_residual_mouse_roundtrips_training_cache(tmp_path: Path):
     assert payload["x"].shape[1] == metadata["input_dim"]
     assert payload["mouse_y"][0].tolist() == pytest.approx([-1.0, 0.0])
     assert payload["mouse_y"][1].tolist() == pytest.approx([2.0, 0.0])
+
+
+def test_streaming_mouse_seed_state_parallel_matches_serial(tmp_path: Path):
+    shard_a = tmp_path / "train_a.jsonl"
+    shard_b = tmp_path / "train_b.jsonl"
+    rows_a = [
+        {**_record(idx, "train_core"), "recording_id": "d2e_480p:Apex/mouse_a", "sequence_id": f"d2e_480p:Apex/mouse_a#{idx:06d}"}
+        for idx in range(4)
+    ]
+    rows_b = [
+        {**_record(idx + 4, "train_core"), "recording_id": "d2e_480p:Apex/mouse_b", "sequence_id": f"d2e_480p:Apex/mouse_b#{idx:06d}"}
+        for idx in range(4)
+    ]
+    _write_jsonl(shard_a, rows_a)
+    _write_jsonl(shard_b, rows_b)
+
+    serial = _seed_streaming_mouse_delta_state([shard_a, shard_b])
+    parallel = _seed_streaming_mouse_delta_state([shard_a, shard_b], num_workers=2)
+    payload = _streaming_mouse_seed_state_for_parallel_prediction(
+        {"prediction_workers": 2},
+        train_paths=[shard_a, shard_b],
+    )
+
+    assert parallel == serial
+    assert _load_streaming_mouse_seed_state(payload) == serial
+    assert payload["source"] == "parent_train_scan_parallel"
+    assert payload["recordings"] == 2
 
 
 def test_streaming_idm_precompute_script_preserves_residual_mouse_stats(tmp_path: Path):

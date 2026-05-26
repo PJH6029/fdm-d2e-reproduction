@@ -1212,11 +1212,16 @@ def _update_mouse_baseline_state(
 
 def _seed_streaming_mouse_delta_state(
     record_paths: str | Path | Sequence[str | Path],
+    *,
+    num_workers: int = 1,
 ) -> tuple[dict[str, tuple[float, float]], dict[str, tuple[float, float]], tuple[float, float]]:
+    paths = _record_paths_from_value(record_paths)
+    if len(paths) > 1 and int(num_workers) > 1:
+        return _seed_streaming_mouse_delta_state_parallel(paths, num_workers=int(num_workers))
     last_by_recording: dict[str, tuple[float, float]] = {}
     last_by_game: dict[str, tuple[float, float]] = {}
     fallback = (0.0, 0.0)
-    for path in _record_paths_from_value(record_paths):
+    for path in paths:
         for row in iter_jsonl(path):
             fallback = _update_mouse_baseline_state(
                 row,
@@ -1225,6 +1230,152 @@ def _seed_streaming_mouse_delta_state(
                 last_by_game=last_by_game,
             )
     return last_by_recording, last_by_game, fallback
+
+
+def _timestamp_for_seed_row(row: dict[str, Any], fallback: int) -> int:
+    try:
+        return int(row.get("timestamp_ns", fallback))
+    except Exception:
+        return int(fallback)
+
+
+def _seed_streaming_mouse_delta_state_partition(path: str | Path) -> dict[str, Any]:
+    last_by_recording: dict[str, tuple[int, tuple[float, float]]] = {}
+    last_by_game: dict[str, tuple[int, tuple[float, float]]] = {}
+    fallback_ts = -1
+    fallback = (0.0, 0.0)
+    rows = 0
+    for row in iter_jsonl(path):
+        timestamp = _timestamp_for_seed_row(row, rows)
+        value = target_mouse_delta(row, mode="sum")
+        value = (float(value[0]), float(value[1]))
+        recording_id = str(row.get("recording_id", ""))
+        game = str(row.get("game", "unknown"))
+        if recording_id not in last_by_recording or timestamp >= last_by_recording[recording_id][0]:
+            last_by_recording[recording_id] = (timestamp, value)
+        if game not in last_by_game or timestamp >= last_by_game[game][0]:
+            last_by_game[game] = (timestamp, value)
+        if timestamp >= fallback_ts:
+            fallback_ts = timestamp
+            fallback = value
+        rows += 1
+    return {
+        "path": str(path),
+        "rows": int(rows),
+        "last_by_recording": {key: [ts, value[0], value[1]] for key, (ts, value) in last_by_recording.items()},
+        "last_by_game": {key: [ts, value[0], value[1]] for key, (ts, value) in last_by_game.items()},
+        "fallback": [fallback_ts, fallback[0], fallback[1]],
+    }
+
+
+def _seed_streaming_mouse_delta_state_parallel(
+    record_paths: Sequence[str | Path],
+    *,
+    num_workers: int,
+) -> tuple[dict[str, tuple[float, float]], dict[str, tuple[float, float]], tuple[float, float]]:
+    paths = list(record_paths)
+    workers = min(max(1, int(num_workers)), len(paths))
+    partitions: list[dict[str, Any]] = []
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(_seed_streaming_mouse_delta_state_partition, path): path for path in paths}
+        for future in as_completed(futures):
+            partitions.append(future.result())
+    merged_recording: dict[str, tuple[int, tuple[float, float]]] = {}
+    merged_game: dict[str, tuple[int, tuple[float, float]]] = {}
+    fallback_ts = -1
+    fallback = (0.0, 0.0)
+    for partition in partitions:
+        for key, raw in dict(partition.get("last_by_recording", {})).items():
+            timestamp, dx, dy = int(raw[0]), float(raw[1]), float(raw[2])
+            if key not in merged_recording or timestamp >= merged_recording[key][0]:
+                merged_recording[key] = (timestamp, (dx, dy))
+        for key, raw in dict(partition.get("last_by_game", {})).items():
+            timestamp, dx, dy = int(raw[0]), float(raw[1]), float(raw[2])
+            if key not in merged_game or timestamp >= merged_game[key][0]:
+                merged_game[key] = (timestamp, (dx, dy))
+        raw_fallback = partition.get("fallback", [-1, 0.0, 0.0])
+        timestamp, dx, dy = int(raw_fallback[0]), float(raw_fallback[1]), float(raw_fallback[2])
+        if timestamp >= fallback_ts:
+            fallback_ts = timestamp
+            fallback = (dx, dy)
+    return (
+        {key: value for key, (_timestamp, value) in merged_recording.items()},
+        {key: value for key, (_timestamp, value) in merged_game.items()},
+        fallback,
+    )
+
+
+def _streaming_mouse_seed_state_payload(
+    *,
+    last_by_recording: dict[str, tuple[float, float]],
+    last_by_game: dict[str, tuple[float, float]],
+    fallback: tuple[float, float],
+    source: str,
+    workers: int,
+) -> dict[str, Any]:
+    return {
+        "schema": "streaming_idm_mouse_seed_state.v1",
+        "source": str(source),
+        "workers": int(workers),
+        "recordings": len(last_by_recording),
+        "games": len(last_by_game),
+        "last_by_recording": {key: [float(value[0]), float(value[1])] for key, value in last_by_recording.items()},
+        "last_by_game": {key: [float(value[0]), float(value[1])] for key, value in last_by_game.items()},
+        "fallback": [float(fallback[0]), float(fallback[1])],
+    }
+
+
+def _load_streaming_mouse_seed_state(
+    seed_state: Any,
+) -> tuple[dict[str, tuple[float, float]], dict[str, tuple[float, float]], tuple[float, float]] | None:
+    if not isinstance(seed_state, dict):
+        return None
+    raw_recording = seed_state.get("last_by_recording", {})
+    raw_game = seed_state.get("last_by_game", {})
+    raw_fallback = seed_state.get("fallback", [0.0, 0.0])
+    if not isinstance(raw_recording, dict) or not isinstance(raw_game, dict):
+        return None
+    last_by_recording = {
+        str(key): (float(value[0]), float(value[1]))
+        for key, value in raw_recording.items()
+        if isinstance(value, (list, tuple)) and len(value) >= 2
+    }
+    last_by_game = {
+        str(key): (float(value[0]), float(value[1]))
+        for key, value in raw_game.items()
+        if isinstance(value, (list, tuple)) and len(value) >= 2
+    }
+    fallback = (
+        float(raw_fallback[0]) if isinstance(raw_fallback, (list, tuple)) and len(raw_fallback) >= 2 else 0.0,
+        float(raw_fallback[1]) if isinstance(raw_fallback, (list, tuple)) and len(raw_fallback) >= 2 else 0.0,
+    )
+    return last_by_recording, last_by_game, fallback
+
+
+def _streaming_mouse_seed_state_for_parallel_prediction(
+    config: dict[str, Any],
+    *,
+    train_paths: Sequence[str | Path],
+) -> dict[str, Any]:
+    workers = int(
+        config.get(
+            "streaming_mouse_seed_state_workers",
+            config.get("action_history_seed_state_workers", config.get("prediction_workers", 1)),
+        )
+        or 1
+    )
+    parallel = bool(config.get("streaming_mouse_seed_state_parallel_by_path", workers > 1))
+    last_by_recording, last_by_game, fallback = _seed_streaming_mouse_delta_state(
+        train_paths,
+        num_workers=workers if parallel else 1,
+    )
+    return _streaming_mouse_seed_state_payload(
+        last_by_recording=last_by_recording,
+        last_by_game=last_by_game,
+        fallback=fallback,
+        source="parent_train_scan_parallel" if parallel and workers > 1 else "parent_train_scan",
+        workers=workers if parallel else 1,
+    )
 
 
 def _features_with_optional_mouse_baseline(
@@ -3478,14 +3629,21 @@ def _evaluate_stream_metrics(
         for train_row in _iter_records(train_paths):
             history, button_state = _ensure_history_state(histories, button_states, str(train_row.get("recording_id", "")))
             _append_history(history, button_state, _tokens(train_row), history_len=action_history_len)
-    if residual_mouse and config.get("train_records"):
-        train_paths = _record_paths_from_config(
-            config,
-            primary_key="train_records",
-            paths_key="train_record_paths",
-            glob_key="train_records_glob",
-        )
-        last_mouse_by_recording, last_mouse_by_game, last_mouse_fallback = _seed_streaming_mouse_delta_state(train_paths)
+    if residual_mouse:
+        mouse_seed_state = _load_streaming_mouse_seed_state(config.get("_streaming_mouse_seed_state"))
+        if mouse_seed_state is not None:
+            last_mouse_by_recording, last_mouse_by_game, last_mouse_fallback = mouse_seed_state
+        elif config.get("train_records") or config.get("train_record_paths") or config.get("train_records_glob"):
+            train_paths = _record_paths_from_config(
+                config,
+                primary_key="train_records",
+                paths_key="train_record_paths",
+                glob_key="train_records_glob",
+            )
+            last_mouse_by_recording, last_mouse_by_game, last_mouse_fallback = _seed_streaming_mouse_delta_state(
+                train_paths,
+                num_workers=int(config.get("streaming_mouse_seed_state_workers", 1) or 1),
+            )
     with torch.no_grad():
         if action_history_len > 0 or residual_mouse:
             def causal_batches() -> Iterable[list[dict[str, Any]]]:
@@ -4508,6 +4666,24 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
                 "recordings": int(seed_state.get("recordings", 0)),
                 "history_len": int(seed_state.get("history_len", action_history_len)),
             }
+        if residual_mouse:
+            train_paths = _record_paths_from_config(
+                checkpoint_config,
+                primary_key="train_records",
+                paths_key="train_record_paths",
+                glob_key="train_records_glob",
+            )
+            mouse_seed_state = _streaming_mouse_seed_state_for_parallel_prediction(
+                {**checkpoint_config, **config},
+                train_paths=train_paths,
+            )
+            prediction_config["_streaming_mouse_seed_state"] = mouse_seed_state
+            prediction_config["streaming_mouse_seed_state_summary"] = {
+                "source": mouse_seed_state.get("source"),
+                "recordings": int(mouse_seed_state.get("recordings", 0)),
+                "games": int(mouse_seed_state.get("games", 0)),
+                "workers": int(mouse_seed_state.get("workers", 1)),
+            }
         prediction = _predict_streaming_idm_checkpoint_parallel(
             config,
             checkpoint=checkpoint,
@@ -5005,6 +5181,18 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
                 "recordings": int(seed_state.get("recordings", 0)),
                 "history_len": int(seed_state.get("history_len", final_action_history_len)),
             }
+        if _residual_mouse_from_mode(_mouse_target_mode(config)):
+            mouse_seed_state = _streaming_mouse_seed_state_for_parallel_prediction(
+                config,
+                train_paths=train_record_paths,
+            )
+            config["_streaming_mouse_seed_state"] = mouse_seed_state
+            config["streaming_mouse_seed_state_summary"] = {
+                "source": mouse_seed_state.get("source"),
+                "recordings": int(mouse_seed_state.get("recordings", 0)),
+                "games": int(mouse_seed_state.get("games", 0)),
+                "workers": int(mouse_seed_state.get("workers", 1)),
+            }
         if str(device).startswith("cuda"):
             model.to("cpu")
             torch.cuda.empty_cache()
@@ -5030,6 +5218,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             output_dir=out_dir,
         )
     config.pop("_action_history_seed_state", None)
+    config.pop("_streaming_mouse_seed_state", None)
     config_fingerprint = stable_hash_json(config)
     resolved_config_path = out_dir / "resolved_config.json"
     write_json(
