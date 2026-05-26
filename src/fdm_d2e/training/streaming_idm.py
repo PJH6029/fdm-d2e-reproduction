@@ -293,6 +293,85 @@ def _action_history_seed_state_from_records(
     }
 
 
+def _action_history_seed_state_partition(path: str | Path, history_len: int) -> dict[str, Any]:
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+    latest_timestamp_by_recording: dict[str, int] = {}
+    if history_len <= 0:
+        return {"schema": "streaming_idm_action_history_seed_partition.v1", "path": str(path), "rows": 0, "recordings": 0}
+    rows = 0
+    for row in iter_jsonl(path):
+        recording_id = str(row.get("recording_id", ""))
+        history, button_state = _ensure_history_state(histories, button_states, recording_id)
+        _append_history(history, button_state, _tokens(row), history_len=history_len)
+        try:
+            latest_timestamp_by_recording[recording_id] = int(row.get("timestamp_ns", 0))
+        except Exception:
+            latest_timestamp_by_recording[recording_id] = rows
+        rows += 1
+    return {
+        "schema": "streaming_idm_action_history_seed_partition.v1",
+        "path": str(path),
+        "rows": int(rows),
+        "recordings": len(histories),
+        "histories": histories,
+        "button_states": button_states,
+        "latest_timestamp_by_recording": latest_timestamp_by_recording,
+    }
+
+
+def _action_history_seed_state_from_records_parallel(
+    record_paths: Sequence[str | Path],
+    *,
+    history_len: int,
+    workers: int,
+) -> dict[str, Any]:
+    paths = list(record_paths)
+    if history_len <= 0:
+        return {"schema": "streaming_idm_action_history_seed_state.v1", "history_len": 0, "histories": {}, "button_states": {}}
+    if len(paths) <= 1 or workers <= 1:
+        return _action_history_seed_state_from_records(paths, history_len=history_len)
+    partition_count = min(int(workers), len(paths))
+    partitions: list[dict[str, Any]] = []
+    with ProcessPoolExecutor(max_workers=partition_count) as pool:
+        futures = {pool.submit(_action_history_seed_state_partition, path, int(history_len)): path for path in paths}
+        for future in as_completed(futures):
+            partitions.append(future.result())
+    merged_histories: dict[str, list[list[str]]] = {}
+    merged_button_states: dict[str, dict[str, float]] = {}
+    latest_timestamp: dict[str, int] = {}
+    for partition in partitions:
+        histories = dict(partition.get("histories", {}))
+        button_states = dict(partition.get("button_states", {}))
+        timestamps = dict(partition.get("latest_timestamp_by_recording", {}))
+        for recording_id, history_rows in histories.items():
+            timestamp = int(timestamps.get(recording_id, 0))
+            if recording_id not in latest_timestamp or timestamp >= latest_timestamp[recording_id]:
+                latest_timestamp[recording_id] = timestamp
+                merged_histories[recording_id] = [
+                    [str(token) for token in tokens]
+                    for tokens in history_rows[-int(history_len) :]
+                    if isinstance(tokens, list)
+                ]
+                state = button_states.get(recording_id, {})
+                merged_button_states[recording_id] = (
+                    {str(key): float(value) for key, value in state.items()}
+                    if isinstance(state, dict)
+                    else _empty_button_state()
+                )
+    return {
+        "schema": "streaming_idm_action_history_seed_state.v1",
+        "history_len": int(history_len),
+        "recordings": len(merged_histories),
+        "histories": merged_histories,
+        "button_states": merged_button_states,
+        "parallel": True,
+        "workers": int(partition_count),
+        "partition_count": len(partitions),
+        "rows": sum(int(partition.get("rows") or 0) for partition in partitions),
+    }
+
+
 def _empty_action_history_seed_state(*, history_len: int) -> dict[str, Any]:
     return {
         "schema": "streaming_idm_action_history_seed_state.v1",
@@ -318,6 +397,16 @@ def _action_history_seed_state_for_parallel_prediction(
     if mode in {"empty", "zero", "none", "target_start"}:
         return _empty_action_history_seed_state(history_len=history_len), "empty"
     if mode in {"train_scan", "parent_train_scan", "train_tail"}:
+        workers = int(config.get("action_history_seed_state_workers", 1) or 1)
+        if bool(config.get("action_history_seed_state_parallel_by_path", workers > 1)) and workers > 1:
+            return (
+                _action_history_seed_state_from_records_parallel(
+                    train_paths,
+                    history_len=history_len,
+                    workers=workers,
+                ),
+                "parent_train_scan_parallel",
+            )
         return _action_history_seed_state_from_records(train_paths, history_len=history_len), "parent_train_scan"
     raise ValueError(
         "action_history_seed_state_mode must be one of empty/zero/none/target_start "
@@ -3514,6 +3603,12 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "mouse_max_tokens_per_axis",
         "resume_predictions",
         "force_cpu",
+        "train_records",
+        "train_record_paths",
+        "train_records_glob",
+        "action_history_seed_state_mode",
+        "action_history_seed_state_workers",
+        "action_history_seed_state_parallel_by_path",
     ):
         if key in config:
             prediction_config[key] = config[key]
