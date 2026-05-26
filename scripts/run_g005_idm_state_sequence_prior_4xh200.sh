@@ -21,4 +21,5 @@ WANDB_SIDECAR_LOG="${WANDB_SIDECAR_LOG:-artifacts/idm/g005_idm_state_sequence_pr
 WANDB_SIDECAR_PID_FILE="${WANDB_SIDECAR_PID_FILE:-outputs/cluster/g005_idm_state_sequence_prior_wandb_sidecar.pid}" \
 WANDB_SIDECAR_TAGS="${WANDB_SIDECAR_TAGS:-g005,idm,d2e,state-sequence-prior,4xh200,sidecar}" \
 WANDB_PROCESS_PATTERN="${WANDB_PROCESS_PATTERN:-train_idm_streaming|torchrun|run_g005_idm_state_sequence_prior|run_g005_idm_state_luma_pair}" \
+SKIP_STATE_STATS_SYNTHESIS="${SKIP_STATE_STATS_SYNTHESIS:-1}" \
 scripts/run_g005_idm_state_luma_pair_4xh200.sh

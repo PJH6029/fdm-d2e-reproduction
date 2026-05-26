@@ -65,7 +65,7 @@ if [[ "$needs_state_materialization" != "0" ]]; then
   } 2>&1 | tee "$STATE_LOG"
 fi
 
-if [[ ! -s "$OUTPUT_DIR/streaming_stats.json" || "${FORCE_STATE_STATS_SYNTHESIS:-0}" != "0" ]]; then
+if [[ "${SKIP_STATE_STATS_SYNTHESIS:-0}" == "0" && ( ! -s "$OUTPUT_DIR/streaming_stats.json" || "${FORCE_STATE_STATS_SYNTHESIS:-0}" != "0" ) ]]; then
   {
     echo "stats_synthesis_started_at=$(date -Iseconds)"
     uv run python scripts/synthesize_state_streaming_stats.py \
