@@ -23,6 +23,13 @@ BUILD_PAPER_METRICS="${BUILD_PAPER_METRICS:-1}"
 VALIDATE_G005="${VALIDATE_G005:-1}"
 REQUIRE_PRECOMPUTED_CACHE="${REQUIRE_PRECOMPUTED_CACHE:-0}"
 PRECOMPUTE_CACHE_VALIDATION="${PRECOMPUTE_CACHE_VALIDATION:-artifacts/idm/${MODEL_SLUG}_precomputed_cache_validation.json}"
+MLXP_RESERVATION_ID="${MLXP_RESERVATION_ID:-}"
+MLXP_RESERVATION_START_AT="${MLXP_RESERVATION_START_AT:-}"
+MLXP_RESERVATION_END_AT="${MLXP_RESERVATION_END_AT:-}"
+MLXP_RESERVATION_NODE_ID="${MLXP_RESERVATION_NODE_ID:-}"
+MLXP_RESERVATION_GPU_INDICES="${MLXP_RESERVATION_GPU_INDICES:-}"
+MLXP_RESERVATION_POD_NAME="${MLXP_RESERVATION_POD_NAME:-}"
+MLXP_RESERVATION_CHECKED_AT="${MLXP_RESERVATION_CHECKED_AT:-}"
 
 mkdir -p "$(dirname "$LOG_PATH")" "$(dirname "$RUN_SUMMARY")" "$(dirname "$GPU_MONITOR_LOG")" "$(dirname "$PID_FILE")" outputs/cluster "$OUTPUT_DIR"
 echo "$$" >"$PID_FILE"
@@ -252,6 +259,15 @@ payload = {
     "precompute_cache_validation_path": str(precompute_cache_validation_path),
     "precompute_cache_validation_status": precompute_cache_validation.get("status") if precompute_cache_validation else None,
     "precompute_cache_validation_rows": precompute_cache_validation.get("rows") if precompute_cache_validation else None,
+    "mlxp_reservation": {
+        "reservation_id": "$MLXP_RESERVATION_ID" or None,
+        "start_at": "$MLXP_RESERVATION_START_AT" or None,
+        "end_at": "$MLXP_RESERVATION_END_AT" or None,
+        "node_id": "$MLXP_RESERVATION_NODE_ID" or None,
+        "gpu_indices": "$MLXP_RESERVATION_GPU_INDICES" or None,
+        "pod_name": "$MLXP_RESERVATION_POD_NAME" or None,
+        "checked_at": "$MLXP_RESERVATION_CHECKED_AT" or None,
+    },
     "checkpoint_path": (metadata or {}).get("checkpoint_path"),
     "train_records": (metadata or {}).get("train_records"),
     "target_records": (metadata or {}).get("target_records"),
