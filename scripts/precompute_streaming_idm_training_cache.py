@@ -18,7 +18,9 @@ from fdm_d2e.training.streaming_idm import (
     _build_training_cache_manifests,
     _category_vocab_for_heads,
     _load_training_cache_manifests,
+    _mouse_target_mode,
     _record_paths_from_config,
+    _residual_mouse_from_mode,
     _training_cache_manifest_byte_count,
     _training_cache_manifest_row_count,
     scan_streaming_idm_stats,
@@ -72,6 +74,7 @@ def main() -> int:
             num_workers=int(config.get("precompute_num_workers", config.get("stats_num_workers", 1))),
             action_history_len=_action_history_len_from_config(config),
             action_history_parallel_by_path=_action_history_parallel_by_path(config),
+            residual_mouse=_residual_mouse_from_mode(_mouse_target_mode(config)),
         )
         stats["stats_precompute_wall_clock_seconds"] = time.time() - started_stats
         write_json(stats_path, stats)

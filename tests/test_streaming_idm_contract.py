@@ -352,6 +352,57 @@ def test_streaming_idm_residual_mouse_roundtrips_training_cache(tmp_path: Path):
     assert payload["mouse_y"][1].tolist() == pytest.approx([2.0, 0.0])
 
 
+def test_streaming_idm_precompute_script_preserves_residual_mouse_stats(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    train_path = tmp_path / "train.jsonl"
+    _write_jsonl(train_path, [_record(idx, "train_core") for idx in range(4)])
+    out_dir = tmp_path / "idm_precompute_residual"
+    config_path = tmp_path / "config.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "train_records": str(train_path),
+                "output_dir": str(out_dir),
+                "training_cache_dir": str(out_dir / "train_cache"),
+                "training_cache_chunk_size": 2,
+                "feature_mode": "summary_compact_grid8_shift_surface_time",
+                "categorical_min_count": 1,
+                "mouse_head_mode": "axis_softmax",
+                "mouse_target_mode": "residual_last_seen",
+            }
+        )
+    )
+    summary_path = tmp_path / "precompute_summary.json"
+
+    build = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/precompute_streaming_idm_training_cache.py"),
+            "--config",
+            str(config_path),
+            "--output",
+            str(summary_path),
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert build.returncode == 0, build.stderr
+    stats = json.loads((out_dir / "streaming_stats.json").read_text())
+    summary = json.loads(summary_path.read_text())
+    assert stats["residual_mouse"] is True
+    assert stats["input_dim"] == scan_streaming_idm_stats(
+        train_path,
+        feature_mode="summary_compact_grid8_shift_surface_time",
+        categorical_min_count=1,
+        residual_mouse=True,
+    )["input_dim"]
+    assert summary["status"] == "pass"
+    assert summary["rows"] == 4
+
+
 def test_streaming_idm_action_history_stats_parallel_by_path(tmp_path: Path):
     shard_a = tmp_path / "train_a.jsonl"
     shard_b = tmp_path / "train_b.jsonl"
