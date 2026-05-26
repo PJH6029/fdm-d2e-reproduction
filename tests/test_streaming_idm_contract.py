@@ -9,6 +9,7 @@ import pytest
 
 from fdm_d2e.training.streaming_idm import (
     _distributed_runtime,
+    _select_group_fbeta_threshold,
     _training_cache_identity,
     _training_cache_assignment_plan,
     _training_cache_rank_assignment,
@@ -112,6 +113,56 @@ def test_training_cache_assignment_balances_manifest_rows():
     assert max(greedy_loads) - min(greedy_loads) < max(modulo_loads) - min(modulo_loads)
     assert plan["row_load_max"] == max(greedy_loads)
     assert plan["row_load_min"] == min(greedy_loads)
+
+
+def test_streaming_group_fbeta_threshold_can_enforce_no_event_fpr_cap():
+    counts = {
+        0.3: {
+            "tp": 8,
+            "fp": 4,
+            "fn": 2,
+            "predicted_positive": 12,
+            "positive_examples": 10,
+            "no_event_examples": 100,
+            "no_event_false_positive_examples": 9,
+        },
+        0.5: {
+            "tp": 6,
+            "fp": 1,
+            "fn": 4,
+            "predicted_positive": 7,
+            "positive_examples": 10,
+            "no_event_examples": 100,
+            "no_event_false_positive_examples": 3,
+        },
+        0.7: {
+            "tp": 2,
+            "fp": 0,
+            "fn": 8,
+            "predicted_positive": 2,
+            "positive_examples": 10,
+            "no_event_examples": 100,
+            "no_event_false_positive_examples": 0,
+        },
+    }
+
+    unconstrained, unconstrained_stats = _select_group_fbeta_threshold(
+        counts,
+        default_threshold=0.5,
+        beta=1.0,
+    )
+    constrained, constrained_stats = _select_group_fbeta_threshold(
+        counts,
+        default_threshold=0.5,
+        beta=1.0,
+        max_no_event_fpr=0.05,
+    )
+
+    assert unconstrained == 0.3
+    assert unconstrained_stats["no_event_false_positive_rate"] == 0.09
+    assert constrained == 0.5
+    assert constrained_stats["constraint_satisfied"] is True
+    assert constrained_stats["no_event_false_positive_rate"] == 0.03
 
 
 def test_training_cache_identity_includes_mouse_target_mode(tmp_path: Path):

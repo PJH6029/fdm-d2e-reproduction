@@ -2317,6 +2317,81 @@ def _fbeta_score(tp: float, fp: float, fn: float, beta: float) -> tuple[float, f
     return score, precision, recall
 
 
+def _group_no_event_fpr_cap(config: dict[str, Any], group: str) -> float | None:
+    keys = {
+        "keyboard": ("category_calibration_max_no_key_fpr", "keyboard_category_calibration_max_no_key_fpr"),
+        "mouse_button": ("category_calibration_max_no_button_fpr", "button_category_calibration_max_no_button_fpr"),
+    }.get(group, ())
+    for key in keys:
+        value = config.get(key)
+        if value is None:
+            continue
+        cap = float(value)
+        if cap < 0.0 or cap > 1.0:
+            raise ValueError(f"{key} must be between 0 and 1")
+        return cap
+    return None
+
+
+def _select_group_fbeta_threshold(
+    counts_by_threshold: dict[float, dict[str, int]],
+    *,
+    default_threshold: float,
+    beta: float,
+    max_no_event_fpr: float | None = None,
+) -> tuple[float, dict[str, Any]]:
+    best_threshold = float(default_threshold)
+    best_key: tuple[float, float, float, float] = (-1.0, -1.0, -1.0, float(default_threshold))
+    best_stats: dict[str, Any] = {}
+    fallback_threshold = float(default_threshold)
+    fallback_key: tuple[float, float, float, float, float] = (float("inf"), float("inf"), float("inf"), float("inf"), float("inf"))
+    fallback_stats: dict[str, Any] = {}
+    eligible_count = 0
+    for threshold in sorted(counts_by_threshold):
+        counts = dict(counts_by_threshold[threshold])
+        score, precision, recall = _fbeta_score(counts.get("tp", 0), counts.get("fp", 0), counts.get("fn", 0), beta)
+        no_event_examples = int(counts.get("no_event_examples", 0))
+        no_event_fp = int(counts.get("no_event_false_positive_examples", 0))
+        no_event_fpr = no_event_fp / no_event_examples if no_event_examples else None
+        stats = {
+            **counts,
+            "score": score,
+            "precision": precision,
+            "recall": recall,
+            "no_event_false_positive_rate": no_event_fpr,
+            "max_no_event_false_positive_rate": max_no_event_fpr,
+        }
+        constraint_satisfied = max_no_event_fpr is None or no_event_fpr is None or no_event_fpr <= max_no_event_fpr
+        stats["constraint_satisfied"] = bool(constraint_satisfied)
+        fallback_sort_fpr = no_event_fpr if no_event_fpr is not None else 0.0
+        fallback_candidate_key = (fallback_sort_fpr, -score, -precision, -recall, -float(threshold))
+        if fallback_candidate_key < fallback_key:
+            fallback_key = fallback_candidate_key
+            fallback_threshold = float(threshold)
+            fallback_stats = stats
+        if not constraint_satisfied:
+            continue
+        eligible_count += 1
+        key = (score, precision, recall, float(threshold))
+        if key > best_key:
+            best_key = key
+            best_threshold = float(threshold)
+            best_stats = stats
+    if not best_stats and fallback_stats:
+        best_threshold = fallback_threshold
+        best_stats = fallback_stats
+    best_stats["eligible_thresholds"] = eligible_count
+    return best_threshold, best_stats
+
+
+def _group_threshold_label(group: str) -> str:
+    if group == "keyboard":
+        return "no_key"
+    if group == "mouse_button":
+        return "no_button"
+    return "no_event"
+
+
 def _calibrate_streaming_category_thresholds(
     torch,
     model,
@@ -2356,6 +2431,21 @@ def _calibrate_streaming_category_thresholds(
     }
     per_group_counts = {
         group: {threshold: {"tp": 0, "fp": 0, "fn": 0} for threshold in grid}
+        for group in groups
+    }
+    per_group_exact_counts = {
+        group: {
+            threshold: {
+                "tp": 0,
+                "fp": 0,
+                "fn": 0,
+                "predicted_positive": 0,
+                "positive_examples": 0,
+                "no_event_examples": 0,
+                "no_event_false_positive_examples": 0,
+            }
+            for threshold in grid
+        }
         for group in groups
     }
     observed_examples = 0
@@ -2403,6 +2493,19 @@ def _calibrate_streaming_category_thresholds(
                     counts["tp"] += sum(int(tp_vec[idx]) for idx in indices)
                     counts["fp"] += sum(int(fp_vec[idx]) for idx in indices)
                     counts["fn"] += sum(int(fn_vec[idx]) for idx in indices)
+                    pred_group = pred[:, indices]
+                    label_group = labels[:, indices]
+                    pred_any = pred_group.any(dim=1)
+                    label_any = label_group.any(dim=1)
+                    exact_match = (pred_group == label_group).all(dim=1)
+                    exact_counts = per_group_exact_counts[group][threshold]
+                    exact_counts["tp"] += int((label_any & exact_match).sum().detach().cpu().item())
+                    exact_counts["fn"] += int((label_any & ~exact_match).sum().detach().cpu().item())
+                    exact_counts["fp"] += int(((~label_any & pred_any) | (label_any & pred_any & ~exact_match)).sum().detach().cpu().item())
+                    exact_counts["predicted_positive"] += int(pred_any.sum().detach().cpu().item())
+                    exact_counts["positive_examples"] += int(label_any.sum().detach().cpu().item())
+                    exact_counts["no_event_examples"] += int((~label_any).sum().detach().cpu().item())
+                    exact_counts["no_event_false_positive_examples"] += int((~label_any & pred_any).sum().detach().cpu().item())
 
     diagnostics: dict[str, Any] = {
         "mode": mode,
@@ -2438,23 +2541,27 @@ def _calibrate_streaming_category_thresholds(
     else:
         per_group: dict[str, Any] = {}
         for group, indices in groups.items():
-            best_key = (-1.0, -1.0, -1.0, default_threshold)
-            best_threshold = default_threshold
-            best_counts: dict[str, int] = {}
-            for threshold in grid:
-                counts = per_group_counts[group][threshold]
-                score, precision, recall = _fbeta_score(counts["tp"], counts["fp"], counts["fn"], beta)
-                # Prefer precision before recall when scores tie; click/key
-                # spam poisons downstream pseudo-labeling more than abstention.
-                key = (score, precision, recall, threshold)
-                if key > best_key:
-                    best_key = key
-                    best_threshold = float(threshold)
-                    best_counts = dict(counts)
-                    best_counts.update({"score": score, "precision": precision, "recall": recall})
+            max_no_event_fpr = _group_no_event_fpr_cap(config, group)
+            best_threshold, best_counts = _select_group_fbeta_threshold(
+                per_group_exact_counts[group],
+                default_threshold=default_threshold,
+                beta=beta,
+                max_no_event_fpr=max_no_event_fpr,
+            )
+            legacy_counts = per_group_counts[group].get(best_threshold, {})
             for idx in indices:
                 thresholds[category_vocab[idx]] = best_threshold
-            per_group[group] = {"threshold": best_threshold, "token_count": len(indices), **best_counts}
+            no_event_label = _group_threshold_label(group)
+            per_group[group] = {
+                "threshold": best_threshold,
+                "token_count": len(indices),
+                **best_counts,
+                "token_level_counts": dict(legacy_counts),
+                f"{no_event_label}_examples": best_counts.get("no_event_examples"),
+                f"{no_event_label}_false_positive_examples": best_counts.get("no_event_false_positive_examples"),
+                f"{no_event_label}_false_positive_rate": best_counts.get("no_event_false_positive_rate"),
+                f"max_{no_event_label}_false_positive_rate": max_no_event_fpr,
+            }
         diagnostics["per_group"] = per_group
     diagnostics["status"] = "computed"
     diagnostics["category_thresholds"] = thresholds
@@ -2622,6 +2729,21 @@ def _calibrate_streaming_category_thresholds_from_cache(
         group: {threshold: {"tp": 0, "fp": 0, "fn": 0} for threshold in grid}
         for group in groups
     }
+    per_group_exact_counts = {
+        group: {
+            threshold: {
+                "tp": 0,
+                "fp": 0,
+                "fn": 0,
+                "predicted_positive": 0,
+                "positive_examples": 0,
+                "no_event_examples": 0,
+                "no_event_false_positive_examples": 0,
+            }
+            for threshold in grid
+        }
+        for group in groups
+    }
     observed_examples = 0
     model.eval()
     with torch.no_grad():
@@ -2656,6 +2778,19 @@ def _calibrate_streaming_category_thresholds_from_cache(
                     counts["tp"] += sum(int(tp_vec[idx]) for idx in indices)
                     counts["fp"] += sum(int(fp_vec[idx]) for idx in indices)
                     counts["fn"] += sum(int(fn_vec[idx]) for idx in indices)
+                    pred_group = pred[:, indices]
+                    label_group = labels[:, indices]
+                    pred_any = pred_group.any(dim=1)
+                    label_any = label_group.any(dim=1)
+                    exact_match = (pred_group == label_group).all(dim=1)
+                    exact_counts = per_group_exact_counts[group][threshold]
+                    exact_counts["tp"] += int((label_any & exact_match).sum().detach().cpu().item())
+                    exact_counts["fn"] += int((label_any & ~exact_match).sum().detach().cpu().item())
+                    exact_counts["fp"] += int(((~label_any & pred_any) | (label_any & pred_any & ~exact_match)).sum().detach().cpu().item())
+                    exact_counts["predicted_positive"] += int(pred_any.sum().detach().cpu().item())
+                    exact_counts["positive_examples"] += int(label_any.sum().detach().cpu().item())
+                    exact_counts["no_event_examples"] += int((~label_any).sum().detach().cpu().item())
+                    exact_counts["no_event_false_positive_examples"] += int((~label_any & pred_any).sum().detach().cpu().item())
 
     diagnostics: dict[str, Any] = {
         "mode": mode,
@@ -2691,21 +2826,27 @@ def _calibrate_streaming_category_thresholds_from_cache(
     else:
         per_group: dict[str, Any] = {}
         for group, indices in groups.items():
-            best_key = (-1.0, -1.0, -1.0, default_threshold)
-            best_threshold = default_threshold
-            best_counts: dict[str, int] = {}
-            for threshold in grid:
-                counts = per_group_counts[group][threshold]
-                score, precision, recall = _fbeta_score(counts["tp"], counts["fp"], counts["fn"], beta)
-                key = (score, precision, recall, threshold)
-                if key > best_key:
-                    best_key = key
-                    best_threshold = float(threshold)
-                    best_counts = dict(counts)
-                    best_counts.update({"score": score, "precision": precision, "recall": recall})
+            max_no_event_fpr = _group_no_event_fpr_cap(config, group)
+            best_threshold, best_counts = _select_group_fbeta_threshold(
+                per_group_exact_counts[group],
+                default_threshold=default_threshold,
+                beta=beta,
+                max_no_event_fpr=max_no_event_fpr,
+            )
+            legacy_counts = per_group_counts[group].get(best_threshold, {})
             for idx in indices:
                 thresholds[category_vocab[idx]] = best_threshold
-            per_group[group] = {"threshold": best_threshold, "token_count": len(indices), **best_counts}
+            no_event_label = _group_threshold_label(group)
+            per_group[group] = {
+                "threshold": best_threshold,
+                "token_count": len(indices),
+                **best_counts,
+                "token_level_counts": dict(legacy_counts),
+                f"{no_event_label}_examples": best_counts.get("no_event_examples"),
+                f"{no_event_label}_false_positive_examples": best_counts.get("no_event_false_positive_examples"),
+                f"{no_event_label}_false_positive_rate": best_counts.get("no_event_false_positive_rate"),
+                f"max_{no_event_label}_false_positive_rate": max_no_event_fpr,
+            }
         diagnostics["per_group"] = per_group
     diagnostics["status"] = "computed"
     diagnostics["category_thresholds"] = thresholds

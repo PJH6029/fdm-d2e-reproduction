@@ -26,6 +26,9 @@ WANDB_SIDECAR_LOG="${WANDB_SIDECAR_LOG:-artifacts/idm/g005_idm_event_state_conte
 WANDB_SIDECAR_PID_FILE="${WANDB_SIDECAR_PID_FILE:-outputs/cluster/g005_idm_event_state_context_wandb_sidecar.pid}"
 ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"
 WANDB_ENV_FILE="${WANDB_ENV_FILE:-.env}"
+WANDB_TAGS="${WANDB_TAGS:-g005,idm,d2e,event-state-context,pipeline}"
+WANDB_SIDECAR_TAGS="${WANDB_SIDECAR_TAGS:-g005,idm,d2e,event-state-context,4xh200,sidecar}"
+WANDB_PROCESS_PATTERN="${WANDB_PROCESS_PATTERN:-train_idm_streaming|torchrun|run_g005_idm_event_state_context}"
 
 mkdir -p artifacts/idm artifacts/eval outputs/cluster "$OUTPUT_DIR"
 
@@ -42,7 +45,7 @@ log_wandb_artifact_stage() {
     --run-name "$run_name" \
     --group "g005-idm-paper-target" \
     --job-type "pipeline-artifact" \
-    --tags "g005,idm,d2e,event-state-context,pipeline" \
+    --tags "$WANDB_TAGS" \
     --artifact-name "$artifact_name" \
     --artifact-type "evaluation" \
     --output "$output_path" \
@@ -135,9 +138,9 @@ if [[ "$ENABLE_WANDB_SIDECAR" != "0" ]]; then
     --run-name "$MODEL_SLUG-4xh200" \
     --group "g005-idm-paper-target" \
     --job-type "train-sidecar" \
-    --tags "g005,idm,d2e,event-state-context,4xh200,sidecar" \
+    --tags "$WANDB_SIDECAR_TAGS" \
     --poll-seconds 60 \
-    --process-pattern "train_idm_streaming|torchrun|run_g005_idm_event_state_context" \
+    --process-pattern "$WANDB_PROCESS_PATTERN" \
     --finish-on-run-summary >"$WANDB_SIDECAR_LOG" 2>&1 &
   SIDECAR_PID="$!"
 fi
