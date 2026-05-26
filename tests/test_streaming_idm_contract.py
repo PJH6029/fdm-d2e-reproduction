@@ -8,12 +8,14 @@ from pathlib import Path
 import pytest
 
 from fdm_d2e.training.streaming_idm import (
+    MOUSE_AXIS_CLASSES,
     _barrier,
     _distributed_runtime,
     _iter_causal_feature_batches,
     _mouse_target_for_row,
     _predicted_tokens_from_output,
     _select_group_fbeta_threshold,
+    _build_training_cache_manifests,
     _training_cache_identity,
     _training_cache_assignment_plan,
     _training_cache_rank_assignment,
@@ -520,6 +522,70 @@ def test_streaming_idm_cache_precompute_validate_only_preserves_action_history(t
     assert validation["validate_only"] is True
     assert validation["rows"] == len(rows_a) + len(rows_b)
     assert validation["manifest_count"] == 2
+
+
+def test_training_cache_reuse_skips_path_parallel_state_replay(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    shard_a = tmp_path / "train_a.jsonl"
+    shard_b = tmp_path / "train_b.jsonl"
+    rows_a = [
+        {**_exactset_record(idx, "train_core"), "recording_id": "d2e_480p:Apex/cache_a", "sequence_id": f"d2e_480p:Apex/cache_a#{idx:06d}"}
+        for idx in range(4)
+    ]
+    rows_b = [
+        {**_exactset_record(idx + 4, "train_core"), "recording_id": "d2e_480p:Apex/cache_b", "sequence_id": f"d2e_480p:Apex/cache_b#{idx:06d}"}
+        for idx in range(4)
+    ]
+    _write_jsonl(shard_a, rows_a)
+    _write_jsonl(shard_b, rows_b)
+    config = {
+        "train_record_paths": [str(shard_a), str(shard_b)],
+        "output_dir": str(tmp_path / "idm_reuse"),
+        "training_cache_dir": str(tmp_path / "idm_reuse" / "train_cache"),
+        "training_cache_num_workers": 2,
+        "training_cache_chunk_size": 2,
+        "feature_mode": "summary_compact_grid8_shift_surface_time",
+        "categorical_min_count": 1,
+        "action_history_len": 2,
+        "action_history_parallel_by_path": True,
+        "keyboard_head_mode": "softmax",
+        "button_head_mode": "softmax",
+        "mouse_head_mode": "axis_softmax",
+        "mouse_axis_classes": MOUSE_AXIS_CLASSES,
+        "mouse_target_mode": "residual_last_seen",
+    }
+    stats = scan_streaming_idm_stats(
+        [shard_a, shard_b],
+        feature_mode=config["feature_mode"],
+        categorical_min_count=1,
+        num_workers=2,
+        action_history_len=2,
+        action_history_parallel_by_path=True,
+        residual_mouse=True,
+    )
+    category_vocab = [str(token) for token in stats["category_vocab"]]
+    first = _build_training_cache_manifests(
+        [shard_a, shard_b],
+        stats=stats,
+        config=config,
+        category_vocab=category_vocab,
+        mouse_axis_classes=config["mouse_axis_classes"],
+    )
+
+    def fail_iter_jsonl(_path):
+        raise AssertionError("path-parallel manifest reuse must not rescan source jsonl")
+
+    monkeypatch.setattr("fdm_d2e.training.streaming_idm.iter_jsonl", fail_iter_jsonl)
+    reused = _build_training_cache_manifests(
+        [shard_a, shard_b],
+        stats=stats,
+        config=config,
+        category_vocab=category_vocab,
+        mouse_axis_classes=config["mouse_axis_classes"],
+    )
+
+    assert [row["manifest_path"] for row in reused] == [row["manifest_path"] for row in first]
 
 
 def test_streaming_idm_action_history_prediction_does_not_peek_target_labels(tmp_path: Path):

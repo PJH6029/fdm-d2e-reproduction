@@ -1564,6 +1564,7 @@ def _build_training_cache_for_path(
     history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
     mouse_target_mode = _mouse_target_mode(config)
     residual_mouse = _residual_mouse_from_mode(mouse_target_mode)
+    replay_existing_manifest_state = histories is not None or button_states is not None or mouse_state is not None
     if action_history_len > 0:
         histories = histories if histories is not None else {}
         button_states = button_states if button_states is not None else {}
@@ -1577,7 +1578,7 @@ def _build_training_cache_for_path(
         manifest = read_json(manifest_path)
         chunk_rows = manifest.get("chunks", [])
         if manifest.get("identity") == identity and chunk_rows and all(Path(row["path"]).exists() for row in chunk_rows):
-            if action_history_len > 0 or residual_mouse:
+            if replay_existing_manifest_state and (action_history_len > 0 or residual_mouse):
                 for row in iter_jsonl(path):
                     if action_history_len > 0:
                         history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
