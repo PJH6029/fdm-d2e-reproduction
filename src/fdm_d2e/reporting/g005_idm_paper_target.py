@@ -189,6 +189,22 @@ def _check_strict_target(group_metrics: dict[str, Any], row: dict[str, Any]) -> 
     }
 
 
+def _paper_metric_target_paths(config: dict[str, Any]) -> list[str]:
+    metrics_cfg = config.get("paper_metrics", {})
+    if not isinstance(metrics_cfg, dict):
+        return []
+    value = metrics_cfg.get("target_paths")
+    if value is None:
+        value = metrics_cfg.get("target_path")
+    if value is None:
+        return []
+    if isinstance(value, (str, Path)):
+        return [str(value)]
+    if isinstance(value, Sequence):
+        return [str(item) for item in value]
+    return [str(value)]
+
+
 def validate_g005_idm_paper_target(config: dict[str, Any], *, root: str | Path = ".") -> dict[str, Any]:
     root_path = Path(root)
     paths = dict(config.get("paths", {}))
@@ -224,6 +240,30 @@ def validate_g005_idm_paper_target(config: dict[str, Any], *, root: str | Path =
         findings.append({"severity": "error", "code": "gidm_baseline_contract_not_pass", "status": contract.get("status")})
     if paper_metrics and paper_metrics.get("status") != "pass":
         findings.append({"severity": "error", "code": "paper_metrics_not_pass", "status": paper_metrics.get("status"), "error_count": paper_metrics.get("error_count")})
+    if contract and paper_metrics:
+        expected_empty_bins = _get(contract, ["official_metric_protocol", "empty_bins_as_correct"])
+        if expected_empty_bins is None:
+            expected_empty_bins = False
+        observed_empty_bins = _get(paper_metrics, ["groups", "all", "paper_compatible", "empty_bins_as_correct"])
+        if observed_empty_bins is not expected_empty_bins:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "paper_metric_protocol_empty_bins_mismatch",
+                    "expected": expected_empty_bins,
+                    "actual": observed_empty_bins,
+                }
+            )
+    state_target_paths = [path for path in _paper_metric_target_paths(config) if "d2e_state_corpus" in path]
+    if state_target_paths and not bool(config.get("allow_state_target_paper_metric_diagnostic", False)):
+        findings.append(
+            {
+                "severity": "error",
+                "code": "paper_metric_target_uses_held_state_corpus",
+                "paths": state_target_paths,
+                "expected": "event-token D2E target rows matching official evaluate.py keyboard/mouse-button semantics",
+            }
+        )
     if run_summary and int(run_summary.get("exit_code", 999)) != 0:
         findings.append({"severity": "error", "code": "run_summary_exit_nonzero", "exit_code": run_summary.get("exit_code")})
     if run_summary and int(run_summary.get("nproc_per_node", 0) or 0) != expected_gpus:

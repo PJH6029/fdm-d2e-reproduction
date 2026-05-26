@@ -81,6 +81,7 @@ def test_g005_idm_paper_target_audit_passes_with_full_evidence(tmp_path: Path):
                     }
                 }
             },
+            "official_metric_protocol": {"empty_bins_as_correct": False},
         },
     )
     write_json(
@@ -90,6 +91,7 @@ def test_g005_idm_paper_target_audit_passes_with_full_evidence(tmp_path: Path):
             "groups": {
                 "all": {
                     "paper_compatible": {
+                        "empty_bins_as_correct": False,
                         "mouse_move": {"pearson_x": 0.81, "pearson_y": 0.71, "scale_ratio_x": 1.2, "scale_ratio_y": 1.3},
                         "keyboard": {"key_accuracy": 0.75},
                         "mouse_button": {"button_accuracy": 0.95},
@@ -156,6 +158,48 @@ def test_g005_idm_paper_target_audit_passes_with_full_evidence(tmp_path: Path):
     payload = validate_g005_idm_paper_target(config, root=tmp_path)
     assert payload["status"] == "pass"
     assert payload["aggregate_target_results"]
+
+
+def test_g005_idm_paper_target_audit_rejects_non_official_state_metric_protocol(tmp_path: Path):
+    write_json(
+        tmp_path / "contract.json",
+        {
+            "status": "pass",
+            "official_metric_protocol": {"empty_bins_as_correct": False},
+            "target_sequence": {"phase_1": {"primary_targets": {"keyboard_accuracy": 0.7}}},
+        },
+    )
+    write_json(
+        tmp_path / "paper.json",
+        {
+            "status": "pass",
+            "groups": {
+                "all": {
+                    "paper_compatible": {
+                        "empty_bins_as_correct": True,
+                        "keyboard": {"key_accuracy": 0.9},
+                    }
+                }
+            },
+        },
+    )
+    payload = validate_g005_idm_paper_target(
+        {
+            "expected_gpus": 4,
+            "paths": {
+                "gidm_baseline_contract": "contract.json",
+                "paper_metrics": "paper.json",
+            },
+            "paper_metrics": {
+                "target_path": "outputs/data/d2e_state_corpus_shards_accel64/shard_*/target_all_eval.jsonl",
+            },
+        },
+        root=tmp_path,
+    )
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "paper_metric_protocol_empty_bins_mismatch" in codes
+    assert "paper_metric_target_uses_held_state_corpus" in codes
 
 
 def test_g005_idm_paper_target_audit_fails_missing_paper_target(tmp_path: Path):
