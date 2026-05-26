@@ -113,6 +113,23 @@ def test_g005_state_sequence_prior_uses_distinct_wandb_artifact_status_paths() -
     assert config["action_history_seed_state_mode"] == "empty"
 
 
+def test_g005_state_sequence_stack5_prior_uses_future_context_without_seed_synthesis() -> None:
+    text = _script("scripts/run_g005_idm_state_sequence_stack5_prior_4xh200.sh")
+    config = json.loads(
+        (ROOT / "configs/model/idm_streaming_d2e_full_state_sequence_stack5_prior_paper_target.yaml").read_text()
+    )
+    paper = json.loads((ROOT / "configs/eval/g005_idm_state_sequence_stack5_prior_paper_target.yaml").read_text())
+
+    assert "g005_idm_state_sequence_stack5_prior_precompute_wandb_status.json" in text
+    assert 'SKIP_STATE_STATS_SYNTHESIS="${SKIP_STATE_STATS_SYNTHESIS:-1}"' in text
+    assert "scripts/run_g005_idm_state_sequence_prior_4xh200.sh" in text
+    assert config["feature_mode"] == "summary_luma16_stack5_time"
+    assert config["model_arch"] == "luma_action_sequence_prior"
+    assert config["visual_stack_frames"] == 5
+    assert config["action_history_seed_state_mode"] == "empty"
+    assert paper["paths"]["run_summary"] == "artifacts/idm/g005_idm_state_sequence_stack5_prior_4xh200_run.json"
+
+
 def test_g005_video_stack_offset_candidate_separates_precompute_training_and_recovery() -> None:
     precompute = _script("scripts/run_g005_idm_video_stack_luma96_offsets012_precompute.sh")
     training = _script("scripts/run_g005_idm_video_stack_luma96_offsets012_4xh200.sh")
