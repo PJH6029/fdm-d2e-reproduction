@@ -56,3 +56,35 @@ def test_prediction_target_records_accepts_prediction_and_train_summaries() -> N
     assert module._prediction_target_records({"target_records": 13}) == 13
     assert module._prediction_target_records({"metadata": {"target_records": "14"}}) == 14
     assert module._prediction_target_records({"records": "bad"}) is None
+
+
+def test_sidecar_does_not_finish_on_stale_rows_while_process_running() -> None:
+    module = _load_module()
+
+    assert (
+        module._sidecar_final_status(
+            finish_rows=100,
+            target_records=100,
+            recovery_status=None,
+            process_running=True,
+        )
+        == "running"
+    )
+    assert (
+        module._sidecar_final_status(
+            finish_rows=100,
+            target_records=100,
+            recovery_status=None,
+            process_running=False,
+        )
+        == "complete"
+    )
+    assert (
+        module._sidecar_final_status(
+            finish_rows=100,
+            target_records=10,
+            recovery_status="fail",
+            process_running=True,
+        )
+        == "failed"
+    )

@@ -97,6 +97,22 @@ def _prediction_target_records(payload: dict[str, Any] | None) -> int | None:
         return None
 
 
+def _sidecar_final_status(
+    *,
+    finish_rows: int,
+    target_records: int | None,
+    recovery_status: str | None,
+    process_running: bool | None,
+) -> str:
+    done_by_recovery = recovery_status in {"pass", "fail"}
+    if done_by_recovery:
+        return "failed" if recovery_status == "fail" else "complete"
+    done_by_rows = bool(finish_rows and isinstance(target_records, int) and target_records >= finish_rows)
+    if done_by_rows and process_running is not True:
+        return "complete"
+    return "running"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Log full-target prediction recovery progress to Weights & Biases.")
     parser.add_argument("--env-file", default=".env")
@@ -193,10 +209,12 @@ def main() -> int:
                     "sidecar/time": time.time(),
                 }
             )
-            done_by_rows = bool(args.finish_rows and isinstance(target_records, int) and target_records >= args.finish_rows)
-            done_by_recovery = recovery_status in {"pass", "fail"}
-            if done_by_rows or done_by_recovery:
-                final_status = "complete" if recovery_status != "fail" else "failed"
+            final_status = _sidecar_final_status(
+                finish_rows=args.finish_rows,
+                target_records=target_records,
+                recovery_status=recovery_status,
+                process_running=process_running,
+            )
             payload = {
                 "schema": "wandb_prediction_sidecar_status.v1",
                 "status": final_status,
