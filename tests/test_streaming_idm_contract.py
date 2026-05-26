@@ -10,6 +10,9 @@ import pytest
 from fdm_d2e.training.streaming_idm import (
     _barrier,
     _distributed_runtime,
+    _iter_causal_feature_batches,
+    _mouse_target_for_row,
+    _predicted_tokens_from_output,
     _select_group_fbeta_threshold,
     _training_cache_identity,
     _training_cache_assignment_plan,
@@ -243,6 +246,110 @@ def test_streaming_idm_action_history_changes_stats_and_cache_identity(tmp_path:
     assert history_identity["action_history_len"] == 2
     assert history_identity["input_dim"] == history_stats["input_dim"]
     assert history_identity != base_identity
+
+
+def test_streaming_idm_residual_mouse_adds_causal_baseline_features(tmp_path: Path):
+    records = tmp_path / "train.jsonl"
+    rows = [_record(idx, "train_core") for idx in range(4)]
+    _write_jsonl(records, rows)
+
+    base_stats = scan_streaming_idm_stats(
+        records,
+        feature_mode="summary_compact_grid8_shift_surface_time",
+        categorical_min_count=1,
+    )
+    residual_stats = scan_streaming_idm_stats(
+        records,
+        feature_mode="summary_compact_grid8_shift_surface_time",
+        categorical_min_count=1,
+        residual_mouse=True,
+    )
+    residual_rows = next(
+        iter(
+            _iter_causal_feature_batches(
+                records,
+                batch_size=4,
+                max_examples=None,
+                feature_mode="summary_compact_grid8_shift_surface_time",
+                history_vocab=[],
+                history_len=0,
+                residual_mouse=True,
+            )
+        )
+    )
+
+    assert residual_stats["residual_mouse"] is True
+    assert residual_stats["input_dim"] == base_stats["input_dim"] + 2
+    assert residual_rows[0]["__streaming_mouse_baseline"] == [0.0, 0.0]
+    assert residual_rows[1]["__streaming_mouse_baseline"] == [-1.0, 0.0]
+    assert _mouse_target_for_row(residual_rows[1], mouse_target_mode="residual_last_seen") == (2.0, 0.0)
+    assert len(residual_rows[1]["__streaming_idm_features"]) == residual_stats["input_dim"]
+
+
+def test_streaming_idm_prediction_uses_residual_mouse_baseline_with_axis_head():
+    tokens = _predicted_tokens_from_output(
+        [0.0, 0.0, 0.1, 0.2, 5.0, 5.0, 0.2, 0.1],
+        config={
+            "mouse_head_mode": "axis_softmax",
+            "mouse_axis_decode_mode": "argmax",
+            "mouse_target_mode": "residual_last_seen",
+        },
+        category_vocab=[],
+        mouse_axis_classes=["N1", "Z0", "P1"],
+        base_dx=5.0,
+        base_dy=-2.0,
+        residual_mouse=True,
+    )
+
+    assert tokens[:2] == ["MOUSE_DX_P3", "MOUSE_DY_N2"]
+
+
+def test_streaming_idm_residual_mouse_roundtrips_training_cache(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    torch = pytest.importorskip("torch")
+    train_path = tmp_path / "train.jsonl"
+    target_path = tmp_path / "target.jsonl"
+    _write_jsonl(train_path, [_record(idx, "train_core") for idx in range(8)])
+    _write_jsonl(target_path, [_record(idx + 8, "eval") for idx in range(4)])
+
+    summary = train_streaming_idm(
+        {
+            "model_name": "tiny_streaming_idm_residual",
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(tmp_path / "idm_residual"),
+            "feature_mode": "summary_compact_grid8_shift_surface_time",
+            "hidden_dim": 8,
+            "depth": 1,
+            "epochs": 1,
+            "eval_interval_epochs": 1,
+            "batch_size": 4,
+            "training_cache_dir": str(tmp_path / "idm_residual_cache"),
+            "training_cache_chunk_size": 4,
+            "categorical_min_count": 1,
+            "mouse_head_mode": "axis_softmax",
+            "mouse_target_mode": "residual_last_seen",
+            "mouse_output_gain_mode": "fixed",
+            "seed": 47,
+            "force_cpu": True,
+        }
+    )
+
+    metadata = summary["metadata"]
+    assert metadata["mouse_target_mode"] == "residual_last_seen"
+    assert metadata["input_dim"] == scan_streaming_idm_stats(
+        train_path,
+        feature_mode="summary_compact_grid8_shift_surface_time",
+        categorical_min_count=1,
+        residual_mouse=True,
+    )["input_dim"]
+    manifest = json.loads(Path(metadata["training_cache"]["manifest_paths"][0]).read_text())
+    payload = torch.load(manifest["chunks"][0]["path"], map_location="cpu", weights_only=False)
+    assert manifest["identity"]["mouse_target_mode"] == "residual_last_seen"
+    assert payload["x"].shape[1] == metadata["input_dim"]
+    assert payload["mouse_y"][0].tolist() == pytest.approx([-1.0, 0.0])
+    assert payload["mouse_y"][1].tolist() == pytest.approx([2.0, 0.0])
 
 
 def test_streaming_idm_action_history_stats_parallel_by_path(tmp_path: Path):

@@ -199,7 +199,10 @@ def _build_luma_action_sequence_prior_model(
         raise ValueError("action_history_len must be non-negative")
 
     base_feature_dim = int(layout["expected_feature_dim"])
-    history_dim = max(0, input_dim - base_feature_dim)
+    residual_mouse_dim = 2 if str(config.get("mouse_target_mode", "")).replace("-", "_").lower() == "residual_last_seen" else 0
+    if residual_mouse_dim and input_dim < base_feature_dim + residual_mouse_dim:
+        raise ValueError("residual_last_seen action-sequence model requires two residual mouse baseline features")
+    history_dim = max(0, input_dim - base_feature_dim - residual_mouse_dim)
     history_vocab_dim = 0
     parsed_history_dim = 0
     if action_history_len > 0 and history_dim >= (2 * action_history_len) + 3:
@@ -211,7 +214,7 @@ def _build_luma_action_sequence_prior_model(
     base_aux_dim = base_feature_dim - int(layout["visual_dim"])
     parsed_button_dim = 3 if parsed_history_dim else 0
     unparsed_history_dim = 0 if parsed_history_dim else history_dim
-    head_aux_dim = base_aux_dim + parsed_button_dim + unparsed_history_dim
+    head_aux_dim = base_aux_dim + parsed_button_dim + unparsed_history_dim + residual_mouse_dim
     max_tokens = 1 + visual_planes + (action_history_len if parsed_history_dim else 0)
 
     class LumaActionSequencePriorIDM(torch.nn.Module):
@@ -223,6 +226,7 @@ def _build_luma_action_sequence_prior_model(
             self.history_dim = int(history_dim)
             self.history_vocab_dim = int(history_vocab_dim)
             self.parsed_history_dim = int(parsed_history_dim)
+            self.residual_mouse_dim = int(residual_mouse_dim)
             self.visual_token = torch.nn.Sequential(
                 torch.nn.LayerNorm(int(layout["luma_size"]) * int(layout["luma_size"])),
                 torch.nn.Linear(int(layout["luma_size"]) * int(layout["luma_size"]), token_dim),
@@ -271,7 +275,13 @@ def _build_luma_action_sequence_prior_model(
             visual = x[:, visual_start:visual_end].reshape(x.shape[0], planes, size * size)
             base_tail = x[:, visual_end:base_end]
             base_aux = torch.cat([summary, base_tail], dim=1)
-            history_tail = x[:, base_end:]
+            residual_dim = int(self.residual_mouse_dim)
+            if residual_dim:
+                history_tail = x[:, base_end:-residual_dim]
+                residual_tail = x[:, -residual_dim:]
+            else:
+                history_tail = x[:, base_end:]
+                residual_tail = x[:, :0]
 
             tokens = [self.cls_token.expand(x.shape[0], -1, -1), self.visual_token(visual)]
             if self.action_token is not None:
@@ -282,9 +292,9 @@ def _build_luma_action_sequence_prior_model(
                 vocab_start = 2 * h_len
                 vocab = parsed[:, vocab_start : vocab_start + (h_len * vocab_dim)].reshape(x.shape[0], h_len, vocab_dim)
                 tokens.append(self.action_token(torch.cat([deltas, vocab], dim=-1)))
-                aux = torch.cat([base_aux, parsed[:, -3:]], dim=1)
+                aux = torch.cat([base_aux, parsed[:, -3:], residual_tail], dim=1)
             else:
-                aux = torch.cat([base_aux, history_tail], dim=1)
+                aux = torch.cat([base_aux, history_tail, residual_tail], dim=1)
 
             sequence = torch.cat(tokens, dim=1)
             encoded = self.encoder(sequence + self.position[:, : sequence.shape[1], :])
@@ -1162,9 +1172,6 @@ def _prediction_from_output(
     mouse_max_tokens_per_axis: int = 8,
 ) -> tuple[float, float, list[str]]:
     dx, dy = float(output[0]), float(output[1])
-    if residual_mouse:
-        dx += float(base_dx)
-        dy += float(base_dy)
     category_end = 2 + len(category_vocab)
     keyboard_end = category_end
     if keyboard_head_mode == "softmax":
@@ -1193,6 +1200,9 @@ def _prediction_from_output(
                 raise ValueError(f"unsupported mouse_axis_decode_mode: {mouse_axis_decode_mode}")
     dx *= float(mouse_output_gain)
     dy *= float(mouse_output_gain)
+    if residual_mouse:
+        dx += float(base_dx)
+        dy += float(base_dy)
     tokens = tokens_from_delta(
         float(dx),
         float(dy),

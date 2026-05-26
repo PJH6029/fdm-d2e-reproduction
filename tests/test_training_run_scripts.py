@@ -167,6 +167,26 @@ def test_g005_compact_luma_window5_materializes_nep_context_before_training() ->
     assert config["feature_mode"] == "summary_compact_luma16_window5_time"
     assert config["model_arch"] == "luma_temporal_conv"
     assert paper["paper_metrics"]["empty_bins_as_correct"] is False
+    assert paper["paper_metrics"]["target_path"] == "outputs/data/d2e_full_corpus_shards_accel64/shard_*/target_all_eval.jsonl"
+
+
+def test_g005_compact_luma_window5_residual_reuses_materialization_and_targets_original_records() -> None:
+    text = _script("scripts/run_g005_idm_compact_luma_window5_residual_4xh200.sh")
+    config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target.yaml").read_text())
+    paper = json.loads((ROOT / "configs/eval/g005_idm_compact_luma_window5_residual_paper_target.yaml").read_text())
+    split = json.loads((ROOT / "configs/eval/g005_idm_compact_luma_window5_residual_split_statistics.yaml").read_text())
+
+    assert "scripts/run_g005_idm_compact_luma_window5_4xh200.sh" in text
+    assert "g005_idm_compact_luma_window5_residual_precomputed_cache_validation.json" in text
+    assert "compact-luma-window5,residual" in text
+    assert config["model_arch"] == "luma_action_sequence_prior"
+    assert config["mouse_target_mode"] == "residual_last_seen"
+    assert config["mouse_head_mode"] == "axis_softmax"
+    assert config["action_history_len"] == 4
+    assert config["action_history_parallel_by_path"] is True
+    assert paper["paper_metrics"]["target_path"] == "outputs/data/d2e_full_corpus_shards_accel64/shard_*/target_all_eval.jsonl"
+    assert split["ground_truth_glob"] == "outputs/data/d2e_full_corpus_shards_accel64/shard_*/target_all_eval.jsonl"
+    assert split["train_stats_path"] == "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/streaming_stats.json"
 
 
 def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:

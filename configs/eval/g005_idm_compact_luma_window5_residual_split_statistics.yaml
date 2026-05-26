@@ -1,0 +1,16 @@
+{
+  "schema": "split_statistical_comparison_builder_config.v1",
+  "model_name": "streaming_idm_d2e_full_compact_luma_window5_residual_paper_target",
+  "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/predictions.jsonl",
+  "prediction_summary_path": "artifacts/idm/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target_summary.json",
+  "ground_truth_glob": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/target_all_eval.jsonl",
+  "train_records_glob": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/train_core.jsonl",
+  "streaming": true,
+  "split_workers": 16,
+  "train_stats_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/streaming_stats.json",
+  "output_dir": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target",
+  "summary_out": "artifacts/eval/g005_idm_compact_luma_window5_residual_split_statistical_comparisons_summary.json",
+  "endpoints": "configs/eval/primary_endpoints.yaml",
+  "baseline_names": ["noop", "global_majority", "last_seen_train"],
+  "split_tags": ["temporal", "heldout_recording", "heldout_game"]
+}

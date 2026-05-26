@@ -146,6 +146,37 @@ class TorchIDMContractTests(unittest.TestCase):
 
         self.assertEqual(tuple(out.shape), (3, 7))
 
+    def test_luma_action_sequence_prior_parses_history_with_residual_mouse_tail(self):
+        if not torch_available():
+            self.skipTest("torch extra is not installed")
+        torch = require_torch()
+        history_len = 2
+        history_vocab_dim = 5
+        history_dim = (2 * history_len) + (history_vocab_dim * history_len) + 3
+        model = _build_model(
+            torch,
+            input_dim=2332 + history_dim + 2,
+            output_dim=7,
+            hidden_dim=8,
+            depth=1,
+            dropout=0.0,
+            config={
+                "model_arch": "luma_action_sequence_prior",
+                "action_history_len": history_len,
+                "visual_stack_frames": 5,
+                "mouse_target_mode": "residual_last_seen",
+                "sequence_token_dim": 16,
+                "sequence_transformer_heads": 2,
+                "sequence_transformer_layers": 1,
+                "sequence_transformer_ff_dim": 32,
+            },
+            feature_mode="summary_luma16_stack5_time",
+        )
+
+        out = model(torch.zeros((3, 2332 + history_dim + 2), dtype=torch.float32))
+
+        self.assertEqual(tuple(out.shape), (3, 7))
+
     def test_residual_mouse_baselines_are_causal_for_train_and_last_seen_for_target(self):
         train = [
             {"sequence_id": "r#0", "recording_id": "r", "game": "g", "timestamp_ns": 0, "ground_truth_tokens": ["MOUSE_DX_P1", "MOUSE_DY_Z0"]},
@@ -339,6 +370,24 @@ class TorchIDMContractTests(unittest.TestCase):
         self.assertLess(abs(dy), 0.01)
         self.assertEqual(tokens[0], "MOUSE_DX_P1")
         self.assertTrue(tokens[1].startswith("MOUSE_DY_"))
+
+    def test_residual_mouse_is_applied_after_axis_softmax_decode(self):
+        dx, dy, tokens = _prediction_from_output(
+            [0.0, 0.0, 0.1, 0.2, 5.0, 5.0, 0.2, 0.1],
+            base_dx=5.0,
+            base_dy=-2.0,
+            residual_mouse=True,
+            category_vocab=[],
+            category_thresholds={},
+            category_threshold=0.5,
+            button_head_mode="multilabel",
+            mouse_head_mode="axis_softmax",
+            mouse_axis_classes=["N1", "Z0", "P1"],
+            mouse_axis_decode_mode="argmax",
+        )
+
+        self.assertEqual((dx, dy), (6.0, -3.0))
+        self.assertEqual(tokens[:2], ["MOUSE_DX_P3", "MOUSE_DY_N2"])
 
     def test_mouse_output_gain_rescales_decoded_motion_before_tokenization(self):
         dx, dy, tokens = _prediction_from_output(

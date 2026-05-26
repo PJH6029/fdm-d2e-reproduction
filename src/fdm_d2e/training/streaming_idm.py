@@ -491,7 +491,7 @@ def _latest_token_map_update(target: dict[str, tuple[int, list[str]]], key: str,
         target[key] = (timestamp, tokens)
 
 
-def _scan_stats_partition(path: str | Path, feature_mode: str) -> dict[str, Any]:
+def _scan_stats_partition(path: str | Path, feature_mode: str, *, residual_mouse: bool = False) -> dict[str, Any]:
     count = 0
     mean: list[float] = []
     m2: list[float] = []
@@ -506,8 +506,22 @@ def _scan_stats_partition(path: str | Path, feature_mode: str) -> dict[str, Any]
     split_names: set[str] = set()
     eval_split_tags: set[str] = set()
     fingerprint = hashlib.sha256()
+    last_mouse_by_recording: dict[str, tuple[float, float]] = {}
+    last_mouse_by_game: dict[str, tuple[float, float]] = {}
+    last_mouse_fallback = (0.0, 0.0)
     for row in iter_jsonl(path):
-        features = _base_record_features(row, feature_mode=feature_mode)
+        mouse_baseline = _mouse_baseline_for_row(
+            row,
+            last_by_recording=last_mouse_by_recording,
+            last_by_game=last_mouse_by_game,
+            fallback=last_mouse_fallback,
+        )
+        features = _features_with_optional_mouse_baseline(
+            row,
+            _base_record_features(row, feature_mode=feature_mode),
+            residual_mouse=residual_mouse,
+            baseline=mouse_baseline,
+        )
         if not mean:
             mean = [0.0 for _ in features]
             m2 = [0.0 for _ in features]
@@ -529,6 +543,13 @@ def _scan_stats_partition(path: str | Path, feature_mode: str) -> dict[str, Any]
         timestamp_ns = row.get("timestamp_ns")
         _latest_token_map_update(last_tokens_by_recording, str(row.get("recording_id", "")), timestamp_ns, tokens)
         _latest_token_map_update(last_tokens_by_game, str(row.get("game", "unknown")), timestamp_ns, tokens)
+        if residual_mouse:
+            last_mouse_fallback = _update_mouse_baseline_state(
+                row,
+                target_mouse_delta(row, mode="sum"),
+                last_by_recording=last_mouse_by_recording,
+                last_by_game=last_mouse_by_game,
+            )
         if row.get("source_id") is not None:
             source_ids.add(str(row["source_id"]))
         if row.get("resolution_tier") is not None:
@@ -579,6 +600,7 @@ def _scan_streaming_idm_stats_with_action_history(
     feature_mode: str,
     categorical_min_count: int,
     action_history_len: int,
+    residual_mouse: bool = False,
 ) -> dict[str, Any]:
     category_counts: Counter[str] = Counter()
     keyboard_class_counts: Counter[str] = Counter()
@@ -604,6 +626,9 @@ def _scan_streaming_idm_stats_with_action_history(
     fingerprint = hashlib.sha256()
     histories: dict[str, list[list[str]]] = {}
     button_states: dict[str, dict[str, float]] = {}
+    last_mouse_by_recording: dict[str, tuple[float, float]] = {}
+    last_mouse_by_game: dict[str, tuple[float, float]] = {}
+    last_mouse_fallback = (0.0, 0.0)
     fingerprint_parts: list[dict[str, Any]] = []
     for path in paths:
         part_count = 0
@@ -611,13 +636,24 @@ def _scan_streaming_idm_stats_with_action_history(
         for row in iter_jsonl(path):
             recording_id = str(row.get("recording_id", ""))
             history, button_state = _ensure_history_state(histories, button_states, recording_id)
-            features = _record_features_with_history(
+            mouse_baseline = _mouse_baseline_for_row(
                 row,
-                feature_mode=feature_mode,
-                history_vocab=history_vocab,
-                history_len=action_history_len,
-                history=history,
-                button_state=button_state,
+                last_by_recording=last_mouse_by_recording,
+                last_by_game=last_mouse_by_game,
+                fallback=last_mouse_fallback,
+            )
+            features = _features_with_optional_mouse_baseline(
+                row,
+                _record_features_with_history(
+                    row,
+                    feature_mode=feature_mode,
+                    history_vocab=history_vocab,
+                    history_len=action_history_len,
+                    history=history,
+                    button_state=button_state,
+                ),
+                residual_mouse=residual_mouse,
+                baseline=mouse_baseline,
             )
             if not mean:
                 mean = [0.0 for _ in features]
@@ -656,6 +692,13 @@ def _scan_streaming_idm_stats_with_action_history(
             part_fingerprint.update(encoded)
             part_fingerprint.update(b"\n")
             _append_history(history, button_state, tokens, history_len=action_history_len)
+            if residual_mouse:
+                last_mouse_fallback = _update_mouse_baseline_state(
+                    row,
+                    target_mouse_delta(row, mode="sum"),
+                    last_by_recording=last_mouse_by_recording,
+                    last_by_game=last_mouse_by_game,
+                )
         fingerprint_parts.append({"path": str(path), "count": part_count, "fingerprint": part_fingerprint.hexdigest()})
 
     if count == 0:
@@ -667,6 +710,7 @@ def _scan_streaming_idm_stats_with_action_history(
                 "feature_mode": feature_mode,
                 "action_history_len": action_history_len,
                 "action_history_vocab": history_vocab,
+                "residual_mouse": bool(residual_mouse),
                 "partitions": fingerprint_parts,
                 "rows": fingerprint.hexdigest(),
             },
@@ -698,6 +742,8 @@ def _scan_streaming_idm_stats_with_action_history(
         "action_history_vocab": history_vocab,
         "action_history_dim": _history_dim(history_vocab=history_vocab, history_len=action_history_len),
         "action_history_feedback": "teacher_forced_train",
+        "action_history_parallel_by_path": False,
+        "residual_mouse": bool(residual_mouse),
     }
 
 
@@ -718,6 +764,7 @@ def _scan_action_history_stats_partition(
     feature_mode: str,
     history_vocab: list[str],
     action_history_len: int,
+    residual_mouse: bool = False,
 ) -> dict[str, Any]:
     count = 0
     mean: list[float] = []
@@ -735,16 +782,30 @@ def _scan_action_history_stats_partition(
     fingerprint = hashlib.sha256()
     histories: dict[str, list[list[str]]] = {}
     button_states: dict[str, dict[str, float]] = {}
+    last_mouse_by_recording: dict[str, tuple[float, float]] = {}
+    last_mouse_by_game: dict[str, tuple[float, float]] = {}
+    last_mouse_fallback = (0.0, 0.0)
     for row in iter_jsonl(path):
         recording_id = str(row.get("recording_id", ""))
         history, button_state = _ensure_history_state(histories, button_states, recording_id)
-        features = _record_features_with_history(
+        mouse_baseline = _mouse_baseline_for_row(
             row,
-            feature_mode=feature_mode,
-            history_vocab=history_vocab,
-            history_len=action_history_len,
-            history=history,
-            button_state=button_state,
+            last_by_recording=last_mouse_by_recording,
+            last_by_game=last_mouse_by_game,
+            fallback=last_mouse_fallback,
+        )
+        features = _features_with_optional_mouse_baseline(
+            row,
+            _record_features_with_history(
+                row,
+                feature_mode=feature_mode,
+                history_vocab=history_vocab,
+                history_len=action_history_len,
+                history=history,
+                button_state=button_state,
+            ),
+            residual_mouse=residual_mouse,
+            baseline=mouse_baseline,
         )
         if not mean:
             mean = [0.0 for _ in features]
@@ -788,6 +849,13 @@ def _scan_action_history_stats_partition(
         )
         fingerprint.update(b"\n")
         _append_history(history, button_state, tokens, history_len=action_history_len)
+        if residual_mouse:
+            last_mouse_fallback = _update_mouse_baseline_state(
+                row,
+                target_mouse_delta(row, mode="sum"),
+                last_by_recording=last_mouse_by_recording,
+                last_by_game=last_mouse_by_game,
+            )
     return {
         "path": str(path),
         "count": count,
@@ -815,6 +883,7 @@ def _merge_action_history_stats_partitions(
     categorical_min_count: int,
     action_history_len: int,
     history_vocab: list[str],
+    residual_mouse: bool = False,
 ) -> dict[str, Any]:
     partition_list = list(partitions)
     merged = _merge_stats_partitions(
@@ -822,6 +891,7 @@ def _merge_action_history_stats_partitions(
         train_records=train_records,
         feature_mode=feature_mode,
         categorical_min_count=categorical_min_count,
+        residual_mouse=residual_mouse,
     )
     fingerprint = hashlib.sha256(
         json.dumps(
@@ -829,6 +899,7 @@ def _merge_action_history_stats_partitions(
                 "feature_mode": feature_mode,
                 "action_history_len": int(action_history_len),
                 "action_history_vocab": history_vocab,
+                "residual_mouse": bool(residual_mouse),
                 "partitions": sorted(
                     [
                         {"path": row.get("path", ""), "count": int(row.get("count", 0)), "fingerprint": row.get("fingerprint", "")}
@@ -849,6 +920,7 @@ def _merge_action_history_stats_partitions(
             "action_history_dim": _history_dim(history_vocab=history_vocab, history_len=action_history_len),
             "action_history_feedback": "teacher_forced_train",
             "action_history_parallel_by_path": True,
+            "residual_mouse": bool(residual_mouse),
         }
     )
     return merged
@@ -862,6 +934,7 @@ def _scan_streaming_idm_stats_with_action_history_parallel(
     categorical_min_count: int,
     action_history_len: int,
     num_workers: int,
+    residual_mouse: bool = False,
 ) -> dict[str, Any]:
     workers = min(max(1, int(num_workers)), len(paths))
     category_counts: Counter[str] = Counter()
@@ -874,7 +947,14 @@ def _scan_streaming_idm_stats_with_action_history_parallel(
     partitions: list[dict[str, Any]] = []
     with ProcessPoolExecutor(max_workers=workers) as pool:
         futures = {
-            pool.submit(_scan_action_history_stats_partition, path, feature_mode, history_vocab, int(action_history_len)): path
+            pool.submit(
+                _scan_action_history_stats_partition,
+                path,
+                feature_mode,
+                history_vocab,
+                int(action_history_len),
+                residual_mouse,
+            ): path
             for path in paths
         }
         for future in as_completed(futures):
@@ -886,10 +966,18 @@ def _scan_streaming_idm_stats_with_action_history_parallel(
         categorical_min_count=categorical_min_count,
         action_history_len=int(action_history_len),
         history_vocab=history_vocab,
+        residual_mouse=residual_mouse,
     )
 
 
-def _merge_stats_partitions(partitions: Iterable[dict[str, Any]], *, train_records: str | Path | Sequence[str | Path], feature_mode: str, categorical_min_count: int) -> dict[str, Any]:
+def _merge_stats_partitions(
+    partitions: Iterable[dict[str, Any]],
+    *,
+    train_records: str | Path | Sequence[str | Path],
+    feature_mode: str,
+    categorical_min_count: int,
+    residual_mouse: bool = False,
+) -> dict[str, Any]:
     acc = _empty_stats_accumulator()
     for part in partitions:
         count, mean, m2 = _merge_feature_moments(
@@ -933,6 +1021,7 @@ def _merge_stats_partitions(partitions: Iterable[dict[str, Any]], *, train_recor
         json.dumps(
             {
                 "feature_mode": feature_mode,
+                "residual_mouse": bool(residual_mouse),
                 "partitions": sorted(acc["fingerprint_parts"], key=lambda row: row["path"]),
             },
             ensure_ascii=False,
@@ -967,6 +1056,7 @@ def _merge_stats_partitions(partitions: Iterable[dict[str, Any]], *, train_recor
         "split_names": sorted(acc["split_names"]),
         "eval_split_tags": sorted(acc["eval_split_tags"]),
         "dataset_fingerprint": fingerprint,
+        "residual_mouse": bool(residual_mouse),
     }
 
 
@@ -978,6 +1068,7 @@ def scan_streaming_idm_stats(
     num_workers: int = 1,
     action_history_len: int = 0,
     action_history_parallel_by_path: bool = False,
+    residual_mouse: bool = False,
 ) -> dict[str, Any]:
     paths = _record_paths_from_value(train_records)
     if int(action_history_len) > 0:
@@ -989,6 +1080,7 @@ def scan_streaming_idm_stats(
                 categorical_min_count=categorical_min_count,
                 action_history_len=int(action_history_len),
                 num_workers=int(num_workers),
+                residual_mouse=residual_mouse,
             )
         return _scan_streaming_idm_stats_with_action_history(
             paths,
@@ -996,20 +1088,28 @@ def scan_streaming_idm_stats(
             feature_mode=feature_mode,
             categorical_min_count=categorical_min_count,
             action_history_len=int(action_history_len),
+            residual_mouse=residual_mouse,
         )
     if len(paths) > 1 and int(num_workers) > 1:
         workers = min(int(num_workers), len(paths))
         partitions: list[dict[str, Any]] = []
         with ProcessPoolExecutor(max_workers=workers) as pool:
-            futures = {pool.submit(_scan_stats_partition, path, feature_mode): path for path in paths}
+            futures = {pool.submit(_scan_stats_partition, path, feature_mode, residual_mouse=residual_mouse): path for path in paths}
             for future in as_completed(futures):
                 partitions.append(future.result())
-        return _merge_stats_partitions(partitions, train_records=train_records, feature_mode=feature_mode, categorical_min_count=categorical_min_count)
+        return _merge_stats_partitions(
+            partitions,
+            train_records=train_records,
+            feature_mode=feature_mode,
+            categorical_min_count=categorical_min_count,
+            residual_mouse=residual_mouse,
+        )
     return _merge_stats_partitions(
-        (_scan_stats_partition(path, feature_mode) for path in paths),
+        (_scan_stats_partition(path, feature_mode, residual_mouse=residual_mouse) for path in paths),
         train_records=train_records,
         feature_mode=feature_mode,
         categorical_min_count=categorical_min_count,
+        residual_mouse=residual_mouse,
     )
 
 
@@ -1027,6 +1127,7 @@ def scan_streaming_idm_stats_from_config(config: dict[str, Any]) -> dict[str, An
         num_workers=int(config.get("precompute_num_workers", config.get("stats_num_workers", 1))),
         action_history_len=_action_history_len_from_config(config),
         action_history_parallel_by_path=_action_history_parallel_by_path(config),
+        residual_mouse=_residual_mouse_from_mode(_mouse_target_mode(config)),
     )
 
 
@@ -1072,9 +1173,99 @@ def _mouse_target_mode(config: dict[str, Any]) -> str:
     return str(config.get("mouse_target_mode", "mean"))
 
 
+def _residual_mouse_from_mode(mouse_target_mode: str) -> bool:
+    return str(mouse_target_mode).replace("-", "_").lower() == "residual_last_seen"
+
+
+def _base_mouse_target_mode(mouse_target_mode: str) -> str:
+    return "sum" if _residual_mouse_from_mode(mouse_target_mode) else str(mouse_target_mode)
+
+
+def _mouse_delta_from_tokens(tokens: Sequence[str]) -> tuple[float, float]:
+    return target_mouse_delta({"ground_truth_tokens": list(tokens)}, mode="sum")
+
+
+def _mouse_baseline_for_row(
+    row: dict[str, Any],
+    *,
+    last_by_recording: dict[str, tuple[float, float]],
+    last_by_game: dict[str, tuple[float, float]],
+    fallback: tuple[float, float],
+) -> tuple[float, float]:
+    recording_id = str(row.get("recording_id", ""))
+    game = str(row.get("game", "unknown"))
+    return last_by_recording.get(recording_id) or last_by_game.get(game) or fallback
+
+
+def _update_mouse_baseline_state(
+    row: dict[str, Any],
+    delta: tuple[float, float],
+    *,
+    last_by_recording: dict[str, tuple[float, float]],
+    last_by_game: dict[str, tuple[float, float]],
+) -> tuple[float, float]:
+    value = (float(delta[0]), float(delta[1]))
+    last_by_recording[str(row.get("recording_id", ""))] = value
+    last_by_game[str(row.get("game", "unknown"))] = value
+    return value
+
+
+def _seed_streaming_mouse_delta_state(
+    record_paths: str | Path | Sequence[str | Path],
+) -> tuple[dict[str, tuple[float, float]], dict[str, tuple[float, float]], tuple[float, float]]:
+    last_by_recording: dict[str, tuple[float, float]] = {}
+    last_by_game: dict[str, tuple[float, float]] = {}
+    fallback = (0.0, 0.0)
+    for path in _record_paths_from_value(record_paths):
+        for row in iter_jsonl(path):
+            fallback = _update_mouse_baseline_state(
+                row,
+                target_mouse_delta(row, mode="sum"),
+                last_by_recording=last_by_recording,
+                last_by_game=last_by_game,
+            )
+    return last_by_recording, last_by_game, fallback
+
+
+def _features_with_optional_mouse_baseline(
+    row: dict[str, Any],
+    features: list[float],
+    *,
+    residual_mouse: bool,
+    baseline: tuple[float, float],
+) -> list[float]:
+    if not residual_mouse:
+        return features
+    return list(features) + [float(baseline[0]), float(baseline[1])]
+
+
+def _row_with_mouse_baseline(
+    row: dict[str, Any],
+    *,
+    features: list[float],
+    residual_mouse: bool,
+    baseline: tuple[float, float],
+) -> dict[str, Any]:
+    out = {**row, "__streaming_idm_features": features}
+    if residual_mouse:
+        out["__streaming_mouse_baseline"] = [float(baseline[0]), float(baseline[1])]
+    return out
+
+
+def _mouse_target_for_row(row: dict[str, Any], *, mouse_target_mode: str) -> tuple[float, float]:
+    base_mode = _base_mouse_target_mode(mouse_target_mode)
+    target_dx, target_dy = target_mouse_delta(row, mode=base_mode)
+    if not _residual_mouse_from_mode(mouse_target_mode):
+        return target_dx, target_dy
+    baseline = row.get("__streaming_mouse_baseline")
+    if not isinstance(baseline, (list, tuple)) or len(baseline) != 2:
+        raise ValueError("residual_last_seen mouse targets require __streaming_mouse_baseline on each row")
+    return float(target_dx) - float(baseline[0]), float(target_dy) - float(baseline[1])
+
+
 def _mouse_targets(torch, rows: list[dict[str, Any]], *, device: str, mouse_target_mode: str = "mean"):
     return torch.tensor(
-        [target_mouse_delta(row, mode=mouse_target_mode) for row in rows],
+        [_mouse_target_for_row(row, mouse_target_mode=mouse_target_mode) for row in rows],
         dtype=torch.float32,
         device=device,
     )
@@ -1089,7 +1280,7 @@ def _axis_class_indices_with_index(
     dx_indices: list[int] = []
     dy_indices: list[int] = []
     for row in records:
-        dx, dy = target_mouse_delta(row, mode=mouse_target_mode)
+        dx, dy = _mouse_target_for_row(row, mouse_target_mode=mouse_target_mode)
         dx_indices.append(class_index[_axis_suffix_from_delta(dx, "MOUSE_DX_")])
         dy_indices.append(class_index[_axis_suffix_from_delta(dy, "MOUSE_DY_")])
     return dx_indices, dy_indices
@@ -1157,8 +1348,9 @@ def _iter_causal_feature_batches(
     history_vocab: list[str],
     history_len: int,
     skip_examples: int = 0,
+    residual_mouse: bool = False,
 ) -> Iterable[list[dict[str, Any]]]:
-    if history_len <= 0:
+    if history_len <= 0 and not residual_mouse:
         yield from _iter_batches(path, batch_size, max_examples, skip_examples=skip_examples)
         return
     batch: list[dict[str, Any]] = []
@@ -1166,26 +1358,61 @@ def _iter_causal_feature_batches(
     skipped = 0
     histories: dict[str, list[list[str]]] = {}
     button_states: dict[str, dict[str, float]] = {}
+    last_mouse_by_recording: dict[str, tuple[float, float]] = {}
+    last_mouse_by_game: dict[str, tuple[float, float]] = {}
+    last_mouse_fallback = (0.0, 0.0)
     for record_path in _record_paths_from_value(path):
         for row in iter_jsonl(record_path):
-            recording_id = str(row.get("recording_id", ""))
-            history, button_state = _ensure_history_state(histories, button_states, recording_id)
-            features = _record_features_with_history(
+            if history_len > 0:
+                recording_id = str(row.get("recording_id", ""))
+                history, button_state = _ensure_history_state(histories, button_states, recording_id)
+                features = _record_features_with_history(
+                    row,
+                    feature_mode=feature_mode,
+                    history_vocab=history_vocab,
+                    history_len=history_len,
+                    history=history,
+                    button_state=button_state,
+                )
+            else:
+                history = []
+                button_state = {}
+                features = _base_record_features(row, feature_mode=feature_mode)
+            mouse_baseline = _mouse_baseline_for_row(
                 row,
-                feature_mode=feature_mode,
-                history_vocab=history_vocab,
-                history_len=history_len,
-                history=history,
-                button_state=button_state,
+                last_by_recording=last_mouse_by_recording,
+                last_by_game=last_mouse_by_game,
+                fallback=last_mouse_fallback,
+            )
+            features = _features_with_optional_mouse_baseline(
+                row,
+                features,
+                residual_mouse=residual_mouse,
+                baseline=mouse_baseline,
             )
             tokens = _tokens(row)
-            _append_history(history, button_state, tokens, history_len=history_len)
+            if history_len > 0:
+                _append_history(history, button_state, tokens, history_len=history_len)
+            if residual_mouse:
+                last_mouse_fallback = _update_mouse_baseline_state(
+                    row,
+                    target_mouse_delta(row, mode="sum"),
+                    last_by_recording=last_mouse_by_recording,
+                    last_by_game=last_mouse_by_game,
+                )
             if skipped < int(skip_examples):
                 skipped += 1
                 continue
             if max_examples is not None and seen >= max_examples:
                 break
-            batch.append({**row, "__streaming_idm_features": features})
+            batch.append(
+                _row_with_mouse_baseline(
+                    row,
+                    features=features,
+                    residual_mouse=residual_mouse,
+                    baseline=mouse_baseline,
+                )
+            )
             seen += 1
             if len(batch) >= batch_size:
                 yield batch
@@ -1234,7 +1461,7 @@ def _training_cache_identity(
         "action_history_vocab": list(stats.get("action_history_vocab", [])),
         "action_history_dim": int(stats.get("action_history_dim", 0)),
         "action_history_parallel_by_path": _action_history_parallel_by_path(config),
-        "cache_version": 4,
+        "cache_version": 5,
     }
 
 
@@ -1260,7 +1487,7 @@ def _training_cache_manifest_path(
 
 
 def _cache_axis_indices(row: dict[str, Any], class_index: dict[str, int], *, mouse_target_mode: str = "mean") -> tuple[int, int]:
-    dx, dy = target_mouse_delta(row, mode=mouse_target_mode)
+    dx, dy = _mouse_target_for_row(row, mouse_target_mode=mouse_target_mode)
     return (
         class_index[_axis_suffix_from_delta(dx, "MOUSE_DX_")],
         class_index[_axis_suffix_from_delta(dy, "MOUSE_DY_")],
@@ -1289,7 +1516,7 @@ def _flush_training_cache_chunk(
     )
     mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device="cpu")
     x = (x - mean_t) / std_t
-    mouse_y = torch.tensor([target_mouse_delta(row, mode=mouse_target_mode) for row in rows], dtype=torch.float32)
+    mouse_y = torch.tensor([_mouse_target_for_row(row, mouse_target_mode=mouse_target_mode) for row in rows], dtype=torch.float32)
     cat_y = torch.zeros((len(rows), len(category_vocab)), dtype=torch.float32)
     for row_idx, row in enumerate(rows):
         for token in set(row.get("ground_truth_tokens", [])):
@@ -1330,21 +1557,38 @@ def _build_training_cache_for_path(
     force_rebuild: bool = False,
     histories: dict[str, list[list[str]]] | None = None,
     button_states: dict[str, dict[str, float]] | None = None,
+    mouse_state: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     manifest_path = Path(manifest_path)
     action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
     history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
+    mouse_target_mode = _mouse_target_mode(config)
+    residual_mouse = _residual_mouse_from_mode(mouse_target_mode)
     if action_history_len > 0:
         histories = histories if histories is not None else {}
         button_states = button_states if button_states is not None else {}
+    if residual_mouse:
+        mouse_state = mouse_state if mouse_state is not None else {
+            "last_by_recording": {},
+            "last_by_game": {},
+            "fallback": (0.0, 0.0),
+        }
     if manifest_path.exists() and not force_rebuild:
         manifest = read_json(manifest_path)
         chunk_rows = manifest.get("chunks", [])
         if manifest.get("identity") == identity and chunk_rows and all(Path(row["path"]).exists() for row in chunk_rows):
-            if action_history_len > 0:
+            if action_history_len > 0 or residual_mouse:
                 for row in iter_jsonl(path):
-                    history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
-                    _append_history(history, button_state, _tokens(row), history_len=action_history_len)
+                    if action_history_len > 0:
+                        history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
+                        _append_history(history, button_state, _tokens(row), history_len=action_history_len)
+                    if residual_mouse:
+                        mouse_state["fallback"] = _update_mouse_baseline_state(
+                            row,
+                            target_mouse_delta(row, mode="sum"),
+                            last_by_recording=mouse_state["last_by_recording"],
+                            last_by_game=mouse_state["last_by_game"],
+                        )
             return manifest
     torch = require_torch()
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1354,7 +1598,6 @@ def _build_training_cache_for_path(
     vocab_index = {token: idx for idx, token in enumerate(category_vocab)}
     axis_class_index = {label: idx for idx, label in enumerate(mouse_axis_classes)}
     mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
-    mouse_target_mode = _mouse_target_mode(config)
     keyboard_classes = _keyboard_classes_for_heads(stats, config)
     button_classes = _button_classes_for_heads(stats, config)
     chunks: list[dict[str, Any]] = []
@@ -1372,8 +1615,38 @@ def _build_training_cache_for_path(
                 history=history,
                 button_state=button_state,
             )
-            row = {**row, "__streaming_idm_features": features}
             _append_history(history, button_state, _tokens(row), history_len=action_history_len)
+        else:
+            features = _base_record_features(row, feature_mode=str(stats["feature_mode"]))
+        mouse_baseline = (
+            _mouse_baseline_for_row(
+                row,
+                last_by_recording=mouse_state["last_by_recording"],
+                last_by_game=mouse_state["last_by_game"],
+                fallback=mouse_state["fallback"],
+            )
+            if residual_mouse
+            else (0.0, 0.0)
+        )
+        features = _features_with_optional_mouse_baseline(
+            row,
+            features,
+            residual_mouse=residual_mouse,
+            baseline=mouse_baseline,
+        )
+        row = _row_with_mouse_baseline(
+            row,
+            features=features,
+            residual_mouse=residual_mouse,
+            baseline=mouse_baseline,
+        )
+        if residual_mouse:
+            mouse_state["fallback"] = _update_mouse_baseline_state(
+                row,
+                target_mouse_delta(row, mode="sum"),
+                last_by_recording=mouse_state["last_by_recording"],
+                last_by_game=mouse_state["last_by_game"],
+            )
         batch.append(row)
         count += 1
         if len(batch) >= chunk_size:
@@ -1461,9 +1734,17 @@ def _build_training_cache_manifests(
         )
         tasks.append((path, manifest_path, identity))
     action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
-    if action_history_len > 0 and not _action_history_parallel_by_path(config):
+    residual_mouse = _residual_mouse_from_mode(_mouse_target_mode(config))
+    if (action_history_len > 0 and not _action_history_parallel_by_path(config)) or (
+        residual_mouse and len(tasks) > 1 and cache_workers <= 1
+    ):
         histories: dict[str, list[list[str]]] = {}
         button_states: dict[str, dict[str, float]] = {}
+        mouse_state: dict[str, Any] = {
+            "last_by_recording": {},
+            "last_by_game": {},
+            "fallback": (0.0, 0.0),
+        }
         return [
             _build_training_cache_for_path(
                 path,
@@ -1477,6 +1758,7 @@ def _build_training_cache_manifests(
                 force_rebuild=force_rebuild,
                 histories=histories,
                 button_states=button_states,
+                mouse_state=mouse_state,
             )
             for path, manifest_path, identity in tasks
         ]
@@ -1761,6 +2043,7 @@ def _train_one_epoch(
     shard_by_path = len(record_paths) > 1
     action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
     history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
+    residual_mouse = _residual_mouse_from_mode(mouse_target_mode)
     if training_cache_manifests:
         cache_shard_by_path = bool(config.get("training_cache_shard_by_path", shard_by_path))
         progress_interval = int(config.get("training_progress_interval_batches", 0) or 0)
@@ -1862,8 +2145,8 @@ def _train_one_epoch(
             "training_cache": True,
             "training_cache_shard_by_path": cache_shard_by_path,
         }
-    if action_history_len > 0 and world_size > 1:
-        raise ValueError("action_history_len>0 with distributed streaming IDM training requires training_cache_dir")
+    if (action_history_len > 0 or residual_mouse) and world_size > 1:
+        raise ValueError("distributed streaming IDM training with causal action/mouse state requires training_cache_dir")
     mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
     vocab_index = {token: idx for idx, token in enumerate(category_vocab)}
     axis_class_index = {label: idx for idx, label in enumerate(mouse_axis_classes)}
@@ -1875,6 +2158,7 @@ def _train_one_epoch(
             feature_mode=feature_mode,
             history_vocab=history_vocab,
             history_len=action_history_len,
+            residual_mouse=residual_mouse,
         )
     ):
         if world_size > 1 and not shard_by_path and (batch_idx % world_size) != rank:
@@ -2348,6 +2632,9 @@ def _predicted_tokens_from_output(
     config: dict[str, Any],
     category_vocab: list[str],
     mouse_axis_classes: list[str],
+    base_dx: float = 0.0,
+    base_dy: float = 0.0,
+    residual_mouse: bool = False,
 ) -> list[str]:
     category_threshold = float(config.get("category_threshold", 0.35))
     configured_thresholds = config.get("category_thresholds", {})
@@ -2357,9 +2644,9 @@ def _predicted_tokens_from_output(
     } if isinstance(configured_thresholds, dict) else {token: category_threshold for token in category_vocab}
     _dx, _dy, tokens = _prediction_from_output(
         output,
-        base_dx=0.0,
-        base_dy=0.0,
-        residual_mouse=False,
+        base_dx=float(base_dx),
+        base_dy=float(base_dy),
+        residual_mouse=bool(residual_mouse),
         category_vocab=category_vocab,
         category_thresholds=category_thresholds,
         category_threshold=category_threshold,
@@ -2543,6 +2830,7 @@ def _calibrate_streaming_category_thresholds(
     observed_examples = 0
     action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
     history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
+    residual_mouse = _residual_mouse_from_mode(_mouse_target_mode(config))
     model.eval()
     with torch.no_grad():
         for rows in _iter_causal_feature_batches(
@@ -2552,6 +2840,7 @@ def _calibrate_streaming_category_thresholds(
             feature_mode=str(stats["feature_mode"]),
             history_vocab=history_vocab,
             history_len=action_history_len,
+            residual_mouse=residual_mouse,
         ):
             if not rows:
                 continue
@@ -2700,6 +2989,7 @@ def _calibrate_streaming_mouse_output_gain(
     target_abs_sum = 0.0
     value_count = 0
     mouse_target_mode = _mouse_target_mode(config)
+    residual_mouse = _residual_mouse_from_mode(mouse_target_mode)
     action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
     history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
     model.eval()
@@ -2711,6 +3001,7 @@ def _calibrate_streaming_mouse_output_gain(
             feature_mode=str(stats["feature_mode"]),
             history_vocab=history_vocab,
             history_len=action_history_len,
+            residual_mouse=residual_mouse,
         ):
             x = _batch_features(
                 torch,
@@ -2726,9 +3017,9 @@ def _calibrate_streaming_mouse_output_gain(
             for row, output in zip(rows, outputs):
                 dx, dy, _tokens = _prediction_from_output(
                     output,
-                    base_dx=0.0,
-                    base_dy=0.0,
-                    residual_mouse=False,
+                    base_dx=float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[0]),
+                    base_dy=float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[1]),
+                    residual_mouse=residual_mouse,
                     category_vocab=category_vocab,
                     category_thresholds=category_thresholds,
                     category_threshold=category_threshold,
@@ -2744,7 +3035,7 @@ def _calibrate_streaming_mouse_output_gain(
                     mouse_axis_temperature=float(config.get("mouse_axis_temperature", 1.0)),
                     mouse_output_gain=1.0,
                 )
-                target_dx, target_dy = target_mouse_delta(row, mode=mouse_target_mode)
+                target_dx, target_dy = target_mouse_delta(row, mode=_base_mouse_target_mode(mouse_target_mode))
                 predicted_abs_sum += abs(float(dx)) + abs(float(dy))
                 target_abs_sum += abs(float(target_dx)) + abs(float(target_dy))
                 value_count += 2
@@ -3169,8 +3460,13 @@ def _evaluate_stream_metrics(
     mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
     action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
     history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
+    mouse_target_mode = _mouse_target_mode(config)
+    residual_mouse = _residual_mouse_from_mode(mouse_target_mode)
     histories: dict[str, list[list[str]]] = {}
     button_states: dict[str, dict[str, float]] = {}
+    last_mouse_by_recording: dict[str, tuple[float, float]] = {}
+    last_mouse_by_game: dict[str, tuple[float, float]] = {}
+    last_mouse_fallback = (0.0, 0.0)
     if action_history_len > 0 and config.get("train_records"):
         train_paths = _record_paths_from_config(
             config,
@@ -3181,19 +3477,56 @@ def _evaluate_stream_metrics(
         for train_row in _iter_records(train_paths):
             history, button_state = _ensure_history_state(histories, button_states, str(train_row.get("recording_id", "")))
             _append_history(history, button_state, _tokens(train_row), history_len=action_history_len)
+    if residual_mouse and config.get("train_records"):
+        train_paths = _record_paths_from_config(
+            config,
+            primary_key="train_records",
+            paths_key="train_record_paths",
+            glob_key="train_records_glob",
+        )
+        last_mouse_by_recording, last_mouse_by_game, last_mouse_fallback = _seed_streaming_mouse_delta_state(train_paths)
     with torch.no_grad():
-        if action_history_len > 0:
-            batches: Iterable[list[dict[str, Any]]] = (
-                [{**row, "__streaming_idm_features": _record_features_with_history(
-                    row,
-                    feature_mode=str(stats["feature_mode"]),
-                    history_vocab=history_vocab,
-                    history_len=action_history_len,
-                    history=(state := _ensure_history_state(histories, button_states, str(row.get("recording_id", ""))))[0],
-                    button_state=state[1],
-                )}]
-                for row in _iter_records(target_records)
-            )
+        if action_history_len > 0 or residual_mouse:
+            def causal_batches() -> Iterable[list[dict[str, Any]]]:
+                emitted = 0
+                for row in _iter_records(target_records):
+                    if max_examples is not None and emitted >= int(max_examples):
+                        break
+                    if action_history_len > 0:
+                        history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
+                        features = _record_features_with_history(
+                            row,
+                            feature_mode=str(stats["feature_mode"]),
+                            history_vocab=history_vocab,
+                            history_len=action_history_len,
+                            history=history,
+                            button_state=button_state,
+                        )
+                    else:
+                        features = _base_record_features(row, feature_mode=str(stats["feature_mode"]))
+                    mouse_baseline = _mouse_baseline_for_row(
+                        row,
+                        last_by_recording=last_mouse_by_recording,
+                        last_by_game=last_mouse_by_game,
+                        fallback=last_mouse_fallback,
+                    )
+                    features = _features_with_optional_mouse_baseline(
+                        row,
+                        features,
+                        residual_mouse=residual_mouse,
+                        baseline=mouse_baseline,
+                    )
+                    emitted += 1
+                    yield [
+                        _row_with_mouse_baseline(
+                            row,
+                            features=features,
+                            residual_mouse=residual_mouse,
+                            baseline=mouse_baseline,
+                        )
+                    ]
+
+            batches = causal_batches()
         else:
             batches = _iter_batches(target_records, batch_size, max_examples)
         for rows in batches:
@@ -3216,10 +3549,20 @@ def _evaluate_stream_metrics(
                     config=config,
                     category_vocab=category_vocab,
                     mouse_axis_classes=mouse_axis_classes,
+                    base_dx=float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[0]),
+                    base_dy=float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[1]),
+                    residual_mouse=residual_mouse,
                 )
                 if action_history_len > 0:
                     history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
                     _append_history(history, button_state, tokens, history_len=action_history_len)
+                if residual_mouse:
+                    last_mouse_fallback = _update_mouse_baseline_state(
+                        row,
+                        _mouse_delta_from_tokens(tokens),
+                        last_by_recording=last_mouse_by_recording,
+                        last_by_game=last_mouse_by_game,
+                    )
                 metric.update(tokens, row)
                 count += 1
     metrics = metric.payload()
@@ -3303,8 +3646,13 @@ def _predict_stream(
     resume_existing_rows = 0
     action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
     history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
+    mouse_target_mode = _mouse_target_mode(config)
+    residual_mouse = _residual_mouse_from_mode(mouse_target_mode)
     seed_state_provided = isinstance(config.get("_action_history_seed_state"), dict)
     histories, button_states = _load_action_history_seed_state(config.get("_action_history_seed_state"))
+    last_mouse_by_recording: dict[str, tuple[float, float]] = {}
+    last_mouse_by_game: dict[str, tuple[float, float]] = {}
+    last_mouse_fallback = (0.0, 0.0)
     if action_history_len > 0:
         if not histories and not seed_state_provided:
             train_paths = _record_paths_from_config(
@@ -3315,6 +3663,14 @@ def _predict_stream(
             )
             seed_state = _action_history_seed_state_from_records(train_paths, history_len=action_history_len)
             histories, button_states = _load_action_history_seed_state(seed_state)
+    if residual_mouse and config.get("train_records"):
+        train_paths = _record_paths_from_config(
+            config,
+            primary_key="train_records",
+            paths_key="train_record_paths",
+            glob_key="train_records_glob",
+        )
+        last_mouse_by_recording, last_mouse_by_game, last_mouse_fallback = _seed_streaming_mouse_delta_state(train_paths)
     if resume_predictions:
         pseudo_exists = pseudo_path.exists()
         predictions_exists = predictions_path.exists()
@@ -3377,6 +3733,13 @@ def _predict_stream(
                     if action_history_len > 0:
                         history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
                         _append_history(history, button_state, tokens, history_len=action_history_len)
+                    if residual_mouse:
+                        last_mouse_fallback = _update_mouse_baseline_state(
+                            row,
+                            _mouse_delta_from_tokens(tokens),
+                            last_by_recording=last_mouse_by_recording,
+                            last_by_game=last_mouse_by_game,
+                        )
                     _observe_prediction_metrics(
                         row=row,
                         tokens=tokens,
@@ -3397,7 +3760,7 @@ def _predict_stream(
         remaining_max_examples = max(0, int(max_target_examples) - int(resume_existing_rows))
 
     def prediction_batches() -> Iterable[list[dict[str, Any]]]:
-        if action_history_len <= 0:
+        if action_history_len <= 0 and not residual_mouse:
             yield from _iter_batches(
                 target_records,
                 batch_size,
@@ -3412,17 +3775,39 @@ def _predict_stream(
         for row in row_iter:
             if remaining_max_examples is not None and emitted >= remaining_max_examples:
                 break
-            history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
-            features = _record_features_with_history(
+            if action_history_len > 0:
+                history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
+                features = _record_features_with_history(
+                    row,
+                    feature_mode=str(stats["feature_mode"]),
+                    history_vocab=history_vocab,
+                    history_len=action_history_len,
+                    history=history,
+                    button_state=button_state,
+                )
+            else:
+                features = _base_record_features(row, feature_mode=str(stats["feature_mode"]))
+            mouse_baseline = _mouse_baseline_for_row(
                 row,
-                feature_mode=str(stats["feature_mode"]),
-                history_vocab=history_vocab,
-                history_len=action_history_len,
-                history=history,
-                button_state=button_state,
+                last_by_recording=last_mouse_by_recording,
+                last_by_game=last_mouse_by_game,
+                fallback=last_mouse_fallback,
+            )
+            features = _features_with_optional_mouse_baseline(
+                row,
+                features,
+                residual_mouse=residual_mouse,
+                baseline=mouse_baseline,
             )
             emitted += 1
-            yield [{**row, "__streaming_idm_features": features}]
+            yield [
+                _row_with_mouse_baseline(
+                    row,
+                    features=features,
+                    residual_mouse=residual_mouse,
+                    baseline=mouse_baseline,
+                )
+            ]
 
     with pseudo_path.open(write_mode) as pseudo_f, predictions_path.open(write_mode) as pred_f, torch.no_grad():
         for rows in prediction_batches():
@@ -3449,10 +3834,20 @@ def _predict_stream(
                     config=config,
                     category_vocab=category_vocab,
                     mouse_axis_classes=mouse_axis_classes,
+                    base_dx=float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[0]),
+                    base_dy=float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[1]),
+                    residual_mouse=residual_mouse,
                 )
                 if action_history_len > 0:
                     history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
                     _append_history(history, button_state, tokens, history_len=action_history_len)
+                if residual_mouse:
+                    last_mouse_fallback = _update_mouse_baseline_state(
+                        row,
+                        _mouse_delta_from_tokens(tokens),
+                        last_by_recording=last_mouse_by_recording,
+                        last_by_game=last_mouse_by_game,
+                    )
                 confidence = max(0.05, min(0.99, 1.0 / (1.0 + len(tokens))))
                 pseudo = {
                     "schema": "idm_pseudolabel.v1",
@@ -3575,9 +3970,15 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         checkpoint = torch.load(checkpoint_path, map_location=checkpoint_device)
     checkpoint_config = dict(checkpoint.get("config", {}))
     action_history_len = int(checkpoint.get("stats", {}).get("action_history_len", checkpoint_config.get("action_history_len", 0)) or 0)
+    residual_mouse = _residual_mouse_from_mode(str(checkpoint_config.get("mouse_target_mode", config.get("mouse_target_mode", "mean"))))
     if parallel_prediction and action_history_len > 0 and not _action_history_parallel_by_path({**checkpoint_config, **config}):
         raise ValueError(
             "parallel prediction with action_history_len>0 requires action_history_parallel_by_path=true "
+            "and target record paths that preserve complete recording order"
+        )
+    if parallel_prediction and residual_mouse and not _action_history_parallel_by_path({**checkpoint_config, **config}):
+        raise ValueError(
+            "parallel prediction with residual_last_seen mouse state requires action_history_parallel_by_path=true "
             "and target record paths that preserve complete recording order"
         )
     prediction_config = dict(checkpoint_config)
@@ -3599,6 +4000,7 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "mouse_axis_temperature",
         "mouse_output_gain",
         "mouse_output_gain_mode",
+        "mouse_target_mode",
         "mouse_emit_mode",
         "mouse_max_tokens_per_axis",
         "resume_predictions",
@@ -3893,6 +4295,7 @@ def _predict_streaming_idm_checkpoint_parallel(
         "mouse_axis_temperature",
         "mouse_output_gain",
         "mouse_output_gain_mode",
+        "mouse_target_mode",
         "mouse_emit_mode",
         "mouse_max_tokens_per_axis",
         "force_cpu",
@@ -4075,12 +4478,18 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         action_history_len = int(
             checkpoint.get("stats", {}).get("action_history_len", checkpoint_config.get("action_history_len", 0)) or 0
         )
+        residual_mouse = _residual_mouse_from_mode(str(checkpoint_config.get("mouse_target_mode", config.get("mouse_target_mode", "mean"))))
+        if action_history_len > 0 and not _action_history_parallel_by_path({**checkpoint_config, **config}):
+            raise ValueError(
+                "parallel prediction with action_history_len>0 requires action_history_parallel_by_path=true "
+                "and target record paths that preserve complete recording order"
+            )
+        if residual_mouse and not _action_history_parallel_by_path({**checkpoint_config, **config}):
+            raise ValueError(
+                "parallel prediction with residual_last_seen mouse state requires action_history_parallel_by_path=true "
+                "and target record paths that preserve complete recording order"
+            )
         if action_history_len > 0:
-            if not _action_history_parallel_by_path({**checkpoint_config, **config}):
-                raise ValueError(
-                    "parallel prediction with action_history_len>0 requires action_history_parallel_by_path=true "
-                    "and target record paths that preserve complete recording order"
-                )
             train_paths = _record_paths_from_config(
                 checkpoint_config,
                 primary_key="train_records",
@@ -4279,6 +4688,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
                 num_workers=int(config.get("precompute_num_workers", config.get("stats_num_workers", 1))),
                 action_history_len=_action_history_len_from_config(config),
                 action_history_parallel_by_path=_action_history_parallel_by_path(config),
+                residual_mouse=_residual_mouse_from_mode(_mouse_target_mode(config)),
             )
             write_json(stats_path, stats)
         if dist["enabled"]:
@@ -4570,22 +4980,29 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     write_calibration_progress("final_checkpoint_saved")
     prediction_workers = int(config.get("prediction_workers", 1))
     if prediction_workers > 1 and len(target_record_paths) > 1:
-        if int(stats.get("action_history_len", 0) or 0) > 0:
-            if not _action_history_parallel_by_path(config):
-                raise ValueError(
-                    "parallel prediction with action_history_len>0 requires action_history_parallel_by_path=true "
-                    "and target record paths that preserve complete recording order"
-                )
+        final_action_history_len = int(stats.get("action_history_len", 0) or 0)
+        final_residual_mouse = _residual_mouse_from_mode(_mouse_target_mode(config))
+        if final_action_history_len > 0 and not _action_history_parallel_by_path(config):
+            raise ValueError(
+                "parallel prediction with action_history_len>0 requires action_history_parallel_by_path=true "
+                "and target record paths that preserve complete recording order"
+            )
+        if final_residual_mouse and not _action_history_parallel_by_path(config):
+            raise ValueError(
+                "parallel prediction with residual_last_seen mouse state requires action_history_parallel_by_path=true "
+                "and target record paths that preserve complete recording order"
+            )
+        if final_action_history_len > 0:
             seed_state, seed_source = _action_history_seed_state_for_parallel_prediction(
                 config,
                 train_paths=train_record_paths,
-                history_len=int(stats.get("action_history_len", 0) or 0),
+                history_len=final_action_history_len,
             )
             config["_action_history_seed_state"] = seed_state
             config["action_history_seed_state_summary"] = {
                 "source": seed_source,
                 "recordings": int(seed_state.get("recordings", 0)),
-                "history_len": int(seed_state.get("history_len", int(stats.get("action_history_len", 0) or 0))),
+                "history_len": int(seed_state.get("history_len", final_action_history_len)),
             }
         if str(device).startswith("cuda"):
             model.to("cpu")
