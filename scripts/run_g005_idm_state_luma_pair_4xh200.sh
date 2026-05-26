@@ -9,12 +9,15 @@ STATE_OUTPUT_ROOT="${STATE_OUTPUT_ROOT:-outputs/data/d2e_state_corpus_shards_acc
 STATE_SUMMARY="${STATE_SUMMARY:-artifacts/idm/g005_idm_state_corpus_materialization_summary.json}"
 STATE_PROGRESS="${STATE_PROGRESS:-artifacts/idm/g005_idm_state_corpus_materialization_progress.json}"
 STATE_LOG="${STATE_LOG:-artifacts/idm/g005_idm_state_corpus_materialization.log}"
+STATE_MATERIALIZATION_WANDB_STATUS="${STATE_MATERIALIZATION_WANDB_STATUS:-artifacts/idm/g005_idm_state_corpus_materialization_wandb_status.json}"
 PRECOMPUTE_CACHE_VALIDATION="${PRECOMPUTE_CACHE_VALIDATION:-artifacts/idm/g005_idm_state_luma_pair_precomputed_cache_validation.json}"
 PRECOMPUTE_CACHE_PROGRESS="${PRECOMPUTE_CACHE_PROGRESS:-artifacts/idm/g005_idm_state_luma_pair_precompute_progress.json}"
 PRECOMPUTE_CACHE_LOG="${PRECOMPUTE_CACHE_LOG:-artifacts/idm/g005_idm_state_luma_pair_precompute.log}"
+PRECOMPUTE_CACHE_WANDB_STATUS="${PRECOMPUTE_CACHE_WANDB_STATUS:-artifacts/idm/g005_idm_state_luma_pair_precompute_wandb_status.json}"
 STATE_FEATURE_STATS_SEED="${STATE_FEATURE_STATS_SEED:-outputs/idm_streaming_d2e_full_luma_pair_exactset_history_paper_target/streaming_stats.json}"
 STATE_STATS_SYNTHESIS_SUMMARY="${STATE_STATS_SYNTHESIS_SUMMARY:-artifacts/idm/g005_idm_state_luma_pair_stats_synthesis_summary.json}"
 STATE_STATS_SYNTHESIS_LOG="${STATE_STATS_SYNTHESIS_LOG:-artifacts/idm/g005_idm_state_luma_pair_stats_synthesis.log}"
+STATE_STATS_SYNTHESIS_WANDB_STATUS="${STATE_STATS_SYNTHESIS_WANDB_STATUS:-artifacts/idm/g005_idm_state_luma_pair_stats_synthesis_wandb_status.json}"
 SPLIT_STATS_CONFIG="${SPLIT_STATS_CONFIG:-configs/eval/g005_idm_state_luma_pair_split_statistics.yaml}"
 PAPER_TARGET_CONFIG="${PAPER_TARGET_CONFIG:-configs/eval/g005_idm_state_luma_pair_paper_target.yaml}"
 LOG_PATH="${LOG_PATH:-artifacts/idm/g005_idm_state_luma_pair_4xh200.log}"
@@ -27,10 +30,31 @@ WANDB_SIDECAR_LOG="${WANDB_SIDECAR_LOG:-artifacts/idm/g005_idm_state_luma_pair_w
 WANDB_SIDECAR_PID_FILE="${WANDB_SIDECAR_PID_FILE:-outputs/cluster/g005_idm_state_luma_pair_wandb_sidecar.pid}"
 ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"
 WANDB_ENV_FILE="${WANDB_ENV_FILE:-.env}"
+WANDB_TAGS="${WANDB_TAGS:-g005,idm,d2e,state-corpus,pipeline}"
 WANDB_SIDECAR_TAGS="${WANDB_SIDECAR_TAGS:-g005,idm,d2e,state-corpus,4xh200,sidecar}"
 WANDB_PROCESS_PATTERN="${WANDB_PROCESS_PATTERN:-train_idm_streaming|torchrun|run_g005_idm_state_luma_pair}"
 
 mkdir -p artifacts/idm artifacts/eval outputs/cluster "$OUTPUT_DIR"
+
+log_wandb_artifact_stage() {
+  local run_name="$1"
+  local artifact_name="$2"
+  local output_path="$3"
+  shift 3
+  if [[ "$ENABLE_WANDB_SIDECAR" == "0" ]]; then
+    return 0
+  fi
+  uv run --with wandb python scripts/log_wandb_artifacts.py \
+    --env-file "$WANDB_ENV_FILE" \
+    --run-name "$run_name" \
+    --group "g005-idm-paper-target" \
+    --job-type "pipeline-artifact" \
+    --tags "$WANDB_TAGS" \
+    --artifact-name "$artifact_name" \
+    --artifact-type "evaluation" \
+    --output "$output_path" \
+    "$@" || true
+}
 
 needs_state_materialization=1
 if [[ -s "$STATE_SUMMARY" ]]; then
@@ -63,6 +87,12 @@ if [[ "$needs_state_materialization" != "0" ]]; then
       --workers "${STATE_MATERIALIZE_WORKERS:-16}"
     echo "state_materialization_finished_at=$(date -Iseconds)"
   } 2>&1 | tee "$STATE_LOG"
+  log_wandb_artifact_stage \
+    "$MODEL_SLUG-state-materialization" \
+    "$MODEL_SLUG-state-materialization" \
+    "$STATE_MATERIALIZATION_WANDB_STATUS" \
+    --json "$STATE_SUMMARY" \
+    --json "$STATE_PROGRESS"
 fi
 
 if [[ "${SKIP_STATE_STATS_SYNTHESIS:-0}" == "0" && ( ! -s "$OUTPUT_DIR/streaming_stats.json" || "${FORCE_STATE_STATS_SYNTHESIS:-0}" != "0" ) ]]; then
@@ -76,6 +106,12 @@ if [[ "${SKIP_STATE_STATS_SYNTHESIS:-0}" == "0" && ( ! -s "$OUTPUT_DIR/streaming
       --workers "${STATE_STATS_SYNTHESIS_WORKERS:-16}"
     echo "stats_synthesis_finished_at=$(date -Iseconds)"
   } 2>&1 | tee "$STATE_STATS_SYNTHESIS_LOG"
+  log_wandb_artifact_stage \
+    "$MODEL_SLUG-stats-synthesis" \
+    "$MODEL_SLUG-stats-synthesis" \
+    "$STATE_STATS_SYNTHESIS_WANDB_STATUS" \
+    --json "$STATE_STATS_SYNTHESIS_SUMMARY" \
+    --json "$OUTPUT_DIR/streaming_stats.json"
 fi
 
 needs_cache_precompute=1
@@ -104,6 +140,12 @@ if [[ "$needs_cache_precompute" != "0" ]]; then
       --progress-output "$PRECOMPUTE_CACHE_PROGRESS"
     echo "cache_precompute_finished_at=$(date -Iseconds)"
   } 2>&1 | tee "$PRECOMPUTE_CACHE_LOG"
+  log_wandb_artifact_stage \
+    "$MODEL_SLUG-cache-precompute" \
+    "$MODEL_SLUG-cache-precompute" \
+    "$PRECOMPUTE_CACHE_WANDB_STATUS" \
+    --json "$PRECOMPUTE_CACHE_VALIDATION" \
+    --json "$PRECOMPUTE_CACHE_PROGRESS"
 fi
 
 SIDECAR_PID=""

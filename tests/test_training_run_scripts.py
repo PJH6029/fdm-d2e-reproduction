@@ -83,15 +83,31 @@ def test_g005_state_luma_pair_materializes_state_corpus_and_logs_wandb() -> None
     materialize_idx = text.index("scripts/materialize_d2e_state_corpus.py")
     stats_idx = text.index("scripts/synthesize_state_streaming_stats.py")
     cache_idx = text.index("scripts/precompute_streaming_idm_training_cache.py")
+    stats_artifact_idx = text.index("$MODEL_SLUG-stats-synthesis")
+    cache_artifact_idx = text.index("$MODEL_SLUG-cache-precompute")
     wandb_idx = text.index("uv run --with wandb python scripts/watch_wandb_training.py")
     train_idx = text.index("scripts/run_g005_idm_surface_paper_target_4xh200.sh")
-    assert materialize_idx < stats_idx < cache_idx < wandb_idx < train_idx
+    assert materialize_idx < stats_idx < stats_artifact_idx < cache_idx < cache_artifact_idx < wandb_idx < train_idx
     assert 'ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"' in text
+    assert 'WANDB_TAGS="${WANDB_TAGS:-g005,idm,d2e,state-corpus,pipeline}"' in text
     assert "--env-file \"$WANDB_ENV_FILE\"" in text
+    assert "$MODEL_SLUG-stats-synthesis" in text
+    assert "$MODEL_SLUG-cache-precompute" in text
+    assert "STATE_STATS_SYNTHESIS_WANDB_STATUS" in text
+    assert "PRECOMPUTE_CACHE_WANDB_STATUS" in text
     assert "--workers \"${STATE_MATERIALIZE_WORKERS:-16}\"" in text
     assert "outputs/data/d2e_state_corpus_shards_accel64" in text
     assert "ALLOW_CACHE_BUILD=0" in text
     assert "REQUIRE_PRECOMPUTED_CACHE=1" in text
+
+
+def test_g005_state_sequence_prior_uses_distinct_wandb_artifact_status_paths() -> None:
+    text = _script("scripts/run_g005_idm_state_sequence_prior_4xh200.sh")
+
+    assert "g005_idm_state_sequence_prior_precompute_wandb_status.json" in text
+    assert "g005_idm_state_sequence_prior_stats_synthesis_wandb_status.json" in text
+    assert 'WANDB_TAGS="${WANDB_TAGS:-g005,idm,d2e,state-sequence-prior,pipeline}"' in text
+    assert "scripts/run_g005_idm_state_luma_pair_4xh200.sh" in text
 
 
 def test_g005_video_stack_offset_candidate_separates_precompute_training_and_recovery() -> None:
