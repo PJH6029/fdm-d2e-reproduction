@@ -1,0 +1,33 @@
+{
+  "artifacts": {
+    "checkpoint": {
+      "bytes": 49577525,
+      "exists": true,
+      "path": "outputs/idm_streaming_d2e_full_state_sequence_prior_paper_target/checkpoint.pt"
+    },
+    "gpu_monitor": {
+      "bytes": 116975,
+      "exists": true,
+      "path": "artifacts/idm/g005_idm_state_sequence_prior_4xh200_gpu_monitor.csv"
+    },
+    "streaming_stats": {
+      "bytes": 273724,
+      "exists": true,
+      "path": "outputs/idm_streaming_d2e_full_state_sequence_prior_paper_target/streaming_stats.json"
+    },
+    "train_history": {
+      "bytes": 1284,
+      "exists": true,
+      "path": "outputs/idm_streaming_d2e_full_state_sequence_prior_paper_target/train_history.json"
+    }
+  },
+  "created_at_unix": 1779779061.3151662,
+  "pids": [
+    617280,
+    617283,
+    617352
+  ],
+  "reason": "Original wrapper was stuck in post-checkpoint train-scan seed-state construction; empty-seed recovery is already predicting from the same checkpoint with 16 workers.",
+  "schema": "g005_state_sequence_original_trainscan_interruption.v1",
+  "status": "interrupted_after_checkpoint_for_recovery_tail_resource_contention"
+}
