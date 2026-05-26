@@ -1,0 +1,198 @@
+{
+  "cache_summary": {
+    "bytes": 180212446911,
+    "rows": 19211006,
+    "status": "pass",
+    "wall_clock_seconds": 1133.9777982234955
+  },
+  "calibration": {
+    "checkpoint_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/checkpoint.pt",
+    "pre_calibration_checkpoint_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/checkpoint_pre_calibration.pt",
+    "schema": "streaming_idm_calibration_progress.v1",
+    "stage": "final_checkpoint_saved",
+    "status": "pass",
+    "updated_at_epoch": 1779811447.8540218
+  },
+  "claim_boundary": "Failure evidence only; do not checkpoint G005 or claim paper target win from this run.",
+  "created_at_unix": 1779818287.534029,
+  "decision": "Stop slow paper-compatible rescan for this candidate; full merged target metrics already fail paper targets by a wide margin.",
+  "git_head": "e152ffedac56acebcb1b33d44fe80ce4ef43835e",
+  "materialization_summary": {
+    "output_root": "outputs/data/d2e_luma_window5_corpus_shards_accel64",
+    "status": "pass",
+    "target_rows": 16698646,
+    "train_rows": 19211006,
+    "wall_clock_seconds": 2586.980797767639
+  },
+  "metrics": {
+    "failure_count": 16698443,
+    "keyboard_accuracy": 0.01636747571576633,
+    "mouse_button_accuracy": 0.05174536257433903,
+    "mouse_button_f1": 0.030834130625716633,
+    "mouse_move_pearson": 0.045364362540220575,
+    "mouse_scale_ratio": 1.5108912481104453,
+    "no_button_false_positive_rate": 0.10655300333726099,
+    "target_rows": 16698646
+  },
+  "paper_metrics_progress_at_stop": {
+    "model_name": "streaming_idm_d2e_full_compact_luma_window5_paper_target",
+    "prediction_paths": [
+      "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/predictions.jsonl"
+    ],
+    "rows_seen": 12000000,
+    "schema": "paper_idm_metrics_progress.v1",
+    "sequence_id_mismatches": 0,
+    "status": "running",
+    "target_paths": [
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_0/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_1/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_10/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_11/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_12/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_13/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_14/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_15/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_16/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_17/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_18/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_19/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_2/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_20/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_21/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_22/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_23/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_24/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_25/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_26/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_27/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_28/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_29/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_3/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_30/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_31/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_32/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_33/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_34/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_35/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_36/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_37/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_38/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_39/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_4/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_40/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_41/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_42/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_43/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_44/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_45/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_46/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_47/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_48/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_49/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_5/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_50/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_51/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_52/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_53/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_54/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_55/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_56/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_57/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_58/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_59/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_6/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_60/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_61/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_62/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_63/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_7/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_8/target_all_eval.jsonl",
+      "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_9/target_all_eval.jsonl"
+    ]
+  },
+  "reservation": {
+    "checked_at": "2026-05-26T23:02:55+09:00",
+    "end_at": "2026-05-27T06:00:00+09:00",
+    "gpu_count": 4,
+    "gpu_indices": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "image_path": "ghcr.io/pjh6029/snupi-personal-codex:20260414",
+    "namespace": "p-production",
+    "node_id": "4",
+    "pod_name": "prod-rsv-jeonghunpark-20260525-22e263",
+    "pod_phase": "Running",
+    "pod_status": "Running",
+    "project_id": "production",
+    "reservation_id": "rsv-jeonghunpark-20260526-2fda44",
+    "start_at": "2026-05-26T18:00:00+09:00",
+    "status": "running"
+  },
+  "schema": "g005_idm_compact_luma_window5_failure_decision.v1",
+  "split_stats_status": "pass",
+  "status": "failed_metric_target",
+  "train_history": {
+    "history": [
+      {
+        "batches": 4719,
+        "epoch": 1,
+        "examples": 19211006,
+        "loss": 33.47098389822378,
+        "loss_sum": 643011272.4946804
+      },
+      {
+        "batches": 4719,
+        "epoch": 2,
+        "examples": 19211006,
+        "loss": 31.926650058872525,
+        "loss_sum": 613343065.8409004
+      },
+      {
+        "batches": 4719,
+        "epoch": 3,
+        "examples": 19211006,
+        "loss": 30.827440318742063,
+        "loss_sum": 592226140.9279957
+      },
+      {
+        "batches": 4719,
+        "epoch": 4,
+        "examples": 19211006,
+        "loss": 29.561421600936843,
+        "loss_sum": 567904647.7441273
+      },
+      {
+        "batches": 4719,
+        "epoch": 5,
+        "examples": 19211006,
+        "loss": 28.29022816780935,
+        "loss_sum": 543483743.0731544
+      },
+      {
+        "batches": 4719,
+        "epoch": 6,
+        "examples": 19211006,
+        "loss": 26.95820559058581,
+        "loss_sum": 517894249.3499775
+      },
+      {
+        "batches": 4719,
+        "epoch": 7,
+        "examples": 19211006,
+        "loss": 25.65352797287623,
+        "loss_sum": 492830079.8080931
+      },
+      {
+        "batches": 4719,
+        "epoch": 8,
+        "examples": 19211006,
+        "loss": 24.36159432651428,
+        "loss_sum": 468010734.77623177
+      }
+    ],
+    "schema": "streaming_idm_train_history.v1"
+  }
+}

@@ -1,0 +1,564 @@
+luma_window_materialization_started_at=2026-05-26T14:02:55+00:00
+{"status": "pass", "target_rows": 16698646, "train_rows": 19211006}
+luma_window_materialization_finished_at=2026-05-26T14:46:02+00:00
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: pjh6029 (pjh6029-seoul-national-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run oc2vl7ub
+wandb: Tracking run with wandb version 0.27.0
+wandb: Run data is saved locally in outputs/wandb/wandb/run-20260526_144605-oc2vl7ub
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run g005_idm_compact_luma_window5-materialization
+wandb: ⭐️ View project at https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction
+wandb: 🚀 View run at https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/oc2vl7ub
+wandb: updating run metadata; uploading artifact g005_idm_compact_luma_window5-materialization
+wandb: uploading artifact g005_idm_compact_luma_window5-materialization
+wandb: uploading wandb-metadata.json; uploading requirements.txt; uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:         g005_idm_compact_luma_window5_materialization_progress/completed_pairs ▁
+wandb:             g005_idm_compact_luma_window5_materialization_progress/target_rows ▁
+wandb:             g005_idm_compact_luma_window5_materialization_progress/total_pairs ▁
+wandb:              g005_idm_compact_luma_window5_materialization_progress/train_rows ▁
+wandb:                g005_idm_compact_luma_window5_materialization_summary/luma_size ▁
+wandb: g005_idm_compact_luma_window5_materialization_summary/offset_present_counts/-1 ▁
+wandb: g005_idm_compact_luma_window5_materialization_summary/offset_present_counts/-2 ▁
+wandb:  g005_idm_compact_luma_window5_materialization_summary/offset_present_counts/0 ▁
+wandb:  g005_idm_compact_luma_window5_materialization_summary/offset_present_counts/1 ▁
+wandb:  g005_idm_compact_luma_window5_materialization_summary/offset_present_counts/2 ▁
+wandb:                                                                             +4 ...
+wandb: 
+wandb: Run summary:
+wandb:         g005_idm_compact_luma_window5_materialization_progress/completed_pairs 64
+wandb:             g005_idm_compact_luma_window5_materialization_progress/target_rows 16698646
+wandb:             g005_idm_compact_luma_window5_materialization_progress/total_pairs 64
+wandb:              g005_idm_compact_luma_window5_materialization_progress/train_rows 19211006
+wandb:                g005_idm_compact_luma_window5_materialization_summary/luma_size 16
+wandb: g005_idm_compact_luma_window5_materialization_summary/offset_present_counts/-1 35908734
+wandb: g005_idm_compact_luma_window5_materialization_summary/offset_present_counts/-2 35907816
+wandb:  g005_idm_compact_luma_window5_materialization_summary/offset_present_counts/0 35909652
+wandb:  g005_idm_compact_luma_window5_materialization_summary/offset_present_counts/1 35908734
+wandb:  g005_idm_compact_luma_window5_materialization_summary/offset_present_counts/2 35907816
+wandb:                                                                             +4 ...
+wandb: 
+wandb: 🚀 View run g005_idm_compact_luma_window5-materialization at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/oc2vl7ub
+wandb: ⭐️ View project at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction
+wandb: Synced 4 W&B file(s), 0 media file(s), 3 artifact file(s) and 0 other file(s)
+wandb: Find logs at: outputs/wandb/wandb/run-20260526_144605-oc2vl7ub/logs
+{"status": "complete", "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/oc2vl7ub"}
+cache_precompute_started_at=2026-05-26T14:46:12+00:00
+{
+  "bytes": 180212446911,
+  "cache_dir": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache",
+  "claim_boundary": "Standalone cache precompute prepares streaming IDM DDP input; it is not model-quality evidence.",
+  "config": "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml",
+  "force_rebuild": false,
+  "manifest_count": 64,
+  "manifest_paths": [
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-73aa8023c36647d3fc77.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-f69af1c31ed01231ef53.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-0c823ce1536c43549c57.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-5e24e1879e5a41b23b90.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-d9640ab6cfd6c5fb7b06.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ff04a50bf53815257584.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-43de7239f7f2efd5f127.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-fdd5e375725cc20712af.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-e4061f2bfbbb8ed96fab.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-cabda658f32150c5c79d.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-026453f777a06e338d40.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ec90493e4c5e2f48b596.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-b6d61ab36f03f4f948b5.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-b009e56b46b6a81fbc96.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-d60e015f9f2a35a93b8d.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-996ccad6d111fde2760d.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-411b4afa99b8e2897794.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-80ad9bbe6629fb04541a.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-40886054b8ab68f55be7.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-cffcd949f22dd2e34bd0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ba470a0d7a0e61354320.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-062f31214d6a97765851.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-1b8baecff22a07a9ec17.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-7059e7a44880383d283c.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-db220531c71df7c8b2b0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-8c7ae924a5ab53ffb7f0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-08ca755a67077864de84.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-c10282dc7ac731421ff2.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-efb0f44f16d51e5cbe44.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ca58b6c664e994961e49.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-32d2aeb069602cf4a0c0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-9a56ad33baff8f4da0a9.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-b4381d566e0a8f85eae1.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-3afcf1fafbbf953791e7.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-790677dec76925306f2b.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-0acd1e834e5301a7bdd4.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-47712fdd6a809cd94da6.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-f063b37a00fa47813633.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-5c088a2f3044f9caa690.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-1ee15d53402d68d86edd.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-5ea3ce9b8b74268ce672.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-aae3b14c7f205bd44245.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-d489c49568ac953c1224.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ca762b03434a1c288a74.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-954aac33aed2bd7086f2.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-0afe3f336c23f4b4c0c0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-7cfaeb11e37ab4e2f224.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-0350a8bd19c902b33ed0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-fb6a9f426dd545323781.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ea6a52b984ea85cb6731.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-b1e9ec00c5d7bf01c188.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-0e4f8bb2c88527344e01.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-7025d8be4852c0ebc3e5.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-6709c1f8c0009eb12ecc.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-9d3c4f8a31abbbbbd588.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-07bd9743efaa6df244b4.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-66ac5342154a42fedb33.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-34c6df8d1b7032f5ecea.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-fc07135d64e2c9911435.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-261d872a23cdeb331429.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-11636746a5947cc63bac.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-9bfa834761dcffdb3564.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-39dc933cb91afe4e32b8.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-827388739c537153ab00.manifest.json"
+  ],
+  "record_paths": 64,
+  "rows": 19211006,
+  "schema": "streaming_idm_training_cache_precompute_summary.v1",
+  "stats_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/streaming_stats.json",
+  "stats_precomputed": true,
+  "status": "pass",
+  "validate_only": false,
+  "wall_clock_seconds": 1133.9777982234955,
+  "workers": 16
+}
+cache_precompute_finished_at=2026-05-26T15:28:48+00:00
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: pjh6029 (pjh6029-seoul-national-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run vfmdwg0j
+wandb: Tracking run with wandb version 0.27.0
+wandb: Run data is saved locally in outputs/wandb/wandb/run-20260526_152851-vfmdwg0j
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run g005_idm_compact_luma_window5-cache-precompute
+wandb: ⭐️ View project at https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction
+wandb: 🚀 View run at https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/vfmdwg0j
+wandb: updating run metadata; uploading artifact g005_idm_compact_luma_window5-cache-precompute
+wandb: uploading artifact g005_idm_compact_luma_window5-cache-precompute
+wandb: uploading history steps 0-0, summary
+wandb: 
+wandb: Run history:
+wandb:              g005_idm_compact_luma_window5_precompute_progress/bytes ▁
+wandb:      g005_idm_compact_luma_window5_precompute_progress/force_rebuild ▁
+wandb:     g005_idm_compact_luma_window5_precompute_progress/manifest_count ▁
+wandb:       g005_idm_compact_luma_window5_precompute_progress/record_paths ▁
+wandb:               g005_idm_compact_luma_window5_precompute_progress/rows ▁
+wandb:  g005_idm_compact_luma_window5_precompute_progress/stats_precomputed ▁
+wandb:      g005_idm_compact_luma_window5_precompute_progress/validate_only ▁
+wandb: g005_idm_compact_luma_window5_precompute_progress/wall_clock_seconds ▁
+wandb:            g005_idm_compact_luma_window5_precompute_progress/workers ▁
+wandb:     g005_idm_compact_luma_window5_precomputed_cache_validation/bytes ▁
+wandb:                                                                   +8 ...
+wandb: 
+wandb: Run summary:
+wandb:              g005_idm_compact_luma_window5_precompute_progress/bytes 180212446911
+wandb:      g005_idm_compact_luma_window5_precompute_progress/force_rebuild 0
+wandb:     g005_idm_compact_luma_window5_precompute_progress/manifest_count 64
+wandb:       g005_idm_compact_luma_window5_precompute_progress/record_paths 64
+wandb:               g005_idm_compact_luma_window5_precompute_progress/rows 19211006
+wandb:  g005_idm_compact_luma_window5_precompute_progress/stats_precomputed 1
+wandb:      g005_idm_compact_luma_window5_precompute_progress/validate_only 0
+wandb: g005_idm_compact_luma_window5_precompute_progress/wall_clock_seconds 1133.9778
+wandb:            g005_idm_compact_luma_window5_precompute_progress/workers 16
+wandb:     g005_idm_compact_luma_window5_precomputed_cache_validation/bytes 180212446911
+wandb:                                                                   +8 ...
+wandb: 
+wandb: 🚀 View run g005_idm_compact_luma_window5-cache-precompute at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/vfmdwg0j
+wandb: ⭐️ View project at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction
+wandb: Synced 4 W&B file(s), 0 media file(s), 3 artifact file(s) and 0 other file(s)
+wandb: Find logs at: outputs/wandb/wandb/run-20260526_152851-vfmdwg0j/logs
+{"status": "complete", "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/vfmdwg0j"}
+started_at=2026-05-26T15:28:58+00:00
+git_head=e152ffedac56acebcb1b33d44fe80ce4ef43835e
+config=configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml
+nproc_per_node=4
+gpu_monitor_log=artifacts/idm/g005_idm_compact_luma_window5_4xh200_gpu_monitor.csv
+split_stats_config=configs/eval/g005_idm_compact_luma_window5_split_statistics.yaml
+paper_target_config=configs/eval/g005_idm_compact_luma_window5_paper_target.yaml
+{"cuda_available": true, "cuda_device_count": 4, "cuda_visible_devices": null, "expected_gpus": 4, "hostname": "prod-rsv-jeonghunpark-20260525-22e263", "rank": 0, "schema": "cluster_gpu_smoke.v1", "status": "passed", "torch_imported": true, "torch_version": "2.12.0+cu130", "world_size": 1}
+validating precomputed streaming IDM stats/cache via artifacts/idm/g005_idm_compact_luma_window5_precomputed_cache_validation.json
+{
+  "bytes": 180212446911,
+  "cache_dir": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache",
+  "claim_boundary": "Standalone cache precompute prepares streaming IDM DDP input; it is not model-quality evidence.",
+  "config": "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml",
+  "force_rebuild": false,
+  "manifest_count": 64,
+  "manifest_paths": [
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-73aa8023c36647d3fc77.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-f69af1c31ed01231ef53.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-0c823ce1536c43549c57.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-5e24e1879e5a41b23b90.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-d9640ab6cfd6c5fb7b06.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ff04a50bf53815257584.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-43de7239f7f2efd5f127.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-fdd5e375725cc20712af.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-e4061f2bfbbb8ed96fab.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-cabda658f32150c5c79d.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-026453f777a06e338d40.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ec90493e4c5e2f48b596.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-b6d61ab36f03f4f948b5.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-b009e56b46b6a81fbc96.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-d60e015f9f2a35a93b8d.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-996ccad6d111fde2760d.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-411b4afa99b8e2897794.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-80ad9bbe6629fb04541a.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-40886054b8ab68f55be7.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-cffcd949f22dd2e34bd0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ba470a0d7a0e61354320.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-062f31214d6a97765851.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-1b8baecff22a07a9ec17.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-7059e7a44880383d283c.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-db220531c71df7c8b2b0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-8c7ae924a5ab53ffb7f0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-08ca755a67077864de84.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-c10282dc7ac731421ff2.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-efb0f44f16d51e5cbe44.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ca58b6c664e994961e49.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-32d2aeb069602cf4a0c0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-9a56ad33baff8f4da0a9.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-b4381d566e0a8f85eae1.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-3afcf1fafbbf953791e7.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-790677dec76925306f2b.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-0acd1e834e5301a7bdd4.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-47712fdd6a809cd94da6.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-f063b37a00fa47813633.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-5c088a2f3044f9caa690.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-1ee15d53402d68d86edd.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-5ea3ce9b8b74268ce672.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-aae3b14c7f205bd44245.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-d489c49568ac953c1224.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ca762b03434a1c288a74.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-954aac33aed2bd7086f2.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-0afe3f336c23f4b4c0c0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-7cfaeb11e37ab4e2f224.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-0350a8bd19c902b33ed0.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-fb6a9f426dd545323781.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-ea6a52b984ea85cb6731.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-b1e9ec00c5d7bf01c188.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-0e4f8bb2c88527344e01.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-7025d8be4852c0ebc3e5.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-6709c1f8c0009eb12ecc.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-9d3c4f8a31abbbbbd588.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-07bd9743efaa6df244b4.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-66ac5342154a42fedb33.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-34c6df8d1b7032f5ecea.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-fc07135d64e2c9911435.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-261d872a23cdeb331429.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-11636746a5947cc63bac.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-9bfa834761dcffdb3564.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-39dc933cb91afe4e32b8.manifest.json",
+    "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/train_cache/train_core-827388739c537153ab00.manifest.json"
+  ],
+  "record_paths": 64,
+  "rows": 19211006,
+  "schema": "streaming_idm_training_cache_precompute_summary.v1",
+  "stats_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/streaming_stats.json",
+  "stats_precomputed": true,
+  "status": "pass",
+  "validate_only": true,
+  "wall_clock_seconds": 0.9954047203063965,
+  "workers": 32
+}
+W0526 15:29:10.572000 639084 torch/distributed/run.py:862] 
+W0526 15:29:10.572000 639084 torch/distributed/run.py:862] *****************************************
+W0526 15:29:10.572000 639084 torch/distributed/run.py:862] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0526 15:29:10.572000 639084 torch/distributed/run.py:862] *****************************************
+[W526 15:29:12.512237261 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [localhost]:43527 (errno: 97 - Address family not supported by protocol).
+[W526 15:29:12.517431716 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:43527 (errno: 97 - Address family not supported by protocol).
+[W526 15:29:12.520977751 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:43527 (errno: 97 - Address family not supported by protocol).
+[W526 15:29:12.819248751 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.78]:33455 (errno: 97 - Address family not supported by protocol).
+[W526 15:29:15.236556318 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.78]:33455 (errno: 97 - Address family not supported by protocol).
+[W526 15:29:15.301863129 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.78]:33455 (errno: 97 - Address family not supported by protocol).
+[W526 15:29:15.302725066 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.78]:33455 (errno: 97 - Address family not supported by protocol).
+[W526 15:29:15.304124269 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.78]:33455 (errno: 97 - Address family not supported by protocol).
+streaming IDM worker complete: rank=3 world_size=4 status=worker_complete
+streaming IDM worker complete: rank=1 world_size=4 status=worker_complete
+streaming IDM worker complete: rank=2 world_size=4 status=worker_complete
+trained streaming IDM: model=streaming_idm_d2e_full_compact_luma_window5_paper_target device=cuda:0 train=19211006 target=16698646 metrics=outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/metrics.json
+split statistical comparisons: status=pass outputs=3
+{
+  "checkpoint_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/checkpoint.pt",
+  "config": "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml",
+  "exit_code": 143,
+  "expected_gpus": 4,
+  "git_diff_sha256": null,
+  "git_head": "e152ffedac56acebcb1b33d44fe80ce4ef43835e",
+  "git_status_short": "?? artifacts/eval/g005_idm_compact_luma_window5_split_statistical_comparisons_summary.json\n?? artifacts/idm/g005_idm_compact_luma_window5_4xh200.log\n?? artifacts/idm/g005_idm_compact_luma_window5_4xh200_gpu_monitor.csv\n?? artifacts/idm/g005_idm_compact_luma_window5_4xh200_run.json\n?? artifacts/idm/g005_idm_compact_luma_window5_failure_decision.json\n?? artifacts/idm/g005_idm_compact_luma_window5_launcher.log\n?? artifacts/idm/g005_idm_compact_luma_window5_launcher_offsets_failure.log\n?? artifacts/idm/g005_idm_compact_luma_window5_materialization.log\n?? artifacts/idm/g005_idm_compact_luma_window5_materialization_offsets_failure.log\n?? artifacts/idm/g005_idm_compact_luma_window5_materialization_progress.json\n?? artifacts/idm/g005_idm_compact_luma_window5_materialization_summary.json\n?? artifacts/idm/g005_idm_compact_luma_window5_materialization_wandb_status.json\n?? artifacts/idm/g005_idm_compact_luma_window5_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_compact_luma_window5_precompute.log\n?? artifacts/idm/g005_idm_compact_luma_window5_precompute_progress.json\n?? artifacts/idm/g005_idm_compact_luma_window5_precompute_wandb_status.json\n?? artifacts/idm/g005_idm_compact_luma_window5_precomputed_cache_validation.json\n?? artifacts/idm/g005_idm_compact_luma_window5_reservation_context.json\n?? artifacts/idm/g005_idm_compact_luma_window5_wandb_sidecar.log\n?? artifacts/idm/g005_idm_compact_luma_window5_wandb_sidecar_status.json\n?? artifacts/idm/idm_streaming_d2e_full_compact_luma_window5_paper_target_summary.json",
+  "gpu_monitor_log": "artifacts/idm/g005_idm_compact_luma_window5_4xh200_gpu_monitor.csv",
+  "gpu_monitor_sha256": "5076f4682aa39d1bea2d05d424682cdb82adfae4c10bc1db210bb5e3be6957a9",
+  "gpu_monitor_status": {
+    "covers_expected_gpus": true,
+    "expected_gpus": 4,
+    "rows": 1200,
+    "unique_gpu_indices": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  "gpu_smoke_report": "outputs/cluster/g005_idm_compact_luma_window5_gpu_smoke.json",
+  "log_path": "artifacts/idm/g005_idm_compact_luma_window5_4xh200.log",
+  "metadata_exists": true,
+  "metadata_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/checkpoint_metadata.json",
+  "metrics_exists": true,
+  "metrics_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/metrics.json",
+  "mlxp_reservation": {
+    "checked_at": "2026-05-26T23:02:55+09:00",
+    "end_at": "2026-05-27T06:00:00+09:00",
+    "gpu_indices": "1,2,3,4",
+    "node_id": "4",
+    "pod_name": "prod-rsv-jeonghunpark-20260525-22e263",
+    "reservation_id": "rsv-jeonghunpark-20260526-2fda44",
+    "start_at": "2026-05-26T18:00:00+09:00"
+  },
+  "nproc_per_node": 4,
+  "paper_metrics_path": "artifacts/idm/g005_idm_compact_luma_window5_paper_metrics.json",
+  "paper_metrics_rows": null,
+  "paper_metrics_status": null,
+  "paper_target_config": "configs/eval/g005_idm_compact_luma_window5_paper_target.yaml",
+  "pid_file": "outputs/cluster/g005_idm_compact_luma_window5_4xh200.pid",
+  "precompute_cache_validation_path": "artifacts/idm/g005_idm_compact_luma_window5_precomputed_cache_validation.json",
+  "precompute_cache_validation_rows": 19211006,
+  "precompute_cache_validation_status": "pass",
+  "prediction_resume": {
+    "action_history_seed_state_summary": {},
+    "enabled": false,
+    "existing_rows": 0,
+    "parts": [
+      {
+        "part_index": 0,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_000/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_000/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_0/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_1/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_10/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_11/target_all_eval.jsonl"
+        ],
+        "records": 1089390
+      },
+      {
+        "part_index": 1,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_001/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_001/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_12/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_13/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_14/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_15/target_all_eval.jsonl"
+        ],
+        "records": 1018173
+      },
+      {
+        "part_index": 2,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_002/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_002/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_16/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_17/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_18/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_19/target_all_eval.jsonl"
+        ],
+        "records": 898692
+      },
+      {
+        "part_index": 3,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_003/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_003/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_2/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_20/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_21/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_22/target_all_eval.jsonl"
+        ],
+        "records": 986551
+      },
+      {
+        "part_index": 4,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_004/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_004/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_23/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_24/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_25/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_26/target_all_eval.jsonl"
+        ],
+        "records": 681790
+      },
+      {
+        "part_index": 5,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_005/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_005/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_27/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_28/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_29/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_3/target_all_eval.jsonl"
+        ],
+        "records": 907924
+      },
+      {
+        "part_index": 6,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_006/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_006/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_30/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_31/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_32/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_33/target_all_eval.jsonl"
+        ],
+        "records": 769740
+      },
+      {
+        "part_index": 7,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_007/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_007/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_34/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_35/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_36/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_37/target_all_eval.jsonl"
+        ],
+        "records": 898715
+      },
+      {
+        "part_index": 8,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_008/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_008/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_38/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_39/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_4/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_40/target_all_eval.jsonl"
+        ],
+        "records": 888529
+      },
+      {
+        "part_index": 9,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_009/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_009/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_41/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_42/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_43/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_44/target_all_eval.jsonl"
+        ],
+        "records": 1015028
+      },
+      {
+        "part_index": 10,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_010/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_010/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_45/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_46/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_47/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_48/target_all_eval.jsonl"
+        ],
+        "records": 1519495
+      },
+      {
+        "part_index": 11,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_011/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_011/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_49/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_5/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_50/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_51/target_all_eval.jsonl"
+        ],
+        "records": 861540
+      },
+      {
+        "part_index": 12,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_012/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_012/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_52/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_53/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_54/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_55/target_all_eval.jsonl"
+        ],
+        "records": 1186839
+      },
+      {
+        "part_index": 13,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_013/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_013/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_56/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_57/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_58/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_59/target_all_eval.jsonl"
+        ],
+        "records": 1381352
+      },
+      {
+        "part_index": 14,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_014/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_014/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_6/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_60/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_61/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_62/target_all_eval.jsonl"
+        ],
+        "records": 1246917
+      },
+      {
+        "part_index": 15,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_015/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/prediction_recovery_parts/part_015/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_63/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_7/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_8/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_9/target_all_eval.jsonl"
+        ],
+        "records": 1347971
+      }
+    ],
+    "pseudolabel_validation": true,
+    "workers": 16,
+    "write_mode": "parallel_parts"
+  },
+  "require_precomputed_cache": true,
+  "runtime_config": "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml",
+  "schema": "g005_idm_compact_luma_window5_4xh200_run.v1",
+  "split_stats_config": "configs/eval/g005_idm_compact_luma_window5_split_statistics.yaml",
+  "split_stats_outputs": [
+    {
+      "comparisons": 21,
+      "path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/split_temporal_statistical_comparison.json",
+      "split": "temporal",
+      "status": "pass"
+    },
+    {
+      "comparisons": 21,
+      "path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/split_heldout_recording_statistical_comparison.json",
+      "split": "heldout_recording",
+      "status": "pass"
+    },
+    {
+      "comparisons": 21,
+      "path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/split_heldout_game_statistical_comparison.json",
+      "split": "heldout_game",
+      "status": "pass"
+    }
+  ],
+  "split_stats_status": "pass",
+  "split_stats_summary_path": "artifacts/eval/g005_idm_compact_luma_window5_split_statistical_comparisons_summary.json",
+  "summary_exists": true,
+  "summary_path": "artifacts/idm/idm_streaming_d2e_full_compact_luma_window5_paper_target_summary.json",
+  "target_records": 16698646,
+  "train_records": 19211006,
+  "wall_clock_seconds": 8984
+}

@@ -1,0 +1,798 @@
+{
+  "schema": "d2e_luma_window_materialization.v1",
+  "status": "pass",
+  "input_root": "outputs/data/d2e_full_corpus_shards_accel64",
+  "output_root": "outputs/data/d2e_luma_window5_corpus_shards_accel64",
+  "offsets": [
+    -2,
+    -1,
+    0,
+    1,
+    2
+  ],
+  "luma_size": 16,
+  "train_rows": 19211006,
+  "target_rows": 16698646,
+  "pair_count": 64,
+  "offset_present_counts": {
+    "-2": 35907816,
+    "-1": 35908734,
+    "0": 35909652,
+    "1": 35908734,
+    "2": 35907816
+  },
+  "train_outputs": [
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_0/train_core.jsonl",
+      "rows": 189058,
+      "sha256": "89fde3527993d6cbf145e8150356a3d7622d635aaad240c62ab93b2f7062c129",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_0/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_1/train_core.jsonl",
+      "rows": 450313,
+      "sha256": "7edb2b1340735291f61952a9466d03070fcbfa51ce9e02185595c245af56ee56",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_1/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_10/train_core.jsonl",
+      "rows": 256627,
+      "sha256": "540e18fa1083d06fe0d15e9ad5f90f4757fa5916c4aa0563d3b0e8c4118a84be",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_10/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_11/train_core.jsonl",
+      "rows": 225686,
+      "sha256": "9a4d47c1ddddb350ad8e893ae51832c4d1f9ac206172b00e1fff74a54573d836",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_11/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_12/train_core.jsonl",
+      "rows": 578389,
+      "sha256": "a2fcd3d880af9b0bf5aeedbc7a4d126196deb02b870b215d7dad56e387c98bcc",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_12/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_13/train_core.jsonl",
+      "rows": 272801,
+      "sha256": "342f23eb42f3701f99a8e3366e67673c56c5b37fcfb30a95fbdb4cd64a56e49a",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_13/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_14/train_core.jsonl",
+      "rows": 276864,
+      "sha256": "196afaeb13e2e2fbbb6f1dfe8f2b26c4e267d4930705acb56f1360d4191916f5",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_14/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_15/train_core.jsonl",
+      "rows": 505404,
+      "sha256": "7e6b2decfebaf56468ae28ac226d17e3fb614535ee7c784a5fbb072acc782832",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_15/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_16/train_core.jsonl",
+      "rows": 574302,
+      "sha256": "c98b5a58bb5a8fea2817604a1356d2501fab50fd3c2c20c5a19926bd303315c6",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_16/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_17/train_core.jsonl",
+      "rows": 185984,
+      "sha256": "2434942e537ef92db21c4138161566b8beb7e14f1eb7d17e5d29b855dffa3a43",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_17/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_18/train_core.jsonl",
+      "rows": 524692,
+      "sha256": "770bcef1fba05452ef6f9bc75592c6164f97f09d398c1186ab80eb20ae93ed59",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_18/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_19/train_core.jsonl",
+      "rows": 413082,
+      "sha256": "f9cd56f62d3ddd5681c1ac1cf5967dc8b54510d96b01cc0e9b1782bc982529b2",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_19/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_2/train_core.jsonl",
+      "rows": 266070,
+      "sha256": "978935714fe970ddeada272efe6e01792809878bc4b5c476dd0f0868120cada3",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_2/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_20/train_core.jsonl",
+      "rows": 296168,
+      "sha256": "91c2e685abea7e5121b0795527ace1d65ff1081bf05e461d3e05ace0c2e7d3eb",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_20/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_21/train_core.jsonl",
+      "rows": 294227,
+      "sha256": "f0bbb200d65a7d0cc585d3ca8d9545789ef4149f71257d66c34afff5d04e0115",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_21/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_22/train_core.jsonl",
+      "rows": 260580,
+      "sha256": "f573586b3439c9dd4f940092e0077bbfa40dfe0d6804b6727f785401e5297bf4",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_22/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_23/train_core.jsonl",
+      "rows": 405064,
+      "sha256": "bf6a797897e142e0b6a5ebd1665e5e7851a7d7fd9eec613dc6438519930c7479",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_23/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_24/train_core.jsonl",
+      "rows": 333848,
+      "sha256": "9c651907e3c4b8b197631de393d3bd310f90a5738734c61d0387e3c3fa401b12",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_24/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_25/train_core.jsonl",
+      "rows": 251678,
+      "sha256": "e8e2ce20314a20c27dc849489202137c17cdd0b42f7d1953d8daab8bc187073a",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_25/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_26/train_core.jsonl",
+      "rows": 210628,
+      "sha256": "72a5e31264c82ce8964f478be18ff62bae3fe8879caca632aca62d17d628e73f",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_26/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_27/train_core.jsonl",
+      "rows": 107433,
+      "sha256": "30fa33c1a2eabbf9d53fb86f4c4364b19e909b5f6b414721509f49b13a358d2c",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_27/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_28/train_core.jsonl",
+      "rows": 189456,
+      "sha256": "34235422d14bac07a9d75580e7e7f8af59b01675e4028c203e5085cbfceebbf1",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_28/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_29/train_core.jsonl",
+      "rows": 440934,
+      "sha256": "706497a42d718656150ce49f24697652b3b6f3f87451211916a3e851f2e50e0b",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_29/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_3/train_core.jsonl",
+      "rows": 120147,
+      "sha256": "c495d29a09c98ba60369b45cd04c11028c46679a4e315e223e6c83c5ad6d7c9e",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_3/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_30/train_core.jsonl",
+      "rows": 263929,
+      "sha256": "fefebd0c6cfa5f866bf35c5ae0ce750040288c4b597401c4709ea3c31bc5a855",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_30/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_31/train_core.jsonl",
+      "rows": 280244,
+      "sha256": "d3aca54c5257f7c28edbe0141241b9495c52a306f15ad2c74b9445a04d85829f",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_31/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_32/train_core.jsonl",
+      "rows": 837034,
+      "sha256": "e86c16815d280eee85d3361135e2c1994ee36395af4fbf3e9c8243e36604cf18",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_32/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_33/train_core.jsonl",
+      "rows": 216684,
+      "sha256": "c7080384574b2a4d2a238f7d49f16dc1565a72b1ab5b4772c4af7a0a617d2b5f",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_33/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_34/train_core.jsonl",
+      "rows": 372530,
+      "sha256": "62a66cc827c49ef69dd4da01a53198e8a8208f195701ad7be5528631a758e09d",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_34/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_35/train_core.jsonl",
+      "rows": 336255,
+      "sha256": "a25957a43f9c39dc1ea71f7eee35f74d3a43178b3cb66b246044df27b3d0b8a3",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_35/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_36/train_core.jsonl",
+      "rows": 235047,
+      "sha256": "4b87df76a2371faa7a23465a9ccca7537f96727a59d7e1144ec260a7b656563f",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_36/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_37/train_core.jsonl",
+      "rows": 200593,
+      "sha256": "4659f081dee8f4d71592be363ad29ac46c08b853cba730358e2f3647bc4c38b1",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_37/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_38/train_core.jsonl",
+      "rows": 228922,
+      "sha256": "4f176cb2568f5a309478498623bde25436f84204fae0afd8eead254738e67eb7",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_38/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_39/train_core.jsonl",
+      "rows": 222273,
+      "sha256": "211523290f0f50a6e5a4ba0715847f2e34c7fb27662241b0b1a960f48d97d882",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_39/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_4/train_core.jsonl",
+      "rows": 421094,
+      "sha256": "f83cf5b548ecbf29295a8343723a3df19627a7c7cafba3702d9d117e97545f15",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_4/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_40/train_core.jsonl",
+      "rows": 231823,
+      "sha256": "2886de4e12215878054c4daa38745a709a5b6a4ab0f154df5d8f8234bd32d369",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_40/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_41/train_core.jsonl",
+      "rows": 318924,
+      "sha256": "7263018f1a22fe2b7e780a35c0e80ad50dea82ad1a7c2a5ce51ede94f1e193df",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_41/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_42/train_core.jsonl",
+      "rows": 208003,
+      "sha256": "254ba7a5f25bd89eaec7694d5585926ec243c466cda504e5bf4daf94d67c58b4",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_42/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_43/train_core.jsonl",
+      "rows": 617546,
+      "sha256": "3de6f16b92fe78e669996420fa8785314ad52f842fe76fff5b203b1b2076bb1c",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_43/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_44/train_core.jsonl",
+      "rows": 207424,
+      "sha256": "4bf778a706d21e54e445da6dd7fe5a5121419f66330c83f47e082dde278b726b",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_44/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_45/train_core.jsonl",
+      "rows": 242042,
+      "sha256": "bfcfd1a67bf1296a25aa2a1df8d061bef67a5aafd3ae0d993c251e82f7a58809",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_45/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_46/train_core.jsonl",
+      "rows": 315360,
+      "sha256": "7569651c830601a3f1006a037fe62603fa442e7953a46ce65d8156b803a65f93",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_46/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_47/train_core.jsonl",
+      "rows": 277612,
+      "sha256": "f2547fdaf6d9f616415bc96642e4d9976f6d49b241a88723a6dacc3799103212",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_47/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_48/train_core.jsonl",
+      "rows": 243292,
+      "sha256": "7e58c0f6cf4d37d80c4e3e30d442396fffd1791c406af61fd1aa647e5fc91957",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_48/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_49/train_core.jsonl",
+      "rows": 269239,
+      "sha256": "3c5ebda2391c2cff1075378ea6ca509c7de1b8f6e9a70de3acd28b092d28469c",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_49/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_5/train_core.jsonl",
+      "rows": 534905,
+      "sha256": "7368f9becda767bded375b9094fa7115265417734cbaa84e0d55d8731b644e6c",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_5/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_50/train_core.jsonl",
+      "rows": 172675,
+      "sha256": "33632c949d1b3379fcdc0ed772c14f66a8f00749ebb22a04d9f5366c49714d2e",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_50/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_51/train_core.jsonl",
+      "rows": 227590,
+      "sha256": "d0707ca817cc45e724a131ffd371fa4055ebb37123b10f178af06abe4ec5c31e",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_51/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_52/train_core.jsonl",
+      "rows": 305316,
+      "sha256": "b2a0ca236ec90af95f51e93000d3d355471713a386ed0f9927bb5efba053ee72",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_52/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_53/train_core.jsonl",
+      "rows": 232858,
+      "sha256": "2950fc0ce43c38a233aaa64250b9c3f0a994758b3bf7441937b5e91be62ac14c",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_53/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_54/train_core.jsonl",
+      "rows": 268087,
+      "sha256": "b7162d39a825e5200f7125cf5c0dcd563fb16ea8fe8ef57024918914f3f20e01",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_54/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_55/train_core.jsonl",
+      "rows": 182598,
+      "sha256": "2d86e5da28a418a9c274c10ddc8a6b12b59f32563932ed6710ad586c9f1c0f1b",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_55/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_56/train_core.jsonl",
+      "rows": 167456,
+      "sha256": "4bb3bc1237b1b32f1c8ba874841fee17a3c5cbd82c2d19ec2faa5656874e0539",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_56/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_57/train_core.jsonl",
+      "rows": 366875,
+      "sha256": "64ae79584e9cfc73d4288956500b024b9aabfa5f7737d5ace6158e191f14a29b",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_57/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_58/train_core.jsonl",
+      "rows": 333040,
+      "sha256": "4f1edfce375b4ce40e2d51c133a9c27f5a0c29e3bc1a16d183bb9ad65312128c",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_58/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_59/train_core.jsonl",
+      "rows": 302968,
+      "sha256": "e2fada2eb6bacb9fb897d542e61938c5fb85cfdd1645826bf2201efca0f26bc1",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_59/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_6/train_core.jsonl",
+      "rows": 319940,
+      "sha256": "99f4231d9918c04a651efecdee97702af97f0fc3930740e2f350dc5397ee04af",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_6/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_60/train_core.jsonl",
+      "rows": 193995,
+      "sha256": "4dd3d8ea0fb54d9030edc39b051fbde2a0df734c02bca9ec3c607a86169e8303",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_60/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_61/train_core.jsonl",
+      "rows": 159044,
+      "sha256": "99f0798686daee661ac2b91f47f9173f22c1784981dc1628a1933d31da5de153",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_61/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_62/train_core.jsonl",
+      "rows": 137530,
+      "sha256": "3a16f7e25d1402e3a9f8a49e9ca5873d24f74dffc5f16c5158a21140207d4909",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_62/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_63/train_core.jsonl",
+      "rows": 281664,
+      "sha256": "7372ad24084408ccf0cce5746d26d8dca81bd882001816c3a311556753252d7e",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_63/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_7/train_core.jsonl",
+      "rows": 316136,
+      "sha256": "7d509c0b76d9f33626de09d647bc78b2f6000b62c22c7a90cd0523948435ec9d",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_7/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_8/train_core.jsonl",
+      "rows": 397886,
+      "sha256": "993cee4726b6dddf81d201f4eed3f710a5638f40ff5dcf99b1c1d21741ac109a",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_8/train_core.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_9/train_core.jsonl",
+      "rows": 135138,
+      "sha256": "73c0e9b4644aac4a7747492fe5bb107a276fed97f0d74dedbc6a4d6d5dbb01d4",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_9/train_core.jsonl"
+    }
+  ],
+  "target_outputs": [
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_0/target_all_eval.jsonl",
+      "rows": 205515,
+      "sha256": "612c12781db21079a3b188cdb58f243690545dc095edf18cc693b9ebd622b6bb",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_0/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_1/target_all_eval.jsonl",
+      "rows": 428369,
+      "sha256": "9ed18a6f8c0d20a69938e05a6660c2e329b3dcc26aa797adb9b39dbd7ba6c5f3",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_1/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_10/target_all_eval.jsonl",
+      "rows": 155422,
+      "sha256": "e22b49a07b3910e1f70e6179a8db4fe6188db3e1881e35e85229117029a7d060",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_10/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_11/target_all_eval.jsonl",
+      "rows": 300084,
+      "sha256": "4addb2056ec2b5bedd68a814aebb678a653efa01e7d7f0538fdd41ff3e88da22",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_11/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_12/target_all_eval.jsonl",
+      "rows": 279018,
+      "sha256": "0ebbd755e618b2f3d9e6a08964c4c524a427174cc7eec6fd8aacca00a77b4fe2",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_12/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_13/target_all_eval.jsonl",
+      "rows": 365851,
+      "sha256": "f6b283867dd04e34cde67ae4b6e74817e34fea10d1c1d0e272a4a8b537f07f21",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_13/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_14/target_all_eval.jsonl",
+      "rows": 183041,
+      "sha256": "c97ad8bd6af1a8a708d1b547397a5bc2f04959db37cd2e3639ca3a5e0bfacc29",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_14/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_15/target_all_eval.jsonl",
+      "rows": 190263,
+      "sha256": "d1cb07daabd73d37c348088a7f62d4852eb8d2075b3fdfb1ec1b2290987fd405",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_15/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_16/target_all_eval.jsonl",
+      "rows": 223192,
+      "sha256": "893b797019d191a87b51644115683fc561ed913d730d5d3bcc375e00338a4838",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_16/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_17/target_all_eval.jsonl",
+      "rows": 332113,
+      "sha256": "6f5312aa74cecce0d4d89bd3262f23a115644c3cfa940c3df5195f43734793cd",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_17/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_18/target_all_eval.jsonl",
+      "rows": 223805,
+      "sha256": "7461144f0cf41bdbc36a00bbceef505df79e244ff6b1e58839f51d9ee444889e",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_18/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_19/target_all_eval.jsonl",
+      "rows": 119582,
+      "sha256": "e0a46bf70c6a3de92ca1459a92f1776b5186e42ee3c13ae8af6409a5dbd85fc9",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_19/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_2/target_all_eval.jsonl",
+      "rows": 340553,
+      "sha256": "2f2ea79501f4bd77d4dfe73d1cea9f05b7508a851c8ffbe887b0024d49016ac5",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_2/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_20/target_all_eval.jsonl",
+      "rows": 318586,
+      "sha256": "43e06537490e7374ce4e1cac783a5a78c110befc43dbec4b65a2e59d64372ec8",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_20/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_21/target_all_eval.jsonl",
+      "rows": 103780,
+      "sha256": "9dec7604150722088ade685cfa360273a7f28e2f833455d0f542ee163fc4a543",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_21/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_22/target_all_eval.jsonl",
+      "rows": 223632,
+      "sha256": "599e6cb07062bc809e9af8bb43553f8a69784a1f523dbe8666bc25ace8b25ab9",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_22/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_23/target_all_eval.jsonl",
+      "rows": 101266,
+      "sha256": "23a07b75b9402cf350dba62fa771cf38fd2551ac04ef0f5eb2c6b2f64504d3a1",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_23/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_24/target_all_eval.jsonl",
+      "rows": 318950,
+      "sha256": "8665bf7cf13d825e94f90c543d129df1453ce21ed952a0543fd0a9c961959085",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_24/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_25/target_all_eval.jsonl",
+      "rows": 86494,
+      "sha256": "3b28f983aacd8499f9ff469497cc6483895abd4076f7f122d742d95ebe5617ff",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_25/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_26/target_all_eval.jsonl",
+      "rows": 175080,
+      "sha256": "79273d6f93e38d1be3e10f89e4421b33665b537271fdc98a99b0b5e7b0601da2",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_26/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_27/target_all_eval.jsonl",
+      "rows": 202425,
+      "sha256": "46fd80da569478506707b369d3ef488bf51b47df85917801569225ea088e87d7",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_27/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_28/target_all_eval.jsonl",
+      "rows": 264210,
+      "sha256": "141bac85cf0da7fd4f29fc46e7d8f163c16ea11f3d662f475c12d4658b6d69a6",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_28/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_29/target_all_eval.jsonl",
+      "rows": 222787,
+      "sha256": "d097f5d5d0e3cd57661834362868864d65c2db7383906d728dbb22b2004c3c16",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_29/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_3/target_all_eval.jsonl",
+      "rows": 218502,
+      "sha256": "bf5620ce5cfd4ef0b1715423bc8e4630e23ff0cac58dc54a827b636dcdf9301b",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_3/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_30/target_all_eval.jsonl",
+      "rows": 84512,
+      "sha256": "a1c209a50f18248a4aad71cb4b4535344f17a967dbe109e7535a182b3f179969",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_30/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_31/target_all_eval.jsonl",
+      "rows": 321519,
+      "sha256": "d29236bc7d8d4ede3ff2c28bd465a163d1eb93e73aa200965fcd7983a3f6b9e2",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_31/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_32/target_all_eval.jsonl",
+      "rows": 219956,
+      "sha256": "71f49ae60490d601f25d7247ab9288de5caf6ad306bcbcb9c6107ff52c6cc0f2",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_32/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_33/target_all_eval.jsonl",
+      "rows": 143753,
+      "sha256": "00e245afa1e7f85866e9e848ba7a0e5abbf8285dd6bd1470ae1d5cfb3f769a8c",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_33/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_34/target_all_eval.jsonl",
+      "rows": 145189,
+      "sha256": "cc787e47bce3eed3d2b896ce3ea2e8074a8560267c740fe1e436808d720a18c3",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_34/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_35/target_all_eval.jsonl",
+      "rows": 286361,
+      "sha256": "5333567c9bfb43bc305562c79aa573444c430c8a0bbc32a554b45f5a623c5dc9",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_35/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_36/target_all_eval.jsonl",
+      "rows": 184240,
+      "sha256": "a5b45a594c5b93d549bb6efa5e320d5a6cd1c33b5f462304a3e96fc0b825b005",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_36/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_37/target_all_eval.jsonl",
+      "rows": 282925,
+      "sha256": "9a1212473043e2bf18cf2eb1d7a484a447b6145a083ea35824787673f403ec91",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_37/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_38/target_all_eval.jsonl",
+      "rows": 270692,
+      "sha256": "21d5602001ce650b072ffa9650ed479b04bd430f840274ee8f80811e8170ef56",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_38/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_39/target_all_eval.jsonl",
+      "rows": 181997,
+      "sha256": "0ea4842ee2aa4e64daa9efc99b526355937ef3946097c90c14ea926130cfcd72",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_39/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_4/target_all_eval.jsonl",
+      "rows": 174270,
+      "sha256": "c47a12f469eaa85b044655e450afdfd266e122b76e1c8693cf5b54e9b9ca3262",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_4/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_40/target_all_eval.jsonl",
+      "rows": 261570,
+      "sha256": "bce5576332b7ff2fd8f516f7e1db5814471f75015ebb30b8ac431ceee7cd16ae",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_40/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_41/target_all_eval.jsonl",
+      "rows": 212141,
+      "sha256": "aa7477ed6e5212920dca445e9775abd2a15b012e4d4478e3bdadb38db62928b2",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_41/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_42/target_all_eval.jsonl",
+      "rows": 394402,
+      "sha256": "20fb631b0d0bb0cd86f401dfc1f16e052a5bfcd354276f546440ded9eeb3337e",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_42/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_43/target_all_eval.jsonl",
+      "rows": 204060,
+      "sha256": "5e8dbb4f061e6054bab4d23fef727130094200940641c5a9a3d48f31875ef0fc",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_43/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_44/target_all_eval.jsonl",
+      "rows": 204425,
+      "sha256": "270f59ec63ae8c0a8167302a0a393c1db6383aba3ae11a0eb8fb869ca7d7d380",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_44/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_45/target_all_eval.jsonl",
+      "rows": 444979,
+      "sha256": "097dfdecb2cc877ed50451a62d943a167a40b9cccf57d8834e8ca8ea617c10ac",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_45/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_46/target_all_eval.jsonl",
+      "rows": 468255,
+      "sha256": "83eb32546d40a0e5ce9df2e1e64f0e56a1958ed8c04064af7a593da4ad579e34",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_46/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_47/target_all_eval.jsonl",
+      "rows": 241897,
+      "sha256": "b80a4a8aada1788558704514ae0fb9f716b1e5e8fd8abfdda3630f0b9d61d6e8",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_47/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_48/target_all_eval.jsonl",
+      "rows": 364364,
+      "sha256": "ac2f083fa4dc64749d835423515d66d8a2c13ac910e0ba045893679434434bbf",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_48/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_49/target_all_eval.jsonl",
+      "rows": 203018,
+      "sha256": "1e117a8665e960ff1edc1b5f6526b7ad36887cdee7851a394dc697034f25f465",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_49/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_5/target_all_eval.jsonl",
+      "rows": 286152,
+      "sha256": "a5cf9714b8a6bc3ddf1097049a18645f48e091b6578e9d1157a6c2688e0d830c",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_5/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_50/target_all_eval.jsonl",
+      "rows": 135973,
+      "sha256": "5447411863ecd83e810a1c48b7a77b1d64b67c31bad8700a526766c27129122e",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_50/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_51/target_all_eval.jsonl",
+      "rows": 236397,
+      "sha256": "2acf28ad70b2af36e365553f5405aee7c7e55a5530ab3827caf56b249aa515ff",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_51/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_52/target_all_eval.jsonl",
+      "rows": 276203,
+      "sha256": "7bf50b7120051e88c33cfeca492b81b2df26837c3ca5e2a5d3828da4ba122c30",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_52/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_53/target_all_eval.jsonl",
+      "rows": 352033,
+      "sha256": "7f2d69420fe33bd27405bc3f2bb22e25717b22567bdf212150a4aa7cc712c56b",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_53/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_54/target_all_eval.jsonl",
+      "rows": 287373,
+      "sha256": "5e7b2b781db8b08cfe25816f78478d41fc20f85ac602db3287f4c0c456f22c16",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_54/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_55/target_all_eval.jsonl",
+      "rows": 271230,
+      "sha256": "4e10315efbef675f7ec8a11fbe1db20fd649bddee514cbc470cfaf87b24e3365",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_55/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_56/target_all_eval.jsonl",
+      "rows": 451674,
+      "sha256": "4f93541bb89733eb7f8685a56dd299ee40f06b0497d0632e5943a64558fe6c45",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_56/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_57/target_all_eval.jsonl",
+      "rows": 262650,
+      "sha256": "ef35497f2aec4ab76e3836382b7d57f66cd29f1992390a87d22b891b538a504f",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_57/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_58/target_all_eval.jsonl",
+      "rows": 312887,
+      "sha256": "ab9ba80ecffdf8dc198c46050aa508e796a776fdba734ffcef445f7a291d0209",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_58/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_59/target_all_eval.jsonl",
+      "rows": 354141,
+      "sha256": "fa60b03689df23b31d0fb2ab8bf78e611bbe0dbba2b5a11735251ef2e0f97a67",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_59/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_6/target_all_eval.jsonl",
+      "rows": 361217,
+      "sha256": "7bc68b686caf5d1a9c8b38cfb0591e1127f72aa7ab968f7c62503e51b38f4f1f",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_6/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_60/target_all_eval.jsonl",
+      "rows": 257759,
+      "sha256": "ae9967b4c4bbe5e6bca73dac778f51eee6c84bca3da0ba1529479a4956cace7c",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_60/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_61/target_all_eval.jsonl",
+      "rows": 257391,
+      "sha256": "f1f9824a97109aa87b11c580ce8dd53272c3cf60eb5da322a8569e4ec9fc1731",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_61/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_62/target_all_eval.jsonl",
+      "rows": 370550,
+      "sha256": "1d1be47831d4e3edb8f9aa902cbf8ba683372319f937168998a4947d548fc007",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_62/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_63/target_all_eval.jsonl",
+      "rows": 333176,
+      "sha256": "b4d328aa61d370eac67e747686f79262d85d846511bd93dbf84eb50189384b34",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_63/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_7/target_all_eval.jsonl",
+      "rows": 295062,
+      "sha256": "b095d9273368e0c78e33d6f77515ea725b1f257efef04dd5e87580065f6642ac",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_7/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_8/target_all_eval.jsonl",
+      "rows": 282862,
+      "sha256": "719afa693e4c1efedb5901074111d060331d0a4da3d3d157d7bc64366642ff51",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_8/target_all_eval.jsonl"
+    },
+    {
+      "output_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_9/target_all_eval.jsonl",
+      "rows": 436871,
+      "sha256": "face21aeb207fb2fe21111facb681b11cbda307adca8b59983f782d2c7b3abd3",
+      "input_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_9/target_all_eval.jsonl"
+    }
+  ],
+  "wall_clock_seconds": 2586.980797767639,
+  "claim_boundary": "Adds non-label compact luma windows for NEP-style IDM context; D2E event-token targets are preserved unchanged."
+}
