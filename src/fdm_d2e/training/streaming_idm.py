@@ -3879,14 +3879,18 @@ def _predict_stream(
             )
             seed_state = _action_history_seed_state_from_records(train_paths, history_len=action_history_len)
             histories, button_states = _load_action_history_seed_state(seed_state)
-    if residual_mouse and config.get("train_records"):
-        train_paths = _record_paths_from_config(
-            config,
-            primary_key="train_records",
-            paths_key="train_record_paths",
-            glob_key="train_records_glob",
-        )
-        last_mouse_by_recording, last_mouse_by_game, last_mouse_fallback = _seed_streaming_mouse_delta_state(train_paths)
+    if residual_mouse:
+        mouse_seed_state = _load_streaming_mouse_seed_state(config.get("_streaming_mouse_seed_state"))
+        if mouse_seed_state is not None:
+            last_mouse_by_recording, last_mouse_by_game, last_mouse_fallback = mouse_seed_state
+        elif config.get("train_records") or config.get("train_record_paths") or config.get("train_records_glob"):
+            train_paths = _record_paths_from_config(
+                config,
+                primary_key="train_records",
+                paths_key="train_record_paths",
+                glob_key="train_records_glob",
+            )
+            last_mouse_by_recording, last_mouse_by_game, last_mouse_fallback = _seed_streaming_mouse_delta_state(train_paths)
     if resume_predictions:
         pseudo_exists = pseudo_path.exists()
         predictions_exists = predictions_path.exists()

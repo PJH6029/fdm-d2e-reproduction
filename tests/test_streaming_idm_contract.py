@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+import fdm_d2e.training.streaming_idm as streaming_idm
 from fdm_d2e.training.streaming_idm import (
     MOUSE_AXIS_CLASSES,
     _barrier,
@@ -1415,6 +1416,69 @@ def test_streaming_idm_recovers_action_history_outputs_with_parallel_prediction_
     assert metadata["action_history_len"] == 2
     assert metadata["action_history_feedback"] == "autoregressive_predicted"
     assert len((output_dir / "predictions.jsonl").read_text().splitlines()) == 5
+
+
+def test_streaming_idm_prediction_prefers_residual_mouse_seed_state(monkeypatch, tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    torch = streaming_idm.require_torch()
+    target_path = tmp_path / "target.jsonl"
+    train_path = tmp_path / "train.jsonl"
+    row = {
+        **_record(10, "eval"),
+        "__streaming_idm_features": [0.0, 0.0],
+        "ground_truth_tokens": ["MOUSE_DX_P5", "MOUSE_DY_N2"],
+    }
+    _write_jsonl(target_path, [row])
+    _write_jsonl(train_path, [{**_record(1, "train_core"), "ground_truth_tokens": ["MOUSE_DX_N1", "MOUSE_DY_Z0"]}])
+    captured_inputs = []
+
+    class ZeroModel(torch.nn.Module):
+        def forward(self, x):
+            captured_inputs.append(x.detach().cpu().tolist())
+            return torch.zeros((x.shape[0], 2 + 2 * len(MOUSE_AXIS_CLASSES)), dtype=torch.float32, device=x.device)
+
+    def fail_seed_scan(*_args, **_kwargs):
+        raise AssertionError("provided streaming mouse seed state must avoid train-record rescans")
+
+    monkeypatch.setattr(streaming_idm, "_seed_streaming_mouse_delta_state", fail_seed_scan)
+    result = streaming_idm._predict_stream(
+        torch,
+        ZeroModel(),
+        target_records=target_path,
+        stats={
+            "feature_mode": "summary_compact_grid8_shift_surface_time",
+            "mean": [0.0, 0.0, 0.0, 0.0],
+            "std": [1.0, 1.0, 1.0, 1.0],
+            "dataset_fingerprint": "unit_fingerprint",
+            "action_history_len": 0,
+        },
+        config={
+            "model_name": "tiny_seed_state_idm",
+            "train_records": str(train_path),
+            "mouse_target_mode": "residual_last_seen",
+            "mouse_head_mode": "axis_softmax",
+            "validate_pseudolabels": False,
+            "_streaming_mouse_seed_state": {
+                "schema": "streaming_idm_mouse_seed_state.v1",
+                "source": "unit",
+                "workers": 0,
+                "recordings": 1,
+                "games": 0,
+                "last_by_recording": {"d2e_480p:Apex/rec": [5.0, -2.0]},
+                "last_by_game": {},
+                "fallback": [0.0, 0.0],
+            },
+        },
+        device="cpu",
+        category_vocab=[],
+        mouse_axis_classes=MOUSE_AXIS_CLASSES,
+        checkpoint_path=tmp_path / "checkpoint.pt",
+        output_dir=tmp_path / "predict",
+    )
+
+    assert result["target_records"] == 1
+    assert captured_inputs[0][0][-2:] == [5.0, -2.0]
 
 
 def test_streaming_idm_train_summary_uses_parallel_final_prediction(tmp_path: Path):
