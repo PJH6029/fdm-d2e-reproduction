@@ -64,6 +64,7 @@ def _build_mlp(torch, input_dim: int, output_dim: int, hidden_dim: int, depth: i
 def _luma_temporal_layout(input_dim: int, feature_mode: str, config: dict[str, Any]) -> dict[str, int]:
     supported_modes = {
         "summary_luma16_stack5_time",
+        "summary_compact_luma16_window5_time",
         "summary_compact_luma16_pair_time",
         "summary_compact_luma16_pair_shift_time",
         "summary_compact_luma16_pair_shift_time_prior_action",
@@ -76,14 +77,15 @@ def _luma_temporal_layout(input_dim: int, feature_mode: str, config: dict[str, A
     plane_dim = luma_size * luma_size
     if luma_size <= 0:
         raise ValueError("visual_luma_size must be positive")
-    if feature_mode == "summary_luma16_stack5_time":
+    if feature_mode in {"summary_luma16_stack5_time", "summary_compact_luma16_window5_time"}:
         stack_frames = int(config.get("visual_stack_frames", 5))
         if stack_frames < 2:
             raise ValueError("visual_stack_frames must be >=2")
         if luma_size != 16 or stack_frames != 5:
-            raise ValueError("summary_luma16_stack5_time requires visual_luma_size=16 and visual_stack_frames=5")
+            raise ValueError(f"{feature_mode} requires visual_luma_size=16 and visual_stack_frames=5")
         visual_planes = stack_frames + (stack_frames - 1)
-        expected_feature_dim = summary_dim + (visual_planes * plane_dim) + temporal_dim
+        mask_dim = stack_frames if feature_mode == "summary_compact_luma16_window5_time" else 0
+        expected_feature_dim = summary_dim + (visual_planes * plane_dim) + mask_dim + temporal_dim
     elif feature_mode == "summary_compact_luma16_pair_time":
         if luma_size != 16:
             raise ValueError(f"{feature_mode} requires visual_luma_size=16")

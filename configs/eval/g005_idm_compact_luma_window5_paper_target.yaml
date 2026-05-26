@@ -1,0 +1,49 @@
+{
+  "schema": "g005_idm_paper_target_config.v1",
+  "goal_id": "G005-idm-full-paper-target",
+  "model_name": "streaming_idm_d2e_full_compact_luma_window5_paper_target",
+  "output_path": "artifacts/idm/g005_idm_compact_luma_window5_paper_target_audit.json",
+  "expected_gpus": 4,
+  "min_gpu_monitor_rows": 4,
+  "require_gpu_monitor_covers_expected_gpus": true,
+  "min_train_records": 19211006,
+  "min_target_records": 16698646,
+  "paper_target_margin": 0.0,
+  "require_all_splits_beat_targets": false,
+  "required_splits": ["temporal", "heldout_recording", "heldout_game"],
+  "paths": {
+    "gidm_baseline_contract": "artifacts/eval/g003_gidm_baseline_contract.json",
+    "paper_metrics": "artifacts/idm/g005_idm_compact_luma_window5_paper_metrics.json",
+    "checkpoint": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/checkpoint.pt",
+    "checkpoint_metadata": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/checkpoint_metadata.json",
+    "train_summary": "artifacts/idm/idm_streaming_d2e_full_compact_luma_window5_paper_target_summary.json",
+    "run_summary": "artifacts/idm/g005_idm_compact_luma_window5_4xh200_run.json",
+    "split_stats_summary": "artifacts/eval/g005_idm_compact_luma_window5_split_statistical_comparisons_summary.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_compact_luma_window5_4xh200_gpu_monitor.csv"
+  },
+  "paper_metrics": {
+    "model_name": "streaming_idm_d2e_full_compact_luma_window5_paper_target",
+    "output_path": "artifacts/idm/g005_idm_compact_luma_window5_paper_metrics.json",
+    "progress_output_path": "artifacts/idm/g005_idm_compact_luma_window5_paper_metrics_progress.json",
+    "progress_rows": 1000000,
+    "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_paper_target/predictions.jsonl",
+    "target_path": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_*/target_all_eval.jsonl",
+    "split_tags": ["temporal", "heldout_recording", "heldout_game"],
+    "empty_bins_as_correct": false
+  },
+  "strict_local_targets": [
+    {
+      "name": "mouse_button_f1",
+      "path": ["strict_local", "mouse_button", "f1"],
+      "direction": "higher",
+      "baseline": 0.27259490490800825,
+      "min_delta": 0.02
+    },
+    {
+      "name": "no_button_false_positive_rate",
+      "path": ["strict_local", "mouse_button", "no_button_false_positive_rate"],
+      "direction": "lower",
+      "target": 0.10
+    }
+  ]
+}

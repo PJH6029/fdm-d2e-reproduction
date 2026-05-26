@@ -152,6 +152,23 @@ def test_g005_video_stack_offset_candidate_separates_precompute_training_and_rec
     assert "scripts/validate_g005_idm_paper_target.py --config \"$PAPER_TARGET_CONFIG\"" in recovery
 
 
+def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
+    text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
+    config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())
+    paper = json.loads((ROOT / "configs/eval/g005_idm_compact_luma_window5_paper_target.yaml").read_text())
+
+    materialize_idx = text.index("scripts/materialize_d2e_luma_window_corpus.py")
+    cache_idx = text.index("scripts/precompute_streaming_idm_training_cache.py")
+    train_idx = text.index("scripts/run_g005_idm_surface_paper_target_4xh200.sh")
+    assert materialize_idx < cache_idx < train_idx
+    assert "--offsets \"${WINDOW_OFFSETS:--2,-1,0,1,2}\"" in text
+    assert "outputs/data/d2e_luma_window5_corpus_shards_accel64" in text
+    assert 'WANDB_TAGS="${WANDB_TAGS:-g005,idm,d2e,compact-luma-window5,pipeline}"' in text
+    assert config["feature_mode"] == "summary_compact_luma16_window5_time"
+    assert config["model_arch"] == "luma_temporal_conv"
+    assert paper["paper_metrics"]["empty_bins_as_correct"] is False
+
+
 def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
     text = _script("scripts/run_g004_d2e_full_fdm_4xh200.sh")
     assert 'PID_FILE="${PID_FILE:-outputs/cluster/g004_d2e_full_fdm_4xh200.pid}"' in text

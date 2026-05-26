@@ -452,6 +452,42 @@ def _luma_stack_features(
     return values
 
 
+def _compact_luma_window_features(
+    row: dict[str, Any],
+    *,
+    expected_frames: int = 5,
+    luma_size: int = 16,
+    include_deltas: bool = True,
+) -> list[float]:
+    plane_len = int(luma_size) * int(luma_size)
+    raw_window = row.get("compact_luma_window", [])
+    raw_mask = row.get("compact_luma_window_mask", [])
+    planes: list[list[float]] = []
+    mask: list[float] = []
+    if isinstance(raw_window, list):
+        for idx in range(expected_frames):
+            values = raw_window[idx] if idx < len(raw_window) else []
+            if isinstance(values, list) and len(values) == plane_len:
+                planes.append([float(value) for value in values])
+                present = raw_mask[idx] if isinstance(raw_mask, list) and idx < len(raw_mask) else 1.0
+                mask.append(1.0 if float(present) > 0.0 else 0.0)
+            else:
+                planes.append([0.0 for _ in range(plane_len)])
+                mask.append(0.0)
+    while len(planes) < expected_frames:
+        planes.append([0.0 for _ in range(plane_len)])
+        mask.append(0.0)
+    values = [value for plane in planes for value in plane]
+    if include_deltas:
+        for idx in range(expected_frames - 1):
+            if mask[idx] and mask[idx + 1]:
+                values.extend(float(next_value - cur_value) for cur_value, next_value in zip(planes[idx], planes[idx + 1]))
+            else:
+                values.extend(0.0 for _ in range(plane_len))
+    values.extend(mask[:expected_frames])
+    return values
+
+
 def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> list[float]:
     base = _summary_features(row)
     if feature_mode == "summary":
@@ -486,6 +522,8 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
         )
     if feature_mode == "summary_luma16_stack5_time":
         return base + _luma_stack_features(row, offsets=(-2, -1, 0, 1, 2), luma_size=16) + _temporal_basis_features(row)
+    if feature_mode == "summary_compact_luma16_window5_time":
+        return base + _compact_luma_window_features(row, expected_frames=5, luma_size=16) + _temporal_basis_features(row)
     raise ValueError(f"unsupported IDM feature_mode: {feature_mode}")
 
 
