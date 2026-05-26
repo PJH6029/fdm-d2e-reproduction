@@ -1,0 +1,412 @@
+{
+  "aggregate_target_results": [
+    {
+      "actual": 2.2590267094887574e-05,
+      "direction": "higher",
+      "margin": 0.0,
+      "name": "pearson_x",
+      "passed": false,
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "pearson_x"
+      ],
+      "target": 0.796
+    },
+    {
+      "actual": -0.0007260909813175689,
+      "direction": "higher",
+      "margin": 0.0,
+      "name": "pearson_y",
+      "passed": false,
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "pearson_y"
+      ],
+      "target": 0.783
+    },
+    {
+      "actual": 0.0026504556098955415,
+      "direction": "higher",
+      "margin": 0.0,
+      "name": "keyboard_accuracy",
+      "passed": false,
+      "path": [
+        "paper_compatible",
+        "keyboard",
+        "key_accuracy"
+      ],
+      "target": 0.73
+    },
+    {
+      "actual": 0.010314822989440016,
+      "direction": "higher",
+      "margin": 0.0,
+      "name": "mouse_button_accuracy",
+      "passed": false,
+      "path": [
+        "paper_compatible",
+        "mouse_button",
+        "button_accuracy"
+      ],
+      "target": 0.957
+    },
+    {
+      "actual": 1.8482618503562676,
+      "direction": "lower",
+      "margin": 0.0,
+      "name": "scale_ratio_x",
+      "passed": false,
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "scale_ratio_x"
+      ],
+      "target": 1.23
+    },
+    {
+      "actual": 1.0542327240301033,
+      "direction": "lower",
+      "margin": 0.0,
+      "name": "scale_ratio_y",
+      "passed": true,
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "scale_ratio_y"
+      ],
+      "target": 1.31
+    }
+  ],
+  "checkpoint_exists": true,
+  "checkpoint_link": {
+    "created": false,
+    "exists": true,
+    "mode": "existing",
+    "sha256": "b87e122cfc88165c8724553a749677887ac4f6d43e8ce85aa1c287186cef8b9a",
+    "source": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/checkpoint.pt",
+    "target": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/checkpoint.pt"
+  },
+  "checkpoint_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/checkpoint.pt",
+  "checkpoint_sha256": "b87e122cfc88165c8724553a749677887ac4f6d43e8ce85aa1c287186cef8b9a",
+  "claim_boundary": "Checkpoint recovery finalization validates a full-corpus G005 IDM candidate from an already-trained 4xH200 checkpoint. It is evidence for the recovered candidate, not a fresh training run and not FDM-1 parity.",
+  "exit_code": 0,
+  "expected_gpus": 4,
+  "g005_audit_error_count": 8,
+  "g005_audit_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/artifacts/idm/g005_idm_compact_luma_window5_residual_paper_target_audit.json",
+  "g005_audit_status": "fail",
+  "git_head": "a5062750be49565cb66a0ebfd989a4a2d9587fd6",
+  "git_status_short": "?? artifacts/eval/g005_idm_compact_luma_window5_residual_split_statistical_comparisons_summary.json\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_4xh200.log\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_4xh200_gpu_monitor.csv\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_4xh200_run.json\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_finalization.log\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_launcher.log\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_paper_metrics.json\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_precompute.log\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_precompute_progress.json\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_precompute_wandb_status.json\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_precomputed_cache_validation.json\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_prediction_wandb_sidecar.log\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_prediction_wandb_sidecar_status.json\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_recovery.log\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_wandb_sidecar.log\n?? artifacts/idm/g005_idm_compact_luma_window5_residual_wandb_sidecar_status.json\n?? artifacts/idm/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target_summary.json",
+  "gpu_monitor_log": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/artifacts/idm/g005_idm_compact_luma_window5_residual_4xh200_gpu_monitor.csv",
+  "gpu_monitor_sha256": "ea3c0e189a757cf4057f8b1183251cfbecbbfd78796be4f2ad54192d574bc372",
+  "gpu_monitor_status": {
+    "covers_expected_gpus": true,
+    "expected_gpus": 4,
+    "rows": 148,
+    "sample_count": 37,
+    "unique_gpu_indices": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  "metadata_exists": true,
+  "metadata_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/checkpoint_metadata.json",
+  "nproc_per_node": 4,
+  "paper_metrics_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/artifacts/idm/g005_idm_compact_luma_window5_residual_paper_metrics.json",
+  "paper_metrics_rows": 16698646,
+  "paper_metrics_status": "pass",
+  "paper_target_config": "configs/eval/g005_idm_compact_luma_window5_residual_paper_target.yaml",
+  "prediction_resume": {
+    "action_history_seed_state_summary": {
+      "history_len": 4,
+      "recordings": 642,
+      "source": "stats_tail"
+    },
+    "enabled": false,
+    "existing_rows": 0,
+    "parts": [
+      {
+        "part_index": 0,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_000/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_000/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_0/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_1/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_10/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_11/target_all_eval.jsonl"
+        ],
+        "records": 1089390
+      },
+      {
+        "part_index": 1,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_001/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_001/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_12/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_13/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_14/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_15/target_all_eval.jsonl"
+        ],
+        "records": 1018173
+      },
+      {
+        "part_index": 2,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_002/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_002/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_16/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_17/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_18/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_19/target_all_eval.jsonl"
+        ],
+        "records": 898692
+      },
+      {
+        "part_index": 3,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_003/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_003/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_2/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_20/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_21/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_22/target_all_eval.jsonl"
+        ],
+        "records": 986551
+      },
+      {
+        "part_index": 4,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_004/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_004/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_23/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_24/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_25/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_26/target_all_eval.jsonl"
+        ],
+        "records": 681790
+      },
+      {
+        "part_index": 5,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_005/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_005/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_27/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_28/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_29/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_3/target_all_eval.jsonl"
+        ],
+        "records": 907924
+      },
+      {
+        "part_index": 6,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_006/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_006/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_30/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_31/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_32/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_33/target_all_eval.jsonl"
+        ],
+        "records": 769740
+      },
+      {
+        "part_index": 7,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_007/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_007/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_34/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_35/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_36/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_37/target_all_eval.jsonl"
+        ],
+        "records": 898715
+      },
+      {
+        "part_index": 8,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_008/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_008/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_38/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_39/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_4/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_40/target_all_eval.jsonl"
+        ],
+        "records": 888529
+      },
+      {
+        "part_index": 9,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_009/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_009/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_41/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_42/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_43/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_44/target_all_eval.jsonl"
+        ],
+        "records": 1015028
+      },
+      {
+        "part_index": 10,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_010/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_010/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_45/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_46/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_47/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_48/target_all_eval.jsonl"
+        ],
+        "records": 1519495
+      },
+      {
+        "part_index": 11,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_011/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_011/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_49/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_5/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_50/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_51/target_all_eval.jsonl"
+        ],
+        "records": 861540
+      },
+      {
+        "part_index": 12,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_012/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_012/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_52/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_53/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_54/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_55/target_all_eval.jsonl"
+        ],
+        "records": 1186839
+      },
+      {
+        "part_index": 13,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_013/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_013/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_56/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_57/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_58/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_59/target_all_eval.jsonl"
+        ],
+        "records": 1381352
+      },
+      {
+        "part_index": 14,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_014/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_014/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_6/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_60/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_61/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_62/target_all_eval.jsonl"
+        ],
+        "records": 1246917
+      },
+      {
+        "part_index": 15,
+        "predictions_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_015/predictions.jsonl",
+        "pseudo_label_path": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_parts/part_015/pseudolabels.jsonl",
+        "record_paths": [
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_63/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_7/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_8/target_all_eval.jsonl",
+          "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_9/target_all_eval.jsonl"
+        ],
+        "records": 1347971
+      }
+    ],
+    "pseudolabel_validation": false,
+    "workers": 16,
+    "write_mode": "parallel_parts"
+  },
+  "predictions_bytes": 7045739683,
+  "predictions_exists": true,
+  "predictions_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/predictions.jsonl",
+  "pseudolabels_bytes": 11192946301,
+  "pseudolabels_exists": true,
+  "pseudolabels_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/pseudolabels.jsonl",
+  "recovery_command": "python scripts/recover_idm_streaming_outputs.py --config configs/model/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target.yaml --prediction-workers 16 --prediction-cuda-devices 0,1,2,3 --no-resume-predictions --no-pseudolabel-validation",
+  "recovery_summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/prediction_recovery_summary.json",
+  "recovery_summary_status": "pass",
+  "run_summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/artifacts/idm/g005_idm_compact_luma_window5_residual_4xh200_run.json",
+  "schema": "g005_idm_checkpoint_recovery_finalization_run.v1",
+  "source_checkpoint_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/checkpoint.pt",
+  "source_checkpoint_sha256": "b87e122cfc88165c8724553a749677887ac4f6d43e8ce85aa1c287186cef8b9a",
+  "source_run_summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/artifacts/idm/g005_idm_compact_luma_window5_residual_4xh200_run.json",
+  "source_run_summary_status": null,
+  "source_stats_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/streaming_stats.json",
+  "source_stats_sha256": "f5f6e968c8ad42a7a0e72cf5b152158879695265caec933b0468c1be37f2b526",
+  "split_statistics_output_dir": "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target",
+  "split_stats_config": "configs/eval/g005_idm_compact_luma_window5_residual_split_statistics.yaml",
+  "split_stats_outputs": [
+    {
+      "comparisons": 21,
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/split_temporal_statistical_comparison.json",
+      "split": "temporal",
+      "status": "pass"
+    },
+    {
+      "comparisons": 21,
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/split_heldout_recording_statistical_comparison.json",
+      "split": "heldout_recording",
+      "status": "pass"
+    },
+    {
+      "comparisons": 21,
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/split_heldout_game_statistical_comparison.json",
+      "split": "heldout_game",
+      "status": "pass"
+    }
+  ],
+  "split_stats_status": "pass",
+  "split_stats_summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/artifacts/eval/g005_idm_compact_luma_window5_residual_split_statistical_comparisons_summary.json",
+  "stats_link": {
+    "created": false,
+    "exists": true,
+    "mode": "existing",
+    "sha256": "f5f6e968c8ad42a7a0e72cf5b152158879695265caec933b0468c1be37f2b526",
+    "source": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/streaming_stats.json",
+    "target": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/streaming_stats.json"
+  },
+  "status": "pass",
+  "strict_target_results": [
+    {
+      "actual": 0.019495182858141873,
+      "baseline": 0.27259490490800825,
+      "direction": "higher",
+      "min_delta": 0.02,
+      "name": "mouse_button_f1",
+      "passed": false,
+      "path": [
+        "strict_local",
+        "mouse_button",
+        "f1"
+      ],
+      "target": 0.29259490490800827
+    },
+    {
+      "actual": 0.12417762863806965,
+      "baseline": null,
+      "direction": "lower",
+      "min_delta": 0.0,
+      "name": "no_button_false_positive_rate",
+      "passed": false,
+      "path": [
+        "strict_local",
+        "mouse_button",
+        "no_button_false_positive_rate"
+      ],
+      "target": 0.1
+    }
+  ],
+  "target_records": 16698646,
+  "train_records": 19211006,
+  "train_summary_exists": true,
+  "train_summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-residual-740fb02/artifacts/idm/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target_summary.json"
+}
