@@ -1669,7 +1669,7 @@ def _training_cache_identity(
         "action_history_vocab": list(stats.get("action_history_vocab", [])),
         "action_history_dim": int(stats.get("action_history_dim", 0)),
         "action_history_parallel_by_path": _action_history_parallel_by_path(config),
-        "cache_version": 5,
+        "cache_version": int(config.get("training_cache_identity_version", 5)),
     }
 
 
