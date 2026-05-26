@@ -930,6 +930,11 @@ def test_streaming_idm_softmax_exactset_heads_roundtrip_cache_and_prediction(tmp
     metadata = summary["metadata"]
     assert metadata["keyboard_head_mode"] == "softmax"
     assert metadata["button_head_mode"] == "softmax"
+    assert metadata["calibration"]["softmax"]["status"] == "computed"
+    assert "keyboard" in metadata["calibration"]["softmax"]["heads"]
+    assert "button" in metadata["calibration"]["softmax"]["heads"]
+    assert isinstance(metadata["calibration"]["keyboard_softmax_threshold"], float)
+    assert isinstance(metadata["calibration"]["button_softmax_threshold"], float)
     assert ("KEY_PRESS_87",) in {tuple(row) for row in metadata["keyboard_classes"]}
     assert ("MOUSE_LEFT_DOWN",) in {tuple(row) for row in metadata["button_classes"]}
     assert "KEY_PRESS_87" not in metadata["categorical_vocab"]

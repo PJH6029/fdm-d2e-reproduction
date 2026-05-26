@@ -2980,6 +2980,232 @@ def _group_threshold_label(group: str) -> str:
     return "no_event"
 
 
+def _softmax_threshold_label(head: str) -> str:
+    if head == "keyboard":
+        return "no_key"
+    if head == "button":
+        return "no_button"
+    return "no_event"
+
+
+def _select_softmax_threshold(
+    counts_by_threshold: dict[float, dict[str, int]],
+    *,
+    default_threshold: float,
+    beta: float,
+    max_no_event_fpr: float | None,
+) -> tuple[float, dict[str, Any]]:
+    best_threshold = float(default_threshold)
+    best_key: tuple[float, float, float, float] = (-1.0, -1.0, -1.0, float(default_threshold))
+    best_stats: dict[str, Any] = {}
+    fallback_threshold = float(default_threshold)
+    fallback_key: tuple[float, float, float, float, float] = (float("inf"), float("inf"), float("inf"), float("inf"), float("inf"))
+    fallback_stats: dict[str, Any] = {}
+    eligible_count = 0
+    for threshold in sorted(counts_by_threshold):
+        counts = dict(counts_by_threshold[threshold])
+        score, precision, recall = _fbeta_score(counts.get("tp", 0), counts.get("fp", 0), counts.get("fn", 0), beta)
+        no_event_examples = int(counts.get("no_event_examples", 0))
+        no_event_fp = int(counts.get("no_event_false_positive_examples", 0))
+        no_event_fpr = no_event_fp / no_event_examples if no_event_examples else None
+        stats = {
+            **counts,
+            "score": score,
+            "precision": precision,
+            "recall": recall,
+            "no_event_false_positive_rate": no_event_fpr,
+            "max_no_event_false_positive_rate": max_no_event_fpr,
+        }
+        constraint_satisfied = max_no_event_fpr is None or no_event_fpr is None or no_event_fpr <= max_no_event_fpr
+        stats["constraint_satisfied"] = bool(constraint_satisfied)
+        fallback_sort_fpr = no_event_fpr if no_event_fpr is not None else 0.0
+        fallback_candidate_key = (fallback_sort_fpr, -score, -precision, -recall, -float(threshold))
+        if fallback_candidate_key < fallback_key:
+            fallback_key = fallback_candidate_key
+            fallback_threshold = float(threshold)
+            fallback_stats = stats
+        if not constraint_satisfied:
+            continue
+        eligible_count += 1
+        key = (score, precision, recall, float(threshold))
+        if key > best_key:
+            best_key = key
+            best_threshold = float(threshold)
+            best_stats = stats
+    if not best_stats and fallback_stats:
+        best_threshold = fallback_threshold
+        best_stats = fallback_stats
+    best_stats["eligible_thresholds"] = eligible_count
+    return best_threshold, best_stats
+
+
+def _softmax_calibration_grid(config: dict[str, Any], *, head: str) -> list[float]:
+    raw_grid = config.get(f"{head}_softmax_calibration_grid", config.get("softmax_calibration_grid"))
+    if isinstance(raw_grid, list) and raw_grid:
+        grid = [float(value) for value in raw_grid]
+    else:
+        grid = [0.0] + [round(value / 100.0, 4) for value in range(5, 100, 5)]
+    return sorted({min(0.999, max(0.0, value)) for value in grid})
+
+
+def _softmax_calibration_fpr_cap(config: dict[str, Any], *, head: str) -> float | None:
+    if head == "keyboard":
+        keys = ("keyboard_softmax_calibration_max_no_key_fpr", "softmax_calibration_max_no_key_fpr")
+    elif head == "button":
+        keys = ("button_softmax_calibration_max_no_button_fpr", "softmax_calibration_max_no_button_fpr")
+    else:
+        keys = ()
+    for key in keys:
+        value = config.get(key)
+        if value is None:
+            continue
+        cap = float(value)
+        if cap < 0.0 or cap > 1.0:
+            raise ValueError(f"{key} must be between 0 and 1")
+        return cap
+    return None
+
+
+def _calibrate_streaming_softmax_thresholds_from_cache(
+    torch,
+    model,
+    *,
+    training_cache_manifests: Sequence[dict[str, Any]],
+    config: dict[str, Any],
+    device: str,
+    category_vocab: list[str],
+    keyboard_classes: list[tuple[str, ...]],
+    button_classes: list[tuple[str, ...]],
+) -> dict[str, Any]:
+    """Choose exact-set softmax emission thresholds from train-cache labels.
+
+    Cross-entropy can rank the correct non-empty exact-set class while still
+    assigning too many low-confidence positive classes at inference time. This
+    calibrates the emit/no-emit threshold without touching heldout labels.
+    """
+
+    keyboard_enabled = str(config.get("keyboard_head_mode", "multilabel")) == "softmax" and bool(keyboard_classes)
+    button_enabled = str(config.get("button_head_mode", "multilabel")) == "softmax" and bool(button_classes)
+    if not keyboard_enabled and not button_enabled:
+        return {"status": "skipped_no_softmax_heads"}
+    batch_size = int(config.get("softmax_calibration_batch_size", config.get("category_calibration_batch_size", config.get("eval_batch_size", config.get("batch_size", 2048)))))
+    max_examples = config.get("softmax_calibration_max_examples", config.get("category_calibration_max_examples"))
+    beta = float(config.get("softmax_calibration_beta", config.get("category_calibration_beta", 1.0)))
+    grids = {
+        "keyboard": _softmax_calibration_grid(config, head="keyboard"),
+        "button": _softmax_calibration_grid(config, head="button"),
+    }
+    counts: dict[str, dict[float, dict[str, int]]] = {
+        "keyboard": {
+            threshold: {"tp": 0, "fp": 0, "fn": 0, "predicted_positive": 0, "positive_examples": 0, "no_event_examples": 0, "no_event_false_positive_examples": 0}
+            for threshold in grids["keyboard"]
+        },
+        "button": {
+            threshold: {"tp": 0, "fp": 0, "fn": 0, "predicted_positive": 0, "positive_examples": 0, "no_event_examples": 0, "no_event_false_positive_examples": 0}
+            for threshold in grids["button"]
+        },
+    }
+    observed_examples = 0
+    model.eval()
+    with torch.no_grad():
+        for x, _mouse_y, _cat_y, keyboard_y, button_y, _dx_y, _dy_y, batch_rows in _iter_training_cache_batches(
+            torch,
+            training_cache_manifests,
+            batch_size=batch_size,
+            device=device,
+            max_examples=max_examples,
+            rank=0,
+            world_size=1,
+            shard_by_path=False,
+            shard_assignment=str(config.get("training_cache_shard_assignment", "greedy_rows")),
+        ):
+            outputs = model(x)
+            category_end = 2 + len(category_vocab)
+            keyboard_end = category_end + (len(keyboard_classes) if keyboard_enabled else 0)
+            if keyboard_enabled:
+                if keyboard_y is None:
+                    raise ValueError("training cache is missing keyboard targets for keyboard softmax calibration")
+                logits = outputs[:, category_end:keyboard_end]
+                probs = torch.softmax(logits, dim=1)
+                best_prob, best_idx = probs.max(dim=1)
+                labels = keyboard_y
+                for threshold in grids["keyboard"]:
+                    pred_idx = torch.where(
+                        (best_idx != 0) & (best_prob >= float(threshold)),
+                        best_idx,
+                        torch.zeros_like(best_idx),
+                    )
+                    label_positive = labels != 0
+                    pred_positive = pred_idx != 0
+                    exact = pred_idx == labels
+                    row = counts["keyboard"][threshold]
+                    row["tp"] += int((label_positive & exact).sum().detach().cpu().item())
+                    row["fn"] += int((label_positive & ~exact).sum().detach().cpu().item())
+                    row["fp"] += int(((~label_positive & pred_positive) | (label_positive & pred_positive & ~exact)).sum().detach().cpu().item())
+                    row["predicted_positive"] += int(pred_positive.sum().detach().cpu().item())
+                    row["positive_examples"] += int(label_positive.sum().detach().cpu().item())
+                    row["no_event_examples"] += int((~label_positive).sum().detach().cpu().item())
+                    row["no_event_false_positive_examples"] += int((~label_positive & pred_positive).sum().detach().cpu().item())
+            button_start = keyboard_end
+            button_end = button_start + (len(button_classes) if button_enabled else 0)
+            if button_enabled:
+                if button_y is None:
+                    raise ValueError("training cache is missing button targets for button softmax calibration")
+                logits = outputs[:, button_start:button_end]
+                probs = torch.softmax(logits, dim=1)
+                best_prob, best_idx = probs.max(dim=1)
+                labels = button_y
+                for threshold in grids["button"]:
+                    pred_idx = torch.where(
+                        (best_idx != 0) & (best_prob >= float(threshold)),
+                        best_idx,
+                        torch.zeros_like(best_idx),
+                    )
+                    label_positive = labels != 0
+                    pred_positive = pred_idx != 0
+                    exact = pred_idx == labels
+                    row = counts["button"][threshold]
+                    row["tp"] += int((label_positive & exact).sum().detach().cpu().item())
+                    row["fn"] += int((label_positive & ~exact).sum().detach().cpu().item())
+                    row["fp"] += int(((~label_positive & pred_positive) | (label_positive & pred_positive & ~exact)).sum().detach().cpu().item())
+                    row["predicted_positive"] += int(pred_positive.sum().detach().cpu().item())
+                    row["positive_examples"] += int(label_positive.sum().detach().cpu().item())
+                    row["no_event_examples"] += int((~label_positive).sum().detach().cpu().item())
+                    row["no_event_false_positive_examples"] += int((~label_positive & pred_positive).sum().detach().cpu().item())
+            observed_examples += int(batch_rows)
+    result: dict[str, Any] = {
+        "status": "computed" if observed_examples else "no_calibration_examples",
+        "source": "training_cache",
+        "observed_examples": int(observed_examples),
+        "max_examples": max_examples,
+        "beta": beta,
+        "heads": {},
+    }
+    for head, enabled, default_key in [
+        ("keyboard", keyboard_enabled, "keyboard_softmax_threshold"),
+        ("button", button_enabled, "button_softmax_threshold"),
+    ]:
+        if not enabled:
+            continue
+        threshold, stats = _select_softmax_threshold(
+            counts[head],
+            default_threshold=float(config.get(default_key, 0.5)),
+            beta=beta,
+            max_no_event_fpr=_softmax_calibration_fpr_cap(config, head=head),
+        )
+        config[default_key] = float(threshold)
+        label = _softmax_threshold_label(head)
+        result["heads"][head] = {
+            "threshold": float(threshold),
+            "grid": grids[head],
+            **stats,
+            f"{label}_examples": stats.get("no_event_examples"),
+            f"{label}_false_positive_examples": stats.get("no_event_false_positive_examples"),
+            f"{label}_false_positive_rate": stats.get("no_event_false_positive_rate"),
+        }
+    return result
+
+
 def _calibrate_streaming_category_thresholds(
     torch,
     model,
@@ -4677,6 +4903,8 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         "category_threshold",
         "category_thresholds",
         "category_threshold_mode",
+        "keyboard_softmax_threshold",
+        "button_softmax_threshold",
         "mouse_axis_decode_mode",
         "mouse_axis_temperature",
         "mouse_output_gain",
@@ -4824,6 +5052,8 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
             ),
             "category_threshold": float(checkpoint_config.get("category_threshold", 0.35)),
             "category_thresholds": dict(checkpoint_config.get("category_thresholds", {})),
+            "keyboard_softmax_threshold": float(checkpoint_config.get("keyboard_softmax_threshold", 0.5)),
+            "button_softmax_threshold": float(checkpoint_config.get("button_softmax_threshold", 0.5)),
             "mouse_output_gain": float(checkpoint_config.get("mouse_output_gain", 1.0)),
             "mouse_output_gain_mode": str(checkpoint_config.get("mouse_output_gain_mode", "fixed")),
             "last_train_loss": history[-1]["loss"] if history else None,
@@ -4879,7 +5109,7 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
     }
     summary_path = Path(config.get("summary_out", checkpoint_config.get("summary_out", output_dir / "summary.json")))
     write_json(summary_path, summary)
-    return {
+    recovery_summary = {
         "schema": "streaming_idm_checkpoint_recovery_summary.v1",
         "status": "pass",
         "checkpoint_path": str(checkpoint_path),
@@ -4889,6 +5119,8 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         "target_records": int(prediction["records"]),
         "prediction_resume": prediction.get("prediction_resume", {}),
     }
+    write_json(Path(prediction_config["summary_out"]), recovery_summary)
+    return recovery_summary
 
 
 def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
@@ -4990,6 +5222,20 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         config=config,
         feature_mode=feature_mode,
     ).to(device)
+    resume_checkpoint_path = config.get("resume_training_checkpoint") or config.get("initial_checkpoint_path")
+    resumed_history: list[dict[str, Any]] = []
+    if resume_checkpoint_path:
+        resume_path = Path(resume_checkpoint_path)
+        if not resume_path.exists():
+            raise FileNotFoundError(f"resume_training_checkpoint does not exist: {resume_path}")
+        try:
+            resume_checkpoint = torch.load(resume_path, map_location=device, weights_only=False)
+        except TypeError:  # pragma: no cover - older torch releases.
+            resume_checkpoint = torch.load(resume_path, map_location=device)
+        model.load_state_dict(resume_checkpoint["model_state_dict"])
+        if bool(config.get("resume_training_preserve_history", True)):
+            resumed_history = [dict(row) for row in resume_checkpoint.get("history", []) if isinstance(row, dict)]
+        config["resumed_from_checkpoint"] = str(resume_path)
     train_model = model
     if dist["enabled"]:
         ddp_kwargs = {"device_ids": [int(dist["local_rank"])]} if str(device).startswith("cuda") else {}
@@ -5021,7 +5267,8 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         positive_weight=float(config.get("button_softmax_positive_weight", 1.0)),
         device=device,
     ) if button_head_mode == "softmax" else None
-    history = []
+    history = resumed_history
+    start_epoch = len(history)
     convergence_report = {
         "schema": "streaming_convergence_report.v1",
         "score_mode": str(config.get("convergence_score", "composite_primary")),
@@ -5084,7 +5331,8 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             )
         epoch_stats = _aggregate_epoch_stats(torch, epoch_stats, device=device, dist=dist)
         if dist["is_rank0"]:
-            row = {"epoch": epoch + 1, **epoch_stats}
+            epoch_number = start_epoch + epoch + 1
+            row = {"epoch": epoch_number, **epoch_stats}
             if eval_interval_epochs > 0 and ((epoch + 1) % eval_interval_epochs == 0 or (epoch + 1) == int(config.get("epochs", 3))):
                 row["validation"] = _evaluate_stream_metrics(
                     torch,
@@ -5102,7 +5350,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             write_json(out_dir / "convergence_report.json", convergence_report)
             if save_epoch_checkpoints:
                 tmp_epoch_checkpoint_path = epoch_checkpoint_path.with_suffix(epoch_checkpoint_path.suffix + ".tmp")
-                torch.save(build_checkpoint_payload(f"epoch_{epoch + 1}"), tmp_epoch_checkpoint_path)
+                torch.save(build_checkpoint_payload(f"epoch_{epoch_number}"), tmp_epoch_checkpoint_path)
                 tmp_epoch_checkpoint_path.replace(epoch_checkpoint_path)
                 write_json(
                     epoch_checkpoint_metadata_path,
@@ -5110,7 +5358,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
                         "schema": "streaming_idm_epoch_checkpoint_metadata.v1",
                         "status": "pass",
                         "checkpoint_path": str(epoch_checkpoint_path),
-                        "epoch": epoch + 1,
+                        "epoch": epoch_number,
                         "history_path": str(out_dir / "train_history.json"),
                         "updated_at_epoch": time.time(),
                     },
@@ -5180,6 +5428,28 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         calibration_status=calibration_info.get("status"),
         observed_examples=calibration_info.get("observed_examples"),
     )
+    softmax_calibration_info: dict[str, Any] = {"status": "skipped_no_cache"}
+    if use_cache_calibration:
+        write_calibration_progress(
+            "softmax_threshold_calibration_started",
+            softmax_calibration_max_examples=config.get("softmax_calibration_max_examples", config.get("category_calibration_max_examples")),
+        )
+        softmax_calibration_info = _calibrate_streaming_softmax_thresholds_from_cache(
+            torch,
+            model,
+            training_cache_manifests=training_cache_manifests,
+            config=config,
+            device=device,
+            category_vocab=category_vocab,
+            keyboard_classes=keyboard_classes,
+            button_classes=button_classes,
+        )
+        write_calibration_progress(
+            "softmax_threshold_calibration_finished",
+            softmax_calibration_status=softmax_calibration_info.get("status"),
+            keyboard_softmax_threshold=config.get("keyboard_softmax_threshold"),
+            button_softmax_threshold=config.get("button_softmax_threshold"),
+        )
     write_calibration_progress(
         "mouse_gain_calibration_started",
         use_cache_calibration=use_cache_calibration,
@@ -5331,6 +5601,9 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "convergence_plateau_met": bool(convergence_report.get("plateau_met", False)),
         "calibration": {
             **calibration_info,
+            "softmax": softmax_calibration_info,
+            "keyboard_softmax_threshold": float(config.get("keyboard_softmax_threshold", 0.5)),
+            "button_softmax_threshold": float(config.get("button_softmax_threshold", 0.5)),
             "mouse_output_gain": mouse_output_gain,
             "mouse_output_gain_info": mouse_output_gain_info,
             "last_train_loss": history[-1]["loss"] if history else None,
