@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.config import load_config
 from fdm_d2e.io_utils import write_json
+from fdm_d2e.training.streaming_idm import _append_history, _ensure_history_state, _history_dim, _history_vector
 
 try:  # pragma: no cover - exercised on cluster when present.
     import orjson  # type: ignore
@@ -143,11 +144,73 @@ def _feature_prefix_from_seed(seed: dict[str, Any]) -> tuple[list[float], list[f
     return mean[:base_dim], std[:base_dim], base_dim
 
 
+def _scan_history_partition(path: str, history_vocab: list[str], history_len: int) -> dict[str, Any]:
+    count = 0
+    mean: list[float] = []
+    m2: list[float] = []
+    histories: dict[str, list[list[str]]] = {}
+    button_states: dict[str, dict[str, float]] = {}
+    fingerprint = hashlib.sha256()
+    for row in _iter_jsonl(Path(path)):
+        recording_id = str(row.get("recording_id", ""))
+        history, button_state = _ensure_history_state(histories, button_states, recording_id)
+        features = _history_vector(history, button_state, history_vocab, history_len=history_len)
+        if not mean:
+            mean = [0.0 for _ in features]
+            m2 = [0.0 for _ in features]
+        if len(features) != len(mean):
+            raise ValueError(f"inconsistent action-history dimension in {path}: {len(features)} != {len(mean)}")
+        count += 1
+        for idx, value in enumerate(features):
+            delta = value - mean[idx]
+            mean[idx] += delta / count
+            m2[idx] += delta * (value - mean[idx])
+        tokens = _tokens(row)
+        fingerprint.update(
+            json.dumps(
+                {"sequence_id": row.get("sequence_id"), "tokens": tokens, "history_features": features},
+                sort_keys=True,
+            ).encode("utf-8")
+        )
+        fingerprint.update(b"\n")
+        _append_history(history, button_state, tokens, history_len=history_len)
+    return {"path": path, "count": count, "mean": mean, "m2": m2, "fingerprint": fingerprint.hexdigest()}
+
+
+def _merge_history_stats(parts: list[dict[str, Any]]) -> tuple[list[float], list[float], int]:
+    total = 0
+    mean: list[float] = []
+    m2: list[float] = []
+    for part in parts:
+        part_count = int(part.get("count") or 0)
+        if part_count <= 0:
+            continue
+        part_mean = [float(value) for value in part.get("mean", [])]
+        part_m2 = [float(value) for value in part.get("m2", [])]
+        if not mean:
+            mean = list(part_mean)
+            m2 = list(part_m2)
+            total = part_count
+            continue
+        if len(part_mean) != len(mean) or len(part_m2) != len(m2):
+            raise ValueError("inconsistent action-history dimensions across partitions")
+        new_total = total + part_count
+        for idx, value in enumerate(part_mean):
+            delta = value - mean[idx]
+            mean[idx] += delta * (part_count / new_total)
+            m2[idx] += part_m2[idx] + (delta * delta * total * part_count / new_total)
+        total = new_total
+    if total <= 0:
+        return [], [], 0
+    std = [(m2[idx] / max(1, total - 1)) ** 0.5 or 1.0 for idx in range(len(mean))]
+    return mean, std, total
+
+
 def synthesize_stats(config_path: Path, *, seed_stats_path: Path, output_path: Path, summary_path: Path, workers: int) -> dict[str, Any]:
     started = time.time()
     config = load_config(config_path)
     seed_stats = json.loads(seed_stats_path.read_text(encoding="utf-8"))
-    mean, std, input_dim = _feature_prefix_from_seed(seed_stats)
+    mean, std, base_input_dim = _feature_prefix_from_seed(seed_stats)
     train_paths = _expand(config.get("train_records_glob") or config["train_records"])
     category_counts: Counter[str] = Counter()
     keyboard_class_counts: Counter[str] = Counter()
@@ -182,13 +245,36 @@ def synthesize_stats(config_path: Path, *, seed_stats_path: Path, output_path: P
         raise ValueError("no state training rows found")
     categorical_min_count = int(config.get("categorical_min_count", 1))
     category_vocab = sorted(token for token, count in category_counts.items() if count >= categorical_min_count)
+    action_history_len = int(config.get("action_history_len", 0) or 0)
+    history_vocab = list(category_vocab)
+    history_parts: list[dict[str, Any]] = []
+    history_dim = 0
+    if action_history_len > 0:
+        with ProcessPoolExecutor(max_workers=min(max(1, int(workers)), len(train_paths))) as pool:
+            futures = [pool.submit(_scan_history_partition, str(path), history_vocab, action_history_len) for path in train_paths]
+            for future in as_completed(futures):
+                history_parts.append(future.result())
+        history_mean, history_std, history_rows = _merge_history_stats(history_parts)
+        if history_rows != rows:
+            raise ValueError(f"history stats row mismatch: {history_rows} != {rows}")
+        history_dim = _history_dim(history_vocab=history_vocab, history_len=action_history_len)
+        if len(history_mean) != history_dim or len(history_std) != history_dim:
+            raise ValueError(f"history stats dimension mismatch: {len(history_mean)} != {history_dim}")
+        mean = mean + history_mean
+        std = std + history_std
     majority_key, _majority_count = sequence_counts.most_common(1)[0] if sequence_counts else ("NOOP", 0)
     dataset_fingerprint = hashlib.sha256(
         json.dumps(
             {
                 "feature_seed": seed_stats.get("dataset_fingerprint"),
                 "feature_seed_path": str(seed_stats_path),
-                "feature_prefix_dim": input_dim,
+                "feature_prefix_dim": base_input_dim,
+                "action_history_len": action_history_len,
+                "action_history_vocab": history_vocab,
+                "action_history_parts": sorted(
+                    ({"path": part["path"], "count": part["count"], "fingerprint": part["fingerprint"]} for part in history_parts),
+                    key=lambda row: str(row["path"]),
+                ),
                 "state_token_parts": sorted(
                     ({"path": part["path"], "rows": part["rows"], "fingerprint": part["fingerprint"]} for part in parts),
                     key=lambda row: str(row["path"]),
@@ -202,7 +288,7 @@ def synthesize_stats(config_path: Path, *, seed_stats_path: Path, output_path: P
         "train_records": [str(path) for path in train_paths],
         "num_examples": rows,
         "feature_mode": str(config.get("feature_mode", seed_stats.get("feature_mode"))),
-        "input_dim": input_dim,
+        "input_dim": len(mean),
         "mean": mean,
         "std": std,
         "category_vocab": category_vocab,
@@ -217,10 +303,11 @@ def synthesize_stats(config_path: Path, *, seed_stats_path: Path, output_path: P
         "split_names": sorted(split_names),
         "eval_split_tags": sorted(eval_split_tags),
         "dataset_fingerprint": dataset_fingerprint,
-        "action_history_len": 0,
-        "action_history_vocab": [],
-        "action_history_dim": 0,
-        "action_history_feedback": "none",
+        "action_history_len": action_history_len,
+        "action_history_vocab": history_vocab if action_history_len > 0 else [],
+        "action_history_dim": history_dim,
+        "action_history_feedback": "teacher_forced_train" if action_history_len > 0 else "none",
+        "action_history_parallel_by_path": bool(config.get("action_history_parallel_by_path", False)),
         "synthesized_from_feature_seed": str(seed_stats_path),
     }
     write_json(output_path, stats)
@@ -231,8 +318,11 @@ def synthesize_stats(config_path: Path, *, seed_stats_path: Path, output_path: P
         "seed_stats_path": str(seed_stats_path),
         "output_path": str(output_path),
         "rows": rows,
-        "input_dim": input_dim,
+        "base_input_dim": base_input_dim,
+        "input_dim": len(mean),
         "category_vocab_size": len(category_vocab),
+        "action_history_len": action_history_len,
+        "action_history_dim": history_dim,
         "keyboard_class_count": len(keyboard_class_counts),
         "button_class_count": len(button_class_counts),
         "workers": int(workers),

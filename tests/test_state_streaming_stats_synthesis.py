@@ -69,3 +69,70 @@ def test_synthesizes_state_label_stats_from_feature_seed_prefix(tmp_path: Path):
     assert stats["std"] == [1.0, 1.0, 2.0]
     assert stats["keyboard_class_counts"] == {'["KEY_DOWN_W"]': 1, "[]": 1}
     assert stats["action_history_dim"] == 0
+
+
+def test_synthesizes_action_history_stats_without_rescanning_visual_features(tmp_path: Path):
+    config = tmp_path / "config.json"
+    train = tmp_path / "state/shard_00/train_core.jsonl"
+    seed = tmp_path / "seed_stats.json"
+    output = tmp_path / "out/streaming_stats.json"
+    summary = tmp_path / "artifacts/stats_summary.json"
+    config.write_text(
+        json.dumps(
+            {
+                "train_records": str(train),
+                "train_records_glob": str(train),
+                "feature_mode": "summary_compact_luma16_pair_shift_time",
+                "categorical_min_count": 1,
+                "action_history_len": 2,
+                "action_history_parallel_by_path": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+    seed.write_text(
+        json.dumps(
+            {
+                "dataset_fingerprint": "seed",
+                "feature_mode": "summary_compact_luma16_pair_shift_time",
+                "input_dim": 5,
+                "mean": [1, 2, 3, 4, 5],
+                "std": [1, 1, 2, 2, 3],
+                "action_history_dim": 2,
+            }
+        ),
+        encoding="utf-8",
+    )
+    _write_jsonl(
+        train,
+        [
+            {
+                "sequence_id": "a",
+                "recording_id": "rec",
+                "game": "game",
+                "timestamp_ns": 1,
+                "ground_truth_tokens": ["MOUSE_DX_Z0", "MOUSE_DY_Z0", "KEY_DOWN_W", "MOUSE_LEFT_DOWN"],
+            },
+            {
+                "sequence_id": "b",
+                "recording_id": "rec",
+                "game": "game",
+                "timestamp_ns": 2,
+                "ground_truth_tokens": ["MOUSE_DX_P1", "MOUSE_DY_N1", "KEY_DOWN_W"],
+            },
+        ],
+    )
+
+    payload = synthesize_stats(config, seed_stats_path=seed, output_path=output, summary_path=summary, workers=1)
+    stats = json.loads(output.read_text(encoding="utf-8"))
+
+    assert payload["status"] == "pass"
+    assert stats["action_history_len"] == 2
+    assert stats["action_history_feedback"] == "teacher_forced_train"
+    assert stats["action_history_parallel_by_path"] is True
+    assert set(stats["action_history_vocab"]) == {"KEY_DOWN_W", "MOUSE_LEFT_DOWN"}
+    assert stats["action_history_dim"] == (2 * 2) + (2 * 2) + 3
+    assert stats["input_dim"] == 3 + stats["action_history_dim"]
+    assert len(stats["mean"]) == stats["input_dim"]
+    assert len(stats["std"]) == stats["input_dim"]
+    assert payload["action_history_dim"] == stats["action_history_dim"]
