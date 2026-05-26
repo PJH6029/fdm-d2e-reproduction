@@ -47,3 +47,12 @@ def test_prediction_status_sums_part_and_canonical_sizes(tmp_path: Path) -> None
     assert status["part_pseudolabel_bytes"] == 2
     assert status["predictions"]["bytes"] == 9
     assert status["pseudolabels"]["exists"] is False
+
+
+def test_prediction_target_records_accepts_prediction_and_train_summaries() -> None:
+    module = _load_module()
+
+    assert module._prediction_target_records({"records": "12"}) == 12
+    assert module._prediction_target_records({"target_records": 13}) == 13
+    assert module._prediction_target_records({"metadata": {"target_records": "14"}}) == 14
+    assert module._prediction_target_records({"records": "bad"}) is None

@@ -85,6 +85,18 @@ def _nested_get(payload: dict[str, Any] | None, keys: list[str]) -> Any:
     return current
 
 
+def _prediction_target_records(payload: dict[str, Any] | None) -> int | None:
+    value = _nested_get(payload, ["target_records"])
+    if value is None:
+        value = _nested_get(payload, ["records"])
+    if value is None:
+        value = _nested_get(payload, ["metadata", "target_records"])
+    try:
+        return int(value) if value is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Log full-target prediction recovery progress to Weights & Biases.")
     parser.add_argument("--env-file", default=".env")
@@ -160,7 +172,7 @@ def main() -> int:
             recovery_summary = _read_json(Path(args.recovery_summary))
             paper_metrics = _read_json(Path(args.paper_metrics))
             audit = _read_json(Path(args.audit))
-            target_records = _nested_get(prediction_summary, ["target_records"])
+            target_records = _prediction_target_records(prediction_summary)
             recovery_status = recovery_summary.get("status") if recovery_summary else None
             audit_status = audit.get("status") if audit else None
             run.log(
