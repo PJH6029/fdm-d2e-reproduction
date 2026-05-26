@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 
@@ -103,11 +104,13 @@ def test_g005_state_luma_pair_materializes_state_corpus_and_logs_wandb() -> None
 
 def test_g005_state_sequence_prior_uses_distinct_wandb_artifact_status_paths() -> None:
     text = _script("scripts/run_g005_idm_state_sequence_prior_4xh200.sh")
+    config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_state_sequence_prior_paper_target.yaml").read_text())
 
     assert "g005_idm_state_sequence_prior_precompute_wandb_status.json" in text
     assert "g005_idm_state_sequence_prior_stats_synthesis_wandb_status.json" in text
     assert 'WANDB_TAGS="${WANDB_TAGS:-g005,idm,d2e,state-sequence-prior,pipeline}"' in text
     assert "scripts/run_g005_idm_state_luma_pair_4xh200.sh" in text
+    assert config["action_history_seed_state_mode"] == "empty"
 
 
 def test_g005_video_stack_offset_candidate_separates_precompute_training_and_recovery() -> None:
