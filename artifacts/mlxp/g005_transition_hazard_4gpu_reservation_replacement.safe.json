@@ -1,0 +1,73 @@
+{
+  "cancelled_reservation": {
+    "args": [],
+    "command": [],
+    "created_at": "2026-05-26T09:37:09+09:00",
+    "end_at": "2026-05-26T18:00:00+09:00",
+    "gpu_count": 2,
+    "gpu_indices": [
+      1,
+      2
+    ],
+    "gpu_start": 1,
+    "image_path": "ghcr.io/pjh6029/snupi-personal-codex:20260414",
+    "managed_image_key": "codex",
+    "namespace": "p-production",
+    "node_id": "4",
+    "pod_name": "",
+    "project_id": "production",
+    "purpose": "Continuous GUI - FDM reproduction G005 continuation/finalization fallback after 4xH200 window",
+    "registry_profile_key": "",
+    "reservation_id": "rsv-jeonghunpark-20260526-a7c009",
+    "start_at": "2026-05-26T12:00:00+09:00",
+    "status": "cancelled",
+    "updated_at": "2026-05-26T10:23:10+09:00"
+  },
+  "create_payload_safe": {
+    "actor_name": "",
+    "args": [],
+    "command": [],
+    "end_at": "2026-05-26T18:00:00+09:00",
+    "gpu_count": 4,
+    "gpu_indices": [],
+    "gpu_start": 1,
+    "image_path": "",
+    "managed_image_key": "codex",
+    "node_id": "4",
+    "purpose": "Continuous GUI - FDM reproduction G005 transition-hazard IDM 4xH200 continuation",
+    "registry_profile_key": "",
+    "start_at": "2026-05-26T12:00:00+09:00"
+  },
+  "created_at_epoch": 1779758640.170406,
+  "created_reservation": {
+    "args": [],
+    "command": [],
+    "created_at": "2026-05-26T10:23:10+09:00",
+    "end_at": "2026-05-26T18:00:00+09:00",
+    "gpu_count": 4,
+    "gpu_indices": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "gpu_start": 1,
+    "image_path": "ghcr.io/pjh6029/snupi-personal-codex:20260414",
+    "managed_image_key": "codex",
+    "namespace": "p-production",
+    "node_id": "4",
+    "pod_name": "",
+    "project_id": "production",
+    "purpose": "Continuous GUI - FDM reproduction G005 transition-hazard IDM 4xH200 continuation",
+    "registry_profile_key": "",
+    "reservation_id": "rsv-jeonghunpark-20260526-4a98db",
+    "start_at": "2026-05-26T12:00:00+09:00",
+    "status": "scheduled",
+    "updated_at": "2026-05-26T10:23:10+09:00"
+  },
+  "reason": "GPU quota increase was approved after the 2x fallback was scheduled; replace fallback with 4xH200 continuation before the current 4x reservation expires.",
+  "schema": "mlxp_reservation_transition_safe_summary.v1",
+  "secret_policy": "No API tokens, kubeconfigs, jupyter tokens, or raw /api/me payloads are stored in this artifact.",
+  "standing_user_authorization": "User explicitly authorized scheduling cluster GPU reservations without confirmation for this research workflow.",
+  "status": "pass"
+}
