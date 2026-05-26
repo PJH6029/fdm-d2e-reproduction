@@ -4287,6 +4287,29 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         "history": [],
         "report_path": str(out_dir / "convergence_report.json"),
     }
+    epoch_checkpoint_path = out_dir / "checkpoint_epoch_latest.pt"
+    epoch_checkpoint_metadata_path = out_dir / "checkpoint_epoch_latest_metadata.json"
+    save_epoch_checkpoints = bool(config.get("save_epoch_checkpoints", False))
+
+    def build_checkpoint_payload(stage: str) -> dict[str, Any]:
+        return {
+            "model_state_dict": model.state_dict(),
+            "config": dict(config),
+            "stats": stats,
+            "category_vocab": category_vocab,
+            "keyboard_head_mode": keyboard_head_mode,
+            "keyboard_classes": [list(tokens) for tokens in keyboard_classes],
+            "button_head_mode": button_head_mode,
+            "button_classes": [list(tokens) for tokens in button_classes],
+            "mouse_head_mode": mouse_head_mode,
+            "mouse_target_mode": _mouse_target_mode(config),
+            "mouse_emit_mode": str(config.get("mouse_emit_mode", "single")),
+            "mouse_max_tokens_per_axis": int(config.get("mouse_max_tokens_per_axis", 8)),
+            "mouse_axis_classes": mouse_axis_classes,
+            "history": history,
+            "calibration_stage": stage,
+        }
+
     eval_interval_epochs = int(config.get("eval_interval_epochs", 0))
     for epoch in range(int(config.get("epochs", 3))):
         join_context = train_model.join() if dist["enabled"] else nullcontext()
@@ -4329,6 +4352,21 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             convergence_report = _convergence_report(history, config, output_dir=out_dir)
             write_json(out_dir / "train_history.json", {"schema": "streaming_idm_train_history.v1", "history": history})
             write_json(out_dir / "convergence_report.json", convergence_report)
+            if save_epoch_checkpoints:
+                tmp_epoch_checkpoint_path = epoch_checkpoint_path.with_suffix(epoch_checkpoint_path.suffix + ".tmp")
+                torch.save(build_checkpoint_payload(f"epoch_{epoch + 1}"), tmp_epoch_checkpoint_path)
+                tmp_epoch_checkpoint_path.replace(epoch_checkpoint_path)
+                write_json(
+                    epoch_checkpoint_metadata_path,
+                    {
+                        "schema": "streaming_idm_epoch_checkpoint_metadata.v1",
+                        "status": "pass",
+                        "checkpoint_path": str(epoch_checkpoint_path),
+                        "epoch": epoch + 1,
+                        "history_path": str(out_dir / "train_history.json"),
+                        "updated_at_epoch": time.time(),
+                    },
+                )
         _barrier(torch, dist)
     if dist["enabled"] and torch.distributed.is_initialized():
         torch.distributed.destroy_process_group()
@@ -4342,25 +4380,6 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     checkpoint_path = out_dir / "checkpoint.pt"
     pre_calibration_checkpoint_path = out_dir / "checkpoint_pre_calibration.pt"
     calibration_progress_path = out_dir / "calibration_progress.json"
-
-    def build_checkpoint_payload(stage: str) -> dict[str, Any]:
-        return {
-            "model_state_dict": model.state_dict(),
-            "config": dict(config),
-            "stats": stats,
-            "category_vocab": category_vocab,
-            "keyboard_head_mode": keyboard_head_mode,
-            "keyboard_classes": [list(tokens) for tokens in keyboard_classes],
-            "button_head_mode": button_head_mode,
-            "button_classes": [list(tokens) for tokens in button_classes],
-            "mouse_head_mode": mouse_head_mode,
-            "mouse_target_mode": _mouse_target_mode(config),
-            "mouse_emit_mode": str(config.get("mouse_emit_mode", "single")),
-            "mouse_max_tokens_per_axis": int(config.get("mouse_max_tokens_per_axis", 8)),
-            "mouse_axis_classes": mouse_axis_classes,
-            "history": history,
-            "calibration_stage": stage,
-        }
 
     def write_calibration_progress(stage: str, **extra: Any) -> None:
         write_json(
