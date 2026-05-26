@@ -1,0 +1,32 @@
+{
+  "artifacts": {
+    "artifacts/idm/g005_idm_event_state_context_prefix_metrics_800k.json": {
+      "bytes": 23871,
+      "exists": true
+    },
+    "artifacts/idm/g005_idm_event_state_context_wandb_sidecar_status.json": {
+      "bytes": 3640,
+      "exists": true
+    },
+    "outputs/idm_streaming_d2e_full_event_state_context_paper_target/checkpoint.pt": {
+      "bytes": 49208245,
+      "exists": true
+    },
+    "outputs/idm_streaming_d2e_full_event_state_context_paper_target/convergence_report.json": {
+      "bytes": 1237,
+      "exists": true
+    },
+    "outputs/idm_streaming_d2e_full_event_state_context_paper_target/train_history.json": {
+      "bytes": 979,
+      "exists": true
+    }
+  },
+  "created_at_unix": 1779756074.7878542,
+  "prediction_part_max_rows": 555671,
+  "prediction_part_min_rows": 485680,
+  "prediction_parts": 16,
+  "prediction_rows": 8340020,
+  "reason": "800k prefix metrics failed paper target; reserve remaining 4xH200 window for transition-hazard run",
+  "schema": "g005_event_state_context_interruption_snapshot.v1",
+  "status": "interrupted_for_transition_hazard_candidate"
+}
