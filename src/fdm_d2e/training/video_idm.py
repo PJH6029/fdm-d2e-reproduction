@@ -52,6 +52,12 @@ from fdm_d2e.training.torch_idm import (
 _FRAME_REF_RE = re.compile(r"^(?P<source>.+)#frame=(?P<index>\d+)$")
 _PPM_FRAME_RE = re.compile(r"^(?P<prefix>.*?)(?P<number>\d+)(?P<suffix>\.ppm)$")
 _JSONL_COMPACT_SEPARATORS = (",", ":")
+_CHECKPOINT_CALIBRATION_KEYS = {
+    "button_softmax_threshold",
+    "category_thresholds",
+    "keyboard_softmax_threshold",
+    "mouse_output_gain",
+}
 
 
 def _record_paths_from_value(value: str | Path | Sequence[str | Path]) -> list[Path]:
@@ -2443,6 +2449,10 @@ def predict_video_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     checkpoint_config = dict(checkpoint.get("model_config", {}))
     prediction_config = dict(checkpoint_config)
     prediction_config.update({key: value for key, value in config.items() if value is not None})
+    if not bool(config.get("override_checkpoint_calibration", False)):
+        for key in _CHECKPOINT_CALIBRATION_KEYS:
+            if key in checkpoint_config:
+                prediction_config[key] = checkpoint_config[key]
     stats = dict(checkpoint["stats"])
     target_paths = _record_paths_from_config(
         prediction_config,
@@ -2533,6 +2543,11 @@ def predict_video_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "prediction_workers": prediction_workers,
         "recalibration": recalibration,
         "prediction": prediction,
+        "resolved_prediction_config": {
+            key: prediction_config.get(key)
+            for key in sorted(_CHECKPOINT_CALIBRATION_KEYS)
+            if key in prediction_config
+        },
     }
     summary_out = prediction_config.get("prediction_summary_out") or prediction_config.get("summary_out")
     if summary_out:

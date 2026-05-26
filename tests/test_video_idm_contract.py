@@ -14,7 +14,7 @@ from fdm_d2e.training.video_idm import (
     predict_video_idm_checkpoint,
     train_video_idm,
 )
-from fdm_d2e.training.torch_idm import torch_available
+from fdm_d2e.training.torch_idm import require_torch, torch_available
 
 
 def _write_ppm(path: Path, value: int) -> None:
@@ -205,6 +205,13 @@ def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):
     assert first["sequence_id"] == target_rows[0]["sequence_id"]
     assert isinstance(first["predicted_tokens"], list)
 
+    torch = require_torch()
+    checkpoint_payload = torch.load(summary["metadata"]["checkpoint_path"], map_location="cpu", weights_only=False)
+    checkpoint_payload["model_config"]["mouse_output_gain"] = 7.0
+    checkpoint_payload["model_config"]["keyboard_softmax_threshold"] = 0.77
+    checkpoint_payload["model_config"]["button_softmax_threshold"] = 0.88
+    torch.save(checkpoint_payload, summary["metadata"]["checkpoint_path"])
+
     predict_dir = tmp_path / "predict_again"
     predict_summary = predict_video_idm_checkpoint(
         {
@@ -213,10 +220,16 @@ def test_video_idm_precompute_and_train_from_precomputed_cache(tmp_path: Path):
             "output_dir": str(predict_dir),
             "summary_out": str(tmp_path / "predict_summary.json"),
             "max_target_examples": 1,
+            "mouse_output_gain": 1.0,
+            "keyboard_softmax_threshold": 0.1,
+            "button_softmax_threshold": 0.1,
         }
     )
     assert predict_summary["target_records"] == 1
     assert Path(predict_summary["prediction"]["predictions_path"]).exists()
+    assert predict_summary["resolved_prediction_config"]["mouse_output_gain"] == 7.0
+    assert predict_summary["resolved_prediction_config"]["keyboard_softmax_threshold"] == 0.77
+    assert predict_summary["resolved_prediction_config"]["button_softmax_threshold"] == 0.88
 
     recalibrated_summary = predict_video_idm_checkpoint(
         {
