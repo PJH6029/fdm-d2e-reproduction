@@ -2223,7 +2223,10 @@ def _distributed_runtime(torch, config: dict[str, Any]) -> dict[str, Any]:
 
 def _barrier(torch, dist: dict[str, Any]) -> None:
     if dist["enabled"] and torch.distributed.is_initialized():
-        torch.distributed.barrier()
+        if str(dist.get("backend")) == "nccl" and str(dist.get("device", "")).startswith("cuda"):
+            torch.distributed.barrier(device_ids=[int(dist["local_rank"])])
+        else:
+            torch.distributed.barrier()
 
 
 def _aggregate_epoch_stats(torch, stats: dict[str, Any], *, device: str, dist: dict[str, Any]) -> dict[str, Any]:

@@ -1076,7 +1076,10 @@ def train_streaming_fdm(config: dict[str, Any]) -> dict[str, Any]:
         split_summary = _load_reusable_fdm_split_summary(config, output_dir) or materialize_fdm_streaming_splits(config)
     if world_size > 1:
         assert torch is not None
-        torch.distributed.barrier()
+        if backend == "nccl" and torch.cuda.is_available() and not force_cpu:
+            torch.distributed.barrier(device_ids=[local_rank])
+        else:
+            torch.distributed.barrier()
     if rank != 0:
         split_summary = read_json(split_summary_path)
     torch_cfg, train_record_paths, target_record_paths, model_name = _fdm_torch_config(config, split_summary, output_dir=output_dir)

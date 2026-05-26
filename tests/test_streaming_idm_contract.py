@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from fdm_d2e.training.streaming_idm import (
+    _barrier,
     _distributed_runtime,
     _select_group_fbeta_threshold,
     _training_cache_identity,
@@ -1214,6 +1215,52 @@ def test_distributed_runtime_preserves_timeout_when_already_initialized(monkeypa
     assert calls["set_device"] == 1
     assert dist["enabled"] is True
     assert dist["timeout_seconds"] == 86400
+
+
+def test_barrier_passes_device_ids_for_nccl_cuda():
+    calls = {}
+
+    class FakeDistributed:
+        @staticmethod
+        def is_initialized():
+            return True
+
+        @staticmethod
+        def barrier(**kwargs):
+            calls["kwargs"] = kwargs
+
+    class FakeTorch:
+        distributed = FakeDistributed()
+
+    _barrier(
+        FakeTorch(),
+        {"enabled": True, "backend": "nccl", "device": "cuda:2", "local_rank": 2},
+    )
+
+    assert calls["kwargs"] == {"device_ids": [2]}
+
+
+def test_barrier_omits_device_ids_for_gloo():
+    calls = {}
+
+    class FakeDistributed:
+        @staticmethod
+        def is_initialized():
+            return True
+
+        @staticmethod
+        def barrier(**kwargs):
+            calls["kwargs"] = kwargs
+
+    class FakeTorch:
+        distributed = FakeDistributed()
+
+    _barrier(
+        FakeTorch(),
+        {"enabled": True, "backend": "gloo", "device": "cpu", "local_rank": 0},
+    )
+
+    assert calls["kwargs"] == {}
 
 
 def test_streaming_idm_stats_can_scan_multiple_record_files(tmp_path: Path):
