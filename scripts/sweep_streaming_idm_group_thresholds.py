@@ -112,6 +112,7 @@ def main() -> int:
     parser.add_argument("--output-root", required=True)
     parser.add_argument("--metrics-root", required=True)
     parser.add_argument("--summary", required=True)
+    parser.add_argument("--endpoints", default="configs/eval/primary_endpoints.yaml")
     parser.add_argument("--model-prefix", default="streaming_idm_threshold_sweep")
     parser.add_argument("--keyboard-thresholds", type=_parse_grid, default="0.05,0.1,0.15,0.2,0.35")
     parser.add_argument("--button-thresholds", type=_parse_grid, default="0.05,0.1,0.15,0.2,0.35")
@@ -157,6 +158,7 @@ def main() -> int:
             "schema": "streaming_idm_predict_config.v1",
             "model_name": model_name,
             "checkpoint_path": str(checkpoint_path),
+            "endpoints": str(args.endpoints),
             "records_path": str(args.records_glob),
             "records_glob": str(args.records_glob),
             "output_dir": str(combo_output),
