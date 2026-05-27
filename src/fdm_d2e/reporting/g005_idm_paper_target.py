@@ -205,6 +205,49 @@ def _paper_metric_target_paths(config: dict[str, Any]) -> list[str]:
     return [str(value)]
 
 
+def _event_state_context_target_paths(config: dict[str, Any]) -> list[str]:
+    markers = (
+        "d2e_event_state_context",
+        "d2e_event_state_duration_context",
+    )
+    return [
+        path
+        for path in _paper_metric_target_paths(config)
+        if any(marker in path for marker in markers)
+    ]
+
+
+def _closed_loop_context_status(prediction_summary: dict[str, Any] | None) -> dict[str, Any]:
+    state = _get(prediction_summary, ["prediction_resume", "closed_loop_state_context"])
+    if not isinstance(state, dict):
+        return {
+            "has_evidence": prediction_summary is not None,
+            "enabled": False,
+            "source": None,
+            "seed_from_train": None,
+            "seed_from_first_target_prior": None,
+            "passes": False,
+        }
+    enabled = state.get("enabled") is True
+    source = state.get("source")
+    seed_from_train = state.get("seed_from_train")
+    seed_from_first_target_prior = state.get("seed_from_first_target_prior")
+    return {
+        "has_evidence": True,
+        "enabled": enabled,
+        "source": source,
+        "seed_from_train": seed_from_train,
+        "seed_from_first_target_prior": seed_from_first_target_prior,
+        "seed_rows": state.get("seed_rows"),
+        "target_prior_seed_recordings": state.get("target_prior_seed_recordings"),
+        "passes": (
+            enabled
+            and source == "predicted_closed_loop_before_current_event_bin"
+            and seed_from_train is False
+        ),
+    }
+
+
 def validate_g005_idm_paper_target(config: dict[str, Any], *, root: str | Path = ".") -> dict[str, Any]:
     root_path = Path(root)
     paths = dict(config.get("paths", {}))
@@ -221,6 +264,7 @@ def validate_g005_idm_paper_target(config: dict[str, Any], *, root: str | Path =
     train_summary = _load_json(root_path, paths.get("train_summary"))
     run_summary = _load_json(root_path, paths.get("run_summary"))
     split_stats_summary = _load_json(root_path, paths.get("split_stats_summary"))
+    prediction_summary = _load_json(root_path, paths.get("prediction_summary"))
     gpu_monitor_path = _path(root_path, paths.get("gpu_monitor"))
     gpu_monitor_status = _gpu_monitor_status(gpu_monitor_path, expected_gpus)
 
@@ -264,6 +308,24 @@ def validate_g005_idm_paper_target(config: dict[str, Any], *, root: str | Path =
                 "expected": "event-token D2E target rows matching official evaluate.py keyboard/mouse-button semantics",
             }
         )
+    event_state_context_paths = _event_state_context_target_paths(config)
+    closed_loop_context_status = _closed_loop_context_status(prediction_summary)
+    if event_state_context_paths and not bool(config.get("allow_event_state_context_target_diagnostic", False)):
+        if not closed_loop_context_status["passes"]:
+            findings.append(
+                {
+                    "severity": "error",
+                    "code": "paper_metric_target_uses_event_state_context_without_closed_loop_evidence",
+                    "paths": event_state_context_paths,
+                    "expected": {
+                        "prediction_summary": "paths.prediction_summary",
+                        "closed_loop_state_context.enabled": True,
+                        "closed_loop_state_context.source": "predicted_closed_loop_before_current_event_bin",
+                        "closed_loop_state_context.seed_from_train": False,
+                    },
+                    "actual": closed_loop_context_status,
+                }
+            )
     if run_summary and int(run_summary.get("exit_code", 999)) != 0:
         findings.append({"severity": "error", "code": "run_summary_exit_nonzero", "exit_code": run_summary.get("exit_code")})
     if run_summary and int(run_summary.get("nproc_per_node", 0) or 0) != expected_gpus:
@@ -341,6 +403,7 @@ def validate_g005_idm_paper_target(config: dict[str, Any], *, root: str | Path =
         "target_records": target_records,
         "checkpoint": checkpoint_meta,
         "gpu_monitor_status": gpu_monitor_status,
+        "closed_loop_state_context_status": closed_loop_context_status,
         "aggregate_target_results": aggregate_target_results,
         "split_target_results": split_target_results,
         "strict_target_results": strict_target_results,

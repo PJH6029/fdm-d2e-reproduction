@@ -202,6 +202,162 @@ def test_g005_idm_paper_target_audit_rejects_non_official_state_metric_protocol(
     assert "paper_metric_target_uses_held_state_corpus" in codes
 
 
+def test_g005_idm_paper_target_audit_rejects_event_state_context_without_closed_loop(tmp_path: Path):
+    write_json(
+        tmp_path / "contract.json",
+        {
+            "status": "pass",
+            "official_metric_protocol": {"empty_bins_as_correct": False},
+            "target_sequence": {"phase_1": {"primary_targets": {"keyboard_accuracy": 0.7}}},
+        },
+    )
+    write_json(
+        tmp_path / "paper.json",
+        {
+            "status": "pass",
+            "groups": {
+                "all": {
+                    "paper_compatible": {
+                        "empty_bins_as_correct": False,
+                        "keyboard": {"key_accuracy": 0.9},
+                    }
+                }
+            },
+        },
+    )
+    payload = validate_g005_idm_paper_target(
+        {
+            "expected_gpus": 4,
+            "paths": {
+                "gidm_baseline_contract": "contract.json",
+                "paper_metrics": "paper.json",
+            },
+            "paper_metrics": {
+                "target_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl",
+            },
+        },
+        root=tmp_path,
+    )
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "paper_metric_target_uses_event_state_context_without_closed_loop_evidence" in codes
+    status = payload["closed_loop_state_context_status"]
+    assert status["passes"] is False
+
+
+def test_g005_idm_paper_target_audit_accepts_event_state_context_with_closed_loop_evidence(tmp_path: Path):
+    paper_metrics = tmp_path / "paper.json"
+    contract = tmp_path / "contract.json"
+    metadata = tmp_path / "checkpoint_metadata.json"
+    summary = tmp_path / "summary.json"
+    run = tmp_path / "run.json"
+    split = tmp_path / "split_summary.json"
+    checkpoint = tmp_path / "checkpoint.pt"
+    gpu = tmp_path / "gpu.csv"
+    prediction_summary = tmp_path / "prediction_summary.json"
+
+    write_json(
+        contract,
+        {
+            "status": "pass",
+            "target_sequence": {
+                "phase_1": {
+                    "primary_targets": {
+                        "pearson_x": 0.8,
+                        "pearson_y": 0.7,
+                        "keyboard_accuracy": 0.7,
+                        "mouse_button_accuracy": 0.9,
+                        "scale_ratio_x_max": 1.3,
+                        "scale_ratio_y_max": 1.4,
+                    }
+                }
+            },
+            "official_metric_protocol": {"empty_bins_as_correct": False},
+        },
+    )
+    write_json(
+        paper_metrics,
+        {
+            "status": "pass",
+            "groups": {
+                "all": {
+                        "paper_compatible": {
+                            "empty_bins_as_correct": False,
+                            "mouse_move": {
+                                "pearson_x": 0.81,
+                                "pearson_y": 0.71,
+                                "scale_ratio_x": 1.2,
+                                "scale_ratio_y": 1.3,
+                            },
+                            "keyboard": {"key_accuracy": 0.8},
+                            "mouse_button": {"button_accuracy": 0.95},
+                        }
+                    },
+                "eval_split:temporal": {"paper_compatible": {"keyboard": {}}},
+                "eval_split:heldout_recording": {"paper_compatible": {"keyboard": {}}},
+                "eval_split:heldout_game": {"paper_compatible": {"keyboard": {}}},
+            },
+        },
+    )
+    write_json(metadata, {"train_records": 10, "target_records": 9, "distributed": {"world_size": 4}})
+    write_json(summary, {"schema": "streaming_idm_train_summary.v1"})
+    write_json(run, {"exit_code": 0, "nproc_per_node": 4, "gpu_monitor_status": {"covers_expected_gpus": True}})
+    write_json(
+        split,
+        {
+            "status": "pass",
+            "outputs": [
+                {"split": "temporal", "status": "pass"},
+                {"split": "heldout_recording", "status": "pass"},
+                {"split": "heldout_game", "status": "pass"},
+            ],
+        },
+    )
+    write_json(
+        prediction_summary,
+        {
+            "status": "pass",
+            "prediction_resume": {
+                "closed_loop_state_context": {
+                    "enabled": True,
+                    "source": "predicted_closed_loop_before_current_event_bin",
+                    "seed_from_train": False,
+                    "seed_from_first_target_prior": True,
+                    "target_prior_seed_recordings": 3,
+                }
+            },
+        },
+    )
+    checkpoint.write_bytes(b"checkpoint")
+    gpu.write_text("sample_unix,parent_pid,timestamp,index\n1,2,now,0\n1,2,now,1\n1,2,now,2\n1,2,now,3\n")
+
+    payload = validate_g005_idm_paper_target(
+        {
+            "expected_gpus": 4,
+            "min_gpu_monitor_rows": 4,
+            "min_train_records": 10,
+            "min_target_records": 9,
+            "paths": {
+                "gidm_baseline_contract": "contract.json",
+                "paper_metrics": "paper.json",
+                "checkpoint": "checkpoint.pt",
+                "checkpoint_metadata": "checkpoint_metadata.json",
+                "train_summary": "summary.json",
+                "run_summary": "run.json",
+                "split_stats_summary": "split_summary.json",
+                "gpu_monitor": "gpu.csv",
+                "prediction_summary": "prediction_summary.json",
+            },
+            "paper_metrics": {
+                "target_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl",
+            },
+        },
+        root=tmp_path,
+    )
+    assert payload["status"] == "pass"
+    assert payload["closed_loop_state_context_status"]["passes"] is True
+
+
 def test_g005_idm_paper_target_audit_fails_missing_paper_target(tmp_path: Path):
     write_json(
         tmp_path / "contract.json",

@@ -152,6 +152,38 @@ def test_g005_video_stack_offset_candidate_separates_precompute_training_and_rec
     assert "scripts/validate_g005_idm_paper_target.py --config \"$PAPER_TARGET_CONFIG\"" in recovery
 
 
+def test_g005_raw112_offset2_candidate_uses_nonleaky_nep100_video_paths() -> None:
+    precompute = _script("scripts/run_g005_idm_video_pair_raw112_offset2_precompute.sh")
+    training = _script("scripts/run_g005_idm_video_pair_raw112_offset2_4xh200.sh")
+    recovery = _script("scripts/recover_g005_idm_video_pair_raw112_offset2_from_checkpoint.sh")
+    config = json.loads(
+        (ROOT / "configs/model/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target.yaml").read_text()
+    )
+    paper = json.loads((ROOT / "configs/eval/g005_idm_video_pair_raw112_offset2_keysoftmax_paper_target.yaml").read_text())
+    split = json.loads((ROOT / "configs/eval/g005_idm_video_pair_raw112_offset2_keysoftmax_split_statistics.yaml").read_text())
+
+    assert "scripts/run_g005_idm_video_stack_luma96_offsets012_precompute.sh" in precompute
+    assert "scripts/run_g005_idm_video_pair_raw112_4xh200.sh" in training
+    assert "scripts/recover_g005_idm_video_stack_luma96_offsets012_from_checkpoint.sh" in recovery
+    assert 'SKIP_PREDICTION="${SKIP_PREDICTION:-1}"' in training
+    assert 'BUILD_SPLIT_STATS="${BUILD_SPLIT_STATS:-0}"' in training
+    assert 'PREDICTION_WORKERS="${PREDICTION_WORKERS:-4}"' in recovery
+    assert config["source_namespace"] == "d2e_full_corpus"
+    assert config["video_image_size"] == 112
+    assert config["video_input_mode"] == "pair_delta_abs"
+    assert config["next_frame_offset"] == 2
+    assert config["video_frame_offsets"] == [0, 2]
+    assert config["train_records_glob"] == "outputs/data/d2e_full_corpus_shards_accel64/shard_*/train_core.jsonl"
+    assert paper["paper_metrics"]["target_path"] == "outputs/data/d2e_full_corpus_accel64/target_all_eval.jsonl"
+    assert paper["paper_metrics"]["predictions_path"] == (
+        "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/predictions.jsonl"
+    )
+    assert split["ground_truth_path"] == "outputs/data/d2e_full_corpus_accel64/target_all_eval.jsonl"
+    assert split["train_stats_path"] == (
+        "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/video_idm_stats.json"
+    )
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())

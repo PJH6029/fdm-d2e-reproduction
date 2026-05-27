@@ -1,18 +1,18 @@
 {
   "schema": "g005_idm_paper_target_audit.v1",
   "status": "fail",
-  "error_count": 4,
+  "error_count": 5,
   "goal_id": "G005-idm-full-paper-target",
   "model_name": "streaming_idm_d2e_full_event_state_duration_context_paper_target",
   "paths": {
-    "gidm_baseline_contract": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/eval/g003_gidm_baseline_contract.json",
-    "paper_metrics": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/idm/g005_idm_event_state_duration_context_paper_metrics.json",
-    "checkpoint": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint.pt",
-    "checkpoint_metadata": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint_metadata.json",
-    "train_summary": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/idm/idm_streaming_d2e_full_event_state_duration_context_paper_target_summary.json",
-    "run_summary": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/idm/g005_idm_event_state_duration_context_4xh200_run.json",
-    "split_stats_summary": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/eval/g005_idm_event_state_duration_context_split_statistical_comparisons_summary.json",
-    "gpu_monitor": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/idm/g005_idm_event_state_duration_context_4xh200_gpu_monitor.csv"
+    "gidm_baseline_contract": "artifacts/eval/g003_gidm_baseline_contract.json",
+    "paper_metrics": "artifacts/idm/g005_idm_event_state_duration_context_paper_metrics.json",
+    "checkpoint": "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint.pt",
+    "checkpoint_metadata": "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint_metadata.json",
+    "train_summary": "artifacts/idm/idm_streaming_d2e_full_event_state_duration_context_paper_target_summary.json",
+    "run_summary": "artifacts/idm/g005_idm_event_state_duration_context_4xh200_run.json",
+    "split_stats_summary": "artifacts/eval/g005_idm_event_state_duration_context_split_statistical_comparisons_summary.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_event_state_duration_context_4xh200_gpu_monitor.csv"
   },
   "expected_gpus": 4,
   "min_train_records": 19211006,
@@ -22,7 +22,7 @@
   "train_records": 19211006,
   "target_records": 16698646,
   "checkpoint": {
-    "path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint.pt",
+    "path": "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint.pt",
     "exists": true,
     "bytes": 36189749,
     "sha256": "20c1d5521089e8e525cc0aed3c6a970006bf53e227ebdea3da9fc7e0be9c2a28"
@@ -38,6 +38,14 @@
     ],
     "expected_gpus": 4,
     "covers_expected_gpus": true
+  },
+  "closed_loop_state_context_status": {
+    "has_evidence": false,
+    "enabled": false,
+    "source": null,
+    "seed_from_train": null,
+    "seed_from_first_target_prior": null,
+    "passes": false
   },
   "aggregate_target_results": [
     {
@@ -412,6 +420,27 @@
     }
   ],
   "findings": [
+    {
+      "severity": "error",
+      "code": "paper_metric_target_uses_event_state_context_without_closed_loop_evidence",
+      "paths": [
+        "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl"
+      ],
+      "expected": {
+        "prediction_summary": "paths.prediction_summary",
+        "closed_loop_state_context.enabled": true,
+        "closed_loop_state_context.source": "predicted_closed_loop_before_current_event_bin",
+        "closed_loop_state_context.seed_from_train": false
+      },
+      "actual": {
+        "has_evidence": false,
+        "enabled": false,
+        "source": null,
+        "seed_from_train": null,
+        "seed_from_first_target_prior": null,
+        "passes": false
+      }
+    },
     {
       "severity": "error",
       "code": "paper_target_not_met",
