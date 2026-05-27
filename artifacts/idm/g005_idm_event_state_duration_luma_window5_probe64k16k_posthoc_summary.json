@@ -1,0 +1,105 @@
+{
+  "claim_boundary": "64k/16k 2-GPU probe validates wiring/runtime only; it is not full-corpus G005 completion evidence and does not justify scaling by itself.",
+  "decision": {
+    "reason": "1-epoch reduced-width probe is far below paper keyboard/button/mouse targets; use it only to validate the new NEP-window+state path before a better architecture/training recipe.",
+    "scale_to_full_run": false
+  },
+  "evidence_paths": {
+    "cache_validation": "artifacts/idm/g005_idm_event_state_duration_luma_window5_probe64k16k_precomputed_cache_validation.json",
+    "context_materialization": "artifacts/idm/g005_idm_event_state_duration_luma_window5_probe64k16k_context_materialization_summary.json",
+    "paper_metrics": "artifacts/idm/g005_idm_event_state_duration_luma_window5_probe64k16k_paper_metrics.json",
+    "run_summary": "artifacts/idm/g005_idm_event_state_duration_luma_window5_probe64k16k_2gpu_run.json",
+    "split_stats_summary": "artifacts/eval/g005_idm_event_state_duration_luma_window5_probe64k16k_split_statistical_comparisons_summary.json",
+    "window_materialization": "artifacts/idm/g005_idm_event_state_duration_luma_window5_probe64k16k_window_materialization_summary.json"
+  },
+  "git_head": "7719337075b3bfc0773d1019b9f0afeb19582053",
+  "materialization": {
+    "context_status": "pass",
+    "window_offsets": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "window_status": "pass"
+  },
+  "paper_compatible_all": {
+    "empty_bins_as_correct": false,
+    "keyboard": {
+      "key_accuracy": 0.010721247563352826,
+      "sample_count": 10260
+    },
+    "mouse_button": {
+      "button_accuracy": 0.04264870931537598,
+      "sample_count": 1782
+    },
+    "mouse_move": {
+      "pearson_x": 0.19559203603007994,
+      "pearson_y": 0.33241280862744704,
+      "sample_count": 15981,
+      "scale_ratio_x": 2.30100616107442,
+      "scale_ratio_y": 1.2330472715941991,
+      "scale_sample_count": 16000
+    }
+  },
+  "pod_name": "prod-rsv-jeonghunpark-20260527-48e785",
+  "posthoc": {
+    "paper_metrics_status": "pass",
+    "split_outputs": [
+      {
+        "comparisons": 21,
+        "path": "outputs/idm_streaming_d2e_full_event_state_duration_luma_window5_g005_idm_event_state_duration_luma_window5_probe64k16k/split_temporal_statistical_comparison.json",
+        "split": "temporal",
+        "status": "pass"
+      },
+      {
+        "comparisons": 21,
+        "path": "outputs/idm_streaming_d2e_full_event_state_duration_luma_window5_g005_idm_event_state_duration_luma_window5_probe64k16k/split_heldout_recording_statistical_comparison.json",
+        "split": "heldout_recording",
+        "status": "pass"
+      },
+      {
+        "comparisons": 21,
+        "path": "outputs/idm_streaming_d2e_full_event_state_duration_luma_window5_g005_idm_event_state_duration_luma_window5_probe64k16k/split_heldout_game_statistical_comparison.json",
+        "split": "heldout_game",
+        "status": "pass"
+      }
+    ],
+    "split_stats_status": "pass"
+  },
+  "probe_rows": {
+    "cache": 64000,
+    "metrics": 16000,
+    "target": 16000,
+    "train": 64000
+  },
+  "reservation_id": "rsv-jeonghunpark-20260527-1a86af",
+  "schema": "g005_idm_event_state_duration_luma_window5_probe_summary.v1",
+  "status": "pass_nonterminal_probe",
+  "strict_local_all": {
+    "keyboard": {
+      "accuracy": 0.008158921603405462,
+      "num_examples": 2819
+    },
+    "mouse_button": {
+      "accuracy": 0.24398625429553264,
+      "exact_true_positive_examples": 71,
+      "f1": 0.07759562841530054,
+      "false_negative_examples": 220,
+      "false_positive_examples": 1468,
+      "no_button_examples": 15709,
+      "no_button_false_positive_examples": 1445,
+      "no_button_false_positive_rate": 0.09198548602711822,
+      "num_examples": 291,
+      "precision": 0.04613385315139701,
+      "predicted_examples": 1539,
+      "recall": 0.24398625429553264
+    }
+  },
+  "training": {
+    "checkpoint_exists": true,
+    "run_exit_code": 1,
+    "run_failure_boundary": "training completed, but wrapper exit_code is nonzero because split stats was initially invoked with split_workers>1 against a serial prediction summary"
+  }
+}

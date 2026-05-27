@@ -1,0 +1,42 @@
+{
+  "schema": "d2e_luma_window_materialization.v1",
+  "status": "pass",
+  "input_root": "outputs/data/d2e_event_state_duration_context_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64",
+  "output_root": "outputs/data/d2e_event_state_duration_luma_window5_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64",
+  "offsets": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "luma_size": 16,
+  "train_rows": 64000,
+  "target_rows": 16000,
+  "pair_count": 1,
+  "offset_present_counts": {
+    "0": 80000,
+    "1": 79996,
+    "2": 79992,
+    "3": 79988,
+    "4": 79984
+  },
+  "train_outputs": [
+    {
+      "output_path": "outputs/data/d2e_event_state_duration_luma_window5_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64/shard_0/train_core.jsonl",
+      "rows": 64000,
+      "sha256": "41e3a061484d3746398fb614de017f2f3c0366e4c79c55d8fd066c191c168753",
+      "input_path": "outputs/data/d2e_event_state_duration_context_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64/shard_0/train_core.jsonl"
+    }
+  ],
+  "target_outputs": [
+    {
+      "output_path": "outputs/data/d2e_event_state_duration_luma_window5_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64/shard_0/target_all_eval.jsonl",
+      "rows": 16000,
+      "sha256": "5dd9db4b2ae0b8da6c107522c5af3e0e8f8750965c2fa76398979917582e9659",
+      "input_path": "outputs/data/d2e_event_state_duration_context_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64/shard_0/target_all_eval.jsonl"
+    }
+  ],
+  "wall_clock_seconds": 23.03193211555481,
+  "claim_boundary": "Adds non-label compact luma windows for NEP-style IDM context; D2E event-token targets are preserved unchanged."
+}

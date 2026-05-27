@@ -1,0 +1,36 @@
+{
+  "schema": "d2e_event_state_context_materialization.v1",
+  "status": "pass",
+  "input_root": "outputs/data/d2e_full_corpus_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64",
+  "output_root": "outputs/data/d2e_event_state_duration_context_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64",
+  "train_rows": 64000,
+  "target_rows": 16000,
+  "pair_count": 1,
+  "recording_state_count": 4,
+  "train_outputs": [
+    {
+      "input_path": "outputs/data/d2e_full_corpus_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64/shard_0/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64/shard_0/train_core.jsonl",
+      "rows": 64000,
+      "prior_key_rows": 39862,
+      "prior_button_rows": 2582,
+      "event_key_rows": 13385,
+      "event_button_rows": 1254,
+      "sha256": "9263fb20d96f6136d0db0dd298ceccfd31a157aab96ba3bc9eb2628eca61561b"
+    }
+  ],
+  "target_outputs": [
+    {
+      "input_path": "outputs/data/d2e_full_corpus_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64/shard_0/target_all_eval.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_g005_idm_event_state_duration_luma_window5_probe64k16k_shards_accel64/shard_0/target_all_eval.jsonl",
+      "rows": 16000,
+      "prior_key_rows": 8183,
+      "prior_button_rows": 246,
+      "event_key_rows": 2819,
+      "event_button_rows": 291,
+      "sha256": "89e92b4fb2b3c0d25b156171af5fe0d62237796e53e18deab0f1a088f37509d0"
+    }
+  ],
+  "wall_clock_seconds": 9.313082933425903,
+  "claim_boundary": "Adds causal prior held-state context while preserving original D2E event-token targets."
+}
