@@ -1,0 +1,38 @@
+{
+  "actual": {
+    "keyboard": 0.009123407714406239,
+    "mouse_button": 0.04138144649217903,
+    "no_button_fpr": 0.06676283307524754,
+    "pearson_x": 0.6426021753917011,
+    "pearson_y": 0.5972448437938398,
+    "scale_ratio_x": 1.123821817326958,
+    "scale_ratio_y": 1.1268488928281242,
+    "strict_mouse_button_f1": 0.06498495422242141
+  },
+  "candidate": "event_state_duration_sequence_prior_prefix320k",
+  "checkout": "8b6402e",
+  "claim_boundary": "Prefix diagnostic only; not G005 completion evidence and not an IDM paper-target win.",
+  "created_at_epoch": 1779924632.4734042,
+  "decision": "Do not promote to full-corpus 4xH200. Causal action-history transformer preserved no-button FPR but collapsed keyboard/button accuracy and remained below paper mouse motion targets on the 320k prefix.",
+  "heldout_no_button_fpr": {
+    "eval_split:heldout_game": 0.0896861307597583,
+    "eval_split:heldout_recording": 0.06598087475295533,
+    "eval_split:temporal": 0.04910217285955652
+  },
+  "metrics_path": "artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_paper_metrics.json",
+  "paper_targets": {
+    "keyboard": 0.73,
+    "mouse_button": 0.957,
+    "no_button_fpr_max": 0.1,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "pod": "prod-rsv-jeonghunpark-20260528-873c77",
+  "reservation_id": "rsv-jeonghunpark-20260528-873c77",
+  "run_summary": "artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_run_summary.json",
+  "schema": "g005_idm_candidate_rejection.v1",
+  "status": "rejected",
+  "wandb_sidecar_status": "artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_wandb_sidecar_status.json"
+}

@@ -1,0 +1,218 @@
+{
+  "claim_boundary": "Sequence-prior event-state-duration prefix diagnostic only; not G005 completion evidence.",
+  "config": "configs/model/idm_streaming_d2e_full_event_state_duration_sequence_prior_prefix320k.yaml",
+  "finished_at": "2026-05-27T23:27:32+0000",
+  "gpu_monitor_log": "artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_gpu_monitor.csv",
+  "paper_metrics": {
+    "alignment": {
+      "examples": [],
+      "missing_prediction_rows": 0,
+      "missing_target_rows": 0,
+      "rows_seen": 320000,
+      "sequence_id_mismatches": 0
+    },
+    "claim_boundary": "Paper-compatible metrics approximate public D2E evaluate.py semantics over pre-binned JSONL tokens; exact released G-IDM comparison remains G006.",
+    "error_count": 0,
+    "findings": [],
+    "groups": {
+      "all": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.009123407714406239,
+            "sample_count": 324769
+          },
+          "mouse_button": {
+            "button_accuracy": 0.04138144649217903,
+            "sample_count": 32285
+          },
+          "mouse_move": {
+            "pearson_x": 0.6426021753917011,
+            "pearson_y": 0.5972448437938398,
+            "sample_count": 260367,
+            "scale_ratio_x": 1.123821817326958,
+            "scale_ratio_y": 1.1268488928281242,
+            "scale_sample_count": 320000
+          }
+        },
+        "rows": 320000,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.020542834878052824,
+            "num_examples": 60313
+          },
+          "mouse_button": {
+            "accuracy": 0.11621250286237692,
+            "exact_true_positive_examples": 1015,
+            "f1": 0.06498495422242141,
+            "false_negative_examples": 7719,
+            "false_positive_examples": 21489,
+            "no_button_examples": 311266,
+            "no_button_false_positive_examples": 20781,
+            "no_button_false_positive_rate": 0.06676283307524754,
+            "num_examples": 8734,
+            "precision": 0.045103092783505154,
+            "predicted_examples": 22504,
+            "recall": 0.11621250286237692
+          }
+        }
+      },
+      "eval_split:heldout_game": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.006165590135055784,
+            "sample_count": 173706
+          },
+          "mouse_button": {
+            "button_accuracy": 0.033393455295027054,
+            "sample_count": 19405
+          },
+          "mouse_move": {
+            "pearson_x": 0.7384412018455064,
+            "pearson_y": 0.6169283868924853,
+            "sample_count": 138588,
+            "scale_ratio_x": 1.1048512585245807,
+            "scale_ratio_y": 1.0262939208625428,
+            "scale_sample_count": 144695
+          }
+        },
+        "rows": 144695,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.0048730645288060995,
+            "num_examples": 25446
+          },
+          "mouse_button": {
+            "accuracy": 0.09882446702530384,
+            "exact_true_positive_examples": 496,
+            "f1": 0.05365062195781504,
+            "false_negative_examples": 4523,
+            "false_positive_examples": 12975,
+            "no_button_examples": 139676,
+            "no_button_false_positive_examples": 12527,
+            "no_button_false_positive_rate": 0.0896861307597583,
+            "num_examples": 5019,
+            "precision": 0.036819835201544054,
+            "predicted_examples": 13471,
+            "recall": 0.09882446702530384
+          }
+        }
+      },
+      "eval_split:heldout_recording": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.007857769550419884,
+            "sample_count": 103719
+          },
+          "mouse_button": {
+            "button_accuracy": 0.04840535950179279,
+            "sample_count": 10598
+          },
+          "mouse_move": {
+            "pearson_x": 0.6557005184984666,
+            "pearson_y": 0.5355466448823525,
+            "sample_count": 79245,
+            "scale_ratio_x": 1.664664443348036,
+            "scale_ratio_y": 1.7731140747824206,
+            "scale_sample_count": 85542
+          }
+        },
+        "rows": 85542,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.021082754190270395,
+            "num_examples": 17123
+          },
+          "mouse_button": {
+            "accuracy": 0.07796028438342731,
+            "exact_true_positive_examples": 318,
+            "f1": 0.06275902901124926,
+            "false_negative_examples": 3761,
+            "false_positive_examples": 5737,
+            "no_button_examples": 81463,
+            "no_button_false_positive_examples": 5375,
+            "no_button_false_positive_rate": 0.06598087475295533,
+            "num_examples": 4079,
+            "precision": 0.052518579686209745,
+            "predicted_examples": 6055,
+            "recall": 0.07796028438342731
+          }
+        }
+      },
+      "eval_split:temporal": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.012382129261799515,
+            "sample_count": 120577
+          },
+          "mouse_button": {
+            "button_accuracy": 0.0498776268039497,
+            "sample_count": 11849
+          },
+          "mouse_move": {
+            "pearson_x": 0.6340958508791449,
+            "pearson_y": 0.5832175672339299,
+            "sample_count": 104966,
+            "scale_ratio_x": 1.1346312757034325,
+            "scale_ratio_y": 1.1728797455355309,
+            "scale_sample_count": 156284
+          }
+        },
+        "rows": 156284,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.029179992746216493,
+            "num_examples": 30329
+          },
+          "mouse_button": {
+            "accuracy": 0.13484087102177555,
+            "exact_true_positive_examples": 483,
+            "f1": 0.0817258883248731,
+            "false_negative_examples": 3099,
+            "false_positive_examples": 7755,
+            "no_button_examples": 152702,
+            "no_button_false_positive_examples": 7498,
+            "no_button_false_positive_rate": 0.04910217285955652,
+            "num_examples": 3582,
+            "precision": 0.05863073561544064,
+            "predicted_examples": 8238,
+            "recall": 0.13484087102177555
+          }
+        }
+      }
+    },
+    "max_rows": 320000,
+    "model_name": "streaming_idm_d2e_full_event_state_duration_sequence_prior_prefix320k",
+    "prediction_paths": [
+      "outputs/idm_streaming_d2e_full_event_state_duration_sequence_prior_prefix320k/predictions.jsonl"
+    ],
+    "schema": "paper_idm_metrics.v1",
+    "split_tags": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ],
+    "status": "pass",
+    "target_paths": [
+      "outputs/data/d2e_event_state_duration_hierarchical_prefix320k/target_all_eval.jsonl"
+    ]
+  },
+  "reservation": {
+    "checked_at": "2026-05-27T22:39:33+00:00",
+    "end_at": "2026-05-28T10:00:00+09:00",
+    "gpu_indices": "1",
+    "id": "rsv-jeonghunpark-20260528-873c77",
+    "node_id": "4",
+    "pod_name": "prod-rsv-jeonghunpark-20260528-873c77",
+    "start_at": "2026-05-28T07:00:00+09:00"
+  },
+  "schema": "g005_sequence_prior_prefix_run_summary.v1",
+  "started_at": "2026-05-27T22:39:33+00:00",
+  "status": "pass",
+  "target_materialization_summary": "artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_target_materialization_summary.json",
+  "train_materialization_summary": "artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_train_materialization_summary.json",
+  "wandb_sidecar_status": "artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_wandb_sidecar_status.json"
+}

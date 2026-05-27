@@ -402,3 +402,22 @@ Next: keyboard likely requires a learned sequence/action-state model that predic
 future key state or current event repeats from richer temporal context, not just
 held duration. GPU should still be gated by a prefix run that beats `event_all` on
 keyboard, button, and motion simultaneously.
+
+
+### Event-state-duration sequence-prior prefix rejection
+
+Date: 2026-05-28 KST.
+
+Ran a 1GPU prefix gate on reservation `rsv-jeonghunpark-20260528-873c77` (production node 4 GPU `[1]`, cancelled immediately after evidence collection). The pod checkout was `8b6402e`; W&B sidecar status is `artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_wandb_sidecar_status.json`.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_run_summary.json` — status `pass`, 320k target predictions, reservation expiration recorded.
+- `artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_paper_metrics.json` — status `pass`, alignment rows `320,000`, zero sequence mismatches.
+- `artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_rejection.json` — explicit negative decision.
+
+Result: reject this branch. Paper-compatible all-row metrics were keyboard `0.009123`, mouse-button `0.041381`, Pearson X/Y `0.6426/0.5972`, scale ratios X/Y `1.124/1.127`. Strict button F1 was `0.06498`. No-button FPR was acceptable overall (`0.0668`) and across heldout_game/heldout_recording/temporal (`0.0897/0.0660/0.0491`), but the model badly underperforms the current endpoint-mixture/event-context baseline and misses every paper target. Do not promote to a full 4xH200 run.
+
+Operational note: the run spent roughly 25 minutes in CPU stats/cache construction before GPU training. Future action-history candidates should precompute stats/cache in a CPU/storage shell before reserving H200s.
+
+Next branch: change the supervision/modeling problem rather than adding another global temporal wrapper. Prioritize teacher-assisted event decoding or causal per-recording latent state estimation with prefix gates, and keep exact-split released G-IDM infrastructure separate until the paper-target objective is met.

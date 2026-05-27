@@ -1,6 +1,6 @@
 {
   "active_goal_id": "G005-g014-idm-full-paper-target",
-  "candidate_count": 15,
+  "candidate_count": 16,
   "claim_boundary": "Revalidation/ranking artifact only; no G005 success claim and no FDM-1 parity claim.",
   "created_at_epoch": 1779902282.2046466,
   "paper_targets": {
@@ -918,14 +918,38 @@
           "severity": "warning"
         }
       ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": null,
+      "audit_status": "not_applicable_prefix_gate",
+      "button_gap_to_paper": 0.915618553507821,
+      "candidate": "event_state_duration_sequence_prior_prefix320k",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.7208765922855938,
+      "metrics_path": "artifacts/idm/g005_idm_event_state_duration_sequence_prior_prefix320k_paper_metrics.json",
+      "note": "Rejected prefix-only causal action-history transformer: no-button FPR is within gate, but keyboard/button collapse and motion remains below paper targets.",
+      "paper_keyboard_accuracy": 0.009123407714406239,
+      "paper_mouse_button_accuracy": 0.04138144649217903,
+      "paper_mouse_pearson_x": 0.6426021753917011,
+      "paper_mouse_pearson_y": 0.5972448437938398,
+      "paper_scale_ratio_x": 1.123821817326958,
+      "paper_scale_ratio_y": 1.1268488928281242,
+      "pearson_x_gap_to_paper": 0.15339782460829898,
+      "pearson_y_gap_to_paper": 0.18575515620616023,
+      "rows": 320000,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.06498495422242141,
+      "strict_no_button_fpr": 0.06676283307524754,
+      "top_audit_findings": []
     }
   ],
   "recommended_next_actions": [
-    "Do not promote threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, or naive luma windows; all miss paper targets under empty_bins_as_correct=false.",
-    "Next G005 branch must change the learned endpoint heads/training signal over event-context features (e.g. exact-set softmax/hierarchical transition heads with heldout-calibrated priors), not just global thresholds.",
-    "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s."
+    "Do not promote threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, or sequence-prior action-history prefix runs; all miss paper targets under empty_bins_as_correct=false.",
+    "Next G005 branch must change the supervision/modeling problem, not just add causal action history: investigate teacher-assisted event decoding or per-recording latent state estimation that is causal at inference and validated on prefix rows before full 4xH200.",
+    "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779920844.0924282
+  "updated_at_epoch": 1779924632.4737964
 }
