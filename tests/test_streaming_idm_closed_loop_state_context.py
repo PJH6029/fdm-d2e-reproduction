@@ -78,6 +78,39 @@ def test_closed_loop_state_context_seed_from_train_records(tmp_path: Path) -> No
     assert target0["previous_event_tokens"] == ["NOOP"]
 
 
+def test_closed_loop_state_context_can_seed_first_target_prior_once() -> None:
+    tracker = _ClosedLoopStateContextTracker()
+    first_target = {
+        "sequence_id": "rec#target0",
+        "recording_id": "rec",
+        "prior_action_tokens": ["KEY_DOWN_87", "MOUSE_LEFT_DOWN"],
+        "prior_key_hold_bins": {"87": 5},
+        "prior_button_hold_bins": {"LEFT": 3},
+        "prior_since_key_transition_bins": 2,
+        "prior_since_button_transition_bins": 1,
+        "previous_event_tokens": ["KEY_PRESS_87"],
+    }
+
+    tracker.seed_recording_from_prior_context(first_target)
+    seeded = tracker.row_with_prior_context({"sequence_id": "rec#target0", "recording_id": "rec"})
+
+    assert tracker.target_prior_seed_recordings == 1
+    assert seeded["prior_action_tokens"] == ["KEY_DOWN_87", "MOUSE_LEFT_DOWN"]
+    assert seeded["prior_key_hold_bins"] == {"87": 5}
+    assert seeded["prior_button_hold_bins"] == {"LEFT": 3}
+    assert seeded["prior_since_key_transition_bins"] == 2
+    assert seeded["prior_since_button_transition_bins"] == 1
+    assert seeded["previous_event_tokens"] == ["KEY_PRESS_87"]
+
+    tracker.observe_tokens(seeded, ["KEY_RELEASE_87"])
+    tracker.seed_recording_from_prior_context({**first_target, "prior_key_hold_bins": {"999": 99}})
+    after_prediction = tracker.row_with_prior_context({"sequence_id": "rec#target1", "recording_id": "rec"})
+
+    assert tracker.target_prior_seed_recordings == 1
+    assert after_prediction["prior_action_tokens"] == ["MOUSE_LEFT_DOWN"]
+    assert after_prediction["prior_key_hold_bins"] == {}
+
+
 def test_closed_loop_state_context_requires_prior_action_feature_mode() -> None:
     assert _closed_loop_state_context_enabled(
         {"closed_loop_state_context": True},

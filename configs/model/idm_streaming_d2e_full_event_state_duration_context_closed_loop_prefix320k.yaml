@@ -12,6 +12,7 @@
   "validate_pseudolabels": false,
   "closed_loop_state_context": true,
   "state_context_source": "predicted_closed_loop",
-  "closed_loop_state_context_seed_from_train": true,
-  "claim_boundary": "Leakage audit only: rerun an existing full-corpus event-state IDM checkpoint with target prior-action/state fields replaced by predicted closed-loop state context. Prefix metrics are not G005 completion evidence."
+  "closed_loop_state_context_seed_from_train": false,
+  "claim_boundary": "Leakage audit only: rerun an existing full-corpus event-state IDM checkpoint with target prior-action/state fields replaced by predicted closed-loop state context. The first observed row per recording may be initialized from its materialized prior context; after that, target action history is ignored. Prefix metrics are not G005 completion evidence.",
+  "closed_loop_state_context_seed_from_target_prior": true
 }

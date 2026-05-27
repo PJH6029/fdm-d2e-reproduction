@@ -291,6 +291,25 @@ def _age_value(value: int | None) -> int | None:
     return None if value is None else max(0, int(value))
 
 
+def _coerce_optional_int(value: Any) -> int | None:
+    if value is None:
+        return None
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return None
+
+
+def _duration_dict_from_context(value: Any) -> dict[str, int]:
+    if not isinstance(value, dict):
+        return {}
+    out: dict[str, int] = {}
+    for key, raw_duration in value.items():
+        coerced = _coerce_optional_int(raw_duration)
+        out[str(key)] = 0 if coerced is None else coerced
+    return out
+
+
 class _ClosedLoopStateContextTracker:
     """Causal state-context replacement for event-state IDM target inference.
 
@@ -313,6 +332,45 @@ class _ClosedLoopStateContextTracker:
         self.button_transition_age: dict[str, int | None] = {}
         self.previous_event_tokens: dict[str, list[str]] = {}
         self.seed_rows = 0
+        self.target_prior_seed_recordings = 0
+
+    def has_recording(self, row: dict[str, Any]) -> bool:
+        recording_id = str(row.get("recording_id", ""))
+        return (
+            recording_id in self.key_states
+            or recording_id in self.button_states
+            or recording_id in self.previous_event_tokens
+            or recording_id in self.key_transition_age
+            or recording_id in self.button_transition_age
+        )
+
+    def seed_recording_from_prior_context(self, row: dict[str, Any]) -> None:
+        """Initialize a new recording from its first materialized prior fields.
+
+        This is cheaper than rescanning the full train split for prefix audits.
+        It must only be used for the first target row observed for a recording:
+        afterwards ``observe_tokens`` owns the state and ignores target prior
+        fields to avoid consuming heldout action history.
+        """
+
+        recording_id = str(row.get("recording_id", ""))
+        if self.has_recording(row):
+            return
+        key_holds = _duration_dict_from_context(row.get("prior_key_hold_bins"))
+        button_holds = _duration_dict_from_context(row.get("prior_button_hold_bins"))
+        for token in [str(token) for token in row.get("prior_action_tokens", []) or []]:
+            if token.startswith("KEY_DOWN_"):
+                key_holds.setdefault(token[len("KEY_DOWN_") :], 1)
+            if token.startswith("MOUSE_") and token.endswith("_DOWN") and not token.startswith(("MOUSE_DX_", "MOUSE_DY_")):
+                button_holds.setdefault(token[len("MOUSE_") : -len("_DOWN")], 1)
+        self.key_states[recording_id] = set(key_holds)
+        self.button_states[recording_id] = set(button_holds)
+        self.key_hold_bins[recording_id] = {key: max(0, int(value)) for key, value in key_holds.items()}
+        self.button_hold_bins[recording_id] = {button: max(0, int(value)) for button, value in button_holds.items()}
+        self.key_transition_age[recording_id] = _coerce_optional_int(row.get("prior_since_key_transition_bins"))
+        self.button_transition_age[recording_id] = _coerce_optional_int(row.get("prior_since_button_transition_bins"))
+        self.previous_event_tokens[recording_id] = [str(token) for token in row.get("previous_event_tokens", []) or ["NOOP"]]
+        self.target_prior_seed_recordings += 1
 
     def row_with_prior_context(self, row: dict[str, Any]) -> dict[str, Any]:
         recording_id = str(row.get("recording_id", ""))
@@ -4370,6 +4428,7 @@ def _predict_stream(
     closed_loop_state_context = _closed_loop_state_context_enabled(config, stats)
     closed_loop_tracker: _ClosedLoopStateContextTracker | None = None
     closed_loop_seed_rows = 0
+    closed_loop_seed_from_target_prior = bool(config.get("closed_loop_state_context_seed_from_target_prior", False))
     if closed_loop_state_context:
         seed_from_train = bool(config.get("closed_loop_state_context_seed_from_train", True))
         if seed_from_train and (
@@ -4533,6 +4592,12 @@ def _predict_stream(
         for row in row_iter:
             if remaining_max_examples is not None and emitted >= remaining_max_examples:
                 break
+            if (
+                closed_loop_tracker is not None
+                and closed_loop_seed_from_target_prior
+                and not closed_loop_tracker.has_recording(row)
+            ):
+                closed_loop_tracker.seed_recording_from_prior_context(row)
             feature_row = closed_loop_tracker.row_with_prior_context(row) if closed_loop_tracker is not None else row
             if action_history_len > 0:
                 history, button_state = _ensure_history_state(histories, button_states, str(feature_row.get("recording_id", "")))
@@ -4759,6 +4824,10 @@ def _predict_stream(
                 if closed_loop_state_context
                 else False,
                 "seed_rows": closed_loop_seed_rows,
+                "seed_from_first_target_prior": closed_loop_seed_from_target_prior if closed_loop_state_context else False,
+                "target_prior_seed_recordings": (
+                    closed_loop_tracker.target_prior_seed_recordings if closed_loop_tracker is not None else 0
+                ),
             },
         },
         "metrics_state": _metric_state_map(metrics_by_model),
@@ -4838,6 +4907,7 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "closed_loop_state_context",
         "state_context_source",
         "closed_loop_state_context_seed_from_train",
+        "closed_loop_state_context_seed_from_target_prior",
         "closed_loop_state_context_seed_max_examples",
         "resume_closed_loop_state_context",
         "force_cpu",
@@ -5144,6 +5214,7 @@ def _predict_streaming_idm_checkpoint_parallel(
         "closed_loop_state_context",
         "state_context_source",
         "closed_loop_state_context_seed_from_train",
+        "closed_loop_state_context_seed_from_target_prior",
         "closed_loop_state_context_seed_max_examples",
         "resume_closed_loop_state_context",
         "force_cpu",
@@ -5333,6 +5404,7 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         "closed_loop_state_context",
         "state_context_source",
         "closed_loop_state_context_seed_from_train",
+        "closed_loop_state_context_seed_from_target_prior",
         "closed_loop_state_context_seed_max_examples",
         "resume_closed_loop_state_context",
         "action_history_parallel_by_path",
