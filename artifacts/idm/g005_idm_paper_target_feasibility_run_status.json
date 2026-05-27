@@ -1,0 +1,234 @@
+{
+  "aborted_runs": [
+    {
+      "log": "artifacts/idm/g005_idm_paper_target_feasibility_prefix_50k_25k.log",
+      "name": "prefix_50k_25k",
+      "progress": "artifacts/idm/g005_idm_paper_target_feasibility_prefix_50k_25k_progress.json",
+      "reason": "aborted before target evidence because single-process CPU scoring was too slow for the 2026-05-27 15:00-18:00 KST reservation; use smaller/optimized diagnostic before rerun."
+    },
+    {
+      "log": "artifacts/idm/g005_idm_paper_target_feasibility_prefix_10k_5k.log",
+      "name": "prefix_10k_5k",
+      "progress": "artifacts/idm/g005_idm_paper_target_feasibility_prefix_10k_5k_progress.json",
+      "reason": "aborted before final output at reservation handoff after terminal 2k/500 diagnostic produced a no-scale recommendation."
+    }
+  ],
+  "claim_boundary": "Non-terminal CPU/IO diagnostic evidence only. It does not complete/checkpoint G005 and should not trigger a full GPU run by itself.",
+  "code_commit": "8cec44c",
+  "created_at_kst": "2026-05-27T17:52:00+09:00",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "schema": "g005_idm_paper_target_feasibility_run_status.v1",
+  "status": "pass",
+  "terminal_run": {
+    "artifact": "artifacts/idm/g005_idm_paper_target_feasibility_prefix_2k_500.json",
+    "log": "artifacts/idm/g005_idm_paper_target_feasibility_prefix_2k_500.log",
+    "name": "prefix_2k_500",
+    "recommendation": {
+      "current_context_baseline": {
+        "keyboard_accuracy": 0.20262943313604903,
+        "mouse_button_accuracy": 0.17769864671991165
+      },
+      "reason": "no prefix rule/oracle diagnostic beats the current event-state-duration-context keyboard and button paper metrics; avoid another full GPU run until target alignment or feature support is improved",
+      "scale_new_full_gpu_run": false,
+      "status": "diagnostic_only"
+    },
+    "status": "pass",
+    "target_rows": 32000,
+    "top_predictors": [
+      {
+        "baseline_delta": {
+          "keyboard_accuracy": -0.14741727142539082,
+          "mouse_button_accuracy": -0.17615225496733433,
+          "mouse_button_f1": -0.29363531698271716,
+          "no_button_false_positive_rate": -0.024169978052423848,
+          "pearson_x": 0.02241978623940244,
+          "pearson_y": 0.06901708008135377,
+          "scale_ratio_x": -0.035067556231893615,
+          "scale_ratio_y": -0.17755276005969334
+        },
+        "name": "copy_previous_event",
+        "paper_pass_count": 2,
+        "values": {
+          "keyboard_accuracy": 0.0552121617106582,
+          "mouse_button_accuracy": 0.0015463917525773195,
+          "mouse_button_f1": 0.0,
+          "no_button_false_positive_rate": 0.02386166033361242,
+          "pearson_x": 0.7726266449413401,
+          "pearson_y": 0.7659840081237234,
+          "scale_ratio_x": 1.0007541133455211,
+          "scale_ratio_y": 1.000346136176265
+        }
+      },
+      {
+        "baseline_delta": {
+          "keyboard_accuracy": 0.593646580007434,
+          "mouse_button_accuracy": 0.40872110636650816,
+          "mouse_button_f1": 0.4391175296348314,
+          "no_button_false_positive_rate": -0.04803163838603627,
+          "pearson_x": -0.34041725363624253,
+          "pearson_y": -0.25066428550204595,
+          "scale_ratio_x": 2.262884153512509,
+          "scale_ratio_y": 2.4125327633154408
+        },
+        "name": "oracle_seen_game",
+        "paper_pass_count": 1,
+        "values": {
+          "keyboard_accuracy": 0.7962760131434831,
+          "mouse_button_accuracy": 0.5864197530864198,
+          "mouse_button_f1": 0.7327528466175486,
+          "no_button_false_positive_rate": 0.0,
+          "pearson_x": 0.4097896050656952,
+          "pearson_y": 0.44630264254032365,
+          "scale_ratio_x": 3.2987058230899238,
+          "scale_ratio_y": 3.5904316595513994
+        }
+      },
+      {
+        "baseline_delta": {
+          "keyboard_accuracy": 0.4808238042740229,
+          "mouse_button_accuracy": 0.3284741927862612,
+          "mouse_button_f1": 0.38236188385703096,
+          "no_button_false_positive_rate": -0.04803163838603627,
+          "pearson_x": -0.5292019271086272,
+          "pearson_y": -0.49679764269187476,
+          "scale_ratio_x": 8.13176739768587,
+          "scale_ratio_y": 7.677859084710055
+        },
+        "name": "oracle_seen_game_prior_state",
+        "paper_pass_count": 0,
+        "values": {
+          "keyboard_accuracy": 0.6834532374100719,
+          "mouse_button_accuracy": 0.5061728395061729,
+          "mouse_button_f1": 0.6759972008397481,
+          "no_button_false_positive_rate": 0.0,
+          "pearson_x": 0.22100493159331053,
+          "pearson_y": 0.20016928535049486,
+          "scale_ratio_x": 9.167589067263284,
+          "scale_ratio_y": 8.855757980946013
+        }
+      },
+      {
+        "baseline_delta": {
+          "keyboard_accuracy": 0.47037178852812905,
+          "mouse_button_accuracy": 0.27291863723070564,
+          "mouse_button_f1": 0.3323632305844578,
+          "no_button_false_positive_rate": -0.04803163838603627,
+          "pearson_x": -0.434545202603267,
+          "pearson_y": -0.3666338387401835,
+          "scale_ratio_x": 3.007713295740037,
+          "scale_ratio_y": 3.1281096642018156
+        },
+        "name": "oracle_seen_game_previous_event",
+        "paper_pass_count": 0,
+        "values": {
+          "keyboard_accuracy": 0.6730012216641781,
+          "mouse_button_accuracy": 0.4506172839506173,
+          "mouse_button_f1": 0.625998547567175,
+          "no_button_false_positive_rate": 0.0,
+          "pearson_x": 0.3156616560986707,
+          "pearson_y": 0.3303330893021861,
+          "scale_ratio_x": 4.043534965317452,
+          "scale_ratio_y": 4.306008560437774
+        }
+      },
+      {
+        "baseline_delta": {
+          "keyboard_accuracy": -0.07607725347951005,
+          "mouse_button_accuracy": -0.17667195267473712,
+          "mouse_button_f1": -0.29152783542318084,
+          "no_button_false_positive_rate": -0.04796723444451505,
+          "pearson_x": -0.6362567043139274,
+          "pearson_y": -0.642075049786484,
+          "scale_ratio_x": 12.371652355029845,
+          "scale_ratio_y": 13.02438845186983
+        },
+        "name": "lookup_game_previous_event_mode",
+        "paper_pass_count": 0,
+        "values": {
+          "keyboard_accuracy": 0.12655217965653898,
+          "mouse_button_accuracy": 0.001026694045174538,
+          "mouse_button_f1": 0.002107481559536354,
+          "no_button_false_positive_rate": 6.44039415212211e-05,
+          "pearson_x": 0.11395015438801026,
+          "pearson_y": 0.05489187825588563,
+          "scale_ratio_x": 13.407474024607259,
+          "scale_ratio_y": 14.20228734810579
+        }
+      },
+      {
+        "baseline_delta": {
+          "keyboard_accuracy": -0.0798960095907175,
+          "mouse_button_accuracy": -0.050257742300589964,
+          "mouse_button_f1": -0.06207602659989736,
+          "no_button_false_positive_rate": -0.047999436415275654,
+          "pearson_x": -0.7333173206741433,
+          "pearson_y": -0.6875750067462608,
+          "scale_ratio_x": 10.801323987076975,
+          "scale_ratio_y": 12.064790431432124
+        },
+        "name": "oracle_seen_game_prior_state_duration",
+        "paper_pass_count": 0,
+        "values": {
+          "keyboard_accuracy": 0.12273342354533152,
+          "mouse_button_accuracy": 0.12744090441932168,
+          "mouse_button_f1": 0.2315592903828198,
+          "no_button_false_positive_rate": 3.220197076061055e-05,
+          "pearson_x": 0.016889538027794408,
+          "pearson_y": 0.009391921296108748,
+          "scale_ratio_x": 11.83714565665439,
+          "scale_ratio_y": 13.242689327668083
+        }
+      },
+      {
+        "baseline_delta": {
+          "keyboard_accuracy": -0.15522506155134957,
+          "mouse_button_accuracy": -0.10781169913512234,
+          "mouse_button_f1": -0.15964516919946595,
+          "no_button_false_positive_rate": -0.047999436415275654,
+          "pearson_x": -0.661308502177885,
+          "pearson_y": -0.5788298779732568,
+          "scale_ratio_x": 11.065452897795042,
+          "scale_ratio_y": 7.007908086975495
+        },
+        "name": "oracle_seen_game_prior_previous_duration",
+        "paper_pass_count": 0,
+        "values": {
+          "keyboard_accuracy": 0.047404371584699456,
+          "mouse_button_accuracy": 0.0698869475847893,
+          "mouse_button_f1": 0.13399014778325122,
+          "no_button_false_positive_rate": 3.220197076061055e-05,
+          "pearson_x": 0.0888983565240528,
+          "pearson_y": 0.11813705006911275,
+          "scale_ratio_x": 12.101274567372457,
+          "scale_ratio_y": 8.185806983211453
+        }
+      },
+      {
+        "baseline_delta": {
+          "keyboard_accuracy": -0.16829809581069974,
+          "mouse_button_accuracy": -0.13846323424506254,
+          "mouse_button_f1": -0.216177521550741,
+          "no_button_false_positive_rate": -0.047323195029302836,
+          "pearson_x": -0.7369159760325039,
+          "pearson_y": -0.6900153068249606,
+          "scale_ratio_x": 9.066806760141288,
+          "scale_ratio_y": 10.421896768946848
+        },
+        "name": "lookup_game_prior_state_duration_mode",
+        "paper_pass_count": 0,
+        "values": {
+          "keyboard_accuracy": 0.0343313373253493,
+          "mouse_button_accuracy": 0.039235412474849095,
+          "mouse_button_f1": 0.07745779543197617,
+          "no_button_false_positive_rate": 0.0007084433567334321,
+          "pearson_x": 0.01329088266943378,
+          "pearson_y": 0.006951621217409016,
+          "scale_ratio_x": 10.102628429718703,
+          "scale_ratio_y": 11.599795665182807
+        }
+      }
+    ],
+    "train_rows": 128000,
+    "wall_clock_seconds": 159.56134295463562
+  }
+}
