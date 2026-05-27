@@ -614,6 +614,15 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
         return base + _luma_stack_features(row, offsets=(-2, -1, 0, 1, 2), luma_size=16) + _temporal_basis_features(row)
     if feature_mode == "summary_compact_luma16_window5_time":
         return base + _compact_luma_window_features(row, expected_frames=5, luma_size=16) + _temporal_basis_features(row)
+    if feature_mode == "summary_compact_luma16_window5_time_state_duration_prior_action":
+        return (
+            base
+            + _compact_luma_window_features(row, expected_frames=5, luma_size=16)
+            + _temporal_basis_features(row)
+            + _state_duration_features(row)
+            + _prior_action_features(row)
+            + _previous_event_features(row)
+        )
     raise ValueError(f"unsupported IDM feature_mode: {feature_mode}")
 
 

@@ -65,6 +65,7 @@ def _luma_temporal_layout(input_dim: int, feature_mode: str, config: dict[str, A
     supported_modes = {
         "summary_luma16_stack5_time",
         "summary_compact_luma16_window5_time",
+        "summary_compact_luma16_window5_time_state_duration_prior_action",
         "summary_compact_luma16_pair_time",
         "summary_compact_luma16_pair_shift_time",
         "summary_compact_luma16_pair_shift_time_prior_action",
@@ -78,15 +79,30 @@ def _luma_temporal_layout(input_dim: int, feature_mode: str, config: dict[str, A
     plane_dim = luma_size * luma_size
     if luma_size <= 0:
         raise ValueError("visual_luma_size must be positive")
-    if feature_mode in {"summary_luma16_stack5_time", "summary_compact_luma16_window5_time"}:
+    if feature_mode in {
+        "summary_luma16_stack5_time",
+        "summary_compact_luma16_window5_time",
+        "summary_compact_luma16_window5_time_state_duration_prior_action",
+    }:
         stack_frames = int(config.get("visual_stack_frames", 5))
         if stack_frames < 2:
             raise ValueError("visual_stack_frames must be >=2")
         if luma_size != 16 or stack_frames != 5:
             raise ValueError(f"{feature_mode} requires visual_luma_size=16 and visual_stack_frames=5")
         visual_planes = stack_frames + (stack_frames - 1)
-        mask_dim = stack_frames if feature_mode == "summary_compact_luma16_window5_time" else 0
-        expected_feature_dim = summary_dim + (visual_planes * plane_dim) + mask_dim + temporal_dim
+        mask_dim = stack_frames if "compact_luma16_window5" in feature_mode else 0
+        prior_action_dim = int(config.get("prior_action_feature_dim", 38)) if "prior_action" in feature_mode else 0
+        state_duration_dim = int(config.get("state_duration_feature_dim", 80)) if "state_duration" in feature_mode else 0
+        previous_event_dim = int(config.get("previous_event_feature_dim", 38)) if "state_duration" in feature_mode else 0
+        expected_feature_dim = (
+            summary_dim
+            + (visual_planes * plane_dim)
+            + mask_dim
+            + temporal_dim
+            + state_duration_dim
+            + prior_action_dim
+            + previous_event_dim
+        )
     elif feature_mode == "summary_compact_luma16_pair_time":
         if luma_size != 16:
             raise ValueError(f"{feature_mode} requires visual_luma_size=16")

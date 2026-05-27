@@ -87,6 +87,33 @@ class TorchIDMContractTests(unittest.TestCase):
 
         self.assertEqual(tuple(out.shape), (3, 7))
 
+    def test_luma_temporal_conv_model_accepts_compact_luma_window_state_context_features(self):
+        if not torch_available():
+            self.skipTest("torch extra is not installed")
+        torch = require_torch()
+        model = _build_model(
+            torch,
+            input_dim=2493,
+            output_dim=7,
+            hidden_dim=8,
+            depth=1,
+            dropout=0.0,
+            config={
+                "model_arch": "luma_temporal_conv",
+                "visual_stack_frames": 5,
+                "visual_conv_channels": 2,
+                "visual_conv_pool_hw": 2,
+                "state_duration_feature_dim": 80,
+                "prior_action_feature_dim": 38,
+                "previous_event_feature_dim": 38,
+            },
+            feature_mode="summary_compact_luma16_window5_time_state_duration_prior_action",
+        )
+
+        out = model(torch.zeros((3, 2493), dtype=torch.float32))
+
+        self.assertEqual(tuple(out.shape), (3, 7))
+
     def test_luma_action_sequence_prior_parses_compact_luma_and_history(self):
         if not torch_available():
             self.skipTest("torch extra is not installed")

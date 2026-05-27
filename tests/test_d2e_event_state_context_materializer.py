@@ -93,3 +93,26 @@ def test_state_duration_prior_feature_mode_adds_duration_and_previous_event_feat
 
     assert len(enriched) == len(base) + 80 + 38 + 38
     assert enriched != [*base, *([0.0] * (80 + 38 + 38))]
+
+
+def test_luma_window_state_duration_prior_feature_mode_combines_nep_window_and_state_context() -> None:
+    row = {
+        "bin_index": 3,
+        "frame": {"features": [0, 1, 2, 3, 4]},
+        "next_frame_features": [1, 2, 3, 4, 5],
+        "frame_delta_features": [1, 1, 1, 1, 1],
+        "compact_luma_window": [[float(idx)] * 256 for idx in range(5)],
+        "compact_luma_window_mask": [1.0, 1.0, 1.0, 1.0, 0.0],
+        "prior_action_tokens": ["KEY_DOWN_87", "MOUSE_LEFT_DOWN"],
+        "previous_event_tokens": ["KEY_PRESS_87", "MOUSE_DX_P2", "MOUSE_DY_N1"],
+        "prior_key_hold_bins": {"87": 4},
+        "prior_button_hold_bins": {"LEFT": 2},
+        "prior_since_key_transition_bins": 3,
+        "prior_since_button_transition_bins": 1,
+    }
+    window_only = record_features(row, feature_mode="summary_compact_luma16_window5_time")
+    enriched = record_features(row, feature_mode="summary_compact_luma16_window5_time_state_duration_prior_action")
+
+    assert len(window_only) == 2337
+    assert len(enriched) == len(window_only) + 80 + 38 + 38
+    assert enriched != [*window_only, *([0.0] * (80 + 38 + 38))]

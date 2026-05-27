@@ -88,6 +88,20 @@ class NeuralIDMTests(unittest.TestCase):
                 },
                 feature_mode="summary_compact_luma16_window5_time",
             )
+            windowed_state = record_features(
+                {
+                    **row,
+                    "compact_luma_window": [[float(idx)] * 256 for idx in range(5)],
+                    "compact_luma_window_mask": [1.0, 1.0, 1.0, 1.0, 0.0],
+                    "prior_action_tokens": ["KEY_DOWN_87", "MOUSE_LEFT_DOWN"],
+                    "previous_event_tokens": ["KEY_PRESS_87", "MOUSE_DX_P2", "MOUSE_DY_N1"],
+                    "prior_key_hold_bins": {"87": 4},
+                    "prior_button_hold_bins": {"LEFT": 2},
+                    "prior_since_key_transition_bins": 3,
+                    "prior_since_button_transition_bins": 1,
+                },
+                feature_mode="summary_compact_luma16_window5_time_state_duration_prior_action",
+            )
             luma_pair = record_features(row, feature_mode="summary_compact_luma16_pair_time")
             luma_pair_shift = record_features(row, feature_mode="summary_compact_luma16_pair_shift_time")
 
@@ -99,6 +113,7 @@ class NeuralIDMTests(unittest.TestCase):
             self.assertEqual(len(causal), 504)
             self.assertEqual(len(stacked), 2332)
             self.assertEqual(len(windowed), 2337)
+            self.assertEqual(len(windowed_state), 2493)
             self.assertEqual(len(luma_pair), 796)
             self.assertEqual(len(luma_pair_shift), 812)
             self.assertTrue(any(abs(value) > 0 for value in rich[16:]))

@@ -204,6 +204,32 @@ def test_g005_event_state_duration_context_uses_distinct_context_and_per_axis_ga
     assert paper["paper_metrics"]["target_path"] == "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl"
 
 
+def test_g005_event_state_duration_luma_window5_combines_nep_window_and_state_context() -> None:
+    text = _script("scripts/run_g005_idm_event_state_duration_luma_window5_4xh200.sh")
+    config = json.loads(
+        (ROOT / "configs/model/idm_streaming_d2e_full_event_state_duration_luma_window5_paper_target.yaml").read_text()
+    )
+    paper = json.loads((ROOT / "configs/eval/g005_idm_event_state_duration_luma_window5_paper_target.yaml").read_text())
+    split = json.loads((ROOT / "configs/eval/g005_idm_event_state_duration_luma_window5_split_statistics.yaml").read_text())
+
+    context_idx = text.index("scripts/materialize_d2e_event_state_context_corpus.py")
+    window_idx = text.index("scripts/materialize_d2e_luma_window_corpus.py")
+    cache_idx = text.index("scripts/precompute_streaming_idm_training_cache.py")
+    train_idx = text.index("scripts/run_g005_idm_surface_paper_target_4xh200.sh")
+    assert context_idx < window_idx < cache_idx < train_idx
+    assert "--offsets=\"${WINDOW_OFFSETS:-0,1,2,3,4}\"" in text
+    assert "outputs/data/d2e_event_state_duration_context_shards_accel64" in text
+    assert "outputs/data/d2e_event_state_duration_luma_window5_shards_accel64" in text
+    assert "event-state-duration-luma-window5" in text
+    assert config["feature_mode"] == "summary_compact_luma16_window5_time_state_duration_prior_action"
+    assert config["visual_stack_frames"] == 5
+    assert config["state_duration_feature_dim"] == 80
+    assert config["previous_event_feature_dim"] == 38
+    assert paper["paper_metrics"]["empty_bins_as_correct"] is False
+    assert paper["paper_metrics"]["target_path"] == "outputs/data/d2e_event_state_duration_luma_window5_shards_accel64/shard_*/target_all_eval.jsonl"
+    assert split["ground_truth_glob"] == "outputs/data/d2e_event_state_duration_luma_window5_shards_accel64/shard_*/target_all_eval.jsonl"
+
+
 def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
     text = _script("scripts/run_g004_d2e_full_fdm_4xh200.sh")
     assert 'PID_FILE="${PID_FILE:-outputs/cluster/g004_d2e_full_fdm_4xh200.pid}"' in text
