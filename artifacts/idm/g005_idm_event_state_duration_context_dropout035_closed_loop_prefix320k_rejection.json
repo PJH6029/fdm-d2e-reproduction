@@ -1,0 +1,91 @@
+{
+  "active_goal_id": "G005-g014-idm-full-paper-target",
+  "candidate": "event_state_duration_context_dropout035_closed_loop_prefix320k",
+  "claim_boundary": "Negative prefix diagnostic only; not G005 completion evidence.",
+  "created_at_epoch": 1779898825.8805628,
+  "evidence": {
+    "artifact_summary": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_artifact_summary.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_2gpu_gpu_monitor.csv",
+    "paper_metrics": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_paper_metrics.json",
+    "pod_launch_summary": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_pod_launch_summary.json",
+    "run_summary": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_run_summary.json",
+    "wandb_status": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_wandb_sidecar_status.json"
+  },
+  "gpu_monitor_status": {
+    "exists": true,
+    "indices": [
+      "0",
+      "1"
+    ],
+    "max_utilization_gpu_pct": 100.0,
+    "nonzero_utilization_rows": 43,
+    "rows": 144
+  },
+  "paper_compatible": {
+    "empty_bins_as_correct": false,
+    "keyboard": {
+      "key_accuracy": 0.006398088104668906,
+      "sample_count": 2390089
+    },
+    "mouse_button": {
+      "button_accuracy": 0.008884276150836534,
+      "sample_count": 280383
+    },
+    "mouse_move": {
+      "pearson_x": 0.021408165111041783,
+      "pearson_y": 0.008897422687370687,
+      "sample_count": 319858,
+      "scale_ratio_x": 18.035151316492733,
+      "scale_ratio_y": 44.71805210788835,
+      "scale_sample_count": 320000
+    }
+  },
+  "recommended_next_actions": [
+    {
+      "action": "chronological_closed_loop_retest",
+      "reason": "Closed-loop tracker requires per-recording chronological target order; shard-glob order may corrupt prior-context updates. Retest the stronger full event-state-duration checkpoint on the same prefix rows sorted by recording/timestamp before more training."
+    },
+    {
+      "action": "endpoint_specialist_or_mixture",
+      "reason": "If chronological retest still fails, train separate keyboard/button/mouse specialists with a selector/calibration objective instead of a single multilabel head."
+    }
+  ],
+  "rejection_reasons": [
+    {
+      "code": "paper_targets_missed",
+      "details": "All paper-compatible keyboard/button/mouse targets remain far below target."
+    },
+    {
+      "code": "closed_loop_button_overfire",
+      "details": "Strict no-button false-positive rate increased to 0.7219 overall and ~1.0 on heldout_game/heldout_recording."
+    },
+    {
+      "code": "dropout_not_promotable",
+      "details": "35% context dropout failed to repair closed-loop distribution shift and worsened FPR relative to the previous closed-loop prefix diagnostic."
+    }
+  ],
+  "rows_seen": 320000,
+  "schema": "g005_idm_candidate_rejection.v1",
+  "status": "rejected",
+  "strict_local": {
+    "keyboard": {
+      "accuracy": 0.0,
+      "num_examples": 60313
+    },
+    "mouse_button": {
+      "accuracy": 0.2135333180673231,
+      "exact_true_positive_examples": 1865,
+      "f1": 0.015488296578041499,
+      "false_negative_examples": 6869,
+      "false_positive_examples": 230228,
+      "no_button_examples": 311266,
+      "no_button_false_positive_examples": 224701,
+      "no_button_false_positive_rate": 0.7218938142938837,
+      "num_examples": 8734,
+      "precision": 0.0080355719474521,
+      "predicted_examples": 232093,
+      "recall": 0.2135333180673231
+    }
+  },
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/1aphyal5"
+}

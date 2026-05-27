@@ -1,0 +1,85 @@
+Using CPython 3.11.11 interpreter at: /opt/conda/bin/python3
+Creating virtual environment at: .venv
+   Building fdm-d2e @ file:///mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-15588db
+      Built fdm-d2e @ file:///mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-15588db
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 1 package in 47ms
+{
+  "status": "pass",
+  "rows": 320000,
+  "output": "outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl",
+  "output_order": {
+    "rows": 320000,
+    "recordings": 22,
+    "per_recording_timestamp_violations": 0,
+    "violation_examples": [],
+    "top_recordings": [
+      [
+        "d2e_480p:Rainbow_Six/recording_20250815_223000_Rainbow_Six_4c4e6223",
+        115168
+      ],
+      [
+        "d2e_480p:Euro_Truck_Simulator_2/recording_20250820_175200_Euro_Truck_Simulator_2_8073a659",
+        53570
+      ],
+      [
+        "d2e_480p:Apex_Legends/0805_02",
+        25942
+      ],
+      [
+        "d2e_original:Battlefield_6_Open_Beta/battlefield6beta_20250817_2236_7",
+        20592
+      ],
+      [
+        "d2e_480p:Rainbow_Six/recording_20250815_223547_Rainbow_Six_d7e2f885",
+        15738
+      ],
+      [
+        "d2e_original:Eternal_Return/0826_01",
+        13789
+      ],
+      [
+        "d2e_480p:Stardew_Valley/recording_20250906_030419__1581832a_split_01",
+        9649
+      ],
+      [
+        "d2e_original:Monster_Hunter_Wilds/recording_20250831_142517__e47dac8b_split_10",
+        8701
+      ],
+      [
+        "d2e_original:Raft/recording_20250908_182315__502c6112_split_00",
+        7914
+      ],
+      [
+        "d2e_480p:Brotato/recording_20250905_170110__ae176151",
+        7005
+      ]
+    ],
+    "split_tag_counts": {
+      "heldout_game": 144695,
+      "heldout_recording": 85542,
+      "temporal": 156284
+    }
+  }
+}
+Traceback (most recent call last):
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-15588db/src/fdm_d2e/training/torch_idm.py", line 42, in require_torch
+    import torch
+ModuleNotFoundError: No module named 'torch'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-15588db/scripts/predict_idm_streaming.py", line 44, in <module>
+    main()
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-15588db/scripts/predict_idm_streaming.py", line 36, in main
+    summary = predict_streaming_idm_checkpoint(config)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-15588db/src/fdm_d2e/training/streaming_idm.py", line 4850, in predict_streaming_idm_checkpoint
+    torch = require_torch()
+            ^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-15588db/src/fdm_d2e/training/torch_idm.py", line 44, in require_torch
+    raise RuntimeError("Torch IDM training requires `uv sync --extra train` or the cluster training image") from exc
+RuntimeError: Torch IDM training requires `uv sync --extra train` or the cluster training image

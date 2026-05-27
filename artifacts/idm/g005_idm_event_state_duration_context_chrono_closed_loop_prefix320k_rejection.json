@@ -1,0 +1,49 @@
+{
+  "candidate": "event_state_duration_context_chrono_closed_loop_prefix320k",
+  "claim_boundary": "Prefix diagnostic only; not G005 completion evidence and no FDM-1 parity claim.",
+  "created_at_epoch": 1779901214.7234573,
+  "decision": "do_not_promote_to_full_g005_run",
+  "evidence": {
+    "artifact_summary": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_artifact_summary.json",
+    "chronological_summary": "artifacts/idm/g005_idm_event_state_duration_context_chrono_prefix320k_materialization_summary.json",
+    "metrics_path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.json",
+    "wandb_status": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_wandb_status.json"
+  },
+  "findings": [
+    {
+      "code": "chronological_order_not_root_cause",
+      "details": "The retest used a materialized 320k target prefix with zero per-recording timestamp violations and reproduced the same poor closed-loop prefix metrics; target row ordering is not the main failure mode."
+    },
+    {
+      "code": "paper_targets_missed",
+      "details": "Keyboard, mouse-button, and mouse-move paper-compatible metrics remain far below D2E paper targets."
+    },
+    {
+      "code": "fpr_bounded_but_underactive",
+      "details": "No-button FPR is below 0.10, but this comes with extremely low button/key recall and strict mouse-button F1 0.0073."
+    },
+    {
+      "code": "next_branch_endpoint_specialists",
+      "details": "Pivot to endpoint-specialist / mixture heads and calibrated decoding instead of more global closed-loop ordering/dropout retests."
+    }
+  ],
+  "metrics": {
+    "keyboard_accuracy": 0.0006060737245394921,
+    "mouse_button_accuracy": 0.0041896515606452064,
+    "pearson_x": 0.014506324329223403,
+    "pearson_y": -0.0014432602143514383,
+    "rows": 320000,
+    "scale_ratio_x": 1.7119855850489214,
+    "scale_ratio_y": 5.199430537006461,
+    "strict_mouse_button_f1": 0.007279994290200557,
+    "strict_no_button_fpr": 0.016532483470729217
+  },
+  "schema": "g005_idm_prefix_rejection.v1",
+  "status": "rejected_prefix_diagnostic",
+  "target_gaps": {
+    "button_gap_to_paper": 0.9528103484393547,
+    "keyboard_gap_to_paper": 0.7293939262754605,
+    "pearson_x_gap_to_paper": 0.7814936756707767,
+    "pearson_y_gap_to_paper": 0.7844432602143515
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "checkout": "15588db",
+  "claim_boundary": "Prefix diagnostic only; rows/hashes prove artifacts but do not satisfy G005 full paper-target completion.",
+  "created_at": "2026-05-27T16:57:40+0000",
+  "gpu_monitor_summary": {
+    "exists": true,
+    "indices": [],
+    "max_utilization_gpu": 0,
+    "nonzero_rows": 0,
+    "rows": 14
+  },
+  "large_artifacts_on_ddn": [
+    {
+      "bytes": 6728666673,
+      "exists": true,
+      "label": "target_records",
+      "path": "outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl",
+      "rows": 320000,
+      "sha256": "868ac9dfbc9f82e09040ce6f1aa938030ca0cb3051836d2e55c05b975cbe4b60"
+    },
+    {
+      "bytes": 157165104,
+      "exists": true,
+      "label": "predictions",
+      "path": "outputs/idm_streaming_d2e_full_event_state_duration_context_chrono_closed_loop_prefix320k/predictions.jsonl",
+      "rows": 320000,
+      "sha256": "f10503e583e841532b46d82d1756f882216d1e186ca7520d8d6a3d419d964043"
+    },
+    {
+      "bytes": 240217960,
+      "exists": true,
+      "label": "pseudolabels",
+      "path": "outputs/idm_streaming_d2e_full_event_state_duration_context_chrono_closed_loop_prefix320k/pseudolabels.jsonl",
+      "rows": 320000,
+      "sha256": "7d528ec7148598079c0a0c1f24429fb8df3b1dd959dc3c84d5a72625d6d4f0db"
+    }
+  ],
+  "paper_metric_excerpt": {
+    "keyboard_accuracy_all": 0.0006060737245394921,
+    "mouse_button_accuracy_all": 0.0041896515606452064,
+    "mouse_move_pearson_x_all": 0.014506324329223403,
+    "mouse_move_pearson_y_all": -0.0014432602143514383,
+    "no_button_fpr_all": 0.016532483470729217,
+    "rows": 320000
+  },
+  "schema": "g005_chrono_closed_loop_prefix_artifact_summary.v1",
+  "small_artifacts": [
+    {
+      "bytes": 9856,
+      "exists": true,
+      "label": "chronological_summary",
+      "path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_prefix320k_materialization_summary.json",
+      "sha256": "f8cb030653a529ccf90b26a9d5c4213cdd3773f575c6ad8d719d5064e5c7880e"
+    },
+    {
+      "bytes": 13034,
+      "exists": true,
+      "label": "prediction_summary",
+      "path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_prediction_summary.json",
+      "sha256": "a7d5c5c1d562960dce6d0a4b296b3404573141bbe01c9f583422592c98522a7b"
+    },
+    {
+      "bytes": 6245,
+      "exists": true,
+      "label": "paper_metrics",
+      "path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.json",
+      "sha256": "a1748cd039d2e3d327026e13171809a12bd9ac95af02da7d48e09dced88ec886"
+    },
+    {
+      "bytes": 7416,
+      "exists": true,
+      "label": "run_summary",
+      "path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_run_summary.json",
+      "sha256": "2cf22b4ecb941e6f79f20b127503126a76c50d47dc080b8c9f82dc11ba463714"
+    },
+    {
+      "bytes": 1153,
+      "exists": true,
+      "label": "wandb_status",
+      "path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_wandb_status.json",
+      "sha256": "71f045f73a7cadf6393b4c97aec8b7acc95571a5b666a0acfcd665f073e22bc6"
+    },
+    {
+      "bytes": 3572,
+      "exists": true,
+      "label": "pod_run_log",
+      "path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_pod_run.log",
+      "sha256": "748aba4c27b44a1f11402cadfefd7e40e935ac3b10b1914d3d38df52b8eb156f"
+    },
+    {
+      "bytes": 2151,
+      "exists": true,
+      "label": "resume_log",
+      "path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_resume.log",
+      "sha256": "7dca828521b1b843cd4c91ef19b85d2d86f41c5320bd6884c0c2ec8219404b2f"
+    },
+    {
+      "bytes": 735,
+      "exists": true,
+      "label": "resume2_log",
+      "path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_resume2.log",
+      "sha256": "9fb07b355502e82a8e54a6d450f4a96c62ca73deebebe88029d1833d4da27003"
+    },
+    {
+      "bytes": 1215,
+      "exists": true,
+      "label": "gpu_monitor",
+      "path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_1gpu_gpu_monitor.csv",
+      "sha256": "5b238512bf91934805992d31b26848a3802d455312a06ed418b3eb5e3aad8cc1"
+    },
+    {
+      "bytes": 1763,
+      "exists": true,
+      "label": "pod_launch_summary",
+      "path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_pod_launch_summary.json",
+      "sha256": "3d88cdc03dce42b2e33bf02eb471d6b92d117678fcc79abc86da876c49ed41a1"
+    }
+  ],
+  "status": "pass"
+}

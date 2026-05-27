@@ -166,3 +166,38 @@ Implemented a non-GPU prep branch for the next G005 prefix gate:
 Verification: `uv run pytest -q tests/test_state_context_dropout_materializer.py tests/test_streaming_idm_closed_loop_state_context.py tests/test_training_run_scripts.py` => 22 passed.
 
 This branch is a prefix gate only. Promote to a full 4xH200 run only if it materially improves closed-loop keyboard/button/mouse metrics over `g005_idm_event_state_duration_context_closed_loop_prefix320k` while preserving no-button FPR.
+
+### Context-dropout closed-loop prefix rejection
+
+Date: 2026-05-28 KST.
+
+Ran the planned 2GPU prefix gate for deterministic 35% train-context dropout plus closed-loop target inference on reservation `rsv-jeonghunpark-20260528-92815d` (production node 4 GPUs `[1,2]`, cancelled immediately after evidence collection). W&B sidecar run: `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/1aphyal5`.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_event_state_duration_context_dropout035_materialization_summary.json` — 64 train shards, `1,280,000` rows, dropout fraction `0.350139`.
+- `artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_artifact_summary.json` — status `pass`, 320k predictions/pseudolabels, 2GPU monitor rows with max GPU utilization 100%.
+- `artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_paper_metrics.json` — status `pass`, alignment rows `320,000`, but metrics are a rejection.
+- `artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_rejection.json` — explicit negative decision.
+
+Result: reject this branch. Paper-compatible metrics remained far below targets: keyboard `0.006398`, mouse-button `0.008884`, mouse Pearson X/Y `0.0214/0.0089`, scale ratios X/Y `18.0/44.7`. Strict mouse-button F1 was only `0.01549`, and no-button FPR exploded to `0.7219` overall (`~1.0` on heldout_game and heldout_recording). This does not improve over the previous closed-loop prefix and must not be promoted to a full G005 run.
+
+Next hypothesis: closed-loop evaluation may be corrupting the state tracker by consuming shard-glob target rows out of per-recording chronological order. Before spending another training run, retest the stronger full event-state-duration checkpoint on the same prefix row set sorted by `(recording_id, timestamp_ns, sequence_id)` with `closed_loop_state_context=true`. If that still fails, pivot to endpoint-specialist/mixture heads with conservative calibration rather than more global context dropout.
+
+
+### Chronological closed-loop prefix rejection
+
+Date: 2026-05-28 KST.
+
+Ran the chronological closed-loop prefix retest on production reservation `rsv-jeonghunpark-20260528-927122` (node 4 GPU `[1]`; follow-on extension `rsv-jeonghunpark-20260528-47a5e5` was cancelled unused after evidence collection). The pod checkout was `15588db`; local reproducibility fixes were later committed in `8619a53` and the follow-up config/logging fix commit. W&B artifact run: `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/gifrgefk`.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_event_state_duration_context_chrono_prefix320k_materialization_summary.json` — materialized 320k target rows with zero per-recording timestamp violations.
+- `artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_artifact_summary.json` — status `pass`; predictions and pseudolabels both have 320k rows with hashes recorded on DDN.
+- `artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.json` — status `pass`, alignment rows `320,000`.
+- `artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_rejection.json` — explicit negative decision.
+
+Result: reject this branch. Chronological materialization reproduced the same closed-loop prefix metrics, so target row ordering is not the main failure mode. No-button FPR is now bounded (`0.0165` overall), but only because the model is underactive: paper keyboard `0.000606`, mouse-button `0.00419`, Pearson X/Y `0.0145/-0.00144`, strict button F1 `0.00728`. This misses every paper target and must not be promoted to a full G005 run.
+
+Next branch: endpoint-specialist/mixture heads plus conservative heldout calibration. Prefix gates must require no-button FPR `<=0.10` and meaningful improvements in keyboard/button/mouse metrics before any 4xH200 full run.

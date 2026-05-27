@@ -1,0 +1,593 @@
+{
+  "claim_boundary": "Training-data augmentation for closed-loop robustness only; no model-quality claim.",
+  "dropout_fraction": 0.3501390625,
+  "dropout_rate": 0.35,
+  "dropped_rows": 448178,
+  "file_count": 64,
+  "input_paths": [
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_0/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_1/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_10/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_11/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_12/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_13/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_14/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_15/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_16/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_17/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_18/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_19/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_2/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_20/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_21/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_22/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_23/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_24/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_25/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_26/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_27/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_28/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_29/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_3/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_30/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_31/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_32/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_33/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_34/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_35/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_36/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_37/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_38/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_39/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_4/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_40/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_41/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_42/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_43/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_44/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_45/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_46/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_47/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_48/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_49/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_5/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_50/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_51/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_52/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_53/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_54/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_55/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_56/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_57/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_58/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_59/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_6/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_60/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_61/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_62/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_63/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_7/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_8/train_core.jsonl",
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_9/train_core.jsonl"
+  ],
+  "output_root": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64",
+  "outputs": [
+    {
+      "dropout_fraction": 0.343,
+      "dropped_rows": 6860,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_0/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_0/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "2a40323576167487b77288f4f255c5e09256bfe091e7921fa81e4b206796147e"
+    },
+    {
+      "dropout_fraction": 0.3529,
+      "dropped_rows": 7058,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_1/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_1/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "7b1ef9d2778f6a3e9e11cd4e1abbbb5659845548919c9dfa3939a9dd60c9e190"
+    },
+    {
+      "dropout_fraction": 0.35335,
+      "dropped_rows": 7067,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_10/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_10/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "ecaaa242393a62f02da23ecda5cf6b1fe954ab72b68b36f0695d6d8ce12f4515"
+    },
+    {
+      "dropout_fraction": 0.34955,
+      "dropped_rows": 6991,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_11/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_11/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "f5ae788676932c0b440fc70029dfe6908055f4e1ab7edf209ac9c10206eaff77"
+    },
+    {
+      "dropout_fraction": 0.34805,
+      "dropped_rows": 6961,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_12/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_12/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "59ad2132d288d838ba012d77b233eca25ba2e26c37be96fd27bb6d5150851f62"
+    },
+    {
+      "dropout_fraction": 0.34845,
+      "dropped_rows": 6969,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_13/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_13/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "54f36781c51e0214afcebfc4c97427e49c32a36ce3ac2ce7e3ed6ba88d87a1c5"
+    },
+    {
+      "dropout_fraction": 0.3583,
+      "dropped_rows": 7166,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_14/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_14/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "f10d5205895b9e1ef796ab3c9690fb7e47fba674557af6c731b0c7ecae7d05eb"
+    },
+    {
+      "dropout_fraction": 0.3498,
+      "dropped_rows": 6996,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_15/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_15/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "e3d6c4fe60ba5dfb0fe41c3b407d78305f6d396fc3c89195a1d1ae018a4cd7b8"
+    },
+    {
+      "dropout_fraction": 0.3545,
+      "dropped_rows": 7090,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_16/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_16/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "d6e2c33c8a48bd084e1c8f3bc55f78532ade5d0844abc017078e42119bb8df24"
+    },
+    {
+      "dropout_fraction": 0.3471,
+      "dropped_rows": 6942,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_17/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_17/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "9e3d51f31fe5a0aed3d58d608b9c0108af2b858bbc06984e870371d718ab0c7b"
+    },
+    {
+      "dropout_fraction": 0.3503,
+      "dropped_rows": 7006,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_18/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_18/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "ee43916ad6be9bae96de1c132fd600a8283daf753711d80ed0f4575e81b8cd53"
+    },
+    {
+      "dropout_fraction": 0.35375,
+      "dropped_rows": 7075,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_19/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_19/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "c5e08e09002bb64a274eefaaada1f522b06e23f069427880b08ed18a9ca915df"
+    },
+    {
+      "dropout_fraction": 0.34915,
+      "dropped_rows": 6983,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_2/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_2/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "45aa272fc4d4a589aa3476a17d9addee89228071b205402eeef54ca1f9d6c552"
+    },
+    {
+      "dropout_fraction": 0.35195,
+      "dropped_rows": 7039,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_20/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_20/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "6b8d043b9517c3f957954b734d569e2a599d1166dc18e863f558268ab437f83a"
+    },
+    {
+      "dropout_fraction": 0.3511,
+      "dropped_rows": 7022,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_21/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_21/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "be64b1af7bebb0b242823bed5c369d0b413f41630d903fcadd49a90c48e794b0"
+    },
+    {
+      "dropout_fraction": 0.35645,
+      "dropped_rows": 7129,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_22/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_22/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "d42a658808ea044b7d5b123c413bd4408b0966201a08a5002a052b528eea3de3"
+    },
+    {
+      "dropout_fraction": 0.3454,
+      "dropped_rows": 6908,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_23/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_23/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "1a3f31f857ed6d4d222f1e1125692a3444ac18cef46958754dd73b17d3a9da25"
+    },
+    {
+      "dropout_fraction": 0.35395,
+      "dropped_rows": 7079,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_24/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_24/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "146500e22ffa1f9bc06f7e830cfc2b68a7a0e2c599e7422ee321081af96e6966"
+    },
+    {
+      "dropout_fraction": 0.34655,
+      "dropped_rows": 6931,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_25/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_25/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "3f35e3171b7c3bde0be5fefa1529e9d64863163de5a0fc21db03b5002a5db3d9"
+    },
+    {
+      "dropout_fraction": 0.35105,
+      "dropped_rows": 7021,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_26/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_26/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "5bda241879f80d8878937b2f61d1c734622a7a41f5ca6db1db73c0a04e3c1445"
+    },
+    {
+      "dropout_fraction": 0.3518,
+      "dropped_rows": 7036,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_27/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_27/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "232a1e2d1d4e1d6bb41566702f1d96cb60590726e05bf78a577ffd641e492c20"
+    },
+    {
+      "dropout_fraction": 0.35425,
+      "dropped_rows": 7085,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_28/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_28/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "2e1dd905d8bd18ce569e18762885632d81723e10e36af5eb32b88df7ed0ee7c3"
+    },
+    {
+      "dropout_fraction": 0.34785,
+      "dropped_rows": 6957,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_29/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_29/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "c0a54d524598afc974a9f8397ccc84ad791c5f76988bd26af7a79c61a175161b"
+    },
+    {
+      "dropout_fraction": 0.3565,
+      "dropped_rows": 7130,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_3/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_3/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "e287e1d04b1de3f603413bb7c4849ff090c796066783e5ab0128365392f16fc4"
+    },
+    {
+      "dropout_fraction": 0.34995,
+      "dropped_rows": 6999,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_30/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_30/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "8ff432d31ed5a5038526961083a5713ddf193d6530b60f5ccaee960d5aca3a75"
+    },
+    {
+      "dropout_fraction": 0.3476,
+      "dropped_rows": 6952,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_31/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_31/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "7403952271e7815a58dd945d00ff1eec2715e32214e14b9b62e2ae5a8250a8e3"
+    },
+    {
+      "dropout_fraction": 0.349,
+      "dropped_rows": 6980,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_32/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_32/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "5228c25b3736b3652fd0b655f1efb920b2a5ce78c05b2efa83207118ea5e3b4d"
+    },
+    {
+      "dropout_fraction": 0.34695,
+      "dropped_rows": 6939,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_33/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_33/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "390b48c735f8e6f68f03cdfa394f756656f4591f2e7e4844e0c51116b22fbdbb"
+    },
+    {
+      "dropout_fraction": 0.35305,
+      "dropped_rows": 7061,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_34/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_34/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "e2ba7dc6f52f2e7ceea04d30183d9860a59d0aeab881285851939e11a01f44ed"
+    },
+    {
+      "dropout_fraction": 0.3471,
+      "dropped_rows": 6942,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_35/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_35/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "55d328dc81cd5c77039ff932d336011a3a492e8e122193acc86bec1505c1d0e8"
+    },
+    {
+      "dropout_fraction": 0.3547,
+      "dropped_rows": 7094,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_36/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_36/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "ac39a994390f52be696fa348f49d00449dcc2216cff65e693e703a1b7de7e6ba"
+    },
+    {
+      "dropout_fraction": 0.3501,
+      "dropped_rows": 7002,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_37/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_37/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "5449749929d633ff77e72aa367ca2563d94dc16239847c76c472d2e0ec814048"
+    },
+    {
+      "dropout_fraction": 0.35195,
+      "dropped_rows": 7039,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_38/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_38/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "74b86faae40eca2130efc6e165ae192c6cfef97b8efd2801add0425c2ed9e35f"
+    },
+    {
+      "dropout_fraction": 0.3534,
+      "dropped_rows": 7068,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_39/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_39/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "1788c3ea5a27271f1585cc4c56ac94c7818b39176f34d99eaee50290f9251e27"
+    },
+    {
+      "dropout_fraction": 0.35045,
+      "dropped_rows": 7009,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_4/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_4/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "98780fd12cfbcbc600b56fa440e471cf94f4aa032dfb9a6094852b05a2776514"
+    },
+    {
+      "dropout_fraction": 0.3486,
+      "dropped_rows": 6972,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_40/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_40/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "937954d8602ed159f3331529ebd95a34c389eb289af96f9c6d0bc921c6ca7871"
+    },
+    {
+      "dropout_fraction": 0.34805,
+      "dropped_rows": 6961,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_41/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_41/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "1c4892fcb426544c6391a4c98a4e75e46825096e952d5c365c1a09f9196292ed"
+    },
+    {
+      "dropout_fraction": 0.34365,
+      "dropped_rows": 6873,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_42/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_42/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "c47b7843612241ee191dedb2df8b0115837b795237b65e27930abaee5e4eca33"
+    },
+    {
+      "dropout_fraction": 0.352,
+      "dropped_rows": 7040,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_43/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_43/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "5a3daf7b7aa5990b99a90501cb8b8b3c9ec438249b66ec52a4ee18ae6a619b08"
+    },
+    {
+      "dropout_fraction": 0.3542,
+      "dropped_rows": 7084,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_44/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_44/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "170e662df9116b1095bf77d3b02ca010faf3f21fa367e7332752e2dd6fced234"
+    },
+    {
+      "dropout_fraction": 0.35305,
+      "dropped_rows": 7061,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_45/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_45/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "f2524b1bdea3cbbba08c5f5361862fe523054a7b4d653783f70d03ce39b0b28b"
+    },
+    {
+      "dropout_fraction": 0.35305,
+      "dropped_rows": 7061,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_46/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_46/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "0d5b86b0f219bfb5c10a50bd4de10eab512bb28876aed8b5cfd813d73b574420"
+    },
+    {
+      "dropout_fraction": 0.35085,
+      "dropped_rows": 7017,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_47/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_47/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "501a6edc41669102ac606f4f10714aef0610afec266b84c9526d7da9c002344f"
+    },
+    {
+      "dropout_fraction": 0.3466,
+      "dropped_rows": 6932,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_48/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_48/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "34f6932afe7fc2a8f076324a6479186d49b31c938629bd7b9becf2a99a92f676"
+    },
+    {
+      "dropout_fraction": 0.35105,
+      "dropped_rows": 7021,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_49/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_49/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "da18622a2db9e5d620c41d2881c20a590d4993a0976ad71d670ea79c17488a4c"
+    },
+    {
+      "dropout_fraction": 0.35065,
+      "dropped_rows": 7013,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_5/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_5/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "a1c95f1d8f82a7e50946ecb8799f5d0354f0c6ae25699ae3761873e87da879ea"
+    },
+    {
+      "dropout_fraction": 0.35125,
+      "dropped_rows": 7025,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_50/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_50/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "e68bd96872236c500c41b8734e98a1eecf2019cf67713882f5dc8b77ae68bc67"
+    },
+    {
+      "dropout_fraction": 0.34585,
+      "dropped_rows": 6917,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_51/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_51/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "7d63552bae5cd3c0c48b60c747594b9e0b90f6f9fada457bf035568b5f81260b"
+    },
+    {
+      "dropout_fraction": 0.3444,
+      "dropped_rows": 6888,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_52/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_52/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "1c7f146b80bb4012413765295ed69badb27518c8b8262c4bb6fb35ace12a1033"
+    },
+    {
+      "dropout_fraction": 0.34645,
+      "dropped_rows": 6929,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_53/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_53/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "0117d3806cc5b9fa1bbf12046d113a91bbca09fe03cfd60fb9ec567f7cd5ae16"
+    },
+    {
+      "dropout_fraction": 0.349,
+      "dropped_rows": 6980,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_54/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_54/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "c153e29eebffa4743160f5dfd21493034bf6487c9825f2b8024abf4a4872fe32"
+    },
+    {
+      "dropout_fraction": 0.35015,
+      "dropped_rows": 7003,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_55/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_55/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "e76822afbb96673a28bc15337c5d31f0b23077804347eb7cd5af393a93001617"
+    },
+    {
+      "dropout_fraction": 0.34585,
+      "dropped_rows": 6917,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_56/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_56/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "0a013f65cf53ae7f0dec16f0ec12defa59becfc48f9c9d1ef7aebb2a83fea690"
+    },
+    {
+      "dropout_fraction": 0.3552,
+      "dropped_rows": 7104,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_57/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_57/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "58ad9d993c9ed118099da200b33018388e9ae9a75f08fcf8082ae7343a9fc37c"
+    },
+    {
+      "dropout_fraction": 0.34775,
+      "dropped_rows": 6955,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_58/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_58/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "b876f8013af3501a54167bcaad4520a0b086b2b99d9b073a311c787b3a522bbb"
+    },
+    {
+      "dropout_fraction": 0.34865,
+      "dropped_rows": 6973,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_59/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_59/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "4e817d19ca48a041139fd84484fb34c875487d933025abda1cb743c351211691"
+    },
+    {
+      "dropout_fraction": 0.344,
+      "dropped_rows": 6880,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_6/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_6/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "e8596806db6c2824643a5dda1da38b467982195c45e02c59899e5963743f9ace"
+    },
+    {
+      "dropout_fraction": 0.3479,
+      "dropped_rows": 6958,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_60/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_60/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "86602b4dd6b0cea7e838e7836b717cf9a07d135005c21c884dacf4c28b11d2e2"
+    },
+    {
+      "dropout_fraction": 0.3516,
+      "dropped_rows": 7032,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_61/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_61/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "26f0def7da675f3c2aa7cd80d434a0d3e6adf663608928bf74493a3df7705a40"
+    },
+    {
+      "dropout_fraction": 0.34985,
+      "dropped_rows": 6997,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_62/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_62/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "d3aa26746f37af0bfc3e5ec1ce1b1505e0435c11641dbb53621033d51e009696"
+    },
+    {
+      "dropout_fraction": 0.3559,
+      "dropped_rows": 7118,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_63/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_63/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "480e91a0f9886ce721bbf3ddb353ef85ebcd130ebd16aefa57e9987396fe64ba"
+    },
+    {
+      "dropout_fraction": 0.34475,
+      "dropped_rows": 6895,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_7/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_7/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "df5b2f18130fa84c43eb46ab150e74da292ec9a44faf74e29f6e924aa950b61b"
+    },
+    {
+      "dropout_fraction": 0.34985,
+      "dropped_rows": 6997,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_8/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_8/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "f7ce3e30b863bee21fa2b8bf9d15f327b6889990c344d7034ac6a12fa97fcea9"
+    },
+    {
+      "dropout_fraction": 0.34945,
+      "dropped_rows": 6989,
+      "input_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_9/train_core.jsonl",
+      "output_path": "outputs/data/d2e_event_state_duration_context_dropout035_shards_accel64/shard_9/train_core.jsonl",
+      "rows": 20000,
+      "sha256": "6d7e65168129e73b049557a3c427719e16e12ecd11d9037dbd9647c84dfb93a8"
+    }
+  ],
+  "rows": 1280000,
+  "schema": "state_context_dropout_train_materialization.v1",
+  "seed": 20260528,
+  "status": "pass",
+  "wall_clock_seconds": 694.7131371498108
+}

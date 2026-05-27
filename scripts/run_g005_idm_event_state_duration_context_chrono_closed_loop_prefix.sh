@@ -28,9 +28,9 @@ uv run --extra train --with wandb python scripts/log_wandb_artifacts.py \
   --tags "g005,idm,d2e,chronological,closed-loop,prefix" \
   --artifact-name "g005-context-chrono-closed-loop-prefix320k" \
   --output "$WANDB_STATUS" \
-  "$CHRONO_SUMMARY" \
-  "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_prediction_summary.json" \
-  "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.json" || true
+  --json "$CHRONO_SUMMARY" \
+  --json "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_prediction_summary.json" \
+  --json "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.json" || true
 python3 - <<PY
 import json, pathlib, time
 summary={

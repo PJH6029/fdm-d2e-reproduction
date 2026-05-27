@@ -1,0 +1,292 @@
+{
+  "all_metrics": {
+    "paper_compatible": {
+      "empty_bins_as_correct": false,
+      "keyboard": {
+        "key_accuracy": 0.006398088104668906,
+        "sample_count": 2390089
+      },
+      "mouse_button": {
+        "button_accuracy": 0.008884276150836534,
+        "sample_count": 280383
+      },
+      "mouse_move": {
+        "pearson_x": 0.021408165111041783,
+        "pearson_y": 0.008897422687370687,
+        "sample_count": 319858,
+        "scale_ratio_x": 18.035151316492733,
+        "scale_ratio_y": 44.71805210788835,
+        "scale_sample_count": 320000
+      }
+    },
+    "rows": 320000,
+    "strict_local": {
+      "keyboard": {
+        "accuracy": 0.0,
+        "num_examples": 60313
+      },
+      "mouse_button": {
+        "accuracy": 0.2135333180673231,
+        "exact_true_positive_examples": 1865,
+        "f1": 0.015488296578041499,
+        "false_negative_examples": 6869,
+        "false_positive_examples": 230228,
+        "no_button_examples": 311266,
+        "no_button_false_positive_examples": 224701,
+        "no_button_false_positive_rate": 0.7218938142938837,
+        "num_examples": 8734,
+        "precision": 0.0080355719474521,
+        "predicted_examples": 232093,
+        "recall": 0.2135333180673231
+      }
+    }
+  },
+  "claim_boundary": "Failed prefix diagnostic; not G005 completion and not paper-target win evidence.",
+  "created_at_epoch": 1779898497.7039237,
+  "files": {
+    "checkpoint": {
+      "exists": true,
+      "rows": null,
+      "sha256": "44a513af1eecd21b25778cdd4f469ed77bd0fdb5eb6f6c6e75a9cd6c37d2c84f",
+      "size_bytes": 35499234
+    },
+    "checkpoint_metadata": {
+      "exists": true,
+      "rows": null,
+      "sha256": "bc3ed53ce4e2e0bc16903cc585068f42be8ce40b438d56a7202ff7e1dd4f7b03",
+      "size_bytes": 26883
+    },
+    "convergence_report": {
+      "exists": true,
+      "rows": null,
+      "sha256": "069b2f789034e5898c80c832000853fa1aaee4b78049df8abaec582d4afe48be",
+      "size_bytes": 991
+    },
+    "gpu_monitor": {
+      "exists": true,
+      "rows": null,
+      "sha256": "7a6f99e930e408f48e553467955103d01898791c4858a323a27711ff2d80e492",
+      "size_bytes": 11613
+    },
+    "launch_summary": {
+      "exists": true,
+      "rows": null,
+      "sha256": "022504cdaf74d4dd4fcaa7be554d98def1c41a2eca9d6fd95c35d531ebb79c95",
+      "size_bytes": 1348
+    },
+    "materialization_progress": {
+      "exists": true,
+      "rows": null,
+      "sha256": "d4be99176f0f47dbfab8d4ac0ed4835775d54c11b266161b160a3d2b43105486",
+      "size_bytes": 32838
+    },
+    "materialization_summary": {
+      "exists": true,
+      "rows": null,
+      "sha256": "1006f562e4a7e9fbea7239b63327291c2ae1a11316c5993a7c274219abf673cb",
+      "size_bytes": 32835
+    },
+    "paper_metrics": {
+      "exists": true,
+      "rows": null,
+      "sha256": "8680d4a6451822ae23e356987d8e605f0dd920f0f62daf7e5f39cb02e207d2f9",
+      "size_bytes": 12537
+    },
+    "pod_run_log": {
+      "exists": true,
+      "rows": null,
+      "sha256": "bde5aea55682f38b026fc69d8fbdddb6876858cb466a7ca744ceee24196ab632",
+      "size_bytes": 3199
+    },
+    "predictions": {
+      "exists": true,
+      "rows": 320000,
+      "sha256": "a9828310f12dc29c5b466af7b20edc63e3f71f78b8fe7f07847df4ee3771f326",
+      "size_bytes": 301428871
+    },
+    "pseudolabels": {
+      "exists": true,
+      "rows": 320000,
+      "sha256": "c459bb7b23354b2056a5b8ee29f41ff0f24594dd6a7f1d80a38e7e60c8a8e4f5",
+      "size_bytes": 382001047
+    },
+    "resolved_config": {
+      "exists": true,
+      "rows": null,
+      "sha256": "816f3847d78f28bc74a3edcc880009cff7254e2b11ceab1cbd38973a4d0626bf",
+      "size_bytes": 8878
+    },
+    "run_summary": {
+      "exists": true,
+      "rows": null,
+      "sha256": "b1443dccb46b25159cf9c3174a8c1a5cf5c10842f794d63af8a56adb6037660a",
+      "size_bytes": 13563
+    },
+    "streaming_stats": {
+      "exists": true,
+      "rows": null,
+      "sha256": "b9be18f05bb4c45c92513dd01fc90c4307b520e14390157dffbf5c5a6a8bde12",
+      "size_bytes": 141884
+    },
+    "train_history": {
+      "exists": true,
+      "rows": null,
+      "sha256": "4d4e20cc1560a90c1e72a4c8a5d54284b54e24d47e173a1e261b5ba4b81902c2",
+      "size_bytes": 658
+    },
+    "trainer_metrics": {
+      "exists": true,
+      "rows": null,
+      "sha256": "25d2a7c7743e64b11a57b0569bc9728ef310d1661904e413a4392035c50d07ec",
+      "size_bytes": 855
+    },
+    "wandb_status": {
+      "exists": true,
+      "rows": null,
+      "sha256": "dce7891db020c7535dafd7927fe8548f8547d49ff756383841692f64bed3fd56",
+      "size_bytes": 2373
+    }
+  },
+  "gpu_monitor_status": {
+    "exists": true,
+    "indices": [
+      "0",
+      "1"
+    ],
+    "max_utilization_gpu_pct": 100.0,
+    "nonzero_utilization_rows": 43,
+    "rows": 144
+  },
+  "metric_status": "pass",
+  "paths": {
+    "checkpoint": "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/checkpoint.pt",
+    "checkpoint_metadata": "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/checkpoint_metadata.json",
+    "convergence_report": "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/convergence_report.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_2gpu_gpu_monitor.csv",
+    "launch_summary": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_pod_launch_summary.json",
+    "materialization_progress": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_materialization_progress.json",
+    "materialization_summary": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_materialization_summary.json",
+    "paper_metrics": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_paper_metrics.json",
+    "pod_run_log": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_pod_run.log",
+    "predictions": "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/predictions.jsonl",
+    "pseudolabels": "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/pseudolabels.jsonl",
+    "resolved_config": "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/resolved_config.json",
+    "run_summary": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_run_summary.json",
+    "streaming_stats": "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/streaming_stats.json",
+    "train_history": "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/train_history.json",
+    "trainer_metrics": "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/metrics.json",
+    "wandb_status": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_wandb_sidecar_status.json"
+  },
+  "rows_seen": 320000,
+  "schema": "g005_context_dropout_prefix_artifact_summary.v1",
+  "status": "pass",
+  "train_history": {
+    "history": [
+      {
+        "batches": 160,
+        "epoch": 1,
+        "examples": 640000,
+        "loss": 9.437208939199895,
+        "loss_sum": 6039813.721087933
+      },
+      {
+        "batches": 160,
+        "epoch": 2,
+        "examples": 640000,
+        "loss": 8.064169932207465,
+        "loss_sum": 5161068.756612778
+      },
+      {
+        "batches": 160,
+        "epoch": 3,
+        "examples": 640000,
+        "loss": 7.91618721254766,
+        "loss_sum": 5066359.816030502
+      },
+      {
+        "batches": 160,
+        "epoch": 4,
+        "examples": 640000,
+        "loss": 7.885935198277235,
+        "loss_sum": 5046998.52689743
+      }
+    ],
+    "schema": "streaming_idm_train_history.v1"
+  },
+  "wandb_status": {
+    "checkpoint_exists": true,
+    "claim_boundary": "W&B sidecar status contains no secrets and is logging-only evidence.",
+    "entity_configured": true,
+    "gpu_latest": [
+      {
+        "index": "0",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 0.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 80.16,
+        "timestamp": "2026/05/27 16:10:07.437",
+        "utilization_gpu_pct": 0.0,
+        "utilization_memory_pct": 0.0
+      },
+      {
+        "index": "1",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 0.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 77.43,
+        "timestamp": "2026/05/27 16:10:07.437",
+        "utilization_gpu_pct": 0.0,
+        "utilization_memory_pct": 0.0
+      }
+    ],
+    "last_epoch": 4,
+    "logged_epochs_this_loop": 0,
+    "logged_epochs_total": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "loop_index": 73,
+    "metadata_exists": true,
+    "process_running": true,
+    "project": "fdm-d2e-reproduction",
+    "rank_progress": [
+      {
+        "batches": 1,
+        "examples": 4096,
+        "heartbeat_age_sec": 1159.7642312049866,
+        "last_local_batch_index": 0,
+        "loss": 3.9398207664489746,
+        "path": "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/rank_progress/train_rank0.json",
+        "rank": 0,
+        "schema": "streaming_idm_train_rank_progress.v1",
+        "training_cache": true,
+        "training_cache_shard_by_path": true,
+        "updated_at_epoch": 1779897082.8698735,
+        "world_size": 2
+      },
+      {
+        "batches": 1,
+        "examples": 4096,
+        "heartbeat_age_sec": 1159.7642290592194,
+        "last_local_batch_index": 0,
+        "loss": 8.46581745147705,
+        "path": "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/rank_progress/train_rank1.json",
+        "rank": 1,
+        "schema": "streaming_idm_train_rank_progress.v1",
+        "training_cache": true,
+        "training_cache_shard_by_path": true,
+        "updated_at_epoch": 1779897082.8698757,
+        "world_size": 2
+      }
+    ],
+    "run_name": "g005-context-dropout-closed-loop-prefix320k-2gpu",
+    "run_summary_exists": true,
+    "schema": "wandb_training_sidecar_status.v1",
+    "status": "complete",
+    "updated_at_epoch": 1779898242.6433804,
+    "wandb_run_id": "1aphyal5",
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/1aphyal5"
+  }
+}

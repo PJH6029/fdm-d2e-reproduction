@@ -1,16 +1,21 @@
 {
-  "schema": "g005_idm_paper_metrics_config.v1",
+  "claim_boundary": "Prefix diagnostic only; not G005 completion evidence.",
+  "empty_bins_as_correct": false,
+  "max_rows": 320000,
   "model_name": "streaming_idm_d2e_full_event_state_duration_context_chrono_closed_loop_prefix320k",
-  "paths": {
-    "predictions_path": "outputs/idm_streaming_d2e_full_event_state_duration_context_chrono_closed_loop_prefix320k/predictions.jsonl",
-    "target_path": "outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl",
-    "output_path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.json"
-  },
-  "paper_metrics": {
-    "target_path": "outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl",
-    "predictions_path": "outputs/idm_streaming_d2e_full_event_state_duration_context_chrono_closed_loop_prefix320k/predictions.jsonl",
-    "max_rows": 320000,
-    "empty_bins_as_correct": false
-  },
-  "claim_boundary": "Prefix diagnostic only; not G005 completion evidence."
+  "output_path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.json",
+  "prediction_paths": [
+    "outputs/idm_streaming_d2e_full_event_state_duration_context_chrono_closed_loop_prefix320k/predictions.jsonl"
+  ],
+  "progress_output_path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics_progress.json",
+  "progress_rows": 100000,
+  "schema": "paper_idm_metrics_config.v1",
+  "split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
+  "target_paths": [
+    "outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl"
+  ]
 }

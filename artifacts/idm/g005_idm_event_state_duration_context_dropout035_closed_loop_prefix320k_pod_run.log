@@ -1,0 +1,21 @@
+{"dropped_rows": 448178, "rows": 1280000, "status": "pass"}
+W0527 15:46:14.316000 771 site-packages/torch/distributed/run.py:793] 
+W0527 15:46:14.316000 771 site-packages/torch/distributed/run.py:793] *****************************************
+W0527 15:46:14.316000 771 site-packages/torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0527 15:46:14.316000 771 site-packages/torch/distributed/run.py:793] *****************************************
+[W527 15:46:14.790035497 socket.cpp:752] [c10d] The client socket cannot be initialized to connect to [localhost]:44607 (errno: 97 - Address family not supported by protocol).
+[W527 15:46:14.795778207 socket.cpp:752] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:44607 (errno: 97 - Address family not supported by protocol).
+[W527 15:46:14.797276021 socket.cpp:752] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:44607 (errno: 97 - Address family not supported by protocol).
+[W527 15:46:16.912661993 socket.cpp:752] [c10d] The client socket cannot be initialized to connect to [localhost]:44607 (errno: 97 - Address family not supported by protocol).
+[W527 15:46:16.915257426 socket.cpp:752] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:44607 (errno: 97 - Address family not supported by protocol).
+[W527 15:46:16.917063597 socket.cpp:752] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:44607 (errno: 97 - Address family not supported by protocol).
+[W527 15:46:16.099230036 socket.cpp:752] [c10d] The client socket cannot be initialized to connect to [localhost]:44607 (errno: 97 - Address family not supported by protocol).
+[W527 15:46:16.102423247 socket.cpp:752] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:44607 (errno: 97 - Address family not supported by protocol).
+[W527 15:46:16.104379800 socket.cpp:752] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:44607 (errno: 97 - Address family not supported by protocol).
+streaming IDM worker complete: rank=1 world_size=2 status=worker_complete
+/opt/conda/lib/python3.11/tempfile.py:934: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/mnt/nvme/tmp/prod-rsv-jeonghunpark-20260528-92815d/tmpgeau1ina'>
+  _warnings.warn(warn_message, ResourceWarning)
+trained streaming IDM: model=streaming_idm_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k device=cuda:0 train=1280000 target=320000 metrics=outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/metrics.json
+/opt/conda/lib/python3.11/tempfile.py:934: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/mnt/nvme/tmp/prod-rsv-jeonghunpark-20260528-92815d/tmpe2a_h8kf'>
+  _warnings.warn(warn_message, ResourceWarning)
+g005 paper metrics: status=pass rows=320000 output=artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_paper_metrics.json

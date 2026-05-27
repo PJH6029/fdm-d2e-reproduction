@@ -308,11 +308,14 @@ def test_g005_chrono_closed_loop_prefix_materializes_before_prediction() -> None
     assert materialize_idx < predict_idx < metrics_idx
     assert "uv run --extra train python scripts/predict_idm_streaming.py" in text
     assert "uv run --extra train --with wandb python scripts/log_wandb_artifacts.py" in text
+    assert '--json "$CHRONO_SUMMARY"' in text
+    assert '--json "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.json"' in text
     assert "d2e_event_state_duration_context_chrono_prefix320k" in text
     assert config["closed_loop_state_context"] is True
     assert config["closed_loop_state_context_seed_from_train"] is False
     assert config["records_path"] == "outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl"
-    assert paper["paper_metrics"]["target_path"] == "outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl"
+    assert paper["target_paths"] == ["outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl"]
+    assert paper["output_path"] == "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.json"
 
 def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
     text = _script("scripts/run_g004_d2e_full_fdm_4xh200.sh")

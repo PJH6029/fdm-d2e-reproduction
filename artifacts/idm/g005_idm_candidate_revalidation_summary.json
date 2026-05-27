@@ -1,8 +1,8 @@
 {
   "active_goal_id": "G005-g014-idm-full-paper-target",
-  "candidate_count": 8,
+  "candidate_count": 10,
   "claim_boundary": "Revalidation/ranking artifact only; no G005 success claim and no FDM-1 parity claim.",
-  "created_at_epoch": 1779895128.430731,
+  "created_at_epoch": 1779901214.7237976,
   "paper_targets": {
     "keyboard_accuracy": 0.73,
     "mouse_button_accuracy": 0.957,
@@ -618,21 +618,90 @@
       "strict_mouse_button_f1": 0.0031206116398814166,
       "strict_no_button_fpr": 0.047153187093637965,
       "top_audit_findings": []
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_rejection.json",
+      "audit_status": "rejected_prefix_diagnostic",
+      "button_gap_to_paper": 0.9481157238491634,
+      "candidate": "event_state_duration_context_dropout035_closed_loop_prefix320k",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.7236019118953311,
+      "metrics_path": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_paper_metrics.json",
+      "note": "Rejected 2GPU prefix: context dropout did not repair closed-loop distribution shift and caused severe mouse-button overfire.",
+      "paper_keyboard_accuracy": 0.006398088104668906,
+      "paper_mouse_button_accuracy": 0.008884276150836534,
+      "paper_mouse_pearson_x": 0.021408165111041783,
+      "paper_mouse_pearson_y": 0.008897422687370687,
+      "paper_scale_ratio_x": 18.035151316492733,
+      "paper_scale_ratio_y": 44.71805210788835,
+      "pearson_x_gap_to_paper": 0.7745918348889582,
+      "pearson_y_gap_to_paper": 0.7741025773126293,
+      "rows": 320000,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.015488296578041499,
+      "strict_no_button_fpr": 0.7218938142938837,
+      "top_audit_findings": [
+        {
+          "code": "paper_targets_missed",
+          "details": "All paper-compatible keyboard/button/mouse targets remain far below target."
+        },
+        {
+          "code": "closed_loop_button_overfire",
+          "details": "Strict no-button false-positive rate increased to 0.7219 overall and ~1.0 on heldout_game/heldout_recording."
+        },
+        {
+          "code": "dropout_not_promotable",
+          "details": "35% context dropout failed to repair closed-loop distribution shift and worsened FPR relative to the previous closed-loop prefix diagnostic."
+        }
+      ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_rejection.json",
+      "audit_status": "rejected_prefix_diagnostic",
+      "button_gap_to_paper": 0.9528103484393547,
+      "candidate": "event_state_duration_context_chrono_closed_loop_prefix320k",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.7293939262754605,
+      "metrics_path": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.json",
+      "note": "Rejected 1GPU prefix: chronological target materialization ruled out ordering as root cause; no-button FPR is bounded but key/button/mouse metrics are far below paper targets.",
+      "paper_keyboard_accuracy": 0.0006060737245394921,
+      "paper_mouse_button_accuracy": 0.0041896515606452064,
+      "paper_mouse_pearson_x": 0.014506324329223403,
+      "paper_mouse_pearson_y": -0.0014432602143514383,
+      "paper_scale_ratio_x": 1.7119855850489214,
+      "paper_scale_ratio_y": 5.199430537006461,
+      "pearson_x_gap_to_paper": 0.7814936756707767,
+      "pearson_y_gap_to_paper": 0.7844432602143515,
+      "rows": 320000,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.007279994290200557,
+      "strict_no_button_fpr": 0.016532483470729217,
+      "top_audit_findings": [
+        {
+          "code": "chronological_order_not_root_cause",
+          "details": "The retest used a materialized 320k target prefix with zero per-recording timestamp violations and reproduced the same poor closed-loop prefix metrics; target row ordering is not the main failure mode."
+        },
+        {
+          "code": "paper_targets_missed",
+          "details": "Keyboard, mouse-button, and mouse-move paper-compatible metrics remain far below D2E paper targets."
+        },
+        {
+          "code": "fpr_bounded_but_underactive",
+          "details": "No-button FPR is below 0.10, but this comes with extremely low button/key recall and strict mouse-button F1 0.0073."
+        },
+        {
+          "code": "next_branch_endpoint_specialists",
+          "details": "Pivot to endpoint-specialist / mixture heads and calibrated decoding instead of more global closed-loop ordering/dropout retests."
+        }
+      ]
     }
   ],
   "recommended_next_actions": [
-    {
-      "action": "closed_loop_context_repair",
-      "reason": "Best full-corpus metrics come from event-state-duration context, but validator correctly rejects it without closed-loop prediction-context evidence. Next branch should train/evaluate context using predicted prior state, not ground-truth target context, while preserving its FPR and mouse Pearson advantages."
-    },
-    {
-      "action": "endpoint_specialist_or_mixture",
-      "reason": "No single candidate approaches keyboard/button paper targets. Build endpoint-specialist architecture or non-leaky mixture with separate keyboard/button/mouse heads and a calibration objective; require prefix gate before 4xH200 full run."
-    },
-    {
-      "action": "longer_released_gidm_exact_split_baseline_when_quota_available",
-      "reason": "Timed G-IDM pilot now proves chunk infrastructure. Full/longer exact-split released G-IDM can become the second-stage baseline after paper-target attempts or a diagnostic teacher once 4GPU quota is available."
-    }
+    "Stop promoting global event-state closed-loop/order/dropout variants: chronological prefix reproduced the same collapsed key/button/mouse metrics.",
+    "Implement a bounded endpoint-specialist mixture branch: separate keyboard, mouse-button, and mouse-motion heads or decoders with heldout-calibrated thresholds; keep no-button FPR <=0.10 as a hard prefix gate.",
+    "Use prefix gates before any full 4xH200 G005 run; only promote candidates that materially improve paper keyboard/button and mouse Pearson while preserving FPR."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets"
