@@ -4777,6 +4777,7 @@ def _predict_stream_for_parallel_part(payload: dict[str, Any]) -> dict[str, Any]
         "metrics_state": prediction["metrics_state"],
         "group_metrics_state": prediction["group_metrics_state"],
         "cluster_metrics_state": prediction["cluster_metrics_state"],
+        "prediction_resume": prediction.get("prediction_resume", {}),
     }
 
 
@@ -4870,7 +4871,9 @@ def _predict_streaming_idm_checkpoint_parallel(
     ):
         if key in config:
             prediction_config[key] = config[key]
-    prediction_config["resume_predictions"] = False
+    prediction_config["resume_predictions"] = bool(
+        config.get("resume_prediction_parts", config.get("resume_predictions", True))
+    )
     parts_root = ensure_dir(config.get("prediction_parts_dir", output_dir / "prediction_recovery_parts"))
     cuda_devices = config.get("prediction_cuda_devices")
     if cuda_devices is None:
@@ -4949,8 +4952,11 @@ def _predict_streaming_idm_checkpoint_parallel(
         "target_resolution_tiers": sorted({tier for part in parts for tier in part.get("target_resolution_tiers", [])}),
         "target_eval_split_tags": sorted({tag for part in parts for tag in part.get("target_eval_split_tags", [])}),
         "prediction_resume": {
-            "enabled": False,
-            "existing_rows": 0,
+            "enabled": bool(prediction_config.get("resume_predictions", False)),
+            "existing_rows": sum(
+                int((part.get("prediction_resume") or {}).get("existing_rows") or 0)
+                for part in parts
+            ),
             "write_mode": "parallel_parts",
             "workers": len(parts),
             "pseudolabel_validation": bool(prediction_config.get("validate_pseudolabels", True)),
@@ -4962,6 +4968,7 @@ def _predict_streaming_idm_checkpoint_parallel(
                     "record_paths": part["record_paths"],
                     "pseudo_label_path": part["pseudo_label_path"],
                     "predictions_path": part["predictions_path"],
+                    "resume_existing_rows": int((part.get("prediction_resume") or {}).get("existing_rows") or 0),
                 }
                 for part in parts
             ],
