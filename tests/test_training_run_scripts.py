@@ -270,6 +270,38 @@ def test_g005_context_dropout_prefix_logs_gpu_and_wandb_sidecar() -> None:
     assert config["max_target_examples"] == 320000
 
 
+def test_g005_hierarchical_prefix_uses_exactset_heads_and_wandb_sidecar() -> None:
+    text = _script("scripts/run_g005_idm_event_state_duration_hierarchical_prefix.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_streaming_d2e_full_event_state_duration_hierarchical_prefix320k.yaml"
+        ).read_text()
+    )
+    paper = json.loads(
+        (
+            ROOT
+            / "configs/eval/g005_idm_event_state_duration_hierarchical_prefix320k_paper_metrics.yaml"
+        ).read_text()
+    )
+
+    train_materialize_idx = text.index("g005_event_state_duration_hierarchical_train_prefix320k")
+    target_materialize_idx = text.index("g005_event_state_duration_hierarchical_target_prefix320k")
+    wandb_idx = text.index("uv run --with wandb python scripts/watch_wandb_training.py")
+    train_idx = text.index("scripts/train_idm_streaming.py")
+    metrics_idx = text.index("scripts/build_g005_idm_paper_metrics.py")
+    assert train_materialize_idx < target_materialize_idx < wandb_idx < train_idx < metrics_idx
+    assert 'ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"' in text
+    assert "g005_idm_event_state_duration_hierarchical_prefix320k_gpu_monitor.csv" in text
+    assert "g005_hierarchical_prefix_wandb_sidecar.pid" in text
+    assert config["keyboard_head_mode"] == "hierarchical_softmax"
+    assert config["button_head_mode"] == "hierarchical_softmax"
+    assert config["feature_mode"] == "summary_compact_luma16_pair_shift_time_state_duration_prior_action"
+    assert config["training_cache_shard_by_path"] is False
+    assert paper["empty_bins_as_correct"] is False
+    assert paper["target_paths"] == ["outputs/data/d2e_event_state_duration_hierarchical_prefix320k/target_all_eval.jsonl"]
+
+
 def test_g005_event_state_duration_luma_window5_combines_nep_window_and_state_context() -> None:
     text = _script("scripts/run_g005_idm_event_state_duration_luma_window5_4xh200.sh")
     config = json.loads(

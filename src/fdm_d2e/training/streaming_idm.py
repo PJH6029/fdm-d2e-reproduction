@@ -131,9 +131,27 @@ def _exact_set_classes_from_counts(counts: dict[str, int], *, min_count: int) ->
     return classes
 
 
+_EXACT_SET_HEAD_MODES = {"softmax", "hierarchical_softmax"}
+
+
+def _uses_exact_set_head(mode: str) -> bool:
+    return str(mode) in _EXACT_SET_HEAD_MODES
+
+
+def _exact_set_head_dim(mode: str, classes: Sequence[tuple[str, ...]]) -> int:
+    if mode == "softmax":
+        return len(classes)
+    if mode == "hierarchical_softmax":
+        # One binary event/no-event logit plus a positive-only exact-set
+        # classifier.  The empty class remains class index 0 in targets but is
+        # not part of the positive classifier.
+        return 1 + max(0, len(classes) - 1)
+    return 0
+
+
 def _category_vocab_for_heads(stats: dict[str, Any], config: dict[str, Any]) -> list[str]:
-    keyboard_softmax = str(config.get("keyboard_head_mode", "multilabel")) == "softmax"
-    button_softmax = str(config.get("button_head_mode", "multilabel")) == "softmax"
+    keyboard_softmax = _uses_exact_set_head(str(config.get("keyboard_head_mode", "multilabel")))
+    button_softmax = _uses_exact_set_head(str(config.get("button_head_mode", "multilabel")))
     vocab = []
     for token in [str(value) for value in stats.get("category_vocab", [])]:
         if keyboard_softmax and _is_keyboard_token(token):
@@ -145,7 +163,7 @@ def _category_vocab_for_heads(stats: dict[str, Any], config: dict[str, Any]) -> 
 
 
 def _keyboard_classes_for_heads(stats: dict[str, Any], config: dict[str, Any]) -> list[tuple[str, ...]]:
-    if str(config.get("keyboard_head_mode", "multilabel")) != "softmax":
+    if not _uses_exact_set_head(str(config.get("keyboard_head_mode", "multilabel"))):
         return []
     if isinstance(config.get("keyboard_classes"), list):
         return [tuple(str(token) for token in row) for row in config["keyboard_classes"]]
@@ -156,7 +174,7 @@ def _keyboard_classes_for_heads(stats: dict[str, Any], config: dict[str, Any]) -
 
 
 def _button_classes_for_heads(stats: dict[str, Any], config: dict[str, Any]) -> list[tuple[str, ...]]:
-    if str(config.get("button_head_mode", "multilabel")) != "softmax":
+    if not _uses_exact_set_head(str(config.get("button_head_mode", "multilabel"))):
         return []
     if isinstance(config.get("button_classes"), list):
         return [tuple(str(token) for token in row) for row in config["button_classes"]]
@@ -198,6 +216,83 @@ def _exact_set_class_weights(
     return torch.tensor(weights, dtype=torch.float32, device=device)
 
 
+def _hierarchical_positive_class_weights(
+    torch,
+    counts: dict[str, int],
+    classes: list[tuple[str, ...]],
+    *,
+    cap: float,
+    positive_weight: float = 1.0,
+    device: str,
+):
+    weights = _exact_set_class_weights(
+        torch,
+        counts,
+        classes,
+        cap=cap,
+        empty_weight=1.0,
+        positive_weight=positive_weight,
+        device=device,
+    )
+    if weights is None or weights.numel() <= 1:
+        return None
+    return weights[1:].contiguous()
+
+
+def _hierarchical_event_pos_weight(
+    torch,
+    counts: dict[str, int],
+    classes: list[tuple[str, ...]],
+    *,
+    cap: float,
+    device: str,
+):
+    if len(classes) <= 1:
+        return None
+    empty_count = max(1, int(counts.get(_label_key(()), 0)))
+    positive_count = sum(max(0, int(counts.get(_label_key(label), 0))) for label in classes[1:])
+    if positive_count <= 0:
+        return None
+    return torch.tensor([min(float(cap), float(empty_count) / float(positive_count))], dtype=torch.float32, device=device)
+
+
+def _hierarchical_exact_set_loss(
+    torch,
+    logits,
+    labels,
+    *,
+    class_weight,
+    event_pos_weight,
+    config: dict[str, Any],
+    head: str,
+    device: str,
+):
+    if logits.shape[1] <= 0:
+        return torch.tensor(0.0, device=device)
+    event_logits = logits[:, 0]
+    positive = labels != 0
+    event_targets = positive.to(dtype=event_logits.dtype)
+    event_loss = torch.nn.functional.binary_cross_entropy_with_logits(
+        event_logits,
+        event_targets,
+        pos_weight=event_pos_weight,
+    )
+    class_logits = logits[:, 1:]
+    if class_logits.shape[1] > 0 and bool(positive.any().detach().cpu().item()):
+        class_targets = labels[positive] - 1
+        class_loss = torch.nn.functional.cross_entropy(
+            class_logits[positive],
+            class_targets,
+            weight=class_weight,
+        )
+    else:
+        class_loss = torch.tensor(0.0, device=device)
+    return (
+        float(config.get(f"{head}_hierarchical_event_loss_weight", 1.0)) * event_loss
+        + float(config.get(f"{head}_hierarchical_class_loss_weight", 1.0)) * class_loss
+    )
+
+
 def _streaming_output_dim(
     *,
     category_vocab: list[str],
@@ -211,8 +306,8 @@ def _streaming_output_dim(
     return (
         2
         + len(category_vocab)
-        + (len(keyboard_classes) if keyboard_head_mode == "softmax" else 0)
-        + (len(button_classes) if button_head_mode == "softmax" else 0)
+        + _exact_set_head_dim(keyboard_head_mode, keyboard_classes)
+        + _exact_set_head_dim(button_head_mode, button_classes)
         + (2 * len(mouse_axis_classes) if mouse_head_mode == "axis_softmax" else 0)
     )
 
@@ -1929,9 +2024,9 @@ def _flush_training_cache_chunk(
         "mouse_y": mouse_y,
         "cat_y": cat_y,
     }
-    if str(config.get("keyboard_head_mode", "multilabel")) == "softmax":
+    if _uses_exact_set_head(str(config.get("keyboard_head_mode", "multilabel"))):
         payload["keyboard_y"] = _exact_set_targets(torch, rows, keyboard_classes, _keyboard_label)
-    if str(config.get("button_head_mode", "multilabel")) == "softmax":
+    if _uses_exact_set_head(str(config.get("button_head_mode", "multilabel"))):
         payload["button_y"] = _exact_set_targets(torch, rows, button_classes, _button_label)
     if mouse_head_mode == "axis_softmax":
         axis = [_cache_axis_indices(row, axis_class_index, mouse_target_mode=mouse_target_mode) for row in rows]
@@ -2421,8 +2516,10 @@ def _train_one_epoch(
     cat_pos_weight,
     keyboard_classes: list[tuple[str, ...]],
     keyboard_class_weight,
+    keyboard_event_pos_weight,
     button_classes: list[tuple[str, ...]],
     button_class_weight,
+    button_event_pos_weight,
     mouse_axis_classes: list[str],
     rank: int = 0,
     world_size: int = 1,
@@ -2469,27 +2566,53 @@ def _train_one_epoch(
                 cat_loss = _categorical_loss(torch, pred[:, 2:category_end], cat_y, cat_pos_weight, config)
             else:
                 cat_loss = torch.tensor(0.0, device=device)
-            keyboard_end = category_end
+            keyboard_dim = _exact_set_head_dim(keyboard_head_mode, keyboard_classes)
+            keyboard_end = category_end + keyboard_dim
             if keyboard_head_mode == "softmax":
-                keyboard_end = category_end + len(keyboard_classes)
                 if keyboard_y is None:
-                    raise ValueError("training cache is missing keyboard targets for keyboard_head_mode=softmax")
+                    raise ValueError(f"training cache is missing keyboard targets for keyboard_head_mode={keyboard_head_mode}")
                 keyboard_loss = torch.nn.functional.cross_entropy(
                     pred[:, category_end:keyboard_end],
                     keyboard_y,
                     weight=keyboard_class_weight,
                 )
+            elif keyboard_head_mode == "hierarchical_softmax":
+                if keyboard_y is None:
+                    raise ValueError("training cache is missing keyboard targets for keyboard_head_mode=hierarchical_softmax")
+                keyboard_loss = _hierarchical_exact_set_loss(
+                    torch,
+                    pred[:, category_end:keyboard_end],
+                    keyboard_y,
+                    class_weight=keyboard_class_weight,
+                    event_pos_weight=keyboard_event_pos_weight,
+                    config=config,
+                    head="keyboard",
+                    device=device,
+                )
             else:
                 keyboard_loss = torch.tensor(0.0, device=device)
-            button_end = keyboard_end
+            button_dim = _exact_set_head_dim(button_head_mode, button_classes)
+            button_end = keyboard_end + button_dim
             if button_head_mode == "softmax":
-                button_end = keyboard_end + len(button_classes)
                 if button_y is None:
-                    raise ValueError("training cache is missing button targets for button_head_mode=softmax")
+                    raise ValueError(f"training cache is missing button targets for button_head_mode={button_head_mode}")
                 button_loss = torch.nn.functional.cross_entropy(
                     pred[:, keyboard_end:button_end],
                     button_y,
                     weight=button_class_weight,
+                )
+            elif button_head_mode == "hierarchical_softmax":
+                if button_y is None:
+                    raise ValueError("training cache is missing button targets for button_head_mode=hierarchical_softmax")
+                button_loss = _hierarchical_exact_set_loss(
+                    torch,
+                    pred[:, keyboard_end:button_end],
+                    button_y,
+                    class_weight=button_class_weight,
+                    event_pos_weight=button_event_pos_weight,
+                    config=config,
+                    head="button",
+                    device=device,
                 )
             else:
                 button_loss = torch.tensor(0.0, device=device)
@@ -2582,25 +2705,49 @@ def _train_one_epoch(
             cat_loss = _categorical_loss(torch, pred[:, 2:category_end], cat_y, cat_pos_weight, config)
         else:
             cat_loss = torch.tensor(0.0, device=device)
-        keyboard_end = category_end
+        keyboard_dim = _exact_set_head_dim(keyboard_head_mode, keyboard_classes)
+        keyboard_end = category_end + keyboard_dim
         if keyboard_head_mode == "softmax":
-            keyboard_end = category_end + len(keyboard_classes)
             keyboard_y = _exact_set_targets(torch, rows, keyboard_classes, _keyboard_label, device=device)
             keyboard_loss = torch.nn.functional.cross_entropy(
                 pred[:, category_end:keyboard_end],
                 keyboard_y,
                 weight=keyboard_class_weight,
             )
+        elif keyboard_head_mode == "hierarchical_softmax":
+            keyboard_y = _exact_set_targets(torch, rows, keyboard_classes, _keyboard_label, device=device)
+            keyboard_loss = _hierarchical_exact_set_loss(
+                torch,
+                pred[:, category_end:keyboard_end],
+                keyboard_y,
+                class_weight=keyboard_class_weight,
+                event_pos_weight=keyboard_event_pos_weight,
+                config=config,
+                head="keyboard",
+                device=device,
+            )
         else:
             keyboard_loss = torch.tensor(0.0, device=device)
-        button_end = keyboard_end
+        button_dim = _exact_set_head_dim(button_head_mode, button_classes)
+        button_end = keyboard_end + button_dim
         if button_head_mode == "softmax":
-            button_end = keyboard_end + len(button_classes)
             button_y = _exact_set_targets(torch, rows, button_classes, _button_label, device=device)
             button_loss = torch.nn.functional.cross_entropy(
                 pred[:, keyboard_end:button_end],
                 button_y,
                 weight=button_class_weight,
+            )
+        elif button_head_mode == "hierarchical_softmax":
+            button_y = _exact_set_targets(torch, rows, button_classes, _button_label, device=device)
+            button_loss = _hierarchical_exact_set_loss(
+                torch,
+                pred[:, keyboard_end:button_end],
+                button_y,
+                class_weight=button_class_weight,
+                event_pos_weight=button_event_pos_weight,
+                config=config,
+                head="button",
+                device=device,
             )
         else:
             button_loss = torch.tensor(0.0, device=device)
@@ -3293,8 +3440,10 @@ def _calibrate_streaming_softmax_thresholds_from_cache(
     calibrates the emit/no-emit threshold without touching heldout labels.
     """
 
-    keyboard_enabled = str(config.get("keyboard_head_mode", "multilabel")) == "softmax" and bool(keyboard_classes)
-    button_enabled = str(config.get("button_head_mode", "multilabel")) == "softmax" and bool(button_classes)
+    keyboard_mode = str(config.get("keyboard_head_mode", "multilabel"))
+    button_mode = str(config.get("button_head_mode", "multilabel"))
+    keyboard_enabled = _uses_exact_set_head(keyboard_mode) and bool(keyboard_classes)
+    button_enabled = _uses_exact_set_head(button_mode) and bool(button_classes)
     if not keyboard_enabled and not button_enabled:
         return {"status": "skipped_no_softmax_heads"}
     batch_size = int(config.get("softmax_calibration_batch_size", config.get("category_calibration_batch_size", config.get("eval_batch_size", config.get("batch_size", 2048)))))
@@ -3330,13 +3479,23 @@ def _calibrate_streaming_softmax_thresholds_from_cache(
         ):
             outputs = model(x)
             category_end = 2 + len(category_vocab)
-            keyboard_end = category_end + (len(keyboard_classes) if keyboard_enabled else 0)
+            keyboard_dim = _exact_set_head_dim(keyboard_mode, keyboard_classes) if keyboard_enabled else 0
+            keyboard_end = category_end + keyboard_dim
             if keyboard_enabled:
                 if keyboard_y is None:
-                    raise ValueError("training cache is missing keyboard targets for keyboard softmax calibration")
-                logits = outputs[:, category_end:keyboard_end]
-                probs = torch.softmax(logits, dim=1)
-                best_prob, best_idx = probs.max(dim=1)
+                    raise ValueError("training cache is missing keyboard targets for keyboard exact-set calibration")
+                if keyboard_mode == "hierarchical_softmax":
+                    logits = outputs[:, category_end:keyboard_end]
+                    best_prob = torch.sigmoid(logits[:, 0])
+                    if logits.shape[1] > 1:
+                        _positive_probs, positive_idx = torch.softmax(logits[:, 1:], dim=1).max(dim=1)
+                        best_idx = positive_idx + 1
+                    else:
+                        best_idx = torch.zeros_like(keyboard_y)
+                else:
+                    logits = outputs[:, category_end:keyboard_end]
+                    probs = torch.softmax(logits, dim=1)
+                    best_prob, best_idx = probs.max(dim=1)
                 labels = keyboard_y
                 for threshold in grids["keyboard"]:
                     pred_idx = torch.where(
@@ -3356,13 +3515,23 @@ def _calibrate_streaming_softmax_thresholds_from_cache(
                     row["no_event_examples"] += int((~label_positive).sum().detach().cpu().item())
                     row["no_event_false_positive_examples"] += int((~label_positive & pred_positive).sum().detach().cpu().item())
             button_start = keyboard_end
-            button_end = button_start + (len(button_classes) if button_enabled else 0)
+            button_dim = _exact_set_head_dim(button_mode, button_classes) if button_enabled else 0
+            button_end = button_start + button_dim
             if button_enabled:
                 if button_y is None:
-                    raise ValueError("training cache is missing button targets for button softmax calibration")
-                logits = outputs[:, button_start:button_end]
-                probs = torch.softmax(logits, dim=1)
-                best_prob, best_idx = probs.max(dim=1)
+                    raise ValueError("training cache is missing button targets for button exact-set calibration")
+                if button_mode == "hierarchical_softmax":
+                    logits = outputs[:, button_start:button_end]
+                    best_prob = torch.sigmoid(logits[:, 0])
+                    if logits.shape[1] > 1:
+                        _positive_probs, positive_idx = torch.softmax(logits[:, 1:], dim=1).max(dim=1)
+                        best_idx = positive_idx + 1
+                    else:
+                        best_idx = torch.zeros_like(button_y)
+                else:
+                    logits = outputs[:, button_start:button_end]
+                    probs = torch.softmax(logits, dim=1)
+                    best_prob, best_idx = probs.max(dim=1)
                 labels = button_y
                 for threshold in grids["button"]:
                     pred_idx = torch.where(
@@ -4566,8 +4735,8 @@ def _predict_stream(
         and bool(button_classes)
     )
     category_end = 2 + len(category_vocab)
-    keyboard_end = category_end + (len(keyboard_classes) if keyboard_head_mode == "softmax" else 0)
-    button_end = keyboard_end + (len(button_classes) if button_head_mode == "softmax" else 0)
+    keyboard_end = category_end + _exact_set_head_dim(keyboard_head_mode, keyboard_classes)
+    button_end = keyboard_end + _exact_set_head_dim(button_head_mode, button_classes)
     keyboard_softmax_threshold = float(config.get("keyboard_softmax_threshold", 0.5))
     button_softmax_threshold = float(config.get("button_softmax_threshold", 0.5))
     mouse_output_gain = float(config.get("mouse_output_gain", 1.0))
@@ -5676,10 +5845,10 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             _barrier(torch, dist)
     category_vocab = _category_vocab_for_heads(stats, config)
     keyboard_head_mode = str(config.get("keyboard_head_mode", "multilabel"))
-    if keyboard_head_mode not in {"multilabel", "softmax"}:
+    if keyboard_head_mode not in {"multilabel", "softmax", "hierarchical_softmax"}:
         raise ValueError(f"unsupported keyboard_head_mode: {keyboard_head_mode}")
     button_head_mode = str(config.get("button_head_mode", "multilabel"))
-    if button_head_mode not in {"multilabel", "softmax"}:
+    if button_head_mode not in {"multilabel", "softmax", "hierarchical_softmax"}:
         raise ValueError(f"unsupported button_head_mode: {button_head_mode}")
     keyboard_classes = _keyboard_classes_for_heads(stats, config)
     button_classes = _button_classes_for_heads(stats, config)
@@ -5769,6 +5938,22 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         positive_weight=float(config.get("keyboard_softmax_positive_weight", 1.0)),
         device=device,
     ) if keyboard_head_mode == "softmax" else None
+    if keyboard_head_mode == "hierarchical_softmax":
+        keyboard_class_weight = _hierarchical_positive_class_weights(
+            torch,
+            {str(k): int(v) for k, v in stats.get("keyboard_class_counts", {}).items()},
+            keyboard_classes,
+            cap=float(config.get("keyboard_softmax_class_weight_cap", 20.0)),
+            positive_weight=float(config.get("keyboard_softmax_positive_weight", 1.0)),
+            device=device,
+        )
+    keyboard_event_pos_weight = _hierarchical_event_pos_weight(
+        torch,
+        {str(k): int(v) for k, v in stats.get("keyboard_class_counts", {}).items()},
+        keyboard_classes,
+        cap=float(config.get("keyboard_hierarchical_event_pos_weight_cap", config.get("keyboard_softmax_class_weight_cap", 20.0))),
+        device=device,
+    ) if keyboard_head_mode == "hierarchical_softmax" else None
     button_class_weight = _exact_set_class_weights(
         torch,
         {str(k): int(v) for k, v in stats.get("button_class_counts", {}).items()},
@@ -5778,6 +5963,22 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         positive_weight=float(config.get("button_softmax_positive_weight", 1.0)),
         device=device,
     ) if button_head_mode == "softmax" else None
+    if button_head_mode == "hierarchical_softmax":
+        button_class_weight = _hierarchical_positive_class_weights(
+            torch,
+            {str(k): int(v) for k, v in stats.get("button_class_counts", {}).items()},
+            button_classes,
+            cap=float(config.get("button_softmax_class_weight_cap", 20.0)),
+            positive_weight=float(config.get("button_softmax_positive_weight", 1.0)),
+            device=device,
+        )
+    button_event_pos_weight = _hierarchical_event_pos_weight(
+        torch,
+        {str(k): int(v) for k, v in stats.get("button_class_counts", {}).items()},
+        button_classes,
+        cap=float(config.get("button_hierarchical_event_pos_weight_cap", config.get("button_softmax_class_weight_cap", 20.0))),
+        device=device,
+    ) if button_head_mode == "hierarchical_softmax" else None
     history = resumed_history
     start_epoch = len(history)
     total_epochs = int(config.get("epochs", 3))
@@ -5840,8 +6041,10 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
                 cat_pos_weight=cat_pos_weight,
                 keyboard_classes=keyboard_classes,
                 keyboard_class_weight=keyboard_class_weight,
+                keyboard_event_pos_weight=keyboard_event_pos_weight,
                 button_classes=button_classes,
                 button_class_weight=button_class_weight,
+                button_event_pos_weight=button_event_pos_weight,
                 mouse_axis_classes=mouse_axis_classes,
                 rank=int(dist["rank"]),
                 world_size=int(dist["world_size"]),

@@ -1205,9 +1205,13 @@ def _prediction_from_output(
     keyboard_end = category_end
     if keyboard_head_mode == "softmax":
         keyboard_end = category_end + len(keyboard_classes or [])
+    elif keyboard_head_mode == "hierarchical_softmax":
+        keyboard_end = category_end + 1 + max(0, len(keyboard_classes or []) - 1)
     button_end = keyboard_end
     if button_head_mode == "softmax":
         button_end = keyboard_end + len(button_classes or [])
+    elif button_head_mode == "hierarchical_softmax":
+        button_end = keyboard_end + 1 + max(0, len(button_classes or []) - 1)
     if mouse_head_mode == "axis_softmax":
         axis_classes = mouse_axis_classes or MOUSE_AXIS_CLASSES
         axis_count = len(axis_classes)
@@ -1250,6 +1254,16 @@ def _prediction_from_output(
             best_idx = max(range(len(probs)), key=lambda idx: probs[idx])
             if best_idx != 0 and probs[best_idx] >= float(keyboard_softmax_threshold):
                 tokens.extend(classes[best_idx])
+    elif keyboard_head_mode == "hierarchical_softmax":
+        classes = keyboard_classes or []
+        if len(classes) > 1:
+            event_prob = _sigmoid(float(output[category_end]))
+            keyboard_logits = output[category_end + 1 : keyboard_end]
+            probs = _softmax([float(value) for value in keyboard_logits])
+            if probs:
+                best_idx = max(range(len(probs)), key=lambda idx: probs[idx])
+                if event_prob >= float(keyboard_softmax_threshold):
+                    tokens.extend(classes[best_idx + 1])
     if button_head_mode == "softmax":
         classes = button_classes or []
         button_logits = output[keyboard_end : keyboard_end + len(classes)]
@@ -1258,6 +1272,16 @@ def _prediction_from_output(
             best_idx = max(range(len(probs)), key=lambda idx: probs[idx])
             if best_idx != 0 and probs[best_idx] >= float(button_softmax_threshold):
                 tokens.extend(classes[best_idx])
+    elif button_head_mode == "hierarchical_softmax":
+        classes = button_classes or []
+        if len(classes) > 1:
+            event_prob = _sigmoid(float(output[keyboard_end]))
+            button_logits = output[keyboard_end + 1 : button_end]
+            probs = _softmax([float(value) for value in button_logits])
+            if probs:
+                best_idx = max(range(len(probs)), key=lambda idx: probs[idx])
+                if event_prob >= float(button_softmax_threshold):
+                    tokens.extend(classes[best_idx + 1])
     return dx, dy, tokens
 
 
