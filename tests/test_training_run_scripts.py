@@ -317,6 +317,23 @@ def test_g005_chrono_closed_loop_prefix_materializes_before_prediction() -> None
     assert paper["target_paths"] == ["outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl"]
     assert paper["output_path"] == "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.json"
 
+
+def test_g005_endpoint_mixture_prefix_wrapper_logs_json_artifacts() -> None:
+    text = _script("scripts/run_g005_idm_endpoint_mixture_prefix.sh")
+    ensemble = json.loads((ROOT / "configs/eval/g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k.yaml").read_text())
+    paper = json.loads((ROOT / "configs/eval/g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics.yaml").read_text())
+
+    ensemble_idx = text.index("scripts/ensemble_idm_predictions.py")
+    metrics_idx = text.index("scripts/build_g005_idm_paper_metrics.py")
+    assert ensemble_idx < metrics_idx
+    assert '--json "artifacts/idm/g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_summary.json"' in text
+    assert '--json "artifacts/idm/g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics.json"' in text
+    assert ensemble["policies"]["button"]["mode"] == "source_with_endpoint_gate"
+    assert ensemble["policies"]["button"]["source"] == "state_luma_pair"
+    assert ensemble["policies"]["button"]["gate_sources"] == ["event_state_duration_context"]
+    assert paper["max_rows"] == 320000
+    assert paper["empty_bins_as_correct"] is False
+
 def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
     text = _script("scripts/run_g004_d2e_full_fdm_4xh200.sh")
     assert 'PID_FILE="${PID_FILE:-outputs/cluster/g004_d2e_full_fdm_4xh200.pid}"' in text

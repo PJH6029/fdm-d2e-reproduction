@@ -1,0 +1,17 @@
+{
+  "schema": "paper_idm_metrics_config.v1",
+  "model_name": "endpoint_mixture_state_luma_button_gated_by_event_context_prefix320k",
+  "prediction_paths": [
+    "outputs/idm_ensembles/g005_endpoint_mixture_state_luma_gate_context_prefix320k/predictions.jsonl"
+  ],
+  "target_paths": [
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl"
+  ],
+  "output_path": "artifacts/idm/g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics.json",
+  "progress_output_path": "artifacts/idm/g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics_progress.json",
+  "max_rows": 320000,
+  "progress_rows": 100000,
+  "empty_bins_as_correct": false,
+  "split_tags": ["temporal", "heldout_recording", "heldout_game"],
+  "claim_boundary": "Prefix post-hoc endpoint mixture diagnostic only; not G005 completion evidence."
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "idm_endpoint_prediction_ensemble_config.v1",
+  "policy_id": "state_luma_button_gated_by_event_context_prefix320k",
+  "prediction_paths": {
+    "event_state_duration_context": "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/predictions.jsonl",
+    "state_luma_pair": "outputs/idm_streaming_d2e_full_state_luma_pair_paper_target/predictions.jsonl"
+  },
+  "metadata_source": "event_state_duration_context",
+  "policies": {
+    "mouse": {"mode": "source", "source": "event_state_duration_context"},
+    "keyboard": {"mode": "source", "source": "event_state_duration_context"},
+    "button": {"mode": "source_with_endpoint_gate", "source": "state_luma_pair", "gate_sources": ["event_state_duration_context"]}
+  },
+  "max_rows": 320000,
+  "output_path": "outputs/idm_ensembles/g005_endpoint_mixture_state_luma_gate_context_prefix320k/predictions.jsonl",
+  "summary_path": "artifacts/idm/g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_summary.json",
+  "claim_boundary": "Prefix post-hoc endpoint mixture diagnostic only; not G005 completion evidence."
+}
