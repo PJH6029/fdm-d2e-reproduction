@@ -1,7 +1,7 @@
 {
   "schema": "g005_idm_paper_target_audit.v1",
   "status": "fail",
-  "error_count": 6,
+  "error_count": 7,
   "goal_id": "G005-g014-idm-full-paper-target",
   "model_name": "video_stack_idm_d2e_full_luma96_offsets012_keysoftmax_paper_target",
   "paths": {
@@ -23,9 +23,9 @@
   "target_records": 16698646,
   "checkpoint": {
     "path": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/checkpoint.pt",
-    "exists": true,
-    "bytes": 144719605,
-    "sha256": "129c89be32798a77dbe84fd0ffb40a95e344b205e0fe88e651ffbe1a21c08a92"
+    "exists": false,
+    "bytes": 0,
+    "sha256": null
   },
   "gpu_monitor_status": {
     "rows": 1264,
@@ -38,6 +38,14 @@
     ],
     "expected_gpus": 4,
     "covers_expected_gpus": true
+  },
+  "closed_loop_state_context_status": {
+    "has_evidence": false,
+    "enabled": false,
+    "source": null,
+    "seed_from_train": null,
+    "seed_from_first_target_prior": null,
+    "passes": false
   },
   "aggregate_target_results": [
     {
@@ -412,6 +420,11 @@
     }
   ],
   "findings": [
+    {
+      "severity": "error",
+      "code": "missing_checkpoint",
+      "path": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/checkpoint.pt"
+    },
     {
       "severity": "error",
       "code": "paper_target_not_met",

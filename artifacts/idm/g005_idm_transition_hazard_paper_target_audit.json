@@ -1,7 +1,7 @@
 {
   "schema": "g005_idm_paper_target_audit.v1",
   "status": "fail",
-  "error_count": 5,
+  "error_count": 7,
   "goal_id": "G005-idm-full-paper-target",
   "model_name": "streaming_idm_d2e_full_transition_hazard_paper_target",
   "paths": {
@@ -23,9 +23,9 @@
   "target_records": 16698646,
   "checkpoint": {
     "path": "outputs/idm_streaming_d2e_full_transition_hazard_paper_target/checkpoint.pt",
-    "exists": true,
-    "bytes": 35457589,
-    "sha256": "21587705e717114d4e582cc4e011d7678d882675b0d7e940e978bf73f6aa1a3a"
+    "exists": false,
+    "bytes": 0,
+    "sha256": null
   },
   "gpu_monitor_status": {
     "rows": 928,
@@ -38,6 +38,14 @@
     ],
     "expected_gpus": 4,
     "covers_expected_gpus": true
+  },
+  "closed_loop_state_context_status": {
+    "has_evidence": false,
+    "enabled": false,
+    "source": null,
+    "seed_from_train": null,
+    "seed_from_first_target_prior": null,
+    "passes": false
   },
   "aggregate_target_results": [
     {
@@ -412,6 +420,32 @@
     }
   ],
   "findings": [
+    {
+      "severity": "error",
+      "code": "paper_metric_target_uses_event_state_context_without_closed_loop_evidence",
+      "paths": [
+        "outputs/data/d2e_event_state_context_shards_accel64/shard_*/target_all_eval.jsonl"
+      ],
+      "expected": {
+        "prediction_summary": "paths.prediction_summary",
+        "closed_loop_state_context.enabled": true,
+        "closed_loop_state_context.source": "predicted_closed_loop_before_current_event_bin",
+        "closed_loop_state_context.seed_from_train": false
+      },
+      "actual": {
+        "has_evidence": false,
+        "enabled": false,
+        "source": null,
+        "seed_from_train": null,
+        "seed_from_first_target_prior": null,
+        "passes": false
+      }
+    },
+    {
+      "severity": "error",
+      "code": "missing_checkpoint",
+      "path": "outputs/idm_streaming_d2e_full_transition_hazard_paper_target/checkpoint.pt"
+    },
     {
       "severity": "error",
       "code": "paper_target_not_met",

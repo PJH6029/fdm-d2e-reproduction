@@ -140,3 +140,17 @@ Live timed pilot evidence:
 Claim boundary: this proves timing-correct released G-IDM chunk scheduling, execution, target-window filtering, conversion, and W&B logging. It is not an exact-split baseline result, does not show our IDM beats paper metrics, and does not complete G005/G006.
 
 Follow-up hardening in the same session patched the W&B sidecar to count only manifest-planned chunk paths for future runs, because this run shared a predicted directory with older pilot MCAPs. Next step: proceed to a longer exact-split G-IDM shard once a 4GPU quota/reservation is available; in parallel, keep G005 IDM architecture work focused on beating paper targets rather than promoting these poor released-GIDM pilot metrics.
+
+### Current G005 candidate revalidation after timed G-IDM pilot
+
+Date: 2026-05-28 KST.
+
+Re-ran current G005 paper-target validators and summarized existing candidate metrics in `artifacts/idm/g005_idm_candidate_revalidation_summary.json`. Status remains `fail_no_candidate_meets_paper_targets`.
+
+Top current full-corpus diagnostic candidates:
+
+- `event_state_duration_context_full`: strongest overall paper metrics so far (keyboard `0.2026`, mouse-button `0.1777`, Pearson X/Y `0.7502/0.6970`, strict button F1 `0.2936`, no-button FPR `0.0480`) but still misses D2E paper targets and is rejected because event-state context lacks closed-loop predicted-context evidence.
+- `transition_hazard_full`: strict F1/FPR remain useful (`0.2726`, `0.0526`) but paper keyboard/mouse targets are far below target and it has the same closed-loop context audit issue.
+- `video_stack_luma96_full` and raw112 variants remain non-leaky visual baselines with bounded FPR but near-zero paper keyboard/button and poor mouse motion; do not promote alone.
+
+Recommended branch: repair the event-state-duration context candidate into a non-leaky closed-loop predicted-context model, then combine it with endpoint-specialist heads/calibration for keyboard and mouse-button. Use prefix/small-shard gates before spending another full 4xH200 run. The released G-IDM timed pilot is now infrastructure for future exact-split baseline/teacher diagnostics, not a G005 success path by itself.

@@ -1,0 +1,128 @@
+{
+  "schema": "g005_idm_paper_target_audit.v1",
+  "status": "fail",
+  "error_count": 13,
+  "goal_id": "G005-idm-full-paper-target",
+  "model_name": "streaming_idm_d2e_full_luma_pair_paper_sum_calibrated",
+  "paths": {
+    "gidm_baseline_contract": "artifacts/eval/g003_gidm_baseline_contract.json",
+    "paper_metrics": "artifacts/idm/g005_idm_luma_pair_paper_sum_paper_metrics.json",
+    "checkpoint": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/checkpoint.pt",
+    "checkpoint_metadata": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/checkpoint_metadata.json",
+    "train_summary": "artifacts/idm/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated_summary.json",
+    "run_summary": "artifacts/idm/g005_idm_luma_pair_paper_sum_4xh200_run.json",
+    "split_stats_summary": "artifacts/eval/g005_idm_luma_pair_paper_sum_split_statistical_comparisons_summary.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_luma_pair_paper_sum_4xh200_gpu_monitor.csv"
+  },
+  "expected_gpus": 4,
+  "min_train_records": 19211006,
+  "min_target_records": 16698646,
+  "paper_target_margin": 0.0,
+  "require_all_splits_beat_targets": false,
+  "train_records": 0,
+  "target_records": 0,
+  "checkpoint": {
+    "path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/checkpoint.pt",
+    "exists": false,
+    "bytes": 0,
+    "sha256": null
+  },
+  "gpu_monitor_status": {
+    "rows": 0,
+    "sample_count": 0,
+    "unique_gpu_indices": [],
+    "expected_gpus": 4,
+    "covers_expected_gpus": false
+  },
+  "closed_loop_state_context_status": {
+    "has_evidence": false,
+    "enabled": false,
+    "source": null,
+    "seed_from_train": null,
+    "seed_from_first_target_prior": null,
+    "passes": false
+  },
+  "aggregate_target_results": [],
+  "split_target_results": {},
+  "strict_target_results": [],
+  "split_stats_outputs": [],
+  "findings": [
+    {
+      "severity": "error",
+      "code": "missing_paper_metrics",
+      "path": "artifacts/idm/g005_idm_luma_pair_paper_sum_paper_metrics.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_checkpoint_metadata",
+      "path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/checkpoint_metadata.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_train_summary",
+      "path": "artifacts/idm/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated_summary.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_run_summary",
+      "path": "artifacts/idm/g005_idm_luma_pair_paper_sum_4xh200_run.json"
+    },
+    {
+      "severity": "error",
+      "code": "missing_split_stats_summary",
+      "path": "artifacts/eval/g005_idm_luma_pair_paper_sum_split_statistical_comparisons_summary.json"
+    },
+    {
+      "severity": "error",
+      "code": "gpu_monitor_too_few_rows",
+      "actual": 0
+    },
+    {
+      "severity": "error",
+      "code": "gpu_monitor_does_not_cover_expected_gpus",
+      "actual": {
+        "rows": 0,
+        "sample_count": 0,
+        "unique_gpu_indices": [],
+        "expected_gpus": 4,
+        "covers_expected_gpus": false
+      }
+    },
+    {
+      "severity": "error",
+      "code": "train_records_below_full_corpus_min",
+      "actual": 0,
+      "expected_min": 19211006
+    },
+    {
+      "severity": "error",
+      "code": "target_records_below_full_corpus_min",
+      "actual": 0,
+      "expected_min": 16698646
+    },
+    {
+      "severity": "error",
+      "code": "missing_checkpoint",
+      "path": "outputs/idm_streaming_d2e_full_luma_pair_paper_sum_calibrated/checkpoint.pt"
+    },
+    {
+      "severity": "error",
+      "code": "missing_or_failed_split_stats",
+      "split": "temporal",
+      "row": null
+    },
+    {
+      "severity": "error",
+      "code": "missing_or_failed_split_stats",
+      "split": "heldout_recording",
+      "row": null
+    },
+    {
+      "severity": "error",
+      "code": "missing_or_failed_split_stats",
+      "split": "heldout_game",
+      "row": null
+    }
+  ],
+  "claim_boundary": "G005 passes only when our full-corpus 4xH200 IDM run beats paper-reported G-IDM targets under the local paper-compatible token metric and records split/GPU evidence. It is not the exact released G-IDM comparison; that remains G006."
+}

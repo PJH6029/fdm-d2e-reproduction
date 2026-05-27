@@ -1,0 +1,639 @@
+{
+  "active_goal_id": "G005-g014-idm-full-paper-target",
+  "candidate_count": 8,
+  "claim_boundary": "Revalidation/ranking artifact only; no G005 success claim and no FDM-1 parity claim.",
+  "created_at_epoch": 1779895128.430731,
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "ranked_candidates": [
+    {
+      "audit_error_count": 5,
+      "audit_path": "artifacts/idm/g005_idm_event_state_duration_context_paper_target_audit.json",
+      "audit_status": "fail",
+      "button_gap_to_paper": 0.7793013532800883,
+      "candidate": "event_state_duration_context_full",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.527370566863951,
+      "metrics_path": "artifacts/idm/g005_idm_event_state_duration_context_paper_metrics.json",
+      "note": "Best full-corpus mouse/key/button balance but audit flags event-state-context leakage/no closed-loop evidence and misses all paper targets.",
+      "paper_keyboard_accuracy": 0.20262943313604903,
+      "paper_mouse_button_accuracy": 0.17769864671991165,
+      "paper_mouse_pearson_x": 0.7502068587019377,
+      "paper_mouse_pearson_y": 0.6969669280423696,
+      "paper_scale_ratio_x": 1.0358216695774147,
+      "paper_scale_ratio_y": 1.1778988962359584,
+      "pearson_x_gap_to_paper": 0.045793141298062334,
+      "pearson_y_gap_to_paper": 0.08603307195763044,
+      "rows": 16698646,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.29363531698271716,
+      "strict_no_button_fpr": 0.04803163838603627,
+      "top_audit_findings": [
+        {
+          "actual": {
+            "enabled": false,
+            "has_evidence": false,
+            "passes": false,
+            "seed_from_first_target_prior": null,
+            "seed_from_train": null,
+            "source": null
+          },
+          "code": "paper_metric_target_uses_event_state_context_without_closed_loop_evidence",
+          "expected": {
+            "closed_loop_state_context.enabled": true,
+            "closed_loop_state_context.seed_from_train": false,
+            "closed_loop_state_context.source": "predicted_closed_loop_before_current_event_bin",
+            "prediction_summary": "paths.prediction_summary"
+          },
+          "paths": [
+            "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl"
+          ],
+          "severity": "error"
+        },
+        {
+          "actual": 0.7502068587019377,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "pearson_x",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "pearson_x"
+          ],
+          "severity": "error",
+          "target": 0.796
+        },
+        {
+          "actual": 0.6969669280423696,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "pearson_y",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "pearson_y"
+          ],
+          "severity": "error",
+          "target": 0.783
+        },
+        {
+          "actual": 0.20262943313604903,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "keyboard_accuracy",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "keyboard",
+            "key_accuracy"
+          ],
+          "severity": "error",
+          "target": 0.73
+        },
+        {
+          "actual": 0.17769864671991165,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "mouse_button_accuracy",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_button",
+            "button_accuracy"
+          ],
+          "severity": "error",
+          "target": 0.957
+        }
+      ]
+    },
+    {
+      "audit_error_count": 7,
+      "audit_path": "artifacts/idm/g005_idm_event_state_duration_softmax_paper_target_audit.json",
+      "audit_status": "fail",
+      "button_gap_to_paper": 0.862661107693559,
+      "candidate": "event_state_duration_softmax_full",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.6629586617651695,
+      "metrics_path": "artifacts/idm/g005_idm_event_state_duration_softmax_paper_metrics.json",
+      "note": "Similar mouse Pearson but worse FPR and only world_size=1 metadata.",
+      "paper_keyboard_accuracy": 0.06704133823483047,
+      "paper_mouse_button_accuracy": 0.09433889230644099,
+      "paper_mouse_pearson_x": 0.7484696441195036,
+      "paper_mouse_pearson_y": 0.7009831770661057,
+      "paper_scale_ratio_x": 1.0665762646880192,
+      "paper_scale_ratio_y": 1.2066146449683377,
+      "pearson_x_gap_to_paper": 0.04753035588049648,
+      "pearson_y_gap_to_paper": 0.08201682293389434,
+      "rows": 16698646,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.16928080914556248,
+      "strict_no_button_fpr": 0.20050869812817132,
+      "top_audit_findings": [
+        {
+          "actual": 1,
+          "code": "metadata_world_size_mismatch",
+          "expected": 4,
+          "severity": "error"
+        },
+        {
+          "actual": 0.7484696441195036,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "pearson_x",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "pearson_x"
+          ],
+          "severity": "error",
+          "target": 0.796
+        },
+        {
+          "actual": 0.7009831770661057,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "pearson_y",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "pearson_y"
+          ],
+          "severity": "error",
+          "target": 0.783
+        },
+        {
+          "actual": 0.06704133823483047,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "keyboard_accuracy",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "keyboard",
+            "key_accuracy"
+          ],
+          "severity": "error",
+          "target": 0.73
+        },
+        {
+          "actual": 0.09433889230644099,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "mouse_button_accuracy",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_button",
+            "button_accuracy"
+          ],
+          "severity": "error",
+          "target": 0.957
+        },
+        {
+          "actual": 0.16928080914556248,
+          "baseline": 0.27259490490800825,
+          "code": "strict_local_target_not_met",
+          "direction": "higher",
+          "min_delta": 0.02,
+          "name": "mouse_button_f1",
+          "passed": false,
+          "path": [
+            "strict_local",
+            "mouse_button",
+            "f1"
+          ],
+          "severity": "error",
+          "target": 0.29259490490800827
+        }
+      ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": null,
+      "audit_status": null,
+      "button_gap_to_paper": 0.27159509174084884,
+      "candidate": "state_luma_pair_full_empty_correct",
+      "empty_bins_as_correct": true,
+      "keyboard_gap_to_paper": 0.5491601729989875,
+      "metrics_path": "artifacts/idm/g005_idm_state_luma_pair_paper_metrics.json",
+      "note": "Invalid/promotional-risk state-token metric uses empty_bins_as_correct=true and high strict FPR; useful only for state-token diagnostics.",
+      "paper_keyboard_accuracy": 0.18083982700101248,
+      "paper_mouse_button_accuracy": 0.6854049082591511,
+      "paper_mouse_pearson_x": 0.39766916905933186,
+      "paper_mouse_pearson_y": 0.09787428425779347,
+      "paper_scale_ratio_x": 1.4005837353755752,
+      "paper_scale_ratio_y": 6.038007135191314,
+      "pearson_x_gap_to_paper": 0.3983308309406682,
+      "pearson_y_gap_to_paper": 0.6851257157422066,
+      "rows": 16698646,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.19012592159579958,
+      "strict_no_button_fpr": 0.24136128568674722,
+      "top_audit_findings": []
+    },
+    {
+      "audit_error_count": 7,
+      "audit_path": "artifacts/idm/g005_idm_transition_hazard_paper_target_audit.json",
+      "audit_status": "fail",
+      "button_gap_to_paper": 0.7946757877038505,
+      "candidate": "transition_hazard_full",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.6842528242872852,
+      "metrics_path": "artifacts/idm/g005_idm_transition_hazard_paper_metrics.json",
+      "note": "Good strict F1/FPR but weak paper keyboard/mouse and same no closed-loop context issue.",
+      "paper_keyboard_accuracy": 0.04574717571271478,
+      "paper_mouse_button_accuracy": 0.16232421229614943,
+      "paper_mouse_pearson_x": 0.4601976996638697,
+      "paper_mouse_pearson_y": 0.18131005328447297,
+      "paper_scale_ratio_x": 1.0636406709080104,
+      "paper_scale_ratio_y": 3.116300311711043,
+      "pearson_x_gap_to_paper": 0.33580230033613034,
+      "pearson_y_gap_to_paper": 0.601689946715527,
+      "rows": 16698646,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.27259490490800825,
+      "strict_no_button_fpr": 0.052553030063957736,
+      "top_audit_findings": [
+        {
+          "actual": {
+            "enabled": false,
+            "has_evidence": false,
+            "passes": false,
+            "seed_from_first_target_prior": null,
+            "seed_from_train": null,
+            "source": null
+          },
+          "code": "paper_metric_target_uses_event_state_context_without_closed_loop_evidence",
+          "expected": {
+            "closed_loop_state_context.enabled": true,
+            "closed_loop_state_context.seed_from_train": false,
+            "closed_loop_state_context.source": "predicted_closed_loop_before_current_event_bin",
+            "prediction_summary": "paths.prediction_summary"
+          },
+          "paths": [
+            "outputs/data/d2e_event_state_context_shards_accel64/shard_*/target_all_eval.jsonl"
+          ],
+          "severity": "error"
+        },
+        {
+          "code": "missing_checkpoint",
+          "path": "outputs/idm_streaming_d2e_full_transition_hazard_paper_target/checkpoint.pt",
+          "severity": "error"
+        },
+        {
+          "actual": 0.4601976996638697,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "pearson_x",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "pearson_x"
+          ],
+          "severity": "error",
+          "target": 0.796
+        },
+        {
+          "actual": 0.18131005328447297,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "pearson_y",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "pearson_y"
+          ],
+          "severity": "error",
+          "target": 0.783
+        },
+        {
+          "actual": 0.04574717571271478,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "keyboard_accuracy",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "keyboard",
+            "key_accuracy"
+          ],
+          "severity": "error",
+          "target": 0.73
+        },
+        {
+          "actual": 0.16232421229614943,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "mouse_button_accuracy",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_button",
+            "button_accuracy"
+          ],
+          "severity": "error",
+          "target": 0.957
+        }
+      ]
+    },
+    {
+      "audit_error_count": 7,
+      "audit_path": "artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_target_audit.json",
+      "audit_status": "fail",
+      "button_gap_to_paper": 0.9338051578702506,
+      "candidate": "video_stack_luma96_full",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.7165666706133245,
+      "metrics_path": "artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_metrics.json",
+      "note": "Non-leaky video path with bounded FPR but near-zero paper metrics; not viable alone.",
+      "paper_keyboard_accuracy": 0.013433329386675543,
+      "paper_mouse_button_accuracy": 0.023194842129749264,
+      "paper_mouse_pearson_x": 0.022820504049940727,
+      "paper_mouse_pearson_y": 0.03592534713891377,
+      "paper_scale_ratio_x": 1641.9338906563914,
+      "paper_scale_ratio_y": 352.9773545461333,
+      "pearson_x_gap_to_paper": 0.7731794959500593,
+      "pearson_y_gap_to_paper": 0.7470746528610862,
+      "rows": 16698646,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.044285253896334184,
+      "strict_no_button_fpr": 0.07470061551080709,
+      "top_audit_findings": [
+        {
+          "code": "missing_checkpoint",
+          "path": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/checkpoint.pt",
+          "severity": "error"
+        },
+        {
+          "actual": 0.022820504049940727,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "pearson_x",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "pearson_x"
+          ],
+          "severity": "error",
+          "target": 0.796
+        },
+        {
+          "actual": 0.03592534713891377,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "pearson_y",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "pearson_y"
+          ],
+          "severity": "error",
+          "target": 0.783
+        },
+        {
+          "actual": 0.013433329386675543,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "keyboard_accuracy",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "keyboard",
+            "key_accuracy"
+          ],
+          "severity": "error",
+          "target": 0.73
+        },
+        {
+          "actual": 0.023194842129749264,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "mouse_button_accuracy",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_button",
+            "button_accuracy"
+          ],
+          "severity": "error",
+          "target": 0.957
+        },
+        {
+          "actual": 1641.9338906563914,
+          "code": "paper_target_not_met",
+          "direction": "lower",
+          "margin": 0.0,
+          "name": "scale_ratio_x",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "scale_ratio_x"
+          ],
+          "severity": "error",
+          "target": 1.23
+        }
+      ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": null,
+      "audit_status": null,
+      "button_gap_to_paper": 0.957,
+      "candidate": "timed_released_gidm_pilot",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.73,
+      "metrics_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_paper_metrics.json",
+      "note": "Released G-IDM timing-correct infrastructure pilot over 200 rows, not our IDM and not exact-split/full baseline.",
+      "paper_keyboard_accuracy": 0.0,
+      "paper_mouse_button_accuracy": 0.0,
+      "paper_mouse_pearson_x": -0.05154108396987713,
+      "paper_mouse_pearson_y": 0.0885668537224075,
+      "paper_scale_ratio_x": 2.2284946236559136,
+      "paper_scale_ratio_y": 1.7476415094339621,
+      "pearson_x_gap_to_paper": 0.8475410839698772,
+      "pearson_y_gap_to_paper": 0.6944331462775926,
+      "rows": 200,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.0,
+      "strict_no_button_fpr": 0.02040816326530612,
+      "top_audit_findings": []
+    },
+    {
+      "audit_error_count": 8,
+      "audit_path": "artifacts/idm/g005_idm_compact_luma_window5_residual_paper_target_audit.json",
+      "audit_status": "fail",
+      "button_gap_to_paper": 0.94668517701056,
+      "candidate": "compact_luma_window5_residual_full",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.7273495443901045,
+      "metrics_path": "artifacts/idm/g005_idm_compact_luma_window5_residual_paper_metrics.json",
+      "note": "Full-corpus compact visual residual misses all paper targets and FPR gate.",
+      "paper_keyboard_accuracy": 0.0026504556098955415,
+      "paper_mouse_button_accuracy": 0.010314822989440016,
+      "paper_mouse_pearson_x": 2.2590267094887574e-05,
+      "paper_mouse_pearson_y": -0.0007260909813175689,
+      "paper_scale_ratio_x": 1.8482618503562676,
+      "paper_scale_ratio_y": 1.0542327240301033,
+      "pearson_x_gap_to_paper": 0.7959774097329052,
+      "pearson_y_gap_to_paper": 0.7837260909813176,
+      "rows": 16698646,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.019495182858141873,
+      "strict_no_button_fpr": 0.12417762863806965,
+      "top_audit_findings": [
+        {
+          "actual": 1,
+          "code": "metadata_world_size_mismatch",
+          "expected": 4,
+          "severity": "error"
+        },
+        {
+          "actual": 2.2590267094887574e-05,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "pearson_x",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "pearson_x"
+          ],
+          "severity": "error",
+          "target": 0.796
+        },
+        {
+          "actual": -0.0007260909813175689,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "pearson_y",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "pearson_y"
+          ],
+          "severity": "error",
+          "target": 0.783
+        },
+        {
+          "actual": 0.0026504556098955415,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "keyboard_accuracy",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "keyboard",
+            "key_accuracy"
+          ],
+          "severity": "error",
+          "target": 0.73
+        },
+        {
+          "actual": 0.010314822989440016,
+          "code": "paper_target_not_met",
+          "direction": "higher",
+          "margin": 0.0,
+          "name": "mouse_button_accuracy",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_button",
+            "button_accuracy"
+          ],
+          "severity": "error",
+          "target": 0.957
+        },
+        {
+          "actual": 1.8482618503562676,
+          "code": "paper_target_not_met",
+          "direction": "lower",
+          "margin": 0.0,
+          "name": "scale_ratio_x",
+          "passed": false,
+          "path": [
+            "paper_compatible",
+            "mouse_move",
+            "scale_ratio_x"
+          ],
+          "severity": "error",
+          "target": 1.23
+        }
+      ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": null,
+      "audit_status": null,
+      "button_gap_to_paper": 0.9553198411486177,
+      "candidate": "raw112_offset2_long12_prefix",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.73,
+      "metrics_path": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_long12_prefix320000_train2shards_paper_metrics.json",
+      "note": "Rejected 2GPU prefix; longer training did not rescue raw112 offset2 architecture.",
+      "paper_keyboard_accuracy": 0.0,
+      "paper_mouse_button_accuracy": 0.0016801588513823125,
+      "paper_mouse_pearson_x": -0.006545639339665153,
+      "paper_mouse_pearson_y": 0.013522658049791992,
+      "paper_scale_ratio_x": 3.658035118915315,
+      "paper_scale_ratio_y": 3.227192123817225,
+      "pearson_x_gap_to_paper": 0.8025456393396652,
+      "pearson_y_gap_to_paper": 0.769477341950208,
+      "rows": 84512,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.0031206116398814166,
+      "strict_no_button_fpr": 0.047153187093637965,
+      "top_audit_findings": []
+    }
+  ],
+  "recommended_next_actions": [
+    {
+      "action": "closed_loop_context_repair",
+      "reason": "Best full-corpus metrics come from event-state-duration context, but validator correctly rejects it without closed-loop prediction-context evidence. Next branch should train/evaluate context using predicted prior state, not ground-truth target context, while preserving its FPR and mouse Pearson advantages."
+    },
+    {
+      "action": "endpoint_specialist_or_mixture",
+      "reason": "No single candidate approaches keyboard/button paper targets. Build endpoint-specialist architecture or non-leaky mixture with separate keyboard/button/mouse heads and a calibration objective; require prefix gate before 4xH200 full run."
+    },
+    {
+      "action": "longer_released_gidm_exact_split_baseline_when_quota_available",
+      "reason": "Timed G-IDM pilot now proves chunk infrastructure. Full/longer exact-split released G-IDM can become the second-stage baseline after paper-target attempts or a diagnostic teacher once 4GPU quota is available."
+    }
+  ],
+  "schema": "g005_idm_candidate_revalidation_summary.v1",
+  "status": "fail_no_candidate_meets_paper_targets"
+}
