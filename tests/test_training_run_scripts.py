@@ -246,6 +246,30 @@ def test_g005_event_state_duration_context_uses_distinct_context_and_per_axis_ga
     assert paper["paper_metrics"]["target_path"] == "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl"
 
 
+def test_g005_context_dropout_prefix_logs_gpu_and_wandb_sidecar() -> None:
+    text = _script("scripts/run_g005_idm_event_state_duration_context_dropout035_closed_loop_prefix.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k.yaml"
+        ).read_text()
+    )
+
+    materialize_idx = text.index("scripts/materialize_state_context_dropout_train.py")
+    wandb_idx = text.index("uv run --with wandb python scripts/watch_wandb_training.py")
+    train_idx = text.index("scripts/train_idm_streaming.py")
+    metrics_idx = text.index("scripts/build_g005_idm_paper_metrics.py")
+    assert materialize_idx < wandb_idx < train_idx < metrics_idx
+    assert 'ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"' in text
+    assert "g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_gpu_monitor.csv" in text
+    assert "g005_context_dropout_prefix_wandb_sidecar.pid" in text
+    assert "MLXP_RESERVATION_END_AT" in text
+    assert config["closed_loop_state_context"] is True
+    assert config["state_context_source"] == "predicted_closed_loop"
+    assert config["max_train_examples"] == 320000
+    assert config["max_target_examples"] == 320000
+
+
 def test_g005_event_state_duration_luma_window5_combines_nep_window_and_state_context() -> None:
     text = _script("scripts/run_g005_idm_event_state_duration_luma_window5_4xh200.sh")
     config = json.loads(
