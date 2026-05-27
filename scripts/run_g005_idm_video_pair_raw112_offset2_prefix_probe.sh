@@ -4,30 +4,36 @@ set -euo pipefail
 # Non-terminal diagnostic probe for the raw112 offset-2 video IDM candidate.
 # This intentionally supports 1/2 GPU prefix probing while the full G005 gate
 # still requires full-corpus 4xH200 evidence before checkpointing G005 complete.
+# Unlike the full run, this script trains on a small train-shard prefix so it does
+# not burn a GPU reservation on full train-cache materialization before any signal.
 
 export PATH="$HOME/.local/bin:$PATH"
 CONFIG="${CONFIG:-configs/model/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target.yaml}"
 MODEL_SLUG="${MODEL_SLUG:-g005_idm_video_pair_raw112_offset2_keysoftmax}"
-OUTPUT_DIR="${OUTPUT_DIR:-outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target}"
+BASE_OUTPUT_DIR="${BASE_OUTPUT_DIR:-outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target}"
 PREFIX_ROWS="${PREFIX_ROWS:-320000}"
+PREFIX_TRAIN_SHARDS="${PREFIX_TRAIN_SHARDS:-2}"
 PREFIX_SHARD="${PREFIX_SHARD:-outputs/data/d2e_full_corpus_shards_accel64/shard_00/target_all_eval.jsonl}"
-PREFIX_OUTPUT_DIR="${PREFIX_OUTPUT_DIR:-$OUTPUT_DIR/prefix${PREFIX_ROWS}}"
+PREFIX_OUTPUT_DIR="${PREFIX_OUTPUT_DIR:-$BASE_OUTPUT_DIR/prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards}"
 NPROC_PER_NODE="${NPROC_PER_NODE:-2}"
 EXPECTED_GPUS="${EXPECTED_GPUS:-$NPROC_PER_NODE}"
 EPOCHS_OVERRIDE="${EPOCHS_OVERRIDE:-2}"
-CHAIN_SUMMARY="${CHAIN_SUMMARY:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_probe_chain_summary.json}"
-CHAIN_LOG="${CHAIN_LOG:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_probe_chain.log}"
-TRAIN_RUN_SUMMARY="${TRAIN_RUN_SUMMARY:-artifacts/idm/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix_probe_run.json}"
-GPU_MONITOR="${GPU_MONITOR:-artifacts/idm/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix_probe_gpu_monitor.csv}"
-PREFIX_CONFIG="${PREFIX_CONFIG:-outputs/cluster/${MODEL_SLUG}_prefix${PREFIX_ROWS}_config.yaml}"
-PREFIX_PAPER_CONFIG="${PREFIX_PAPER_CONFIG:-outputs/cluster/${MODEL_SLUG}_prefix${PREFIX_ROWS}_paper_metrics.yaml}"
-PREDICTION_SUMMARY="${PREDICTION_SUMMARY:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_prediction_summary.json}"
-PAPER_METRICS="${PAPER_METRICS:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_paper_metrics.json}"
-PAPER_PROGRESS="${PAPER_PROGRESS:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_paper_metrics_progress.json}"
-CACHE_WANDB_STATUS="${CACHE_WANDB_STATUS:-artifacts/idm/${MODEL_SLUG}_train_cache_wandb_status.json}"
-CACHE_WANDB_LOG="${CACHE_WANDB_LOG:-artifacts/idm/${MODEL_SLUG}_train_cache_wandb.log}"
-TRAIN_WANDB_STATUS="${TRAIN_WANDB_STATUS:-artifacts/idm/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_train_wandb_status.json}"
-TRAIN_WANDB_LOG="${TRAIN_WANDB_LOG:-artifacts/idm/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_train_wandb.log}"
+CHAIN_SUMMARY="${CHAIN_SUMMARY:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_probe_chain_summary.json}"
+CHAIN_LOG="${CHAIN_LOG:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_probe_chain.log}"
+TRAIN_RUN_SUMMARY="${TRAIN_RUN_SUMMARY:-artifacts/idm/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_probe_run.json}"
+GPU_MONITOR="${GPU_MONITOR:-artifacts/idm/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_probe_gpu_monitor.csv}"
+PREFIX_CONFIG="${PREFIX_CONFIG:-outputs/cluster/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_config.yaml}"
+PREFIX_PAPER_CONFIG="${PREFIX_PAPER_CONFIG:-outputs/cluster/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_paper_metrics.yaml}"
+PREFIX_CACHE_SUMMARY="${PREFIX_CACHE_SUMMARY:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_cache_precompute_summary.json}"
+TRAIN_PRECOMPUTE_RUN="${TRAIN_PRECOMPUTE_RUN:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_train_precompute_run.json}"
+TARGET_PRECOMPUTE_RUN="${TARGET_PRECOMPUTE_RUN:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_target_precompute_run.json}"
+PREDICTION_SUMMARY="${PREDICTION_SUMMARY:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_prediction_summary.json}"
+PAPER_METRICS="${PAPER_METRICS:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_paper_metrics.json}"
+PAPER_PROGRESS="${PAPER_PROGRESS:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_paper_metrics_progress.json}"
+CACHE_WANDB_STATUS="${CACHE_WANDB_STATUS:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_cache_wandb_status.json}"
+CACHE_WANDB_LOG="${CACHE_WANDB_LOG:-artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_cache_wandb.log}"
+TRAIN_WANDB_STATUS="${TRAIN_WANDB_STATUS:-artifacts/idm/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_train_wandb_status.json}"
+TRAIN_WANDB_LOG="${TRAIN_WANDB_LOG:-artifacts/idm/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_train_wandb.log}"
 WANDB_ENV_FILE="${WANDB_ENV_FILE:-.env}"
 ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"
 MLXP_RESERVATION_ID="${MLXP_RESERVATION_ID:-}"
@@ -39,7 +45,7 @@ MLXP_RESERVATION_POD_NAME="${MLXP_RESERVATION_POD_NAME:-}"
 MLXP_RESERVATION_CHECKED_AT="${MLXP_RESERVATION_CHECKED_AT:-$(date -Iseconds)}"
 QUOTA_REQUEST_ID="${QUOTA_REQUEST_ID:-}"
 
-mkdir -p artifacts/idm artifacts/eval outputs/cluster "$PREFIX_OUTPUT_DIR"
+mkdir -p artifacts/idm artifacts/eval outputs/cluster "$PREFIX_OUTPUT_DIR" "$(dirname "$CHAIN_SUMMARY")"
 CACHE_SIDECAR_PID=""
 TRAIN_SIDECAR_PID=""
 
@@ -56,6 +62,87 @@ trap cleanup_sidecars EXIT
 wandb_configured() {
   [[ -n "${WANDB_PROJECT:-}" ]] && return 0
   [[ -f "$WANDB_ENV_FILE" ]] && grep -Eq '^[[:space:]]*WANDB_PROJECT=' "$WANDB_ENV_FILE"
+}
+
+build_prefix_config() {
+  uv run --no-sync python - <<PY
+from __future__ import annotations
+import glob, json
+from pathlib import Path
+
+base = json.loads(Path("$CONFIG").read_text())
+train_shards = int("$PREFIX_TRAIN_SHARDS")
+base_output = Path("$BASE_OUTPUT_DIR")
+cache_dir = Path(str(base.get("video_cache_dir") or (base_output / "video_cache")))
+
+# Prefer already materialized train-cache source paths so an interrupted full
+# precompute can be salvaged as a quick diagnostic instead of discarded.
+existing_sources: list[str] = []
+for manifest_path in sorted((cache_dir / "train").glob("*.manifest.json")):
+    try:
+        manifest = json.loads(manifest_path.read_text())
+    except Exception:
+        continue
+    source = manifest.get("source_path")
+    chunks = manifest.get("chunks") or []
+    if source and chunks and all(Path(row.get("path", "")).exists() for row in chunks):
+        existing_sources.append(str(source))
+existing_sources = sorted(dict.fromkeys(existing_sources))
+if len(existing_sources) >= train_shards:
+    train_paths = existing_sources[:train_shards]
+    train_selection_policy = "existing_completed_cache_manifests"
+else:
+    candidates: list[str] = []
+    if base.get("train_record_paths"):
+        candidates.extend(str(p) for p in base["train_record_paths"])
+    if base.get("train_records_glob"):
+        candidates.extend(sorted(glob.glob(str(base["train_records_glob"]))))
+    if not candidates and base.get("train_records"):
+        candidates.append(str(base["train_records"]))
+    train_paths = sorted(dict.fromkeys(candidates))[:train_shards]
+    train_selection_policy = "first_train_record_paths"
+if len(train_paths) < train_shards:
+    raise SystemExit(f"only selected {len(train_paths)} train path(s), need {train_shards}")
+
+cfg = dict(base)
+cfg["source_config_path"] = "$CONFIG"
+cfg.pop("train_records", None)
+cfg.pop("train_records_glob", None)
+cfg["train_record_paths"] = train_paths
+cfg["target_records"] = "$PREFIX_SHARD"
+cfg.pop("target_records_glob", None)
+cfg["output_dir"] = "$PREFIX_OUTPUT_DIR"
+cfg["summary_out"] = "artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_summary.json"
+cfg["cache_summary_out"] = "$PREFIX_CACHE_SUMMARY"
+cfg["video_cache_dir"] = str(cache_dir)
+cfg["max_target_examples"] = int("$PREFIX_ROWS")
+cfg["probe_claim_boundary"] = "Prefix diagnostic only; not full-corpus G005 completion evidence and not a 4xH200 scaling claim."
+cfg["runtime_overrides"] = {
+    "prefix_train_shards": train_shards,
+    "train_selection_policy": train_selection_policy,
+    "target_records": "$PREFIX_SHARD",
+    "max_target_examples": int("$PREFIX_ROWS"),
+    "output_dir": "$PREFIX_OUTPUT_DIR",
+    "probe": "prefix",
+}
+Path("$PREFIX_CONFIG").parent.mkdir(parents=True, exist_ok=True)
+Path("$PREFIX_CONFIG").write_text(json.dumps(cfg, indent=2, sort_keys=True)+"\n")
+
+paper = json.loads(Path("configs/eval/g005_idm_video_pair_raw112_offset2_keysoftmax_paper_target.yaml").read_text())
+paper["output_path"] = "artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_paper_target_audit.json"
+paper["paths"]["paper_metrics"] = "$PAPER_METRICS"
+paper["paths"]["run_summary"] = "$TRAIN_RUN_SUMMARY"
+paper["paths"]["gpu_monitor"] = "$GPU_MONITOR"
+paper["paper_metrics"]["output_path"] = "$PAPER_METRICS"
+paper["paper_metrics"]["progress_output_path"] = "$PAPER_PROGRESS"
+paper["paper_metrics"]["predictions_path"] = "$PREFIX_OUTPUT_DIR/predictions.jsonl"
+paper["paper_metrics"]["target_path"] = "$PREFIX_SHARD"
+paper["paper_metrics"]["max_rows"] = int("$PREFIX_ROWS")
+paper["claim_boundary"] = "Prefix diagnostic only; not full-corpus G005 completion evidence."
+Path("$PREFIX_PAPER_CONFIG").parent.mkdir(parents=True, exist_ok=True)
+Path("$PREFIX_PAPER_CONFIG").write_text(json.dumps(paper, indent=2, sort_keys=True)+"\n")
+print(json.dumps({"prefix_config":"$PREFIX_CONFIG", "train_paths":train_paths, "train_selection_policy":train_selection_policy}, indent=2))
+PY
 }
 
 write_summary() {
@@ -76,6 +163,7 @@ def git(args):
     except Exception: return None
 paper = load("$PAPER_METRICS") or {}
 allm = paper.get("groups", {}).get("all", {}) if isinstance(paper.get("groups"), dict) else {}
+prefix_cfg = load("$PREFIX_CONFIG") or {}
 payload={
   "schema":"g005_offset2_prefix_probe_chain_summary.v1",
   "status":status,
@@ -83,11 +171,14 @@ payload={
   "git_head":git(["rev-parse","HEAD"]),
   "git_status_short":git(["status","--short"]),
   "model_slug":"$MODEL_SLUG",
-  "config":"$CONFIG",
-  "prefix_rows":int("$PREFIX_ROWS"),
-  "prefix_shard":"$PREFIX_SHARD",
+  "source_config":"$CONFIG",
   "prefix_config":"$PREFIX_CONFIG",
   "prefix_paper_config":"$PREFIX_PAPER_CONFIG",
+  "prefix_rows":int("$PREFIX_ROWS"),
+  "prefix_train_shards":int("$PREFIX_TRAIN_SHARDS"),
+  "prefix_train_paths":prefix_cfg.get("train_record_paths"),
+  "prefix_shard":"$PREFIX_SHARD",
+  "prefix_output_dir":"$PREFIX_OUTPUT_DIR",
   "nproc_per_node":int("$NPROC_PER_NODE"),
   "expected_gpus":int("$EXPECTED_GPUS"),
   "epochs_override":int("$EPOCHS_OVERRIDE"),
@@ -103,8 +194,8 @@ payload={
   },
   "quota_request_id":"$QUOTA_REQUEST_ID" or None,
   "claim_boundary":"Prefix diagnostic only; not full-corpus G005 completion evidence and not a 4xH200 scaling claim.",
-  "train_cache_precompute_run":load("artifacts/idm/${MODEL_SLUG}_train_precompute_run.json"),
-  "target_prefix_cache_precompute_run":load("artifacts/idm/${MODEL_SLUG}_target_prefix_precompute_run.json"),
+  "train_cache_precompute_run":load("$TRAIN_PRECOMPUTE_RUN"),
+  "target_prefix_cache_precompute_run":load("$TARGET_PRECOMPUTE_RUN"),
   "train_run":load("$TRAIN_RUN_SUMMARY"),
   "prediction":load("$PREDICTION_SUMMARY"),
   "paper_metrics_payload":paper,
@@ -114,7 +205,7 @@ payload={
   "train_wandb_status":load("$TRAIN_WANDB_STATUS"),
 }
 Path("$CHAIN_SUMMARY").write_text(json.dumps(payload, indent=2, sort_keys=True)+"\n")
-print(json.dumps({k: payload.get(k) for k in ["status","git_head","prefix_rows","paper_all","strict_local"]}, indent=2, sort_keys=True))
+print(json.dumps({k: payload.get(k) for k in ["status","git_head","prefix_rows","prefix_train_shards","paper_all","strict_local"]}, indent=2, sort_keys=True))
 PY
 }
 
@@ -123,17 +214,17 @@ start_cache_wandb() {
   wandb_configured || return 0
   nohup env WANDB_RESUME=allow uv run --no-sync --with wandb python scripts/watch_wandb_video_cache.py \
     --env-file "$WANDB_ENV_FILE" \
-    --cache-dir "$OUTPUT_DIR/video_cache" \
-    --summary "artifacts/idm/${MODEL_SLUG}_cache_precompute_summary.json" \
-    --run-summary "artifacts/idm/${MODEL_SLUG}_train_precompute_run.json" \
+    --cache-dir "$BASE_OUTPUT_DIR/video_cache" \
+    --summary "$PREFIX_CACHE_SUMMARY" \
+    --run-summary "$TRAIN_PRECOMPUTE_RUN" \
     --output "$CACHE_WANDB_STATUS" \
-    --pid-file "outputs/cluster/${MODEL_SLUG}_train_cache_wandb.pid" \
-    --run-name "${MODEL_SLUG}-train-cache" \
+    --pid-file "outputs/cluster/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_cache_wandb.pid" \
+    --run-name "${MODEL_SLUG}-prefix${PREFIX_ROWS}-train${PREFIX_TRAIN_SHARDS}shards-cache" \
     --group g005-idm-paper-target \
     --job-type video-cache \
     --tags g005,idm,d2e,raw112,offset2,cache,prefix-probe \
     --poll-seconds 60 \
-    --finish-manifests 64 \
+    --finish-manifests "$PREFIX_TRAIN_SHARDS" \
     >"$CACHE_WANDB_LOG" 2>&1 &
   CACHE_SIDECAR_PID="$!"
 }
@@ -143,15 +234,15 @@ start_train_wandb() {
   wandb_configured || return 0
   nohup env WANDB_RESUME=allow uv run --no-sync --with wandb python scripts/watch_wandb_training.py \
     --env-file "$WANDB_ENV_FILE" \
-    --train-history "$OUTPUT_DIR/train_history.json" \
-    --rank-progress-dir "$OUTPUT_DIR/rank_progress" \
+    --train-history "$PREFIX_OUTPUT_DIR/train_history.json" \
+    --rank-progress-dir "$PREFIX_OUTPUT_DIR/rank_progress" \
     --gpu-monitor "$GPU_MONITOR" \
     --run-summary "$TRAIN_RUN_SUMMARY" \
-    --checkpoint "$OUTPUT_DIR/checkpoint.pt" \
-    --metadata "$OUTPUT_DIR/checkpoint_metadata.json" \
+    --checkpoint "$PREFIX_OUTPUT_DIR/checkpoint.pt" \
+    --metadata "$PREFIX_OUTPUT_DIR/checkpoint_metadata.json" \
     --output "$TRAIN_WANDB_STATUS" \
-    --pid-file "outputs/cluster/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_train_wandb.pid" \
-    --run-name "${MODEL_SLUG}-${EXPECTED_GPUS}gpu-train" \
+    --pid-file "outputs/cluster/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_train_wandb.pid" \
+    --run-name "${MODEL_SLUG}-${EXPECTED_GPUS}gpu-prefix${PREFIX_ROWS}-train${PREFIX_TRAIN_SHARDS}shards" \
     --group g005-idm-paper-target \
     --job-type train-sidecar \
     --tags g005,idm,d2e,raw112,offset2,prefix-probe \
@@ -165,25 +256,27 @@ start_train_wandb() {
 (
   echo "chain_started_at=$(date -Iseconds)"
   echo "git_head=$(git rev-parse HEAD)"
-  echo "config=$CONFIG"
+  echo "source_config=$CONFIG"
+  build_prefix_config
   write_summary running_train_cache
   start_cache_wandb
-  CONFIG="$CONFIG" MODEL_SLUG="$MODEL_SLUG" PRECOMPUTE_SPLITS=train \
-    LOG_PATH="artifacts/idm/${MODEL_SLUG}_train_precompute.log" \
-    RUN_SUMMARY="artifacts/idm/${MODEL_SLUG}_train_precompute_run.json" \
-    PID_FILE="outputs/cluster/${MODEL_SLUG}_train_precompute.pid" \
+  CONFIG="$PREFIX_CONFIG" MODEL_SLUG="${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards" PRECOMPUTE_SPLITS=train \
+    LOG_PATH="artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_train_precompute.log" \
+    RUN_SUMMARY="$TRAIN_PRECOMPUTE_RUN" \
+    PID_FILE="outputs/cluster/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_train_precompute.pid" \
     scripts/run_g005_idm_video_pair_raw112_offset2_precompute.sh
 
   write_summary running_training
   start_train_wandb
-  CONFIG="$CONFIG" MODEL_SLUG="$MODEL_SLUG" \
+  CONFIG="$PREFIX_CONFIG" MODEL_SLUG="${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards" \
     NPROC_PER_NODE="$NPROC_PER_NODE" EXPECTED_GPUS="$EXPECTED_GPUS" EPOCHS_OVERRIDE="$EPOCHS_OVERRIDE" \
     SKIP_PREDICTION=1 BUILD_SPLIT_STATS=0 BUILD_PAPER_METRICS=0 VALIDATE_G005=0 \
-    LOG_PATH="artifacts/idm/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix_probe.log" \
+    LOG_PATH="artifacts/idm/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_probe.log" \
     RUN_SUMMARY="$TRAIN_RUN_SUMMARY" \
     GPU_MONITOR_LOG="$GPU_MONITOR" \
-    PID_FILE="outputs/cluster/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix_probe.pid" \
-    GPU_SMOKE_REPORT="outputs/cluster/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_smoke.json" \
+    PID_FILE="outputs/cluster/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_probe.pid" \
+    GPU_SMOKE_REPORT="outputs/cluster/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_smoke.json" \
+    RUNTIME_CONFIG="outputs/cluster/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_train_runtime.yaml" \
     MLXP_RESERVATION_ID="$MLXP_RESERVATION_ID" \
     MLXP_RESERVATION_START_AT="$MLXP_RESERVATION_START_AT" \
     MLXP_RESERVATION_END_AT="$MLXP_RESERVATION_END_AT" \
@@ -194,40 +287,16 @@ start_train_wandb() {
     scripts/run_g005_idm_video_pair_raw112_offset2_4xh200.sh
 
   write_summary running_target_prefix_cache
-  uv run --no-sync python - <<PY
-from __future__ import annotations
-import json
-from pathlib import Path
-cfg=json.loads(Path("$CONFIG").read_text())
-cfg["target_records"]="$PREFIX_SHARD"
-cfg.pop("target_records_glob", None)
-cfg["max_target_examples"]=int("$PREFIX_ROWS")
-cfg["source_config_path"]="$CONFIG"
-cfg["runtime_overrides"]={"target_records":"$PREFIX_SHARD", "max_target_examples":int("$PREFIX_ROWS"), "probe":"prefix"}
-Path("$PREFIX_CONFIG").write_text(json.dumps(cfg, indent=2, sort_keys=True)+"\n")
-paper=json.loads(Path("configs/eval/g005_idm_video_pair_raw112_offset2_keysoftmax_paper_target.yaml").read_text())
-paper["output_path"]="artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_paper_target_audit.json"
-paper["paths"]["paper_metrics"]="$PAPER_METRICS"
-paper["paths"]["run_summary"]="$TRAIN_RUN_SUMMARY"
-paper["paths"]["gpu_monitor"]="$GPU_MONITOR"
-paper["paper_metrics"]["output_path"]="$PAPER_METRICS"
-paper["paper_metrics"]["progress_output_path"]="$PAPER_PROGRESS"
-paper["paper_metrics"]["predictions_path"]="$PREFIX_OUTPUT_DIR/predictions.jsonl"
-paper["paper_metrics"]["target_path"]="$PREFIX_SHARD"
-paper["paper_metrics"]["max_rows"]=int("$PREFIX_ROWS")
-paper["claim_boundary"]="Prefix diagnostic only; not full-corpus G005 completion evidence."
-Path("$PREFIX_PAPER_CONFIG").write_text(json.dumps(paper, indent=2, sort_keys=True)+"\n")
-PY
-  CONFIG="$PREFIX_CONFIG" MODEL_SLUG="${MODEL_SLUG}_target_prefix" PRECOMPUTE_SPLITS=target \
-    LOG_PATH="artifacts/idm/${MODEL_SLUG}_target_prefix_precompute.log" \
-    RUN_SUMMARY="artifacts/idm/${MODEL_SLUG}_target_prefix_precompute_run.json" \
-    PID_FILE="outputs/cluster/${MODEL_SLUG}_target_prefix_precompute.pid" \
+  CONFIG="$PREFIX_CONFIG" MODEL_SLUG="${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_target" PRECOMPUTE_SPLITS=target \
+    LOG_PATH="artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_target_precompute.log" \
+    RUN_SUMMARY="$TARGET_PRECOMPUTE_RUN" \
+    PID_FILE="outputs/cluster/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_target_precompute.pid" \
     scripts/run_g005_idm_video_pair_raw112_offset2_precompute.sh
 
   write_summary running_prefix_prediction
   uv run --no-sync python scripts/predict_idm_video.py \
     --config "$PREFIX_CONFIG" \
-    --checkpoint-path "$OUTPUT_DIR/checkpoint.pt" \
+    --checkpoint-path "$PREFIX_OUTPUT_DIR/checkpoint.pt" \
     --output-dir "$PREFIX_OUTPUT_DIR" \
     --max-target-examples "$PREFIX_ROWS" \
     --prediction-summary-out "$PREDICTION_SUMMARY" \

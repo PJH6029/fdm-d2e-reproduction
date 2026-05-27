@@ -168,6 +168,9 @@ def test_g005_raw112_offset2_candidate_uses_nonleaky_nep100_video_paths() -> Non
     assert "scripts/recover_g005_idm_video_stack_luma96_offsets012_from_checkpoint.sh" in recovery
     assert "Prefix diagnostic only; not full-corpus G005 completion evidence" in prefix_probe
     assert 'PREFIX_ROWS="${PREFIX_ROWS:-320000}"' in prefix_probe
+    assert 'PREFIX_TRAIN_SHARDS="${PREFIX_TRAIN_SHARDS:-2}"' in prefix_probe
+    assert "existing_completed_cache_manifests" in prefix_probe
+    assert '--finish-manifests "$PREFIX_TRAIN_SHARDS"' in prefix_probe
     assert "scripts/run_g005_idm_video_pair_raw112_offset2_precompute.sh" in prefix_probe
     assert "scripts/run_g005_idm_video_pair_raw112_offset2_4xh200.sh" in prefix_probe
     assert "scripts/predict_idm_video.py" in prefix_probe
