@@ -1,0 +1,80 @@
+{
+  "bin_ms": 50,
+  "chunk_context_seconds": 0.0,
+  "chunk_manifest_output": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_manifest.json",
+  "chunk_manifest_written": true,
+  "chunk_paths_by_key": {
+    "d2e_480p:Apex_Legends/0805_01": [
+      "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001171000_dur000005000.mcap",
+      "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000001176000_dur000005000.mcap"
+    ]
+  },
+  "chunk_seconds": 5.0,
+  "chunked_recording_count": 1,
+  "claim_boundary": "Released G-IDM inference execution evidence only; metric claims require conversion plus paper-metric artifacts.",
+  "completed_chunks": 2,
+  "completed_recordings": 1,
+  "cuda_devices": [
+    "0",
+    "1"
+  ],
+  "d2e_repo": "outputs/external/D2E",
+  "dry_run": false,
+  "failed_chunks": 0,
+  "failed_recordings": 0,
+  "inference_script": "outputs/external/D2E/inference_desktop_minimal.py",
+  "manifest_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_timing_enriched_manifest.json",
+  "max_chunks": 2,
+  "max_context_length": 2048,
+  "max_duration": null,
+  "max_recordings": null,
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "planned_chunks": 2,
+  "planned_recordings": 1,
+  "recording_keys": [],
+  "resume": false,
+  "rows": [
+    {
+      "chunk_index": 1,
+      "chunked": true,
+      "cuda_device": "1",
+      "duration_seconds": 5.0,
+      "elapsed_seconds": 60.436317682266235,
+      "exit_code": 0,
+      "log_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_logs/00000_0001_d2e_480p_Apex_Legends_0805_01.log",
+      "output_exists": true,
+      "output_sha256": "eb58f12e41992c199580964f9470d5d402d7042203cb29da1179aad10b56bb13",
+      "output_size": 15062,
+      "prediction_mcap_path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000001176000_dur000005000.mcap",
+      "resolved_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-25646d5/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000001176000_dur000005000.mcap",
+      "start_time_seconds": 1176.0,
+      "success": true,
+      "temp_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-25646d5/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000001176000_dur000005000.mcap.tmp.313.1",
+      "timestamp_offset_seconds": 1178.4170986,
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv"
+    },
+    {
+      "chunk_index": 0,
+      "chunked": true,
+      "cuda_device": "0",
+      "duration_seconds": 5.0,
+      "elapsed_seconds": 64.6058988571167,
+      "exit_code": 0,
+      "log_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_logs/00000_0000_d2e_480p_Apex_Legends_0805_01.log",
+      "output_exists": true,
+      "output_sha256": "beadd3f7ae39815aa36a921e22d88884843eb157c305a6eeb5f65f74700e5ef8",
+      "output_size": 16343,
+      "prediction_mcap_path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001171000_dur000005000.mcap",
+      "resolved_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-25646d5/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001171000_dur000005000.mcap",
+      "start_time_seconds": 1171.0,
+      "success": true,
+      "temp_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-25646d5/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001171000_dur000005000.mcap.tmp.313.0",
+      "timestamp_offset_seconds": 1173.4170986,
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv"
+    }
+  ],
+  "schema": "gidm_manifest_inference_run.v1",
+  "workers": 2
+}

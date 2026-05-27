@@ -114,3 +114,29 @@ The successful two-chunk G-IDM pilot used decode-summary count manifest rows wit
 Added target timing enrichment for G-IDM manifests from either by-recording JSONL roots or an extracted target-record JSONL. Local pilot artifact `artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_timing_enrichment_summary.json` enriches `d2e_480p:Apex_Legends/0805_01` to `bin_index_min=23420`, `timestamp_min_ns=1173417098600`; dry-run `artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_timed_chunk_dry_run_summary.json` now schedules the first chunk at `start_time_seconds=1171.0` and `timestamp_offset_seconds=1173.4170986`.
 
 Next live pilot should rerun chunked G-IDM on this timing-enriched manifest; previous two MCAP chunks remain useful only as executable-path evidence.
+
+### Timing-correct chunked G-IDM pilot and covered-window metrics
+
+Date: 2026-05-28 KST.
+
+After the local target-timing enrichment, a fresh 2GPU production pilot used reservation `rsv-jeonghunpark-20260527-ec840b` on node 4 GPUs `[1,2]` and was cancelled after evidence collection. The pod checkout was reset to `fedd123` and used the timing-enriched Apex temporal target row (`bin_index_min=23420`, `timestamp_min_ns=1173417098600`).
+
+Code/evidence hardening before the run:
+
+- `write_chunked_gidm_manifest` now records explicit `prediction_mcap_chunks` with `start_time_seconds`, `timestamp_offset_seconds`, and `[timestamp_start_ns, timestamp_end_ns_exclusive)`.
+- Target extraction and MCAP conversion now support `filter_to_prediction_windows` / `filter_targets_to_prediction_windows` so bounded pilots evaluate only rows covered by predicted chunks instead of silently treating unpredicted target rows as empty predictions.
+- Dry-run evidence: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_window_dry_run_summary.json` and `artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_window_manifest.json` plan chunks at `start000001171000` and `start000001176000` with timestamp offsets `1173.4170986` and `1178.4170986`.
+
+Live timed pilot evidence:
+
+- Wrapper: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_wrapper_summary.json` — `status=pass`, `completed_chunks=2`, `failed_chunks=0`.
+- Inference summary: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_inference_summary.json` — both chunks succeeded; elapsed seconds were about 60.4s and 64.6s.
+- Chunk outputs: `outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001171000_dur000005000.mcap` and `chunk_0001_start000001176000_dur000005000.mcap`.
+- Target-window extraction/conversion: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_target_extraction_summary.json` and `artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_conversion_summary.json` — 200 covered target rows and 200 prediction rows.
+- Metrics: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_paper_metrics.json` — `rows_seen=200`, status pass; metrics remain poor (`keyboard=0`, `button=0`, mouse Pearson X/Y `-0.0515/0.0886`) and are diagnostic only.
+- W&B sidecar: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_wandb_sidecar_status.json` (`0mt0e772`). The sidecar counted older pilot MCAP files in the same predicted directory, so use the scoped artifact summary rather than sidecar final_mcap_count for chunk-completion claims.
+- Scoped hash summary: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_artifact_summary.json` — `status=pass`, `completed_chunk_count=2`, `planned_chunk_count=2`, `target_rows=200`, `prediction_rows=200`, `metric_rows=200`.
+
+Claim boundary: this proves timing-correct released G-IDM chunk scheduling, execution, target-window filtering, conversion, and W&B logging. It is not an exact-split baseline result, does not show our IDM beats paper metrics, and does not complete G005/G006.
+
+Follow-up hardening in the same session patched the W&B sidecar to count only manifest-planned chunk paths for future runs, because this run shared a predicted directory with older pilot MCAPs. Next step: proceed to a longer exact-split G-IDM shard once a 4GPU quota/reservation is available; in parallel, keep G005 IDM architecture work focused on beating paper targets rather than promoting these poor released-GIDM pilot metrics.

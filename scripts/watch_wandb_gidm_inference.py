@@ -93,21 +93,44 @@ def _latest_gpu_rows(path: Path) -> list[dict[str, Any]]:
     return parsed
 
 
-def _mcap_status(predicted_dir: Path) -> dict[str, Any]:
-    final_paths = [Path(path) for path in glob.glob(str(predicted_dir / "**" / "*.mcap"), recursive=True)]
-    temp_paths = [Path(path) for path in glob.glob(str(predicted_dir / "**" / "*.tmp.*"), recursive=True)]
+def _mcap_status(predicted_dir: Path, planned_paths: list[Path] | None = None) -> dict[str, Any]:
+    if planned_paths:
+        final_paths = planned_paths
+        temp_paths = []
+        for path in planned_paths:
+            temp_paths.extend(path.parent.glob(path.name + ".tmp.*"))
+    else:
+        final_paths = [Path(path) for path in glob.glob(str(predicted_dir / "**" / "*.mcap"), recursive=True)]
+        temp_paths = [Path(path) for path in glob.glob(str(predicted_dir / "**" / "*.tmp.*"), recursive=True)]
     nonzero_final = [path for path in final_paths if path.exists() and path.stat().st_size > 0]
     zero_final = [path for path in final_paths if path.exists() and path.stat().st_size == 0]
     temp_bytes = sum(path.stat().st_size for path in temp_paths if path.exists())
     final_bytes = sum(path.stat().st_size for path in nonzero_final if path.exists())
     return {
         "predicted_dir": str(predicted_dir),
+        "planned_path_scoped": bool(planned_paths),
         "final_mcap_count": len(nonzero_final),
         "zero_final_mcap_count": len(zero_final),
         "temp_output_count": len(temp_paths),
         "final_mcap_bytes": final_bytes,
         "temp_output_bytes": temp_bytes,
     }
+
+
+def _planned_prediction_paths(manifest: dict[str, Any]) -> list[Path]:
+    rows = manifest.get("recordings", [])
+    if not isinstance(rows, list):
+        return []
+    paths: list[Path] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        chunk_paths = row.get("prediction_mcap_paths")
+        if isinstance(chunk_paths, list) and chunk_paths:
+            paths.extend(Path(str(path)) for path in chunk_paths)
+        elif row.get("prediction_mcap_path"):
+            paths.append(Path(str(row["prediction_mcap_path"])))
+    return paths
 
 
 def _planned_prediction_outputs(manifest: dict[str, Any]) -> dict[str, int | bool | None]:
@@ -173,6 +196,7 @@ def main() -> int:
 
     manifest = _read_json(Path(args.manifest)) or {}
     planned = _planned_prediction_outputs(manifest)
+    planned_paths = _planned_prediction_paths(manifest)
     planned_recordings = planned["planned_recordings"]
     planned_outputs = planned["planned_outputs"]
     manifest_chunked = planned["chunked"]
@@ -205,7 +229,7 @@ def main() -> int:
     try:
         while True:
             loop_index += 1
-            mcap = _mcap_status(Path(args.predicted_dir))
+            mcap = _mcap_status(Path(args.predicted_dir), planned_paths=planned_paths)
             gpu_rows = _latest_gpu_rows(Path(args.gpu_monitor))
             pipeline_summary = _read_json(Path(args.pipeline_summary))
             inference_summary = _read_json(Path(args.inference_summary))

@@ -1,0 +1,41 @@
+{
+  "schema": "gidm_target_records_extraction.v1",
+  "status": "pass",
+  "error_count": 0,
+  "manifest_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_retry_manifest.json",
+  "by_recording_roots": [
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_*/by_recording"
+  ],
+  "expanded_root_count": 64,
+  "output_path": "outputs/gidm_exact_split/g006_gidm_chunked_pilot_2gpu_timed_retry/targets.jsonl",
+  "output_sha256": "36d8b8fcb14e98428cc778e6e8d1e77868441139883742b3a5f8bf530c72a22e",
+  "recording_count": 1,
+  "rows_written": 200,
+  "split_tags": [
+    "heldout_game",
+    "heldout_recording",
+    "temporal"
+  ],
+  "only_existing_predictions": true,
+  "filter_to_prediction_windows": true,
+  "bin_ms": 50,
+  "recording_keys": [],
+  "per_recording": [
+    {
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "status": "pass",
+      "filter_to_prediction_windows": true,
+      "prediction_window_count": 2,
+      "records_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_0/by_recording/d2e_480p/Apex_Legends/0805_01/all_records.jsonl",
+      "expected_rows": null,
+      "manifest_row_count": 5855,
+      "rows_written": 200,
+      "split_tags": [
+        "temporal"
+      ]
+    }
+  ],
+  "findings": [],
+  "manifest_fingerprint": "11f6700b5afe645095361cee43ba0662982c619346358207e9029e3682c13e41",
+  "claim_boundary": "This extracts exact target rows for released G-IDM conversion/metric evaluation; it is not a model-quality claim by itself."
+}
