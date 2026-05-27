@@ -334,6 +334,41 @@ def test_g005_endpoint_mixture_prefix_wrapper_logs_json_artifacts() -> None:
     assert paper["max_rows"] == 320000
     assert paper["empty_bins_as_correct"] is False
 
+
+def test_g005_luma_window_nep100_prefix_wrapper_materializes_future_offsets_and_train_extra() -> None:
+    text = _script("scripts/run_g005_idm_event_state_duration_luma_window_nep100_prefix.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_streaming_d2e_full_event_state_duration_luma_window_nep100_prefix320k.yaml"
+        ).read_text()
+    )
+    paper = json.loads(
+        (
+            ROOT
+            / "configs/eval/g005_idm_event_state_duration_luma_window_nep100_prefix320k_paper_metrics.yaml"
+        ).read_text()
+    )
+
+    materialize_idx = text.index("scripts/materialize_luma_window_prefix.py")
+    wandb_idx = text.index("uv run --with wandb python scripts/watch_wandb_training.py")
+    train_idx = text.index("uv run --extra train torchrun")
+    metrics_idx = text.index("uv run --extra train python scripts/build_g005_idm_paper_metrics.py")
+    assert materialize_idx < wandb_idx < train_idx < metrics_idx
+    assert 'WINDOW_OFFSETS="${WINDOW_OFFSETS:-0,2,4,6,8}"' in text
+    assert "--offsets \"$WINDOW_OFFSETS\"" in text
+    assert "outputs/data/d2e_event_state_duration_luma_window_nep100_prefix320k" in text
+    assert "g005-luma-window-nep100-prefix320k" in text
+    assert config["feature_mode"] == "summary_compact_luma16_window5_time_state_duration_prior_action"
+    assert config["model_arch"] == "luma_temporal_conv"
+    assert config["max_train_examples"] == 320000
+    assert config["max_target_examples"] == 320000
+    assert config["prediction_cuda_devices"] == [0]
+    assert paper["max_rows"] == 320000
+    assert paper["empty_bins_as_correct"] is False
+    assert paper["target_paths"] == ["outputs/data/d2e_event_state_duration_luma_window_nep100_prefix320k/target_all_eval.jsonl"]
+
+
 def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
     text = _script("scripts/run_g004_d2e_full_fdm_4xh200.sh")
     assert 'PID_FILE="${PID_FILE:-outputs/cluster/g004_d2e_full_fdm_4xh200.pid}"' in text

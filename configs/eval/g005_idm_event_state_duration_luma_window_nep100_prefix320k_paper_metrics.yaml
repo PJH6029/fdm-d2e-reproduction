@@ -1,0 +1,13 @@
+{
+  "schema": "paper_idm_metrics_config.v1",
+  "model_name": "streaming_idm_d2e_full_event_state_duration_luma_window_nep100_prefix320k",
+  "prediction_paths": ["outputs/idm_streaming_d2e_full_event_state_duration_luma_window_nep100_prefix320k/predictions.jsonl"],
+  "target_paths": ["outputs/data/d2e_event_state_duration_luma_window_nep100_prefix320k/target_all_eval.jsonl"],
+  "output_path": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_paper_metrics.json",
+  "progress_output_path": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_paper_metrics_progress.json",
+  "max_rows": 320000,
+  "progress_rows": 100000,
+  "empty_bins_as_correct": false,
+  "split_tags": ["temporal", "heldout_recording", "heldout_game"],
+  "claim_boundary": "NEP-style future-offset luma-window prefix diagnostic only; not G005 completion evidence."
+}
