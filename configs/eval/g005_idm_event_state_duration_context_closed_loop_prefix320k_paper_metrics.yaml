@@ -6,7 +6,12 @@
   "progress_rows": 100000,
   "predictions_path": "outputs/idm_streaming_d2e_full_event_state_duration_context_closed_loop_prefix320k/predictions.jsonl",
   "target_path": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl",
-  "split_tags": ["temporal", "heldout_recording", "heldout_game"],
+  "split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
   "empty_bins_as_correct": false,
-  "claim_boundary": "Prefix leakage audit only; full G005 paper-target success still requires full-corpus non-leaky evaluation and validator pass."
+  "claim_boundary": "Prefix leakage audit only; full G005 paper-target success still requires full-corpus non-leaky evaluation and validator pass.",
+  "max_rows": 320000
 }
