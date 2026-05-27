@@ -260,15 +260,16 @@ start_train_wandb() {
   build_prefix_config
   write_summary running_train_cache
   start_cache_wandb
-  CONFIG="$PREFIX_CONFIG" MODEL_SLUG="${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards" PRECOMPUTE_SPLITS=train \
-    LOG_PATH="artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_train_precompute.log" \
+  PREFIX_MODEL_SLUG="${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards"
+  CONFIG="$PREFIX_CONFIG" MODEL_SLUG="$PREFIX_MODEL_SLUG" PRECOMPUTE_SPLITS=train \
+    LOG_PATH="artifacts/idm/${PREFIX_MODEL_SLUG}_train_precompute.log" \
     RUN_SUMMARY="$TRAIN_PRECOMPUTE_RUN" \
-    PID_FILE="outputs/cluster/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_train_precompute.pid" \
+    PID_FILE="outputs/cluster/${PREFIX_MODEL_SLUG}_train_precompute.pid" \
     scripts/run_g005_idm_video_pair_raw112_offset2_precompute.sh
 
   write_summary running_training
   start_train_wandb
-  CONFIG="$PREFIX_CONFIG" MODEL_SLUG="${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards" \
+  CONFIG="$PREFIX_CONFIG" MODEL_SLUG="$PREFIX_MODEL_SLUG" \
     NPROC_PER_NODE="$NPROC_PER_NODE" EXPECTED_GPUS="$EXPECTED_GPUS" EPOCHS_OVERRIDE="$EPOCHS_OVERRIDE" \
     SKIP_PREDICTION=1 BUILD_SPLIT_STATS=0 BUILD_PAPER_METRICS=0 VALIDATE_G005=0 \
     LOG_PATH="artifacts/idm/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_probe.log" \
@@ -276,7 +277,7 @@ start_train_wandb() {
     GPU_MONITOR_LOG="$GPU_MONITOR" \
     PID_FILE="outputs/cluster/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_probe.pid" \
     GPU_SMOKE_REPORT="outputs/cluster/${MODEL_SLUG}_${EXPECTED_GPUS}gpu_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_smoke.json" \
-    RUNTIME_CONFIG="outputs/cluster/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_train_runtime.yaml" \
+    RUNTIME_CONFIG="outputs/cluster/${PREFIX_MODEL_SLUG}_train_runtime.yaml" \
     MLXP_RESERVATION_ID="$MLXP_RESERVATION_ID" \
     MLXP_RESERVATION_START_AT="$MLXP_RESERVATION_START_AT" \
     MLXP_RESERVATION_END_AT="$MLXP_RESERVATION_END_AT" \
@@ -287,10 +288,10 @@ start_train_wandb() {
     scripts/run_g005_idm_video_pair_raw112_offset2_4xh200.sh
 
   write_summary running_target_prefix_cache
-  CONFIG="$PREFIX_CONFIG" MODEL_SLUG="${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_target" PRECOMPUTE_SPLITS=target \
-    LOG_PATH="artifacts/idm/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_target_precompute.log" \
+  CONFIG="$PREFIX_CONFIG" MODEL_SLUG="${PREFIX_MODEL_SLUG}_target" PRECOMPUTE_SPLITS=target \
+    LOG_PATH="artifacts/idm/${PREFIX_MODEL_SLUG}_target_precompute.log" \
     RUN_SUMMARY="$TARGET_PRECOMPUTE_RUN" \
-    PID_FILE="outputs/cluster/${MODEL_SLUG}_prefix${PREFIX_ROWS}_train${PREFIX_TRAIN_SHARDS}shards_target_precompute.pid" \
+    PID_FILE="outputs/cluster/${PREFIX_MODEL_SLUG}_target_precompute.pid" \
     scripts/run_g005_idm_video_pair_raw112_offset2_precompute.sh
 
   write_summary running_prefix_prediction
