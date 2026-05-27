@@ -17,7 +17,7 @@ from fdm_d2e.config import load_config
 from fdm_d2e.eval.statistics import cluster_bootstrap_delta, endpoint_value, holm_bonferroni
 from fdm_d2e.io_utils import ensure_dir, read_json, stable_hash_json, write_json, write_jsonl
 from fdm_d2e.schema import validate_named
-from fdm_d2e.training.neural_idm import record_features, target_mouse_delta
+from fdm_d2e.training.neural_idm import record_features, target_mouse_delta, tokens_from_delta
 from fdm_d2e.training.torch_idm import (
     MOUSE_AXIS_CLASSES,
     _append_history,
@@ -4321,6 +4321,38 @@ def _predict_stream(
     remaining_max_examples = None
     if max_target_examples is not None:
         remaining_max_examples = max(0, int(max_target_examples) - int(resume_existing_rows))
+    category_threshold = float(config.get("category_threshold", 0.35))
+    configured_category_thresholds = config.get("category_thresholds", {})
+    category_thresholds = (
+        {
+            token: float(configured_category_thresholds.get(token, category_threshold))
+            for token in category_vocab
+        }
+        if isinstance(configured_category_thresholds, dict)
+        else {token: category_threshold for token in category_vocab}
+    )
+    keyboard_head_mode = str(config.get("keyboard_head_mode", "multilabel"))
+    button_head_mode = str(config.get("button_head_mode", "multilabel"))
+    mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
+    keyboard_classes = _keyboard_classes_for_heads({"keyboard_class_counts": {}}, config)
+    button_classes = _button_classes_for_heads({"button_class_counts": {}}, config)
+    fast_regression_softmax_decode = (
+        mouse_head_mode == "regression"
+        and keyboard_head_mode == "softmax"
+        and button_head_mode == "softmax"
+        and bool(keyboard_classes)
+        and bool(button_classes)
+    )
+    category_end = 2 + len(category_vocab)
+    keyboard_end = category_end + (len(keyboard_classes) if keyboard_head_mode == "softmax" else 0)
+    button_end = keyboard_end + (len(button_classes) if button_head_mode == "softmax" else 0)
+    keyboard_softmax_threshold = float(config.get("keyboard_softmax_threshold", 0.5))
+    button_softmax_threshold = float(config.get("button_softmax_threshold", 0.5))
+    mouse_output_gain = float(config.get("mouse_output_gain", 1.0))
+    mouse_output_gain_x = float(config["mouse_output_gain_x"]) if config.get("mouse_output_gain_x") is not None else mouse_output_gain
+    mouse_output_gain_y = float(config["mouse_output_gain_y"]) if config.get("mouse_output_gain_y") is not None else mouse_output_gain
+    mouse_emit_mode = str(config.get("mouse_emit_mode", "single"))
+    mouse_max_tokens_per_axis = int(config.get("mouse_max_tokens_per_axis", 8))
 
     def prediction_batches() -> Iterable[list[dict[str, Any]]]:
         if action_history_len <= 0 and not residual_mouse:
@@ -4384,23 +4416,79 @@ def _predict_stream(
                 mean_t=mean_t,
                 std_t=std_t,
             )
-            outputs = model(x).detach().cpu().tolist()
-            for row, output in zip(rows, outputs):
+            output_tensor = model(x).detach()
+            fast_batch: dict[str, Any] | None = None
+            if fast_regression_softmax_decode:
+                dx_values = (output_tensor[:, 0] * mouse_output_gain_x).detach()
+                dy_values = (output_tensor[:, 1] * mouse_output_gain_y).detach()
+                if residual_mouse:
+                    baselines = torch.tensor(
+                        [
+                            [
+                                float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[0]),
+                                float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[1]),
+                            ]
+                            for row in rows
+                        ],
+                        dtype=torch.float32,
+                        device=output_tensor.device,
+                    )
+                    dx_values = dx_values + baselines[:, 0]
+                    dy_values = dy_values + baselines[:, 1]
+                keyboard_logits = output_tensor[:, category_end:keyboard_end]
+                keyboard_probs, keyboard_indices = torch.nn.functional.softmax(keyboard_logits, dim=1).max(dim=1)
+                button_logits = output_tensor[:, keyboard_end:button_end]
+                button_probs, button_indices = torch.nn.functional.softmax(button_logits, dim=1).max(dim=1)
+                if category_vocab:
+                    category_probs = torch.sigmoid(output_tensor[:, 2:category_end]).detach().cpu().tolist()
+                else:
+                    category_probs = [[] for _ in rows]
+                fast_batch = {
+                    "dx": dx_values.cpu().tolist(),
+                    "dy": dy_values.cpu().tolist(),
+                    "keyboard_indices": keyboard_indices.cpu().tolist(),
+                    "keyboard_probs": keyboard_probs.cpu().tolist(),
+                    "button_indices": button_indices.cpu().tolist(),
+                    "button_probs": button_probs.cpu().tolist(),
+                    "category_probs": category_probs,
+                }
+                outputs: list[list[float]] = []
+            else:
+                outputs = output_tensor.cpu().tolist()
+            for row_index, row in enumerate(rows):
                 if row.get("source_id") is not None:
                     target_source_ids.add(str(row["source_id"]))
                 if row.get("resolution_tier") is not None:
                     target_resolution_tiers.add(str(row["resolution_tier"]))
                 for tag in row.get("eval_split_tags", []) or []:
                     target_eval_split_tags.add(str(tag))
-                tokens = _predicted_tokens_from_output(
-                    output,
-                    config=config,
-                    category_vocab=category_vocab,
-                    mouse_axis_classes=mouse_axis_classes,
-                    base_dx=float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[0]),
-                    base_dy=float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[1]),
-                    residual_mouse=residual_mouse,
-                )
+                if fast_batch is not None:
+                    tokens = tokens_from_delta(
+                        float(fast_batch["dx"][row_index]),
+                        float(fast_batch["dy"][row_index]),
+                        emit_mode=mouse_emit_mode,
+                        max_tokens_per_axis=mouse_max_tokens_per_axis,
+                    )
+                    for token, prob in zip(category_vocab, fast_batch["category_probs"][row_index]):
+                        if float(prob) >= float(category_thresholds.get(token, category_threshold)):
+                            tokens.append(token)
+                    keyboard_idx = int(fast_batch["keyboard_indices"][row_index])
+                    if keyboard_idx != 0 and float(fast_batch["keyboard_probs"][row_index]) >= keyboard_softmax_threshold:
+                        tokens.extend(keyboard_classes[keyboard_idx])
+                    button_idx = int(fast_batch["button_indices"][row_index])
+                    if button_idx != 0 and float(fast_batch["button_probs"][row_index]) >= button_softmax_threshold:
+                        tokens.extend(button_classes[button_idx])
+                else:
+                    output = outputs[row_index]
+                    tokens = _predicted_tokens_from_output(
+                        output,
+                        config=config,
+                        category_vocab=category_vocab,
+                        mouse_axis_classes=mouse_axis_classes,
+                        base_dx=float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[0]),
+                        base_dy=float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[1]),
+                        residual_mouse=residual_mouse,
+                    )
                 if action_history_len > 0:
                     history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
                     _append_history(history, button_state, tokens, history_len=action_history_len)
