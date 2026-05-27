@@ -18,9 +18,9 @@ uv run python scripts/materialize_chronological_prefix.py \
   --summary-out "$CHRONO_SUMMARY" \
   --max-rows "$MAX_ROWS" \
   --source-label "g005_event_state_duration_context_prefix320k"
-uv run python scripts/predict_idm_streaming.py --config "$PREDICT_CONFIG" --prediction-workers 1 --prediction-cuda-devices 0
+uv run --extra train python scripts/predict_idm_streaming.py --config "$PREDICT_CONFIG" --prediction-workers 1 --prediction-cuda-devices 0
 uv run python scripts/build_g005_idm_paper_metrics.py --config "$PAPER_CONFIG"
-uv run --with wandb python scripts/log_wandb_artifacts.py \
+uv run --extra train --with wandb python scripts/log_wandb_artifacts.py \
   --env-file .env \
   --run-name "g005-context-chrono-closed-loop-prefix320k" \
   --group "g005-idm-paper-target" \

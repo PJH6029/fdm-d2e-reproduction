@@ -306,6 +306,8 @@ def test_g005_chrono_closed_loop_prefix_materializes_before_prediction() -> None
     predict_idx = text.index("scripts/predict_idm_streaming.py")
     metrics_idx = text.index("scripts/build_g005_idm_paper_metrics.py")
     assert materialize_idx < predict_idx < metrics_idx
+    assert "uv run --extra train python scripts/predict_idm_streaming.py" in text
+    assert "uv run --extra train --with wandb python scripts/log_wandb_artifacts.py" in text
     assert "d2e_event_state_duration_context_chrono_prefix320k" in text
     assert config["closed_loop_state_context"] is True
     assert config["closed_loop_state_context_seed_from_train"] is False
