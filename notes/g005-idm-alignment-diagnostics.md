@@ -421,3 +421,36 @@ Result: reject this branch. Paper-compatible all-row metrics were keyboard `0.00
 Operational note: the run spent roughly 25 minutes in CPU stats/cache construction before GPU training. Future action-history candidates should precompute stats/cache in a CPU/storage shell before reserving H200s.
 
 Next branch: change the supervision/modeling problem rather than adding another global temporal wrapper. Prioritize teacher-assisted event decoding or causal per-recording latent state estimation with prefix gates, and keep exact-split released G-IDM infrastructure separate until the paper-target objective is met.
+
+### 2026-05-28 KST — NEP/offset target-autocorrelation diagnostic rejects simple label shift
+
+Ran a CPU/storage-shell diagnostic on `production-storage-shell-4` over the same
+320k `d2e_event_state_duration_hierarchical_prefix320k` target rows using a clean
+`de4eab3` worktree. This checks ground-truth target autocorrelation at row shifts
+`-4..4` (50ms bins) to test whether D2E's NEP-τ=100ms semantics could be rescued
+by a simple target/label offset before spending more H200 time.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_nep_offset_target_autocorr_prefix320k.json` — compact
+  summary with paper-target comparison and baseline comparison.
+- `artifacts/idm/g005_idm_nep_offset_target_autocorr_prefix320k_raw.json` — raw
+  alignment-shift diagnostics.
+- `scripts/build_g005_nep_offset_diagnostics.py` and
+  `src/fdm_d2e/reporting/g005_nep_offset_diagnostics.py` — reproducible builder.
+- `tests/test_g005_nep_offset_diagnostics.py` — regression coverage for expected
+  shift extraction and claim boundary.
+
+Result: reject a simple NEP/label-offset GPU branch. The expected +2 row shift
+(+100ms) has keyboard `0.17448`, mouse-button `0.02147`, Pearson X/Y
+`0.41486/0.38618`, and strict button F1 `0.0300`; it misses every paper target
+except scale ratio. No nonzero shift meets all paper targets. The best nonzero
+motion shift is `-1` with Pearson X/Y `0.7687/0.7424`, still below the D2E paper
+`0.796/0.783` targets, while the best key/button shifts remain very low
+(keyboard `0.19085`, mouse-button `0.05744`).
+
+Interpretation: D2E NEP-style timing is not just a row-index mismatch in our
+prefix target rows. Continue with a branch that changes the supervision/modeling
+problem (teacher-assisted event decoding, causal per-recording latent state, or a
+learned future-key-state/event decoder) and prefix-gate it before any full 4xH200
+promotion. Do not claim target-autocorrelation metrics as trained-model evidence.

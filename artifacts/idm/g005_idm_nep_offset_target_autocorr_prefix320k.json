@@ -1,0 +1,997 @@
+{
+  "schema": "g005_nep_offset_diagnostics.v1",
+  "status": "pass",
+  "source_label": "d2e_event_state_duration_hierarchical_prefix320k_target",
+  "expected_nep_shift": 2,
+  "expected_nep_shift_ms": 100,
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "scale_ratio_x": 1.23,
+    "scale_ratio_y": 1.31
+  },
+  "diagnostics_status": "pass",
+  "alignment": {
+    "rows_seen": 320000,
+    "sequence_id_mismatches": 0,
+    "missing_prediction_rows": 0,
+    "missing_target_rows": 0,
+    "examples": []
+  },
+  "block_stats": {
+    "recording_fragments": 22,
+    "max_fragment_rows": 115168,
+    "short_fragments": 0
+  },
+  "claim_boundary": "target_autocorr is a temporal-offset diagnostic/oracle over ground-truth targets, not a trained model result and not valid G005 completion evidence.",
+  "identity_shift_note": "shift=0 is an identity sanity check and is excluded from nonzero offset recommendations.",
+  "expected_shift": {
+    "shift": 2,
+    "shift_ms": 100,
+    "pair_count": 319956,
+    "metrics": {
+      "rows": 319956.0,
+      "keyboard_accuracy": 0.17447975052483541,
+      "mouse_button_accuracy": 0.021471352695219798,
+      "pearson_x": 0.41486074393357936,
+      "pearson_y": 0.38618132090750656,
+      "scale_ratio_x": 1.0000844777184257,
+      "scale_ratio_y": 1.0001143637266852,
+      "strict_mouse_button_f1": 0.02999942749184176,
+      "strict_no_button_fpr": 0.01838553063237614
+    },
+    "paper_target_results": [
+      {
+        "metric": "keyboard_accuracy",
+        "actual": 0.17447975052483541,
+        "target": 0.73,
+        "direction": "higher",
+        "passed": false,
+        "gap_to_target": 0.5555202494751645
+      },
+      {
+        "metric": "mouse_button_accuracy",
+        "actual": 0.021471352695219798,
+        "target": 0.957,
+        "direction": "higher",
+        "passed": false,
+        "gap_to_target": 0.9355286473047801
+      },
+      {
+        "metric": "pearson_x",
+        "actual": 0.41486074393357936,
+        "target": 0.796,
+        "direction": "higher",
+        "passed": false,
+        "gap_to_target": 0.3811392560664207
+      },
+      {
+        "metric": "pearson_y",
+        "actual": 0.38618132090750656,
+        "target": 0.783,
+        "direction": "higher",
+        "passed": false,
+        "gap_to_target": 0.39681867909249346
+      },
+      {
+        "metric": "scale_ratio_x",
+        "actual": 1.0000844777184257,
+        "target": 1.23,
+        "direction": "lower",
+        "passed": true,
+        "gap_to_target": -0.2299155222815743
+      },
+      {
+        "metric": "scale_ratio_y",
+        "actual": 1.0001143637266852,
+        "target": 1.31,
+        "direction": "lower",
+        "passed": true,
+        "gap_to_target": -0.3098856362733149
+      }
+    ],
+    "paper_target_passes": false,
+    "comparison_to_baseline": [
+      {
+        "metric": "keyboard_accuracy",
+        "target_autocorr_value": 0.17447975052483541,
+        "baseline_value": 0.19900156833292837,
+        "improvement_direction": "higher",
+        "delta_in_favor_of_shift": -0.024521817808092955,
+        "improves_over_baseline": false
+      },
+      {
+        "metric": "mouse_button_accuracy",
+        "target_autocorr_value": 0.021471352695219798,
+        "baseline_value": 0.17256699910195208,
+        "improvement_direction": "higher",
+        "delta_in_favor_of_shift": -0.1510956464067323,
+        "improves_over_baseline": false
+      },
+      {
+        "metric": "pearson_x",
+        "target_autocorr_value": 0.41486074393357936,
+        "baseline_value": 0.6048383535587054,
+        "improvement_direction": "higher",
+        "delta_in_favor_of_shift": -0.18997760962512605,
+        "improves_over_baseline": false
+      },
+      {
+        "metric": "pearson_y",
+        "target_autocorr_value": 0.38618132090750656,
+        "baseline_value": 0.5985909398660804,
+        "improvement_direction": "higher",
+        "delta_in_favor_of_shift": -0.2124096189585738,
+        "improves_over_baseline": false
+      },
+      {
+        "metric": "scale_ratio_x",
+        "target_autocorr_value": 1.0000844777184257,
+        "baseline_value": 2.5678622785947947,
+        "improvement_direction": "lower",
+        "delta_in_favor_of_shift": 1.567777800876369,
+        "improves_over_baseline": true
+      },
+      {
+        "metric": "scale_ratio_y",
+        "target_autocorr_value": 1.0001143637266852,
+        "baseline_value": 1.4696145698157421,
+        "improvement_direction": "lower",
+        "delta_in_favor_of_shift": 0.46950020608905696,
+        "improves_over_baseline": true
+      }
+    ],
+    "split_metrics": {
+      "eval_split:heldout_game": {
+        "rows": 144689.0,
+        "keyboard_accuracy": 0.1775463922553586,
+        "mouse_button_accuracy": 0.02983425414364641,
+        "pearson_x": 0.4200085252082345,
+        "pearson_y": 0.36529955456556795,
+        "scale_ratio_x": 1.0,
+        "scale_ratio_y": 1.0,
+        "strict_mouse_button_f1": 0.042637975692369,
+        "strict_no_button_fpr": 0.024386052838834396,
+        "paper_target_results": [
+          {
+            "metric": "keyboard_accuracy",
+            "actual": 0.1775463922553586,
+            "target": 0.73,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.5524536077446414
+          },
+          {
+            "metric": "mouse_button_accuracy",
+            "actual": 0.02983425414364641,
+            "target": 0.957,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.9271657458563536
+          },
+          {
+            "metric": "pearson_x",
+            "actual": 0.4200085252082345,
+            "target": 0.796,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.37599147479176553
+          },
+          {
+            "metric": "pearson_y",
+            "actual": 0.36529955456556795,
+            "target": 0.783,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.4177004454344321
+          },
+          {
+            "metric": "scale_ratio_x",
+            "actual": 1.0,
+            "target": 1.23,
+            "direction": "lower",
+            "passed": true,
+            "gap_to_target": -0.22999999999999998
+          },
+          {
+            "metric": "scale_ratio_y",
+            "actual": 1.0,
+            "target": 1.31,
+            "direction": "lower",
+            "passed": true,
+            "gap_to_target": -0.31000000000000005
+          }
+        ]
+      },
+      "eval_split:heldout_recording": {
+        "rows": 85530.0,
+        "keyboard_accuracy": 0.14524904349047,
+        "mouse_button_accuracy": 0.03927492447129909,
+        "pearson_x": 0.4198502897751374,
+        "pearson_y": 0.4097753309149957,
+        "scale_ratio_x": 1.000456170813897,
+        "scale_ratio_y": 1.0002087307245204,
+        "strict_mouse_button_f1": 0.05565089482716352,
+        "strict_no_button_fpr": 0.02925685381394949,
+        "paper_target_results": [
+          {
+            "metric": "keyboard_accuracy",
+            "actual": 0.14524904349047,
+            "target": 0.73,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.58475095650953
+          },
+          {
+            "metric": "mouse_button_accuracy",
+            "actual": 0.03927492447129909,
+            "target": 0.957,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.9177250755287009
+          },
+          {
+            "metric": "pearson_x",
+            "actual": 0.4198502897751374,
+            "target": 0.796,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.37614971022486265
+          },
+          {
+            "metric": "pearson_y",
+            "actual": 0.4097753309149957,
+            "target": 0.783,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.37322466908500435
+          },
+          {
+            "metric": "scale_ratio_x",
+            "actual": 1.000456170813897,
+            "target": 1.23,
+            "direction": "lower",
+            "passed": true,
+            "gap_to_target": -0.22954382918610294
+          },
+          {
+            "metric": "scale_ratio_y",
+            "actual": 1.0002087307245204,
+            "target": 1.31,
+            "direction": "lower",
+            "passed": true,
+            "gap_to_target": -0.3097912692754796
+          }
+        ]
+      },
+      "eval_split:temporal": {
+        "rows": 156254.0,
+        "keyboard_accuracy": 0.18602513024823783,
+        "mouse_button_accuracy": 0.017269964078474715,
+        "pearson_x": 0.39104838238183975,
+        "pearson_y": 0.39321167538937024,
+        "scale_ratio_x": 1.0001070842283395,
+        "scale_ratio_y": 1.000394716588917,
+        "strict_mouse_button_f1": 0.023729759910664432,
+        "strict_no_button_fpr": 0.014881478715948466,
+        "paper_target_results": [
+          {
+            "metric": "keyboard_accuracy",
+            "actual": 0.18602513024823783,
+            "target": 0.73,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.5439748697517621
+          },
+          {
+            "metric": "mouse_button_accuracy",
+            "actual": 0.017269964078474715,
+            "target": 0.957,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.9397300359215253
+          },
+          {
+            "metric": "pearson_x",
+            "actual": 0.39104838238183975,
+            "target": 0.796,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.4049516176181603
+          },
+          {
+            "metric": "pearson_y",
+            "actual": 0.39321167538937024,
+            "target": 0.783,
+            "direction": "higher",
+            "passed": false,
+            "gap_to_target": 0.3897883246106298
+          },
+          {
+            "metric": "scale_ratio_x",
+            "actual": 1.0001070842283395,
+            "target": 1.23,
+            "direction": "lower",
+            "passed": true,
+            "gap_to_target": -0.2298929157716605
+          },
+          {
+            "metric": "scale_ratio_y",
+            "actual": 1.000394716588917,
+            "target": 1.31,
+            "direction": "lower",
+            "passed": true,
+            "gap_to_target": -0.30960528341108295
+          }
+        ]
+      }
+    }
+  },
+  "all_shift_metrics": [
+    {
+      "shift": -4,
+      "shift_ms": -200,
+      "pair_count": 319912,
+      "rows": 319912.0,
+      "keyboard_accuracy": 0.19084946567309313,
+      "mouse_button_accuracy": 0.05191177326427283,
+      "pearson_x": 0.10492718977996614,
+      "pearson_y": 0.06535133382022079,
+      "scale_ratio_x": 1.0000704729889707,
+      "scale_ratio_y": 1.0001697965836929,
+      "strict_mouse_button_f1": 0.08668766103635843,
+      "strict_no_button_fpr": 0.02193278445134296,
+      "paper_target_passes": false,
+      "paper_target_results": [
+        {
+          "metric": "keyboard_accuracy",
+          "actual": 0.19084946567309313,
+          "target": 0.73,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.5391505343269068
+        },
+        {
+          "metric": "mouse_button_accuracy",
+          "actual": 0.05191177326427283,
+          "target": 0.957,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.9050882267357271
+        },
+        {
+          "metric": "pearson_x",
+          "actual": 0.10492718977996614,
+          "target": 0.796,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.6910728102200339
+        },
+        {
+          "metric": "pearson_y",
+          "actual": 0.06535133382022079,
+          "target": 0.783,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.7176486661797792
+        },
+        {
+          "metric": "scale_ratio_x",
+          "actual": 1.0000704729889707,
+          "target": 1.23,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.2299295270110293
+        },
+        {
+          "metric": "scale_ratio_y",
+          "actual": 1.0001697965836929,
+          "target": 1.31,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.3098302034163072
+        }
+      ]
+    },
+    {
+      "shift": -3,
+      "shift_ms": -150,
+      "pair_count": 319934,
+      "rows": 319934.0,
+      "keyboard_accuracy": 0.10726074262839486,
+      "mouse_button_accuracy": 0.05744033692091717,
+      "pearson_x": 0.1883833165748132,
+      "pearson_y": 0.16646639504688956,
+      "scale_ratio_x": 1.000063171970232,
+      "scale_ratio_y": 1.0001280785008024,
+      "strict_mouse_button_f1": 0.10408198316826014,
+      "strict_no_button_fpr": 0.02102827763496144,
+      "paper_target_passes": false,
+      "paper_target_results": [
+        {
+          "metric": "keyboard_accuracy",
+          "actual": 0.10726074262839486,
+          "target": 0.73,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.6227392573716051
+        },
+        {
+          "metric": "mouse_button_accuracy",
+          "actual": 0.05744033692091717,
+          "target": 0.957,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.8995596630790827
+        },
+        {
+          "metric": "pearson_x",
+          "actual": 0.1883833165748132,
+          "target": 0.796,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.6076166834251868
+        },
+        {
+          "metric": "pearson_y",
+          "actual": 0.16646639504688956,
+          "target": 0.783,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.6165336049531105
+        },
+        {
+          "metric": "scale_ratio_x",
+          "actual": 1.000063171970232,
+          "target": 1.23,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.229936828029768
+        },
+        {
+          "metric": "scale_ratio_y",
+          "actual": 1.0001280785008024,
+          "target": 1.31,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.3098719214991976
+        }
+      ]
+    },
+    {
+      "shift": -2,
+      "shift_ms": -100,
+      "pair_count": 319956,
+      "rows": 319956.0,
+      "keyboard_accuracy": 0.17447975052483541,
+      "mouse_button_accuracy": 0.021471352695219798,
+      "pearson_x": 0.41486074393357936,
+      "pearson_y": 0.38618132090750656,
+      "scale_ratio_x": 1.0000844777184257,
+      "scale_ratio_y": 1.0001143637266852,
+      "strict_mouse_button_f1": 0.02999942749184176,
+      "strict_no_button_fpr": 0.018382376567209258,
+      "paper_target_passes": false,
+      "paper_target_results": [
+        {
+          "metric": "keyboard_accuracy",
+          "actual": 0.17447975052483541,
+          "target": 0.73,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.5555202494751645
+        },
+        {
+          "metric": "mouse_button_accuracy",
+          "actual": 0.021471352695219798,
+          "target": 0.957,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.9355286473047801
+        },
+        {
+          "metric": "pearson_x",
+          "actual": 0.41486074393357936,
+          "target": 0.796,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.3811392560664207
+        },
+        {
+          "metric": "pearson_y",
+          "actual": 0.38618132090750656,
+          "target": 0.783,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.39681867909249346
+        },
+        {
+          "metric": "scale_ratio_x",
+          "actual": 1.0000844777184257,
+          "target": 1.23,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.2299155222815743
+        },
+        {
+          "metric": "scale_ratio_y",
+          "actual": 1.0001143637266852,
+          "target": 1.31,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.3098856362733149
+        }
+      ]
+    },
+    {
+      "shift": -1,
+      "shift_ms": -50,
+      "pair_count": 319978,
+      "rows": 319978.0,
+      "keyboard_accuracy": 0.07934970526359642,
+      "mouse_button_accuracy": 0.0019398104528071827,
+      "pearson_x": 0.7687360622696963,
+      "pearson_y": 0.7424076496578984,
+      "scale_ratio_x": 1.000075823699724,
+      "scale_ratio_y": 1.000085162845654,
+      "strict_mouse_button_f1": 0.00011450163164825099,
+      "strict_no_button_fpr": 0.02292413669018519,
+      "paper_target_passes": false,
+      "paper_target_results": [
+        {
+          "metric": "keyboard_accuracy",
+          "actual": 0.07934970526359642,
+          "target": 0.73,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.6506502947364036
+        },
+        {
+          "metric": "mouse_button_accuracy",
+          "actual": 0.0019398104528071827,
+          "target": 0.957,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.9550601895471927
+        },
+        {
+          "metric": "pearson_x",
+          "actual": 0.7687360622696963,
+          "target": 0.796,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.027263937730303778
+        },
+        {
+          "metric": "pearson_y",
+          "actual": 0.7424076496578984,
+          "target": 0.783,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.040592350342101624
+        },
+        {
+          "metric": "scale_ratio_x",
+          "actual": 1.000075823699724,
+          "target": 1.23,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.22992417630027595
+        },
+        {
+          "metric": "scale_ratio_y",
+          "actual": 1.000085162845654,
+          "target": 1.31,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.3099148371543461
+        }
+      ]
+    },
+    {
+      "shift": 0,
+      "shift_ms": 0,
+      "pair_count": 320000,
+      "rows": 320000.0,
+      "keyboard_accuracy": 1.0,
+      "mouse_button_accuracy": 1.0,
+      "pearson_x": 1.0,
+      "pearson_y": 1.0,
+      "scale_ratio_x": 1.0,
+      "scale_ratio_y": 1.0,
+      "strict_mouse_button_f1": 1.0,
+      "strict_no_button_fpr": 0.0,
+      "paper_target_passes": true,
+      "paper_target_results": [
+        {
+          "metric": "keyboard_accuracy",
+          "actual": 1.0,
+          "target": 0.73,
+          "direction": "higher",
+          "passed": true,
+          "gap_to_target": -0.27
+        },
+        {
+          "metric": "mouse_button_accuracy",
+          "actual": 1.0,
+          "target": 0.957,
+          "direction": "higher",
+          "passed": true,
+          "gap_to_target": -0.04300000000000004
+        },
+        {
+          "metric": "pearson_x",
+          "actual": 1.0,
+          "target": 0.796,
+          "direction": "higher",
+          "passed": true,
+          "gap_to_target": -0.20399999999999996
+        },
+        {
+          "metric": "pearson_y",
+          "actual": 1.0,
+          "target": 0.783,
+          "direction": "higher",
+          "passed": true,
+          "gap_to_target": -0.21699999999999997
+        },
+        {
+          "metric": "scale_ratio_x",
+          "actual": 1.0,
+          "target": 1.23,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.22999999999999998
+        },
+        {
+          "metric": "scale_ratio_y",
+          "actual": 1.0,
+          "target": 1.31,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.31000000000000005
+        }
+      ]
+    },
+    {
+      "shift": 1,
+      "shift_ms": 50,
+      "pair_count": 319978,
+      "rows": 319978.0,
+      "keyboard_accuracy": 0.07934970526359642,
+      "mouse_button_accuracy": 0.0019398104528071827,
+      "pearson_x": 0.7687360622696963,
+      "pearson_y": 0.7424076496578984,
+      "scale_ratio_x": 1.0000758236997243,
+      "scale_ratio_y": 1.000085162845654,
+      "strict_mouse_button_f1": 0.00011450163164825099,
+      "strict_no_button_fpr": 0.022927275940175747,
+      "paper_target_passes": false,
+      "paper_target_results": [
+        {
+          "metric": "keyboard_accuracy",
+          "actual": 0.07934970526359642,
+          "target": 0.73,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.6506502947364036
+        },
+        {
+          "metric": "mouse_button_accuracy",
+          "actual": 0.0019398104528071827,
+          "target": 0.957,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.9550601895471927
+        },
+        {
+          "metric": "pearson_x",
+          "actual": 0.7687360622696963,
+          "target": 0.796,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.027263937730303778
+        },
+        {
+          "metric": "pearson_y",
+          "actual": 0.7424076496578984,
+          "target": 0.783,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.040592350342101624
+        },
+        {
+          "metric": "scale_ratio_x",
+          "actual": 1.0000758236997243,
+          "target": 1.23,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.22992417630027573
+        },
+        {
+          "metric": "scale_ratio_y",
+          "actual": 1.000085162845654,
+          "target": 1.31,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.3099148371543461
+        }
+      ]
+    },
+    {
+      "shift": 2,
+      "shift_ms": 100,
+      "pair_count": 319956,
+      "rows": 319956.0,
+      "keyboard_accuracy": 0.17447975052483541,
+      "mouse_button_accuracy": 0.021471352695219798,
+      "pearson_x": 0.41486074393357936,
+      "pearson_y": 0.38618132090750656,
+      "scale_ratio_x": 1.0000844777184257,
+      "scale_ratio_y": 1.0001143637266852,
+      "strict_mouse_button_f1": 0.02999942749184176,
+      "strict_no_button_fpr": 0.01838553063237614,
+      "paper_target_passes": false,
+      "paper_target_results": [
+        {
+          "metric": "keyboard_accuracy",
+          "actual": 0.17447975052483541,
+          "target": 0.73,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.5555202494751645
+        },
+        {
+          "metric": "mouse_button_accuracy",
+          "actual": 0.021471352695219798,
+          "target": 0.957,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.9355286473047801
+        },
+        {
+          "metric": "pearson_x",
+          "actual": 0.41486074393357936,
+          "target": 0.796,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.3811392560664207
+        },
+        {
+          "metric": "pearson_y",
+          "actual": 0.38618132090750656,
+          "target": 0.783,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.39681867909249346
+        },
+        {
+          "metric": "scale_ratio_x",
+          "actual": 1.0000844777184257,
+          "target": 1.23,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.2299155222815743
+        },
+        {
+          "metric": "scale_ratio_y",
+          "actual": 1.0001143637266852,
+          "target": 1.31,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.3098856362733149
+        }
+      ]
+    },
+    {
+      "shift": 3,
+      "shift_ms": 150,
+      "pair_count": 319934,
+      "rows": 319934.0,
+      "keyboard_accuracy": 0.10726074262839486,
+      "mouse_button_accuracy": 0.05744033692091717,
+      "pearson_x": 0.1883833165748132,
+      "pearson_y": 0.16646639504688956,
+      "scale_ratio_x": 1.0000631719702322,
+      "scale_ratio_y": 1.0001280785008024,
+      "strict_mouse_button_f1": 0.10408198316826014,
+      "strict_no_button_fpr": 0.021031423420875897,
+      "paper_target_passes": false,
+      "paper_target_results": [
+        {
+          "metric": "keyboard_accuracy",
+          "actual": 0.10726074262839486,
+          "target": 0.73,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.6227392573716051
+        },
+        {
+          "metric": "mouse_button_accuracy",
+          "actual": 0.05744033692091717,
+          "target": 0.957,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.8995596630790827
+        },
+        {
+          "metric": "pearson_x",
+          "actual": 0.1883833165748132,
+          "target": 0.796,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.6076166834251868
+        },
+        {
+          "metric": "pearson_y",
+          "actual": 0.16646639504688956,
+          "target": 0.783,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.6165336049531105
+        },
+        {
+          "metric": "scale_ratio_x",
+          "actual": 1.0000631719702322,
+          "target": 1.23,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.22993682802976778
+        },
+        {
+          "metric": "scale_ratio_y",
+          "actual": 1.0001280785008024,
+          "target": 1.31,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.3098719214991976
+        }
+      ]
+    },
+    {
+      "shift": 4,
+      "shift_ms": 200,
+      "pair_count": 319912,
+      "rows": 319912.0,
+      "keyboard_accuracy": 0.19084946567309313,
+      "mouse_button_accuracy": 0.05191177326427283,
+      "pearson_x": 0.10492718977996614,
+      "pearson_y": 0.06535133382022079,
+      "scale_ratio_x": 1.0000704729889707,
+      "scale_ratio_y": 1.0001697965836929,
+      "strict_mouse_button_f1": 0.08668766103635843,
+      "strict_no_button_fpr": 0.021942213695566246,
+      "paper_target_passes": false,
+      "paper_target_results": [
+        {
+          "metric": "keyboard_accuracy",
+          "actual": 0.19084946567309313,
+          "target": 0.73,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.5391505343269068
+        },
+        {
+          "metric": "mouse_button_accuracy",
+          "actual": 0.05191177326427283,
+          "target": 0.957,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.9050882267357271
+        },
+        {
+          "metric": "pearson_x",
+          "actual": 0.10492718977996614,
+          "target": 0.796,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.6910728102200339
+        },
+        {
+          "metric": "pearson_y",
+          "actual": 0.06535133382022079,
+          "target": 0.783,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.7176486661797792
+        },
+        {
+          "metric": "scale_ratio_x",
+          "actual": 1.0000704729889707,
+          "target": 1.23,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.2299295270110293
+        },
+        {
+          "metric": "scale_ratio_y",
+          "actual": 1.0001697965836929,
+          "target": 1.31,
+          "direction": "lower",
+          "passed": true,
+          "gap_to_target": -0.3098302034163072
+        }
+      ]
+    }
+  ],
+  "best_nonzero_shift_by_metric": {
+    "keyboard_accuracy": {
+      "shift": -4,
+      "value": 0.19084946567309313
+    },
+    "mouse_button_accuracy": {
+      "shift": -3,
+      "value": 0.05744033692091717
+    },
+    "pearson_x": {
+      "shift": -1,
+      "value": 0.7687360622696963
+    },
+    "pearson_y": {
+      "shift": -1,
+      "value": 0.7424076496578984
+    },
+    "scale_ratio_x": {
+      "shift": -3,
+      "value": 1.000063171970232
+    },
+    "scale_ratio_y": {
+      "shift": -1,
+      "value": 1.000085162845654
+    }
+  },
+  "nonzero_shifts_meeting_all_paper_targets": [],
+  "findings": [
+    {
+      "severity": "info",
+      "code": "expected_nep_shift_target_autocorr_below_paper_targets",
+      "shift": 2,
+      "shift_ms": 100,
+      "blocking_metrics": [
+        {
+          "metric": "keyboard_accuracy",
+          "actual": 0.17447975052483541,
+          "target": 0.73,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.5555202494751645
+        },
+        {
+          "metric": "mouse_button_accuracy",
+          "actual": 0.021471352695219798,
+          "target": 0.957,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.9355286473047801
+        },
+        {
+          "metric": "pearson_x",
+          "actual": 0.41486074393357936,
+          "target": 0.796,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.3811392560664207
+        },
+        {
+          "metric": "pearson_y",
+          "actual": 0.38618132090750656,
+          "target": 0.783,
+          "direction": "higher",
+          "passed": false,
+          "gap_to_target": 0.39681867909249346
+        }
+      ]
+    },
+    {
+      "severity": "info",
+      "code": "no_nonzero_target_autocorr_shift_meets_all_paper_targets"
+    }
+  ],
+  "interpretation": {
+    "shift_definition": "target_autocorr compares ground-truth tokens at row i against ground-truth tokens at row i+k within the same recording fragment.",
+    "next_action_if_expected_shift_fails": "Do not spend a 4xH200 run on a simple NEP/label-offset hypothesis; change the supervision/modeling problem or use a teacher/latent-state branch with a prefix gate first.",
+    "next_action_if_expected_shift_passes": "Validate a shifted-label or NEP-aligned training candidate on prefix rows before any full-corpus 4xH200 promotion."
+  }
+}
