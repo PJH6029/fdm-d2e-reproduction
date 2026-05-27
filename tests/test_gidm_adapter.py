@@ -13,7 +13,7 @@ from fdm_d2e.eval.gidm_runner import (
     prepare_desktop_minimal_inference_script,
     write_chunked_gidm_manifest,
 )
-from fdm_d2e.eval.gidm_targets import extract_gidm_target_records
+from fdm_d2e.eval.gidm_targets import enrich_gidm_manifest_with_target_timing, extract_gidm_target_records
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
@@ -644,6 +644,157 @@ def test_extract_gidm_target_records_uses_by_recording_roots(tmp_path: Path):
     assert payload["status"] == "pass"
     assert payload["rows_written"] == 2
     assert [row["sequence_id"] for row in rows] == ["rec_001#000001", "rec_001#000000"]
+
+
+def test_enrich_gidm_manifest_with_target_timing_uses_by_recording_rows(tmp_path: Path):
+    root = tmp_path / "shard_0" / "by_recording"
+    records = root / "d2e_480p" / "Game" / "rec_001" / "all_records.jsonl"
+    _write_jsonl(
+        records,
+        [
+            {
+                "sequence_id": "rec_001#train",
+                "source_id": "d2e_480p",
+                "universe_row_id": "d2e_480p:Game/rec_001",
+                "cross_resolution_key": "Game/rec_001",
+                "source_recording_id": "rec_001",
+                "recording_id": "d2e_480p:Game/rec_001",
+                "game": "Game",
+                "timestamp_ns": 1_000_000_000,
+                "bin_index": 20,
+                "eval_split_tags": [],
+            },
+            {
+                "sequence_id": "rec_001#heldout0",
+                "source_id": "d2e_480p",
+                "universe_row_id": "d2e_480p:Game/rec_001",
+                "cross_resolution_key": "Game/rec_001",
+                "source_recording_id": "rec_001",
+                "recording_id": "d2e_480p:Game/rec_001",
+                "game": "Game",
+                "timestamp_ns": 1_173_417_098_600,
+                "bin_index": 23_420,
+                "eval_split_tags": ["temporal"],
+            },
+            {
+                "sequence_id": "rec_001#heldout1",
+                "source_id": "d2e_480p",
+                "universe_row_id": "d2e_480p:Game/rec_001",
+                "cross_resolution_key": "Game/rec_001",
+                "source_recording_id": "rec_001",
+                "recording_id": "d2e_480p:Game/rec_001",
+                "game": "Game",
+                "timestamp_ns": 1_173_467_098_600,
+                "bin_index": 23_421,
+                "eval_split_tags": ["temporal"],
+            },
+        ],
+    )
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "recordings": [
+                    {
+                        "universe_row_id": "d2e_480p:Game/rec_001",
+                        "source_id": "d2e_480p",
+                        "game": "Game",
+                        "recording_id": "rec_001",
+                        "row_count": 2,
+                        "timestamp_min_ns": None,
+                        "timestamp_max_ns": None,
+                        "bin_index_min": None,
+                        "bin_index_max": None,
+                        "prediction_mcap_path": str(tmp_path / "pred.mcap"),
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    out = tmp_path / "timed_manifest.json"
+    payload = enrich_gidm_manifest_with_target_timing(
+        manifest_path=manifest,
+        by_recording_roots=[tmp_path / "shard_*" / "by_recording"],
+        output_path=out,
+        summary_out=tmp_path / "summary.json",
+    )
+    timed = json.loads(out.read_text(encoding="utf-8"))
+    row = timed["recordings"][0]
+
+    assert payload["status"] == "pass"
+    assert row["row_count"] == 2
+    assert row["timestamp_min_ns"] == 1_173_417_098_600
+    assert row["timestamp_max_ns"] == 1_173_467_098_600
+    assert row["bin_index_min"] == 23_420
+    assert row["bin_index_max"] == 23_421
+    assert row["target_timing_source"] == "by_recording_scan"
+
+
+def test_enrich_gidm_manifest_with_target_timing_can_use_target_records(tmp_path: Path):
+    target = tmp_path / "targets.jsonl"
+    _write_jsonl(
+        target,
+        [
+            {
+                "sequence_id": "rec_001#heldout0",
+                "source_id": "d2e_480p",
+                "universe_row_id": "d2e_480p:Game/rec_001",
+                "cross_resolution_key": "Game/rec_001",
+                "source_recording_id": "rec_001",
+                "recording_id": "d2e_480p:Game/rec_001",
+                "game": "Game",
+                "timestamp_ns": 1_173_417_098_600,
+                "bin_index": 23_420,
+                "eval_split_tags": ["temporal"],
+            },
+            {
+                "sequence_id": "rec_001#heldout1",
+                "source_id": "d2e_480p",
+                "universe_row_id": "d2e_480p:Game/rec_001",
+                "cross_resolution_key": "Game/rec_001",
+                "source_recording_id": "rec_001",
+                "recording_id": "d2e_480p:Game/rec_001",
+                "game": "Game",
+                "timestamp_ns": 1_173_467_098_600,
+                "bin_index": 23_421,
+                "eval_split_tags": ["temporal"],
+            },
+        ],
+    )
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "recordings": [
+                    {
+                        "universe_row_id": "d2e_480p:Game/rec_001",
+                        "source_id": "d2e_480p",
+                        "game": "Game",
+                        "recording_id": "rec_001",
+                        "row_count": 2,
+                        "prediction_mcap_path": str(tmp_path / "pred.mcap"),
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    out = tmp_path / "timed_manifest.json"
+    payload = enrich_gidm_manifest_with_target_timing(
+        manifest_path=manifest,
+        target_record_paths=[target],
+        output_path=out,
+        summary_out=tmp_path / "summary.json",
+    )
+    row = json.loads(out.read_text(encoding="utf-8"))["recordings"][0]
+
+    assert payload["status"] == "pass"
+    assert row["row_count"] == 2
+    assert row["bin_index_min"] == 23_420
+    assert row["target_timing_source"] == "target_record_scan"
 
 
 def test_chunked_gidm_plan_uses_bin_indices_and_writes_manifest(tmp_path: Path):

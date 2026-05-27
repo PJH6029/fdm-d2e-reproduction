@@ -1,0 +1,39 @@
+{
+  "schema": "gidm_manifest_target_timing_enrichment.v1",
+  "status": "pass",
+  "error_count": 0,
+  "warning_count": 0,
+  "manifest_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_scoped_manifest.json",
+  "output_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_timing_enriched_manifest.json",
+  "output_sha256": "8b90beaba9610e096a8c53bcaee92b0f6e048a194494c509e8a881fa3d394002",
+  "by_recording_roots": [],
+  "target_record_paths": [
+    "outputs/gidm_exact_split/pilot_retry2/targets.jsonl"
+  ],
+  "expanded_root_count": 0,
+  "recording_count": 1,
+  "target_rows": 5855,
+  "split_tags": [
+    "heldout_game",
+    "heldout_recording",
+    "temporal"
+  ],
+  "recording_keys": [],
+  "max_recordings": 1,
+  "per_recording": [
+    {
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "row_count": 5855,
+      "timestamp_min_ns": 1173417098600,
+      "timestamp_max_ns": 1466117098600,
+      "bin_index_min": 23420,
+      "bin_index_max": 29274,
+      "split_tags": [
+        "temporal"
+      ],
+      "target_timing_records_path": null
+    }
+  ],
+  "findings": [],
+  "claim_boundary": "Target timing enrichment evidence only; metric claims require inference/conversion/metrics artifacts."
+}

@@ -106,3 +106,11 @@ Evidence:
 - Hash manifest: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_artifact_summary.json`.
 
 Claim boundary: this proves the chunked released G-IDM execution path can produce timestamp-aligned MCAP chunks and local JSONL conversion. It does not satisfy G005 paper-target win, full exact-split G-IDM baseline, or our-IDM training evidence.
+
+### Target-timed chunk scheduling fix
+
+The successful two-chunk G-IDM pilot used decode-summary count manifest rows with missing `bin_index_min/max`, so chunks were scheduled from video time `0s` while the Apex temporal target rows begin near bin `23420` / video time `1171s`. This made the pilot execution valid infrastructure evidence but its metrics mostly empty-bin diagnostics.
+
+Added target timing enrichment for G-IDM manifests from either by-recording JSONL roots or an extracted target-record JSONL. Local pilot artifact `artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_timing_enrichment_summary.json` enriches `d2e_480p:Apex_Legends/0805_01` to `bin_index_min=23420`, `timestamp_min_ns=1173417098600`; dry-run `artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_timed_chunk_dry_run_summary.json` now schedules the first chunk at `start_time_seconds=1171.0` and `timestamp_offset_seconds=1173.4170986`.
+
+Next live pilot should rerun chunked G-IDM on this timing-enriched manifest; previous two MCAP chunks remain useful only as executable-path evidence.
