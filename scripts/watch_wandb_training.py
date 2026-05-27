@@ -68,8 +68,17 @@ def _latest_gpu_rows(path: Path) -> list[dict[str, Any]]:
     data_rows = [row for row in rows if not any(cell.lower() == "timestamp" for cell in row)]
     if not data_rows:
         return []
-    latest_ts = data_rows[-1][0]
-    latest = [row for row in data_rows if row and row[0] == latest_ts]
+    latest_reversed: list[list[str]] = []
+    seen_indices: set[str] = set()
+    for row in reversed(data_rows):
+        if len(row) < 2:
+            continue
+        index = row[1]
+        if index in seen_indices:
+            break
+        seen_indices.add(index)
+        latest_reversed.append(row)
+    latest = list(reversed(latest_reversed))
     parsed: list[dict[str, Any]] = []
     for row in latest:
         if len(row) < 8:
