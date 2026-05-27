@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Sequence
 
 from fdm_d2e.data.d2e_real import decode_mcap_events
+from fdm_d2e.eval.gidm_targets import prediction_windows_ns
 from fdm_d2e.io_utils import ensure_dir, read_json, stable_hash_json, write_json
 from fdm_d2e.tokenization.actions import tokenize_event
 
@@ -396,6 +397,7 @@ def convert_gidm_mcap_predictions(
     bin_ms: int = 50,
     timestamp_shift_ns: int = 0,
     auto_timestamp_shift_from_screen: bool = False,
+    filter_targets_to_prediction_windows: bool = False,
     allow_missing: bool = False,
     decode_fn: Callable[..., list[dict[str, Any]]] = decode_mcap_events,
 ) -> dict[str, Any]:
@@ -411,8 +413,23 @@ def convert_gidm_mcap_predictions(
         missing = sorted(set(by_key) - set(available))
         if missing:
             raise FileNotFoundError(f"missing predicted MCAP files for {len(missing)} recording(s), first={missing[0]}")
+    windows_by_key: dict[str, list[tuple[int, int]]] = {}
+    if filter_targets_to_prediction_windows:
+        missing_windows = []
+        for key, row in available.items():
+            windows = prediction_windows_ns(row, bin_ms=bin_ms)
+            if not windows:
+                missing_windows.append(key)
+            else:
+                windows_by_key[key] = windows
+        if missing_windows:
+            raise ValueError(
+                "filter_targets_to_prediction_windows requested but prediction windows are missing "
+                f"for {len(missing_windows)} recording(s), first={missing_windows[0]}"
+            )
 
     targets_by_key: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    filtered_out_by_key: dict[str, int] = defaultdict(int)
     fields = [
         "sequence_id",
         "source_id",
@@ -426,6 +443,15 @@ def convert_gidm_mcap_predictions(
         for row in _iter_jsonl_fields(path, fields):
             key = _record_key(row)
             if key in available:
+                if filter_targets_to_prediction_windows:
+                    try:
+                        timestamp_ns = int(row.get("timestamp_ns", 0))
+                    except (TypeError, ValueError):
+                        filtered_out_by_key[key] += 1
+                        continue
+                    if not any(start <= timestamp_ns < end for start, end in windows_by_key.get(key, [])):
+                        filtered_out_by_key[key] += 1
+                        continue
                 targets_by_key[key].append(row)
 
     decoded_counts: dict[str, int] = {}
@@ -501,6 +527,9 @@ def convert_gidm_mcap_predictions(
         "bin_ms": int(bin_ms),
         "timestamp_shift_ns": int(timestamp_shift_ns),
         "auto_timestamp_shift_from_screen": bool(auto_timestamp_shift_from_screen),
+        "filter_targets_to_prediction_windows": bool(filter_targets_to_prediction_windows),
+        "prediction_window_counts": {key: len(value) for key, value in windows_by_key.items()},
+        "filtered_out_target_rows_by_key": dict(filtered_out_by_key),
         "timestamp_shifts_by_key": timestamp_shifts_by_key,
         "auto_shift_skipped_by_key": auto_shift_skipped_by_key,
         "claim_boundary": "This converts released G-IDM MCAP predictions to the local predictions.jsonl metric boundary; metric claims require a separate paper-metric/audit artifact.",

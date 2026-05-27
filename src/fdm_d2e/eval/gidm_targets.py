@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import glob
 import json
+import re
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -81,6 +82,67 @@ def _prediction_exists(row: dict[str, Any]) -> bool:
     return output.exists() and output.stat().st_size > 0
 
 
+_CHUNK_NAME_RE = re.compile(r"chunk_(?P<chunk_index>\d+)_start(?P<start_ms>\d+)_dur(?P<duration_ms>\d+)\.mcap$")
+
+
+def _prediction_windows_ns(row: dict[str, Any], *, bin_ms: int = 50) -> list[tuple[int, int]]:
+    """Return ground-truth timestamp windows covered by chunked predictions.
+
+    New chunk manifests carry explicit `prediction_mcap_chunks`.  For older
+    chunk manifests, fall back to the deterministic chunk filename convention
+    plus the row's target timing fields.  Non-chunked/full-record manifests
+    intentionally return an empty list so callers can fail closed when they ask
+    for partial-window filtering.
+    """
+
+    windows: list[tuple[int, int]] = []
+    chunks = row.get("prediction_mcap_chunks")
+    if isinstance(chunks, list):
+        for chunk in chunks:
+            if not isinstance(chunk, dict):
+                continue
+            try:
+                start_ns = int(chunk.get("timestamp_start_ns"))
+                end_ns = int(chunk.get("timestamp_end_ns_exclusive"))
+            except (TypeError, ValueError):
+                try:
+                    start_ns = int(round(float(chunk["timestamp_offset_seconds"]) * 1e9))
+                    end_ns = int(round((float(chunk["timestamp_offset_seconds"]) + float(chunk["duration_seconds"])) * 1e9))
+                except (KeyError, TypeError, ValueError):
+                    continue
+            if end_ns > start_ns:
+                windows.append((start_ns, end_ns))
+    if windows:
+        return sorted(windows)
+
+    if row.get("bin_index_min") is None or row.get("timestamp_min_ns") is None:
+        return []
+    try:
+        base_timestamp_ns = int(row["timestamp_min_ns"]) - int(row["bin_index_min"]) * int(bin_ms) * 1_000_000
+    except (TypeError, ValueError):
+        return []
+    paths = row.get("prediction_mcap_paths")
+    if not isinstance(paths, list):
+        return []
+    for path in paths:
+        match = _CHUNK_NAME_RE.search(Path(str(path)).name)
+        if not match:
+            continue
+        start_ns = base_timestamp_ns + int(match.group("start_ms")) * 1_000_000
+        end_ns = start_ns + int(match.group("duration_ms")) * 1_000_000
+        if end_ns > start_ns:
+            windows.append((start_ns, end_ns))
+    return sorted(windows)
+
+
+def _timestamp_in_windows(timestamp_ns: int, windows: Sequence[tuple[int, int]]) -> bool:
+    return any(start_ns <= int(timestamp_ns) < end_ns for start_ns, end_ns in windows)
+
+
+def prediction_windows_ns(row: dict[str, Any], *, bin_ms: int = 50) -> list[tuple[int, int]]:
+    return _prediction_windows_ns(row, bin_ms=bin_ms)
+
+
 def _records_path_for_row(row: dict[str, Any], roots: Sequence[Path]) -> Path | None:
     source_id = str(row.get("source_id") or "")
     game = str(row.get("game") or "")
@@ -104,6 +166,8 @@ def extract_gidm_target_records(
     recording_keys: Sequence[str] | None = None,
     split_tags: Sequence[str] = TARGET_SPLIT_TAGS,
     only_existing_predictions: bool = False,
+    filter_to_prediction_windows: bool = False,
+    bin_ms: int = 50,
 ) -> dict[str, Any]:
     manifest = read_json(manifest_path)
     wanted = {str(key) for key in (recording_keys or [])}
@@ -132,6 +196,11 @@ def extract_gidm_target_records(
     with output.open("w", encoding="utf-8", buffering=1024 * 1024) as handle:
         for manifest_row in manifest_rows:
             key = str(manifest_row.get("universe_row_id") or "")
+            prediction_windows = _prediction_windows_ns(manifest_row, bin_ms=bin_ms) if filter_to_prediction_windows else []
+            if filter_to_prediction_windows and not prediction_windows:
+                findings.append({"severity": "error", "code": "missing_prediction_windows", "universe_row_id": key})
+                per_recording.append({"universe_row_id": key, "status": "missing_prediction_windows", "rows_written": 0})
+                continue
             records_path = _records_path_for_row(manifest_row, roots)
             if records_path is None:
                 findings.append({"severity": "error", "code": "missing_by_recording_records", "universe_row_id": key})
@@ -142,6 +211,14 @@ def extract_gidm_target_records(
                 tags = _split_tags(row)
                 if wanted_tags and not (wanted_tags & set(tags)):
                     continue
+                if filter_to_prediction_windows:
+                    try:
+                        timestamp_ns = int(row.get("timestamp_ns", 0))
+                    except (TypeError, ValueError):
+                        findings.append({"severity": "warning", "code": "invalid_target_timestamp", "universe_row_id": key})
+                        continue
+                    if not _timestamp_in_windows(timestamp_ns, prediction_windows):
+                        continue
                 compact = {field: row.get(field) for field in TARGET_FIELDS if field in row}
                 compact["eval_split_tags"] = tags
                 selected.append(compact)
@@ -150,7 +227,9 @@ def extract_gidm_target_records(
                 handle.write(json.dumps(compact, sort_keys=True) + "\n")
                 rows_written += 1
             expected = int(manifest_row.get("row_count", 0) or 0)
-            if expected and expected != len(selected):
+            if filter_to_prediction_windows and not selected:
+                findings.append({"severity": "error", "code": "no_rows_in_prediction_windows", "universe_row_id": key})
+            if expected and expected != len(selected) and not filter_to_prediction_windows:
                 findings.append(
                     {
                         "severity": "error",
@@ -163,9 +242,16 @@ def extract_gidm_target_records(
             per_recording.append(
                 {
                     "universe_row_id": key,
-                    "status": "pass" if expected == 0 or expected == len(selected) else "row_count_mismatch",
+                    "status": (
+                        "pass"
+                        if filter_to_prediction_windows or expected == 0 or expected == len(selected)
+                        else "row_count_mismatch"
+                    ),
+                    "filter_to_prediction_windows": bool(filter_to_prediction_windows),
+                    "prediction_window_count": len(prediction_windows),
                     "records_path": str(records_path),
-                    "expected_rows": expected,
+                    "expected_rows": None if filter_to_prediction_windows else expected,
+                    "manifest_row_count": expected,
                     "rows_written": len(selected),
                     "split_tags": sorted({tag for row in selected for tag in _split_tags(row)}),
                 }
@@ -185,6 +271,8 @@ def extract_gidm_target_records(
         "rows_written": rows_written,
         "split_tags": sorted(wanted_tags),
         "only_existing_predictions": bool(only_existing_predictions),
+        "filter_to_prediction_windows": bool(filter_to_prediction_windows),
+        "bin_ms": int(bin_ms),
         "recording_keys": [str(key) for key in (recording_keys or [])],
         "per_recording": per_recording,
         "findings": findings,

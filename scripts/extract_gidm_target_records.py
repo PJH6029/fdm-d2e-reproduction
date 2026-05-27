@@ -20,6 +20,12 @@ def main() -> int:
     parser.add_argument("--recording-key", action="append", default=[])
     parser.add_argument("--split-tag", action="append", default=[])
     parser.add_argument("--only-existing-predictions", action="store_true")
+    parser.add_argument(
+        "--filter-to-prediction-windows",
+        action="store_true",
+        help="For chunked/partial G-IDM pilots, write only target rows covered by predicted chunk timestamp windows.",
+    )
+    parser.add_argument("--bin-ms", type=int, default=50)
     parser.add_argument("--allow-fail", action="store_true")
     args = parser.parse_args()
     roots = args.by_recording_root or ["outputs/data/d2e_full_corpus_shards_accel64/shard_*/by_recording"]
@@ -31,6 +37,8 @@ def main() -> int:
         recording_keys=args.recording_key,
         split_tags=args.split_tag or TARGET_SPLIT_TAGS,
         only_existing_predictions=args.only_existing_predictions,
+        filter_to_prediction_windows=args.filter_to_prediction_windows,
+        bin_ms=args.bin_ms,
     )
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0 if payload["status"] == "pass" or args.allow_fail else 2

@@ -190,6 +190,8 @@ def run_gidm_exact_split_pipeline(
                 recording_keys=selected_recording_keys,
                 split_tags=_list(dict(config.get("paper_metrics", {})).get("split_tags"), TARGET_SPLIT_TAGS),
                 only_existing_predictions=bool(allow_partial),
+                filter_to_prediction_windows=bool(config.get("filter_targets_to_prediction_windows", False)),
+                bin_ms=int(config.get("bin_ms", 50)),
             )
             statuses["target_extraction"] = {
                 "status": target_summary.get("status"),
@@ -208,6 +210,7 @@ def run_gidm_exact_split_pipeline(
                 bin_ms=int(config.get("bin_ms", 50)),
                 timestamp_shift_ns=int(config.get("timestamp_shift_ns", 0) or 0),
                 auto_timestamp_shift_from_screen=bool(config.get("auto_timestamp_shift_from_screen", True)),
+                filter_targets_to_prediction_windows=bool(config.get("filter_targets_to_prediction_windows", False)),
                 allow_missing=bool(allow_partial),
             )
             statuses["conversion"] = {

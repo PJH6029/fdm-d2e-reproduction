@@ -336,6 +336,86 @@ def test_convert_gidm_mcap_predictions_reads_chunked_aligned_paths(tmp_path: Pat
     assert rows[1]["predicted_tokens"] == ["MOUSE_DX_P1", "MOUSE_DY_N1"]
 
 
+def test_convert_gidm_mcap_predictions_can_filter_to_chunk_windows(tmp_path: Path):
+    target = tmp_path / "target.jsonl"
+    _write_jsonl(
+        target,
+        [
+            {
+                "sequence_id": "rec#before",
+                "universe_row_id": "d2e_480p:Game/rec",
+                "recording_id": "d2e_480p:Game/rec",
+                "source_id": "d2e_480p",
+                "cross_resolution_key": "Game/rec",
+                "game": "Game",
+                "timestamp_ns": 2_399_950_000,
+            },
+            {
+                "sequence_id": "rec#inside",
+                "universe_row_id": "d2e_480p:Game/rec",
+                "recording_id": "d2e_480p:Game/rec",
+                "source_id": "d2e_480p",
+                "cross_resolution_key": "Game/rec",
+                "game": "Game",
+                "timestamp_ns": 2_400_000_000,
+            },
+            {
+                "sequence_id": "rec#after",
+                "universe_row_id": "d2e_480p:Game/rec",
+                "recording_id": "d2e_480p:Game/rec",
+                "source_id": "d2e_480p",
+                "cross_resolution_key": "Game/rec",
+                "game": "Game",
+                "timestamp_ns": 2_500_000_000,
+            },
+        ],
+    )
+    chunk = tmp_path / "chunk_a.mcap"
+    chunk.write_text("placeholder", encoding="utf-8")
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "recordings": [
+                    {
+                        "universe_row_id": "d2e_480p:Game/rec",
+                        "prediction_mcap_paths": [str(chunk)],
+                        "prediction_mcap_chunks": [
+                            {
+                                "prediction_mcap_path": str(chunk),
+                                "timestamp_start_ns": 2_400_000_000,
+                                "timestamp_end_ns_exclusive": 2_450_000_000,
+                            }
+                        ],
+                        "prediction_timestamps_aligned_to_ground_truth": True,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def fake_decode(_path, *, topics, limit=None):
+        return [{"type": "keyboard", "event_type": "press", "key": "87", "timestamp_ns": 2_401_000_000}]
+
+    out = tmp_path / "predictions.jsonl"
+    payload = convert_gidm_mcap_predictions(
+        manifest_path=manifest,
+        target_record_paths=[target],
+        output_path=out,
+        filter_targets_to_prediction_windows=True,
+        decode_fn=fake_decode,
+    )
+    rows = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines()]
+
+    assert payload["rows_written"] == 1
+    assert payload["filter_targets_to_prediction_windows"] is True
+    assert payload["prediction_window_counts"]["d2e_480p:Game/rec"] == 1
+    assert payload["filtered_out_target_rows_by_key"]["d2e_480p:Game/rec"] == 2
+    assert rows[0]["sequence_id"] == "rec#inside"
+    assert rows[0]["predicted_tokens"] == ["KEY_PRESS_87"]
+
+
 def test_prepare_desktop_minimal_inference_script_keeps_desktop_constants(tmp_path: Path):
     repo = tmp_path / "D2E"
     repo.mkdir()
@@ -646,6 +726,84 @@ def test_extract_gidm_target_records_uses_by_recording_roots(tmp_path: Path):
     assert [row["sequence_id"] for row in rows] == ["rec_001#000001", "rec_001#000000"]
 
 
+def test_extract_gidm_target_records_can_filter_to_chunk_windows(tmp_path: Path):
+    root = tmp_path / "shard_0" / "by_recording"
+    records = root / "d2e_480p" / "Game" / "rec_001" / "all_records.jsonl"
+    _write_jsonl(
+        records,
+        [
+            {
+                "sequence_id": "rec_001#before",
+                "source_id": "d2e_480p",
+                "universe_row_id": "d2e_480p:Game/rec_001",
+                "cross_resolution_key": "Game/rec_001",
+                "source_recording_id": "rec_001",
+                "recording_id": "d2e_480p:Game/rec_001",
+                "game": "Game",
+                "timestamp_ns": 999_000_000,
+                "bin_index": 19,
+                "eval_split_tags": ["temporal"],
+                "ground_truth_tokens": ["KEY_PRESS_65"],
+            },
+            {
+                "sequence_id": "rec_001#inside",
+                "source_id": "d2e_480p",
+                "universe_row_id": "d2e_480p:Game/rec_001",
+                "cross_resolution_key": "Game/rec_001",
+                "source_recording_id": "rec_001",
+                "recording_id": "d2e_480p:Game/rec_001",
+                "game": "Game",
+                "timestamp_ns": 1_000_000_000,
+                "bin_index": 20,
+                "eval_split_tags": ["temporal"],
+                "ground_truth_tokens": ["KEY_PRESS_87"],
+            },
+        ],
+    )
+    pred = tmp_path / "pred.mcap"
+    pred.write_bytes(b"mcap")
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "recordings": [
+                    {
+                        "universe_row_id": "d2e_480p:Game/rec_001",
+                        "source_id": "d2e_480p",
+                        "game": "Game",
+                        "recording_id": "rec_001",
+                        "row_count": 2,
+                        "prediction_mcap_paths": [str(pred)],
+                        "prediction_mcap_chunks": [
+                            {
+                                "prediction_mcap_path": str(pred),
+                                "timestamp_start_ns": 1_000_000_000,
+                                "timestamp_end_ns_exclusive": 1_050_000_000,
+                            }
+                        ],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    out = tmp_path / "targets.jsonl"
+    payload = extract_gidm_target_records(
+        manifest_path=manifest,
+        by_recording_roots=[tmp_path / "shard_*" / "by_recording"],
+        output_path=out,
+        filter_to_prediction_windows=True,
+    )
+    rows = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines()]
+
+    assert payload["status"] == "pass"
+    assert payload["filter_to_prediction_windows"] is True
+    assert payload["rows_written"] == 1
+    assert payload["per_recording"][0]["prediction_window_count"] == 1
+    assert rows[0]["sequence_id"] == "rec_001#inside"
+
+
 def test_enrich_gidm_manifest_with_target_timing_uses_by_recording_rows(tmp_path: Path):
     root = tmp_path / "shard_0" / "by_recording"
     records = root / "d2e_480p" / "Game" / "rec_001" / "all_records.jsonl"
@@ -847,6 +1005,9 @@ def test_chunked_gidm_plan_uses_bin_indices_and_writes_manifest(tmp_path: Path):
     row = payload["recordings"][0]
     assert row["prediction_timestamps_aligned_to_ground_truth"] is True
     assert row["prediction_mcap_paths"] == paths_by_key["d2e_480p:Game/rec_001"]
+    assert row["prediction_mcap_chunks"][0]["timestamp_start_ns"] == 319_403_399_000
+    assert row["prediction_mcap_chunks"][0]["timestamp_end_ns_exclusive"] == 319_903_399_000
+    assert row["chunked_prediction"]["chunk_count"] == len(paths_by_key["d2e_480p:Game/rec_001"])
 
 
 def test_chunked_gidm_plan_can_limit_total_chunks_for_pilots(tmp_path: Path):

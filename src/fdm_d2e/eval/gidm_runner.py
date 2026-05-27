@@ -226,6 +226,36 @@ def _chunk_output_path(prediction_mcap_path: str, *, universe_row_id: str, chunk
     return chunk_dir / f"chunk_{chunk_index:04d}_start{start_ms:012d}_dur{duration_ms:09d}.mcap"
 
 
+def _chunk_schedule_for_row(
+    row: dict[str, Any],
+    *,
+    chunk_seconds: float,
+    chunk_context_seconds: float,
+    bin_ms: int,
+) -> list[dict[str, float | int]]:
+    start_rel, end_rel, base_timestamp_seconds = _recording_timing(row, bin_ms=bin_ms)
+    first_start = max(0.0, start_rel - float(chunk_context_seconds))
+    final_end = max(first_start + int(bin_ms) / 1000.0, end_rel + float(chunk_context_seconds))
+    schedule: list[dict[str, float | int]] = []
+    cursor = first_start
+    chunk_index = 0
+    while cursor < final_end - 1e-9:
+        chunk_end = min(final_end, cursor + float(chunk_seconds))
+        duration = max(int(bin_ms) / 1000.0, chunk_end - cursor)
+        schedule.append(
+            {
+                "chunk_index": int(chunk_index),
+                "start_time_seconds": float(cursor),
+                "duration_seconds": float(duration),
+                "timestamp_offset_seconds": float(base_timestamp_seconds + cursor),
+                "timestamp_end_seconds": float(base_timestamp_seconds + cursor + duration),
+            }
+        )
+        cursor += float(chunk_seconds)
+        chunk_index += 1
+    return schedule
+
+
 def build_gidm_chunk_run_plan(
     *,
     manifest_path: str | Path,
@@ -268,20 +298,19 @@ def build_gidm_chunk_run_plan(
         if max_chunks is not None and selected_chunk_count >= int(max_chunks):
             break
         key = str(row["universe_row_id"])
-        start_rel, end_rel, base_timestamp_seconds = _recording_timing(row, bin_ms=bin_ms)
-        first_start = max(0.0, start_rel - float(chunk_context_seconds))
-        final_end = max(first_start + int(bin_ms) / 1000.0, end_rel + float(chunk_context_seconds))
-        starts = []
-        cursor = first_start
-        while cursor < final_end - 1e-9:
-            starts.append(cursor)
-            cursor += float(chunk_seconds)
+        schedule = _chunk_schedule_for_row(
+            row,
+            chunk_seconds=float(chunk_seconds),
+            chunk_context_seconds=float(chunk_context_seconds),
+            bin_ms=int(bin_ms),
+        )
         chunk_paths: list[str] = []
-        for chunk_index, chunk_start in enumerate(starts):
+        for scheduled in schedule:
             if max_chunks is not None and selected_chunk_count >= int(max_chunks):
                 break
-            chunk_end = min(final_end, chunk_start + float(chunk_seconds))
-            duration = max(int(bin_ms) / 1000.0, chunk_end - chunk_start)
+            chunk_index = int(scheduled["chunk_index"])
+            chunk_start = float(scheduled["start_time_seconds"])
+            duration = float(scheduled["duration_seconds"])
             output_path = _chunk_output_path(
                 str(row["prediction_mcap_path"]),
                 universe_row_id=key,
@@ -305,7 +334,7 @@ def build_gidm_chunk_run_plan(
                     log_path=str(log_root / f"{row_index:05d}_{chunk_index:04d}_{safe}.log"),
                     start_time_seconds=float(chunk_start),
                     duration_seconds=float(duration),
-                    timestamp_offset_seconds=float(base_timestamp_seconds + chunk_start),
+                    timestamp_offset_seconds=float(scheduled["timestamp_offset_seconds"]),
                 )
             )
         if chunk_paths:
@@ -466,13 +495,36 @@ def write_chunked_gidm_manifest(
         paths = chunk_paths_by_key.get(key)
         if not paths:
             continue
+        schedule = _chunk_schedule_for_row(
+            row,
+            chunk_seconds=float(chunk_seconds),
+            chunk_context_seconds=float(chunk_context_seconds),
+            bin_ms=int(bin_ms),
+        )
+        chunk_rows = []
+        for path, scheduled in zip(paths, schedule, strict=False):
+            timestamp_offset = float(scheduled["timestamp_offset_seconds"])
+            duration = float(scheduled["duration_seconds"])
+            chunk_rows.append(
+                {
+                    "chunk_index": int(scheduled["chunk_index"]),
+                    "prediction_mcap_path": str(path),
+                    "start_time_seconds": float(scheduled["start_time_seconds"]),
+                    "duration_seconds": duration,
+                    "timestamp_offset_seconds": timestamp_offset,
+                    "timestamp_start_ns": int(round(timestamp_offset * 1e9)),
+                    "timestamp_end_ns_exclusive": int(round((timestamp_offset + duration) * 1e9)),
+                }
+            )
         row["prediction_mcap_paths"] = paths
+        row["prediction_mcap_chunks"] = chunk_rows
         row["prediction_timestamps_aligned_to_ground_truth"] = True
         row["chunked_prediction"] = {
             "chunk_seconds": float(chunk_seconds),
             "chunk_context_seconds": float(chunk_context_seconds),
             "bin_ms": int(bin_ms),
             "timestamp_mode": "ground_truth_aligned",
+            "chunk_count": len(chunk_rows),
         }
         updated += 1
         selected_rows.append(row)
@@ -514,7 +566,7 @@ def run_gidm_manifest_inference(
     dry_run: bool = False,
 ) -> dict[str, Any]:
     repo = Path(d2e_repo)
-    script = prepare_desktop_minimal_inference_script(repo)
+    script = repo / "inference_desktop_minimal.py" if dry_run else prepare_desktop_minimal_inference_script(repo)
     chunk_paths_by_key: dict[str, list[str]] = {}
     if chunk_seconds is not None:
         plans, chunk_paths_by_key = build_gidm_chunk_run_plan(

@@ -1,0 +1,64 @@
+{
+  "schema": "gidm_manifest_inference_run.v1",
+  "manifest_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_timing_enriched_manifest.json",
+  "chunk_manifest_output": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_window_manifest.json",
+  "d2e_repo": "outputs/external/D2E",
+  "inference_script": "outputs/external/D2E/inference_desktop_minimal.py",
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "workers": 2,
+  "cuda_devices": [
+    "0",
+    "1"
+  ],
+  "max_recordings": null,
+  "recording_keys": [],
+  "max_context_length": 2048,
+  "max_duration": null,
+  "max_chunks": 2,
+  "chunk_seconds": 5.0,
+  "chunk_context_seconds": 0.0,
+  "bin_ms": 50,
+  "resume": false,
+  "dry_run": true,
+  "planned_recordings": 1,
+  "planned_chunks": 2,
+  "chunked_recording_count": 1,
+  "completed_recordings": 0,
+  "failed_recordings": 0,
+  "completed_chunks": 0,
+  "failed_chunks": 0,
+  "rows": [
+    {
+      "index": 0,
+      "chunk_index": 0,
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv",
+      "prediction_mcap_path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001171000_dur000005000.mcap",
+      "cuda_device": "0",
+      "log_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_window_logs/00000_0000_d2e_480p_Apex_Legends_0805_01.log",
+      "start_time_seconds": 1171.0,
+      "duration_seconds": 5.0,
+      "timestamp_offset_seconds": 1173.4170986
+    },
+    {
+      "index": 1,
+      "chunk_index": 1,
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv",
+      "prediction_mcap_path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000001176000_dur000005000.mcap",
+      "cuda_device": "1",
+      "log_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_timed_window_logs/00000_0001_d2e_480p_Apex_Legends_0805_01.log",
+      "start_time_seconds": 1176.0,
+      "duration_seconds": 5.0,
+      "timestamp_offset_seconds": 1178.4170986
+    }
+  ],
+  "chunk_paths_by_key": {
+    "d2e_480p:Apex_Legends/0805_01": [
+      "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001171000_dur000005000.mcap",
+      "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000001176000_dur000005000.mcap"
+    ]
+  },
+  "chunk_manifest_written": true,
+  "claim_boundary": "Released G-IDM inference execution evidence only; metric claims require conversion plus paper-metric artifacts."
+}
