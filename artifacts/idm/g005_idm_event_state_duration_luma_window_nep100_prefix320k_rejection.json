@@ -1,0 +1,64 @@
+{
+  "candidate": "event_state_duration_luma_window_nep100_prefix320k",
+  "claim_boundary": "Prefix diagnostic only; not G005 completion evidence and not a D2E paper win.",
+  "created_at_epoch": 1779907534.1770713,
+  "decision": "Do not promote to full-corpus/full-GPU G005. Use this as negative evidence against naive NEP-style compact luma-window materialization and pivot to lighter learned endpoint specialists/calibration.",
+  "findings": [
+    {
+      "code": "paper_targets_missed",
+      "details": "Keyboard 0.0190 and mouse-button 0.0307 remain far below paper targets 0.730/0.957; mouse Pearson improves only to X/Y 0.5804/0.5546."
+    },
+    {
+      "code": "future_luma_window_not_sufficient",
+      "details": "Adding 0/2/4/6/8 compact-luma future offsets to event-state-duration context did not improve endpoint classification; it is worse than the previous event-context prefix matrix on keyboard/button/F1."
+    },
+    {
+      "code": "heldout_game_fpr_gate_failed",
+      "details": "Overall no-button FPR is 0.0764, but heldout_game FPR is 0.1073, above the <=0.10 hard gate."
+    },
+    {
+      "code": "gpu_underutilized_json_materialization",
+      "details": "Prefix materialization/stats used huge JSON rows and 1GPU run averaged only 0.184% GPU utilization; future probes should use tensor/cache features or CPU precompute before reserving GPUs."
+    }
+  ],
+  "gaps_to_paper": {
+    "keyboard_accuracy": 0.7110025208630998,
+    "mouse_button_accuracy": 0.9263338417125115,
+    "pearson_x": 0.2156384686074614,
+    "pearson_y": 0.22840932711585604,
+    "scale_ratio_x_excess": 0.3069989565703348,
+    "scale_ratio_y_excess": 0.0
+  },
+  "gpu_monitor_summary": {
+    "max_gpu_utilization_pct": 25.0,
+    "max_memory_used_mib": 67065.0,
+    "max_power_draw_w": 167.05,
+    "mean_gpu_utilization_pct": 0.18439716312056736,
+    "path": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_gpu_monitor.csv",
+    "rows": 141
+  },
+  "materialization_summary_path": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_materialization_summary.json",
+  "metrics_path": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_paper_metrics.json",
+  "paper_metrics": {
+    "empty_bins_as_correct": false,
+    "keyboard_accuracy": 0.01899747913690016,
+    "mouse_button_accuracy": 0.030666158287488424,
+    "pearson_x": 0.5803615313925387,
+    "pearson_y": 0.554590672884144,
+    "scale_ratio_x": 1.5369989565703348,
+    "scale_ratio_y": 1.2588359352346
+  },
+  "reservation_path": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_reservation.json",
+  "rows": 320000,
+  "run_summary_path": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_run_summary.json",
+  "schema": "g005_idm_candidate_rejection.v1",
+  "status": "rejected_prefix_diagnostic",
+  "strict_metrics": {
+    "heldout_game_no_button_false_positive_rate": 0.10727684068845042,
+    "heldout_recording_no_button_false_positive_rate": 0.08544983612192038,
+    "mouse_button_f1": 0.049203882356390935,
+    "no_button_false_positive_rate": 0.07643301870425938,
+    "temporal_no_button_false_positive_rate": 0.046502337886864614
+  },
+  "wandb_status_path": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_wandb_sidecar_status.json"
+}

@@ -1,0 +1,208 @@
+{
+  "claim_boundary": "NEP-style future-offset luma-window prefix diagnostic only; not G005 completion evidence.",
+  "config": "configs/model/idm_streaming_d2e_full_event_state_duration_luma_window_nep100_prefix320k.yaml",
+  "finished_at": "2026-05-27T18:39:35+0000",
+  "gpu_monitor_log": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_gpu_monitor.csv",
+  "materialization_summary": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_materialization_summary.json",
+  "paper_metrics": {
+    "alignment": {
+      "examples": [],
+      "missing_prediction_rows": 0,
+      "missing_target_rows": 0,
+      "rows_seen": 320000,
+      "sequence_id_mismatches": 0
+    },
+    "claim_boundary": "Paper-compatible metrics approximate public D2E evaluate.py semantics over pre-binned JSONL tokens; exact released G-IDM comparison remains G006.",
+    "error_count": 0,
+    "findings": [],
+    "groups": {
+      "all": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.01899747913690016,
+            "sample_count": 219766
+          },
+          "mouse_button": {
+            "button_accuracy": 0.030666158287488424,
+            "sample_count": 36718
+          },
+          "mouse_move": {
+            "pearson_x": 0.5803615313925387,
+            "pearson_y": 0.554590672884144,
+            "sample_count": 196722,
+            "scale_ratio_x": 1.5369989565703348,
+            "scale_ratio_y": 1.2588359352346,
+            "scale_sample_count": 320000
+          }
+        },
+        "rows": 320000,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.016331470827184853,
+            "num_examples": 60313
+          },
+          "mouse_button": {
+            "accuracy": 0.09606136936111748,
+            "exact_true_positive_examples": 839,
+            "f1": 0.049203882356390935,
+            "false_negative_examples": 7895,
+            "false_positive_examples": 24530,
+            "no_button_examples": 311266,
+            "no_button_false_positive_examples": 23791,
+            "no_button_false_positive_rate": 0.07643301870425938,
+            "num_examples": 8734,
+            "precision": 0.03307185935590681,
+            "predicted_examples": 25369,
+            "recall": 0.09606136936111748
+          }
+        }
+      },
+      "eval_split:heldout_game": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.013470050632105213,
+            "sample_count": 125612
+          },
+          "mouse_button": {
+            "button_accuracy": 0.023946442365462194,
+            "sample_count": 23302
+          },
+          "mouse_move": {
+            "pearson_x": 0.6747316131457198,
+            "pearson_y": 0.5701445494624504,
+            "sample_count": 76106,
+            "scale_ratio_x": 1.9894013987595285,
+            "scale_ratio_y": 1.421278827713944,
+            "scale_sample_count": 144695
+          }
+        },
+        "rows": 144695,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.0038119940265660614,
+            "num_examples": 25446
+          },
+          "mouse_button": {
+            "accuracy": 0.0773062363020522,
+            "exact_true_positive_examples": 388,
+            "f1": 0.03714696026807085,
+            "false_negative_examples": 4631,
+            "false_positive_examples": 15483,
+            "no_button_examples": 139676,
+            "no_button_false_positive_examples": 14984,
+            "no_button_false_positive_rate": 0.10727684068845042,
+            "num_examples": 5019,
+            "precision": 0.02444710478230735,
+            "predicted_examples": 15871,
+            "recall": 0.0773062363020522
+          }
+        }
+      },
+      "eval_split:heldout_recording": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.016451199627300257,
+            "sample_count": 68688
+          },
+          "mouse_button": {
+            "button_accuracy": 0.038874430709173714,
+            "sample_count": 12296
+          },
+          "mouse_move": {
+            "pearson_x": 0.5736435689634971,
+            "pearson_y": 0.47065508442222337,
+            "sample_count": 55652,
+            "scale_ratio_x": 1.04037183340145,
+            "scale_ratio_y": 1.283415012988404,
+            "scale_sample_count": 85542
+          }
+        },
+        "rows": 85542,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.013724230567073527,
+            "num_examples": 17123
+          },
+          "mouse_button": {
+            "accuracy": 0.07379259622456484,
+            "exact_true_positive_examples": 301,
+            "f1": 0.05112960760998811,
+            "false_negative_examples": 3778,
+            "false_positive_examples": 7394,
+            "no_button_examples": 81463,
+            "no_button_false_positive_examples": 6961,
+            "no_button_false_positive_rate": 0.08544983612192038,
+            "num_examples": 4079,
+            "precision": 0.03911630929174789,
+            "predicted_examples": 7695,
+            "recall": 0.07379259622456484
+          }
+        }
+      },
+      "eval_split:temporal": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.026214128035320087,
+            "sample_count": 76104
+          },
+          "mouse_button": {
+            "button_accuracy": 0.042750607006590356,
+            "sample_count": 11532
+          },
+          "mouse_move": {
+            "pearson_x": 0.5736329252479715,
+            "pearson_y": 0.5477244722266833,
+            "sample_count": 105856,
+            "scale_ratio_x": 1.353467660551063,
+            "scale_ratio_y": 1.137630953831161,
+            "scale_sample_count": 156284
+          }
+        },
+        "rows": 156284,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.024794750898480003,
+            "num_examples": 30329
+          },
+          "mouse_button": {
+            "accuracy": 0.11557788944723618,
+            "exact_true_positive_examples": 414,
+            "f1": 0.07315780173175472,
+            "false_negative_examples": 3168,
+            "false_positive_examples": 7322,
+            "no_button_examples": 152702,
+            "no_button_false_positive_examples": 7101,
+            "no_button_false_positive_rate": 0.046502337886864614,
+            "num_examples": 3582,
+            "precision": 0.05351602895553258,
+            "predicted_examples": 7736,
+            "recall": 0.11557788944723618
+          }
+        }
+      }
+    },
+    "max_rows": 320000,
+    "model_name": "streaming_idm_d2e_full_event_state_duration_luma_window_nep100_prefix320k",
+    "prediction_paths": [
+      "outputs/idm_streaming_d2e_full_event_state_duration_luma_window_nep100_prefix320k/predictions.jsonl"
+    ],
+    "schema": "paper_idm_metrics.v1",
+    "split_tags": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ],
+    "status": "pass",
+    "target_paths": [
+      "outputs/data/d2e_event_state_duration_luma_window_nep100_prefix320k/target_all_eval.jsonl"
+    ]
+  },
+  "schema": "g005_luma_window_nep100_prefix_run_summary.v1",
+  "started_at": "2026-05-27T17:29:10+00:00",
+  "status": "pass",
+  "wandb_sidecar_status": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_wandb_sidecar_status.json"
+}

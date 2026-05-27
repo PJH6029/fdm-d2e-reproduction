@@ -1,0 +1,37 @@
+{
+  "schema": "d2e_luma_window_prefix_materialization.v1",
+  "status": "pass",
+  "train_input": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/train_core.jsonl",
+  "target_input": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl",
+  "train_output": {
+    "path": "outputs/data/d2e_event_state_duration_luma_window_nep100_prefix320k/train_core.jsonl",
+    "rows": 320000,
+    "sha256": "59c66f373cb34b45663be017668680dde4d8268db96ba23bda8879db0558ae48",
+    "bytes": 14964585877
+  },
+  "target_output": {
+    "path": "outputs/data/d2e_event_state_duration_luma_window_nep100_prefix320k/target_all_eval.jsonl",
+    "rows": 320000,
+    "sha256": "02e0361ece0ffd69812a0a975c37cea85a3ac3ea099e1deeae4066210ef22a87",
+    "bytes": 15085372085
+  },
+  "max_train_rows": 320000,
+  "max_target_rows": 320000,
+  "offsets": [
+    0,
+    2,
+    4,
+    6,
+    8
+  ],
+  "luma_key": "luma16",
+  "offset_present_counts": {
+    "0": 640000,
+    "2": 639928,
+    "4": 639856,
+    "6": 639784,
+    "8": 639712
+  },
+  "wall_clock_seconds": 743.7004437446594,
+  "claim_boundary": "Prefix materialization only; not G005 completion evidence."
+}

@@ -219,3 +219,38 @@ Evidence:
 Result: reject post-hoc endpoint recombination. State-luma button predictions either increase no-button FPR (`0.1447` when used directly) or lose button accuracy when gated/intersected. Event-context alone remains best under the FPR gate and still misses all paper targets by large margins.
 
 Next branch must be a learned endpoint-specialist architecture rather than token-level recombination: NEP/future-offset visual context for keyboard/buttons, exact-count or exact-set heads, and heldout-calibrated thresholds. Prefix gates must beat the `event_all` prefix baseline while keeping no-button FPR `<=0.10`.
+
+### 2026-05-28 KST — NEP-style future luma-window prefix rejected
+
+Ran `g005-luma-window-nep100-prefix320k` on production reservation
+`rsv-jeonghunpark-20260528-081f41` (node 4, 1×H200, cancelled after evidence
+collection). Code checkout: `9eb3094`. W&B sidecar run:
+`https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/b1gnvqbr`.
+
+This branch materialized a nonleaky 320k/320k prefix with compact luma offsets
+`[0, 2, 4, 6, 8]` on top of event-state-duration context and trained a
+`luma_temporal_conv` IDM. The materializer was intentionally split-independent
+(train rows cannot borrow target/eval frames from the same recording).
+
+Evidence:
+
+- `artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_materialization_summary.json` — 320k train + 320k target rows.
+- `outputs/idm_streaming_d2e_full_event_state_duration_luma_window_nep100_prefix320k/{checkpoint_metadata.json,metrics.json,train_history.json,convergence_report.json}` — prefix training metadata copied locally; raw checkpoint/predictions remain on DDN.
+- `artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_paper_metrics.json` — paper-compatible prefix metrics with 320k aligned rows and no sequence mismatches.
+- `artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_rejection.json` — explicit rejection decision.
+
+Metrics: keyboard `0.0190`, mouse-button `0.0307`, Pearson X/Y
+`0.5804/0.5546`, scale ratio X/Y `1.5370/1.2588`, strict button F1 `0.0492`,
+overall no-button FPR `0.0764`. Heldout-game no-button FPR is `0.1073`, above
+the <=0.10 hard gate. This is much worse than the event-context prefix matrix on
+key/button endpoints, so naive NEP-style compact luma windows are not promoted.
+
+Operational finding: the JSON-expanded luma-window prefix produced 14–15GB JSONL
+files and averaged only `0.184%` GPU utilization during the 1GPU run. Future
+visual/NEP probes should not reserve GPUs for JSON materialization/stats; use
+CPU/storage-shell precompute, tensor caches, or the existing video-cache path.
+
+Next: target a learned endpoint-specialist/calibration branch over the stronger
+event-context/event_all signal instead of adding global visual context. Prefix
+gates must beat `event_all` simultaneously on keyboard, button, and mouse Pearson
+while keeping no-button FPR <=0.10 before any full-corpus run.

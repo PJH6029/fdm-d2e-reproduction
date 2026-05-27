@@ -1,6 +1,6 @@
 {
   "active_goal_id": "G005-g014-idm-full-paper-target",
-  "candidate_count": 11,
+  "candidate_count": 12,
   "claim_boundary": "Revalidation/ranking artifact only; no G005 success claim and no FDM-1 parity claim.",
   "created_at_epoch": 1779902282.2046466,
   "paper_targets": {
@@ -733,12 +733,53 @@
           "details": "Best prefix policy still has keyboard 0.1990, button 0.1726, Pearson X/Y 0.6048/0.5986, below paper targets."
         }
       ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_rejection.json",
+      "audit_status": "rejected_prefix_diagnostic",
+      "button_gap_to_paper": 0.9263338417125115,
+      "candidate": "event_state_duration_luma_window_nep100_prefix320k",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.7110025208630998,
+      "metrics_path": "artifacts/idm/g005_idm_event_state_duration_luma_window_nep100_prefix320k_paper_metrics.json",
+      "note": "Rejected 1GPU prefix: NEP-style future luma windows improved mouse scale but collapsed keyboard/button endpoint accuracy and failed heldout_game FPR gate.",
+      "paper_keyboard_accuracy": 0.01899747913690016,
+      "paper_mouse_button_accuracy": 0.030666158287488424,
+      "paper_mouse_pearson_x": 0.5803615313925387,
+      "paper_mouse_pearson_y": 0.554590672884144,
+      "paper_scale_ratio_x": 1.5369989565703348,
+      "paper_scale_ratio_y": 1.2588359352346,
+      "pearson_x_gap_to_paper": 0.2156384686074614,
+      "pearson_y_gap_to_paper": 0.22840932711585604,
+      "rows": 320000,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.049203882356390935,
+      "strict_no_button_fpr": 0.07643301870425938,
+      "top_audit_findings": [
+        {
+          "code": "paper_targets_missed",
+          "details": "Keyboard 0.0190 and mouse-button 0.0307 remain far below paper targets 0.730/0.957; mouse Pearson improves only to X/Y 0.5804/0.5546."
+        },
+        {
+          "code": "future_luma_window_not_sufficient",
+          "details": "Adding 0/2/4/6/8 compact-luma future offsets to event-state-duration context did not improve endpoint classification; it is worse than the previous event-context prefix matrix on keyboard/button/F1."
+        },
+        {
+          "code": "heldout_game_fpr_gate_failed",
+          "details": "Overall no-button FPR is 0.0764, but heldout_game FPR is 0.1073, above the <=0.10 hard gate."
+        },
+        {
+          "code": "gpu_underutilized_json_materialization",
+          "details": "Prefix materialization/stats used huge JSON rows and 1GPU run averaged only 0.184% GPU utilization; future probes should use tensor/cache features or CPU precompute before reserving GPUs."
+        }
+      ]
     }
   ],
   "recommended_next_actions": [
-    "Do not spend 4xH200 on post-hoc event/state endpoint mixtures; the prefix matrix shows event-context alone is already the best tested policy under the FPR gate.",
-    "Move to an actual learned endpoint-specialist architecture: future-offset/NEP-style visual context for keyboard/buttons plus calibrated exact count heads, not token-level recombination of existing weak predictions.",
-    "Before full runs, create prefix gates that compare against event_context_full/event_all and require simultaneous gains in keyboard, mouse-button, and mouse Pearson with no-button FPR<=0.10."
+    "Do not promote context-dropout, chronological closed-loop, post-hoc endpoint mixtures, or naive future-luma-window prefixes to full-corpus G005; all miss paper targets under empty_bins_as_correct=false.",
+    "Avoid JSON-expanded luma-window training on reserved GPUs. If future visual/NEP probes are needed, precompute compact tensor caches on CPU/storage shells or use the existing video cache path.",
+    "Next G005 branch should target learned endpoint-specialist calibration over the stronger event_context_full/event_all signal: improve keyboard/button heads without sacrificing mouse Pearson/FPR, and gate prefixes against event_all before any full run."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets"
