@@ -110,7 +110,7 @@ if [[ "$needs_cache_precompute" != "0" ]]; then
     echo "cache_precompute_started_at=$(date -Iseconds)"
     uv run python scripts/precompute_streaming_idm_training_cache.py \
       --config "$CONFIG" \
-      --workers "${CONTEXT_CACHE_WORKERS:-32}" \
+      --workers "${CONTEXT_CACHE_WORKERS:-64}" \
       --output "$PRECOMPUTE_CACHE_VALIDATION" \
       --progress-output "$PRECOMPUTE_CACHE_PROGRESS"
     echo "cache_precompute_finished_at=$(date -Iseconds)"
