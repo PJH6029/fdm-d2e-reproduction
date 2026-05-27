@@ -78,8 +78,9 @@ def prepare_desktop_minimal_inference_script(d2e_repo: str | Path) -> Path:
             "\n\n"
             "def preprocess_video(input_path: str, output_path: str, duration: float, start_time: float = 0.0) -> str:\n"
         ),
+        '        "ffmpeg",\n': '        _ffmpeg_executable(),\n',
         '        "-y",\n        "-i",\n': (
-            '        _ffmpeg_executable(),\n        "-y",\n        *(["-ss", str(float(start_time))] if float(start_time) > 0 else []),\n        "-i",\n'
+            '        "-y",\n        *(["-ss", str(float(start_time))] if float(start_time) > 0 else []),\n        "-i",\n'
         ),
         "def create_mcap_from_video(video_path: str, mcap_path: str, fps: float = 20.0):\n": (
             "def create_mcap_from_video(\n"

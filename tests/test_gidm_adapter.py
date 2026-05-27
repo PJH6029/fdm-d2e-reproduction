@@ -396,6 +396,8 @@ def test_prepare_desktop_minimal_inference_script_keeps_desktop_constants(tmp_pa
     assert "timestamp_offset_seconds" in text
     assert "imageio-ffmpeg==0.5.1" in text
     assert "_ffmpeg_executable()" in text
+    assert 'cmd = [\n        _ffmpeg_executable(),\n        "-y",' in text
+    assert '        "ffmpeg",\n' not in text
     assert "duration_seconds=duration" in text
 
 
