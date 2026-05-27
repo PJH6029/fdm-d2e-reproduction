@@ -1,0 +1,73 @@
+{
+  "candidate": "event_state_duration_hierarchical_prefix320k",
+  "claim_boundary": "Prefix diagnostic only; no G005 completion, no FDM-1 parity, no released G-IDM exact-split claim.",
+  "created_at": "2026-05-27T21:34:50.008595+00:00",
+  "decision": "reject",
+  "event_all_prefix_baseline": {
+    "keyboard_accuracy": 0.1990015683,
+    "mouse_button_accuracy": 0.1725669991,
+    "pearson_x": 0.6048383536,
+    "pearson_y": 0.5985909399,
+    "strict_mouse_button_f1": 0.2809433496,
+    "strict_no_button_fpr": 0.037498474
+  },
+  "event_all_prefix_deltas": {
+    "keyboard_accuracy": -0.11648603334152745,
+    "mouse_button_accuracy": -0.02499850163849704,
+    "pearson_x": -0.5136112833867537,
+    "pearson_y": -0.5583934089745339,
+    "strict_mouse_button_f1": -0.03108609254849834,
+    "strict_no_button_fpr": 0.006923338854600246
+  },
+  "gpu_summary": {
+    "max_memory_used_mib": 25079.0,
+    "max_utilization_pct": 91.0,
+    "mean_utilization_pct": 1.0,
+    "rows": 91
+  },
+  "observed": {
+    "keyboard_accuracy": 0.08251553495847254,
+    "mouse_button_accuracy": 0.14756849746150297,
+    "pearson_x": 0.09122707021324634,
+    "pearson_y": 0.040197530925466116,
+    "scale_ratio_x": 4.0491057031868625,
+    "scale_ratio_y": 1.215033926642633,
+    "strict_mouse_button_f1": 0.24985725705150166,
+    "strict_no_button_fpr": 0.04442181285460024
+  },
+  "paper_target_gaps": {
+    "keyboard_accuracy": 0.6474844650415275,
+    "mouse_button_accuracy": 0.809431502538497,
+    "pearson_x": 0.7047729297867537,
+    "pearson_y": 0.742802469074534,
+    "scale_ratio_x_excess": 2.8191057031868625,
+    "scale_ratio_y_excess": 0.0
+  },
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "paths": {
+    "gpu_monitor": "artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_gpu_monitor.csv",
+    "metrics": "outputs/idm_streaming_d2e_full_event_state_duration_hierarchical_prefix320k/metrics.json",
+    "paper_metrics": "artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_paper_metrics.json",
+    "run_summary": "artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_run_summary.json",
+    "target_materialization": "artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_target_materialization_summary.json",
+    "train_materialization": "artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_train_materialization_summary.json",
+    "wandb_sidecar_status": "artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_wandb_sidecar_status.json"
+  },
+  "reason": "Hierarchical exact-set event/no-event heads keep no-button FPR below 0.10 but collapse paper-compatible keyboard, button, and mouse-motion endpoints versus the stronger event_all prefix baseline and miss all paper targets.",
+  "reservation_cancelled_after_evidence": true,
+  "reservation_id": "rsv-jeonghunpark-20260528-0002ff",
+  "schema": "g005_idm_candidate_rejection.v1",
+  "split_no_button_fpr": {
+    "heldout_game": 0.07936223832297604,
+    "heldout_recording": 0.05222002626959479,
+    "temporal": 0.022966300375895535
+  },
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/v4gxczt0"
+}

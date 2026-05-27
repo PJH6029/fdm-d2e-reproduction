@@ -1,6 +1,6 @@
 {
   "active_goal_id": "G005-g014-idm-full-paper-target",
-  "candidate_count": 13,
+  "candidate_count": 14,
   "claim_boundary": "Revalidation/ranking artifact only; no G005 success claim and no FDM-1 parity claim.",
   "created_at_epoch": 1779902282.2046466,
   "paper_targets": {
@@ -815,6 +815,72 @@
           "details": "Inference-only sweep averaged 0.194% GPU utilization; future threshold diagnostics should run in a memory-rich CPU pod or use batched logit export rather than repeated JSON prediction."
         }
       ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": "artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_rejection.json",
+      "audit_status": "rejected_prefix_diagnostic",
+      "button_gap_to_paper": 0.809431502538497,
+      "candidate": "event_state_duration_hierarchical_prefix320k",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.6474844650415275,
+      "metrics_path": "artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_paper_metrics.json",
+      "note": "Rejected learned hierarchical exact-set heads: safe no-button FPR, but worse than event_all prefix on keyboard, button, and mouse Pearson; misses every paper target.",
+      "paper_keyboard_accuracy": 0.08251553495847254,
+      "paper_mouse_button_accuracy": 0.14756849746150297,
+      "paper_mouse_pearson_x": 0.09122707021324634,
+      "paper_mouse_pearson_y": 0.040197530925466116,
+      "paper_scale_ratio_x": 4.0491057031868625,
+      "paper_scale_ratio_y": 1.215033926642633,
+      "pearson_x_gap_to_paper": 0.7047729297867537,
+      "pearson_y_gap_to_paper": 0.742802469074534,
+      "rows": 320000,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.24985725705150166,
+      "strict_no_button_fpr": 0.04442181285460024,
+      "top_audit_findings": [
+        {
+          "actual": 0.08251553495847254,
+          "code": "paper_target_not_met",
+          "name": "keyboard_accuracy",
+          "severity": "error",
+          "target": 0.73
+        },
+        {
+          "actual": 0.14756849746150297,
+          "code": "paper_target_not_met",
+          "name": "mouse_button_accuracy",
+          "severity": "error",
+          "target": 0.957
+        },
+        {
+          "actual": 0.09122707021324634,
+          "code": "paper_target_not_met",
+          "name": "pearson_x",
+          "severity": "error",
+          "target": 0.796
+        },
+        {
+          "actual": 0.040197530925466116,
+          "code": "paper_target_not_met",
+          "name": "pearson_y",
+          "severity": "error",
+          "target": 0.783
+        },
+        {
+          "baseline": "event_all",
+          "code": "prefix_baseline_regression",
+          "deltas": {
+            "keyboard_accuracy": -0.11648603334152745,
+            "mouse_button_accuracy": -0.02499850163849704,
+            "pearson_x": -0.5136112833867537,
+            "pearson_y": -0.5583934089745339,
+            "strict_mouse_button_f1": -0.03108609254849834,
+            "strict_no_button_fpr": 0.006923338854600246
+          },
+          "severity": "error"
+        }
+      ]
     }
   ],
   "recommended_next_actions": [
@@ -823,5 +889,6 @@
     "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
-  "status": "fail_no_candidate_meets_paper_targets"
+  "status": "fail_no_candidate_meets_paper_targets",
+  "updated_at_epoch": 1779917690.0090363
 }

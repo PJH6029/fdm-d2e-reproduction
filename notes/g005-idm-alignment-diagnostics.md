@@ -291,3 +291,51 @@ G005 candidate must change the learned endpoint heads/training objective over
 event-context features, e.g. exact-set/hierarchical transition heads with
 heldout-calibrated priors, and must beat `event_all` on a prefix before any full
 run.
+
+
+### 2026-05-28 KST — hierarchical exact-set prefix rejected
+
+Ran `g005-hierarchical-exactset-prefix320k` on production reservation
+`rsv-jeonghunpark-20260528-0002ff` (node 4, 1×H200, cancelled after evidence
+collection). Code checkout: `deb1ec0`. W&B sidecar run: `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/v4gxczt0`.
+
+This branch replaced independent multilabel decoding for keyboard/mouse-button
+with learned event/no-event + positive exact-set heads over the event-state-duration
+features. The intended hypothesis was to preserve the low no-button false-positive
+rate while improving exact key/button sets.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_train_materialization_summary.json` and
+  `artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_target_materialization_summary.json` — 320k/320k
+  chronological prefix materialization; target rows cover temporal,
+  heldout-recording, and heldout-game tags.
+- `outputs/idm_streaming_d2e_full_event_state_duration_hierarchical_prefix320k/{checkpoint_metadata.json,metrics.json,train_history.json,convergence_report.json}`
+  — local reproducibility metadata; raw checkpoint/predictions remain on DDN/PVC.
+- `artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_paper_metrics.json` — paper-compatible metrics over
+  320k aligned target rows with zero missing/mismatched sequence IDs.
+- `artifacts/idm/g005_idm_event_state_duration_hierarchical_prefix320k_rejection.json` — explicit negative decision.
+
+Result: reject this branch. It keeps no-button FPR under the 0.10 gate on every
+heldout tag (overall `0.0444`; heldout-game
+`0.0794`; heldout-recording
+`0.0522`; temporal
+`0.0230`), but paper-compatible
+keyboard `0.0825`, mouse-button
+`0.1476`, Pearson X/Y
+`0.0912/0.0402`, and strict button F1
+`0.2499` all fail the paper-target gate. It is
+also worse than the `event_all` prefix baseline on keyboard, button, and motion
+(Pearson X/Y deltas `-0.5136` /
+`-0.5584`).
+
+Operational finding: the 1×H200 run completed in under one reservation hour, but
+GPU sampling shows bursty/low utilization (mean `1.00%`,
+max `91.0%`) because JSON cache/prediction phases
+dominate this 320k prefix. Do not scale this exact architecture to a full G005 run.
+
+Next: abandon pure exact-set event heads as the main improvement route. The next
+candidate should preserve the strong event-context motion signal and add a
+stronger high-recall categorical/action prior or sequence model for key/button
+sets, with prefix acceptance requiring improvement over `event_all` on all major
+endpoints before any 4×H200 full run.
