@@ -1,0 +1,80 @@
+{
+  "claim_boundary": "Prefix prediction ensemble uses no target labels but is not training evidence and not a full-corpus G005 completion artifact.",
+  "decision": {
+    "reason": "button accuracy and no-button FPR regressed on the 320k prefix, so full ensemble expansion is not justified.",
+    "scale_to_full_run": false
+  },
+  "ensemble_summary": {
+    "claim_boundary": "Post-hoc ensemble over aligned prediction files; not new training evidence by itself.",
+    "first_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420",
+    "group_sources": {
+      "keyboard": "context",
+      "mouse_button": "state_button",
+      "mouse_move": "context"
+    },
+    "last_sequence_id": "d2e_480p:Rainbow_Six/recording_20250815_223547_Rainbow_Six_d7e2f885#015737",
+    "max_rows": 320000,
+    "model_name": "streaming_idm_ensemble_context_motion_state_button_prefix320k",
+    "output_path": "outputs/idm_ensembles/context_motion_state_button_prefix320k/predictions.jsonl",
+    "rows": 320000,
+    "schema": "idm_prediction_ensemble_summary.v1",
+    "sources": {
+      "context": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/predictions.jsonl",
+      "state_button": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_state_luma_pair_paper_target/predictions.jsonl"
+    },
+    "status": "pass",
+    "token_counts": {
+      "keyboard": 57448,
+      "mouse_button": 69380,
+      "mouse_move": 1098739,
+      "other": 0
+    },
+    "wall_clock_seconds": 5.146820068359375
+  },
+  "evidence_paths": {
+    "ensemble_summary": "artifacts/idm/g005_idm_ensemble_context_motion_state_button_prefix320k_ensemble_summary.json",
+    "paper_metrics": "artifacts/idm/g005_idm_ensemble_context_motion_state_button_prefix320k_paper_metrics.json"
+  },
+  "paper_compatible_all": {
+    "empty_bins_as_correct": false,
+    "keyboard": {
+      "key_accuracy": 0.19900156833292837,
+      "sample_count": 90542
+    },
+    "mouse_button": {
+      "button_accuracy": 0.013481599649666089,
+      "sample_count": 63939
+    },
+    "mouse_move": {
+      "pearson_x": 0.6048383535587054,
+      "pearson_y": 0.5985909398660804,
+      "sample_count": 134435,
+      "scale_ratio_x": 2.5678622785947947,
+      "scale_ratio_y": 1.4696145698157421,
+      "scale_sample_count": 320000
+    }
+  },
+  "rows": 320000,
+  "schema": "g005_idm_ensemble_probe_decision.v1",
+  "status": "pass_nonterminal_probe",
+  "strict_local_all": {
+    "keyboard": {
+      "accuracy": 0.2610548306335284,
+      "num_examples": 60313
+    },
+    "mouse_button": {
+      "accuracy": 0.07797114724066866,
+      "exact_true_positive_examples": 681,
+      "f1": 0.024336638970785314,
+      "false_negative_examples": 8053,
+      "false_positive_examples": 46550,
+      "no_button_examples": 311266,
+      "no_button_false_positive_examples": 45026,
+      "no_button_false_positive_rate": 0.1446544113394974,
+      "num_examples": 8734,
+      "precision": 0.014418496326565179,
+      "predicted_examples": 47231,
+      "recall": 0.07797114724066866
+    }
+  }
+}

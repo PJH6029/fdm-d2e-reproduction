@@ -1,0 +1,27 @@
+{
+  "schema": "idm_prediction_ensemble_summary.v1",
+  "status": "pass",
+  "model_name": "streaming_idm_ensemble_context_motion_state_button_prefix320k",
+  "sources": {
+    "context": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/predictions.jsonl",
+    "state_button": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_state_luma_pair_paper_target/predictions.jsonl"
+  },
+  "group_sources": {
+    "keyboard": "context",
+    "mouse_button": "state_button",
+    "mouse_move": "context"
+  },
+  "output_path": "outputs/idm_ensembles/context_motion_state_button_prefix320k/predictions.jsonl",
+  "rows": 320000,
+  "max_rows": 320000,
+  "first_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420",
+  "last_sequence_id": "d2e_480p:Rainbow_Six/recording_20250815_223547_Rainbow_Six_d7e2f885#015737",
+  "token_counts": {
+    "keyboard": 57448,
+    "mouse_button": 69380,
+    "mouse_move": 1098739,
+    "other": 0
+  },
+  "wall_clock_seconds": 5.146820068359375,
+  "claim_boundary": "Post-hoc ensemble over aligned prediction files; not new training evidence by itself."
+}
