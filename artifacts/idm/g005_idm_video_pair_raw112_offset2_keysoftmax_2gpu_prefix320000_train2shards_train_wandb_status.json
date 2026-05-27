@@ -1,0 +1,74 @@
+{
+  "checkpoint_exists": true,
+  "claim_boundary": "W&B sidecar status contains no secrets and is logging-only evidence.",
+  "entity_configured": true,
+  "gpu_latest": [
+    {
+      "index": "0",
+      "memory_total_mib": 143771.0,
+      "memory_used_mib": 18233.0,
+      "name": "NVIDIA H200",
+      "power_draw_w": 177.37,
+      "timestamp": "2026/05/27 12:16:17.508",
+      "utilization_gpu_pct": 58.0,
+      "utilization_memory_pct": 33.0
+    },
+    {
+      "index": "1",
+      "memory_total_mib": 143771.0,
+      "memory_used_mib": 4.0,
+      "name": "NVIDIA H200",
+      "power_draw_w": 77.73,
+      "timestamp": "2026/05/27 12:16:17.508",
+      "utilization_gpu_pct": 0.0,
+      "utilization_memory_pct": 0.0
+    }
+  ],
+  "last_epoch": 2,
+  "logged_epochs_this_loop": 0,
+  "logged_epochs_total": [
+    1,
+    2
+  ],
+  "loop_index": 3,
+  "metadata_exists": true,
+  "process_running": true,
+  "project": "fdm-d2e-reproduction",
+  "rank_progress": [
+    {
+      "batches": 200,
+      "examples": 102400,
+      "heartbeat_age_sec": 66.83882212638855,
+      "last_local_batch_index": 199,
+      "loss": 17.363861083984375,
+      "path": "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/prefix320000_train2shards/rank_progress/train_rank0.json",
+      "rank": 0,
+      "schema": "video_idm_train_rank_progress.v1",
+      "updated_at_epoch": 1779884145.7288768,
+      "video_cache": true,
+      "video_cache_shard_by_path": true,
+      "world_size": 2
+    },
+    {
+      "batches": 200,
+      "examples": 102400,
+      "heartbeat_age_sec": 66.8388319015503,
+      "last_local_batch_index": 199,
+      "loss": 6.991795539855957,
+      "path": "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/prefix320000_train2shards/rank_progress/train_rank1.json",
+      "rank": 1,
+      "schema": "video_idm_train_rank_progress.v1",
+      "updated_at_epoch": 1779884145.728867,
+      "video_cache": true,
+      "video_cache_shard_by_path": true,
+      "world_size": 2
+    }
+  ],
+  "run_name": "g005_idm_video_pair_raw112_offset2_keysoftmax-2gpu-prefix320000-train2shards",
+  "run_summary_exists": true,
+  "schema": "wandb_training_sidecar_status.v1",
+  "status": "complete",
+  "updated_at_epoch": 1779884212.5801215,
+  "wandb_run_id": "f1br53x9",
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/f1br53x9"
+}

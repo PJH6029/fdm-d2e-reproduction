@@ -1,0 +1,46 @@
+{
+  "candidate_id": "idm_video_pair_raw112_offset2_keysoftmax_prefix320k_train2shards",
+  "claim_boundary": "Prefix diagnostic only; rejects/prioritizes candidates but is not full-corpus G005 completion evidence, not a 4xH200 scaling claim, and not a paper-target result.",
+  "created_at_unix": 1779889353.700072,
+  "decision": "reject_for_full_g005_promotion",
+  "eval_prefix": {
+    "rows": 84512,
+    "target_cache_rows": 84512,
+    "target_path": "outputs/data/d2e_full_corpus_shards_accel64/shard_30/target_all_eval.jsonl"
+  },
+  "evidence": {
+    "chain_summary": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_prefix320000_train2shards_probe_chain_summary.json",
+    "chain_summary_sha256": "4d7425c1ac1bd773c72b026734ed5d90a6e68029b636e7ef5c6e2d7858b97f4e",
+    "gpu_monitor": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_2gpu_prefix320000_train2shards_probe_gpu_monitor.csv",
+    "paper_metrics": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_prefix320000_train2shards_paper_metrics.json",
+    "paper_metrics_sha256": "e8f09b930ba64802311530e8b6ff011773f00ea8f409792bf8e585cbb5096179",
+    "prediction_summary": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_prefix320000_train2shards_prediction_summary.json",
+    "target_precompute_run": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_prefix320000_train2shards_target_precompute_run.json",
+    "train_run": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_2gpu_prefix320000_train2shards_probe_run.json",
+    "train_run_sha256": "d14fe3d2c5ec8447403529ae525e366f988ed03b100385b936a093ba506bdf6f",
+    "wandb_train_status": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_2gpu_prefix320000_train2shards_train_wandb_status.json"
+  },
+  "metrics": {
+    "paper_keyboard_accuracy": 0.0,
+    "paper_mouse_button_accuracy": 0.0,
+    "paper_mouse_move_pearson_x": -0.015275680487983213,
+    "paper_mouse_move_pearson_y": 0.009987394353072195,
+    "strict_keyboard_accuracy": 0.0,
+    "strict_mouse_button_f1": 0.0,
+    "strict_no_button_fpr": 0.0
+  },
+  "next_action": "Do not launch full-corpus 4xH200 for this offset-2 raw112 keysoftmax recipe. Use the result as evidence to pivot to stronger IDM architecture/calibration candidates before G005 full paper-target attempts.",
+  "reason": "2-GPU train-prefix diagnostic produced zero keyboard/button accuracy on shard_30 target prefix and near-zero/negative mouse Pearson, so it is not a viable candidate for expensive full-corpus 4xH200 G005 promotion.",
+  "schema": "g005_idm_candidate_rejection.v1",
+  "status": "fail_metric_screen",
+  "train_prefix": {
+    "epochs": 2,
+    "expected_gpus": 2,
+    "nproc_per_node": 2,
+    "train_rows": 227580,
+    "train_shards": [
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_27/train_core.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_3/train_core.jsonl"
+    ]
+  }
+}
