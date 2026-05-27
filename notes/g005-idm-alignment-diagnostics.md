@@ -254,3 +254,40 @@ Next: target a learned endpoint-specialist/calibration branch over the stronger
 event-context/event_all signal instead of adding global visual context. Prefix
 gates must beat `event_all` simultaneously on keyboard, button, and mouse Pearson
 while keeping no-button FPR <=0.10 before any full-corpus run.
+
+### 2026-05-28 KST — event-context global threshold sweep rejected
+
+Ran `g005_event_context_threshold_sweep_prefix320k` on production reservation
+`rsv-jeonghunpark-20260528-236ade` (node 4, 1×H200, cancelled after evidence
+collection). Code checkout: `eca4a5d`. The storage-shell attempt failed first
+because `production-storage-shell-4` has a 2Gi memory limit and was OOMKilled;
+the successful run used a memory-rich production pod. No W&B run was created for
+this prediction-only sweep.
+
+The sweep re-decoded the existing full event-state-duration checkpoint over the
+first 320k target rows with global key/button thresholds `{0.05, 0.10}`. It was
+a calibration-only test intended to falsify whether the strong event-context
+checkpoint is merely under-decoded.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_event_context_threshold_sweep_prefix320k_summary.json` — 4 completed threshold combos.
+- `artifacts/idm/g005_idm_event_context_threshold_sweep_prefix320k/*_paper_metrics.json` — paper-compatible metrics for every combo.
+- `artifacts/idm/g005_idm_event_context_threshold_sweep_prefix320k_rejection.json` — explicit rejection decision.
+
+Result: reject threshold-only decoding. The best combo was
+`key0p05_button0p1`, with keyboard `0.00494`, mouse-button `0.01285`, Pearson
+X/Y `0.8002/0.6427`, strict button F1 `0.00044`, and no-button FPR `0.8884`.
+This is far worse than the calibrated `event_all` prefix and misses the FPR gate
+by a large margin. Lowering button thresholds recovers neither exact buttons nor
+safe FPR; it mostly overfires no-button rows.
+
+Operational finding: repeated JSON prediction averaged only `0.194%` GPU
+utilization. Future decode sweeps should export logits once or run in a
+memory-rich CPU context; do not spend H200 time on repeated JSON re-prediction.
+
+Next: threshold-only and post-hoc recombination paths are exhausted. The next
+G005 candidate must change the learned endpoint heads/training objective over
+event-context features, e.g. exact-set/hierarchical transition heads with
+heldout-calibrated priors, and must beat `event_all` on a prefix before any full
+run.

@@ -1,0 +1,59 @@
+{
+  "best_combo": {
+    "button_threshold": 0.1,
+    "default_threshold": 0.35,
+    "index": 1,
+    "keyboard_threshold": 0.05,
+    "metrics_path": "artifacts/idm/g005_idm_event_context_threshold_sweep_prefix320k/key0p05_button0p1_paper_metrics.json",
+    "model_name": "g005_event_context_threshold_sweep_prefix320k_key0p05_button0p1",
+    "output_dir": "outputs/idm_streaming_d2e_full_event_context_threshold_sweep_prefix320k/key0p05_button0p1",
+    "paper_keyboard_accuracy": 0.004937218495043366,
+    "paper_mouse_button_accuracy": 0.012849136160933767,
+    "paper_mouse_pearson_x": 0.8002422301033372,
+    "paper_mouse_pearson_y": 0.6427245596480502,
+    "prediction_summary_path": "outputs/idm_streaming_d2e_full_event_context_threshold_sweep_prefix320k/key0p05_button0p1/prediction_summary.json",
+    "predictions_path": "outputs/idm_streaming_d2e_full_event_context_threshold_sweep_prefix320k/key0p05_button0p1/predictions.jsonl",
+    "rows": 320000,
+    "score": -1.7883655779943841,
+    "slug": "key0p05_button0p1",
+    "status": "pass",
+    "strict_mouse_button_f1": 0.0004421994319438067,
+    "strict_no_button_fpr": 0.8883655779943842
+  },
+  "best_metrics_path": "artifacts/idm/g005_idm_event_context_threshold_sweep_prefix320k/key0p05_button0p1_paper_metrics.json",
+  "candidate": "event_context_group_threshold_sweep_prefix320k",
+  "claim_boundary": "Prefix diagnostic only; not G005 completion evidence and not a D2E paper win.",
+  "combo_count": 4,
+  "created_at_epoch": 1779913301.2520757,
+  "decision": "Do not promote threshold-only decoding as G005 path. The next candidate must alter learned endpoint heads/logit training, not only global decode thresholds.",
+  "findings": [
+    {
+      "code": "calibration_only_not_sufficient",
+      "details": "Best global group threshold combo (key0p05_button0p1) has keyboard 0.0049, button 0.0128, and no-button FPR 0.8884; it is far worse than event_all and misses paper targets."
+    },
+    {
+      "code": "low_threshold_button_overfire",
+      "details": "Lowering button thresholds to 0.05/0.10 causes no-button FPR 0.888-0.918, so recall cannot be recovered by simple global threshold lowering under the <=0.10 FPR gate."
+    },
+    {
+      "code": "mouse_regression_independent_of_threshold",
+      "details": "Mouse Pearson X is high (0.8002) but Y remains below paper target (0.6427); category thresholds do not address the remaining mouse Y gap."
+    },
+    {
+      "code": "gpu_underutilized_prediction_io_bound",
+      "details": "Inference-only sweep averaged 0.194% GPU utilization; future threshold diagnostics should run in a memory-rich CPU pod or use batched logit export rather than repeated JSON prediction."
+    }
+  ],
+  "gpu_monitor_summary": {
+    "max_gpu_utilization_pct": 15.0,
+    "max_memory_used_mib": 4285.0,
+    "mean_gpu_utilization_pct": 0.1937984496124031,
+    "path": "artifacts/idm/g005_idm_event_context_threshold_sweep_prefix320k_gpu_monitor.csv",
+    "rows": 129
+  },
+  "reservation_path": "artifacts/idm/g005_idm_event_context_threshold_sweep_prefix320k_reservation.json",
+  "rows": 320000,
+  "schema": "g005_idm_candidate_rejection.v1",
+  "status": "rejected_prefix_diagnostic",
+  "summary_path": "artifacts/idm/g005_idm_event_context_threshold_sweep_prefix320k_summary.json"
+}
