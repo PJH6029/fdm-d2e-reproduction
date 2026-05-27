@@ -1,0 +1,74 @@
+{
+  "checkpoint_exists": true,
+  "claim_boundary": "W&B sidecar status contains no secrets and is logging-only evidence.",
+  "entity_configured": true,
+  "gpu_latest": [
+    {
+      "index": "1",
+      "memory_total_mib": 143771.0,
+      "memory_used_mib": 4.0,
+      "name": "NVIDIA H200",
+      "power_draw_w": 77.89,
+      "timestamp": "2026/05/27 13:59:50.961",
+      "utilization_gpu_pct": 0.0,
+      "utilization_memory_pct": 0.0
+    }
+  ],
+  "last_epoch": 12,
+  "logged_epochs_this_loop": 0,
+  "logged_epochs_total": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "loop_index": 6,
+  "metadata_exists": true,
+  "process_running": true,
+  "project": "fdm-d2e-reproduction",
+  "rank_progress": [
+    {
+      "batches": 200,
+      "examples": 102400,
+      "heartbeat_age_sec": 97.45524215698242,
+      "last_local_batch_index": 199,
+      "loss": 15.95095157623291,
+      "path": "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/prefix320000_train2shards_long12/rank_progress/train_rank0.json",
+      "rank": 0,
+      "schema": "video_idm_train_rank_progress.v1",
+      "updated_at_epoch": 1779890358.5261257,
+      "video_cache": true,
+      "video_cache_shard_by_path": true,
+      "world_size": 2
+    },
+    {
+      "batches": 200,
+      "examples": 102400,
+      "heartbeat_age_sec": 97.45524740219116,
+      "last_local_batch_index": 199,
+      "loss": 5.144773483276367,
+      "path": "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/prefix320000_train2shards_long12/rank_progress/train_rank1.json",
+      "rank": 1,
+      "schema": "video_idm_train_rank_progress.v1",
+      "updated_at_epoch": 1779890358.5261204,
+      "video_cache": true,
+      "video_cache_shard_by_path": true,
+      "world_size": 2
+    }
+  ],
+  "run_name": "g005_idm_video_pair_raw112_offset2_keysoftmax_long12-2gpu-prefix320000-train2shards",
+  "run_summary_exists": true,
+  "schema": "wandb_training_sidecar_status.v1",
+  "status": "complete",
+  "updated_at_epoch": 1779890455.9922156,
+  "wandb_run_id": "qhh13vzv",
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/qhh13vzv"
+}

@@ -1,0 +1,102 @@
+{
+  "schema": "idm_checkpoint_metadata.v1",
+  "model": "video_pair_idm_d2e_full_raw112_offset2_keysoftmax_paper_target",
+  "dataset_fingerprint": "d4780ddc1da55a56527dd8b4de71480dee886dda0dc07d920321cb1c96cd5a3b",
+  "train_records": 19211006,
+  "target_records": 0,
+  "pseudo_label_path": "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/prefix320000_train2shards_long12/pseudolabels.jsonl",
+  "filtered_pseudo_label_path": "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/prefix320000_train2shards_long12/pseudolabels.jsonl",
+  "checkpoint_path": "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/prefix320000_train2shards_long12/checkpoint.pt",
+  "train_state_path": "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/prefix320000_train2shards_long12/train_state.pt",
+  "metrics_path": "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/prefix320000_train2shards_long12/metrics.json",
+  "calibration": {
+    "schema": "video_idm_calibration.v1",
+    "observed_examples": 227580,
+    "grid": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95
+    ],
+    "beta": 1.0,
+    "category_thresholds": {
+      "MOUSE_X1_DOWN": 0.45,
+      "MOUSE_X1_UP": 0.45
+    },
+    "per_group": {
+      "other": {
+        "threshold": 0.45,
+        "token_count": 2,
+        "tp": 3,
+        "fp": 17994,
+        "fn": 30
+      }
+    },
+    "keyboard_softmax_threshold": 0.5,
+    "keyboard_softmax_threshold_diagnostics": {
+      "tp": 6,
+      "fp": 491,
+      "fn": 49797,
+      "predicted_positive": 497,
+      "no_button_examples": 177777,
+      "no_button_false_positive_examples": 321,
+      "score": 0.00023856858846918488,
+      "precision": 0.012072434607645875,
+      "recall": 0.00012047467020059032,
+      "no_button_false_positive_rate": 0.001805632899643936,
+      "max_no_button_false_positive_rate": 0.08,
+      "constraint_satisfied": true,
+      "eligible_thresholds": 15,
+      "no_key_examples": 177777,
+      "no_key_false_positive_examples": 321,
+      "no_key_false_positive_rate": 0.001805632899643936,
+      "max_no_key_false_positive_rate": 0.08
+    },
+    "button_softmax_threshold": 0.4,
+    "button_softmax_threshold_diagnostics": {
+      "tp": 44,
+      "fp": 9361,
+      "fn": 9724,
+      "predicted_positive": 9405,
+      "no_button_examples": 217812,
+      "no_button_false_positive_examples": 9047,
+      "score": 0.004589787722317842,
+      "precision": 0.004678362573099415,
+      "recall": 0.0045045045045045045,
+      "no_button_false_positive_rate": 0.04153581988136558,
+      "max_no_button_false_positive_rate": 0.08,
+      "constraint_satisfied": true,
+      "eligible_thresholds": 12
+    },
+    "mouse_output_gain": 32.0,
+    "mouse_output_gain_diagnostics": {
+      "predicted_abs_mean": 0.11142706269464442,
+      "target_abs_mean": 8.084339572897443,
+      "raw_ratio": 72.55274775618764,
+      "value_count": 455160
+    }
+  },
+  "distributed": {
+    "enabled": true,
+    "world_size": 2,
+    "rank": 0,
+    "local_rank": 0,
+    "is_rank0": true,
+    "backend": "nccl"
+  }
+}

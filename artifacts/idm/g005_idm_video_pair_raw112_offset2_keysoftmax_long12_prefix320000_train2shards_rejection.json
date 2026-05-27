@@ -1,0 +1,108 @@
+{
+  "candidate": "g005_idm_video_pair_raw112_offset2_keysoftmax_long12_prefix320000_train2shards",
+  "claim_boundary": "Negative prefix diagnostic only. This does not complete G005 and is not a full-corpus or 4xH200 scaling claim.",
+  "comparison_to_2epoch_prefix": {
+    "interpretation": "Button accuracy becomes barely nonzero but mouse/keyboard remain unusable; loss reduction is not translating into paper metrics.",
+    "paper_compatible": {
+      "empty_bins_as_correct": false,
+      "keyboard": {
+        "key_accuracy": 0.0,
+        "sample_count": 22390
+      },
+      "mouse_button": {
+        "button_accuracy": 0.0,
+        "sample_count": 2375
+      },
+      "mouse_move": {
+        "pearson_x": -0.015275680487983213,
+        "pearson_y": 0.009987394353072195,
+        "sample_count": 84512,
+        "scale_ratio_x": 2.809006343697551,
+        "scale_ratio_y": 1.3668648474888918,
+        "scale_sample_count": 84512
+      }
+    }
+  },
+  "created_at_unix": 1779890678.541093,
+  "decision": "reject_for_full_g005_promotion",
+  "evidence": {
+    "chain_summary": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_long12_prefix320000_train2shards_probe_chain_summary.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_long12_2gpu_prefix320000_train2shards_probe_gpu_monitor.csv",
+    "paper_metrics": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_long12_prefix320000_train2shards_paper_metrics.json",
+    "run_summary": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_long12_2gpu_prefix320000_train2shards_probe_run.json",
+    "train_history": "outputs/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target/prefix320000_train2shards_long12/train_history.json",
+    "wandb_status": "artifacts/idm/g005_idm_video_pair_raw112_offset2_keysoftmax_long12_2gpu_prefix320000_train2shards_train_wandb_status.json"
+  },
+  "git_head": "561d97985f9911b64e249917e31b6c8d7eb219d6",
+  "gpu_context": {
+    "end_at": "2026-05-28T08:00:00+09:00",
+    "nproc_per_node": 2,
+    "quota_request_id": "req-1-gpu-quota-increase-20260527-3b6a15",
+    "reservation_id": "rsv-jeonghunpark-20260527-917202",
+    "run_wall_clock_seconds": 248
+  },
+  "metrics": {
+    "paper_compatible": {
+      "empty_bins_as_correct": false,
+      "keyboard": {
+        "key_accuracy": 0.0,
+        "sample_count": 21070
+      },
+      "mouse_button": {
+        "button_accuracy": 0.0016801588513823125,
+        "sample_count": 6547
+      },
+      "mouse_move": {
+        "pearson_x": -0.006545639339665153,
+        "pearson_y": 0.013522658049791992,
+        "sample_count": 84468,
+        "scale_ratio_x": 3.658035118915315,
+        "scale_ratio_y": 3.227192123817225,
+        "scale_sample_count": 84512
+      }
+    },
+    "rows": 84512,
+    "strict_local": {
+      "keyboard": {
+        "accuracy": 0.0,
+        "num_examples": 18702
+      },
+      "mouse_button": {
+        "accuracy": 0.00449034575662326,
+        "exact_true_positive_examples": 10,
+        "f1": 0.0031206116398814166,
+        "false_negative_examples": 2217,
+        "false_positive_examples": 4172,
+        "no_button_examples": 82285,
+        "no_button_false_positive_examples": 3880,
+        "no_button_false_positive_rate": 0.047153187093637965,
+        "num_examples": 2227,
+        "precision": 0.0023912003825920613,
+        "predicted_examples": 4182,
+        "recall": 0.00449034575662326
+      }
+    }
+  },
+  "next_action": "Pivot away from raw CNN offset-2 full scaling; use official G-IDM/evaluation diagnostics or a new architecture with pretrained visual-action representation before any further full 4xH200 run.",
+  "reason": "12-epoch 2GPU prefix diagnostic on reused non-leaky raw112 offset-2 video caches remains far below D2E paper targets; longer training does not rescue the architecture, so do not spend 4xH200 full-corpus time on this candidate.",
+  "schema": "g005_idm_candidate_rejection.v1",
+  "story_goal": "G005-g014-idm-full-paper-target",
+  "target_gaps": {
+    "keyboard_accuracy_delta": -0.73,
+    "mouse_button_accuracy_delta": -0.9553198411486177,
+    "pearson_x_delta": -0.8025456393396652,
+    "pearson_y_delta": -0.769477341950208,
+    "scale_ratio_x_margin": -2.428035118915315,
+    "scale_ratio_y_margin": -1.917192123817225
+  },
+  "targets": {
+    "paper_reported": {
+      "keyboard_accuracy": 0.73,
+      "mouse_button_accuracy": 0.957,
+      "pearson_x": 0.796,
+      "pearson_y": 0.783,
+      "scale_ratio_x_max": 1.23,
+      "scale_ratio_y_max": 1.31
+    }
+  }
+}
