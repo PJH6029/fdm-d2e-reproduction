@@ -1,6 +1,6 @@
 {
   "active_goal_id": "G005-g014-idm-full-paper-target",
-  "candidate_count": 14,
+  "candidate_count": 15,
   "claim_boundary": "Revalidation/ranking artifact only; no G005 success claim and no FDM-1 parity claim.",
   "created_at_epoch": 1779902282.2046466,
   "paper_targets": {
@@ -881,6 +881,43 @@
           "severity": "error"
         }
       ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": "artifacts/idm/g005_idm_causal_keyboard_repeat_policy_matrix.json",
+      "audit_status": "rejected_diagnostic",
+      "button_gap_to_paper": null,
+      "candidate": "causal_keyboard_repeat_policy_matrix_prefix320k",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.5321686338736094,
+      "metrics_path": "artifacts/idm/g005_idm_causal_keyboard_repeat_policy_matrix.json",
+      "note": "Rejected causal held-key duration repeat/release priors: best keyboard 0.1978 (code_hold_mod_pressrelease_th0.3) is below event_all prefix keyboard and far below paper target.",
+      "paper_keyboard_accuracy": 0.19783136612639068,
+      "paper_mouse_button_accuracy": null,
+      "paper_mouse_pearson_x": null,
+      "paper_mouse_pearson_y": null,
+      "paper_scale_ratio_x": null,
+      "paper_scale_ratio_y": null,
+      "pearson_x_gap_to_paper": null,
+      "pearson_y_gap_to_paper": null,
+      "rows": 320000,
+      "status": "pass",
+      "strict_mouse_button_f1": null,
+      "strict_no_button_fpr": null,
+      "top_audit_findings": [
+        {
+          "actual": 0.19783136612639068,
+          "code": "paper_target_not_met",
+          "name": "keyboard_accuracy",
+          "severity": "error",
+          "target": 0.73
+        },
+        {
+          "best_policy": "code_hold_mod_pressrelease_th0.3",
+          "code": "causal_duration_prior_underperforms_noncausal_upper_bound",
+          "severity": "warning"
+        }
+      ]
     }
   ],
   "recommended_next_actions": [
@@ -890,5 +927,5 @@
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779917690.0090363
+  "updated_at_epoch": 1779920844.0924282
 }

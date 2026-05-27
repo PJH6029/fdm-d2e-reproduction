@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.eval.state_transition_diagnostics import (
+    build_causal_keyboard_repeat_policy_matrix,
     build_key_repeat_prior_metrics,
     build_state_delta_oracle_metrics,
     merge_motion_and_categorical,
@@ -77,7 +78,16 @@ def test_state_delta_oracle_and_repeat_prior_metrics(tmp_path: Path) -> None:
 
     oracle = build_state_delta_oracle_metrics(target_paths=[target], max_rows=2)
     repeat = build_key_repeat_prior_metrics(train_paths=[train], target_paths=[target], max_train_rows=3, max_target_rows=2)
+    causal = build_causal_keyboard_repeat_policy_matrix(
+        train_paths=[train],
+        target_paths=[target],
+        max_train_rows=3,
+        max_target_rows=2,
+        thresholds=[0.5],
+    )
 
     assert oracle["policies"]["next_state_delta_plus_prev_motion"]["all"]["paper_compatible"]["mouse_button"]["button_accuracy"] == 1.0
     assert repeat["rows"] == 2
     assert repeat["policies"]["global_hold_since_th0.1"]["all"]["paper_compatible"]["keyboard"]["key_accuracy"] == 1.0
+    assert causal["rows"] == 2
+    assert causal["policies"]["global_hold_since_pressrelease_th0.5"]["all"]["paper_compatible"]["keyboard"]["key_accuracy"] == 1.0

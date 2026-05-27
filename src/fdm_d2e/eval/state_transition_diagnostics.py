@@ -212,9 +212,25 @@ def _repeat_context_code_hold_since(code: str, hold: int, since: int) -> tuple[s
     return (str(code), min(int(hold), 256), min(int(since), 64))
 
 
+def _repeat_context_global_hold_mod(code: str, hold: int, since: int) -> tuple[int, int, int, int, int]:
+    del code
+    return (min(int(hold), 128), int(hold) % 2, int(hold) % 3, int(hold) % 4, min(int(since), 64))
+
+
+def _repeat_context_code_hold_mod(code: str, hold: int, since: int) -> tuple[str, int, int, int, int, int]:
+    return (str(code), min(int(hold), 128), int(hold) % 2, int(hold) % 3, int(hold) % 4, min(int(since), 64))
+
+
 _REPEAT_CONTEXTS: dict[str, Callable[[str, int, int], tuple[Any, ...]]] = {
     "global_hold_since": _repeat_context_global_hold_since,
     "code_hold_since": _repeat_context_code_hold_since,
+}
+
+_TRANSITION_CONTEXTS: dict[str, Callable[[str, int, int], tuple[Any, ...]]] = {
+    "global_hold_since": _repeat_context_global_hold_since,
+    "code_hold_since": _repeat_context_code_hold_since,
+    "global_hold_mod": _repeat_context_global_hold_mod,
+    "code_hold_mod": _repeat_context_code_hold_mod,
 }
 
 
@@ -258,6 +274,44 @@ def train_key_repeat_priors(
                 rec[1] += positive
     return {
         name: {key: (pos / n, n, pos) for key, (n, pos) in items.items() if n >= int(min_support)}
+        for name, items in counts.items()
+    }
+
+
+def train_key_transition_priors(
+    *,
+    train_paths: Sequence[str | Path],
+    max_rows: int | None = None,
+    min_support: int = 3,
+) -> dict[str, dict[tuple[Any, ...], tuple[float, float, int, int, int]]]:
+    """Estimate causal held-key press/release probabilities from train rows.
+
+    The features are intentionally limited to metadata available before the
+    current 50 ms action bin: held-key code, held duration, and time since the
+    last key transition. This is a causal negative-control diagnostic, unlike
+    the noncausal state-delta upper bound above.
+    """
+
+    counts: dict[str, defaultdict[tuple[Any, ...], list[int]]] = {
+        name: defaultdict(lambda: [0, 0, 0]) for name in _TRANSITION_CONTEXTS
+    }
+    for row in _iter_rows(train_paths, max_rows=max_rows):
+        gt = set(_tokens(row, "ground_truth_tokens"))
+        since = _prior_since_key_transition(row)
+        for code, hold in _prior_key_holds(row).items():
+            press = int(("KEY_PRESS_" + code) in gt)
+            release = int(("KEY_RELEASE_" + code) in gt)
+            for name, context_fn in _TRANSITION_CONTEXTS.items():
+                rec = counts[name][context_fn(code, hold, since)]
+                rec[0] += 1
+                rec[1] += press
+                rec[2] += release
+    return {
+        name: {
+            key: (press / n, release / n, n, press, release)
+            for key, (n, press, release) in items.items()
+            if n >= int(min_support)
+        }
         for name, items in counts.items()
     }
 
@@ -307,6 +361,81 @@ def build_key_repeat_prior_metrics(
     }
 
 
+def build_causal_keyboard_repeat_policy_matrix(
+    *,
+    train_paths: Sequence[str | Path],
+    target_paths: Sequence[str | Path],
+    max_train_rows: int | None = None,
+    max_target_rows: int | None = None,
+    thresholds: Sequence[float] = (0.02, 0.05, 0.08, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.65),
+    min_support: int = 3,
+) -> dict[str, Any]:
+    priors = train_key_transition_priors(train_paths=train_paths, max_rows=max_train_rows, min_support=min_support)
+    policies: dict[str, Callable[[dict[str, Any]], list[str]]] = {
+        "empty": lambda _row: [],
+        "prev_keys": lambda row: [token for token in _previous_tokens(row) if token.startswith("KEY_")],
+        "prev_keypress_if_held": lambda row: [
+            token
+            for token in _previous_tokens(row)
+            if token.startswith("KEY_PRESS_") and token.removeprefix("KEY_PRESS_") in _prior_key_holds(row)
+        ],
+        "held_all_as_press": lambda row: ["KEY_PRESS_" + code for code in _prior_key_holds(row)],
+    }
+
+    for name, context_fn in _TRANSITION_CONTEXTS.items():
+        for threshold in thresholds:
+
+            def make_press_release_policy(
+                *,
+                context_name: str = name,
+                context: Callable[[str, int, int], tuple[Any, ...]] = context_fn,
+                threshold_value: float = float(threshold),
+                include_previous_release: bool = False,
+            ) -> Callable[[dict[str, Any]], list[str]]:
+                def policy(row: dict[str, Any]) -> list[str]:
+                    out: list[str] = []
+                    if include_previous_release:
+                        out.extend(token for token in _previous_tokens(row) if token.startswith("KEY_RELEASE_"))
+                    since = _prior_since_key_transition(row)
+                    model = priors.get(context_name, {})
+                    for code, hold in _prior_key_holds(row).items():
+                        rec = model.get(context(code, hold, since))
+                        if not rec:
+                            continue
+                        press_probability, release_probability, *_ = rec
+                        if press_probability >= threshold_value:
+                            out.append("KEY_PRESS_" + code)
+                        if release_probability >= threshold_value:
+                            out.append("KEY_RELEASE_" + code)
+                    return merge_motion_and_categorical([], out)
+
+                return policy
+
+            label = f"{name}_pressrelease_th{float(threshold):g}"
+            policies[label] = make_press_release_policy()
+            label_with_prev = f"{name}_plus_prev_release_th{float(threshold):g}"
+            policies[label_with_prev] = make_press_release_policy(include_previous_release=True)
+
+    accs = {name: _PaperMetricAccumulator(empty_bins_as_correct=False) for name in policies}
+    rows = 0
+    for row in _iter_rows(target_paths, max_rows=max_target_rows):
+        gt = _tokens(row, "ground_truth_tokens")
+        for name, policy in policies.items():
+            accs[name].update(policy(row), gt)
+        rows += 1
+    return {
+        "schema": "g005_causal_keyboard_repeat_policy_matrix.v1",
+        "rows": rows,
+        "train_paths": [str(path) for path in train_paths],
+        "target_paths": [str(path) for path in target_paths],
+        "min_support": int(min_support),
+        "thresholds": [float(value) for value in thresholds],
+        "context_count": {name: len(model) for name, model in priors.items()},
+        "policies": _metrics_payload(accs),
+        "claim_boundary": "Causal duration-prior keyboard diagnostic only; no future target state or target labels are used at prediction time.",
+    }
+
+
 def write_state_transition_diagnostics(
     *,
     train_paths: Sequence[str | Path],
@@ -326,14 +455,22 @@ def write_state_transition_diagnostics(
         max_train_rows=max_train_rows,
         max_target_rows=max_target_rows,
     )
+    causal_keyboard = build_causal_keyboard_repeat_policy_matrix(
+        train_paths=train_paths,
+        target_paths=target_paths,
+        max_train_rows=max_train_rows,
+        max_target_rows=max_target_rows,
+    )
     paths = {
         "previous_context": output / f"{prefix}_prefix_context_heuristic_matrix.json",
         "state_delta_oracle": output / f"{prefix}_state_delta_oracle_prefix320k_metrics.json",
         "key_repeat_prior": output / f"{prefix}_key_repeat_prior_prefix320k_metrics.json",
+        "causal_keyboard_repeat": output / f"{prefix}_causal_keyboard_repeat_policy_matrix.json",
     }
     write_json(paths["previous_context"], previous)
     write_json(paths["state_delta_oracle"], state_delta)
     write_json(paths["key_repeat_prior"], repeat)
+    write_json(paths["causal_keyboard_repeat"], causal_keyboard)
     return {
         "schema": "g005_state_transition_diagnostics_summary.v1",
         "status": "pass",
@@ -342,6 +479,7 @@ def write_state_transition_diagnostics(
             "previous_context": previous["rows"],
             "state_delta_oracle": state_delta["rows"],
             "key_repeat_prior": repeat["rows"],
+            "causal_keyboard_repeat": causal_keyboard["rows"],
         },
         "claim_boundary": "Diagnostic artifact index only; state-delta and repeat-prior outputs include noncausal upper bounds.",
     }

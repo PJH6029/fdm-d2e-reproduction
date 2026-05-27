@@ -372,3 +372,33 @@ Next branch: train or decode a keyboard-repeat specialist over held-state durati
 previous key repeats, and frame/next-frame context, while reusing previous-motion
 continuation and state-transition button decoding as separate heads. Do not treat
 state-delta oracle metrics as claimable because they use future held-state metadata.
+
+
+### 2026-05-28 KST — causal keyboard repeat/release prior rejected
+
+Ran a CPU-only causal held-key duration policy matrix on `production-storage-shell-4`
+over the same 320k train/target prefix. Unlike the state-delta upper bound, this
+matrix predicts only from causal metadata available before the current action bin:
+held key code, held duration, time since last key transition, and previous key
+release tokens.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_causal_keyboard_repeat_policy_matrix.json` — full policy
+  matrix over global/code-specific hold-duration contexts and thresholds.
+- `src/fdm_d2e/eval/state_transition_diagnostics.py` and
+  `scripts/build_g005_state_transition_diagnostics.py` — reproducible builder now
+  includes this causal matrix.
+- `tests/test_state_transition_diagnostics.py` — regression coverage for the
+  causal matrix plus state-delta/repeat diagnostics.
+
+Result: reject simple causal duration priors. The best policy is `code_hold_mod_pressrelease_th0.3` with
+keyboard `0.1978` over `88535` paper-compatible key samples. That is
+below the `event_all` prefix keyboard (`0.1990`) and far below the paper target
+`0.73`, while the noncausal next-state/repeat upper bound reached only `0.5426`.
+This rules out a purely tabular held-duration repeat/release fix.
+
+Next: keyboard likely requires a learned sequence/action-state model that predicts
+future key state or current event repeats from richer temporal context, not just
+held duration. GPU should still be gated by a prefix run that beats `event_all` on
+keyboard, button, and motion simultaneously.
