@@ -1,0 +1,424 @@
+{
+  "aggregate_target_results": [
+    {
+      "actual": 0.7484696441195036,
+      "direction": "higher",
+      "margin": 0.0,
+      "name": "pearson_x",
+      "passed": false,
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "pearson_x"
+      ],
+      "target": 0.796
+    },
+    {
+      "actual": 0.7009831770661057,
+      "direction": "higher",
+      "margin": 0.0,
+      "name": "pearson_y",
+      "passed": false,
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "pearson_y"
+      ],
+      "target": 0.783
+    },
+    {
+      "actual": 0.06704133823483047,
+      "direction": "higher",
+      "margin": 0.0,
+      "name": "keyboard_accuracy",
+      "passed": false,
+      "path": [
+        "paper_compatible",
+        "keyboard",
+        "key_accuracy"
+      ],
+      "target": 0.73
+    },
+    {
+      "actual": 0.09433889230644099,
+      "direction": "higher",
+      "margin": 0.0,
+      "name": "mouse_button_accuracy",
+      "passed": false,
+      "path": [
+        "paper_compatible",
+        "mouse_button",
+        "button_accuracy"
+      ],
+      "target": 0.957
+    },
+    {
+      "actual": 1.0665762646880192,
+      "direction": "lower",
+      "margin": 0.0,
+      "name": "scale_ratio_x",
+      "passed": true,
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "scale_ratio_x"
+      ],
+      "target": 1.23
+    },
+    {
+      "actual": 1.2066146449683377,
+      "direction": "lower",
+      "margin": 0.0,
+      "name": "scale_ratio_y",
+      "passed": true,
+      "path": [
+        "paper_compatible",
+        "mouse_move",
+        "scale_ratio_y"
+      ],
+      "target": 1.31
+    }
+  ],
+  "checkpoint_exists": true,
+  "checkpoint_link": {
+    "created": false,
+    "exists": true,
+    "mode": "existing",
+    "sha256": "70fe79928ea94d4bfb4d749f84c86353a8afa93175381339df3c963a42a69994",
+    "source": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/checkpoint.pt",
+    "target": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/checkpoint.pt"
+  },
+  "checkpoint_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/checkpoint.pt",
+  "checkpoint_sha256": "70fe79928ea94d4bfb4d749f84c86353a8afa93175381339df3c963a42a69994",
+  "claim_boundary": "Checkpoint recovery finalization validates a full-corpus G005 IDM candidate from an already-trained 4xH200 checkpoint. It is evidence for the recovered candidate, not a fresh training run and not FDM-1 parity.",
+  "exit_code": 0,
+  "expected_gpus": 4,
+  "g005_audit_error_count": 7,
+  "g005_audit_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/idm/g005_idm_event_state_duration_softmax_paper_target_audit.json",
+  "g005_audit_status": "fail",
+  "git_head": "b40e42d6e9719b21854258d3590600f499bf441e",
+  "git_status_short": "M artifacts/idm/g005_idm_exactset_history_precomputed_cache_validation.json\n M artifacts/idm/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target_summary.json\nA  configs/eval/g005_idm_state_luma_pair_paper_target.yaml\nA  configs/eval/g005_idm_state_luma_pair_split_statistics.yaml\nM  configs/eval/g005_idm_video_stack_luma96_offsets012_keysoftmax_split_statistics.yaml\nA  configs/eval/g006_gidm_exact_split_pipeline.yaml\nA  configs/model/idm_streaming_d2e_full_state_luma_pair_paper_target.yaml\nA  scripts/log_wandb_artifacts.py\nA  scripts/materialize_d2e_state_corpus.py\nA  scripts/run_g005_idm_state_luma_pair_4xh200.sh\nA  scripts/run_g006_gidm_exact_split_pipeline.py\nAM scripts/synthesize_state_streaming_stats.py\nA  scripts/watch_wandb_gidm_inference.py\nA  src/fdm_d2e/eval/gidm_exact_pipeline.py\nM  src/fdm_d2e/eval/gidm_runner.py\nM  src/fdm_d2e/eval/split_statistics.py\nM  src/fdm_d2e/tokenization/actions.py\n M src/fdm_d2e/training/neural_idm.py\n M src/fdm_d2e/training/torch_idm.py\nM  tests/test_action_tokenization.py\nA  tests/test_d2e_state_materializer.py\nM  tests/test_gidm_adapter.py\nA  tests/test_gidm_exact_pipeline.py\nM  tests/test_split_statistics.py\nA  tests/test_state_streaming_stats_synthesis.py\nM  tests/test_training_run_scripts.py\nA  tests/test_wandb_artifact_logger.py\n?? artifacts/aux/g005_aux_examples_atari_head_probe.json\n?? artifacts/aux/g005_aux_materialization_execute.log\n?? artifacts/aux/g005_aux_materialization_execute_summary.json\n?? artifacts/aux/g005_aux_materialization_watcher.log\n?? artifacts/aux/g005_d2e_aux_train_run.log\n?? artifacts/aux/g005_postrun_watcher.log\n?? artifacts/aux/g005_pre3868187_20260523T044702Z/\n?? artifacts/eval/g002_pvc_action_error_diagnostics_progress.json\n?? artifacts/eval/g002_pvc_action_error_diagnostics_smoke.json\n?? artifacts/eval/g005_idm_event_state_duration_context_split_statistical_comparisons_summary.json\n?? artifacts/eval/g005_idm_event_state_duration_softmax_split_statistical_comparisons_summary.json\n?? artifacts/eval/g005_idm_state_luma_pair_split_statistical_comparisons_summary.json\n?? artifacts/eval/g005_idm_video_stack_luma96_offsets012_keysoftmax_split_statistical_comparisons_summary.json\n?? artifacts/eval/g006_gidm_exact_split_active_outputs_before_fast_restart.txt\n?? artifacts/eval/g006_gidm_exact_split_inference_fast16_gpu_monitor.csv\n?? artifacts/eval/g006_gidm_exact_split_inference_fast16_launcher.log\n?? artifacts/eval/g006_gidm_exact_split_inference_fast16_pipeline.log\n?? artifacts/eval/g006_gidm_exact_split_inference_fast16_run.json\n?? artifacts/eval/g006_gidm_exact_split_inference_fast32_abort_summary.json\n?? artifacts/eval/g006_gidm_exact_split_inference_fast32_gpu_monitor.csv\n?? artifacts/eval/g006_gidm_exact_split_inference_fast32_launcher.log\n?? artifacts/eval/g006_gidm_exact_split_inference_fast32_pipeline.log\n?? artifacts/eval/g006_gidm_exact_split_inference_fast32_run.json\n?? artifacts/eval/g006_gidm_exact_split_inference_fast32_wandb_sidecar.log\n?? artifacts/eval/g006_gidm_exact_split_inference_fast32_wandb_sidecar_status.json\n?? artifacts/eval/g006_gidm_exact_split_inference_gpu_monitor.csv\n?? artifacts/eval/g006_gidm_exact_split_inference_launcher.log\n?? artifacts/eval/g006_gidm_exact_split_inference_pipeline.log\n?? artifacts/eval/g006_gidm_exact_split_inference_run.json\n?? artifacts/eval/g006_gidm_manifest_runner_dry_run.json\n?? artifacts/eval/gidm_exact_split_inference_logs/\n?? artifacts/eval/gidm_manifest_inference_logs/\n?? artifacts/fdm/fdm_bth05_gain_probe_cpu.json\n?? artifacts/fdm/fdm_bth05_gain_probe_cpu.log\n?? artifacts/fdm/fdm_bth05_gain_sweep_h200.json\n?? artifacts/fdm/fdm_bth05_gain_sweep_h200.log\n?? artifacts/fdm/fdm_bth05_pipeline_h200.log\n?? artifacts/fdm/fdm_bth05_regression_h200.log\n?? artifacts/fdm/fdm_knn_shooter64_surface_motion_cpu.log\n?? artifacts/fdm/fdm_knn_shooter64_surface_sweep_h200.log\n?? artifacts/fdm/fdm_regression_gain_probe_cpu.json\n?? artifacts/fdm/fdm_regression_gain_probe_cpu.log\n?? artifacts/fdm/fdm_shooter64_fulltrain_button_sweep_h200.log\n?? artifacts/fdm/fdm_shooter64_recall_beta_sweep_h200.log\n?? artifacts/fdm/fdm_shooter64_surface_motion_fulltrain_h200.log\n?? artifacts/fdm/fdm_shooter64_surface_motion_h200.log\n?? artifacts/fdm/g003_to_g004_chain.log\n?? artifacts/fdm/g003_to_g004_chain_watcher.log\n?? artifacts/fdm/g004_d2e_full_fdm_4xh200.launch.log\n?? artifacts/fdm/g004_d2e_full_fdm_4xh200.log\n?? artifacts/fdm/g004_d2e_full_fdm_4xh200.nohup.log\n?? artifacts/fdm/g004_d2e_full_fdm_4xh200_launcher.log\n?? artifacts/fdm/g004_gpu_idle_restart_backup_20260522T235357Z/\n?? artifacts/fdm/g004_postrun_watcher.log\n?? artifacts/fdm/g004_pull_conflict_backup_20260522T234011Z/\n?? artifacts/fdm/g004_serial_restart_backup_20260522T233926Z/\n?? artifacts/fdm/idm_predict_shooter64_train_from_selected_h200.log\n?? artifacts/idm/g003_accel64_attached_gpu_monitor.log\n?? artifacts/idm/g003_accel64_failed_training_timeout.json\n?? artifacts/idm/g003_accel64_integrated_finalization.log\n?? artifacts/idm/g003_accel64_launch.log\n?? artifacts/idm/g003_accel64_live_health.json\n?? artifacts/idm/g003_accel64_live_health_report.json\n?? artifacts/idm/g003_accel64_parallel_recover_idm_outputs.log\n?? artifacts/idm/g003_accel64_postrun_watcher.log\n?? artifacts/idm/g003_accel64_postrun_watcher_once_probe.json\n?? artifacts/idm/g003_accel64_postrun_watcher_summary.json\n?? artifacts/idm/g003_accel64_progress.json\n?? artifacts/idm/g003_accel64_promotion_backups/\n?? artifacts/idm/g003_accel64_recover_idm_outputs.log\n?? artifacts/idm/g003_accel64_resume_plan.json\n?? artifacts/idm/g003_accel64_shard_29_repair.json\n?? artifacts/idm/g003_accel64_training_resume.log\n?? artifacts/idm/g003_attached_gpu_monitor.log\n?? artifacts/idm/g003_canonical_stop_20260521T171444Z.json\n?? artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64.csv\n?? artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_accel64_attached.json\n?? artifacts/idm/g003_d2e_full_idm_4xh200_gpu_monitor_attached.json\n?? artifacts/idm/g003_d2e_full_idm_run_accel64_isolated.log\n?? artifacts/idm/g003_d2e_full_idm_run_full_compact.log\n?? artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.json\n?? artifacts/idm/g003_d2e_full_idm_run_full_compact_parallel.log\n?? artifacts/idm/g003_full_idm_progress.json\n?? artifacts/idm/g003_live_health.json\n?? artifacts/idm/g003_postrun_watcher.log\n?? artifacts/idm/g003_postrun_watcher_summary.json\n?? artifacts/idm/g003_restart_20260521T161028Z.json\n?? artifacts/idm/g003_restart_20260521T161637Z.json\n?? artifacts/idm/g005_idm_event_state_context_4xh200.log\n?? artifacts/idm/g005_idm_event_state_context_4xh200_gpu_monitor.csv\n?? artifacts/idm/g005_idm_event_state_context_4xh200_run.json\n?? artifacts/idm/g005_idm_event_state_context_driver.nohup.log\n?? artifacts/idm/g005_idm_event_state_context_interruption_snapshot.json\n?? artifacts/idm/g005_idm_event_state_context_materialization.log\n?? artifacts/idm/g005_idm_event_state_context_materialization_progress.json\n?? artifacts/idm/g005_idm_event_state_context_materialization_summary.json\n?? artifacts/idm/g005_idm_event_state_context_materialization_wandb_status.json\n?? artifacts/idm/g005_idm_event_state_context_precompute.log\n?? artifacts/idm/g005_idm_event_state_context_precompute_progress.json\n?? artifacts/idm/g005_idm_event_state_context_precompute_wandb_status.json\n?? artifacts/idm/g005_idm_event_state_context_precomputed_cache_validation.json\n?? artifacts/idm/g005_idm_event_state_context_prefix_metrics_800k.json\n?? artifacts/idm/g005_idm_event_state_context_prefix_metrics_wandb_status.json\n?? artifacts/idm/g005_idm_event_state_context_reservation_context.json\n?? artifacts/idm/g005_idm_event_state_context_wandb_sidecar.log\n?? artifacts/idm/g005_idm_event_state_context_wandb_sidecar_status.json\n?? artifacts/idm/g005_idm_event_state_duration_context_141cf1f_driver.nohup.log\n?? artifacts/idm/g005_idm_event_state_duration_context_141cf1f_relaunch.json\n?? artifacts/idm/g005_idm_event_state_duration_context_4xh200.log\n?? artifacts/idm/g005_idm_event_state_duration_context_4xh200_gpu_monitor.csv\n?? artifacts/idm/g005_idm_event_state_duration_context_4xh200_run.json\n?? artifacts/idm/g005_idm_event_state_duration_context_driver.nohup.log\n?? artifacts/idm/g005_idm_event_state_duration_context_materialization.log\n?? artifacts/idm/g005_idm_event_state_duration_context_materialization_progress.json\n?? artifacts/idm/g005_idm_event_state_duration_context_materialization_summary.json\n?? artifacts/idm/g005_idm_event_state_duration_context_materialization_wandb_status.json\n?? artifacts/idm/g005_idm_event_state_duration_context_paper_metrics.json\n?? artifacts/idm/g005_idm_event_state_duration_context_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_event_state_duration_context_paper_target_audit.json\n?? artifacts/idm/g005_idm_event_state_duration_context_precompute.log\n?? artifacts/idm/g005_idm_event_state_duration_context_precompute_progress.json\n?? artifacts/idm/g005_idm_event_state_duration_context_precompute_wandb_status.json\n?? artifacts/idm/g005_idm_event_state_duration_context_precomputed_cache_validation.json\n?? artifacts/idm/g005_idm_event_state_duration_context_reservation_context.json\n?? artifacts/idm/g005_idm_event_state_duration_context_wandb_sidecar.log\n?? artifacts/idm/g005_idm_event_state_duration_context_wandb_sidecar_status.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_2gpu_checkpoint_recovery.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_2gpu_recovery_finalization.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_4xh200.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_4xh200_before_recovery_25e280a.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_4xh200_before_vectorized_relaunch_1022129.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_4xh200_gpu_monitor.csv\n?? artifacts/idm/g005_idm_event_state_duration_softmax_4xh200_gpu_monitor_before_recovery_25e280a.csv\n?? artifacts/idm/g005_idm_event_state_duration_softmax_4xh200_gpu_monitor_before_vectorized_relaunch_1022129.csv\n?? artifacts/idm/g005_idm_event_state_duration_softmax_4xh200_run.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_calibration_recovery_25e280a.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_launch.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_launcher.nohup.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_paper_metrics.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_precompute.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_precompute_progress.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_precompute_wandb_status.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_precomputed_cache_validation.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_prediction_part_tail_cleanup_1022129.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_prediction_part_tail_cleanup_2gpu_resume.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_prediction_vectorized_relaunch_1022129.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_recovery_25e280a_launcher.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_seeded_relaunch.nohup.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_stats_seed_relaunch_7742d60.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_tailclean_relaunch_1022129_launcher.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_vectorized_relaunch_1022129_launcher.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_wandb_sidecar.log\n?? artifacts/idm/g005_idm_event_state_duration_softmax_wandb_sidecar_status.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_wandb_sidecar_status_before_recovery_25e280a.json\n?? artifacts/idm/g005_idm_event_state_duration_softmax_wandb_sidecar_status_before_vectorized_relaunch_1022129.json\n?? artifacts/idm/g005_idm_exactset_history_4xh200_run.json\n?? artifacts/idm/g005_idm_exactset_history_pre_launch_cache_validation.json\n?? artifacts/idm/g005_idm_paper_sum_4xh200.log\n?? artifacts/idm/g005_idm_paper_sum_4xh200_gpu_monitor.csv\n?? artifacts/idm/g005_idm_paper_sum_launcher.log\n?? artifacts/idm/g005_idm_state_corpus_materialization.log\n?? artifacts/idm/g005_idm_state_corpus_materialization_progress.json\n?? artifacts/idm/g005_idm_state_corpus_materialization_summary.json\n?? artifacts/idm/g005_idm_state_corpus_materialization_wandb_status.json\n?? artifacts/idm/g005_idm_state_luma_pair_4xh200.log\n?? artifacts/idm/g005_idm_state_luma_pair_4xh200_gpu_monitor.csv\n?? artifacts/idm/g005_idm_state_luma_pair_4xh200_run.json\n?? artifacts/idm/g005_idm_state_luma_pair_alignment_shift_probe_1m.json\n?? artifacts/idm/g005_idm_state_luma_pair_alignment_shift_probe_1m_progress.json\n?? artifacts/idm/g005_idm_state_luma_pair_alignment_shift_probe_1m_wandb_status.json\n?? artifacts/idm/g005_idm_state_luma_pair_code_checkout_manifest.json\n?? artifacts/idm/g005_idm_state_luma_pair_code_checkout_wandb_status.json\n?? artifacts/idm/g005_idm_state_luma_pair_eventified_d1_prefix1m_paper_metrics.json\n?? artifacts/idm/g005_idm_state_luma_pair_eventified_d1_prefix1m_summary.json\n?? artifacts/idm/g005_idm_state_luma_pair_eventified_d2_prefix1m_paper_metrics.json\n?? artifacts/idm/g005_idm_state_luma_pair_eventified_d2_prefix1m_summary.json\n?? artifacts/idm/g005_idm_state_luma_pair_eventified_d_prefix1m_paper_metrics.json\n?? artifacts/idm/g005_idm_state_luma_pair_eventified_prefix1m_metrics_wandb_status.json\n?? artifacts/idm/g005_idm_state_luma_pair_eventified_prefix1m_wandb_status.json\n?? artifacts/idm/g005_idm_state_luma_pair_launcher.log\n?? artifacts/idm/g005_idm_state_luma_pair_paper_metrics.json\n?? artifacts/idm/g005_idm_state_luma_pair_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_state_luma_pair_paper_target_audit.json\n?? artifacts/idm/g005_idm_state_luma_pair_postrun_finalization.log\n?? artifacts/idm/g005_idm_state_luma_pair_postrun_finalization_summary.json\n?? artifacts/idm/g005_idm_state_luma_pair_postrun_wandb_status.json\n?? artifacts/idm/g005_idm_state_luma_pair_precompute.log\n?? artifacts/idm/g005_idm_state_luma_pair_precompute_progress.json\n?? artifacts/idm/g005_idm_state_luma_pair_precompute_wandb_logger.log\n?? artifacts/idm/g005_idm_state_luma_pair_precompute_wandb_status.json\n?? artifacts/idm/g005_idm_state_luma_pair_precomputed_cache_validation.json\n?? artifacts/idm/g005_idm_state_luma_pair_stats_synthesis.log\n?? artifacts/idm/g005_idm_state_luma_pair_stats_synthesis_summary.json\n?? artifacts/idm/g005_idm_state_luma_pair_stats_synthesis_wandb_status.json\n?? artifacts/idm/g005_idm_state_luma_pair_wandb_sidecar.log\n?? artifacts/idm/g005_idm_state_luma_pair_wandb_sidecar_status.json\n?? artifacts/idm/g005_idm_video_pair_raw112_epoch12_closed_target_probe_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_video_pair_raw112_epoch12_recal_fpr05_closed_target_probe_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_video_pair_raw112_epoch12_recal_fpr08_closed_target_probe_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_video_pair_raw112_epoch6_closed_target_probe_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_video_pair_raw112_resume_to12_4xh200.log\n?? artifacts/idm/g005_idm_video_pair_raw112_resume_to6_4xh200.log\n?? artifacts/idm/g005_idm_video_pair_raw112_trainfirst_4xh200.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_alignment_shift_probe_100k.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_alignment_shift_probe_1m.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_alignment_shift_probe_1m_progress.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_alignment_shift_probe_1m_wandb_status.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_calpreserve_abort.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_calpreserve_live_prediction_wandb_sidecar.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_calpreserve_live_prediction_wandb_sidecar_status.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_calpreserve_prediction_wandb_sidecar.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_calpreserve_prediction_wandb_sidecar_status.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_calpreserve_prefix200k_paper_metrics.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_calpreserve_recovery.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_checkpoint_recovery.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_checkpoint_recovery_launcher.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_checkpoint_recovery_run.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_metrics.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_metrics_progress.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_paper_target_audit.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_post_prediction_metrics.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_post_prediction_metrics_parallel.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_post_prediction_metrics_retry.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_post_prediction_metrics_run.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_postmetrics_wandb_status.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_precompute.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_precompute_launcher.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_precompute_launcher_rerun.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_precompute_run.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_prediction_summary.json\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_prediction_wandb_sidecar.log\n?? artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_prediction_wandb_sidecar_status.json\n?? artifacts/idm/g005_pre_5b53f16_pull_precompute_evidence_backup_20260524T161256Z/\n?? artifacts/idm/g005_pre_b654b6e_pull_conflict_backup_20260524T131152Z/\n?? artifacts/idm/g005_precompute_pause_governor.log\n?? artifacts/idm/g005_video_pair_raw112_cache_precompute.log\n?? artifacts/idm/g005_video_pair_raw112_cache_precompute_bounded.log\n?? artifacts/idm/g005_video_pair_raw112_cache_precompute_restart.log\n?? artifacts/idm/g005_video_pair_raw112_cache_to_prefix_train_watcher.log\n?? artifacts/idm/g4_h200_residual_runs.log\n?? artifacts/idm/g4_h200_richmotion16_run.log\n?? artifacts/idm/g4_h200_richmotion36_run.log\n?? artifacts/idm/g4_h200_richmotion36b_run.log\n?? artifacts/idm/g4_h200_shooter32_run.log\n?? artifacts/idm/idm_streaming_d2e_full_event_state_duration_context_paper_target_summary.json\n?? artifacts/idm/idm_streaming_d2e_full_event_state_duration_softmax_paper_target_summary.json\n?? artifacts/idm/idm_streaming_d2e_full_state_luma_pair_paper_target_summary.json\n?? artifacts/idm/idm_streaming_d2e_probe_summary.json\n?? artifacts/idm/idm_torch_apex16_capacity_sweep_h200.log\n?? artifacts/idm/idm_torch_apex16_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_axis_softmax_motion_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_focal_calibrated_sweep_h200.json\n?? artifacts/idm/idm_torch_shooter32_focal_calibrated_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_grid8_group_calibrated_sweep_h200.json\n?? artifacts/idm/idm_torch_shooter32_grid8_group_calibrated_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_grid8_time_group_calibrated_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_luma_temporal_conv_h256_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_luma_temporal_conv_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_motion_only_residual_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_seq_button_softmax_residual_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_seq_button_softmax_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_seq_button_softmax_sweep_h200_rerun.json\n?? artifacts/idm/idm_torch_shooter32_seq_button_softmax_sweep_h200_rerun.log\n?? artifacts/idm/idm_torch_shooter32_seq_history_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_surface_motion_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter32_sweep_h200.log\n?? artifacts/idm/idm_torch_shooter64_surface_motion_sweep_h200.log\n?? artifacts/idm/idm_video_pair_d2e_full_raw112_keysoftmax_paper_target_summary.json\n?? artifacts/idm/idm_video_pair_d2e_full_raw112_paper_target_summary.json\n?? artifacts/idm/threshold_probe/\n?? artifacts/mlxp/g005_exactset_history_b0e1b1_idle_stop.json\n?? artifacts/pod_untracked_backup/\n?? artifacts/sources/d2e_full_corpus_decode_summary_accel64.json\n?? artifacts/sources/d2e_full_corpus_probe_fast_summary.json\n?? artifacts/sources/d2e_full_corpus_probe_summary.json\n?? artifacts/sources/d2e_full_corpus_shard_0.log\n?? artifacts/sources/d2e_full_corpus_shard_1.log\n?? artifacts/sources/d2e_full_corpus_shard_10.log\n?? artifacts/sources/d2e_full_corpus_shard_11.log\n?? artifacts/sources/d2e_full_corpus_shard_12.log\n?? artifacts/sources/d2e_full_corpus_shard_13.log\n?? artifacts/sources/d2e_full_corpus_shard_14.log\n?? artifacts/sources/d2e_full_corpus_shard_15.log\n?? artifacts/sources/d2e_full_corpus_shard_16.log\n?? artifacts/sources/d2e_full_corpus_shard_17.log\n?? artifacts/sources/d2e_full_corpus_shard_18.log\n?? artifacts/sources/d2e_full_corpus_shard_19.log\n?? artifacts/sources/d2e_full_corpus_shard_2.log\n?? artifacts/sources/d2e_full_corpus_shard_20.log\n?? artifacts/sources/d2e_full_corpus_shard_21.log\n?? artifacts/sources/d2e_full_corpus_shard_22.log\n?? artifacts/sources/d2e_full_corpus_shard_23.log\n?? artifacts/sources/d2e_full_corpus_shard_24.log\n?? artifacts/sources/d2e_full_corpus_shard_25.log\n?? artifacts/sources/d2e_full_corpus_shard_26.log\n?? artifacts/sources/d2e_full_corpus_shard_27.log\n?? artifacts/sources/d2e_full_corpus_shard_28.log\n?? artifacts/sources/d2e_full_corpus_shard_29.log\n?? artifacts/sources/d2e_full_corpus_shard_3.log\n?? artifacts/sources/d2e_full_corpus_shard_30.log\n?? artifacts/sources/d2e_full_corpus_shard_31.log\n?? artifacts/sources/d2e_full_corpus_shard_32.log\n?? artifacts/sources/d2e_full_corpus_shard_33.log\n?? artifacts/sources/d2e_full_corpus_shard_34.log\n?? artifacts/sources/d2e_full_corpus_shard_35.log\n?? artifacts/sources/d2e_full_corpus_shard_36.log\n?? artifacts/sources/d2e_full_corpus_shard_37.log\n?? artifacts/sources/d2e_full_corpus_shard_38.log\n?? artifacts/sources/d2e_full_corpus_shard_39.log\n?? artifacts/sources/d2e_full_corpus_shard_4.log\n?? artifacts/sources/d2e_full_corpus_shard_40.log\n?? artifacts/sources/d2e_full_corpus_shard_41.log\n?? artifacts/sources/d2e_full_corpus_shard_42.log\n?? artifacts/sources/d2e_full_corpus_shard_43.log\n?? artifacts/sources/d2e_full_corpus_shard_44.log\n?? artifacts/sources/d2e_full_corpus_shard_45.log\n?? artifacts/sources/d2e_full_corpus_shard_46.log\n?? artifacts/sources/d2e_full_corpus_shard_47.log\n?? artifacts/sources/d2e_full_corpus_shard_48.log\n?? artifacts/sources/d2e_full_corpus_shard_49.log\n?? artifacts/sources/d2e_full_corpus_shard_5.log\n?? artifacts/sources/d2e_full_corpus_shard_50.log\n?? artifacts/sources/d2e_full_corpus_shard_51.log\n?? artifacts/sources/d2e_full_corpus_shard_52.log\n?? artifacts/sources/d2e_full_corpus_shard_53.log\n?? artifacts/sources/d2e_full_corpus_shard_54.log\n?? artifacts/sources/d2e_full_corpus_shard_55.log\n?? artifacts/sources/d2e_full_corpus_shard_56.log\n?? artifacts/sources/d2e_full_corpus_shard_57.log\n?? artifacts/sources/d2e_full_corpus_shard_58.log\n?? artifacts/sources/d2e_full_corpus_shard_59.log\n?? artifacts/sources/d2e_full_corpus_shard_6.log\n?? artifacts/sources/d2e_full_corpus_shard_60.log\n?? artifacts/sources/d2e_full_corpus_shard_61.log\n?? artifacts/sources/d2e_full_corpus_shard_62.log\n?? artifacts/sources/d2e_full_corpus_shard_63.log\n?? artifacts/sources/d2e_full_corpus_shard_7.log\n?? artifacts/sources/d2e_full_corpus_shard_8.log\n?? artifacts/sources/d2e_full_corpus_shard_9.log\n?? artifacts/sources/decode_d2e_shooter64_h200.log\n?? artifacts/sources/g003_accel64/\n?? artifacts/sources/g003_restart_archive_20260521T161028Z/\n?? artifacts/sources/g003_restart_archive_20260521T161637Z/\n?? configs/eval/g005_idm_event_state_context_paper_target.yaml\n?? configs/eval/g005_idm_event_state_context_split_statistics.yaml\n?? configs/model/idm_streaming_d2e_full_event_state_context_paper_target.yaml\n?? configs/tmp/\n?? scripts/convert_state_predictions_to_events.py\n?? scripts/diagnose_idm_alignment_shifts.py\n?? scripts/materialize_d2e_event_state_context_corpus.py\n?? scripts/run_g005_idm_event_state_context_4xh200.sh\n?? src/fdm_d2e/eval/idm_alignment_shifts.py\n?? src/fdm_d2e/eval/state_prediction_events.py",
+  "gpu_monitor_log": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/idm/g005_idm_event_state_duration_softmax_4xh200_gpu_monitor.csv",
+  "gpu_monitor_sha256": "2970bbea6c73c7c290817999fedd4443fa31e61e731bb1bc1e446686c5993c5b",
+  "gpu_monitor_status": {
+    "covers_expected_gpus": true,
+    "expected_gpus": 4,
+    "rows": 152,
+    "sample_count": 38,
+    "unique_gpu_indices": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  "metadata_exists": true,
+  "metadata_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/checkpoint_metadata.json",
+  "nproc_per_node": 4,
+  "paper_metrics_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/idm/g005_idm_event_state_duration_softmax_paper_metrics.json",
+  "paper_metrics_rows": 16698646,
+  "paper_metrics_status": "pass",
+  "paper_target_config": "configs/eval/g005_idm_event_state_duration_softmax_paper_target.yaml",
+  "prediction_resume": {
+    "action_history_seed_state_summary": {},
+    "enabled": true,
+    "existing_rows": 8640630,
+    "parts": [
+      {
+        "part_index": 0,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_000/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_000/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_0/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_1/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_10/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_11/target_all_eval.jsonl"
+        ],
+        "records": 1089390,
+        "resume_existing_rows": 563537
+      },
+      {
+        "part_index": 1,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_001/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_001/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_12/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_13/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_14/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_15/target_all_eval.jsonl"
+        ],
+        "records": 1018173,
+        "resume_existing_rows": 582988
+      },
+      {
+        "part_index": 2,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_002/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_002/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_16/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_17/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_18/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_19/target_all_eval.jsonl"
+        ],
+        "records": 898692,
+        "resume_existing_rows": 607617
+      },
+      {
+        "part_index": 3,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_003/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_003/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_2/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_20/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_21/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_22/target_all_eval.jsonl"
+        ],
+        "records": 986551,
+        "resume_existing_rows": 586605
+      },
+      {
+        "part_index": 4,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_004/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_004/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_23/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_24/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_25/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_26/target_all_eval.jsonl"
+        ],
+        "records": 681790,
+        "resume_existing_rows": 561917
+      },
+      {
+        "part_index": 5,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_005/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_005/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_27/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_28/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_29/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_3/target_all_eval.jsonl"
+        ],
+        "records": 907924,
+        "resume_existing_rows": 543712
+      },
+      {
+        "part_index": 6,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_006/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_006/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_30/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_31/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_32/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_33/target_all_eval.jsonl"
+        ],
+        "records": 769740,
+        "resume_existing_rows": 566675
+      },
+      {
+        "part_index": 7,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_007/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_007/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_34/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_35/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_36/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_37/target_all_eval.jsonl"
+        ],
+        "records": 898715,
+        "resume_existing_rows": 550243
+      },
+      {
+        "part_index": 8,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_008/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_008/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_38/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_39/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_4/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_40/target_all_eval.jsonl"
+        ],
+        "records": 888529,
+        "resume_existing_rows": 506276
+      },
+      {
+        "part_index": 9,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_009/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_009/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_41/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_42/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_43/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_44/target_all_eval.jsonl"
+        ],
+        "records": 1015028,
+        "resume_existing_rows": 488887
+      },
+      {
+        "part_index": 10,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_010/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_010/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_45/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_46/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_47/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_48/target_all_eval.jsonl"
+        ],
+        "records": 1519495,
+        "resume_existing_rows": 498509
+      },
+      {
+        "part_index": 11,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_011/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_011/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_49/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_5/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_50/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_51/target_all_eval.jsonl"
+        ],
+        "records": 861540,
+        "resume_existing_rows": 505083
+      },
+      {
+        "part_index": 12,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_012/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_012/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_52/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_53/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_54/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_55/target_all_eval.jsonl"
+        ],
+        "records": 1186839,
+        "resume_existing_rows": 495939
+      },
+      {
+        "part_index": 13,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_013/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_013/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_56/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_57/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_58/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_59/target_all_eval.jsonl"
+        ],
+        "records": 1381352,
+        "resume_existing_rows": 504886
+      },
+      {
+        "part_index": 14,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_014/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_014/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_6/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_60/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_61/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_62/target_all_eval.jsonl"
+        ],
+        "records": 1246917,
+        "resume_existing_rows": 554199
+      },
+      {
+        "part_index": 15,
+        "predictions_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_015/predictions.jsonl",
+        "pseudo_label_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_parts/part_015/pseudolabels.jsonl",
+        "record_paths": [
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_63/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_7/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_8/target_all_eval.jsonl",
+          "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64/shard_9/target_all_eval.jsonl"
+        ],
+        "records": 1347971,
+        "resume_existing_rows": 523557
+      }
+    ],
+    "pseudolabel_validation": false,
+    "workers": 16,
+    "write_mode": "parallel_parts"
+  },
+  "predictions_bytes": 6488128385,
+  "predictions_exists": true,
+  "predictions_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/predictions.jsonl",
+  "pseudolabels_bytes": 10601582934,
+  "pseudolabels_exists": true,
+  "pseudolabels_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/pseudolabels.jsonl",
+  "recovery_command": "2gpu checkpoint recovery after 4xH200 reservation preempted at 2026-05-27T15:00+09:00; predictions resumed from 8,640,630 aligned part rows",
+  "recovery_summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/prediction_recovery_summary.json",
+  "recovery_summary_status": "pass",
+  "run_summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/idm/g005_idm_event_state_duration_softmax_4xh200_run.json",
+  "schema": "g005_idm_checkpoint_recovery_finalization_run.v1",
+  "source_checkpoint_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/checkpoint.pt",
+  "source_checkpoint_sha256": "70fe79928ea94d4bfb4d749f84c86353a8afa93175381339df3c963a42a69994",
+  "source_run_summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/idm/g005_idm_event_state_duration_softmax_4xh200_run.json",
+  "source_run_summary_status": null,
+  "source_stats_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/streaming_stats.json",
+  "source_stats_sha256": "327151410e29eeebc9fda0c7af90734bbaead92ed9bbd852fd1f581bd3dd2ae3",
+  "split_statistics_output_dir": "outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target",
+  "split_stats_config": "configs/eval/g005_idm_event_state_duration_softmax_split_statistics.yaml",
+  "split_stats_outputs": [
+    {
+      "comparisons": 21,
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/split_temporal_statistical_comparison.json",
+      "split": "temporal",
+      "status": "pass"
+    },
+    {
+      "comparisons": 21,
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/split_heldout_recording_statistical_comparison.json",
+      "split": "heldout_recording",
+      "status": "pass"
+    },
+    {
+      "comparisons": 21,
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/split_heldout_game_statistical_comparison.json",
+      "split": "heldout_game",
+      "status": "pass"
+    }
+  ],
+  "split_stats_status": "pass",
+  "split_stats_summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/eval/g005_idm_event_state_duration_softmax_split_statistical_comparisons_summary.json",
+  "stats_link": {
+    "created": false,
+    "exists": true,
+    "mode": "existing",
+    "sha256": "327151410e29eeebc9fda0c7af90734bbaead92ed9bbd852fd1f581bd3dd2ae3",
+    "source": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/streaming_stats.json",
+    "target": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_softmax_paper_target/streaming_stats.json"
+  },
+  "status": "pass",
+  "strict_target_results": [
+    {
+      "actual": 0.16928080914556248,
+      "baseline": 0.27259490490800825,
+      "direction": "higher",
+      "min_delta": 0.02,
+      "name": "mouse_button_f1",
+      "passed": false,
+      "path": [
+        "strict_local",
+        "mouse_button",
+        "f1"
+      ],
+      "target": 0.29259490490800827
+    },
+    {
+      "actual": 0.20050869812817132,
+      "baseline": null,
+      "direction": "lower",
+      "min_delta": 0.0,
+      "name": "no_button_false_positive_rate",
+      "passed": false,
+      "path": [
+        "strict_local",
+        "mouse_button",
+        "no_button_false_positive_rate"
+      ],
+      "target": 0.1
+    }
+  ],
+  "target_records": 16698646,
+  "train_records": 19211006,
+  "train_summary_exists": true,
+  "train_summary_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/artifacts/idm/idm_streaming_d2e_full_event_state_duration_softmax_paper_target_summary.json"
+}
