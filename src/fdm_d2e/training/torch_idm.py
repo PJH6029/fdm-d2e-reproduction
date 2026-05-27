@@ -68,6 +68,7 @@ def _luma_temporal_layout(input_dim: int, feature_mode: str, config: dict[str, A
         "summary_compact_luma16_pair_time",
         "summary_compact_luma16_pair_shift_time",
         "summary_compact_luma16_pair_shift_time_prior_action",
+        "summary_compact_luma16_pair_shift_time_state_duration_prior_action",
     }
     if feature_mode not in supported_modes:
         raise ValueError(f"model_arch=luma_temporal_conv requires one of: {sorted(supported_modes)}")
@@ -98,8 +99,18 @@ def _luma_temporal_layout(input_dim: int, feature_mode: str, config: dict[str, A
         stack_frames = 2
         visual_planes = 3
         shift_surface_dim = 16
-        prior_action_dim = int(config.get("prior_action_feature_dim", 38)) if feature_mode.endswith("_prior_action") else 0
-        expected_feature_dim = summary_dim + (visual_planes * plane_dim) + shift_surface_dim + temporal_dim + prior_action_dim
+        prior_action_dim = int(config.get("prior_action_feature_dim", 38)) if "prior_action" in feature_mode else 0
+        state_duration_dim = int(config.get("state_duration_feature_dim", 80)) if "state_duration" in feature_mode else 0
+        previous_event_dim = int(config.get("previous_event_feature_dim", 38)) if "state_duration" in feature_mode else 0
+        expected_feature_dim = (
+            summary_dim
+            + (visual_planes * plane_dim)
+            + shift_surface_dim
+            + temporal_dim
+            + state_duration_dim
+            + prior_action_dim
+            + previous_event_dim
+        )
     visual_dim = visual_planes * plane_dim
     if input_dim < expected_feature_dim:
         raise ValueError(
@@ -1168,6 +1179,8 @@ def _prediction_from_output(
     mouse_axis_decode_mode: str = "argmax",
     mouse_axis_temperature: float = 1.0,
     mouse_output_gain: float = 1.0,
+    mouse_output_gain_x: float | None = None,
+    mouse_output_gain_y: float | None = None,
     mouse_emit_mode: str = "single",
     mouse_max_tokens_per_axis: int = 8,
 ) -> tuple[float, float, list[str]]:
@@ -1198,8 +1211,8 @@ def _prediction_from_output(
                 dy = _axis_class_to_delta(axis_classes[dy_idx])
             else:
                 raise ValueError(f"unsupported mouse_axis_decode_mode: {mouse_axis_decode_mode}")
-    dx *= float(mouse_output_gain)
-    dy *= float(mouse_output_gain)
+    dx *= float(mouse_output_gain if mouse_output_gain_x is None else mouse_output_gain_x)
+    dy *= float(mouse_output_gain if mouse_output_gain_y is None else mouse_output_gain_y)
     if residual_mouse:
         dx += float(base_dx)
         dy += float(base_dy)

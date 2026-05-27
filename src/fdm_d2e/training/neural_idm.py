@@ -48,10 +48,9 @@ def _temporal_basis_features(row: dict[str, Any]) -> list[float]:
     return values
 
 
-def _prior_action_features(row: dict[str, Any], *, num_buckets: int = 32) -> list[float]:
-    """Fixed-width sketch of the previous action tokens for causal FDM modes."""
+def _action_token_features(tokens: list[str], *, num_buckets: int = 32) -> list[float]:
+    """Fixed-width sketch of sparse action tokens."""
 
-    tokens = [str(token) for token in row.get("prior_action_tokens", []) or []]
     if not tokens:
         tokens = ["NOOP"]
     dxs: list[float] = []
@@ -87,6 +86,88 @@ def _prior_action_features(row: dict[str, Any], *, num_buckets: int = 32) -> lis
         1.0 if tokens == ["NOOP"] else 0.0,
         *[value / denom for value in buckets],
     ]
+
+
+def _prior_action_features(row: dict[str, Any], *, num_buckets: int = 32) -> list[float]:
+    """Fixed-width sketch of the previous action tokens for causal modes."""
+
+    tokens = [str(token) for token in row.get("prior_action_tokens", []) or []]
+    return _action_token_features(tokens, num_buckets=num_buckets)
+
+
+def _previous_event_features(row: dict[str, Any], *, num_buckets: int = 32) -> list[float]:
+    tokens = [str(token) for token in row.get("previous_event_tokens", []) or []]
+    return _action_token_features(tokens, num_buckets=num_buckets)
+
+
+def _scaled_log_duration(value: Any, *, max_bins: float = 256.0) -> float:
+    try:
+        numeric = max(0.0, float(value))
+    except (TypeError, ValueError):
+        numeric = 0.0
+    return min(1.0, math.log1p(numeric) / math.log1p(max_bins))
+
+
+def _duration_map_from_row(row: dict[str, Any], key: str, *, token_prefix: str) -> dict[str, float]:
+    raw = row.get(key)
+    if isinstance(raw, dict):
+        out: dict[str, float] = {}
+        for item_key, value in raw.items():
+            try:
+                out[str(item_key)] = max(0.0, float(value))
+            except (TypeError, ValueError):
+                out[str(item_key)] = 0.0
+        return out
+    # Backward-compatible fallback for older materialized rows.
+    out = {}
+    for token in [str(token) for token in row.get("prior_action_tokens", []) or []]:
+        if token.startswith(token_prefix):
+            value = token[len(token_prefix) :]
+            if token_prefix == "MOUSE_" and value.endswith("_DOWN"):
+                value = value[: -len("_DOWN")]
+            out[value] = 1.0
+    return out
+
+
+def _state_duration_features(row: dict[str, Any], *, key_buckets: int = 32) -> list[float]:
+    key_holds = _duration_map_from_row(row, "prior_key_hold_bins", token_prefix="KEY_DOWN_")
+    button_holds = _duration_map_from_row(row, "prior_button_hold_bins", token_prefix="MOUSE_")
+    button_names = ("LEFT", "RIGHT", "MIDDLE")
+
+    key_values = list(key_holds.values())
+    button_values = list(button_holds.values())
+    key_count = len(key_values)
+    button_count = len(button_values)
+    since_key = row.get("prior_since_key_transition_bins")
+    since_button = row.get("prior_since_button_transition_bins")
+    aggregates = [
+        min(1.0, key_count / 8.0),
+        min(1.0, button_count / 3.0),
+        _scaled_log_duration(max(key_values) if key_values else 0.0),
+        _scaled_log_duration(sum(key_values) / key_count if key_count else 0.0),
+        _scaled_log_duration(max(button_values) if button_values else 0.0),
+        _scaled_log_duration(sum(button_values) / button_count if button_count else 0.0),
+        _scaled_log_duration(since_key, max_bins=512.0) if since_key is not None else 0.0,
+        _scaled_log_duration(since_button, max_bins=512.0) if since_button is not None else 0.0,
+        1.0 if key_count else 0.0,
+        1.0 if button_count else 0.0,
+    ]
+
+    key_presence = [0.0 for _ in range(key_buckets)]
+    key_duration = [0.0 for _ in range(key_buckets)]
+    for key, duration in key_holds.items():
+        digest = hashlib.sha256(str(key).encode("utf-8")).digest()
+        bucket = int.from_bytes(digest[:4], "big") % key_buckets
+        sign = 1.0 if digest[4] % 2 == 0 else -1.0
+        key_presence[bucket] += sign
+        key_duration[bucket] += sign * _scaled_log_duration(duration)
+    denom = max(1.0, float(key_count))
+    key_presence = [value / denom for value in key_presence]
+    key_duration = [value / denom for value in key_duration]
+
+    button_presence = [1.0 if name in button_holds else 0.0 for name in button_names]
+    button_duration = [_scaled_log_duration(button_holds.get(name, 0.0)) for name in button_names]
+    return aggregates + key_presence + key_duration + button_presence + button_duration
 
 
 def _read_ppm_tokens(payload: bytes) -> tuple[list[bytes], int]:
@@ -512,6 +593,15 @@ def record_features(row: dict[str, Any], *, feature_mode: str = "summary") -> li
             + _compact_luma_pair_features(row, grid_size=8, luma_size=16, shift_surface=True)
             + _temporal_basis_features(row)
             + _prior_action_features(row)
+        )
+    if feature_mode == "summary_compact_luma16_pair_shift_time_state_duration_prior_action":
+        return (
+            base
+            + _compact_luma_pair_features(row, grid_size=8, luma_size=16, shift_surface=True)
+            + _temporal_basis_features(row)
+            + _state_duration_features(row)
+            + _prior_action_features(row)
+            + _previous_event_features(row)
         )
     if feature_mode == "summary_causal_compact_grid8_time_prior_action":
         return (

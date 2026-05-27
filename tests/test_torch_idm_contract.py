@@ -404,6 +404,23 @@ class TorchIDMContractTests(unittest.TestCase):
         self.assertEqual((dx, dy), (6.0, -3.0))
         self.assertEqual(tokens[:2], ["MOUSE_DX_P3", "MOUSE_DY_N2"])
 
+    def test_mouse_output_gain_can_be_axis_specific(self):
+        dx, dy, tokens = _prediction_from_output(
+            [2.0, -1.0],
+            base_dx=0.0,
+            base_dy=0.0,
+            residual_mouse=False,
+            category_vocab=[],
+            category_thresholds={},
+            category_threshold=0.5,
+            mouse_output_gain=3.0,
+            mouse_output_gain_x=2.0,
+            mouse_output_gain_y=5.0,
+        )
+
+        self.assertEqual((dx, dy), (4.0, -5.0))
+        self.assertEqual(tokens[:2], ["MOUSE_DX_P3", "MOUSE_DY_N3"])
+
     def test_prediction_can_emit_decomposed_mouse_tokens_for_paper_sums(self):
         dx, dy, tokens = _prediction_from_output(
             [30.0, -7.0],

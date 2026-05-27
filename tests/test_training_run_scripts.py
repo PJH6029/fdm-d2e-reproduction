@@ -189,6 +189,21 @@ def test_g005_compact_luma_window5_residual_reuses_materialization_and_targets_o
     assert split["train_stats_path"] == "outputs/idm_streaming_d2e_full_compact_luma_window5_residual_paper_target/streaming_stats.json"
 
 
+def test_g005_event_state_duration_context_uses_distinct_context_and_per_axis_gain() -> None:
+    text = _script("scripts/run_g005_idm_event_state_duration_context_4xh200.sh")
+    config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_event_state_duration_context_paper_target.yaml").read_text())
+    paper = json.loads((ROOT / "configs/eval/g005_idm_event_state_duration_context_paper_target.yaml").read_text())
+
+    assert "scripts/materialize_d2e_event_state_context_corpus.py" in text
+    assert "outputs/data/d2e_event_state_duration_context_shards_accel64" in text
+    assert "event-state-duration-context" in text
+    assert config["feature_mode"] == "summary_compact_luma16_pair_shift_time_state_duration_prior_action"
+    assert config["mouse_output_gain_mode"] == "train_abs_ratio_per_axis"
+    assert config["state_duration_feature_dim"] == 80
+    assert paper["paper_metrics"]["empty_bins_as_correct"] is False
+    assert paper["paper_metrics"]["target_path"] == "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl"
+
+
 def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
     text = _script("scripts/run_g004_d2e_full_fdm_4xh200.sh")
     assert 'PID_FILE="${PID_FILE:-outputs/cluster/g004_d2e_full_fdm_4xh200.pid}"' in text

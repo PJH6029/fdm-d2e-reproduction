@@ -2870,6 +2870,8 @@ def _predicted_tokens_from_output(
         mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
         mouse_axis_temperature=float(config.get("mouse_axis_temperature", 1.0)),
         mouse_output_gain=float(config.get("mouse_output_gain", 1.0)),
+        mouse_output_gain_x=float(config["mouse_output_gain_x"]) if config.get("mouse_output_gain_x") is not None else None,
+        mouse_output_gain_y=float(config["mouse_output_gain_y"]) if config.get("mouse_output_gain_y") is not None else None,
         mouse_emit_mode=str(config.get("mouse_emit_mode", "single")),
         mouse_max_tokens_per_axis=int(config.get("mouse_max_tokens_per_axis", 8)),
     )
@@ -3409,7 +3411,7 @@ def _calibrate_streaming_mouse_output_gain(
             "min_gain": min_gain,
             "max_gain": max_gain,
         }
-    if mode != "train_abs_ratio":
+    if mode not in {"train_abs_ratio", "train_abs_ratio_per_axis"}:
         raise ValueError(f"unsupported streaming mouse_output_gain_mode: {mode}")
     batch_size = int(config.get("mouse_gain_calibration_batch_size", config.get("eval_batch_size", config.get("batch_size", 2048))))
     max_examples = config.get("mouse_gain_calibration_max_examples", config.get("category_calibration_max_examples"))
@@ -3422,6 +3424,10 @@ def _calibrate_streaming_mouse_output_gain(
     mean_t, std_t = _normalizer_tensors(torch, mean=stats["mean"], std=stats["std"], device=device)
     predicted_abs_sum = 0.0
     target_abs_sum = 0.0
+    predicted_abs_x_sum = 0.0
+    predicted_abs_y_sum = 0.0
+    target_abs_x_sum = 0.0
+    target_abs_y_sum = 0.0
     value_count = 0
     mouse_target_mode = _mouse_target_mode(config)
     residual_mouse = _residual_mouse_from_mode(mouse_target_mode)
@@ -3469,10 +3475,16 @@ def _calibrate_streaming_mouse_output_gain(
                     mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
                     mouse_axis_temperature=float(config.get("mouse_axis_temperature", 1.0)),
                     mouse_output_gain=1.0,
+                    mouse_output_gain_x=1.0,
+                    mouse_output_gain_y=1.0,
                 )
                 target_dx, target_dy = target_mouse_delta(row, mode=_base_mouse_target_mode(mouse_target_mode))
                 predicted_abs_sum += abs(float(dx)) + abs(float(dy))
                 target_abs_sum += abs(float(target_dx)) + abs(float(target_dy))
+                predicted_abs_x_sum += abs(float(dx))
+                predicted_abs_y_sum += abs(float(dy))
+                target_abs_x_sum += abs(float(target_dx))
+                target_abs_y_sum += abs(float(target_dy))
                 value_count += 2
     predicted_abs_mean = predicted_abs_sum / value_count if value_count else None
     target_abs_mean = target_abs_sum / value_count if value_count else None
@@ -3491,6 +3503,12 @@ def _calibrate_streaming_mouse_output_gain(
     raw_ratio = target_abs_mean / max(predicted_abs_mean, 1e-9)
     unclipped_gain = configured_gain * raw_ratio
     gain = min(max_gain, max(min_gain, unclipped_gain))
+    raw_ratio_x = target_abs_x_sum / max(predicted_abs_x_sum, 1e-9)
+    raw_ratio_y = target_abs_y_sum / max(predicted_abs_y_sum, 1e-9)
+    gain_x = min(max_gain, max(min_gain, configured_gain * raw_ratio_x))
+    gain_y = min(max_gain, max(min_gain, configured_gain * raw_ratio_y))
+    if mode == "train_abs_ratio_per_axis":
+        gain = (gain_x + gain_y) / 2.0
     return gain, {
         "mode": mode,
         "status": "computed",
@@ -3498,10 +3516,18 @@ def _calibrate_streaming_mouse_output_gain(
         "raw_ratio": raw_ratio,
         "unclipped_gain": unclipped_gain,
         "gain": gain,
+        "raw_ratio_x": raw_ratio_x,
+        "raw_ratio_y": raw_ratio_y,
+        "gain_x": gain_x if mode == "train_abs_ratio_per_axis" else gain,
+        "gain_y": gain_y if mode == "train_abs_ratio_per_axis" else gain,
         "min_gain": min_gain,
         "max_gain": max_gain,
         "predicted_abs_mean": predicted_abs_mean,
         "target_abs_mean": target_abs_mean,
+        "predicted_abs_x_mean": predicted_abs_x_sum / max(1, value_count // 2),
+        "predicted_abs_y_mean": predicted_abs_y_sum / max(1, value_count // 2),
+        "target_abs_x_mean": target_abs_x_sum / max(1, value_count // 2),
+        "target_abs_y_mean": target_abs_y_sum / max(1, value_count // 2),
         "value_count": value_count,
         "max_examples": max_examples,
     }
@@ -3694,7 +3720,7 @@ def _calibrate_streaming_mouse_output_gain_from_cache(
             "min_gain": min_gain,
             "max_gain": max_gain,
         }
-    if mode != "train_abs_ratio":
+    if mode not in {"train_abs_ratio", "train_abs_ratio_per_axis"}:
         raise ValueError(f"unsupported streaming mouse_output_gain_mode: {mode}")
     batch_size = int(config.get("mouse_gain_calibration_batch_size", config.get("eval_batch_size", config.get("batch_size", 2048))))
     max_examples = config.get("mouse_gain_calibration_max_examples", config.get("category_calibration_max_examples"))
@@ -3706,6 +3732,10 @@ def _calibrate_streaming_mouse_output_gain_from_cache(
     } if isinstance(configured_thresholds, dict) else {token: category_threshold for token in category_vocab}
     predicted_abs_sum = 0.0
     target_abs_sum = 0.0
+    predicted_abs_x_sum = 0.0
+    predicted_abs_y_sum = 0.0
+    target_abs_x_sum = 0.0
+    target_abs_y_sum = 0.0
     value_count = 0
     model.eval()
     with torch.no_grad():
@@ -3742,10 +3772,16 @@ def _calibrate_streaming_mouse_output_gain_from_cache(
                     mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
                     mouse_axis_temperature=float(config.get("mouse_axis_temperature", 1.0)),
                     mouse_output_gain=1.0,
+                    mouse_output_gain_x=1.0,
+                    mouse_output_gain_y=1.0,
                 )
                 target_dx, target_dy = target
                 predicted_abs_sum += abs(float(dx)) + abs(float(dy))
                 target_abs_sum += abs(float(target_dx)) + abs(float(target_dy))
+                predicted_abs_x_sum += abs(float(dx))
+                predicted_abs_y_sum += abs(float(dy))
+                target_abs_x_sum += abs(float(target_dx))
+                target_abs_y_sum += abs(float(target_dy))
                 value_count += 2
     predicted_abs_mean = predicted_abs_sum / value_count if value_count else None
     target_abs_mean = target_abs_sum / value_count if value_count else None
@@ -3765,6 +3801,12 @@ def _calibrate_streaming_mouse_output_gain_from_cache(
     raw_ratio = target_abs_mean / max(predicted_abs_mean, 1e-9)
     unclipped_gain = configured_gain * raw_ratio
     gain = min(max_gain, max(min_gain, unclipped_gain))
+    raw_ratio_x = target_abs_x_sum / max(predicted_abs_x_sum, 1e-9)
+    raw_ratio_y = target_abs_y_sum / max(predicted_abs_y_sum, 1e-9)
+    gain_x = min(max_gain, max(min_gain, configured_gain * raw_ratio_x))
+    gain_y = min(max_gain, max(min_gain, configured_gain * raw_ratio_y))
+    if mode == "train_abs_ratio_per_axis":
+        gain = (gain_x + gain_y) / 2.0
     return gain, {
         "mode": mode,
         "source": "training_cache",
@@ -3773,10 +3815,18 @@ def _calibrate_streaming_mouse_output_gain_from_cache(
         "raw_ratio": raw_ratio,
         "unclipped_gain": unclipped_gain,
         "gain": gain,
+        "raw_ratio_x": raw_ratio_x,
+        "raw_ratio_y": raw_ratio_y,
+        "gain_x": gain_x if mode == "train_abs_ratio_per_axis" else gain,
+        "gain_y": gain_y if mode == "train_abs_ratio_per_axis" else gain,
         "min_gain": min_gain,
         "max_gain": max_gain,
         "predicted_abs_mean": predicted_abs_mean,
         "target_abs_mean": target_abs_mean,
+        "predicted_abs_x_mean": predicted_abs_x_sum / max(1, value_count // 2),
+        "predicted_abs_y_mean": predicted_abs_y_sum / max(1, value_count // 2),
+        "target_abs_x_mean": target_abs_x_sum / max(1, value_count // 2),
+        "target_abs_y_mean": target_abs_y_sum / max(1, value_count // 2),
         "value_count": value_count,
         "max_examples": max_examples,
     }
@@ -4445,6 +4495,8 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "mouse_axis_decode_mode",
         "mouse_axis_temperature",
         "mouse_output_gain",
+        "mouse_output_gain_x",
+        "mouse_output_gain_y",
         "mouse_output_gain_mode",
         "mouse_target_mode",
         "mouse_emit_mode",
@@ -4740,6 +4792,8 @@ def _predict_streaming_idm_checkpoint_parallel(
         "mouse_axis_decode_mode",
         "mouse_axis_temperature",
         "mouse_output_gain",
+        "mouse_output_gain_x",
+        "mouse_output_gain_y",
         "mouse_output_gain_mode",
         "mouse_target_mode",
         "mouse_emit_mode",
@@ -4908,6 +4962,8 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         "mouse_axis_decode_mode",
         "mouse_axis_temperature",
         "mouse_output_gain",
+        "mouse_output_gain_x",
+        "mouse_output_gain_y",
         "mouse_output_gain_mode",
         "mouse_emit_mode",
         "mouse_max_tokens_per_axis",
@@ -5055,6 +5111,16 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
             "keyboard_softmax_threshold": float(checkpoint_config.get("keyboard_softmax_threshold", 0.5)),
             "button_softmax_threshold": float(checkpoint_config.get("button_softmax_threshold", 0.5)),
             "mouse_output_gain": float(checkpoint_config.get("mouse_output_gain", 1.0)),
+            "mouse_output_gain_x": (
+                float(checkpoint_config["mouse_output_gain_x"])
+                if checkpoint_config.get("mouse_output_gain_x") is not None
+                else None
+            ),
+            "mouse_output_gain_y": (
+                float(checkpoint_config["mouse_output_gain_y"])
+                if checkpoint_config.get("mouse_output_gain_y") is not None
+                else None
+            ),
             "mouse_output_gain_mode": str(checkpoint_config.get("mouse_output_gain_mode", "fixed")),
             "last_train_loss": history[-1]["loss"] if history else None,
             "prediction_fingerprint": prediction["prediction_fingerprint"],
@@ -5477,10 +5543,16 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             mouse_axis_classes=mouse_axis_classes,
         )
     config["mouse_output_gain"] = mouse_output_gain
+    if mouse_output_gain_info.get("gain_x") is not None:
+        config["mouse_output_gain_x"] = float(mouse_output_gain_info["gain_x"])
+    if mouse_output_gain_info.get("gain_y") is not None:
+        config["mouse_output_gain_y"] = float(mouse_output_gain_info["gain_y"])
     write_calibration_progress(
         "mouse_gain_calibration_finished",
         use_cache_calibration=use_cache_calibration,
         mouse_output_gain=mouse_output_gain,
+        mouse_output_gain_x=config.get("mouse_output_gain_x"),
+        mouse_output_gain_y=config.get("mouse_output_gain_y"),
         mouse_gain_status=mouse_output_gain_info.get("status"),
         value_count=mouse_output_gain_info.get("value_count"),
     )
@@ -5605,6 +5677,8 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
             "keyboard_softmax_threshold": float(config.get("keyboard_softmax_threshold", 0.5)),
             "button_softmax_threshold": float(config.get("button_softmax_threshold", 0.5)),
             "mouse_output_gain": mouse_output_gain,
+            "mouse_output_gain_x": config.get("mouse_output_gain_x"),
+            "mouse_output_gain_y": config.get("mouse_output_gain_y"),
             "mouse_output_gain_info": mouse_output_gain_info,
             "last_train_loss": history[-1]["loss"] if history else None,
             "prediction_fingerprint": prediction["prediction_fingerprint"],

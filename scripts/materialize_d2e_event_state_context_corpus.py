@@ -68,12 +68,30 @@ def _prior_state_tokens(keys: set[str], buttons: set[str]) -> list[str]:
     return tokens or ["NOOP"]
 
 
+def _transition_seen(tokens: list[str], *, prefixes: tuple[str, ...], suffixes: tuple[str, ...] = ()) -> bool:
+    for token in tokens:
+        if prefixes and token.startswith(prefixes):
+            return True
+        if suffixes and token.startswith("MOUSE_") and token.endswith(suffixes):
+            return True
+    return False
+
+
+def _age_value(value: int | None) -> int | None:
+    return None if value is None else max(0, int(value))
+
+
 def _materialize_one(
     input_path: Path,
     output_path: Path,
     *,
     key_states: dict[str, set[str]],
     button_states: dict[str, set[str]],
+    key_hold_bins: dict[str, dict[str, int]],
+    button_hold_bins: dict[str, dict[str, int]],
+    key_transition_age: dict[str, int | None],
+    button_transition_age: dict[str, int | None],
+    previous_event_tokens: dict[str, list[str]],
 ) -> dict[str, Any]:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = output_path.with_suffix(output_path.suffix + ".tmp")
@@ -87,27 +105,58 @@ def _materialize_one(
             recording_id = str(row.get("recording_id", ""))
             keys = key_states.setdefault(recording_id, set())
             buttons = button_states.setdefault(recording_id, set())
+            key_durations = key_hold_bins.setdefault(recording_id, {})
+            button_durations = button_hold_bins.setdefault(recording_id, {})
             prior_tokens = _prior_state_tokens(keys, buttons)
+            prior_key_hold = {key: int(key_durations.get(key, 0)) for key in sorted(keys)}
+            prior_button_hold = {button: int(button_durations.get(button, 0)) for button in sorted(buttons)}
+            tokens = [str(token) for token in row.get("ground_truth_tokens", []) or []]
             _state_tokens, next_keys, next_buttons = state_tokens_from_event_tokens(
-                row.get("ground_truth_tokens", []) or [],
+                tokens,
                 pressed_keys=keys,
                 pressed_buttons=buttons,
                 mouse_emit_mode="decompose",
                 mouse_max_tokens_per_axis=32,
             )
+            key_event = _transition_seen(tokens, prefixes=("KEY_PRESS_", "KEY_RELEASE_", "KEY_DOWN_"))
+            button_event = _transition_seen(tokens, prefixes=(), suffixes=("_DOWN", "_UP"))
+            next_key_durations = {
+                key: int(key_durations.get(key, 0)) + 1 if key in keys else 1
+                for key in sorted(next_keys)
+            }
+            next_button_durations = {
+                button: int(button_durations.get(button, 0)) + 1 if button in buttons else 1
+                for button in sorted(next_buttons)
+            }
+            prev_tokens = previous_event_tokens.get(recording_id) or ["NOOP"]
             key_states[recording_id] = next_keys
             button_states[recording_id] = next_buttons
+            key_hold_bins[recording_id] = next_key_durations
+            button_hold_bins[recording_id] = next_button_durations
             out_row = dict(row)
             out_row["prior_action_tokens"] = prior_tokens
             out_row["prior_action_source"] = "d2e_held_state_before_current_event_bin"
-            out_row["state_context_schema"] = "d2e_event_target_with_prior_held_state.v1"
+            out_row["prior_key_hold_bins"] = prior_key_hold
+            out_row["prior_button_hold_bins"] = prior_button_hold
+            out_row["prior_since_key_transition_bins"] = _age_value(key_transition_age.get(recording_id))
+            out_row["prior_since_button_transition_bins"] = _age_value(button_transition_age.get(recording_id))
+            out_row["previous_event_tokens"] = prev_tokens
+            out_row["state_context_schema"] = "d2e_event_target_with_prior_held_state_duration.v1"
             out.write(_dumps(out_row) + "\n")
+            key_transition_age[recording_id] = 0 if key_event else (
+                None if key_transition_age.get(recording_id) is None else int(key_transition_age[recording_id] or 0) + 1
+            )
+            button_transition_age[recording_id] = 0 if button_event else (
+                None
+                if button_transition_age.get(recording_id) is None
+                else int(button_transition_age[recording_id] or 0) + 1
+            )
+            previous_event_tokens[recording_id] = tokens or ["NOOP"]
             rows += 1
             prior_key_rows += int(any(token.startswith("KEY_DOWN_") for token in prior_tokens))
             prior_button_rows += int(
                 any(token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")) for token in prior_tokens)
             )
-            tokens = [str(token) for token in row.get("ground_truth_tokens", []) or []]
             event_key_rows += int(any(token.startswith("KEY_") for token in tokens))
             event_button_rows += int(any(token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")) for token in tokens))
     tmp_path.replace(output_path)
@@ -126,17 +175,32 @@ def _materialize_one(
 def _materialize_pair_task(payload: dict[str, Any]) -> dict[str, Any]:
     key_states: dict[str, set[str]] = {}
     button_states: dict[str, set[str]] = {}
+    key_hold_bins: dict[str, dict[str, int]] = {}
+    button_hold_bins: dict[str, dict[str, int]] = {}
+    key_transition_age: dict[str, int | None] = {}
+    button_transition_age: dict[str, int | None] = {}
+    previous_event_tokens: dict[str, list[str]] = {}
     train = _materialize_one(
         Path(payload["train_input"]),
         Path(payload["train_output"]),
         key_states=key_states,
         button_states=button_states,
+        key_hold_bins=key_hold_bins,
+        button_hold_bins=button_hold_bins,
+        key_transition_age=key_transition_age,
+        button_transition_age=button_transition_age,
+        previous_event_tokens=previous_event_tokens,
     )
     target = _materialize_one(
         Path(payload["target_input"]),
         Path(payload["target_output"]),
         key_states=key_states,
         button_states=button_states,
+        key_hold_bins=key_hold_bins,
+        button_hold_bins=button_hold_bins,
+        key_transition_age=key_transition_age,
+        button_transition_age=button_transition_age,
+        previous_event_tokens=previous_event_tokens,
     )
     return {
         "pair_index": int(payload["pair_index"]),
