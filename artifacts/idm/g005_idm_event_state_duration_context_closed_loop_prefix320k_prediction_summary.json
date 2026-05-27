@@ -1,0 +1,23 @@
+{
+  "schema": "streaming_idm_checkpoint_recovery_summary.v1",
+  "status": "pass",
+  "checkpoint_path": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint.pt",
+  "metadata_path": "outputs/idm_streaming_d2e_full_event_state_duration_context_closed_loop_prefix320k/checkpoint_metadata.json",
+  "summary_path": "artifacts/idm/g005_idm_event_state_duration_context_closed_loop_prefix320k_recovery_summary.json",
+  "prediction_summary_path": "artifacts/idm/g005_idm_event_state_duration_context_closed_loop_prefix320k_prediction_summary.json",
+  "target_records": 320000,
+  "prediction_resume": {
+    "enabled": false,
+    "existing_rows": 0,
+    "write_mode": "w",
+    "pseudolabel_validation": true,
+    "closed_loop_state_context": {
+      "enabled": true,
+      "source": "predicted_closed_loop_before_current_event_bin",
+      "seed_from_train": false,
+      "seed_rows": 0,
+      "seed_from_first_target_prior": true,
+      "target_prior_seed_recordings": 22
+    }
+  }
+}

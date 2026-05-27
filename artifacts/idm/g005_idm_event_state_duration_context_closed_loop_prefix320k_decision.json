@@ -1,0 +1,29 @@
+{
+  "candidate": "event_state_duration_context_closed_loop_prefix320k",
+  "claim_boundary": "Prefix leakage audit; rejects this candidate for G005 paper-target full scaling, not an aggregate G005 completion/failure.",
+  "decision": "reject_scale_to_full_g005",
+  "evidence_paths": [
+    "configs/model/idm_streaming_d2e_full_event_state_duration_context_closed_loop_prefix320k.yaml",
+    "configs/eval/g005_idm_event_state_duration_context_closed_loop_prefix320k_paper_metrics.yaml",
+    "artifacts/idm/g005_idm_event_state_duration_context_closed_loop_prefix320k_paper_metrics.json",
+    "artifacts/idm/g005_idm_event_state_duration_context_closed_loop_prefix320k_run_summary.json"
+  ],
+  "metrics": {
+    "paper_keyboard_accuracy": 0.0006060737245394921,
+    "paper_mouse_button_accuracy": 0.0041896515606452064,
+    "paper_mouse_pearson_x": 0.014506324329223403,
+    "paper_mouse_pearson_y": -0.0014432602143514383,
+    "strict_mouse_button_f1": 0.007279994290200557,
+    "strict_no_button_false_positive_rate": 0.016532483470729217
+  },
+  "reason": "Leakage-safe closed-loop replay collapses the prior event-state candidate; target-derived prior-action/state context was carrying the apparent full-run signal.",
+  "rows": 320000,
+  "scale_to_full_run": false,
+  "schema": "g005_idm_candidate_decision.v1",
+  "thresholds": {
+    "paper_keyboard_accuracy": 0.73,
+    "paper_mouse_button_accuracy": 0.957,
+    "paper_mouse_pearson_x": 0.796,
+    "paper_mouse_pearson_y": 0.783
+  }
+}
