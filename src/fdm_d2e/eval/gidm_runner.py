@@ -205,6 +205,7 @@ def build_gidm_chunk_run_plan(
     chunk_context_seconds: float = 1.0,
     bin_ms: int = 50,
     max_recordings: int | None = None,
+    max_chunks: int | None = None,
     recording_keys: Sequence[str] | None = None,
     resume: bool = True,
 ) -> tuple[list[GidmChunkRunPlan], dict[str, list[str]]]:
@@ -214,6 +215,8 @@ def build_gidm_chunk_run_plan(
         raise ValueError("chunk_seconds must be positive")
     if float(chunk_context_seconds) < 0:
         raise ValueError("chunk_context_seconds must be non-negative")
+    if max_chunks is not None and int(max_chunks) <= 0:
+        raise ValueError("max_chunks must be positive when provided")
     manifest = read_json(manifest_path)
     wanted = set(str(key) for key in (recording_keys or []))
     rows = []
@@ -230,7 +233,10 @@ def build_gidm_chunk_run_plan(
     log_root = ensure_dir(log_dir)
     plans: list[GidmChunkRunPlan] = []
     chunk_paths_by_key: dict[str, list[str]] = {}
+    selected_chunk_count = 0
     for row_index, row in enumerate(rows):
+        if max_chunks is not None and selected_chunk_count >= int(max_chunks):
+            break
         key = str(row["universe_row_id"])
         start_rel, end_rel, base_timestamp_seconds = _recording_timing(row, bin_ms=bin_ms)
         first_start = max(0.0, start_rel - float(chunk_context_seconds))
@@ -242,6 +248,8 @@ def build_gidm_chunk_run_plan(
             cursor += float(chunk_seconds)
         chunk_paths: list[str] = []
         for chunk_index, chunk_start in enumerate(starts):
+            if max_chunks is not None and selected_chunk_count >= int(max_chunks):
+                break
             chunk_end = min(final_end, chunk_start + float(chunk_seconds))
             duration = max(int(bin_ms) / 1000.0, chunk_end - chunk_start)
             output_path = _chunk_output_path(
@@ -252,6 +260,7 @@ def build_gidm_chunk_run_plan(
                 duration=duration,
             )
             chunk_paths.append(str(output_path))
+            selected_chunk_count += 1
             if resume and output_path.exists() and output_path.stat().st_size > 0:
                 continue
             safe = _safe_plan_name(key)
@@ -269,7 +278,8 @@ def build_gidm_chunk_run_plan(
                     timestamp_offset_seconds=float(base_timestamp_seconds + chunk_start),
                 )
             )
-        chunk_paths_by_key[key] = chunk_paths
+        if chunk_paths:
+            chunk_paths_by_key[key] = chunk_paths
     return plans, chunk_paths_by_key
 
 
@@ -461,6 +471,7 @@ def run_gidm_manifest_inference(
     chunk_context_seconds: float = 1.0,
     chunk_manifest_output: str | Path | None = None,
     bin_ms: int = 50,
+    max_chunks: int | None = None,
     uv_cache_dir: str | Path = "outputs/external/uv-cache-desktop-minimal",
     hf_home: str | Path = "outputs/external/hf-home",
     log_dir: str | Path = "artifacts/eval/gidm_manifest_inference_logs",
@@ -476,6 +487,7 @@ def run_gidm_manifest_inference(
             cuda_devices=cuda_devices,
             log_dir=log_dir,
             max_recordings=max_recordings,
+            max_chunks=max_chunks,
             recording_keys=recording_keys,
             chunk_seconds=float(chunk_seconds),
             chunk_context_seconds=float(chunk_context_seconds),
@@ -590,6 +602,7 @@ def run_gidm_manifest_inference(
         "recording_keys": [str(key) for key in (recording_keys or [])],
         "max_context_length": int(max_context_length),
         "max_duration": max_duration,
+        "max_chunks": int(max_chunks) if max_chunks is not None else None,
         "chunk_seconds": float(chunk_seconds) if chunk_seconds is not None else None,
         "chunk_context_seconds": float(chunk_context_seconds) if chunk_seconds is not None else None,
         "bin_ms": int(bin_ms),

@@ -688,3 +688,50 @@ def test_chunked_gidm_plan_uses_bin_indices_and_writes_manifest(tmp_path: Path):
     row = payload["recordings"][0]
     assert row["prediction_timestamps_aligned_to_ground_truth"] is True
     assert row["prediction_mcap_paths"] == paths_by_key["d2e_480p:Game/rec_001"]
+
+
+def test_chunked_gidm_plan_can_limit_total_chunks_for_pilots(tmp_path: Path):
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "gidm_inference_manifest.v1",
+                "recordings": [
+                    {
+                        "universe_row_id": "d2e_480p:Game/rec_001",
+                        "video_path": "/data/video1.mkv",
+                        "prediction_mcap_path": str(tmp_path / "predicted" / "rec_001.mcap"),
+                        "timestamp_min_ns": 1_000_000_000,
+                        "timestamp_max_ns": 2_000_000_000,
+                        "bin_index_min": 20,
+                        "bin_index_max": 40,
+                    },
+                    {
+                        "universe_row_id": "d2e_480p:Game/rec_002",
+                        "video_path": "/data/video2.mkv",
+                        "prediction_mcap_path": str(tmp_path / "predicted" / "rec_002.mcap"),
+                        "timestamp_min_ns": 1_000_000_000,
+                        "timestamp_max_ns": 2_000_000_000,
+                        "bin_index_min": 20,
+                        "bin_index_max": 40,
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    plans, paths_by_key = build_gidm_chunk_run_plan(
+        manifest_path=manifest,
+        cuda_devices=["0", "1"],
+        log_dir=tmp_path / "logs",
+        chunk_seconds=0.2,
+        chunk_context_seconds=0.0,
+        bin_ms=50,
+        max_chunks=3,
+        resume=False,
+    )
+
+    assert len(plans) == 3
+    assert sum(len(paths) for paths in paths_by_key.values()) == 3
+    assert set(paths_by_key) == {"d2e_480p:Game/rec_001"}

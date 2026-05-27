@@ -83,3 +83,9 @@ Validation evidence:
 - Dry-run artifact: `artifacts/eval/g006_gidm_chunked_dry_run_summary.json` plans one heldout recording as 59 five-second chunks and verifies chunk-manifest generation without committing the large generated manifest.
 
 Claim boundary: this is G-IDM baseline/teacher infrastructure, not G005 paper-target success and not our-IDM metric evidence.
+
+### Chunked G-IDM bounded pilot limiter
+
+Added `--max-chunks` to the released G-IDM manifest runner and exact-split pipeline so GPU pilots can validate one or a few timestamp-aligned chunks without scheduling every chunk from a heldout recording. Dry-run evidence: `artifacts/eval/g006_gidm_chunked_maxchunks_dry_run_summary.json` selected one recording and exactly three chunks with `--max-recordings 2 --max-chunks 3`.
+
+This is a utilization guardrail: use it for smoke/pilot validation only, not for G005 completion or exact-split metric claims.

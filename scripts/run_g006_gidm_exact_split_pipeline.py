@@ -25,6 +25,7 @@ def main() -> int:
     parser.add_argument("--workers", type=int)
     parser.add_argument("--chunk-seconds", type=float)
     parser.add_argument("--chunk-context-seconds", type=float)
+    parser.add_argument("--max-chunks", type=int)
     parser.add_argument("--no-wandb", action="store_true")
     args = parser.parse_args()
 
@@ -33,6 +34,8 @@ def main() -> int:
         config["chunk_seconds"] = args.chunk_seconds
     if args.chunk_context_seconds is not None:
         config["chunk_context_seconds"] = args.chunk_context_seconds
+    if args.max_chunks is not None:
+        config["max_chunks"] = args.max_chunks
     payload = run_gidm_exact_split_pipeline(
         config,
         root=args.root,
