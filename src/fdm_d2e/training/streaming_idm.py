@@ -2803,6 +2803,22 @@ def _distributed_runtime(torch, config: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _streaming_resume_epochs_to_run(*, total_epochs: int, completed_epochs: int, resume_training: bool) -> int:
+    """Return how many epochs this streaming-IDM invocation should execute.
+
+    ``resume_training_checkpoint`` is recovery-oriented: ``epochs`` names the
+    desired total epoch count for the run, not additional epochs to append.
+    ``initial_checkpoint_path`` remains warm-start-oriented and keeps the
+    historical behavior of executing the configured epoch count.
+    """
+
+    total = max(0, int(total_epochs))
+    completed = max(0, int(completed_epochs))
+    if not resume_training:
+        return total
+    return max(0, total - completed)
+
+
 def _barrier(torch, dist: dict[str, Any]) -> None:
     if dist["enabled"] and torch.distributed.is_initialized():
         if str(dist.get("backend")) == "nccl" and str(dist.get("device", "")).startswith("cuda"):
@@ -5288,7 +5304,9 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         config=config,
         feature_mode=feature_mode,
     ).to(device)
-    resume_checkpoint_path = config.get("resume_training_checkpoint") or config.get("initial_checkpoint_path")
+    resume_training_checkpoint_path = config.get("resume_training_checkpoint")
+    resume_checkpoint_path = resume_training_checkpoint_path or config.get("initial_checkpoint_path")
+    resume_training = bool(resume_training_checkpoint_path)
     resumed_history: list[dict[str, Any]] = []
     if resume_checkpoint_path:
         resume_path = Path(resume_checkpoint_path)
@@ -5335,6 +5353,14 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     ) if button_head_mode == "softmax" else None
     history = resumed_history
     start_epoch = len(history)
+    total_epochs = int(config.get("epochs", 3))
+    epochs_to_run = _streaming_resume_epochs_to_run(
+        total_epochs=total_epochs,
+        completed_epochs=start_epoch,
+        resume_training=resume_training,
+    )
+    config["resume_training_completed_epochs"] = start_epoch if resume_training else 0
+    config["resume_training_epochs_to_run"] = epochs_to_run
     convergence_report = {
         "schema": "streaming_convergence_report.v1",
         "score_mode": str(config.get("convergence_score", "composite_primary")),
@@ -5372,7 +5398,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         }
 
     eval_interval_epochs = int(config.get("eval_interval_epochs", 0))
-    for epoch in range(int(config.get("epochs", 3))):
+    for epoch in range(epochs_to_run):
         join_context = train_model.join() if dist["enabled"] else nullcontext()
         with join_context:
             epoch_stats = _train_one_epoch(
@@ -5399,7 +5425,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         if dist["is_rank0"]:
             epoch_number = start_epoch + epoch + 1
             row = {"epoch": epoch_number, **epoch_stats}
-            if eval_interval_epochs > 0 and ((epoch + 1) % eval_interval_epochs == 0 or (epoch + 1) == int(config.get("epochs", 3))):
+            if eval_interval_epochs > 0 and ((epoch + 1) % eval_interval_epochs == 0 or (epoch + 1) == epochs_to_run):
                 row["validation"] = _evaluate_stream_metrics(
                     torch,
                     model,

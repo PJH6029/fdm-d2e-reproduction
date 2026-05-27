@@ -21,6 +21,7 @@ from fdm_d2e.training.streaming_idm import (
     _select_group_fbeta_threshold,
     _build_training_cache_manifests,
     _streaming_mouse_seed_state_for_parallel_prediction,
+    _streaming_resume_epochs_to_run,
     _training_cache_identity,
     _training_cache_assignment_plan,
     _training_cache_rank_assignment,
@@ -85,6 +86,13 @@ def _exactset_record(idx: int, split: str) -> dict:
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
     path.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
+
+
+def test_streaming_resume_epochs_to_run_treats_resume_as_total_target():
+    assert _streaming_resume_epochs_to_run(total_epochs=10, completed_epochs=3, resume_training=True) == 7
+    assert _streaming_resume_epochs_to_run(total_epochs=10, completed_epochs=10, resume_training=True) == 0
+    assert _streaming_resume_epochs_to_run(total_epochs=10, completed_epochs=12, resume_training=True) == 0
+    assert _streaming_resume_epochs_to_run(total_epochs=10, completed_epochs=3, resume_training=False) == 10
 
 
 def test_training_cache_assignment_balances_manifest_rows():
