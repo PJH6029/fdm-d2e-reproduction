@@ -60,14 +60,38 @@ def prepare_desktop_minimal_inference_script(d2e_repo: str | Path) -> Path:
         lines.append(line)
     text = "\n".join(lines) + "\n"
     replacements = {
+        '#     "loguru==0.7.2",\n': (
+            '#     "loguru==0.7.2",\n'
+            '#     "imageio-ffmpeg==0.5.1",\n'
+        ),
+        "import subprocess\n": "import subprocess\nimport shutil\n",
         "def preprocess_video(input_path: str, output_path: str, duration: float) -> str:\n": (
+            "def _ffmpeg_executable() -> str:\n"
+            "    path = shutil.which(\"ffmpeg\")\n"
+            "    if path:\n"
+            "        return path\n"
+            "    try:\n"
+            "        import imageio_ffmpeg\n"
+            "    except ImportError as exc:\n"
+            "        raise FileNotFoundError(\"ffmpeg is not installed and imageio-ffmpeg is unavailable\") from exc\n"
+            "    return imageio_ffmpeg.get_ffmpeg_exe()\n"
+            "\n\n"
             "def preprocess_video(input_path: str, output_path: str, duration: float, start_time: float = 0.0) -> str:\n"
         ),
         '        "-y",\n        "-i",\n': (
-            '        "-y",\n        *(["-ss", str(float(start_time))] if float(start_time) > 0 else []),\n        "-i",\n'
+            '        _ffmpeg_executable(),\n        "-y",\n        *(["-ss", str(float(start_time))] if float(start_time) > 0 else []),\n        "-i",\n'
         ),
         "def create_mcap_from_video(video_path: str, mcap_path: str, fps: float = 20.0):\n": (
-            "def create_mcap_from_video(video_path: str, mcap_path: str, fps: float = 20.0, timestamp_offset_seconds: float = 0.0):\n"
+            "def create_mcap_from_video(\n"
+            "    video_path: str,\n"
+            "    mcap_path: str,\n"
+            "    fps: float = 20.0,\n"
+            "    timestamp_offset_seconds: float = 0.0,\n"
+            "    duration_seconds: float | None = None,\n"
+            "):\n"
+        ),
+        "    duration = get_video_duration(video_path)\n": (
+            "    duration = float(duration_seconds) if duration_seconds is not None else get_video_duration(video_path)\n"
         ),
         "        for i in range(num_frames):\n            timestamp_ns = i * interval_ns\n            screen_msg = ScreenCaptured(\n                utc_ns=timestamp_ns,\n                media_ref={\"uri\": video_abs_path, \"pts_ns\": timestamp_ns},\n            )\n            writer.write_message(screen_msg, topic=\"screen\", timestamp=timestamp_ns)\n": (
             "        timestamp_offset_ns = int(float(timestamp_offset_seconds) * 1e9)\n"
@@ -104,7 +128,12 @@ def prepare_desktop_minimal_inference_script(d2e_repo: str | Path) -> Path:
         ),
         "        create_mcap_from_video(processed_video, input_mcap)\n": (
             "        timestamp_offset = float(args.start_time if args.timestamp_offset is None else args.timestamp_offset)\n"
-            "        create_mcap_from_video(processed_video, input_mcap, timestamp_offset_seconds=timestamp_offset)\n"
+            "        create_mcap_from_video(\n"
+            "            processed_video,\n"
+            "            input_mcap,\n"
+            "            timestamp_offset_seconds=timestamp_offset,\n"
+            "            duration_seconds=duration if args.max_duration is not None or float(args.start_time) > 0 else None,\n"
+            "        )\n"
         ),
     }
     for needle, replacement in replacements.items():

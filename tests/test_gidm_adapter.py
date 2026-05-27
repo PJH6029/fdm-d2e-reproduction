@@ -343,9 +343,11 @@ def test_prepare_desktop_minimal_inference_script_keeps_desktop_constants(tmp_pa
     source.write_text(
         "\n".join(
             [
+                '#     "loguru==0.7.2",',
                 '#     "owa-cli @ git+https://example/owa-cli",',
                 '#     "owa-env-desktop @ git+https://example/owa-env-desktop",',
                 '#     "owa-env-gst @ git+https://example/owa-env-gst",',
+                "import subprocess",
                 "def preprocess_video(input_path: str, output_path: str, duration: float) -> str:",
                 "    cmd = [",
                 '        "ffmpeg",',
@@ -355,6 +357,7 @@ def test_prepare_desktop_minimal_inference_script_keeps_desktop_constants(tmp_pa
                 "    ]",
                 "    return output_path",
                 "def create_mcap_from_video(video_path: str, mcap_path: str, fps: float = 20.0):",
+                "    duration = get_video_duration(video_path)",
                 "    interval_ns = int(1e9 / fps)",
                 "    num_frames = 1",
                 "    with writer:",
@@ -391,6 +394,9 @@ def test_prepare_desktop_minimal_inference_script_keeps_desktop_constants(tmp_pa
     assert "--start-time" in text
     assert "--timestamp-offset" in text
     assert "timestamp_offset_seconds" in text
+    assert "imageio-ffmpeg==0.5.1" in text
+    assert "_ffmpeg_executable()" in text
+    assert "duration_seconds=duration" in text
 
 
 def test_build_gidm_run_plan_assigns_devices_and_resumes_existing_outputs(tmp_path: Path):
