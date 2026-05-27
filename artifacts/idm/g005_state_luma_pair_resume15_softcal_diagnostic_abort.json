@@ -1,0 +1,23 @@
+{
+  "calibration_progress": {
+    "checkpoint_path": "outputs/idm_streaming_d2e_full_state_luma_pair_resume15_softcal_paper_target/checkpoint.pt",
+    "pre_calibration_checkpoint_path": "outputs/idm_streaming_d2e_full_state_luma_pair_resume15_softcal_paper_target/checkpoint_pre_calibration.pt",
+    "schema": "streaming_idm_calibration_progress.v1",
+    "stage": "final_checkpoint_saved",
+    "status": "pass",
+    "updated_at_epoch": 1779838807.8738358
+  },
+  "checkpoint_exists": true,
+  "created_at": "2026-05-26T23:46:35Z",
+  "ineligible_metric_reasons": [
+    "paper_metric_target_uses_held_state_corpus",
+    "paper_metric_protocol_empty_bins_mismatch"
+  ],
+  "prediction_part_bytes": 670424588,
+  "prediction_parts": 16,
+  "reason": "state-target/empty-bin-correct diagnostic is not eligible for G005 official paper target after audit hardening; stop CPU/IO prediction holding 4xH200 memory and switch to official event-target candidate",
+  "repo_head": "b5c6dff4ef9d63f5936718edc3c4f050cd443afb",
+  "run_summary_path": "artifacts/idm/g005_idm_state_luma_pair_resume15_softcal_4xh200_run.json",
+  "schema": "g005_state_luma_pair_resume15_softcal_diagnostic_abort.v1",
+  "status": "aborted_by_leader"
+}

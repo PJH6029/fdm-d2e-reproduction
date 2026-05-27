@@ -1,0 +1,25 @@
+{
+  "canonical_head": "b40e42d6e9719b21854258d3590600f499bf441e",
+  "claim_boundary": "Abort evidence only; not a full-target G005 pass/fail audit.",
+  "code_head_49a1f11": "49a1f111a35962a6b1160f19ff43fde778cab9bd",
+  "created_at": "2026-05-26T23:57:36Z",
+  "live_wandb_sidecar_status": "artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_calpreserve_live_prediction_wandb_sidecar_status.json",
+  "prediction_part_bytes": 1412064122,
+  "prediction_part_count": 16,
+  "prefix_metrics": {
+    "keyboard_accuracy": 0.011805782869612657,
+    "mouse_button_accuracy": 0.013987372510927635,
+    "mouse_button_f1": 0.026778733385457387,
+    "no_button_false_positive_rate": 0.01780944379819913,
+    "pearson_x": 0.043769536863457095,
+    "pearson_y": 0.029640195804120667,
+    "scale_ratio_x": 6.0647061916502105,
+    "scale_ratio_y": 2.1184477761982925
+  },
+  "prefix_metrics_path": "artifacts/idm/g005_idm_video_stack_luma96_offsets012_keysoftmax_calpreserve_prefix200k_paper_metrics.json",
+  "prefix_rows": 192389,
+  "prefix_sequence_id_mismatches": 0,
+  "reason": "calibration-preserving video recovery prefix is decisively below paper targets; stop full recovery to conserve 4xH200 reservation for next official-event candidate",
+  "schema": "g005_video_stack_calpreserve_abort.v1",
+  "status": "aborted_after_prefix_failure"
+}
