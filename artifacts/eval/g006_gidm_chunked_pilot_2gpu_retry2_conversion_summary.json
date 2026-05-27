@@ -1,0 +1,31 @@
+{
+  "schema": "gidm_mcap_conversion_summary.v1",
+  "manifest_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_scoped_manifest.json",
+  "target_record_paths": [
+    "outputs/gidm_exact_split/pilot_retry2/targets.jsonl"
+  ],
+  "predictions_path": "outputs/gidm_exact_split/pilot_retry2/predictions.jsonl",
+  "recording_count": 1,
+  "rows_written": 5855,
+  "decoded_event_counts": {
+    "d2e_480p:Apex_Legends/0805_01": 323
+  },
+  "decoded_event_counts_by_path": {
+    "d2e_480p:Apex_Legends/0805_01": {
+      "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000000000000_dur000005000.mcap": 171,
+      "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000000005000_dur000005000.mcap": 152
+    }
+  },
+  "missing_prediction_count": 0,
+  "allow_missing": false,
+  "bin_ms": 50,
+  "timestamp_shift_ns": 0,
+  "auto_timestamp_shift_from_screen": true,
+  "timestamp_shifts_by_key": {
+    "d2e_480p:Apex_Legends/0805_01": 0
+  },
+  "auto_shift_skipped_by_key": {
+    "d2e_480p:Apex_Legends/0805_01": true
+  },
+  "claim_boundary": "This converts released G-IDM MCAP predictions to the local predictions.jsonl metric boundary; metric claims require a separate paper-metric/audit artifact."
+}

@@ -89,3 +89,20 @@ Claim boundary: this is G-IDM baseline/teacher infrastructure, not G005 paper-ta
 Added `--max-chunks` to the released G-IDM manifest runner and exact-split pipeline so GPU pilots can validate one or a few timestamp-aligned chunks without scheduling every chunk from a heldout recording. Dry-run evidence: `artifacts/eval/g006_gidm_chunked_maxchunks_dry_run_summary.json` selected one recording and exactly three chunks with `--max-recordings 2 --max-chunks 3`.
 
 This is a utilization guardrail: use it for smoke/pilot validation only, not for G005 completion or exact-split metric claims.
+
+## Chunked released G-IDM 2GPU pilot
+
+Date: 2026-05-27 KST.
+
+Reservation `rsv-jeonghunpark-20260527-a89102` on production node 4 GPUs `[1,2]` ran a bounded released Generalist-IDM chunked pilot and was cancelled after evidence collection to avoid idle GPU time.
+
+Evidence:
+
+- First live attempt failed before model execution because the production Codex image lacked system `ffmpeg`: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_max2chunks_wrapper_summary.json`.
+- First fallback retry still failed because the generated command left literal `ffmpeg` as argv[0]: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry_ffmpegfallback_wrapper_summary.json`.
+- Executable-fallback retry succeeded on two 5-second chunks: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_execfallback_wrapper_summary.json` with `completed_chunks=2`, `failed_chunks=0`.
+- W&B sidecar run: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_execfallback_wandb_sidecar_status.json`.
+- Pilot conversion/metrics over the scoped recording target rows: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_paper_metrics.json` (`rows_seen=5855`). Metrics are intentionally not a success claim because only the first two chunks have predictions; most bins are empty.
+- Hash manifest: `artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_artifact_summary.json`.
+
+Claim boundary: this proves the chunked released G-IDM execution path can produce timestamp-aligned MCAP chunks and local JSONL conversion. It does not satisfy G005 paper-target win, full exact-split G-IDM baseline, or our-IDM training evidence.

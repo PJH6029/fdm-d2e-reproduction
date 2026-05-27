@@ -1,0 +1,19 @@
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/external/uv-cache-desktop-minimal/environments-v2/inference-desktop-minimal-17661e99b6cb6eff/lib/python3.11/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+2026-05-27 14:31:17.121 | INFO     | __main__:main:390 - Preprocessing video (start 5.0s, duration 5.0s)...
+Traceback (most recent call last):
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/external/D2E/inference_desktop_minimal.py", line 417, in <module>
+    main()
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/external/D2E/inference_desktop_minimal.py", line 392, in main
+    preprocess_video(str(input_video), processed_video, duration, start_time=float(args.start_time))
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/external/D2E/inference_desktop_minimal.py", line 100, in preprocess_video
+    result = subprocess.run(cmd, capture_output=True, text=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/subprocess.py", line 548, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/opt/conda/lib/python3.11/subprocess.py", line 1955, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'ffmpeg'

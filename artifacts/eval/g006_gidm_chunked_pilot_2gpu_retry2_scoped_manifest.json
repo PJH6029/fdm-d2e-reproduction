@@ -1,0 +1,61 @@
+{
+  "schema": "gidm_inference_manifest.v1+chunked",
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "target_record_paths": [],
+  "decode_summary_path": "artifacts/sources/d2e_full_corpus_decode_summary_accel64.json",
+  "output_dir": "outputs/gidm_exact_split",
+  "source_mode": "decode_summary_split_counts",
+  "recordings": [
+    {
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "source_id": "d2e_480p",
+      "cross_resolution_key": "Apex_Legends/0805_01",
+      "game": "Apex_Legends",
+      "recording_id": "0805_01",
+      "row_count": 5855,
+      "split_tags": [
+        "temporal"
+      ],
+      "timestamp_min_ns": null,
+      "timestamp_max_ns": null,
+      "bin_index_min": null,
+      "bin_index_max": null,
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv",
+      "ground_truth_mcap_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mcap",
+      "prediction_mcap_path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01.mcap",
+      "upstream_model": "open-world-agents/Generalist-IDM-1B",
+      "inference_command": [
+        "uv",
+        "run",
+        "python",
+        "inference.py",
+        "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv",
+        "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01.mcap",
+        "--model",
+        "open-world-agents/Generalist-IDM-1B",
+        "--device",
+        "cuda",
+        "--max-context-length",
+        "2048"
+      ],
+      "prediction_mcap_paths": [
+        "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000000000000_dur000005000.mcap",
+        "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000000005000_dur000005000.mcap"
+      ],
+      "prediction_timestamps_aligned_to_ground_truth": true,
+      "chunked_prediction": {
+        "chunk_seconds": 5.0,
+        "chunk_context_seconds": 0.0,
+        "bin_ms": 50,
+        "timestamp_mode": "ground_truth_aligned"
+      }
+    }
+  ],
+  "recording_count": 1,
+  "target_rows": 5855,
+  "missing_decode_rows": [],
+  "manifest_fingerprint": "3ac00163ae62182de5cc9da6ceda6ad52b73836f7d441b43b21caa42629b3814",
+  "claim_boundary": "Chunked released G-IDM inference manifest; timestamps are aligned to ground-truth recording time. This is baseline/teacher infrastructure, not our-IDM metric success.",
+  "chunked_prediction_count": 1,
+  "source_manifest_path": "artifacts/eval/g006_gidm_exact_split_inference_manifest.json"
+}

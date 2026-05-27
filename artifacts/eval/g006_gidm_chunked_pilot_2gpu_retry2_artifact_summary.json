@@ -1,0 +1,126 @@
+{
+  "artifacts": [
+    {
+      "bytes": 1414,
+      "exists": true,
+      "path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_execfallback_wrapper_summary.json",
+      "sha256": "691743f185b789c1e92171429af553da6496aede73728729b5014bb0a506f194"
+    },
+    {
+      "bytes": 4352,
+      "exists": true,
+      "path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_execfallback_inference_summary.json",
+      "sha256": "9707a18fa0f87769ca02cab157361fa2846d18b41189504d7c1fe548318ede03"
+    },
+    {
+      "bytes": 1453,
+      "exists": true,
+      "path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_scoped_resume_summary.json",
+      "sha256": "2d3f5cd39451ffdc66bfc6d7756aaafa53877692109acdfebb0f5bf25cc1d50a"
+    },
+    {
+      "bytes": 1291,
+      "exists": true,
+      "path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_target_extraction_summary.json",
+      "sha256": "3cbf2eb6f0463f7dc78a53e6570ecfd4cad5e8e6fb223f4a0b8ecf85cddc10e7"
+    },
+    {
+      "bytes": 1338,
+      "exists": true,
+      "path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_conversion_summary.json",
+      "sha256": "cb831eec771602f9ed3accd78a83bed0c0eacaa82d11211a652fb1da9d2a392a"
+    },
+    {
+      "bytes": 5332,
+      "exists": true,
+      "path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_paper_metrics.json",
+      "sha256": "b62d550649faae7c4280314983f540f71f84b12bf91034a8862d955350351dcb"
+    },
+    {
+      "bytes": 992,
+      "exists": true,
+      "path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_execfallback_wandb_sidecar_status.json",
+      "sha256": "4012f4c3ad193c1194bf4502f50d5f747d8c4b04deede7e474f0a27713db77ef"
+    },
+    {
+      "bytes": 670,
+      "exists": true,
+      "path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_execfallback_gpu_monitor.csv",
+      "sha256": "3a588ab7210a4f89af10142ff55236374f4e31ceec49550b43598eeb08f7a796"
+    },
+    {
+      "bytes": 2920574,
+      "exists": true,
+      "path": "outputs/gidm_exact_split/pilot_retry2/targets.jsonl",
+      "sha256": "1e6c507e08c2ed502166824efcc0839ec8e1c832b7a1c6ad331b3cc5a6ee8ff0"
+    },
+    {
+      "bytes": 2025830,
+      "exists": true,
+      "path": "outputs/gidm_exact_split/pilot_retry2/predictions.jsonl",
+      "sha256": "1fd90f1dbf2b9bc5096d95ff0ab616fb318bcd90fa1fc009a6d2dac06be8a2d5"
+    },
+    {
+      "bytes": 16036,
+      "exists": true,
+      "path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000000000000_dur000005000.mcap",
+      "sha256": "37eb6a94b578afb2d5b3d5d26435e0d3245b1252a9a975b5a6a0739b02c65dd5"
+    },
+    {
+      "bytes": 12861,
+      "exists": true,
+      "path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000000005000_dur000005000.mcap",
+      "sha256": "658b6efeae87ff0e387edeaac6e4d6bd1b9e7269a027cc008f33c87af9a71a1c"
+    }
+  ],
+  "claim_boundary": "Released G-IDM two-chunk pilot evidence only; not G005 paper-target success, not full exact-split baseline completion, and not our-IDM training evidence.",
+  "completed_chunks": 2,
+  "created_at_epoch": 1779893146.2043815,
+  "failed_chunks": 0,
+  "git_head": "a5a7e9c3b75554858cad525c022f0e97bc929aa8",
+  "metric_rows": 5855,
+  "paper_all": {
+    "empty_bins_as_correct": false,
+    "keyboard": {
+      "key_accuracy": 0.0,
+      "sample_count": 1329
+    },
+    "mouse_button": {
+      "button_accuracy": 0.0,
+      "sample_count": 198
+    },
+    "mouse_move": {
+      "pearson_x": null,
+      "pearson_y": null,
+      "sample_count": 3829,
+      "scale_ratio_x": null,
+      "scale_ratio_y": null,
+      "scale_sample_count": 5855
+    }
+  },
+  "planned_chunks": 2,
+  "pod_name": "prod-rsv-jeonghunpark-20260527-a89102",
+  "reservation_id": "rsv-jeonghunpark-20260527-a89102",
+  "schema": "g006_gidm_chunked_pilot_2gpu_artifact_summary.v1",
+  "status": "pass",
+  "strict_local": {
+    "keyboard": {
+      "accuracy": 0.0,
+      "num_examples": 1218
+    },
+    "mouse_button": {
+      "accuracy": 0.0,
+      "exact_true_positive_examples": 0,
+      "f1": 0.0,
+      "false_negative_examples": 183,
+      "false_positive_examples": 0,
+      "no_button_examples": 5672,
+      "no_button_false_positive_examples": 0,
+      "no_button_false_positive_rate": 0.0,
+      "num_examples": 183,
+      "precision": null,
+      "predicted_examples": 0,
+      "recall": 0.0
+    }
+  }
+}

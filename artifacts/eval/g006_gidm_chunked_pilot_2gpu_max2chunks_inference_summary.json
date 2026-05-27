@@ -1,0 +1,80 @@
+{
+  "schema": "gidm_manifest_inference_run.v1",
+  "manifest_path": "artifacts/eval/g006_gidm_exact_split_inference_manifest.json",
+  "chunk_manifest_output": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_max2chunks_manifest.json",
+  "d2e_repo": "outputs/external/D2E",
+  "inference_script": "outputs/external/D2E/inference_desktop_minimal.py",
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "workers": 2,
+  "cuda_devices": [
+    "0",
+    "1"
+  ],
+  "max_recordings": 1,
+  "recording_keys": [],
+  "max_context_length": 2048,
+  "max_duration": null,
+  "max_chunks": 2,
+  "chunk_seconds": 5.0,
+  "chunk_context_seconds": 0.0,
+  "bin_ms": 50,
+  "resume": true,
+  "dry_run": false,
+  "planned_recordings": 1,
+  "planned_chunks": 2,
+  "chunked_recording_count": 1,
+  "completed_recordings": 0,
+  "failed_recordings": 1,
+  "completed_chunks": 0,
+  "failed_chunks": 2,
+  "rows": [
+    {
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv",
+      "prediction_mcap_path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000000000000_dur000005000.mcap",
+      "resolved_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-25646d5/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000000000000_dur000005000.mcap",
+      "temp_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-25646d5/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000000000000_dur000005000.mcap.tmp.362.0",
+      "cuda_device": "0",
+      "log_path": "artifacts/eval/gidm_chunked_pilot_logs/00000_0000_d2e_480p_Apex_Legends_0805_01.log",
+      "exit_code": 1,
+      "success": false,
+      "elapsed_seconds": 25.99137783050537,
+      "start_time_seconds": 0.0,
+      "timestamp_offset_seconds": 0.0,
+      "output_exists": false,
+      "output_size": 0,
+      "output_sha256": null,
+      "chunk_index": 0,
+      "duration_seconds": 5.0,
+      "chunked": true
+    },
+    {
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv",
+      "prediction_mcap_path": "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000000005000_dur000005000.mcap",
+      "resolved_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-25646d5/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000000005000_dur000005000.mcap",
+      "temp_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-25646d5/outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000000005000_dur000005000.mcap.tmp.362.1",
+      "cuda_device": "1",
+      "log_path": "artifacts/eval/gidm_chunked_pilot_logs/00000_0001_d2e_480p_Apex_Legends_0805_01.log",
+      "exit_code": 1,
+      "success": false,
+      "elapsed_seconds": 26.023314952850342,
+      "start_time_seconds": 5.0,
+      "timestamp_offset_seconds": 5.0,
+      "output_exists": false,
+      "output_size": 0,
+      "output_sha256": null,
+      "chunk_index": 1,
+      "duration_seconds": 5.0,
+      "chunked": true
+    }
+  ],
+  "chunk_paths_by_key": {
+    "d2e_480p:Apex_Legends/0805_01": [
+      "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000000000000_dur000005000.mcap",
+      "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0001_start000000005000_dur000005000.mcap"
+    ]
+  },
+  "chunk_manifest_written": true,
+  "claim_boundary": "Released G-IDM inference execution evidence only; metric claims require conversion plus paper-metric artifacts."
+}
