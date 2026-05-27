@@ -1,0 +1,44 @@
+{
+  "best_metrics": {
+    "keyboard_accuracy": 0.19900156833292837,
+    "metrics_path": "artifacts/idm/g005_idm_endpoint_mixture_matrix_event_all_paper_metrics.json",
+    "mouse_button_accuracy": 0.17256699910195208,
+    "name": "event_all",
+    "pearson_x": 0.6048383535587054,
+    "pearson_y": 0.5985909398660804,
+    "prediction_path": "outputs/idm_ensembles/g005_endpoint_mixture_matrix/event_all/predictions.jsonl",
+    "prediction_rows": 320000,
+    "prediction_sha256": "384412eca47e46aa06222eb7d3e86da42ded10c183ff143b04a9a0810c80d1e3",
+    "scale_ratio_x": 2.5678622785947947,
+    "scale_ratio_y": 1.4696145698157421,
+    "strict_mouse_button_f1": 0.2809433495505896,
+    "strict_no_button_fpr": 0.03749847397402865,
+    "summary_path": "artifacts/idm/g005_idm_endpoint_mixture_matrix_event_all_summary.json"
+  },
+  "best_policy_under_fpr_gate": "event_all",
+  "candidate": "endpoint_mixture_matrix_prefix320k",
+  "claim_boundary": "Prefix post-hoc endpoint mixture diagnostic only; not G005 completion evidence.",
+  "created_at_epoch": 1779902282.2043068,
+  "decision": "do_not_promote_endpoint_mixture_policy",
+  "evidence": {
+    "best_metrics_path": "artifacts/idm/g005_idm_endpoint_mixture_matrix_event_all_paper_metrics.json",
+    "best_summary_path": "artifacts/idm/g005_idm_endpoint_mixture_matrix_event_all_summary.json",
+    "matrix_summary": "artifacts/idm/g005_idm_endpoint_mixture_matrix_summary.json"
+  },
+  "findings": [
+    {
+      "code": "event_context_already_best",
+      "details": "Among event/state endpoint mixtures, event-context alone had the best mouse-button accuracy and satisfied no-button FPR<=0.10."
+    },
+    {
+      "code": "state_luma_button_not_helpful",
+      "details": "State-luma button source raised no-button FPR to 0.1447 and gated/intersection variants reduced button accuracy below event-context alone."
+    },
+    {
+      "code": "paper_targets_missed",
+      "details": "Best prefix policy still has keyboard 0.1990, button 0.1726, Pearson X/Y 0.6048/0.5986, below paper targets."
+    }
+  ],
+  "schema": "g005_idm_prefix_rejection.v1",
+  "status": "rejected_prefix_diagnostic"
+}

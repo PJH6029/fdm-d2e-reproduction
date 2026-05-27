@@ -1,0 +1,62 @@
+Downloading cpython-3.14.4-linux-x86_64-gnu (download) (34.7MiB)
+ Downloaded cpython-3.14.4-linux-x86_64-gnu (download)
+Using CPython 3.14.4
+Creating virtual environment at: .venv
+   Building fdm-d2e @ file:///mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-fea9099
+      Built fdm-d2e @ file:///mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-fea9099
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 1 package in 41ms
+{"output_path": "outputs/idm_ensembles/g005_endpoint_mixture_state_luma_gate_context_prefix320k/predictions.jsonl", "output_rows": 320000, "status": "pass"}
+g005 paper metrics: status=pass rows=320000 output=artifacts/idm/g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics.json
+Downloading wandb (26.0MiB)
+Downloading pydantic-core (2.0MiB)
+ Downloaded pydantic-core
+ Downloaded wandb
+Installed 20 packages in 183ms
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: pjh6029 (pjh6029-seoul-national-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run nkrlf6x6
+wandb: Tracking run with wandb version 0.27.0
+wandb: Run data is saved locally in outputs/wandb/wandb/run-20260527_170924-nkrlf6x6
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run g005-endpoint-mixture-state-luma-gate-context-prefix320k
+wandb: ⭐️ View project at https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction
+wandb: 🚀 View run at https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/nkrlf6x6
+wandb: updating run metadata; uploading artifact g005-endpoint-mixture-state-luma-gate-context-prefix320k
+wandb: uploading artifact g005-endpoint-mixture-state-luma-gate-context-prefix320k
+wandb: uploading wandb-metadata.json; uploading requirements.txt; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading history steps 0-0, summary
+wandb: 
+wandb: Run history:
+wandb:                        g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/alignment/missing_prediction_rows ▁
+wandb:                            g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/alignment/missing_target_rows ▁
+wandb:                                      g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/alignment/rows_seen ▁
+wandb:                         g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/alignment/sequence_id_mismatches ▁
+wandb:                                              g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/error_count ▁
+wandb:        g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/groups/all/paper_compatible/empty_bins_as_correct ▁
+wandb:        g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/groups/all/paper_compatible/keyboard/key_accuracy ▁
+wandb:        g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/groups/all/paper_compatible/keyboard/sample_count ▁
+wandb: g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/groups/all/paper_compatible/mouse_button/button_accuracy ▁
+wandb:    g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/groups/all/paper_compatible/mouse_button/sample_count ▁
+wandb:                                                                                                                                +107 ...
+wandb: 
+wandb: Run summary:
+wandb:                        g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/alignment/missing_prediction_rows 0
+wandb:                            g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/alignment/missing_target_rows 0
+wandb:                                      g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/alignment/rows_seen 320000
+wandb:                         g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/alignment/sequence_id_mismatches 0
+wandb:                                              g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/error_count 0
+wandb:        g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/groups/all/paper_compatible/empty_bins_as_correct 0
+wandb:        g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/groups/all/paper_compatible/keyboard/key_accuracy 0.199
+wandb:        g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/groups/all/paper_compatible/keyboard/sample_count 90542
+wandb: g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/groups/all/paper_compatible/mouse_button/button_accuracy 0.0089
+wandb:    g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics/groups/all/paper_compatible/mouse_button/sample_count 13701
+wandb:                                                                                                                                +107 ...
+wandb: 
+wandb: 🚀 View run g005-endpoint-mixture-state-luma-gate-context-prefix320k at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/nkrlf6x6
+wandb: ⭐️ View project at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction
+wandb: Synced 4 W&B file(s), 0 media file(s), 3 artifact file(s) and 0 other file(s)
+wandb: Find logs at: outputs/wandb/wandb/run-20260527_170924-nkrlf6x6/logs
+{"status": "complete", "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/nkrlf6x6"}

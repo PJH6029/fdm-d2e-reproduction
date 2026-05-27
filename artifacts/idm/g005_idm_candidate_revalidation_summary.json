@@ -1,8 +1,8 @@
 {
   "active_goal_id": "G005-g014-idm-full-paper-target",
-  "candidate_count": 10,
+  "candidate_count": 11,
   "claim_boundary": "Revalidation/ranking artifact only; no G005 success claim and no FDM-1 parity claim.",
-  "created_at_epoch": 1779901214.7237976,
+  "created_at_epoch": 1779902282.2046466,
   "paper_targets": {
     "keyboard_accuracy": 0.73,
     "mouse_button_accuracy": 0.957,
@@ -696,12 +696,49 @@
           "details": "Pivot to endpoint-specialist / mixture heads and calibrated decoding instead of more global closed-loop ordering/dropout retests."
         }
       ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": "artifacts/idm/g005_idm_endpoint_mixture_matrix_rejection.json",
+      "audit_status": "rejected_prefix_diagnostic",
+      "button_gap_to_paper": 0.7844330008980479,
+      "candidate": "endpoint_mixture_matrix_prefix320k",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.5309984316670716,
+      "metrics_path": "artifacts/idm/g005_idm_endpoint_mixture_matrix_event_all_paper_metrics.json",
+      "note": "Rejected CPU prefix matrix: event-context alone beat all tested state-luma endpoint mixtures; no mixture approaches paper key/button targets.",
+      "paper_keyboard_accuracy": 0.19900156833292837,
+      "paper_mouse_button_accuracy": 0.17256699910195208,
+      "paper_mouse_pearson_x": 0.6048383535587054,
+      "paper_mouse_pearson_y": 0.5985909398660804,
+      "paper_scale_ratio_x": 2.5678622785947947,
+      "paper_scale_ratio_y": 1.4696145698157421,
+      "pearson_x_gap_to_paper": 0.19116164644129463,
+      "pearson_y_gap_to_paper": 0.18440906013391967,
+      "rows": 320000,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.2809433495505896,
+      "strict_no_button_fpr": 0.03749847397402865,
+      "top_audit_findings": [
+        {
+          "code": "event_context_already_best",
+          "details": "Among event/state endpoint mixtures, event-context alone had the best mouse-button accuracy and satisfied no-button FPR<=0.10."
+        },
+        {
+          "code": "state_luma_button_not_helpful",
+          "details": "State-luma button source raised no-button FPR to 0.1447 and gated/intersection variants reduced button accuracy below event-context alone."
+        },
+        {
+          "code": "paper_targets_missed",
+          "details": "Best prefix policy still has keyboard 0.1990, button 0.1726, Pearson X/Y 0.6048/0.5986, below paper targets."
+        }
+      ]
     }
   ],
   "recommended_next_actions": [
-    "Stop promoting global event-state closed-loop/order/dropout variants: chronological prefix reproduced the same collapsed key/button/mouse metrics.",
-    "Implement a bounded endpoint-specialist mixture branch: separate keyboard, mouse-button, and mouse-motion heads or decoders with heldout-calibrated thresholds; keep no-button FPR <=0.10 as a hard prefix gate.",
-    "Use prefix gates before any full 4xH200 G005 run; only promote candidates that materially improve paper keyboard/button and mouse Pearson while preserving FPR."
+    "Do not spend 4xH200 on post-hoc event/state endpoint mixtures; the prefix matrix shows event-context alone is already the best tested policy under the FPR gate.",
+    "Move to an actual learned endpoint-specialist architecture: future-offset/NEP-style visual context for keyboard/buttons plus calibrated exact count heads, not token-level recombination of existing weak predictions.",
+    "Before full runs, create prefix gates that compare against event_context_full/event_all and require simultaneous gains in keyboard, mouse-button, and mouse Pearson with no-button FPR<=0.10."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets"

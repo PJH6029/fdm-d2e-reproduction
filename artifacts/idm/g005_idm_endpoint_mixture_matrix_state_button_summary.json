@@ -1,0 +1,39 @@
+{
+  "schema": "idm_endpoint_prediction_ensemble.v1",
+  "status": "pass",
+  "policy_id": "matrix_state_button",
+  "prediction_paths": {
+    "event": "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/predictions.jsonl",
+    "state": "outputs/idm_streaming_d2e_full_state_luma_pair_paper_target/predictions.jsonl"
+  },
+  "source_counts": {
+    "event": 16698646,
+    "state": 16698646
+  },
+  "metadata_source": "event",
+  "policies": {
+    "button": {
+      "mode": "source",
+      "source": "state"
+    },
+    "keyboard": {
+      "mode": "source",
+      "source": "event"
+    },
+    "mouse": {
+      "mode": "source",
+      "source": "event"
+    }
+  },
+  "output_path": "outputs/idm_ensembles/g005_endpoint_mixture_matrix/state_button/predictions.jsonl",
+  "output_rows": 320000,
+  "output_sha256": "6bd4a367697a14f221a3747b23f53dbb69fe6d77f11a3e4e06c2e2f81ef7c513",
+  "endpoint_positive_rows": {
+    "mouse": 320000,
+    "button": 47231,
+    "keyboard": 50679
+  },
+  "mismatches": [],
+  "wall_clock_seconds": 5.021729230880737,
+  "claim_boundary": "Post-hoc endpoint ensemble diagnostic only; no G005 completion claim without paper-target validation."
+}

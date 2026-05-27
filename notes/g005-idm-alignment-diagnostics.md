@@ -201,3 +201,21 @@ Evidence:
 Result: reject this branch. Chronological materialization reproduced the same closed-loop prefix metrics, so target row ordering is not the main failure mode. No-button FPR is now bounded (`0.0165` overall), but only because the model is underactive: paper keyboard `0.000606`, mouse-button `0.00419`, Pearson X/Y `0.0145/-0.00144`, strict button F1 `0.00728`. This misses every paper target and must not be promoted to a full G005 run.
 
 Next branch: endpoint-specialist/mixture heads plus conservative heldout calibration. Prefix gates must require no-button FPR `<=0.10` and meaningful improvements in keyboard/button/mouse metrics before any 4xH200 full run.
+
+
+### Endpoint-mixture prefix matrix rejection
+
+Date: 2026-05-28 KST.
+
+Used `production-storage-shell-4` (no new GPU reservation) to run a CPU-only endpoint-mixture prefix matrix from existing full-corpus prediction JSONLs. The committed runner/config at `fea9099` combines `event_state_duration_context` mouse/keyboard with several state-luma/event-context mouse-button policies over the first 320k target rows.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_endpoint_mixture_matrix_summary.json` — `status=rejected_no_policy_meets_paper_targets`; best button policy and best FPR-gated policy are both `event_all`.
+- `artifacts/idm/g005_idm_endpoint_mixture_state_luma_gate_context_prefix320k_paper_metrics.json` — the proposed state-luma button gated by event-context detector keeps FPR low (`0.00860`) but button accuracy collapses to `0.00890`.
+- `artifacts/idm/g005_idm_endpoint_mixture_matrix_event_all_paper_metrics.json` — best prefix policy among the matrix: keyboard `0.1990`, mouse-button `0.1726`, Pearson X/Y `0.6048/0.5986`, strict button F1 `0.2809`, no-button FPR `0.0375`.
+- `artifacts/idm/g005_idm_endpoint_mixture_matrix_rejection.json` — explicit negative decision.
+
+Result: reject post-hoc endpoint recombination. State-luma button predictions either increase no-button FPR (`0.1447` when used directly) or lose button accuracy when gated/intersected. Event-context alone remains best under the FPR gate and still misses all paper targets by large margins.
+
+Next branch must be a learned endpoint-specialist architecture rather than token-level recombination: NEP/future-offset visual context for keyboard/buttons, exact-count or exact-set heads, and heldout-calibrated thresholds. Prefix gates must beat the `event_all` prefix baseline while keeping no-button FPR `<=0.10`.
