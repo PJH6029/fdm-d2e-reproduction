@@ -743,3 +743,15 @@ def test_chunked_gidm_plan_can_limit_total_chunks_for_pilots(tmp_path: Path):
     assert len(plans) == 3
     assert sum(len(paths) for paths in paths_by_key.values()) == 3
     assert set(paths_by_key) == {"d2e_480p:Game/rec_001"}
+
+    chunk_manifest = tmp_path / "chunk_manifest_limited.json"
+    payload = write_chunked_gidm_manifest(
+        manifest_path=manifest,
+        output_path=chunk_manifest,
+        chunk_paths_by_key=paths_by_key,
+        chunk_seconds=0.2,
+        chunk_context_seconds=0.0,
+        bin_ms=50,
+    )
+    assert payload["recording_count"] == 1
+    assert [row["universe_row_id"] for row in payload["recordings"]] == ["d2e_480p:Game/rec_001"]

@@ -458,6 +458,7 @@ def write_chunked_gidm_manifest(
 ) -> dict[str, Any]:
     manifest = copy.deepcopy(read_json(manifest_path))
     updated = 0
+    selected_rows: list[dict[str, Any]] = []
     for row in manifest.get("recordings", []):
         if not isinstance(row, dict):
             continue
@@ -474,6 +475,10 @@ def write_chunked_gidm_manifest(
             "timestamp_mode": "ground_truth_aligned",
         }
         updated += 1
+        selected_rows.append(row)
+    manifest["recordings"] = selected_rows
+    manifest["recording_count"] = len(selected_rows)
+    manifest["target_rows"] = sum(int(row.get("row_count", 0) or 0) for row in selected_rows)
     manifest["schema"] = str(manifest.get("schema", "gidm_inference_manifest.v1")) + "+chunked"
     manifest["chunked_prediction_count"] = updated
     manifest["source_manifest_path"] = str(manifest_path)
