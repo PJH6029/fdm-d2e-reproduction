@@ -66,6 +66,10 @@ def _expand_roots(patterns: Sequence[str | Path]) -> list[Path]:
 
 
 def _prediction_exists(row: dict[str, Any]) -> bool:
+    paths = row.get("prediction_mcap_paths")
+    if isinstance(paths, list) and paths:
+        outputs = [Path(str(path)) for path in paths]
+        return all(output.exists() and output.stat().st_size > 0 for output in outputs)
     path = row.get("prediction_mcap_path")
     if not path:
         return False

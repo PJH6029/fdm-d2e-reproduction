@@ -374,6 +374,19 @@ def _first_screen_timestamp_ns(
     raise ValueError(f"no screen timestamp found in MCAP: {mcap_path}")
 
 
+def _prediction_paths(row: dict[str, Any]) -> list[str]:
+    paths = row.get("prediction_mcap_paths")
+    if isinstance(paths, list) and paths:
+        return [str(path) for path in paths]
+    path = row.get("prediction_mcap_path")
+    return [str(path)] if path else []
+
+
+def _prediction_paths_exist(row: dict[str, Any]) -> bool:
+    paths = _prediction_paths(row)
+    return bool(paths) and all(Path(path).exists() and Path(path).stat().st_size > 0 for path in paths)
+
+
 def convert_gidm_mcap_predictions(
     *,
     manifest_path: str | Path,
@@ -392,7 +405,7 @@ def convert_gidm_mcap_predictions(
     available = {
         key: row
         for key, row in by_key.items()
-        if row.get("prediction_mcap_path") and Path(str(row["prediction_mcap_path"])).exists()
+        if _prediction_paths_exist(row)
     }
     if not allow_missing:
         missing = sorted(set(by_key) - set(available))
@@ -416,12 +429,15 @@ def convert_gidm_mcap_predictions(
                 targets_by_key[key].append(row)
 
     decoded_counts: dict[str, int] = {}
+    decoded_counts_by_path: dict[str, dict[str, int]] = {}
     timestamp_shifts_by_key: dict[str, int] = {}
+    auto_shift_skipped_by_key: dict[str, bool] = {}
     token_bins_by_key: dict[str, dict[int, list[str]]] = {}
     for key, target_rows in targets_by_key.items():
-        mcap_path = str(available[key]["prediction_mcap_path"])
+        prediction_paths = _prediction_paths(available[key])
         effective_shift_ns = int(timestamp_shift_ns)
-        if auto_timestamp_shift_from_screen:
+        timestamps_aligned = bool(available[key].get("prediction_timestamps_aligned_to_ground_truth"))
+        if auto_timestamp_shift_from_screen and not timestamps_aligned:
             gt_mcap_path = available[key].get("ground_truth_mcap_path")
             if not gt_mcap_path:
                 raise ValueError(f"manifest row lacks ground_truth_mcap_path for auto timestamp shift: {key}")
@@ -429,11 +445,17 @@ def convert_gidm_mcap_predictions(
                 mcap_path=str(gt_mcap_path),
                 decode_fn=decode_fn,
             ) - _first_screen_timestamp_ns(
-                mcap_path=mcap_path,
+                mcap_path=prediction_paths[0],
                 decode_fn=decode_fn,
             )
+        auto_shift_skipped_by_key[key] = bool(auto_timestamp_shift_from_screen and timestamps_aligned)
         timestamp_shifts_by_key[key] = effective_shift_ns
-        events = decode_fn(mcap_path, topics=["keyboard", "mouse/raw", "mouse"])
+        events: list[dict[str, Any]] = []
+        decoded_counts_by_path[key] = {}
+        for mcap_path in prediction_paths:
+            decoded = decode_fn(mcap_path, topics=["keyboard", "mouse/raw", "mouse"])
+            decoded_counts_by_path[key][mcap_path] = len(decoded)
+            events.extend(decoded)
         decoded_counts[key] = len(events)
         target_rows.sort(key=lambda row: int(row.get("timestamp_ns", 0)))
         token_bins_by_key[key] = _tokens_by_bin(
@@ -473,12 +495,14 @@ def convert_gidm_mcap_predictions(
         "recording_count": len(targets_by_key),
         "rows_written": rows_written,
         "decoded_event_counts": decoded_counts,
+        "decoded_event_counts_by_path": decoded_counts_by_path,
         "missing_prediction_count": len(set(by_key) - set(available)),
         "allow_missing": bool(allow_missing),
         "bin_ms": int(bin_ms),
         "timestamp_shift_ns": int(timestamp_shift_ns),
         "auto_timestamp_shift_from_screen": bool(auto_timestamp_shift_from_screen),
         "timestamp_shifts_by_key": timestamp_shifts_by_key,
+        "auto_shift_skipped_by_key": auto_shift_skipped_by_key,
         "claim_boundary": "This converts released G-IDM MCAP predictions to the local predictions.jsonl metric boundary; metric claims require a separate paper-metric/audit artifact.",
     }
     if summary_out:

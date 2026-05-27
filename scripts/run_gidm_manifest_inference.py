@@ -23,6 +23,10 @@ def main() -> int:
     parser.add_argument("--recording-key", action="append", default=[])
     parser.add_argument("--max-context-length", type=int, default=2048)
     parser.add_argument("--max-duration", type=float)
+    parser.add_argument("--chunk-seconds", type=float, help="Run each manifest recording as timestamp-aligned video chunks.")
+    parser.add_argument("--chunk-context-seconds", type=float, default=1.0)
+    parser.add_argument("--chunk-manifest-output")
+    parser.add_argument("--bin-ms", type=int, default=50)
     parser.add_argument("--uv-cache-dir", default="outputs/external/uv-cache-desktop-minimal")
     parser.add_argument("--hf-home", default="outputs/external/hf-home")
     parser.add_argument("--log-dir", default="artifacts/eval/gidm_manifest_inference_logs")
@@ -40,6 +44,10 @@ def main() -> int:
         recording_keys=args.recording_key,
         max_context_length=args.max_context_length,
         max_duration=args.max_duration,
+        chunk_seconds=args.chunk_seconds,
+        chunk_context_seconds=args.chunk_context_seconds,
+        chunk_manifest_output=args.chunk_manifest_output,
+        bin_ms=args.bin_ms,
         uv_cache_dir=args.uv_cache_dir,
         hf_home=args.hf_home,
         log_dir=args.log_dir,

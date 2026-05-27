@@ -62,3 +62,24 @@ Follow-up after the 2-epoch offset-2 raw-video prefix rejection: a 12-epoch 2GPU
 - Strict local no-button FPR stayed bounded (`0.047153`), but button F1 remained `0.003121`.
 
 Conclusion: longer prefix training does not rescue the non-leaky raw112 offset-2 CNN candidate. Do not promote this candidate to a full 4xH200 G005 run; pivot to a stronger pretrained visual-action representation, exact released G-IDM diagnostics, or a new architecture before spending another full GPU reservation.
+
+## Released G-IDM Chunked Exact-Split Infrastructure
+
+Date: 2026-05-27 KST.
+
+After rejecting the raw112 offset-2 long-train prefix candidate, the next non-leaky path is to make released Generalist-IDM exact-split inference usable as a baseline/teacher diagnostic before spending another full 4xH200 run.
+
+Implemented local chunked inference support for the generated D2E `inference_desktop_minimal.py` wrapper:
+
+- Adds `--start-time` and `--timestamp-offset` patching so each video chunk is cut with ffmpeg but stamped back into the original recording timeline.
+- Adds chunk planning from manifest `bin_index_min/max` and `timestamp_min_ns` so temporal heldout rows no longer require replaying the entire recording prefix.
+- Adds chunked manifest rows with `prediction_mcap_paths` and `prediction_timestamps_aligned_to_ground_truth=true`.
+- Extends conversion/target extraction to accept multiple MCAP chunks per recording and skip first-screen auto-shift when chunk timestamps are already ground-truth aligned.
+
+Validation evidence:
+
+- `uv run pytest -q tests/test_gidm_adapter.py tests/test_gidm_baseline_contract.py tests/test_g005_idm_paper_target.py` => 22 passed.
+- `python3 -m py_compile` over the modified G-IDM runner/adapter/pipeline scripts passed.
+- Dry-run artifact: `artifacts/eval/g006_gidm_chunked_dry_run_summary.json` plans one heldout recording as 59 five-second chunks and verifies chunk-manifest generation without committing the large generated manifest.
+
+Claim boundary: this is G-IDM baseline/teacher infrastructure, not G005 paper-target success and not our-IDM metric evidence.

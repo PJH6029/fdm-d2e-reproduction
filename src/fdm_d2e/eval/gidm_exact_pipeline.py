@@ -130,6 +130,7 @@ def run_gidm_exact_split_pipeline(
     if stage not in {"all", "inference", "finalize"}:
         raise ValueError("stage must be one of: all, inference, finalize")
     manifest_path = _path(root_path, config["manifest_path"])
+    active_manifest_path = manifest_path
     summary_path = _path(root_path, config.get("summary_out", "artifacts/eval/g006_gidm_exact_split_pipeline_summary.json"))
     statuses: dict[str, Any] = {}
     findings: list[dict[str, Any]] = []
@@ -152,6 +153,10 @@ def run_gidm_exact_split_pipeline(
                 recording_keys=selected_recording_keys,
                 max_context_length=int(config.get("max_context_length", 2048)),
                 max_duration=config.get("max_duration"),
+                chunk_seconds=config.get("chunk_seconds"),
+                chunk_context_seconds=float(config.get("chunk_context_seconds", 1.0)),
+                chunk_manifest_output=_path(root_path, config["chunk_manifest_output"]) if config.get("chunk_manifest_output") else None,
+                bin_ms=int(config.get("bin_ms", 50)),
                 uv_cache_dir=_path(root_path, config.get("uv_cache_dir", "outputs/external/uv-cache-desktop-minimal")),
                 hf_home=_path(root_path, config.get("hf_home", "outputs/external/hf-home")),
                 log_dir=_path(root_path, config.get("inference_log_dir", "artifacts/eval/gidm_exact_split_inference_logs")),
@@ -166,10 +171,18 @@ def run_gidm_exact_split_pipeline(
             }
             if statuses["inference"]["status"] != "pass":
                 findings.append({"severity": "error", "code": "inference_failed", **statuses["inference"]})
+            if config.get("chunk_manifest_output"):
+                chunk_manifest_path = _path(root_path, config["chunk_manifest_output"])
+                if chunk_manifest_path.exists():
+                    active_manifest_path = chunk_manifest_path
 
         if stage in {"all", "finalize"} and not dry_run:
+            if stage == "finalize" and config.get("chunk_manifest_output"):
+                chunk_manifest_path = _path(root_path, config["chunk_manifest_output"])
+                if chunk_manifest_path.exists():
+                    active_manifest_path = chunk_manifest_path
             target_summary = extract_gidm_target_records(
-                manifest_path=manifest_path,
+                manifest_path=active_manifest_path,
                 by_recording_roots=[_maybe_relative(root_path, item) for item in _list(config.get("by_recording_roots"))],
                 output_path=_path(root_path, config.get("target_records", "outputs/gidm_exact_split/full_targets.jsonl")),
                 summary_out=_path(root_path, config.get("target_summary", "artifacts/eval/g006_gidm_exact_split_target_extraction_summary.json")),
@@ -187,7 +200,7 @@ def run_gidm_exact_split_pipeline(
                 findings.append({"severity": "error", "code": "target_extraction_failed", **statuses["target_extraction"]})
 
             conversion_summary = convert_gidm_mcap_predictions(
-                manifest_path=manifest_path,
+                manifest_path=active_manifest_path,
                 target_record_paths=[_path(root_path, config.get("target_records", "outputs/gidm_exact_split/full_targets.jsonl"))],
                 output_path=_path(root_path, config.get("predictions", "outputs/gidm_exact_split/full_predictions.jsonl")),
                 summary_out=_path(root_path, config.get("conversion_summary", "artifacts/eval/g006_gidm_exact_split_conversion_summary.json")),
@@ -245,6 +258,8 @@ def run_gidm_exact_split_pipeline(
         "dry_run": bool(dry_run),
         "model": str(config.get("model", "open-world-agents/Generalist-IDM-1B")),
         "manifest_path": str(manifest_path),
+        "active_manifest_path": str(active_manifest_path),
+        "chunk_manifest_output": str(_path(root_path, config["chunk_manifest_output"])) if config.get("chunk_manifest_output") else None,
         "cuda_devices": selected_cuda_devices,
         "workers": selected_workers,
         "max_recordings": selected_max_recordings,

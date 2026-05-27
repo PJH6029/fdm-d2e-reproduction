@@ -23,10 +23,16 @@ def main() -> int:
     parser.add_argument("--recording-key", action="append", default=[])
     parser.add_argument("--cuda-devices")
     parser.add_argument("--workers", type=int)
+    parser.add_argument("--chunk-seconds", type=float)
+    parser.add_argument("--chunk-context-seconds", type=float)
     parser.add_argument("--no-wandb", action="store_true")
     args = parser.parse_args()
 
     config = load_config(args.config)
+    if args.chunk_seconds is not None:
+        config["chunk_seconds"] = args.chunk_seconds
+    if args.chunk_context_seconds is not None:
+        config["chunk_context_seconds"] = args.chunk_context_seconds
     payload = run_gidm_exact_split_pipeline(
         config,
         root=args.root,
