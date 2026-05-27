@@ -17,6 +17,7 @@ from fdm_d2e.config import load_config
 from fdm_d2e.eval.statistics import cluster_bootstrap_delta, endpoint_value, holm_bonferroni
 from fdm_d2e.io_utils import ensure_dir, read_json, stable_hash_json, write_json, write_jsonl
 from fdm_d2e.schema import validate_named
+from fdm_d2e.tokenization.actions import state_tokens_from_event_tokens
 from fdm_d2e.training.neural_idm import record_features, target_mouse_delta, tokens_from_delta
 from fdm_d2e.training.torch_idm import (
     MOUSE_AXIS_CLASSES,
@@ -249,6 +250,138 @@ def _record_features_with_history(
     if history is None or button_state is None:
         raise ValueError("action-history features require causal history state")
     return values + _history_vector(history, button_state, history_vocab, history_len=history_len)
+
+
+def _supports_closed_loop_state_context(feature_mode: str) -> bool:
+    return "prior_action" in str(feature_mode)
+
+
+def _closed_loop_state_context_enabled(config: dict[str, Any], stats: dict[str, Any]) -> bool:
+    enabled = bool(config.get("closed_loop_state_context", False)) or (
+        str(config.get("state_context_source", "")).replace("-", "_").lower() == "predicted_closed_loop"
+    )
+    if not enabled:
+        return False
+    feature_mode = str(stats.get("feature_mode", config.get("feature_mode", "")))
+    if not _supports_closed_loop_state_context(feature_mode):
+        raise ValueError(
+            "closed_loop_state_context requires an IDM feature_mode with prior_action context; "
+            f"got {feature_mode!r}"
+        )
+    return True
+
+
+def _prior_state_tokens(keys: set[str], buttons: set[str]) -> list[str]:
+    tokens = [f"KEY_DOWN_{key}" for key in sorted(keys)]
+    tokens.extend(f"MOUSE_{button}_DOWN" for button in sorted(buttons))
+    return tokens or ["NOOP"]
+
+
+def _transition_seen(tokens: Iterable[str], *, prefixes: tuple[str, ...], suffixes: tuple[str, ...] = ()) -> bool:
+    for raw_token in tokens:
+        token = str(raw_token)
+        if prefixes and token.startswith(prefixes):
+            return True
+        if suffixes and token.startswith("MOUSE_") and token.endswith(suffixes):
+            return True
+    return False
+
+
+def _age_value(value: int | None) -> int | None:
+    return None if value is None else max(0, int(value))
+
+
+class _ClosedLoopStateContextTracker:
+    """Causal state-context replacement for event-state IDM target inference.
+
+    The event-state materializer adds ``prior_*`` fields before each action bin.
+    On target shards those fields can encode earlier target ground-truth actions.
+    This tracker rebuilds the same fields from already predicted tokens (and,
+    optionally, train-split seed rows) so evaluation does not consume target
+    action labels through feature context.
+    """
+
+    schema = "streaming_idm_predicted_closed_loop_state_context.v1"
+    source = "predicted_closed_loop_before_current_event_bin"
+
+    def __init__(self) -> None:
+        self.key_states: dict[str, set[str]] = {}
+        self.button_states: dict[str, set[str]] = {}
+        self.key_hold_bins: dict[str, dict[str, int]] = {}
+        self.button_hold_bins: dict[str, dict[str, int]] = {}
+        self.key_transition_age: dict[str, int | None] = {}
+        self.button_transition_age: dict[str, int | None] = {}
+        self.previous_event_tokens: dict[str, list[str]] = {}
+        self.seed_rows = 0
+
+    def row_with_prior_context(self, row: dict[str, Any]) -> dict[str, Any]:
+        recording_id = str(row.get("recording_id", ""))
+        keys = self.key_states.setdefault(recording_id, set())
+        buttons = self.button_states.setdefault(recording_id, set())
+        key_durations = self.key_hold_bins.setdefault(recording_id, {})
+        button_durations = self.button_hold_bins.setdefault(recording_id, {})
+        out_row = dict(row)
+        out_row["prior_action_tokens"] = _prior_state_tokens(keys, buttons)
+        out_row["prior_action_source"] = self.source
+        out_row["prior_key_hold_bins"] = {key: int(key_durations.get(key, 0)) for key in sorted(keys)}
+        out_row["prior_button_hold_bins"] = {button: int(button_durations.get(button, 0)) for button in sorted(buttons)}
+        out_row["prior_since_key_transition_bins"] = _age_value(self.key_transition_age.get(recording_id))
+        out_row["prior_since_button_transition_bins"] = _age_value(self.button_transition_age.get(recording_id))
+        out_row["previous_event_tokens"] = self.previous_event_tokens.get(recording_id) or ["NOOP"]
+        out_row["state_context_schema"] = self.schema
+        return out_row
+
+    def observe_tokens(self, row: dict[str, Any], tokens: Iterable[str]) -> None:
+        recording_id = str(row.get("recording_id", ""))
+        old_keys = set(self.key_states.setdefault(recording_id, set()))
+        old_buttons = set(self.button_states.setdefault(recording_id, set()))
+        key_durations = dict(self.key_hold_bins.setdefault(recording_id, {}))
+        button_durations = dict(self.button_hold_bins.setdefault(recording_id, {}))
+        token_list = [str(token) for token in tokens if str(token)]
+        _state_tokens, next_keys, next_buttons = state_tokens_from_event_tokens(
+            token_list,
+            pressed_keys=old_keys,
+            pressed_buttons=old_buttons,
+            mouse_emit_mode="decompose",
+            mouse_max_tokens_per_axis=32,
+        )
+        key_event = _transition_seen(token_list, prefixes=("KEY_PRESS_", "KEY_RELEASE_", "KEY_DOWN_"))
+        button_event = _transition_seen(token_list, prefixes=(), suffixes=("_DOWN", "_UP"))
+        self.key_states[recording_id] = set(next_keys)
+        self.button_states[recording_id] = set(next_buttons)
+        self.key_hold_bins[recording_id] = {
+            key: int(key_durations.get(key, 0)) + 1 if key in old_keys else 1
+            for key in sorted(next_keys)
+        }
+        self.button_hold_bins[recording_id] = {
+            button: int(button_durations.get(button, 0)) + 1 if button in old_buttons else 1
+            for button in sorted(next_buttons)
+        }
+        self.key_transition_age[recording_id] = 0 if key_event else (
+            None if self.key_transition_age.get(recording_id) is None else int(self.key_transition_age[recording_id] or 0) + 1
+        )
+        self.button_transition_age[recording_id] = 0 if button_event else (
+            None
+            if self.button_transition_age.get(recording_id) is None
+            else int(self.button_transition_age[recording_id] or 0) + 1
+        )
+        self.previous_event_tokens[recording_id] = token_list or ["NOOP"]
+
+
+def _seed_closed_loop_state_context_from_records(
+    record_paths: Sequence[Path],
+    *,
+    max_examples: int | None = None,
+) -> _ClosedLoopStateContextTracker:
+    tracker = _ClosedLoopStateContextTracker()
+    seen = 0
+    for row in _iter_records(record_paths):
+        if max_examples is not None and seen >= int(max_examples):
+            break
+        tracker.observe_tokens(row, row.get("ground_truth_tokens", []) or ["NOOP"])
+        seen += 1
+    tracker.seed_rows = seen
+    return tracker
 
 
 def _history_dim(*, history_vocab: list[str], history_len: int) -> int:
@@ -4234,6 +4367,28 @@ def _predict_stream(
                 glob_key="train_records_glob",
             )
             last_mouse_by_recording, last_mouse_by_game, last_mouse_fallback = _seed_streaming_mouse_delta_state(train_paths)
+    closed_loop_state_context = _closed_loop_state_context_enabled(config, stats)
+    closed_loop_tracker: _ClosedLoopStateContextTracker | None = None
+    closed_loop_seed_rows = 0
+    if closed_loop_state_context:
+        seed_from_train = bool(config.get("closed_loop_state_context_seed_from_train", True))
+        if seed_from_train and (
+            config.get("train_records") or config.get("train_record_paths") or config.get("train_records_glob")
+        ):
+            train_paths = _record_paths_from_config(
+                config,
+                primary_key="train_records",
+                paths_key="train_record_paths",
+                glob_key="train_records_glob",
+            )
+            seed_max = config.get("closed_loop_state_context_seed_max_examples")
+            closed_loop_tracker = _seed_closed_loop_state_context_from_records(
+                train_paths,
+                max_examples=None if seed_max is None else int(seed_max),
+            )
+            closed_loop_seed_rows = int(closed_loop_tracker.seed_rows)
+        else:
+            closed_loop_tracker = _ClosedLoopStateContextTracker()
     if resume_predictions:
         pseudo_exists = pseudo_path.exists()
         predictions_exists = predictions_path.exists()
@@ -4256,6 +4411,12 @@ def _predict_stream(
                 )
             resume_existing_rows = prediction_rows
             if resume_existing_rows:
+                if closed_loop_state_context and not bool(config.get("resume_closed_loop_state_context", False)):
+                    raise ValueError(
+                        "closed_loop_state_context requires fresh target inference by default; "
+                        "rerun with resume_predictions=false/--no-resume-predictions or set "
+                        "resume_closed_loop_state_context=true only for a confirmed closed-loop partial output"
+                    )
                 target_iter = _iter_records(target_records)
                 for row_idx, (pseudo_row, pred_row) in enumerate(zip(iter_jsonl(pseudo_path), iter_jsonl(predictions_path)), 1):
                     try:
@@ -4293,6 +4454,8 @@ def _predict_stream(
                     tokens = [str(token) for token in pred_row.get("predicted_tokens", [])]
                     if [str(token) for token in pseudo_row.get("predicted_tokens", [])] != tokens:
                         raise ValueError(f"resume_predictions token mismatch at row {row_idx}")
+                    if closed_loop_tracker is not None:
+                        closed_loop_tracker.observe_tokens(row, tokens)
                     if action_history_len > 0:
                         history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
                         _append_history(history, button_state, tokens, history_len=action_history_len)
@@ -4355,7 +4518,7 @@ def _predict_stream(
     mouse_max_tokens_per_axis = int(config.get("mouse_max_tokens_per_axis", 8))
 
     def prediction_batches() -> Iterable[list[dict[str, Any]]]:
-        if action_history_len <= 0 and not residual_mouse:
+        if not closed_loop_state_context and action_history_len <= 0 and not residual_mouse:
             yield from _iter_batches(
                 target_records,
                 batch_size,
@@ -4370,10 +4533,11 @@ def _predict_stream(
         for row in row_iter:
             if remaining_max_examples is not None and emitted >= remaining_max_examples:
                 break
+            feature_row = closed_loop_tracker.row_with_prior_context(row) if closed_loop_tracker is not None else row
             if action_history_len > 0:
-                history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
+                history, button_state = _ensure_history_state(histories, button_states, str(feature_row.get("recording_id", "")))
                 features = _record_features_with_history(
-                    row,
+                    feature_row,
                     feature_mode=str(stats["feature_mode"]),
                     history_vocab=history_vocab,
                     history_len=action_history_len,
@@ -4381,15 +4545,15 @@ def _predict_stream(
                     button_state=button_state,
                 )
             else:
-                features = _base_record_features(row, feature_mode=str(stats["feature_mode"]))
+                features = _base_record_features(feature_row, feature_mode=str(stats["feature_mode"]))
             mouse_baseline = _mouse_baseline_for_row(
-                row,
+                feature_row,
                 last_by_recording=last_mouse_by_recording,
                 last_by_game=last_mouse_by_game,
                 fallback=last_mouse_fallback,
             )
             features = _features_with_optional_mouse_baseline(
-                row,
+                feature_row,
                 features,
                 residual_mouse=residual_mouse,
                 baseline=mouse_baseline,
@@ -4397,7 +4561,7 @@ def _predict_stream(
             emitted += 1
             yield [
                 _row_with_mouse_baseline(
-                    row,
+                    feature_row,
                     features=features,
                     residual_mouse=residual_mouse,
                     baseline=mouse_baseline,
@@ -4489,6 +4653,8 @@ def _predict_stream(
                         base_dy=float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[1]),
                         residual_mouse=residual_mouse,
                     )
+                if closed_loop_tracker is not None:
+                    closed_loop_tracker.observe_tokens(row, tokens)
                 if action_history_len > 0:
                     history, button_state = _ensure_history_state(histories, button_states, str(row.get("recording_id", "")))
                     _append_history(history, button_state, tokens, history_len=action_history_len)
@@ -4511,6 +4677,8 @@ def _predict_stream(
                     "training_split_hash": str(stats["dataset_fingerprint"]),
                     "input_window": {"frame_ref": row.get("frame", {}).get("path", ""), "frame_index": int(row.get("frame", {}).get("index", 0))},
                 }
+                if closed_loop_state_context:
+                    pseudo["state_context_source"] = _ClosedLoopStateContextTracker.source
                 if validate_pseudolabels:
                     validate_named(pseudo, "idm_pseudolabel.schema.json")
                 pred = {
@@ -4521,6 +4689,8 @@ def _predict_stream(
                     "timestamp_ns": row["timestamp_ns"],
                     "predicted_tokens": tokens,
                 }
+                if closed_loop_state_context:
+                    pred["state_context_source"] = _ClosedLoopStateContextTracker.source
                 pseudo_f.write(json.dumps(pseudo, ensure_ascii=False, sort_keys=True) + "\n")
                 pred_f.write(json.dumps(pred, ensure_ascii=False, sort_keys=True) + "\n")
                 _observe_prediction_metrics(
@@ -4582,6 +4752,14 @@ def _predict_stream(
             "existing_rows": resume_existing_rows,
             "write_mode": write_mode,
             "pseudolabel_validation": validate_pseudolabels,
+            "closed_loop_state_context": {
+                "enabled": closed_loop_state_context,
+                "source": _ClosedLoopStateContextTracker.source if closed_loop_state_context else None,
+                "seed_from_train": bool(config.get("closed_loop_state_context_seed_from_train", True))
+                if closed_loop_state_context
+                else False,
+                "seed_rows": closed_loop_seed_rows,
+            },
         },
         "metrics_state": _metric_state_map(metrics_by_model),
         "group_metrics_state": _nested_metric_state_map(group_metrics_by_model),
@@ -4657,6 +4835,11 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
         "mouse_emit_mode",
         "mouse_max_tokens_per_axis",
         "resume_predictions",
+        "closed_loop_state_context",
+        "state_context_source",
+        "closed_loop_state_context_seed_from_train",
+        "closed_loop_state_context_seed_max_examples",
+        "resume_closed_loop_state_context",
         "force_cpu",
         "train_records",
         "train_record_paths",
@@ -4667,6 +4850,10 @@ def predict_streaming_idm_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     ):
         if key in config:
             prediction_config[key] = config[key]
+    if parallel_prediction and _closed_loop_state_context_enabled(prediction_config, dict(checkpoint.get("stats", {}))):
+        raise ValueError(
+            "closed_loop_state_context target inference is sequential and currently requires prediction_workers=1"
+        )
     if parallel_prediction:
         if action_history_len > 0:
             train_paths = _record_paths_from_config(
@@ -4954,11 +5141,20 @@ def _predict_streaming_idm_checkpoint_parallel(
         "mouse_target_mode",
         "mouse_emit_mode",
         "mouse_max_tokens_per_axis",
+        "closed_loop_state_context",
+        "state_context_source",
+        "closed_loop_state_context_seed_from_train",
+        "closed_loop_state_context_seed_max_examples",
+        "resume_closed_loop_state_context",
         "force_cpu",
         "validate_pseudolabels",
     ):
         if key in config:
             prediction_config[key] = config[key]
+    if _closed_loop_state_context_enabled(prediction_config, dict(checkpoint.get("stats", {}))):
+        raise ValueError(
+            "closed_loop_state_context target inference is sequential and currently requires prediction_workers=1"
+        )
     prediction_config["resume_predictions"] = bool(
         config.get("resume_prediction_parts", config.get("resume_predictions", True))
     )
@@ -5127,9 +5323,15 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         "mouse_output_gain_x",
         "mouse_output_gain_y",
         "mouse_output_gain_mode",
+        "mouse_target_mode",
         "mouse_emit_mode",
         "mouse_max_tokens_per_axis",
         "validate_pseudolabels",
+        "closed_loop_state_context",
+        "state_context_source",
+        "closed_loop_state_context_seed_from_train",
+        "closed_loop_state_context_seed_max_examples",
+        "resume_closed_loop_state_context",
         "action_history_parallel_by_path",
         "action_history_parallel_prediction_by_path",
         "action_history_seed_state_mode",
@@ -5140,6 +5342,10 @@ def recover_streaming_idm_outputs_from_checkpoint(config: dict[str, Any]) -> dic
         elif key in checkpoint_config:
             prediction_config[key] = checkpoint_config[key]
     prediction_workers = int(config.get("prediction_workers", 1))
+    if prediction_workers > 1 and _closed_loop_state_context_enabled(prediction_config, dict(checkpoint.get("stats", {}))):
+        raise ValueError(
+            "closed_loop_state_context target inference is sequential and currently requires prediction_workers=1"
+        )
     if prediction_workers > 1:
         action_history_len = int(
             checkpoint.get("stats", {}).get("action_history_len", checkpoint_config.get("action_history_len", 0)) or 0

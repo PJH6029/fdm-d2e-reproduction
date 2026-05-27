@@ -1,0 +1,17 @@
+{
+  "schema": "streaming_idm_checkpoint_recovery_config.v1",
+  "model_name": "streaming_idm_d2e_full_event_state_duration_context_closed_loop_prefix320k",
+  "checkpoint_path": "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint.pt",
+  "output_dir": "outputs/idm_streaming_d2e_full_event_state_duration_context_closed_loop_prefix320k",
+  "prediction_summary_out": "artifacts/idm/g005_idm_event_state_duration_context_closed_loop_prefix320k_prediction_summary.json",
+  "summary_out": "artifacts/idm/g005_idm_event_state_duration_context_closed_loop_prefix320k_recovery_summary.json",
+  "max_target_examples": 320000,
+  "eval_batch_size": 1,
+  "prediction_workers": 1,
+  "resume_predictions": false,
+  "validate_pseudolabels": false,
+  "closed_loop_state_context": true,
+  "state_context_source": "predicted_closed_loop",
+  "closed_loop_state_context_seed_from_train": true,
+  "claim_boundary": "Leakage audit only: rerun an existing full-corpus event-state IDM checkpoint with target prior-action/state fields replaced by predicted closed-loop state context. Prefix metrics are not G005 completion evidence."
+}
