@@ -156,6 +156,7 @@ def test_g005_raw112_offset2_candidate_uses_nonleaky_nep100_video_paths() -> Non
     precompute = _script("scripts/run_g005_idm_video_pair_raw112_offset2_precompute.sh")
     training = _script("scripts/run_g005_idm_video_pair_raw112_offset2_4xh200.sh")
     recovery = _script("scripts/recover_g005_idm_video_pair_raw112_offset2_from_checkpoint.sh")
+    prefix_probe = _script("scripts/run_g005_idm_video_pair_raw112_offset2_prefix_probe.sh")
     config = json.loads(
         (ROOT / "configs/model/idm_video_pair_d2e_full_raw112_offset2_keysoftmax_paper_target.yaml").read_text()
     )
@@ -165,6 +166,12 @@ def test_g005_raw112_offset2_candidate_uses_nonleaky_nep100_video_paths() -> Non
     assert "scripts/run_g005_idm_video_stack_luma96_offsets012_precompute.sh" in precompute
     assert "scripts/run_g005_idm_video_pair_raw112_4xh200.sh" in training
     assert "scripts/recover_g005_idm_video_stack_luma96_offsets012_from_checkpoint.sh" in recovery
+    assert "Prefix diagnostic only; not full-corpus G005 completion evidence" in prefix_probe
+    assert 'PREFIX_ROWS="${PREFIX_ROWS:-320000}"' in prefix_probe
+    assert "scripts/run_g005_idm_video_pair_raw112_offset2_precompute.sh" in prefix_probe
+    assert "scripts/run_g005_idm_video_pair_raw112_offset2_4xh200.sh" in prefix_probe
+    assert "scripts/predict_idm_video.py" in prefix_probe
+    assert "scripts/build_g005_idm_paper_metrics.py" in prefix_probe
     assert 'SKIP_PREDICTION="${SKIP_PREDICTION:-1}"' in training
     assert 'BUILD_SPLIT_STATS="${BUILD_SPLIT_STATS:-0}"' in training
     assert 'PREDICTION_WORKERS="${PREDICTION_WORKERS:-4}"' in recovery
