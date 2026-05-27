@@ -339,3 +339,36 @@ candidate should preserve the strong event-context motion signal and add a
 stronger high-recall categorical/action prior or sequence model for key/button
 sets, with prefix acceptance requiring improvement over `event_all` on all major
 endpoints before any 4×H200 full run.
+
+### 2026-05-28 KST — state-delta / repeat-prior diagnostic
+
+Ran CPU-only prefix heuristics on `production-storage-shell-4` using the same
+320k chronological target prefix. These are diagnostic upper-bound/recipe probes,
+not valid completion candidates, because `next_state_delta_*` uses the next row's
+held-state metadata to infer the current key/button transition.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_prefix_context_heuristic_matrix.json` — previous-event
+  and prior-state baseline policies.
+- `artifacts/idm/g005_idm_state_delta_oracle_prefix320k_metrics.json` — noncausal
+  next-state delta oracle.
+- `artifacts/idm/g005_idm_key_repeat_prior_prefix320k_metrics.json` — train-prefix
+  held-key repeat priors layered on the next-state delta and previous-motion signal.
+
+Findings:
+
+- Previous motion alone gives Pearson X/Y `0.7687/0.7425` with near-perfect scale
+  ratio (`1.0002/1.0000`), so the motion gap is now primarily a short autoregressive
+  motion-continuation problem, not a visual-feature problem on this prefix.
+- Next-state delta gives mouse-button `0.9754`, strict button F1 `0.9933`, and
+  no-button FPR `0.0`, beating the paper mouse-button target as an oracle. This
+  means button failures are largely state-transition modeling/decoding failures.
+- The same next-state delta reaches only keyboard `0.4590`; adding a train-prefix
+  held-key repeat prior improves best keyboard to `0.5426`, still below the paper
+  keyboard target `0.73`. Keyboard repeat/timing remains the hard blocker.
+
+Next branch: train or decode a keyboard-repeat specialist over held-state duration,
+previous key repeats, and frame/next-frame context, while reusing previous-motion
+continuation and state-transition button decoding as separate heads. Do not treat
+state-delta oracle metrics as claimable because they use future held-state metadata.
