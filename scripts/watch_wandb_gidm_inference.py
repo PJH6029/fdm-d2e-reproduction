@@ -94,8 +94,8 @@ def _latest_gpu_rows(path: Path) -> list[dict[str, Any]]:
 
 
 def _mcap_status(predicted_dir: Path) -> dict[str, Any]:
-    final_paths = [Path(path) for path in glob.glob(str(predicted_dir / "*.mcap"))]
-    temp_paths = [Path(path) for path in glob.glob(str(predicted_dir / "*.tmp.*"))]
+    final_paths = [Path(path) for path in glob.glob(str(predicted_dir / "**" / "*.mcap"), recursive=True)]
+    temp_paths = [Path(path) for path in glob.glob(str(predicted_dir / "**" / "*.tmp.*"), recursive=True)]
     nonzero_final = [path for path in final_paths if path.exists() and path.stat().st_size > 0]
     zero_final = [path for path in final_paths if path.exists() and path.stat().st_size == 0]
     temp_bytes = sum(path.stat().st_size for path in temp_paths if path.exists())
@@ -108,6 +108,24 @@ def _mcap_status(predicted_dir: Path) -> dict[str, Any]:
         "final_mcap_bytes": final_bytes,
         "temp_output_bytes": temp_bytes,
     }
+
+
+def _planned_prediction_outputs(manifest: dict[str, Any]) -> dict[str, int | bool | None]:
+    rows = manifest.get("recordings", [])
+    if not isinstance(rows, list):
+        return {"planned_recordings": None, "planned_outputs": None, "chunked": False}
+    planned_outputs = 0
+    chunked = False
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        paths = row.get("prediction_mcap_paths")
+        if isinstance(paths, list) and paths:
+            planned_outputs += len(paths)
+            chunked = True
+        elif row.get("prediction_mcap_path"):
+            planned_outputs += 1
+    return {"planned_recordings": len(rows), "planned_outputs": planned_outputs, "chunked": chunked}
 
 
 def _process_running(pattern: str) -> bool | None:
@@ -154,7 +172,10 @@ def main() -> int:
         raise SystemExit("wandb is not installed; run with `uv run --with wandb ...`") from exc
 
     manifest = _read_json(Path(args.manifest)) or {}
-    planned_recordings = len(manifest.get("recordings", [])) if isinstance(manifest.get("recordings"), list) else None
+    planned = _planned_prediction_outputs(manifest)
+    planned_recordings = planned["planned_recordings"]
+    planned_outputs = planned["planned_outputs"]
+    manifest_chunked = planned["chunked"]
     target_rows = manifest.get("target_rows")
     wandb_dir = Path(os.environ.setdefault("WANDB_DIR", "outputs/wandb"))
     wandb_dir.mkdir(parents=True, exist_ok=True)
@@ -172,6 +193,8 @@ def main() -> int:
             "predicted_dir": args.predicted_dir,
             "manifest": args.manifest,
             "planned_recordings": planned_recordings,
+            "planned_outputs": planned_outputs,
+            "manifest_chunked": manifest_chunked,
             "target_rows": target_rows,
             "env_keys_loaded": sorted(set(env_keys)),
             "claim_boundary": "Sidecar logs released G-IDM inference progress only; it does not run inference or mutate outputs.",
@@ -189,8 +212,8 @@ def main() -> int:
             wrapper_summary = _read_json(Path(args.wrapper_summary))
             process_running = _process_running(args.process_pattern)
             progress = None
-            if planned_recordings:
-                progress = mcap["final_mcap_count"] / float(planned_recordings)
+            if planned_outputs:
+                progress = mcap["final_mcap_count"] / float(planned_outputs)
             metrics: dict[str, Any] = {
                 "gidm/final_mcap_count": mcap["final_mcap_count"],
                 "gidm/zero_final_mcap_count": mcap["zero_final_mcap_count"],
@@ -198,6 +221,8 @@ def main() -> int:
                 "gidm/final_mcap_bytes": mcap["final_mcap_bytes"],
                 "gidm/temp_output_bytes": mcap["temp_output_bytes"],
                 "gidm/planned_recordings": planned_recordings,
+                "gidm/planned_outputs": planned_outputs,
+                "gidm/manifest_chunked": manifest_chunked,
                 "gidm/progress_fraction": progress,
                 "gidm/process_running": process_running,
                 "sidecar/loop": loop_index,
@@ -228,6 +253,8 @@ def main() -> int:
                 "loop_index": loop_index,
                 "mcap": mcap,
                 "planned_recordings": planned_recordings,
+                "planned_outputs": planned_outputs,
+                "manifest_chunked": manifest_chunked,
                 "target_rows": target_rows,
                 "process_running": process_running,
                 "pipeline_summary_status": pipeline_status,
