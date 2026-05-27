@@ -1,0 +1,21 @@
+{
+  "claim_boundary": "Prefix paper-compatible metrics for closed-loop/dropout diagnostic only.",
+  "empty_bins_as_correct": false,
+  "max_rows": 320000,
+  "model_name": "streaming_idm_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k",
+  "output_path": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_paper_metrics.json",
+  "prediction_paths": [
+    "outputs/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k/predictions.jsonl"
+  ],
+  "progress_output_path": "artifacts/idm/g005_idm_event_state_duration_context_dropout035_closed_loop_prefix320k_paper_metrics_progress.json",
+  "progress_rows": 100000,
+  "schema": "paper_idm_metrics_config.v1",
+  "split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
+  "target_paths": [
+    "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl"
+  ]
+}

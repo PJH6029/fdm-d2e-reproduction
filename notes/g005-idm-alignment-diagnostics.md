@@ -154,3 +154,15 @@ Top current full-corpus diagnostic candidates:
 - `video_stack_luma96_full` and raw112 variants remain non-leaky visual baselines with bounded FPR but near-zero paper keyboard/button and poor mouse motion; do not promote alone.
 
 Recommended branch: repair the event-state-duration context candidate into a non-leaky closed-loop predicted-context model, then combine it with endpoint-specialist heads/calibration for keyboard and mouse-button. Use prefix/small-shard gates before spending another full 4xH200 run. The released G-IDM timed pilot is now infrastructure for future exact-split baseline/teacher diagnostics, not a G005 success path by itself.
+
+### Planned closed-loop/dropout repair branch
+
+Implemented a non-GPU prep branch for the next G005 prefix gate:
+
+- `scripts/materialize_state_context_dropout_train.py` creates deterministic train-core shards where a configurable fraction of prior state/action context is replaced by `NOOP`/empty duration fields. This targets the train/eval distribution shift that made the event-state-duration context checkpoint collapse under closed-loop prediction.
+- `configs/model/idm_streaming_d2e_full_event_state_duration_context_dropout035_closed_loop_prefix320k.yaml` trains a 320k-row prefix candidate on 35% context-dropout train shards and evaluates target rows with `closed_loop_state_context=true`, `seed_from_train=false`, `seed_from_target_prior=true`, and `prediction_workers=1`.
+- `scripts/run_g005_idm_event_state_duration_context_dropout035_closed_loop_prefix.sh` materializes bounded dropout shards, trains the prefix candidate, and builds paper-compatible prefix metrics.
+
+Verification: `uv run pytest -q tests/test_state_context_dropout_materializer.py tests/test_streaming_idm_closed_loop_state_context.py tests/test_training_run_scripts.py` => 22 passed.
+
+This branch is a prefix gate only. Promote to a full 4xH200 run only if it materially improves closed-loop keyboard/button/mouse metrics over `g005_idm_event_state_duration_context_closed_loop_prefix320k` while preserving no-button FPR.
