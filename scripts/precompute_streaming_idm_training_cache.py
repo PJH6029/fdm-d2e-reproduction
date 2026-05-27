@@ -50,6 +50,24 @@ def main() -> int:
 
     out_dir = Path(config.get("output_dir", "outputs/idm_streaming_full"))
     stats_path = Path(args.stats_path) if args.stats_path else out_dir / "streaming_stats.json"
+    progress_out = Path(args.progress_output) if args.progress_output else None
+
+    def write_progress(stage: str, **extra: object) -> None:
+        if not progress_out:
+            return
+        write_json(
+            progress_out,
+            {
+                "schema": "streaming_idm_training_cache_precompute_progress.v1",
+                "status": "running",
+                "stage": stage,
+                "config": str(config_path),
+                "stats_path": str(stats_path),
+                "cache_dir": str(config["training_cache_dir"]),
+                **extra,
+            },
+        )
+
     if args.force_rescan_stats and stats_path.exists():
         stats_path.unlink()
     if not stats_path.exists() and args.stats_seed_path:
@@ -67,6 +85,12 @@ def main() -> int:
     if not stats_path.exists():
         started_stats = time.time()
         stats_path.parent.mkdir(parents=True, exist_ok=True)
+        write_progress(
+            "stats_scan",
+            record_paths=len(record_paths),
+            workers=int(config.get("precompute_num_workers", config.get("stats_num_workers", 1))),
+            started_at_unix=started_stats,
+        )
         stats = scan_streaming_idm_stats(
             record_paths if len(record_paths) > 1 else record_paths[0],
             feature_mode=str(config.get("feature_mode", "summary_compact_grid8_shift_surface_time")),
@@ -83,21 +107,13 @@ def main() -> int:
     category_vocab = _category_vocab_for_heads(stats, config)
     mouse_axis_classes = [str(value) for value in config.get("mouse_axis_classes", MOUSE_AXIS_CLASSES)]
     started = time.time()
-    progress_out = Path(args.progress_output) if args.progress_output else None
-    if progress_out:
-        write_json(
-            progress_out,
-            {
-                "schema": "streaming_idm_training_cache_precompute_progress.v1",
-                "status": "running",
-                "config": str(config_path),
-                "stats_path": str(stats_path),
-                "cache_dir": str(config["training_cache_dir"]),
-                "record_paths": len(record_paths),
-                "workers": int(config.get("training_cache_num_workers", 1)),
-                "started_at_unix": started,
-            },
-        )
+    write_progress(
+        "validate_cache" if args.validate_only else "cache_build",
+        record_paths=len(record_paths),
+        workers=int(config.get("training_cache_num_workers", 1)),
+        started_at_unix=started,
+        stats_num_examples=int(stats.get("num_examples", 0) or 0),
+    )
     if args.validate_only:
         manifests = _load_training_cache_manifests(
             record_paths,
@@ -134,7 +150,7 @@ def main() -> int:
     }
     write_json(args.output, payload)
     if progress_out:
-        write_json(progress_out, {**payload, "schema": "streaming_idm_training_cache_precompute_progress.v1"})
+        write_json(progress_out, {**payload, "schema": "streaming_idm_training_cache_precompute_progress.v1", "stage": "complete"})
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 

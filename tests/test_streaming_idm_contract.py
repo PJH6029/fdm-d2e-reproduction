@@ -562,6 +562,7 @@ def test_streaming_idm_cache_precompute_validate_only_preserves_action_history(t
         )
     )
     summary_path = tmp_path / "precompute_summary.json"
+    progress_path = tmp_path / "precompute_progress.json"
     validation_path = tmp_path / "validation.json"
 
     build = subprocess.run(
@@ -572,6 +573,8 @@ def test_streaming_idm_cache_precompute_validate_only_preserves_action_history(t
             str(config_path),
             "--output",
             str(summary_path),
+            "--progress-output",
+            str(progress_path),
         ],
         text=True,
         capture_output=True,
@@ -595,9 +598,12 @@ def test_streaming_idm_cache_precompute_validate_only_preserves_action_history(t
 
     assert validate.returncode == 0, validate.stderr
     stats = json.loads((out_dir / "streaming_stats.json").read_text())
+    progress = json.loads(progress_path.read_text())
     validation = json.loads(validation_path.read_text())
     assert stats["action_history_len"] == 2
     assert stats["action_history_parallel_by_path"] is True
+    assert progress["stage"] == "complete"
+    assert progress["rows"] == len(rows_a) + len(rows_b)
     assert validation["validate_only"] is True
     assert validation["rows"] == len(rows_a) + len(rows_b)
     assert validation["manifest_count"] == 2
