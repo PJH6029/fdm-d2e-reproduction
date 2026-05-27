@@ -296,6 +296,22 @@ def test_g005_event_state_duration_luma_window5_combines_nep_window_and_state_co
     assert split["ground_truth_glob"] == "outputs/data/d2e_event_state_duration_luma_window5_shards_accel64/shard_*/target_all_eval.jsonl"
 
 
+
+def test_g005_chrono_closed_loop_prefix_materializes_before_prediction() -> None:
+    text = _script("scripts/run_g005_idm_event_state_duration_context_chrono_closed_loop_prefix.sh")
+    config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_event_state_duration_context_chrono_closed_loop_prefix320k_predict.yaml").read_text())
+    paper = json.loads((ROOT / "configs/eval/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_paper_metrics.yaml").read_text())
+
+    materialize_idx = text.index("scripts/materialize_chronological_prefix.py")
+    predict_idx = text.index("scripts/predict_idm_streaming.py")
+    metrics_idx = text.index("scripts/build_g005_idm_paper_metrics.py")
+    assert materialize_idx < predict_idx < metrics_idx
+    assert "d2e_event_state_duration_context_chrono_prefix320k" in text
+    assert config["closed_loop_state_context"] is True
+    assert config["closed_loop_state_context_seed_from_train"] is False
+    assert config["records_path"] == "outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl"
+    assert paper["paper_metrics"]["target_path"] == "outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl"
+
 def test_g004_wrapper_exposes_parent_pid_for_postrun_watcher() -> None:
     text = _script("scripts/run_g004_d2e_full_fdm_4xh200.sh")
     assert 'PID_FILE="${PID_FILE:-outputs/cluster/g004_d2e_full_fdm_4xh200.pid}"' in text

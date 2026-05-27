@@ -1,0 +1,19 @@
+{
+  "schema": "streaming_idm_predict_config.v1",
+  "model_name": "streaming_idm_d2e_full_event_state_duration_context_chrono_closed_loop_prefix320k",
+  "checkpoint_path": "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint.pt",
+  "checkpoint_metadata_path": "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint_metadata.json",
+  "records_path": "outputs/data/d2e_event_state_duration_context_chrono_prefix320k/target_all_eval.jsonl",
+  "output_dir": "outputs/idm_streaming_d2e_full_event_state_duration_context_chrono_closed_loop_prefix320k",
+  "summary_out": "artifacts/idm/g005_idm_event_state_duration_context_chrono_closed_loop_prefix320k_prediction_summary.json",
+  "max_target_examples": 320000,
+  "prediction_workers": 1,
+  "prediction_cuda_devices": [0],
+  "eval_batch_size": 4096,
+  "resume_predictions": false,
+  "closed_loop_state_context": true,
+  "state_context_source": "predicted_closed_loop",
+  "closed_loop_state_context_seed_from_train": false,
+  "closed_loop_state_context_seed_from_target_prior": true,
+  "claim_boundary": "Prediction-only chronological-order closed-loop prefix retest of the full event-state-duration checkpoint. Not G005 completion evidence."
+}
