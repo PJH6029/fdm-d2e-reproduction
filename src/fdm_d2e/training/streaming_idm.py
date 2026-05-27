@@ -3449,6 +3449,7 @@ def _calibrate_streaming_mouse_output_gain(
     residual_mouse = _residual_mouse_from_mode(mouse_target_mode)
     action_history_len = int(stats.get("action_history_len", _action_history_len_from_config(config)))
     history_vocab = [str(token) for token in stats.get("action_history_vocab", category_vocab)]
+    mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
     model.eval()
     with torch.no_grad():
         for rows in _iter_causal_feature_batches(
@@ -3470,7 +3471,40 @@ def _calibrate_streaming_mouse_output_gain(
                 mean_t=mean_t,
                 std_t=std_t,
             )
-            outputs = model(x).detach().cpu().tolist()
+            output_tensor = model(x).detach()
+            if mouse_head_mode == "regression":
+                predicted_mouse = output_tensor[:, :2]
+                if residual_mouse:
+                    baselines = torch.tensor(
+                        [
+                            [
+                                float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[0]),
+                                float((row.get("__streaming_mouse_baseline") or [0.0, 0.0])[1]),
+                            ]
+                            for row in rows
+                        ],
+                        dtype=torch.float32,
+                        device=predicted_mouse.device,
+                    )
+                    predicted_mouse = predicted_mouse + baselines
+                targets = torch.tensor(
+                    [target_mouse_delta(row, mode=_base_mouse_target_mode(mouse_target_mode)) for row in rows],
+                    dtype=torch.float32,
+                    device=predicted_mouse.device,
+                )
+                batch_predicted_abs_x = float(predicted_mouse[:, 0].abs().sum().cpu())
+                batch_predicted_abs_y = float(predicted_mouse[:, 1].abs().sum().cpu())
+                batch_target_abs_x = float(targets[:, 0].abs().sum().cpu())
+                batch_target_abs_y = float(targets[:, 1].abs().sum().cpu())
+                predicted_abs_x_sum += batch_predicted_abs_x
+                predicted_abs_y_sum += batch_predicted_abs_y
+                target_abs_x_sum += batch_target_abs_x
+                target_abs_y_sum += batch_target_abs_y
+                predicted_abs_sum += batch_predicted_abs_x + batch_predicted_abs_y
+                target_abs_sum += batch_target_abs_x + batch_target_abs_y
+                value_count += int(predicted_mouse.numel())
+                continue
+            outputs = output_tensor.cpu().tolist()
             for row, output in zip(rows, outputs):
                 dx, dy, _tokens = _prediction_from_output(
                     output,
@@ -3486,7 +3520,7 @@ def _calibrate_streaming_mouse_output_gain(
                     button_head_mode=str(config.get("button_head_mode", "multilabel")),
                     button_classes=_button_classes_for_heads({"button_class_counts": {}}, config),
                     button_softmax_threshold=float(config.get("button_softmax_threshold", 0.5)),
-                    mouse_head_mode=str(config.get("mouse_head_mode", "axis_softmax")),
+                    mouse_head_mode=mouse_head_mode,
                     mouse_axis_classes=mouse_axis_classes,
                     mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
                     mouse_axis_temperature=float(config.get("mouse_axis_temperature", 1.0)),
@@ -3766,7 +3800,24 @@ def _calibrate_streaming_mouse_output_gain_from_cache(
             shard_by_path=False,
             shard_assignment=str(config.get("training_cache_shard_assignment", "greedy_rows")),
         ):
-            outputs = model(x).detach().cpu().tolist()
+            output_tensor = model(x).detach()
+            mouse_head_mode = str(config.get("mouse_head_mode", "axis_softmax"))
+            if mouse_head_mode == "regression":
+                predicted_mouse = output_tensor[:, :2]
+                targets_tensor = mouse_y.detach()
+                batch_predicted_abs_x = float(predicted_mouse[:, 0].abs().sum().cpu())
+                batch_predicted_abs_y = float(predicted_mouse[:, 1].abs().sum().cpu())
+                batch_target_abs_x = float(targets_tensor[:, 0].abs().sum().cpu())
+                batch_target_abs_y = float(targets_tensor[:, 1].abs().sum().cpu())
+                predicted_abs_x_sum += batch_predicted_abs_x
+                predicted_abs_y_sum += batch_predicted_abs_y
+                target_abs_x_sum += batch_target_abs_x
+                target_abs_y_sum += batch_target_abs_y
+                predicted_abs_sum += batch_predicted_abs_x + batch_predicted_abs_y
+                target_abs_sum += batch_target_abs_x + batch_target_abs_y
+                value_count += int(predicted_mouse.numel())
+                continue
+            outputs = output_tensor.cpu().tolist()
             targets = mouse_y.detach().cpu().tolist()
             for target, output in zip(targets, outputs):
                 dx, dy, _tokens = _prediction_from_output(
@@ -3783,7 +3834,7 @@ def _calibrate_streaming_mouse_output_gain_from_cache(
                     button_head_mode=str(config.get("button_head_mode", "multilabel")),
                     button_classes=_button_classes_for_heads({"button_class_counts": {}}, config),
                     button_softmax_threshold=float(config.get("button_softmax_threshold", 0.5)),
-                    mouse_head_mode=str(config.get("mouse_head_mode", "axis_softmax")),
+                    mouse_head_mode=mouse_head_mode,
                     mouse_axis_classes=mouse_axis_classes,
                     mouse_axis_decode_mode=str(config.get("mouse_axis_decode_mode", "expected")),
                     mouse_axis_temperature=float(config.get("mouse_axis_temperature", 1.0)),

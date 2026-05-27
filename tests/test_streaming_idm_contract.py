@@ -305,7 +305,7 @@ def test_streaming_idm_prediction_uses_residual_mouse_baseline_with_axis_head():
     tokens = _predicted_tokens_from_output(
         [0.0, 0.0, 0.1, 0.2, 5.0, 5.0, 0.2, 0.1],
         config={
-            "mouse_head_mode": "axis_softmax",
+            "mouse_head_mode": "regression",
             "mouse_axis_decode_mode": "argmax",
             "mouse_target_mode": "residual_last_seen",
         },
@@ -949,6 +949,8 @@ def test_streaming_idm_softmax_exactset_heads_roundtrip_cache_and_prediction(tmp
     assert "button" in metadata["calibration"]["softmax"]["heads"]
     assert isinstance(metadata["calibration"]["keyboard_softmax_threshold"], float)
     assert isinstance(metadata["calibration"]["button_softmax_threshold"], float)
+    assert metadata["calibration"]["mouse_output_gain_info"]["source"] == "training_cache"
+    assert metadata["calibration"]["mouse_output_gain_info"]["value_count"] > 0
     assert ("KEY_PRESS_87",) in {tuple(row) for row in metadata["keyboard_classes"]}
     assert ("MOUSE_LEFT_DOWN",) in {tuple(row) for row in metadata["button_classes"]}
     assert "KEY_PRESS_87" not in metadata["categorical_vocab"]
