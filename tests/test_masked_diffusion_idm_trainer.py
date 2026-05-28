@@ -28,6 +28,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _candidate_token_prior_weights,
     _temporal_button_class_targets,
     _temporal_center_candidates,
+    _temporal_family_token_presence_targets,
     _target_slots,
     _token_presence_targets,
     _tokens_from_family_budget_candidates,
@@ -513,6 +514,58 @@ def test_temporal_button_class_biases_mouse_button_candidate_identity():
     assert candidates[0][0]["button_class_score"] == pytest.approx(0.90)
 
 
+def test_temporal_family_token_presence_targets_are_family_scoped_multihot():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = [
+        "<FDM1_ACTION_PAD>",
+        "<FDM1_ACTION_MASK>",
+        "NOOP",
+        "KEY_PRESS_W",
+        "KEY_RELEASE_W",
+        "MOUSE_LEFT_DOWN",
+    ]
+    ids = torch.tensor([[[3, 4, 2], [5, 0, 2], [3, 5, 0]]], dtype=torch.long)
+
+    key_targets = _temporal_family_token_presence_targets(torch, ids, vocab, ["KEY_PRESS_W", "KEY_RELEASE_W"])
+    button_targets = _temporal_family_token_presence_targets(torch, ids, vocab, ["MOUSE_LEFT_DOWN"])
+
+    assert key_targets.tolist() == [[[1.0, 1.0], [0.0, 0.0], [1.0, 0.0]]]
+    assert button_targets.tolist() == [[[0.0], [1.0], [1.0]]]
+
+
+def test_temporal_family_token_presence_biases_key_and_button_candidate_identity():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "KEY_PRESS_A", "KEY_PRESS_D", "MOUSE_LEFT_DOWN"]
+    probabilities = torch.zeros((1, 1, len(vocab)), dtype=torch.float32)
+    probabilities[:, :, 3] = 0.20
+    probabilities[:, :, 4] = 0.45
+    probabilities[:, :, 5] = 0.10
+
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={
+            "non_noop_budget_candidates_per_row": 4,
+            "key_token_presence_candidate_score_blend": 0.9,
+            "button_token_presence_candidate_score_blend": 0.9,
+        },
+        event_probabilities={
+            "key_token_presence": torch.tensor([[0.95, 0.05]], dtype=torch.float32),
+            "button_token_presence": torch.tensor([[0.80]], dtype=torch.float32),
+        },
+    )
+
+    assert candidates[0][0]["token"] == "KEY_PRESS_A"
+    assert candidates[0][0]["key_presence_score"] == pytest.approx(0.95)
+    assert any(row["token"] == "MOUSE_LEFT_DOWN" and row["button_presence_score"] == pytest.approx(0.80) for row in candidates[0])
+
+
 def test_candidate_family_diagnostics_reports_exact_coverage_and_ranks():
     rows = [
         {
@@ -964,6 +1017,16 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "button_class_no_button_weight": 0.1,
             "button_class_button_weight": 4.0,
             "button_class_candidate_score_blend": 0.4,
+            "temporal_key_token_presence_auxiliary": True,
+            "key_token_presence_aux_weight": 0.2,
+            "key_token_presence_pos_weight": 3.0,
+            "key_token_presence_negative_weight": 0.1,
+            "key_token_presence_candidate_score_blend": 0.35,
+            "temporal_button_token_presence_auxiliary": True,
+            "button_token_presence_aux_weight": 0.25,
+            "button_token_presence_pos_weight": 5.0,
+            "button_token_presence_negative_weight": 0.1,
+            "button_token_presence_candidate_score_blend": 0.45,
             "retrieval_action_prior_enabled": True,
             "retrieval_action_prior_top_k": 2,
             "retrieval_action_prior_temperature": 0.1,
@@ -1005,6 +1068,12 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["loss_weights"]["temporal_button_class_auxiliary"] is True
     assert summary["loss_weights"]["button_class_aux_weight"] == 0.3
     assert summary["loss_weights"]["button_class_candidate_score_blend"] == 0.4
+    assert summary["loss_weights"]["temporal_key_token_presence_auxiliary"] is True
+    assert summary["loss_weights"]["key_token_presence_aux_weight"] == 0.2
+    assert summary["loss_weights"]["key_token_presence_candidate_score_blend"] == 0.35
+    assert summary["loss_weights"]["temporal_button_token_presence_auxiliary"] is True
+    assert summary["loss_weights"]["button_token_presence_aux_weight"] == 0.25
+    assert summary["loss_weights"]["button_token_presence_candidate_score_blend"] == 0.45
     assert summary["loss_weights"]["retrieval_action_prior_blend"] == 0.2
     assert summary["loss_weights"]["candidate_token_prior_correction"] is True
     assert summary["candidate_token_prior"]["status"] == "pass"
@@ -1012,6 +1081,7 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["retrieval_action_prior"]["rows"] == 8
     assert any("key_event_loss" in row and "button_event_loss" in row for row in summary["history"])
     assert any("button_class_loss" in row for row in summary["history"])
+    assert any("key_token_presence_loss" in row and "button_token_presence_loss" in row for row in summary["history"])
     assert summary["non_noop_budget"]["status"] in {"pass", "skipped"}
     assert "temporal action-token sequences" in summary["recipe_alignment"]
     assert Path(summary["checkpoint_path"]).exists()
