@@ -392,8 +392,9 @@ def train_joint_key_state_table(
     *,
     train_paths: Sequence[str | Path] | str | Path,
     max_train_rows: int | None = 320_000,
+    context_names: Sequence[str] = _CONTEXT_NAMES,
 ) -> JointKeyStateTable:
-    model = JointKeyStateTable()
+    model = JointKeyStateTable(context_names=context_names)
     for row in _iter_rows(train_paths, max_rows=max_train_rows):
         model.observe(row)
     return model
@@ -414,10 +415,11 @@ def _build_policy_specs(
     *,
     thresholds: Sequence[float],
     min_supports: Sequence[int],
+    lookup_names: Sequence[str] | None = None,
 ) -> list[PolicySpec]:
     specs: list[PolicySpec] = [("base_all", "base", "", "", None, None)]
-    lookup_names = list(_CONTEXT_NAMES) + [f"chain:{name}" for name in _CONTEXT_CHAINS]
-    for lookup_name in lookup_names:
+    selected_lookup_names = list(lookup_names) if lookup_names is not None else list(_CONTEXT_NAMES) + [f"chain:{name}" for name in _CONTEXT_CHAINS]
+    for lookup_name in selected_lookup_names:
         for source in ("top", "nonempty"):
             for min_support in min_supports:
                 for threshold in thresholds:
@@ -470,10 +472,21 @@ def build_joint_key_state_diagnostic(
     max_target_rows: int | None = 50_000,
     thresholds: Sequence[float] = _DEFAULT_THRESHOLDS,
     min_supports: Sequence[int] = _DEFAULT_MIN_SUPPORTS,
+    lookup_names: Sequence[str] | None = None,
     split_tags: Sequence[str] = ("temporal", "heldout_recording", "heldout_game"),
 ) -> dict[str, Any]:
-    model = train_joint_key_state_table(train_paths=train_paths, max_train_rows=max_train_rows)
-    policies = _build_policy_specs(thresholds=thresholds, min_supports=min_supports)
+    selected_lookup_names = list(lookup_names) if lookup_names is not None else list(_CONTEXT_NAMES) + [f"chain:{name}" for name in _CONTEXT_CHAINS]
+    required_contexts: set[str] = set()
+    for lookup_name in selected_lookup_names:
+        if lookup_name.startswith("chain:"):
+            required_contexts.update(_CONTEXT_CHAINS[lookup_name.split(":", 1)[1]])
+        else:
+            if lookup_name not in _CONTEXT_NAMES:
+                raise KeyError(f"unknown joint-key lookup: {lookup_name}")
+            required_contexts.add(lookup_name)
+    model_contexts = tuple(name for name in _CONTEXT_NAMES if name in required_contexts)
+    model = train_joint_key_state_table(train_paths=train_paths, max_train_rows=max_train_rows, context_names=model_contexts)
+    policies = _build_policy_specs(thresholds=thresholds, min_supports=min_supports, lookup_names=selected_lookup_names)
     accs = {name: _new_accs(split_tags) for name, _mode, _lookup, _source, _th, _support in policies}
     usage: dict[str, dict[str, int]] = {name: {"applied": 0, "empty_predictions": 0} for name, *_ in policies if name != "base_all"}
     alignment = {"sequence_id_mismatches": 0, "missing_base_prediction_rows": 0, "examples": []}
@@ -559,7 +572,8 @@ def build_joint_key_state_diagnostic(
         "max_target_rows": max_target_rows,
         "thresholds": [float(value) for value in thresholds],
         "min_supports": [int(value) for value in min_supports],
-        "context_names": list(_CONTEXT_NAMES),
+        "lookup_names": selected_lookup_names,
+        "context_names": list(model.context_names),
         "context_chains": {name: list(chain) for name, chain in _CONTEXT_CHAINS.items()},
         "context_count": {name: len(table) for name, table in model.tables.items()},
         "train_nonempty_key_rows": model.nonempty_rows,

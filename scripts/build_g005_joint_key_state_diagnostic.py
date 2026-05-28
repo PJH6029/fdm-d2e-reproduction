@@ -29,6 +29,15 @@ def main() -> int:
     parser.add_argument("--max-target-rows", type=int, default=50_000)
     parser.add_argument("--thresholds", nargs="+", default=["0.02,0.05,0.1,0.2,0.35,0.5,0.65,0.8"])
     parser.add_argument("--min-supports", nargs="+", default=["1,3,5"])
+    parser.add_argument(
+        "--lookup-names",
+        nargs="+",
+        default=[],
+        help=(
+            "Optional lookup/context names to evaluate. Use plain context names "
+            "or chain:<name> (for example chain:specific_to_global)."
+        ),
+    )
     args = parser.parse_args()
     payload = write_joint_key_state_diagnostic(
         train_paths=args.train_records,
@@ -40,6 +49,7 @@ def main() -> int:
         max_target_rows=args.max_target_rows,
         thresholds=_floats(args.thresholds),
         min_supports=_ints(args.min_supports),
+        lookup_names=args.lookup_names or None,
     )
     best = payload["ranked_policies"][0] if payload.get("ranked_policies") else {}
     print(

@@ -101,5 +101,35 @@ def test_joint_key_state_diagnostic_reports_alignment_mismatch(tmp_path: Path) -
     assert payload["alignment"]["sequence_id_mismatches"] == 1
 
 
+def test_joint_key_state_diagnostic_can_limit_lookup_names(tmp_path: Path) -> None:
+    train = tmp_path / "train.jsonl"
+    target = tmp_path / "target.jsonl"
+    base = tmp_path / "base.jsonl"
+    row = {
+        "sequence_id": "train#000000",
+        "recording_id": "game/train",
+        "prior_key_hold_bins": {"65": 2},
+        "ground_truth_tokens": ["KEY_PRESS_65"],
+    }
+    write_jsonl(train, [row])
+    write_jsonl(target, [{**row, "sequence_id": "target#000000", "recording_id": "game/target"}])
+    write_jsonl(base, [{"sequence_id": "target#000000", "predicted_tokens": []}])
+
+    payload = build_joint_key_state_diagnostic(
+        train_paths=[train],
+        target_paths=[target],
+        base_prediction_paths=[base],
+        max_train_rows=1,
+        max_target_rows=1,
+        thresholds=[0.1],
+        min_supports=[1],
+        lookup_names=["held_codes_only", "chain:duration_to_codes"],
+    )
+
+    assert payload["lookup_names"] == ["held_codes_only", "chain:duration_to_codes"]
+    assert "game_held_mod_since_phase" not in payload["context_names"]
+    assert set(payload["context_names"]) >= {"held_codes_only", "held_mod_since_phase"}
+
+
 def test_sequence_bin_index_parses_suffix() -> None:
     assert sequence_bin_index({"sequence_id": "rec#000123"}) == 123
