@@ -100,7 +100,7 @@ def _raw_video_feature_dim(config: dict[str, Any]) -> int:
 
 def _configured_video_feature_dim(config: dict[str, Any]) -> int:
     source = str(config.get("video_feature_source", "json")).lower()
-    if source in {"raw_frames", "raw_video_frames", "frame_provider"}:
+    if source in {"raw_frames", "raw_video_frames", "frame_provider", "video_idm_cache", "raw_video_cache"}:
         return _raw_video_feature_dim(config)
     return int(config.get("video_feature_dim", 64))
 
@@ -179,6 +179,57 @@ def _precompute_features(rows: Sequence[dict[str, Any]], *, config: dict[str, An
     feature_paths = list(config.get("video_feature_paths", ["compact_luma_window", "compact_luma_window_mask", "frame.features", "next_frame_features", "frame_delta_features"]))
     feature_dim = _configured_video_feature_dim(config)
     return [video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim) for row in rows]
+
+
+def _precompute_video_cache_features(
+    record_paths: Sequence[Path],
+    *,
+    split_name: str,
+    config: dict[str, Any],
+    max_rows: int,
+) -> list[Any]:
+    """Load raw frame-token features from existing video-IDM tensor caches.
+
+    This avoids reserving H200s for slow ffmpeg decode when a prior raw-video
+    cache already exists on the PVC.  The action model is still the FDM-1-shaped
+    temporal masked-diffusion IDM; the cache only supplies decoded screen-video
+    tensors in the same normalized flattened format as ``raw_frames``.
+    """
+
+    from fdm_d2e.io_utils import read_json
+    from fdm_d2e.training.video_idm import _load_cache_chunk, load_video_idm_cache_manifests
+
+    if max_rows <= 0:
+        return []
+    torch = require_torch()
+    stats_path = Path(config.get("video_cache_stats_path", config.get("stats_path", "")))
+    if not stats_path.exists():
+        raise FileNotFoundError(f"missing video cache stats_path for temporal IDM: {stats_path}")
+    stats = read_json(stats_path)
+    manifests = load_video_idm_cache_manifests(record_paths, stats=stats, config=config, split_name=split_name)
+    feature_dim = _raw_video_feature_dim(config)
+    dtype_name = str(config.get("raw_video_feature_tensor_dtype", "float16")).lower()
+    tensor_dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
+    features: list[Any] = []
+    remaining = int(max_rows)
+    for manifest in manifests:
+        for chunk in manifest.get("chunks", []):
+            if remaining <= 0:
+                break
+            payload = _load_cache_chunk(torch, chunk["path"])
+            frames = payload["frames"]
+            take = min(int(frames.shape[0]), remaining)
+            flat = frames[:take].reshape(take, -1).to(dtype=torch.float32).div_(255.0)
+            if int(flat.shape[1]) < feature_dim:
+                flat = torch.cat([flat, torch.zeros((take, feature_dim - int(flat.shape[1])), dtype=torch.float32)], dim=1)
+            flat = flat[:, :feature_dim].to(dtype=tensor_dtype).contiguous()
+            features.extend(flat[idx].clone() for idx in range(take))
+            remaining -= take
+        if remaining <= 0:
+            break
+    if len(features) < max_rows:
+        raise ValueError(f"video cache split {split_name} provided {len(features)} rows, expected {max_rows}")
+    return features
 
 
 def _precompute_target_ids(rows: Sequence[dict[str, Any]], *, max_slots: int, token_to_index: dict[str, int], preserve_pad_slots: bool = False) -> list[list[int]]:
@@ -1672,9 +1723,26 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     preserve_pad_slots = bool(config.get("preserve_pad_action_slots", config.get("pad_action_slots_as_pad", False)))
     vocab = _build_vocab(train_rows, max_slots=max_slots, min_count=int(config.get("vocab_min_count", 1)), preserve_pad_slots=preserve_pad_slots)
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
-    fit_features = _precompute_features(fit_rows, config=config)
-    calibration_features = _precompute_features(calibration_rows, config=config) if calibration_rows else []
-    target_features = _precompute_features(target_rows, config=config)
+    feature_source = str(config.get("video_feature_source", "json")).lower()
+    if feature_source in {"video_idm_cache", "raw_video_cache"}:
+        train_features = _precompute_video_cache_features(
+            train_paths,
+            split_name="train",
+            config=config,
+            max_rows=len(train_rows),
+        )
+        fit_features = train_features[: len(fit_rows)]
+        calibration_features = train_features[len(fit_rows) : len(fit_rows) + len(calibration_rows)] if calibration_rows else []
+        target_features = _precompute_video_cache_features(
+            target_paths,
+            split_name="target",
+            config=config,
+            max_rows=len(target_rows),
+        )
+    else:
+        fit_features = _precompute_features(fit_rows, config=config)
+        calibration_features = _precompute_features(calibration_rows, config=config) if calibration_rows else []
+        target_features = _precompute_features(target_rows, config=config)
     fit_target_ids = _precompute_target_ids(fit_rows, max_slots=max_slots, token_to_index=token_to_index, preserve_pad_slots=preserve_pad_slots)
     dataset = _TemporalMaskedDiffusionDataset(features=fit_features, target_ids=fit_target_ids, config={**config, "max_slots": max_slots}, vocab=vocab)
     loader = torch.utils.data.DataLoader(dataset, batch_size=int(config.get("batch_size", 64)), shuffle=True)
@@ -1965,15 +2033,17 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "preserve_pad_action_slots":preserve_pad_slots,
         "temporal_offsets":offsets,
         "temporal_window":len(offsets),
-        "video_feature_source":str(config.get("video_feature_source", "json")),
+        "video_feature_source":feature_source,
         "video_feature_dim":feature_dim,
         "video_encoder_arch":str(config.get("video_encoder_arch", "flat_mlp")),
         "raw_video_frame_offsets":_raw_video_frame_offsets(config)
-        if str(config.get("video_feature_source", "json")).lower() in {"raw_frames", "raw_video_frames", "frame_provider"}
+        if feature_source in {"raw_frames", "raw_video_frames", "frame_provider", "video_idm_cache", "raw_video_cache"}
         else None,
         "raw_video_image_size":int(config.get("raw_video_image_size", config.get("video_image_size", 96)))
-        if str(config.get("video_feature_source", "json")).lower() in {"raw_frames", "raw_video_frames", "frame_provider"}
+        if feature_source in {"raw_frames", "raw_video_frames", "frame_provider", "video_idm_cache", "raw_video_cache"}
         else None,
+        "video_cache_dir":str(config.get("video_cache_dir")) if feature_source in {"video_idm_cache", "raw_video_cache"} else None,
+        "video_cache_stats_path":str(config.get("video_cache_stats_path", config.get("stats_path"))) if feature_source in {"video_idm_cache", "raw_video_cache"} else None,
         "video_encoder_pretrain_history":video_pretrain_history,
         "history":history,
         "non_noop_budget":non_noop_budget,

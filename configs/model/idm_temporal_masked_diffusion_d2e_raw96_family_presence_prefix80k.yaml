@@ -60,7 +60,7 @@
     },
     "stage": "idm",
     "video_encoder": {
-      "approximation": "Open D2E approximation: raw 96x96 grayscale screen-video frame stack encoded by a small 3D CNN with masked raw-frame reconstruction, not the closed-source SI tokenizer.",
+      "approximation": "Open D2E approximation: raw 96x96 grayscale screen-video frame stack loaded from prior D2E video tensor caches and encoded by a small 3D CNN with masked raw-frame reconstruction; not the closed-source SI tokenizer.",
       "enabled": true,
       "input": "D2E 480p/original frame references decoded to raw 96x96 grayscale video tokens over [0,1,2] frame offsets and a temporal row window",
       "public_anchor": "FDM-1 trains directly on compressed screen-video representations before inverse-dynamics labeling."
@@ -124,7 +124,7 @@
     },
     "raw_video_tokens": {
       "public_anchor": "FDM-1 trains on compressed screen-video representations rather than handcrafted action-history features.",
-      "d2e_approximation": "Decode D2E frame references to normalized raw grayscale 96x96 video tokens at offsets [0,1,2], then feed them to the same noncausal masked action-token diffusion IDM.",
+      "d2e_approximation": "Load decoded D2E frame references from split-safe video tensor caches as normalized raw grayscale 96x96 video tokens at offsets [0,1,2], then feed them to the same noncausal masked action-token diffusion IDM.",
       "claim_boundary": "Open raw-video approximation on D2E; not the closed-source FDM-1 tokenizer and not a parity claim."
     }
   },
@@ -261,7 +261,7 @@
   "button_token_presence_negative_weight": 0.03,
   "button_token_presence_bias_candidates": true,
   "button_token_presence_candidate_score_blend": 0.55,
-  "video_feature_source": "raw_frames",
+  "video_feature_source": "video_idm_cache",
   "raw_video_image_size": 96,
   "raw_video_frame_offsets": [
     0,
@@ -274,5 +274,23 @@
   "raw_video_encoder_pool_hw": 2,
   "raw_video_aux_hidden_dim": 128,
   "raw_video_feature_storage": "tensor",
-  "raw_video_feature_tensor_dtype": "float16"
+  "raw_video_feature_tensor_dtype": "float16",
+  "video_cache_dir": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/video_cache",
+  "video_cache_stats_path": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/video_idm_stats.json",
+  "stats_path": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/video_idm_stats.json",
+  "video_image_size": 96,
+  "video_frame_fps": 20,
+  "video_frame_offsets": [
+    0,
+    1,
+    2
+  ],
+  "next_frame_offset": 2,
+  "require_precomputed_video_cache": true,
+  "video_cache_shard_assignment": "greedy_rows",
+  "video_cache_shard_by_path": true,
+  "button_head_mode": "softmax",
+  "mouse_head_mode": "regression",
+  "mouse_target_mode": "sum",
+  "keyboard_head_mode": "softmax"
 }
