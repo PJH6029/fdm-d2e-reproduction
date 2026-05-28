@@ -104,3 +104,13 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - `G003-d2e-only-idm` is already checkpointed complete in OMX. Do not repeat the G003 checkpoint unless reconciling a ledger corruption.
 - Streaming IDM metadata now records config/data/split/source provenance (`checkpoint_metadata.json`, `resolved_config.json`); ensure the pod checkout includes this before the G003 extraction reaches training.
 - Commit `6974f38` adds automatic split-stat generation to future G003/G004 run wrappers. The old accel64 G003 parent PID `251593` is historical; current live monitoring should focus on G004 parent PID `262618`.
+
+## 2026-05-28 G005 FDM-1-recipe prefix probes
+
+- Commit `a3a7f7d` added the public FDM-1 recipe manifest/audit and recipe-aligned IDM/FDM scaffold configs. Commit `b4e98ea` added a Torch prefix trainer for a non-causal masked-diffusion IDM over fixed action-token slots with iterative unmasking and D2E paper-metric export.
+- MLXP reservation `rsv-jeonghunpark-20260528-a131d9` ran three non-terminal shard_0 prefix probes on 1×H200 and was cancelled afterward to avoid idle GPU. Evidence is under `artifacts/idm/g005_idm_masked_diffusion_prefix20k*.{json,csv,log}` plus `artifacts/idm/g005_idm_masked_diffusion_prefix_reservation_context.json`.
+- Prefix results are **not** G005 completion evidence:
+  - unweighted: training path passed on CUDA but decoded no action; keyboard/button/mouse metrics effectively zero and no-button FPR 0.
+  - no-op-weighted (`noop_loss_weight=0.05`): emitted mouse movement but still key/button recall 0.
+  - category/key-heavy: forced key emission (`KEY_PRESS_65`/`KEY_PRESS_68`) and raised paper keyboard only to ~0.008 while overfitting/overfiring; button remained 0.
+- Diagnosis: the current single-vocabulary fixed-slot decoder is recipe-shaped but too crude for sparse D2E key/button events. Continue within the FDM-1 public recipe by improving token factorization/slot design and video-token conditioning, not by reverting to the old supervised per-head or heuristic branches as completion candidates.
