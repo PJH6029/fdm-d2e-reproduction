@@ -63,6 +63,12 @@ def parse_args() -> argparse.Namespace:
         default="summary_compact_luma16_pair_shift_time_state_duration_prior_action",
     )
     parser.add_argument("--max-rows", type=int, default=None)
+    parser.add_argument(
+        "--skip-rows",
+        type=int,
+        default=0,
+        help="Skip this many source rows before materializing; used for contiguous shard plans.",
+    )
     parser.add_argument("--round-digits", default="6", help="Set to -1 to disable rounding.")
     parser.add_argument("--trust-remote-code", action="store_true")
     parser.add_argument(
@@ -99,6 +105,7 @@ def main() -> None:
         include_summary_features=not args.no_summary_features,
         summary_feature_mode=args.summary_feature_mode,
         max_rows=args.max_rows,
+        skip_rows=max(0, int(args.skip_rows)),
         round_digits=_optional_int(args.round_digits),
         trust_remote_code=bool(args.trust_remote_code),
         path_remaps=parse_path_remaps(args.path_map),

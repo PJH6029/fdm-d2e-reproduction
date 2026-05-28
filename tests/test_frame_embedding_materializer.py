@@ -204,3 +204,39 @@ def test_materializer_can_use_compact_luma_without_ffmpeg_or_frame_files(tmp_pat
     assert summary["missing_frames"] == 0
     out_row = _read_jsonl(output_path)[0]
     assert len(out_row["__streaming_idm_features"]) == 12 * 3
+
+
+def test_materializer_can_skip_source_rows_for_contiguous_shards(tmp_path: Path) -> None:
+    rows = [_row(Path(f"/root/work/data/missing_{idx}.mkv#frame={idx}"), 0.2 + idx, idx=idx) for idx in range(4)]
+    input_path = tmp_path / "input.jsonl"
+    input_path.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
+    output_path = tmp_path / "out.jsonl"
+    summary_path = tmp_path / "summary.json"
+    progress_path = tmp_path / "progress.json"
+
+    summary = materialize_frame_embedding_features(
+        FrameEmbeddingMaterializerConfig(
+            input_path=input_path,
+            output_path=output_path,
+            summary_out=summary_path,
+            backend="dummy-stat",
+            frame_source="compact-luma",
+            frame_offsets=(0, 2),
+            image_size=8,
+            include_summary_features=False,
+            skip_rows=2,
+            max_rows=1,
+            progress_output=progress_path,
+            progress_rows=1,
+        )
+    )
+
+    assert summary["status"] == "pass"
+    assert summary["rows_written"] == 1
+    assert summary["source_rows_skipped"] == 2
+    assert summary["source_rows_scanned"] == 3
+    assert summary["skip_rows"] == 2
+    out_rows = _read_jsonl(output_path)
+    assert [row["sequence_id"] for row in out_rows] == ["seq-2"]
+    progress = json.loads(progress_path.read_text())
+    assert progress["source_rows_skipped"] == 2

@@ -169,6 +169,7 @@ class FrameEmbeddingMaterializerConfig:
     include_summary_features: bool = True
     summary_feature_mode: str = "summary_compact_luma16_pair_shift_time_state_duration_prior_action"
     max_rows: int | None = None
+    skip_rows: int = 0
     round_digits: int | None = 6
     trust_remote_code: bool = False
     path_remaps: tuple[tuple[str, str], ...] = ()
@@ -618,6 +619,8 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
     tmp_path = output_path.with_suffix(output_path.suffix + ".tmp")
     rows_seen = 0
     rows_written = 0
+    source_rows_scanned = 0
+    source_rows_skipped = 0
     feature_override_rows = 0
     feature_lengths: list[int] = []
     embedding_dim_per_frame: int | None = None
@@ -634,6 +637,8 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
         "frame_offsets": list(config.frame_offsets),
         "frame_source": config.frame_source,
         "path_remaps": list(config.path_remaps),
+        "skip_rows": int(config.skip_rows),
+        "max_rows": config.max_rows,
         "source_label": config.source_label,
     }
     try:
@@ -641,6 +646,10 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
             for row in _iter_jsonl(input_path):
                 if config.max_rows is not None and rows_seen >= int(config.max_rows):
                     break
+                source_rows_scanned += 1
+                if int(config.skip_rows) > 0 and source_rows_scanned <= int(config.skip_rows):
+                    source_rows_skipped += 1
+                    continue
                 rows_seen += 1
                 dataset_fingerprint.update(
                     json.dumps(
@@ -675,6 +684,8 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
                         {
                             **progress_base,
                             "rows_seen": rows_seen,
+                            "source_rows_scanned": source_rows_scanned,
+                            "source_rows_skipped": source_rows_skipped,
                             "rows_written": rows_written,
                             "feature_override_rows": feature_override_rows,
                             "missing_frames": int(provider.missing_frames),
@@ -714,6 +725,8 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
         "input": _source_metadata(input_path),
         "output": _source_metadata(output_path),
         "rows_seen": rows_seen,
+        "source_rows_scanned": source_rows_scanned,
+        "source_rows_skipped": source_rows_skipped,
         "rows_written": rows_written,
         "feature_override_rows": feature_override_rows,
         "feature_dim": unique_feature_lengths[0] if unique_feature_lengths else 0,
@@ -737,6 +750,7 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
         "include_summary_features": bool(config.include_summary_features),
         "summary_feature_mode": config.summary_feature_mode if config.include_summary_features else None,
         "max_rows": config.max_rows,
+        "skip_rows": int(config.skip_rows),
         "round_digits": config.round_digits,
         "dataset_fingerprint": dataset_fingerprint.hexdigest(),
         "started_at_unix": started_at,
@@ -748,5 +762,15 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
         ),
     }
     write_json(config.summary_out, summary)
-    _write_progress(config.progress_output, {**progress_base, "status": status, "rows_seen": rows_seen, "rows_written": rows_written})
+    _write_progress(
+        config.progress_output,
+        {
+            **progress_base,
+            "status": status,
+            "rows_seen": rows_seen,
+            "source_rows_scanned": source_rows_scanned,
+            "source_rows_skipped": source_rows_skipped,
+            "rows_written": rows_written,
+        },
+    )
     return summary
