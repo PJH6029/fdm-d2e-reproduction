@@ -626,3 +626,33 @@ the same launcher summary/monitor evidence.
 
 Claim boundary: materialization launcher validation only; no trained IDM metric
 evidence and no G005 success claim.
+
+### 2026-05-28 KST — 4,096-row launcher amortization gate
+
+Used the same debug reservation before expiration to run a larger 4,096-row
+`dinov2-torchhub` gate with the validated shard launcher, after copying a fresh
+4,096-row real D2E target sample from `production-storage-shell-4`.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_run_summary.json`
+  — `status=pass`, `rows_written=4096`, `combined_rows=4096`, two shards,
+  elapsed `93.64s`.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_gpu_monitor.csv`
+  — pre-launch monitor with 186 samples. GPU0/GPU1 max utilization reached
+  `100%`/`89%`, but mean utilization remained low at `4.13%`/`1.41%`.
+- Per-shard summary/progress/log artifacts record 2,048 rows per shard and exact
+  skip/scanned row counts.
+
+Finding: increasing from 1,024 to 4,096 rows amortizes startup enough to observe
+real H200 spikes on both debug GPUs, but the mean utilization is still too low
+for a full 4×H200 extraction to be considered healthy. The bottleneck is likely
+JSONL row IO/serialization and CPU-side preprocessing around the DINO forward
+rather than model compute alone.
+
+Decision: do not run a full frozen-frame extraction with the JSON-expanded path
+as-is. The next implementation should add a more compact tensor-cache/materialized
+feature path or otherwise batch CPU preprocessing/serialization so H200 wall-clock
+is dominated by model forward work before spending a production reservation.
+Claim boundary: materialization throughput evidence only; no trained IDM metric
+evidence and no G005 success claim.
