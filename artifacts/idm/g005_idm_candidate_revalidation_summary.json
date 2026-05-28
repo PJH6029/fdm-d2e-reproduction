@@ -559,6 +559,35 @@
       "state_transition_visible_fraction": 0.36480111238019564,
       "status": "pass",
       "total_key_tokens": 80548
+    },
+    {
+      "alignment": {
+        "examples": [],
+        "missing_base_prediction_rows": 0,
+        "sequence_id_mismatches": 0
+      },
+      "artifact": "artifacts/idm/g005_idm_key_repeat_specialist_matrix_aligned_prefix50k.json",
+      "best_metrics": {
+        "keyboard_accuracy": 0.15504749637739496,
+        "mouse_button_accuracy": 0.1613823715916297,
+        "pearson_x": 0.7598068765377537,
+        "pearson_y": 0.6793739696281583,
+        "scale_ratio_x": 1.2942006105201567,
+        "scale_ratio_y": 1.244073424630026,
+        "strict_mouse_button_f1": 0.267483978824185,
+        "strict_no_button_fpr": 0.0389908256880734
+      },
+      "best_policy": "base_all",
+      "claim_boundary": "CPU prefix diagnostic only; 50k aligned shard-order subset, not G005 completion evidence.",
+      "decision": "reject_simple_repeat_key_table_specialist",
+      "finding_codes": [
+        "aligned_base_stream_beats_repeat_specialist",
+        "simple_train_prefix_repeat_release_tables_reduce_keyboard",
+        "zero_sequence_id_mismatches_required_for_base_composition"
+      ],
+      "name": "key_repeat_specialist_aligned_prefix50k",
+      "rows": 50000,
+      "status": "pass"
     }
   ],
   "paper_targets": {
@@ -1564,10 +1593,11 @@
     "Do not promote frozen DINO-v2 compact-luma embeddings to full-corpus G005: the 320k 2xH200 prefix trained/evaluated successfully but achieved keyboard=0.0206, mouse-button=0.1046, Pearson X/Y=0.0199/0.0102 and heldout_game no-button FPR=0.1096.",
     "Keep the native-luma tensor-cache materialization path as infrastructure only; it solves throughput/cache issues but not the IDM paper-target metric problem.",
     "Key-event taxonomy shows the dominant keyboard blocker is held-repeat/same-bin key decoding: only 36.5% of key tokens are visible to prior->next state differencing, while an oracle repeat/tap key decoder plus state-delta buttons reaches keyboard=0.7418 and button=0.9754 on the 320k prefix. Next candidate should train a non-leaky key-repeat/tap specialist and pair it with state-transition button decoding and improved motion, not another frozen visual embedding alone.",
+    "A simple train-prefix repeat/release lookup specialist is now rejected: on a 50k aligned prefix it reports zero base/target sequence mismatches, but base_all remains best (keyboard=0.1550, button=0.1614, Pearson X/Y=0.7598/0.6794) and every repeat-table replacement/union policy reduces keyboard. Next key branch needs a learned sequence model or teacher/distillation signal, not tabular hold-age thresholds.",
     "Do not reserve H200s for threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, sequence-prior action history, or frozen-DINO-only prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779938663.4311109
+  "updated_at_epoch": 1779940052.9021351
 }

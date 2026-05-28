@@ -848,3 +848,32 @@ baseline and approaches the oracle target. The next branch should explicitly
 model held-repeat keypresses (likely with richer phase/history features or a
 specialized per-key head), pair state-delta-style mouse-button decoding with safe
 FPR, and separately improve motion beyond previous-motion continuation.
+
+### 2026-05-28 KST — aligned repeat-key table specialist rejected
+
+Implemented and ran a CPU-only key-repeat specialist matrix before reserving any
+H200s for a neural repeat-key branch. The runner trains press/release lookup
+tables from train-prefix causal fields and composes them with the existing
+`event_state_duration_context` base prediction stream. A first chronological-run
+attempt was discarded as diagnostic only because the base prediction stream was
+shard-ordered; the committed runner now records sequence-id alignment errors.
+
+Evidence:
+
+- `src/fdm_d2e/eval/key_repeat_specialist.py`
+- `scripts/build_g005_key_repeat_specialist_matrix.py`
+- `tests/test_key_repeat_specialist.py`
+- `artifacts/idm/g005_idm_key_repeat_specialist_matrix_aligned_prefix50k.json`
+
+Result: reject simple table-based repeat-key decoding. On a shard-order aligned
+50k prefix, alignment reports zero sequence-id mismatches. The best policy is
+still `base_all` with keyboard `0.1550`, mouse-button `0.1614`, Pearson X/Y
+`0.7598/0.6794`, strict button F1 `0.2675`, and no-button FPR `0.0390`.
+Every repeat-table replacement/union policy reduces keyboard; the best
+replacement reaches only `0.1216` keyboard. This confirms that the key-event
+oracle gap cannot be closed by simple train-prefix hold-age lookup tables.
+
+Decision: do not promote this repeat-key table path to a GPU run. The next G005
+candidate must use a learned sequence/teacher signal for key repeats/taps (or a
+released-GIDM distillation target) while retaining strict alignment checks for
+any base-stream composition.
