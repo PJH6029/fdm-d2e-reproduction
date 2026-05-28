@@ -24,6 +24,7 @@ from fdm_d2e.training.masked_diffusion_idm_trainer import (
 from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _calibrate_temporal_family_non_noop_budget,
     _calibrate_temporal_non_noop_budget,
+    _candidate_family_diagnostics,
     _temporal_center_candidates,
     _target_slots,
     _token_presence_targets,
@@ -351,6 +352,72 @@ def test_temporal_token_presence_biases_action_token_identity():
         event_probabilities={"token_presence": torch.tensor([[0.98, 0.0, 0.99, 0.05, 0.04]])},
     )
     assert candidates[0][0]["token"] == "KEY_PRESS_A"
+
+
+def test_temporal_candidates_can_preserve_low_scoring_family_candidates():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = [
+        "<FDM1_ACTION_PAD>",
+        "<FDM1_ACTION_MASK>",
+        "KEY_PRESS_A",
+        "MOUSE_LEFT_DOWN",
+        "FDM1_MOUSE_DX_P01",
+        "FDM1_MOUSE_DY_P01",
+    ]
+    probabilities = torch.zeros((1, 2, len(vocab)), dtype=torch.float32)
+    probabilities[:, :, 4] = 0.90
+    probabilities[:, :, 5] = 0.80
+    probabilities[:, :, 2] = 0.02
+    probabilities[:, :, 3] = 0.01
+
+    global_only = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={"non_noop_budget_candidates_per_row": 2},
+    )
+    family_preserved = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={
+            "non_noop_budget_candidates_per_row": 2,
+            "non_noop_budget_min_candidates_per_family": 1,
+            "non_noop_budget_candidate_families": ["keyboard", "mouse_button", "mouse_move"],
+        },
+    )
+
+    assert {candidate["family"] for candidate in global_only[0]} == {"mouse_move"}
+    assert "KEY_PRESS_A" in {candidate["token"] for candidate in family_preserved[0]}
+    assert "MOUSE_LEFT_DOWN" in {candidate["token"] for candidate in family_preserved[0]}
+
+
+def test_candidate_family_diagnostics_reports_exact_coverage_and_ranks():
+    rows = [
+        {
+            "ground_truth_tokens": ["MOUSE_LEFT_DOWN"],
+            "candidates": [
+                {"score": 0.90, "token": "FDM1_MOUSE_DX_P01", "slot": 0, "token_index": 4, "family": "mouse_move"},
+                {"score": 0.20, "token": "MOUSE_LEFT_DOWN", "slot": 1, "token_index": 3, "family": "mouse_button"},
+            ],
+        },
+        {
+            "ground_truth_tokens": ["MOUSE_RIGHT_DOWN"],
+            "candidates": [
+                {"score": 0.40, "token": "MOUSE_LEFT_DOWN", "slot": 0, "token_index": 3, "family": "mouse_button"},
+            ],
+        },
+    ]
+
+    diagnostics = _candidate_family_diagnostics(rows, config={"candidate_diagnostic_families": ["mouse_button"]})
+    button = diagnostics["families"]["mouse_button"]
+
+    assert diagnostics["status"] == "pass"
+    assert button["positive_rows"] == 2
+    assert button["positive_rows_with_family_candidate"] == 2
+    assert button["positive_rows_with_exact_candidate"] == 1
+    assert button["exact_candidate_rank"]["p50"] == 2.0
 
 
 def test_temporal_target_slots_can_preserve_padding_for_sparse_action_sequences():

@@ -537,6 +537,23 @@ def _temporal_center_candidates(
         return []
     max_slots = int(probabilities.shape[1])
     max_candidates = int(config.get("non_noop_budget_candidates_per_row", max_slots * 8))
+    min_candidates_per_family = max(
+        0,
+        int(
+            config.get(
+                "non_noop_budget_min_candidates_per_family",
+                config.get("candidate_min_candidates_per_family", 0),
+            )
+            or 0
+        ),
+    )
+    candidate_families = config.get(
+        "non_noop_budget_candidate_families",
+        config.get("family_non_noop_budget_families", ["keyboard", "mouse_button", "mouse_move"]),
+    )
+    if not isinstance(candidate_families, list) or not candidate_families:
+        candidate_families = ["keyboard", "mouse_button", "mouse_move"]
+    candidate_families = [str(family) for family in candidate_families]
     min_probability = float(config.get("non_noop_candidate_min_probability", 0.0))
     batch_candidates: list[list[dict[str, Any]]] = []
     for batch_idx in range(int(probabilities.shape[0])):
@@ -566,9 +583,47 @@ def _temporal_center_candidates(
                         score = (1.0 - blend) * score + blend * retrieval_score
                 if score < min_probability:
                     continue
-                candidates.append({"score": score, "token_probability": token_score, "retrieval_score": retrieval_score, "slot": slot_idx, "token_index": token_idx, "token": token})
+                candidates.append(
+                    {
+                        "score": score,
+                        "token_probability": token_score,
+                        "retrieval_score": retrieval_score,
+                        "slot": slot_idx,
+                        "token_index": token_idx,
+                        "token": token,
+                        "family": family,
+                    }
+                )
         candidates.sort(key=lambda item: (-float(item["score"]), int(item["slot"]), int(item["token_index"])))
-        batch_candidates.append(candidates[:max_candidates])
+        if min_candidates_per_family > 0:
+            selected: list[dict[str, Any]] = []
+            seen: set[tuple[int, int]] = set()
+
+            def add_candidate(candidate: dict[str, Any]) -> None:
+                key = (int(candidate.get("slot", -1)), int(candidate.get("token_index", -1)))
+                if key in seen:
+                    return
+                selected.append(candidate)
+                seen.add(key)
+
+            for family in candidate_families:
+                emitted = 0
+                for candidate in candidates:
+                    if str(candidate.get("family", _action_family(str(candidate.get("token", ""))))) != family:
+                        continue
+                    add_candidate(candidate)
+                    emitted += 1
+                    if emitted >= min_candidates_per_family:
+                        break
+            effective_max_candidates = max(max_candidates, min_candidates_per_family * len(candidate_families))
+            for candidate in candidates:
+                if len(selected) >= effective_max_candidates:
+                    break
+                add_candidate(candidate)
+            selected.sort(key=lambda item: (-float(item["score"]), int(item["slot"]), int(item["token_index"])))
+            batch_candidates.append(selected[:effective_max_candidates])
+        else:
+            batch_candidates.append(candidates[:max_candidates])
     return batch_candidates
 
 
@@ -795,6 +850,109 @@ def _collect_temporal_probability_rows(
         for row, candidates in zip(batch_rows, _temporal_center_candidates(center_probs, vocab=vocab, config=config, event_probabilities=event_probabilities, retrieval_priors=retrieval_priors)):
             collected.append({"row": row, "candidates": candidates, "ground_truth_tokens": [str(token) for token in row.get("ground_truth_tokens", [])]})
     return collected
+
+
+def _numeric_summary(values: Sequence[float]) -> dict[str, Any]:
+    if not values:
+        return {"count": 0}
+    ordered = sorted(float(value) for value in values)
+
+    def quantile(q: float) -> float:
+        if len(ordered) == 1:
+            return ordered[0]
+        idx = min(len(ordered) - 1, max(0, int(round(q * (len(ordered) - 1)))))
+        return ordered[idx]
+
+    return {
+        "count": len(ordered),
+        "min": ordered[0],
+        "max": ordered[-1],
+        "mean": sum(ordered) / len(ordered),
+        "p50": quantile(0.50),
+        "p90": quantile(0.90),
+        "p99": quantile(0.99),
+    }
+
+
+def _candidate_family_diagnostics(probability_rows: Sequence[dict[str, Any]], *, config: dict[str, Any]) -> dict[str, Any]:
+    """Summarize whether recipe-shaped action-token candidates exist per family.
+
+    This is an audit/diagnostic surface only.  It may use ground-truth labels for
+    reporting positive-row coverage, but it never changes calibration thresholds
+    or predictions.
+    """
+
+    if not probability_rows:
+        return {"status": "skipped", "reason": "no_probability_rows"}
+    families = config.get("candidate_diagnostic_families", config.get("family_non_noop_budget_families", ["keyboard", "mouse_button", "mouse_move"]))
+    if not isinstance(families, list) or not families:
+        families = ["keyboard", "mouse_button", "mouse_move"]
+    top_tokens_limit = max(1, int(config.get("candidate_diagnostic_top_tokens", 12)))
+    payload: dict[str, Any] = {
+        "schema": "temporal_candidate_family_diagnostics.v1",
+        "status": "pass",
+        "rows": len(probability_rows),
+        "families": {},
+        "claim_boundary": "Diagnostic-only summary. Ground-truth labels may be used to audit candidate coverage, but candidate diagnostics do not calibrate or mutate predictions.",
+    }
+    for family in [str(item) for item in families]:
+        total_candidates = 0
+        rows_with_candidates = 0
+        positive_rows = 0
+        positive_rows_with_family_candidate = 0
+        positive_rows_with_exact_candidate = 0
+        exact_ranks: list[float] = []
+        top_family_scores: list[float] = []
+        all_family_scores: list[float] = []
+        top_token_counts: dict[str, int] = {}
+        for row in probability_rows:
+            candidates = [
+                candidate
+                for candidate in row.get("candidates", [])
+                if str(candidate.get("family", _action_family(str(candidate.get("token", ""))))) == family
+            ]
+            total_candidates += len(candidates)
+            if candidates:
+                rows_with_candidates += 1
+                top_family_scores.append(float(candidates[0].get("score", 0.0)))
+                top_token = str(candidates[0].get("token", ""))
+                top_token_counts[top_token] = top_token_counts.get(top_token, 0) + 1
+                all_family_scores.extend(float(candidate.get("score", 0.0)) for candidate in candidates)
+            gt_tokens = [str(token) for token in row.get("ground_truth_tokens", []) if _action_family(str(token)) == family]
+            if not gt_tokens:
+                continue
+            positive_rows += 1
+            candidate_tokens = [str(candidate.get("token", "")) for candidate in candidates]
+            if candidate_tokens:
+                positive_rows_with_family_candidate += 1
+            candidate_token_set = set(candidate_tokens)
+            if any(token in candidate_token_set for token in gt_tokens):
+                positive_rows_with_exact_candidate += 1
+            for gt_token in dict.fromkeys(gt_tokens):
+                for rank, candidate in enumerate(row.get("candidates", []), 1):
+                    if str(candidate.get("token", "")) == gt_token:
+                        exact_ranks.append(float(rank))
+                        break
+        top_tokens = [
+            {"token": token, "rows_as_top_family_candidate": count}
+            for token, count in sorted(top_token_counts.items(), key=lambda item: (-item[1], item[0]))[:top_tokens_limit]
+        ]
+        payload["families"][family] = {
+            "rows": len(probability_rows),
+            "total_candidates": total_candidates,
+            "rows_with_candidates": rows_with_candidates,
+            "candidate_row_rate": rows_with_candidates / max(1, len(probability_rows)),
+            "positive_rows": positive_rows,
+            "positive_rows_with_family_candidate": positive_rows_with_family_candidate,
+            "positive_rows_with_family_candidate_rate": positive_rows_with_family_candidate / max(1, positive_rows),
+            "positive_rows_with_exact_candidate": positive_rows_with_exact_candidate,
+            "positive_rows_with_exact_candidate_rate": positive_rows_with_exact_candidate / max(1, positive_rows),
+            "exact_candidate_rank": _numeric_summary(exact_ranks),
+            "top_family_candidate_score": _numeric_summary(top_family_scores),
+            "all_family_candidate_score": _numeric_summary(all_family_scores),
+            "top_tokens": top_tokens,
+        }
+    return payload
 
 
 def _family_budget_score(family: str, metrics: dict[str, Any], *, max_button_fpr: float, beta: float) -> float:
@@ -1192,6 +1350,24 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         if family_non_noop_budget.get("status") == "pass":
             config["family_non_noop_budgeted_unmasking"] = True
             config["family_non_noop_budget"] = family_non_noop_budget
+    candidate_family_diagnostics: dict[str, Any] = {
+        "calibration": _candidate_family_diagnostics(probability_rows or [], config=config),
+        "target_prefix": {"status": "skipped", "reason": "disabled"},
+    }
+    target_diagnostic_rows = max(0, int(config.get("candidate_diagnostics_target_max_rows", 0) or 0))
+    if target_diagnostic_rows > 0:
+        limit = min(target_diagnostic_rows, len(target_rows))
+        target_probability_rows = _collect_temporal_probability_rows(
+            model,
+            torch,
+            target_rows[:limit],
+            target_features[:limit],
+            config={**config, "max_slots": max_slots},
+            vocab=vocab,
+            device=device,
+            retrieval_index=retrieval_index,
+        )
+        candidate_family_diagnostics["target_prefix"] = _candidate_family_diagnostics(target_probability_rows, config=config)
     predictions_path = Path(output_dir) / "predictions.jsonl"
     prediction_batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
     with predictions_path.open("w", encoding="utf-8") as handle:
@@ -1238,6 +1414,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "history":history,
         "non_noop_budget":non_noop_budget,
         "family_non_noop_budget":family_non_noop_budget,
+        "candidate_family_diagnostics":candidate_family_diagnostics,
         "retrieval_action_prior":retrieval_summary,
         "loss_weights":{
             "noop_loss_weight":float(config.get("noop_loss_weight", 1.0)),
@@ -1262,6 +1439,11 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "token_presence_mouse_button_pos_weight":float(config.get("token_presence_mouse_button_pos_weight", config.get("button_event_pos_weight", 16.0))),
             "token_presence_mouse_move_pos_weight":float(config.get("token_presence_mouse_move_pos_weight", 2.0)),
             "retrieval_action_prior_blend":float(config.get("retrieval_action_prior_blend", 0.35)),
+            "non_noop_budget_candidates_per_row":int(config.get("non_noop_budget_candidates_per_row", max_slots * 8)),
+            "non_noop_budget_min_candidates_per_family":int(
+                config.get("non_noop_budget_min_candidates_per_family", config.get("candidate_min_candidates_per_family", 0)) or 0
+            ),
+            "candidate_diagnostics_target_max_rows":int(config.get("candidate_diagnostics_target_max_rows", 0) or 0),
             "token_loss_type":str(config.get("token_loss_type", "cross_entropy")),
             "token_focal_gamma":float(config.get("token_focal_gamma", config.get("focal_gamma", 2.0))),
         },
