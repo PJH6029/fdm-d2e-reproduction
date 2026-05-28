@@ -62,7 +62,7 @@
     "video_encoder": {
       "approximation": "Prefix candidate consumes materialized compact_luma_window rows (5x16x16 luma tokens) via deterministic flattening until a learned full-resolution video tokenizer is promoted.",
       "enabled": true,
-      "input": "D2E compact luma16 frame-window tokens plus frame deltas as bootstrap video-token conditioning",
+      "input": "D2E compact luma16 frame-window tokens from outputs/data/d2e_luma_window5_corpus_shards_accel64 plus frame deltas as bootstrap video-token conditioning",
       "public_anchor": "FDM-1 trains directly on screen video representations before inverse-dynamics action-token prediction."
     }
   },
@@ -83,8 +83,9 @@
   "output_dir": "outputs/idm_factorized_masked_diffusion_d2e_luma_window5_prefix20k",
   "schema": "factorized_masked_diffusion_idm_config.v1",
   "seed": 53,
+  "source_namespace": "d2e_luma_window5_corpus",
   "summary_out": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_prefix20k_summary.json",
-  "target_records": "outputs/data/d2e_event_state_duration_luma_window5_shards_accel64/shard_*/target_all_eval.jsonl",
+  "target_records": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_*/target_all_eval.jsonl",
   "threshold_candidates": [
     0.05,
     0.1,
@@ -106,7 +107,7 @@
     0.9,
     0.95
   ],
-  "train_records": "outputs/data/d2e_event_state_duration_luma_window5_shards_accel64/shard_*/train_core.jsonl",
+  "train_records": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_*/train_core.jsonl",
   "transformer_heads": 4,
   "transformer_layers": 3,
   "video_feature_dim": 1295,
