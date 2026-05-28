@@ -73,7 +73,8 @@
     "keyboard_accuracy_zero_on_eval_window",
     "mouse_motion_far_below_paper_targets",
     "mouse_button_endpoint_not_measured_in_this_tiny_temporal_window",
-    "warmup_trimming_does_not_rescue_released_gidm_teacher_pilot"
+    "warmup_trimming_does_not_rescue_released_gidm_teacher_pilot",
+    "row_shift_sweep_best_still_misses_paper_targets"
   ],
   "evidence": {
     "pipeline_summary": "artifacts/eval/g006_gidm_warmup_trim_pilot_pipeline_summary.json",
@@ -85,8 +86,9 @@
     "inference_log_dir": "artifacts/eval/gidm_warmup_trim_pilot_inference_logs/",
     "local_prediction_sample": "outputs/gidm_warmup_trim_pilot/predictions.jsonl",
     "local_target_sample": "outputs/gidm_warmup_trim_pilot/targets.jsonl",
-    "local_predicted_mcap": "outputs/gidm_warmup_trim_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap"
+    "local_predicted_mcap": "outputs/gidm_warmup_trim_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap",
+    "shift_sweep": "artifacts/eval/g006_gidm_warmup_trim_pilot_shift_sweep.json"
   },
   "claim_boundary": "Negative G005 teacher-feasibility diagnostic only. This does not complete G005 IDM paper-target win and does not complete G006 exact-split released-GIDM baseline.",
-  "next_action": "Pivot G005 back to learned non-leaky sequence/state IDM architecture or a different teacher signal; do not scale this released-GIDM warmup-trim pilot as the paper-target path."
+  "next_action": "Pivot G005 back to learned non-leaky sequence/state IDM architecture or a different teacher signal; row-shift/timestamp rescue for this released-GIDM pilot is rejected."
 }
