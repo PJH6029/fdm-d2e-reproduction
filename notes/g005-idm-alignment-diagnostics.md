@@ -957,3 +957,28 @@ Decision: do not reserve H200s for compact visual-transition hash features in
 this repeat-key specialist. The next G005 branch should move beyond additive
 hashed features toward a stronger learned sequence/teacher-assisted model or
 released G-IDM exact-split distillation, while preserving aligned-prefix gates.
+
+### 2026-05-28 KST — top-key vocabulary binary gate rejected
+
+Broadened the hashed key specialist beyond currently held keys by adding a
+train-prefix top-key vocabulary option, then ran a CPU/storage-shell aligned
+50k prefix gate with top 16 key codes.
+
+Evidence:
+
+- `src/fdm_d2e/eval/key_hash_sequence_diagnostic.py`
+- `scripts/build_g005_key_hash_sequence_diagnostic.py`
+- `tests/test_key_hash_sequence_diagnostic.py`
+- `artifacts/idm/g005_idm_key_hash_sequence_topvocab16_diagnostic_prefix50k_e2_lr01.json`
+
+Result: reject this top-vocabulary binary specialist. Alignment has zero
+sequence-id mismatches and the trained model saw `10,250,608` candidate examples
+across two epochs, but `base_all` remains the best policy at keyboard `0.15505`.
+The best specialist policy (`press_only_union_base_keys_press0.9`) reaches only
+keyboard `0.11229`, below both base and the held-only learned hash 50k gate
+(`0.19928`). Adding non-held key candidates this way overfires/overconfuses key
+tokens rather than closing the hidden-repeat/new-key gap.
+
+Decision: do not reserve GPUs for the top-key vocabulary hash branch. Continue
+G005 with a qualitatively stronger sequence/teacher-assisted approach, not wider
+additive tabular/hash key candidates.
