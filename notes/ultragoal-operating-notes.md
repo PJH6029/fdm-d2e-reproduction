@@ -175,3 +175,9 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_joint_prefix20k_h200_*`, including run, GPU monitor, W&B status, resolved config, paper metrics, summary, reservation context, and diagnosis.
 - Result is partial but non-terminal: calibration selected event threshold `0.496727854013443` plus min button-token probability `0.5808834896812439`; target no-button FPR improved from prior dynamic event-only `0.5482` to `0.2621`, and strict button F1 became nonzero (`0.00351`) with one exact true positive, but this still fails the `<=0.10` FPR gate and is far below paper-target performance.
 - Next branch should remain recipe-faithful and add fold/recording-robust calibration or confidence-budgeted iterative unmasking before any full-corpus 4×H200 promotion.
+
+## 2026-05-28 KST — Next G005 branch: confidence-budgeted button unmasking
+
+- Implemented a recipe-faithful follow-up branch after joint-gate partial improvement: forced mouse-button unmasking can now be capped by a train/calibration-label event-rate prior while selecting highest-confidence unlabeled target candidates.
+- Candidate config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_budget_prefix20k.yaml`. It keeps the FDM-1-shaped video-token + noncausal masked action-token IDM and adds confidence-budgeted iterative unmasking as an inferred/novel public-recipe approximation.
+- Intended bounded-probe success criterion before scaling: target no-button FPR near or below `0.10` while preserving nonzero button recall; still not G005 completion without full-corpus paper-target win.

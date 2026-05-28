@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.io_utils import read_json
 from fdm_d2e.training.masked_diffusion_idm_trainer import (
+    _calibrate_button_event_budget,
     _calibrate_button_event_threshold,
     torch_available,
     train_masked_diffusion_idm,
@@ -108,6 +109,37 @@ def test_button_event_calibration_can_jointly_gate_token_confidence():
     assert joint["selected_min_token_probability"] == 0.80
     assert joint["selected_row"]["recall"] == 1.0
     assert joint["selected_row"]["false_positive_rate"] == 0.0
+
+
+def test_button_event_budget_uses_train_event_rate_without_target_labels():
+    probability_rows = [
+        {"button_event_prob": 0.90, "button_probs": [0.90]},
+        {"button_event_prob": 0.80, "button_probs": [0.80]},
+        {"button_event_prob": 0.70, "button_probs": [0.70]},
+        {"button_event_prob": 0.60, "button_probs": [0.60]},
+        {"button_event_prob": 0.50, "button_probs": [0.50]},
+    ]
+    rate_rows = [
+        {"ground_truth_tokens": ["MOUSE_LEFT_DOWN"]},
+        {"ground_truth_tokens": []},
+        {"ground_truth_tokens": []},
+        {"ground_truth_tokens": []},
+        {"ground_truth_tokens": []},
+    ]
+    budget = _calibrate_button_event_budget(
+        probability_rows,
+        rate_rows=rate_rows,
+        button_vocab=["MOUSE_LEFT_DOWN"],
+        config={
+            "button_event_threshold": 0.0,
+            "button_event_min_token_probability": 0.0,
+            "button_event_budget_rate_multiplier": 1.0,
+        },
+    )
+    assert budget["rate_source_positive_rate"] == 0.2
+    assert budget["max_forced_events"] == 1
+    assert budget["score_threshold"] == 0.81
+    assert budget["selected_preview"][0]["index"] == 0
 
 
 def test_train_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
@@ -274,6 +306,8 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
             "button_event_loss_weight": 1.0,
             "button_event_threshold": 0.5,
             "button_event_force_topk": 1,
+            "button_event_budgeted_unmasking": True,
+            "button_event_budget_rate_multiplier": 1.0,
             "calibrate_thresholds": True,
             "factorized_calibration_fraction": 0.25,
             "factorized_calibration_max_rows": 2,
@@ -284,7 +318,9 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
     assert summary["status"] == "pass"
     assert summary["threshold_calibration"]["status"] == "pass"
     assert summary["threshold_calibration"]["per_token"]["button_event_threshold"]["status"] == "pass"
+    assert summary["button_event_budget"]["status"] == "pass"
     assert summary["factorization"]["button_event_auxiliary"] is True
     assert "button_event_min_token_probability" in summary["factorization"]
+    assert "button_event_budget_score_threshold" in summary["factorization"]
     assert Path(summary["checkpoint_path"]).exists()
     assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 3

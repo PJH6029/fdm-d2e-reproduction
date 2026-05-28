@@ -482,6 +482,8 @@ def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, c
     max_buttons = int(config.get("max_predicted_buttons", 2))
     button_event_force_topk = int(config.get("button_event_force_topk", 1))
     button_event_min_token_probability = float(config.get("button_event_min_token_probability", 0.0))
+    button_event_budget_score_threshold = config.get("button_event_budget_score_threshold")
+    button_event_budget_score_threshold = None if button_event_budget_score_threshold is None else float(button_event_budget_score_threshold)
     width, height = _screen_size(row)
     model.eval()
     with torch.no_grad():
@@ -506,6 +508,13 @@ def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, c
             fdm1_tokens.extend(str(key_vocab[idx]) for _, idx in selected)
         if out.get("button") is not None and button_vocab:
             probs = torch.sigmoid(out["button"][0]).detach().cpu().tolist()
+            event_prob = float(torch.sigmoid(out["button_event"][0]).detach().cpu()) if out.get("button_event") is not None else None
+            max_button_prob = max([float(prob) for prob in probs] or [0.0])
+            event_budget_pass = (
+                True
+                if button_event_budget_score_threshold is None or event_prob is None
+                else (float(event_prob) * max_button_prob) >= button_event_budget_score_threshold
+            )
             selected = sorted(
                 (
                     (float(prob), idx)
@@ -518,7 +527,9 @@ def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, c
                 not selected
                 and out.get("button_event") is not None
                 and button_event_force_topk > 0
-                and float(torch.sigmoid(out["button_event"][0]).detach().cpu()) >= button_event_threshold
+                and event_prob is not None
+                and float(event_prob) >= button_event_threshold
+                and event_budget_pass
             ):
                 selected = sorted(
                     (
@@ -885,6 +896,89 @@ def _calibrate_per_token_thresholds(
     return {"selected": selected, "rows": rows}
 
 
+def _button_event_label_rate(rows: Sequence[dict[str, Any]], *, button_vocab: Sequence[str]) -> dict[str, Any]:
+    total = len(rows)
+    positives = 0
+    for row in rows:
+        tokens = set(canonical_fdm1_action_tokens(row, include_noop=False))
+        positives += int(any(token in tokens for token in button_vocab))
+    return {
+        "rows": total,
+        "positives": positives,
+        "rate": (positives / total) if total else 0.0,
+    }
+
+
+def _calibrate_button_event_budget(
+    probability_rows: Sequence[dict[str, Any]],
+    *,
+    rate_rows: Sequence[dict[str, Any]],
+    button_vocab: Sequence[str],
+    config: dict[str, Any],
+) -> dict[str, Any]:
+    """Choose an unlabeled confidence budget for forced button unmasking.
+
+    FDM-1's public IDM inference performs iterative high-confidence unmasking.
+    For sparse D2E mouse-button events, an event head can be calibrated on
+    train-heldout rows yet still overfire on target rows.  This budget keeps the
+    recipe shape but caps forced button unmasking to a train-label event-rate
+    prior, selecting only the highest-confidence unlabeled target candidates.
+    Target labels are never inspected here.
+    """
+
+    label_rate = _button_event_label_rate(rate_rows, button_vocab=button_vocab)
+    multiplier = float(config.get("button_event_budget_rate_multiplier", 1.0))
+    cap_rate = config.get("button_event_budget_cap_rate")
+    budget_rate = max(0.0, label_rate["rate"] * multiplier)
+    if cap_rate is not None:
+        budget_rate = min(budget_rate, max(0.0, float(cap_rate)))
+    target_count = len(probability_rows)
+    max_forced = int(math.ceil(target_count * budget_rate)) if budget_rate > 0.0 else 0
+    if label_rate["positives"] > 0 and target_count > 0 and bool(config.get("button_event_budget_min_one", True)):
+        max_forced = max(1, max_forced)
+
+    event_threshold = float(config.get("button_event_threshold", 1.1))
+    min_token_probability = float(config.get("button_event_min_token_probability", 0.0))
+    scored: list[dict[str, Any]] = []
+    for idx, row in enumerate(probability_rows):
+        event_prob = row.get("button_event_prob")
+        if event_prob is None:
+            continue
+        max_button_prob = max([float(value) for value in row.get("button_probs", [])] or [0.0])
+        event_prob = float(event_prob)
+        score = event_prob * max_button_prob
+        passes_thresholds = event_prob >= event_threshold and max_button_prob >= min_token_probability
+        if passes_thresholds:
+            scored.append(
+                {
+                    "index": idx,
+                    "event_prob": event_prob,
+                    "max_button_prob": max_button_prob,
+                    "score": score,
+                }
+            )
+    scored.sort(key=lambda row: (-float(row["score"]), -float(row["event_prob"]), -float(row["max_button_prob"]), int(row["index"])))
+    selected = scored[:max_forced] if max_forced > 0 else []
+    score_threshold = float(selected[-1]["score"]) if selected else 2.0
+    return {
+        "schema": "button_event_confidence_budget.v1",
+        "status": "pass",
+        "rate_source": str(config.get("button_event_budget_rate_source", "calibration_labels")),
+        "rate_source_rows": label_rate["rows"],
+        "rate_source_positives": label_rate["positives"],
+        "rate_source_positive_rate": label_rate["rate"],
+        "rate_multiplier": multiplier,
+        "cap_rate": None if cap_rate is None else float(cap_rate),
+        "budget_rate": budget_rate,
+        "target_rows_scored": target_count,
+        "threshold_candidate_count": len(scored),
+        "max_forced_events": max_forced,
+        "score_threshold": score_threshold,
+        "selected_preview": selected[:10],
+        "claim_boundary": "Uses labeled train/calibration event-rate prior plus unlabeled target confidence scores only; target labels are not used.",
+    }
+
+
 def _calibrate_factorized_thresholds(
     model: Any,
     torch: Any,
@@ -1116,6 +1210,35 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             device=device,
         )
 
+    button_event_budget = {"status": "skipped", "reason": "disabled"}
+    if config.get("button_event_budgeted_unmasking") and config.get("button_event_auxiliary") and button_vocab:
+        budget_max_rows = config.get("button_event_budget_max_target_rows")
+        budget_rows = target_rows[: int(budget_max_rows)] if budget_max_rows is not None else target_rows
+        target_probability_rows = _collect_factorized_probability_rows(
+            model,
+            torch,
+            budget_rows,
+            config=config,
+            key_vocab=key_vocab,
+            button_vocab=button_vocab,
+            device=device,
+        )
+        budget_rate_source = str(config.get("button_event_budget_rate_source", "calibration_labels"))
+        if budget_rate_source == "fit_labels":
+            rate_rows = fit_rows
+        elif budget_rate_source == "train_labels":
+            rate_rows = train_rows
+        else:
+            rate_rows = calibration_rows or fit_rows[-min(len(fit_rows), int(config.get("factorized_calibration_max_rows", 2000))) :]
+        button_event_budget = _calibrate_button_event_budget(
+            target_probability_rows,
+            rate_rows=rate_rows,
+            button_vocab=button_vocab,
+            config=config,
+        )
+        config["button_event_budget_score_threshold"] = float(button_event_budget["score_threshold"])
+        config["button_event_budget_max_forced_events"] = int(button_event_budget["max_forced_events"])
+
     predictions_path = Path(output_dir) / "predictions.jsonl"
     with predictions_path.open("w", encoding="utf-8") as handle:
         for row in target_rows:
@@ -1147,6 +1270,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
         "predictions_path": str(predictions_path),
         "metrics_path": str(metrics_path),
         "threshold_calibration": threshold_calibration,
+        "button_event_budget": button_event_budget,
         "factorization": {
             "mouse_axis_bins": FDM1_MOUSE_AXIS_BINS,
             "key_vocab": key_vocab,
@@ -1157,6 +1281,8 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             "button_event_threshold": float(config.get("button_event_threshold", 1.1)),
             "button_event_force_topk": int(config.get("button_event_force_topk", 1)),
             "button_event_min_token_probability": float(config.get("button_event_min_token_probability", 0.0)),
+            "button_event_budget_score_threshold": None if config.get("button_event_budget_score_threshold") is None else float(config.get("button_event_budget_score_threshold")),
+            "button_event_budget_max_forced_events": None if config.get("button_event_budget_max_forced_events") is None else int(config.get("button_event_budget_max_forced_events")),
             "key_token_threshold_count": len(config.get("key_token_thresholds", {}) if isinstance(config.get("key_token_thresholds"), dict) else {}),
             "button_token_threshold_count": len(config.get("button_token_thresholds", {}) if isinstance(config.get("button_token_thresholds"), dict) else {}),
         },
