@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import glob
 import json
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Callable, Iterable, Sequence
 
@@ -153,6 +153,19 @@ def merge_motion_and_categorical(motion: Sequence[str], categorical: Sequence[st
     return out
 
 
+def merge_motion_and_categorical_counts(motion: Sequence[str], categorical: Sequence[str]) -> list[str]:
+    """Keep repeated mouse-delta tokens and preserve categorical multiplicity.
+
+    D2E binned keyboard metrics count repeated ``KEY_PRESS_*`` events inside one
+    50 ms row.  The simpler repeat-prior diagnostic intentionally dedupes
+    categorical events, which caps hidden-repeat keyboard accuracy.  Count-aware
+    diagnostics need to preserve the predicted multiplicity while still keeping a
+    stable token order.
+    """
+
+    return [str(token) for token in motion] + [str(token) for token in categorical]
+
+
 def _metrics_payload(accumulators: dict[str, _PaperMetricAccumulator]) -> dict[str, Any]:
     return {name: {"all": accumulator.metrics()} for name, accumulator in sorted(accumulators.items())}
 
@@ -280,6 +293,47 @@ def train_key_repeat_priors(
     }
 
 
+def train_key_repeat_count_priors(
+    *,
+    train_paths: Sequence[str | Path],
+    max_rows: int | None = None,
+    min_support: int = 3,
+) -> dict[str, dict[tuple[Any, ...], tuple[float, float, int, int, int]]]:
+    """Estimate held-key repeat multiplicities from train rows.
+
+    The public paper-compatible keyboard metric compares token counters rather
+    than just token presence.  A held key can produce two ``KEY_PRESS_<code>``
+    tokens in one binned row, so binary repeat-prior diagnostics undercount a
+    large part of the hidden-repeat mass.  This table records both
+    ``P(count>=1)`` and ``P(count>=2)`` for causal held-key contexts.  It is
+    still paired with the noncausal state-delta oracle below, so it remains a
+    diagnostic upper-bound path rather than completion evidence.
+    """
+
+    counts: dict[str, defaultdict[tuple[Any, ...], list[int]]] = {
+        name: defaultdict(lambda: [0, 0, 0, 0]) for name in _REPEAT_CONTEXTS
+    }
+    for row in _iter_rows(train_paths, max_rows=max_rows):
+        gt_counts = Counter(_tokens(row, "ground_truth_tokens"))
+        since = _prior_since_key_transition(row)
+        for code, hold in _prior_key_holds(row).items():
+            repeat_count = max(0, int(gt_counts.get("KEY_PRESS_" + code, 0)))
+            for name, context_fn in _REPEAT_CONTEXTS.items():
+                rec = counts[name][context_fn(code, hold, since)]
+                rec[0] += 1
+                rec[1] += min(repeat_count, 2)
+                rec[2] += int(repeat_count >= 1)
+                rec[3] += int(repeat_count >= 2)
+    return {
+        name: {
+            key: (total_count / n, ge1 / n, n, ge1, ge2)
+            for key, (n, total_count, ge1, ge2) in items.items()
+            if n >= int(min_support)
+        }
+        for name, items in counts.items()
+    }
+
+
 def train_key_transition_priors(
     *,
     train_paths: Sequence[str | Path],
@@ -360,6 +414,69 @@ def build_key_repeat_prior_metrics(
         "context_count": {name: len(model) for name, model in priors.items()},
         "policies": _metrics_payload(accs),
         "claim_boundary": "Repeat-prior diagnostic uses train-prefix statistics plus noncausal next-state delta labels; not G005 completion evidence.",
+    }
+
+
+def build_key_repeat_count_prior_metrics(
+    *,
+    train_paths: Sequence[str | Path],
+    target_paths: Sequence[str | Path],
+    max_train_rows: int | None = None,
+    max_target_rows: int | None = None,
+    thresholds: Sequence[float] = (0.05, 0.1, 0.2, 0.35, 0.5, 0.65),
+    min_support: int = 3,
+) -> dict[str, Any]:
+    priors = train_key_repeat_count_priors(train_paths=train_paths, max_rows=max_train_rows, min_support=min_support)
+    policy_specs: list[tuple[str, str, Callable[[str, int, int], tuple[Any, ...]], float, str]] = []
+    for name, context_fn in _REPEAT_CONTEXTS.items():
+        policy_specs.append((f"{name}_mean_round", name, context_fn, 0.0, "mean_round"))
+        for threshold in thresholds:
+            policy_specs.append((f"{name}_ge12_th{threshold:g}", name, context_fn, float(threshold), "ge12"))
+            policy_specs.append((f"{name}_mean_th{threshold:g}", name, context_fn, float(threshold), "mean_threshold"))
+    accs = {label: _PaperMetricAccumulator(empty_bins_as_correct=False) for label, _name, _fn, _th, _mode in policy_specs}
+    usage = {label: {"predicted_key_press_tokens": 0, "predicted_double_press_tokens": 0} for label, *_ in policy_specs}
+    rows = 0
+    for row, next_row in _iter_rows_with_next(target_paths, max_rows=max_target_rows):
+        gt = _tokens(row, "ground_truth_tokens")
+        motion = previous_motion_tokens(row)
+        base = state_delta_tokens(row, next_row)
+        holds = _prior_key_holds(row)
+        since = _prior_since_key_transition(row)
+        for label, name, context_fn, threshold, mode in policy_specs:
+            categorical = list(base)
+            model = priors.get(name, {})
+            for code, hold in holds.items():
+                rec = model.get(context_fn(code, hold, since))
+                if not rec:
+                    continue
+                mean_count, p_ge1, _n, _ge1, ge2 = rec
+                if mode == "mean_round":
+                    predicted_count = int(round(mean_count))
+                elif mode == "mean_threshold":
+                    predicted_count = int(round(mean_count)) if mean_count >= threshold else 0
+                elif mode == "ge12":
+                    predicted_count = int(p_ge1 >= threshold) + int((ge2 / _n) >= threshold if _n else False)
+                else:  # pragma: no cover
+                    raise KeyError(mode)
+                predicted_count = min(2, max(0, predicted_count))
+                if predicted_count:
+                    usage[label]["predicted_key_press_tokens"] += predicted_count
+                    usage[label]["predicted_double_press_tokens"] += int(predicted_count >= 2)
+                    categorical.extend(["KEY_PRESS_" + code] * predicted_count)
+            accs[label].update(merge_motion_and_categorical_counts(motion, categorical), gt)
+        rows += 1
+    return {
+        "schema": "g005_key_repeat_count_prior_prefix320k_metrics.v1",
+        "rows": rows,
+        "train_paths": [str(path) for path in train_paths],
+        "target_paths": [str(path) for path in target_paths],
+        "motion_source": "previous_event_tokens_with_duplicate_mouse_delta_tokens_preserved",
+        "min_support": int(min_support),
+        "thresholds": [float(value) for value in thresholds],
+        "context_count": {name: len(model) for name, model in priors.items()},
+        "usage": usage,
+        "policies": _metrics_payload(accs),
+        "claim_boundary": "Count-aware repeat-prior diagnostic uses train-prefix statistics plus noncausal next-state delta labels; not G005 completion evidence.",
     }
 
 
@@ -467,11 +584,19 @@ def write_state_transition_diagnostics(
         "previous_context": output / f"{prefix}_prefix_context_heuristic_matrix.json",
         "state_delta_oracle": output / f"{prefix}_state_delta_oracle_prefix320k_metrics.json",
         "key_repeat_prior": output / f"{prefix}_key_repeat_prior_prefix320k_metrics.json",
+        "key_repeat_count_prior": output / f"{prefix}_key_repeat_count_prior_prefix320k_metrics.json",
         "causal_keyboard_repeat": output / f"{prefix}_causal_keyboard_repeat_policy_matrix.json",
     }
     write_json(paths["previous_context"], previous)
     write_json(paths["state_delta_oracle"], state_delta)
     write_json(paths["key_repeat_prior"], repeat)
+    count_repeat = build_key_repeat_count_prior_metrics(
+        train_paths=train_paths,
+        target_paths=target_paths,
+        max_train_rows=max_train_rows,
+        max_target_rows=max_target_rows,
+    )
+    write_json(paths["key_repeat_count_prior"], count_repeat)
     write_json(paths["causal_keyboard_repeat"], causal_keyboard)
     return {
         "schema": "g005_state_transition_diagnostics_summary.v1",
@@ -481,6 +606,7 @@ def write_state_transition_diagnostics(
             "previous_context": previous["rows"],
             "state_delta_oracle": state_delta["rows"],
             "key_repeat_prior": repeat["rows"],
+            "key_repeat_count_prior": count_repeat["rows"],
             "causal_keyboard_repeat": causal_keyboard["rows"],
         },
         "claim_boundary": "Diagnostic artifact index only; state-delta and repeat-prior outputs include noncausal upper bounds.",
