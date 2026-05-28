@@ -233,3 +233,10 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Implemented a recipe-faithful follow-up after button-class target candidates collapsed to zero: `button_event_budget_rank_all_scores=true` lets the confidence budget rank all unlabeled target rows by event/button score instead of filtering first by brittle absolute event/min-token thresholds. Calibration still selects the budget multiplier/FPR cap on held-out train rows; target labels remain unused.
 - Candidate config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_class_relaxed_budget_prefix20k.yaml`. This preserves the public FDM-1-shaped video-token + noncausal masked action-token IDM, categorical button-transition token, and iterative confidence unmasking.
 - Intended bounded H200 probe criterion: restore nonzero target button predictions/TPs without exceeding no-button FPR `<=0.10`.
+
+## 2026-05-28 KST — G005 relaxed-budget H200 prefix probe
+
+- Ran commit `5a443a4` on 1×H200 reservation `rsv-jeonghunpark-20260528-8be6cc` / pod `prod-rsv-jeonghunpark-20260528-8be6cc`; copied evidence locally and cancelled the reservation after artifact copy.
+- Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_relaxed_budget_prefix20k_h200_*`, including run, GPU monitor, W&B status, resolved config, paper metrics, compacted summary, reservation context, and diagnosis. W&B run: `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/uh4slone`.
+- Result is negative/non-terminal but diagnostic: relaxed target ranking restored target button predictions (`175`) and kept no-button FPR below gate (`0.08872`), but exact target true positives remained `0`, strict button F1 `0.0`, and paper-compatible mouse-button accuracy `0.0`.
+- Diagnosis: the issue is now **ranking/semantic alignment**, not budget size or absolute threshold transfer. Next recipe-faithful branch should improve button-token semantics/conditioning itself, e.g. align left/right/down/up mapping diagnostics, add click-region/visual-change auxiliary denoising, or train across a broader prefix before promoting.
