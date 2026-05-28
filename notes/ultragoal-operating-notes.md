@@ -320,3 +320,10 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_video_pretrain_prefix320k_h200_*` plus `artifacts/idm/g005_video_pretrain_prefix320k_reservation_context.json`. The large full run/summary JSONs are not committed; hashes are recorded in the compact summary and raw outputs remain on the PVC worktree.
 - Result remains negative/non-terminal: masked luma reconstruction pretraining completed (`loss=0.015299568372561871`), train rows `320000`, target rows `5000`, wall clock `671.2s`; no-button FPR `0.014000411776816966` stayed low, but keyboard key accuracy `0.0`, mouse-button F1 `0.0`, and semantic button overlap `0` are still zero.
 - Diagnosis: compact video-token pretraining alone is not enough. Next recipe-faithful branch should model full action-token spans/press-release timing with noncausal masked diffusion over temporal windows, not only per-frame button-class ranking.
+
+
+## 2026-05-29T00:28:23+09:00 KST — Next G005 branch: temporal button action-token span diffusion
+
+- Implemented the next recipe-faithful branch after masked video-token pretraining did not improve key/button metrics: the factorized masked-diffusion IDM can now train an auxiliary noncausal button span head over neighboring press/release action-token offsets.
+- New config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_video_pretrain_span_prefix320k.yaml`. It keeps masked luma video-token pretraining and adds `button_span_diffusion=true`, offsets `[-2,-1,0,1,2]`, `button_span_loss_weight=2.0`, and uses the current-offset span logits for button probabilities.
+- Rationale: FDM-1's public IDM labels masked action-token sequences noncausally; D2E button failures look like press/release timing/type collapse, so the next bounded probe should learn temporal action-token spans rather than only isolated per-frame button classes.
