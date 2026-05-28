@@ -97,10 +97,44 @@
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_shard1.log",
         "artifacts/idm/g005_idm_frozen_frame_embedding_feature_cache_contract_summary.json",
         "artifacts/idm/g005_idm_frozen_frame_embedding_feature_cache_contract_inline_summary.json",
-        "artifacts/idm/g005_idm_frozen_frame_embedding_feature_cache_contract_thin_summary.json"
+        "artifacts/idm/g005_idm_frozen_frame_embedding_feature_cache_contract_thin_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_gate_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_run_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_gpu_monitor.csv",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard0_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard1_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard0_progress.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard1_progress.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard0.log",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard1.log"
       ],
+      "cache_backed_dinov2_4096_gate": {
+        "elapsed_seconds": 90.25922107696533,
+        "gpu_monitor_summary": {
+          "available": true,
+          "by_index": {
+            "0": {
+              "max": 100.0,
+              "mean": 2.311111111111111,
+              "samples": 90
+            },
+            "1": {
+              "max": 100.0,
+              "mean": 1.1111111111111112,
+              "samples": 90
+            }
+          },
+          "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-5ed61a9-feature-cache-debug/artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_gpu_monitor.csv",
+          "samples": 180
+        },
+        "json_byte_reduction_ratio": 28.799622447122548,
+        "reservation_id": "rsv-jeonghunpark-20260528-af91c8",
+        "rows": 4096,
+        "speedup_vs_vectorized_json_gate": 1.0156437959976037,
+        "total_byte_reduction_ratio": 3.9434945406102804
+      },
       "claim_boundary": "Materialization/code-path gates only; no trained-model metric evidence; late sharded monitor is not a strong GPU-utilization claim.",
-      "decision": "rerun_monitored_dinov2_gate_with_feature_cache_before_prefix_scale",
+      "decision": "cache_backed_output_required_but_do_not_scale_dinov2_without_utilization_fix_or_pivot",
       "feature_cache_contract": {
         "feature_cache_bytes": 20718,
         "feature_cache_ref_rows": 128,
@@ -133,7 +167,10 @@
         "dinov2_branch_needs_binary_cache_or_representation_pivot",
         "external_feature_cache_refs_supported",
         "thin_output_reduces_real_d2e_probe_bytes_15x",
-        "streaming_idm_train_predict_accepts_feature_cache_refs"
+        "streaming_idm_train_predict_accepts_feature_cache_refs",
+        "cache_backed_dinov2_gate_passed",
+        "feature_cache_reduces_dinov2_output_bytes_3_9x",
+        "cache_backed_dinov2_gate_still_low_mean_gpu_utilization"
       ],
       "gpu_monitor_artifacts": [
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_gpu_monitor.csv",
@@ -141,7 +178,8 @@
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_late_gpu_monitor.csv",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_gpu_monitor.csv",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_gpu_monitor.csv",
-        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_gpu_monitor.csv"
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_gpu_monitor.csv",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_gpu_monitor.csv"
       ],
       "implementation_artifacts": [
         "scripts/run_frame_embedding_shards.py",
@@ -254,7 +292,7 @@
           512
         ]
       },
-      "status": "pass_external_feature_cache_contract_ready",
+      "status": "pass_cache_backed_dinov2_gate_low_utilization",
       "timing_seconds": {
         "dinov2_small_compact_luma_cpu_16_rows": 280.816091299057,
         "dinov2_torchhub_gpu_b128_1024_rows": 45.7456533908844,
@@ -1210,7 +1248,7 @@
     }
   ],
   "recommended_next_actions": [
-    "Rerun a monitored DINO shard gate with EMBED_FEATURE_CACHE=1 and EMBED_THIN_OUTPUT=1; promote to 320k prefix only if throughput/utilization materially improves over JSON-expanded gates.",
+    "Do not launch full frozen-DINO 320k extraction until utilization is fixed; cache-backed output is mandatory but the 4,096-row H200 gate still has low mean utilization.",
     "Do not promote threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, or sequence-prior action-history prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Do not reserve H200s for a simple NEP/label-offset branch: target autocorr at +100ms has keyboard=0.1745, mouse-button=0.0215, Pearson X/Y=0.4149/0.3862 and no nonzero shift meets paper targets on the 320k prefix.",
     "Next G005 branch must change the supervision/modeling problem, not just add causal action history: investigate teacher-assisted event decoding or per-recording latent state estimation that is causal at inference and validated on prefix rows before full 4xH200.",
@@ -1220,5 +1258,5 @@
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779931153.7608647
+  "updated_at_epoch": 1779931533.9808679
 }

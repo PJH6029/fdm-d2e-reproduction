@@ -727,3 +727,35 @@ Claim boundary: feature-cache/scaling infrastructure only. It does not provide a
 trained IDM metric win. The next GPU branch should rerun a monitored DINO gate
 with `EMBED_FEATURE_CACHE=1 EMBED_THIN_OUTPUT=1`; only if utilization/throughput
 is materially better should it scale to the 320k prefix and train a candidate.
+
+### 2026-05-28 KST — cache-backed DINO launcher gate
+
+Reserved a short debug slot `rsv-jeonghunpark-20260528-af91c8` on group B
+(2×H200, 10:00–11:00 KST) to rerun the 4,096-row DINO gate with the new external
+feature-cache path from commit `5ed61a9`.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_run_summary.json`
+  — `status=pass`, `rows_written=4096`, `combined_rows=4096`, elapsed `90.26s`,
+  `thin_output=true`, per-shard feature caches enabled.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_gate_summary.json`
+  — compares the cache-backed output against the previous JSON-expanded 4,096-row
+  DINO output.
+- The previous JSON-expanded combined output was `158,722,812` bytes. Thin JSON
+  plus two feature-cache tensors is `40,249,279` bytes (`3.94x` total reduction;
+  the JSON component alone is `28.8x` smaller).
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_gpu_monitor.csv`
+  — valid pre-launch monitor. GPU0/GPU1 both reached `100%` max, but means were
+  still low (`2.31%`/`1.11%`).
+
+Decision: cache-backed rows solve the JSON size/serialization artifact problem
+and are required for any future frozen-frame prefix run, but they do not fix the
+DINO extraction utilization bottleneck by themselves. Do not promote directly to
+full 320k prefix extraction on production H200s from this evidence alone. The
+next frozen-frame option would need larger shard amortization, more aggressive
+GPU batching, or direct tensor-cache extraction that reduces CPU row handling;
+otherwise pivot to a stronger teacher/representation branch.
+
+Claim boundary: materialization and storage-efficiency evidence only; no trained
+IDM metric evidence and no G005 success claim.

@@ -1,0 +1,61 @@
+{
+  "baseline_json_expanded_elapsed_seconds": 91.671217918396,
+  "checkout": "5ed61a9",
+  "claim_boundary": "Cache-backed DINO materialization gate only; no trained IDM metric evidence and no G005 success claim.",
+  "combined_rows": 4096,
+  "created_at_epoch": 1779931533.9591365,
+  "decision": "cache_backed_output_reduces_bytes_but_does_not_fix_dinov2_compute_utilization",
+  "elapsed_seconds": 90.25922107696533,
+  "feature_output": {
+    "feature_cache_bytes": 34737998,
+    "json_byte_reduction_ratio": 28.799622447122548,
+    "previous_json_expanded_combined_bytes": 158722812,
+    "thin_json_bytes": 5511281,
+    "thin_total_bytes": 40249279,
+    "total_byte_reduction_ratio": 3.9434945406102804
+  },
+  "gpu_monitor": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_gpu_monitor.csv",
+  "gpu_monitor_summary": {
+    "available": true,
+    "by_index": {
+      "0": {
+        "max": 100.0,
+        "mean": 2.311111111111111,
+        "samples": 90
+      },
+      "1": {
+        "max": 100.0,
+        "mean": 1.1111111111111112,
+        "samples": 90
+      }
+    },
+    "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-5ed61a9-feature-cache-debug/artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_gpu_monitor.csv",
+    "samples": 180
+  },
+  "namespace": "p-debug",
+  "pod": "debug-rsv-jeonghunpark-20260528-af91c8",
+  "reservation_id": "rsv-jeonghunpark-20260528-af91c8",
+  "rows": 4096,
+  "run_summary": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_run_summary.json",
+  "schema": "g005_dinov2_feature_cache_gate_summary.v1",
+  "shard_summaries": [
+    "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard0_summary.json",
+    "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard1_summary.json"
+  ],
+  "shards": [
+    {
+      "feature_cache_ref_rows": 2048,
+      "feature_dim": 2120,
+      "feature_output_mode": "external_feature_cache",
+      "rows_written": 2048
+    },
+    {
+      "feature_cache_ref_rows": 2048,
+      "feature_dim": 2120,
+      "feature_output_mode": "external_feature_cache",
+      "rows_written": 2048
+    }
+  ],
+  "speedup_vs_vectorized_json_gate": 1.0156437959976037,
+  "status": "pass_functional_low_utilization"
+}
