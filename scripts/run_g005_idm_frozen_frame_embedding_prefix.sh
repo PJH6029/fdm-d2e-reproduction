@@ -34,6 +34,7 @@ EMBED_BATCH_SIZE="${EMBED_BATCH_SIZE:-16}"
 EMBED_DEVICE="${EMBED_DEVICE:-auto}"
 EMBED_POOLING="${EMBED_POOLING:-cls}"
 EMBED_PROGRESS_ROWS="${EMBED_PROGRESS_ROWS:-25000}"
+EMBED_PATH_MAP="${EMBED_PATH_MAP:-}"
 MATERIALIZE_ONLY="${MATERIALIZE_ONLY:-0}"
 
 mkdir -p artifacts/idm outputs/cluster "$OUTPUT_DIR" "$SOURCE_PREFIX_ROOT" "$EMBED_PREFIX_ROOT" "$(dirname "$GPU_MONITOR_LOG")"
@@ -83,6 +84,10 @@ if [[ "$EMBED_BACKEND" == "hf-vision" ]]; then
 else
   EMBED_PY=(uv run python)
 fi
+PATH_MAP_ARGS=()
+if [[ -n "$EMBED_PATH_MAP" ]]; then
+  PATH_MAP_ARGS=(--path-map "$EMBED_PATH_MAP")
+fi
 
 "${EMBED_PY[@]}" scripts/materialize_frame_embedding_features.py \
   --input-path "$SOURCE_PREFIX_ROOT/train_core.jsonl" \
@@ -98,6 +103,7 @@ fi
   --embedding-pooling "$EMBED_POOLING" \
   --max-rows "$MAX_TRAIN_ROWS" \
   --progress-rows "$EMBED_PROGRESS_ROWS" \
+  "${PATH_MAP_ARGS[@]}" \
   --source-label "g005_frozen_frame_embedding_train_prefix320k"
 
 "${EMBED_PY[@]}" scripts/materialize_frame_embedding_features.py \
@@ -114,6 +120,7 @@ fi
   --embedding-pooling "$EMBED_POOLING" \
   --max-rows "$MAX_TARGET_ROWS" \
   --progress-rows "$EMBED_PROGRESS_ROWS" \
+  "${PATH_MAP_ARGS[@]}" \
   --source-label "g005_frozen_frame_embedding_target_prefix320k"
 
 if [[ "$MATERIALIZE_ONLY" == "1" ]]; then
@@ -177,4 +184,3 @@ summary = {
 }
 pathlib.Path("$RUN_SUMMARY").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\\n")
 PY
-

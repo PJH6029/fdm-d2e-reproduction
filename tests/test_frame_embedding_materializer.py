@@ -9,6 +9,7 @@ from fdm_d2e.data.frame_embedding_materializer import (
     FrameEmbeddingMaterializerConfig,
     materialize_frame_embedding_features,
     parse_offsets,
+    parse_path_remaps,
 )
 from fdm_d2e.training.neural_idm import record_features
 from fdm_d2e.training.streaming_idm import scan_streaming_idm_stats
@@ -60,6 +61,9 @@ def test_parse_offsets_rejects_empty_and_duplicates() -> None:
         parse_offsets("")
     with pytest.raises(ValueError, match="unique"):
         parse_offsets("0,1,1")
+    assert parse_path_remaps(["/root/work=/mnt/ddn/work"]) == (("/root/work", "/mnt/ddn/work"),)
+    with pytest.raises(ValueError, match="FROM=TO"):
+        parse_path_remaps(["/root/work"])
 
 
 def test_dummy_stat_materializer_writes_streaming_feature_overrides(tmp_path: Path) -> None:
@@ -140,3 +144,36 @@ def test_dummy_stat_materializer_detects_missing_frames_when_zero_policy(tmp_pat
     out_row = _read_jsonl(output_path)[0]
     # two embeddings + delta, no existing compact/state features
     assert len(out_row["__streaming_idm_features"]) == 12 * 3
+
+
+def test_materializer_uses_path_remap_without_rewriting_output_rows(tmp_path: Path) -> None:
+    actual_root = tmp_path / "ddn" / "work"
+    actual_frames = actual_root / "data"
+    actual_frames.mkdir(parents=True)
+    _write_ppm(actual_frames / "frame_0000.ppm", value=30)
+    _write_ppm(actual_frames / "frame_0001.ppm", value=50)
+    logical_path = Path("/root/work/data/frame_0000.ppm")
+    row = _row(logical_path, 0.2, idx=0)
+    input_path = tmp_path / "input.jsonl"
+    input_path.write_text(json.dumps(row, sort_keys=True) + "\n")
+    output_path = tmp_path / "out.jsonl"
+    summary_path = tmp_path / "summary.json"
+
+    summary = materialize_frame_embedding_features(
+        FrameEmbeddingMaterializerConfig(
+            input_path=input_path,
+            output_path=output_path,
+            summary_out=summary_path,
+            backend="dummy-stat",
+            frame_offsets=(0, 1),
+            image_size=4,
+            include_summary_features=False,
+            path_remaps=(("/root/work", str(actual_root)),),
+        )
+    )
+
+    assert summary["status"] == "pass"
+    assert summary["missing_frames"] == 0
+    assert summary["path_remaps"] == [{"from": "/root/work", "to": str(actual_root)}]
+    out_row = _read_jsonl(output_path)[0]
+    assert out_row["frame"]["path"] == str(logical_path)

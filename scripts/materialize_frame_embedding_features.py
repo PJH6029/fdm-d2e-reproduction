@@ -12,6 +12,7 @@ from fdm_d2e.data.frame_embedding_materializer import (  # noqa: E402
     FrameEmbeddingMaterializerConfig,
     materialize_frame_embedding_features,
     parse_offsets,
+    parse_path_remaps,
 )
 
 
@@ -52,6 +53,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-rows", type=int, default=None)
     parser.add_argument("--round-digits", default="6", help="Set to -1 to disable rounding.")
     parser.add_argument("--trust-remote-code", action="store_true")
+    parser.add_argument(
+        "--path-map",
+        action="append",
+        default=[],
+        help="Optional frame.path prefix remap, repeated as FROM=TO (e.g. /root/work=/mnt/ddn/prod-runs/user).",
+    )
     parser.add_argument("--progress-output", type=Path)
     parser.add_argument("--progress-rows", type=int, default=50_000)
     parser.add_argument("--source-label", default="g005_frozen_frame_embedding_materialization")
@@ -80,6 +87,7 @@ def main() -> None:
         max_rows=args.max_rows,
         round_digits=_optional_int(args.round_digits),
         trust_remote_code=bool(args.trust_remote_code),
+        path_remaps=parse_path_remaps(args.path_map),
         progress_output=args.progress_output,
         progress_rows=args.progress_rows,
         source_label=args.source_label,
@@ -92,4 +100,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

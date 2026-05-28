@@ -169,6 +169,7 @@ class FrameEmbeddingMaterializerConfig:
     max_rows: int | None = None
     round_digits: int | None = 6
     trust_remote_code: bool = False
+    path_remaps: tuple[tuple[str, str], ...] = ()
     progress_output: Path | None = None
     progress_rows: int = 50_000
     source_label: str = "g005_frozen_frame_embedding_materialization"
@@ -287,6 +288,44 @@ def _build_embedder(config: FrameEmbeddingMaterializerConfig) -> Any:
     raise ValueError(f"unsupported frame embedding backend: {config.backend}")
 
 
+def parse_path_remaps(values: Sequence[str] | None) -> tuple[tuple[str, str], ...]:
+    remaps: list[tuple[str, str]] = []
+    for raw in values or []:
+        if "=" not in raw:
+            raise ValueError(f"path remap must be FROM=TO, got {raw!r}")
+        source, target = raw.split("=", 1)
+        source = source.rstrip("/")
+        target = target.rstrip("/")
+        if not source or not target:
+            raise ValueError(f"path remap must have non-empty FROM and TO: {raw!r}")
+        remaps.append((source, target))
+    # Longest source prefix first makes nested remaps deterministic.
+    return tuple(sorted(remaps, key=lambda item: len(item[0]), reverse=True))
+
+
+def _row_for_frame_lookup(row: dict[str, Any], path_remaps: Sequence[tuple[str, str]]) -> dict[str, Any]:
+    if not path_remaps:
+        return row
+    frame = row.get("frame")
+    if not isinstance(frame, dict):
+        return row
+    raw_path = frame.get("path")
+    if not isinstance(raw_path, str):
+        return row
+    mapped_path = raw_path
+    for source, target in path_remaps:
+        if mapped_path == source or mapped_path.startswith(source + "/"):
+            mapped_path = target + mapped_path[len(source) :]
+            break
+    if mapped_path == raw_path:
+        return row
+    mapped_frame = dict(frame)
+    mapped_frame["path"] = mapped_path
+    mapped_row = dict(row)
+    mapped_row["frame"] = mapped_frame
+    return mapped_row
+
+
 def _flush_batch(
     rows: Sequence[dict[str, Any]],
     frames_by_row: Sequence[Sequence[bytes]],
@@ -379,6 +418,7 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
         "backend": config.backend,
         "model_id": config.model_id,
         "frame_offsets": list(config.frame_offsets),
+        "path_remaps": list(config.path_remaps),
         "source_label": config.source_label,
     }
     try:
@@ -402,7 +442,7 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
                 )
                 dataset_fingerprint.update(b"\n")
                 batch_rows.append(row)
-                batch_frames.append(provider.frames(row, offsets=config.frame_offsets))
+                batch_frames.append(provider.frames(_row_for_frame_lookup(row, config.path_remaps), offsets=config.frame_offsets))
                 if len(batch_rows) >= max(1, int(config.batch_size)):
                     output_rows, emb_dim = _flush_batch(batch_rows, batch_frames, embedder=embedder, config=config)
                     embedding_dim_per_frame = emb_dim
@@ -469,6 +509,7 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
         "image_size": int(config.image_size),
         "frame_fps": int(config.frame_fps),
         "missing_frame_policy": str(config.missing_frame_policy),
+        "path_remaps": [{"from": source, "to": target} for source, target in config.path_remaps],
         "missing_frames": int(provider.missing_frames),
         "video_restarts": int(provider.video_restarts),
         "batch_size": int(config.batch_size),
@@ -491,4 +532,3 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
     write_json(config.summary_out, summary)
     _write_progress(config.progress_output, {**progress_base, "status": status, "rows_seen": rows_seen, "rows_written": rows_written})
     return summary
-
