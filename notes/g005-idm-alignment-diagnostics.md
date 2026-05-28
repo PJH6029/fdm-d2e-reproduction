@@ -1075,3 +1075,19 @@ Evidence:
 Result: reject this joint table branch. Alignment has zero sequence-id mismatches and the best policy (`joint_union_held_bucket_only_top_th0.05_s1`) improves the 50k base keyboard from `0.15505` to only `0.16187`, while preserving base button `0.16138`, Pearson X/Y `0.75981/0.67937`, strict button F1 `0.26748`, and no-button FPR `0.03899`. This is below the previous held-key hash 50k gate (`0.19928`) and far below the paper keyboard target `0.73`.
 
 Decision: do not reserve GPUs for this table/memorization specialist. Independent hash/table and joint tabular sequence-state variants are exhausted; the next viable G005 branch must move to a stronger learned sequence/teacher-assisted mechanism rather than another CPU table over held-key metadata.
+
+### 2026-05-28 KST — visual/state action-memory retrieval rejected
+
+Implemented a CPU prefix diagnostic that retrieves train-token multisets from quantized visual/state contexts (`frame.features`, `next_frame_features`, 4×4 pooled grid transitions, held-key state, previous key context) and composes the retrieved action memory with the aligned `event_state_duration_context` base stream.
+
+Evidence:
+
+- `src/fdm_d2e/eval/visual_action_retrieval_diagnostic.py`
+- `scripts/build_g005_visual_action_retrieval_diagnostic.py`
+- `tests/test_visual_action_retrieval_diagnostic.py`
+- `artifacts/idm/g005_idm_visual_action_retrieval_diagnostic_prefix50k_train100k.json`
+- `artifacts/idm/g005_idm_visual_action_retrieval_diagnostic_prefix50k_train100k_storage.log`
+
+Result: reject visual/state action-memory retrieval. The storage-shell gate used clean worktree `c75f86c`, 100k train rows, 50k target rows, and zero sequence-id mismatches. Best policy `retrieval_union_categorical_base_motion_state_only_th0.2_s1` reached keyboard `0.15816` versus base `0.15505`, while button dropped to `0.15585`; Pearson X/Y stayed at base `0.75981/0.67937`; no-button FPR was `0.04110`. This underperforms both the held-key hash 50k gate (`0.19928`) and the joint key-state table (`0.16187`), and is far below paper target `0.73`.
+
+Decision: do not promote approximate visual/action-memory retrieval. The immediate remaining viable route is not another quantized CPU memory/table branch; use released-GIDM/teacher debugging or a genuinely stronger neural sequence model with explicit repeat-key supervision and calibrated motion/button heads.

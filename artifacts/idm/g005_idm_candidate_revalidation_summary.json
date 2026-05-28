@@ -964,6 +964,46 @@
       "storage_log": "artifacts/idm/g005_idm_joint_key_state_diagnostic_prefix50k_train100k_selected_storage.log",
       "strict_no_button_fpr": 0.0389908256880734,
       "train_rows": 100000
+    },
+    {
+      "alignment": {
+        "examples": [],
+        "missing_base_prediction_rows": 0,
+        "sequence_id_mismatches": 0
+      },
+      "artifact": "artifacts/idm/g005_idm_visual_action_retrieval_diagnostic_prefix50k_train100k.json",
+      "base_keyboard_accuracy": 0.15504749637739496,
+      "base_mouse_button_accuracy": 0.1613823715916297,
+      "base_pearson_x": 0.7598068765377537,
+      "base_pearson_y": 0.6793739696281583,
+      "best_keyboard_accuracy": 0.15816366029263762,
+      "best_mouse_button_accuracy": 0.15584813227189223,
+      "best_pearson_x": 0.7598068765377537,
+      "best_pearson_y": 0.6793739696281583,
+      "best_policy": "retrieval_union_categorical_base_motion_state_only_th0.2_s1",
+      "claim_boundary": "CPU/storage-shell aligned-prefix visual/state action-memory diagnostic only; no G005 completion claim and no GPU/full-corpus promotion evidence.",
+      "context_count": {
+        "state_only": 43473,
+        "state_visual_features": 49417,
+        "state_visual_grid4": 64963,
+        "visual_features": 6925,
+        "visual_grid4": 41190
+      },
+      "decision": "reject_visual_action_retrieval_memory",
+      "finding_codes": [
+        "visual_action_retrieval_aligned_prefix_has_zero_sequence_mismatches",
+        "visual_action_retrieval_underperforms_held_hash_gate",
+        "visual_action_retrieval_best_keyboard_far_below_paper_target",
+        "do_not_reserve_gpu_for_action_memory_retrieval"
+      ],
+      "name": "visual_action_retrieval_prefix50k_train100k",
+      "paper_target_passes": false,
+      "policy_count": 81,
+      "rows": 50000,
+      "status": "pass",
+      "storage_log": "artifacts/idm/g005_idm_visual_action_retrieval_diagnostic_prefix50k_train100k_storage.log",
+      "strict_no_button_fpr": 0.04110009829619921,
+      "train_rows": 100000
     }
   ],
   "paper_targets": {
@@ -2195,5 +2235,5 @@
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779949819.020137
+  "updated_at_epoch": 1779950577.2903602
 }
