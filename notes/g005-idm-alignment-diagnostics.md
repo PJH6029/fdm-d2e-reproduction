@@ -681,3 +681,49 @@ forward, or a different representation branch) before production-scale GPU use.
 
 Claim boundary: preprocessing/throughput diagnostic only; no trained IDM metric
 evidence and no G005 success claim.
+
+### 2026-05-28 KST — external feature-cache contract for frozen-frame branch
+
+Implemented the next non-GPU scaling fix after the DINO JSONL path remained
+low-utilization: materialized rows can now store only
+`__streaming_idm_feature_cache` references while the actual feature vectors live
+in a torch `.pt` tensor cache. The same refs are consumed by streaming IDM stats,
+training-cache construction, training, and prediction.
+
+Implementation:
+
+- `scripts/materialize_frame_embedding_features.py` accepts `--feature-cache-out`
+  and `--thin-output`.
+- `scripts/run_frame_embedding_shards.py` accepts `--feature-cache-dir` and
+  passes per-shard cache paths to the materializer.
+- `scripts/run_g005_idm_frozen_frame_embedding_prefix.sh` supports
+  `EMBED_FEATURE_CACHE=1`, `EMBED_THIN_OUTPUT=1`, and
+  `EMBED_FEATURE_CACHE_ROOT=...` so prefix extraction can avoid JSON-expanded
+  feature arrays.
+- `src/fdm_d2e/training/streaming_idm.py` can read external feature-cache refs
+  through an LRU cache and can train/predict through the existing training-cache
+  path from those refs.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_frozen_frame_embedding_feature_cache_contract_summary.json`
+  — real D2E 128-row compact-luma contract probe with `status=pass`.
+- Inline JSON for the 128-row probe was `2,607,781` bytes. Thin JSON plus feature
+  cache was `170,055` bytes, a `15.33x` total byte reduction while preserving
+  `input_dim=36` through `scan_streaming_idm_stats`.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_feature_cache_contract_inline_summary.json`
+  and `..._thin_summary.json` preserve materializer provenance/hashes.
+- Unit/integration coverage now includes materializer cache refs, shard-launcher
+  cache refs, and a tiny end-to-end streaming IDM train/predict run from external
+  feature-cache rows.
+
+Verification: `python3 -m py_compile` for the materializer, streaming IDM, and
+launcher scripts; `bash -n scripts/run_g005_idm_frozen_frame_embedding_prefix.sh`;
+`uv run pytest -q tests/test_frame_embedding_materializer.py
+tests/test_frame_embedding_shard_launcher.py tests/test_streaming_idm_contract.py
+tests/test_training_run_scripts.py` => 67 passed.
+
+Claim boundary: feature-cache/scaling infrastructure only. It does not provide a
+trained IDM metric win. The next GPU branch should rerun a monitored DINO gate
+with `EMBED_FEATURE_CACHE=1 EMBED_THIN_OUTPUT=1`; only if utilization/throughput
+is materially better should it scale to the 320k prefix and train a candidate.

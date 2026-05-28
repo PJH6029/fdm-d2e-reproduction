@@ -258,3 +258,57 @@ def test_gray_byte_frames_to_imagenet_tensor_rejects_non_square_frames() -> None
     torch = pytest.importorskip("torch")
     with pytest.raises(ValueError, match="square grayscale"):
         _gray_byte_frames_to_imagenet_tensor(torch, [bytes([1, 2, 3])], image_size=2)
+
+
+def test_materializer_can_write_external_feature_cache_refs_with_thin_rows(tmp_path: Path) -> None:
+    pytest.importorskip("torch")
+    rows = [_row(Path(f"/root/work/data/missing_{idx}.mkv#frame={idx}"), 0.2 + idx, idx=idx) for idx in range(3)]
+    input_path = tmp_path / "input.jsonl"
+    input_path.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
+    output_path = tmp_path / "thin.jsonl"
+    summary_path = tmp_path / "summary.json"
+    cache_path = tmp_path / "features.pt"
+
+    inline_summary = materialize_frame_embedding_features(
+        FrameEmbeddingMaterializerConfig(
+            input_path=input_path,
+            output_path=tmp_path / "inline.jsonl",
+            summary_out=tmp_path / "inline_summary.json",
+            backend="dummy-stat",
+            frame_source="compact-luma",
+            frame_offsets=(0, 2),
+            image_size=8,
+            include_summary_features=False,
+        )
+    )
+    summary = materialize_frame_embedding_features(
+        FrameEmbeddingMaterializerConfig(
+            input_path=input_path,
+            output_path=output_path,
+            summary_out=summary_path,
+            backend="dummy-stat",
+            frame_source="compact-luma",
+            frame_offsets=(0, 2),
+            image_size=8,
+            include_summary_features=False,
+            feature_cache_out=cache_path,
+            thin_output=True,
+        )
+    )
+
+    assert summary["status"] == "pass"
+    assert summary["feature_output_mode"] == "external_feature_cache"
+    assert summary["feature_override_rows"] == 0
+    assert summary["feature_cache_ref_rows"] == 3
+    assert summary["feature_cache"]["bytes"] > 0
+    assert cache_path.exists()
+    thin_rows = _read_jsonl(output_path)
+    assert len(thin_rows) == 3
+    assert "frame" not in thin_rows[0]
+    assert "next_frame_luma16" not in thin_rows[0]
+    assert "__streaming_idm_features" not in thin_rows[0]
+    assert thin_rows[0]["__streaming_idm_feature_cache"]["row_index"] == 0
+    assert thin_rows[2]["__streaming_idm_feature_cache"]["row_index"] == 2
+    cached_stats = scan_streaming_idm_stats(output_path, feature_mode="summary")
+    assert cached_stats["input_dim"] == inline_summary["feature_dim"]
+    assert cached_stats["num_examples"] == 3

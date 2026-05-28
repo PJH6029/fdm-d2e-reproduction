@@ -1789,3 +1789,63 @@ def test_streaming_idm_stats_can_scan_multiple_record_files(tmp_path: Path):
     assert stats["source_ids"] == ["d2e_480p"]
     assert "KEY_PRESS_87" in stats["category_vocab"]
     assert stats["last_tokens_by_recording"]["d2e_480p:Apex/rec"]
+
+
+def test_streaming_idm_trains_from_external_feature_cache_refs(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    torch = pytest.importorskip("torch")
+    train_cache = tmp_path / "train_features.pt"
+    target_cache = tmp_path / "target_features.pt"
+    train_rows = []
+    target_rows = []
+    train_features = []
+    target_features = []
+    for idx in range(8):
+        row = _record(idx, "train_core")
+        row = {key: row[key] for key in ("sequence_id", "recording_id", "game", "timestamp_ns", "bin_index", "split", "ground_truth_tokens")}
+        row["__streaming_idm_feature_cache"] = {"path": str(train_cache), "row_index": idx, "feature_dim": 2}
+        train_rows.append(row)
+        train_features.append([float(idx), float(idx % 2)])
+    for idx in range(4):
+        row = _record(idx + 8, "eval")
+        row = {key: row[key] for key in ("sequence_id", "recording_id", "game", "timestamp_ns", "bin_index", "split", "eval_split_tags", "ground_truth_tokens")}
+        row["__streaming_idm_feature_cache"] = {"path": str(target_cache), "row_index": idx, "feature_dim": 2}
+        target_rows.append(row)
+        target_features.append([float(idx + 8), float((idx + 8) % 2)])
+    torch.save({"schema": "streaming_idm_feature_cache.v1", "features": torch.tensor(train_features), "rows": 8, "feature_dim": 2}, train_cache)
+    torch.save({"schema": "streaming_idm_feature_cache.v1", "features": torch.tensor(target_features), "rows": 4, "feature_dim": 2}, target_cache)
+    train_path = tmp_path / "train.jsonl"
+    target_path = tmp_path / "target.jsonl"
+    _write_jsonl(train_path, train_rows)
+    _write_jsonl(target_path, target_rows)
+
+    stats = scan_streaming_idm_stats(train_path, feature_mode="summary", categorical_min_count=1)
+    assert stats["input_dim"] == 2
+    summary = train_streaming_idm(
+        {
+            "model_name": "tiny_streaming_idm_feature_cache_refs",
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(tmp_path / "idm_feature_cache_refs"),
+            "feature_mode": "summary",
+            "hidden_dim": 8,
+            "depth": 1,
+            "epochs": 1,
+            "eval_interval_epochs": 0,
+            "batch_size": 4,
+            "training_cache_dir": str(tmp_path / "idm_feature_cache_train_cache"),
+            "training_cache_chunk_size": 4,
+            "categorical_min_count": 1,
+            "mouse_head_mode": "axis_softmax",
+            "prediction_workers": 1,
+            "validate_pseudolabels": False,
+            "seed": 73,
+            "force_cpu": True,
+        }
+    )
+
+    assert summary["metadata"]["input_dim"] == 2
+    assert summary["metadata"]["training_cache"]["enabled"] is True
+    assert summary["metadata"]["target_records"] == 4
+    assert Path(summary["predictions_path"]).exists()

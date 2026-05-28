@@ -177,6 +177,10 @@ def build_materializer_command(args: argparse.Namespace, spec: ShardSpec) -> lis
         "--source-label",
         f"{args.source_label}_shard{spec.index}",
     ]
+    if args.feature_cache_dir is not None:
+        cache_path = args.feature_cache_dir / f"shard_{spec.index:04d}_features.pt"
+        cmd.extend(["--feature-cache-out", str(cache_path)])
+    _add_bool_flag(cmd, "--thin-output", args.thin_output)
     _add_bool_flag(cmd, "--no-normalize-embeddings", args.no_normalize_embeddings)
     _add_bool_flag(cmd, "--no-embedding-deltas", args.no_embedding_deltas)
     _add_bool_flag(cmd, "--no-summary-features", args.no_summary_features)
@@ -252,6 +256,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--summary-out", required=True, type=Path)
     parser.add_argument("--combined-output-path", type=Path)
+    parser.add_argument("--feature-cache-dir", type=Path)
+    parser.add_argument("--thin-output", action="store_true")
     parser.add_argument("--artifact-dir", type=Path)
     parser.add_argument("--artifact-prefix", default="frame_embedding_shards")
     parser.add_argument("--total-rows", required=True, type=int)
@@ -291,6 +297,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     args.materializer_script = args.materializer_script.resolve()
     if args.combined_output_path is not None:
         args.combined_output_path = args.combined_output_path.resolve()
+    if args.feature_cache_dir is not None:
+        args.feature_cache_dir = args.feature_cache_dir.resolve()
+        args.feature_cache_dir.mkdir(parents=True, exist_ok=True)
     if args.gpu_monitor_output is None:
         args.gpu_monitor_output = args.artifact_dir / f"{args.artifact_prefix}_gpu_monitor.csv"
     else:
@@ -377,6 +386,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         "input_path": str(args.input_path),
         "output_dir": str(args.output_dir),
         "combined_output_path": combined_output_path,
+        "feature_cache_dir": str(args.feature_cache_dir) if args.feature_cache_dir is not None else None,
+        "thin_output": bool(args.thin_output),
         "combined_rows": combined_rows,
         "total_rows": args.total_rows,
         "start_row": args.start_row,

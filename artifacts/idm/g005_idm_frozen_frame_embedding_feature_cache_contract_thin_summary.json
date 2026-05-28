@@ -1,0 +1,66 @@
+{
+  "schema": "g005_frozen_frame_embedding_materializer.v1",
+  "status": "pass",
+  "error_count": 0,
+  "errors": [],
+  "source_label": "g005_feature_cache_contract_thin128",
+  "input": {
+    "path": "/tmp/g005_target_sample4096.jsonl",
+    "bytes": 83758477,
+    "mtime_ns": 1779929965639330960,
+    "sha256": "aa418b0c5cde4a0da404e9ce4435028c9b954814e43baef1675a9f63a7ebfdb6"
+  },
+  "output": {
+    "path": "outputs/data/g005_feature_cache_contract/thin_target128.jsonl",
+    "bytes": 149337,
+    "mtime_ns": 1779931049483631081,
+    "sha256": "3cf62f5a0da50df4a55888bffce437f6ac82f99de11c40703a090a45280d316f"
+  },
+  "rows_seen": 128,
+  "source_rows_scanned": 128,
+  "source_rows_skipped": 0,
+  "rows_written": 128,
+  "feature_override_rows": 0,
+  "feature_cache_ref_rows": 128,
+  "feature_output_mode": "external_feature_cache",
+  "feature_cache": {
+    "path": "outputs/data/g005_feature_cache_contract/thin_target128_features.pt",
+    "bytes": 20718,
+    "mtime_ns": 1779931050358450796,
+    "sha256": "eea52e3128bbfbb7e8273e1c59f6b8493aa664613e5aef8e7e5e502ab918f150"
+  },
+  "thin_output": true,
+  "feature_dim": 36,
+  "unique_feature_lengths": [
+    36
+  ],
+  "embedding_dim_per_frame": 12,
+  "backend": "dummy-stat",
+  "model_id": "deterministic-frame-statistics",
+  "frame_offsets": [
+    0,
+    2
+  ],
+  "frame_source": "compact-luma",
+  "image_size": 8,
+  "frame_fps": 20,
+  "missing_frame_policy": "zero",
+  "path_remaps": [],
+  "missing_frames": 0,
+  "video_restarts": 0,
+  "batch_size": 32,
+  "embedding_pooling": "cls",
+  "hf_preprocess": null,
+  "normalize_embeddings": true,
+  "include_embedding_deltas": true,
+  "include_summary_features": false,
+  "summary_feature_mode": null,
+  "max_rows": 128,
+  "skip_rows": 0,
+  "round_digits": 6,
+  "dataset_fingerprint": "608da1a0564b7784d9403095c4e21b39e74fc11bc5d6f92e572f78f34e1c1e81",
+  "started_at_unix": 1779931049.4735708,
+  "finished_at_unix": 1779931050.4179826,
+  "elapsed_seconds": 0.9444117546081543,
+  "claim_boundary": "Frozen frame-embedding materialization is a prefix-gated G005 diagnostic/preparation artifact. It is not trained-model evidence until a downstream IDM run beats the paper-target metrics."
+}

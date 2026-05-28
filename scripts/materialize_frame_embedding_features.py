@@ -80,6 +80,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--progress-output", type=Path)
     parser.add_argument("--progress-rows", type=int, default=50_000)
     parser.add_argument("--source-label", default="g005_frozen_frame_embedding_materialization")
+    parser.add_argument(
+        "--feature-cache-out",
+        type=Path,
+        help="Write feature vectors to a torch tensor cache and store __streaming_idm_feature_cache refs in JSONL rows.",
+    )
+    parser.add_argument("--thin-output", action="store_true", help="Drop heavy frame/compact-luma fields from output JSONL rows.")
     return parser.parse_args()
 
 
@@ -112,6 +118,8 @@ def main() -> None:
         progress_output=args.progress_output,
         progress_rows=args.progress_rows,
         source_label=args.source_label,
+        feature_cache_out=args.feature_cache_out,
+        thin_output=bool(args.thin_output),
     )
     summary = materialize_frame_embedding_features(config)
     print(json.dumps({"status": summary["status"], "rows": summary["rows_written"], "feature_dim": summary["feature_dim"]}, sort_keys=True))

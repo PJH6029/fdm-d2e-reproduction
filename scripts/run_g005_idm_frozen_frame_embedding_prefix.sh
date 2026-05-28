@@ -41,6 +41,9 @@ EMBED_SHARD_COUNT="${EMBED_SHARD_COUNT:-1}"
 EMBED_SHARD_DEVICES="${EMBED_SHARD_DEVICES:-}"
 EMBED_SHARD_MONITOR="${EMBED_SHARD_MONITOR:-1}"
 EMBED_SHARD_MONITOR_INTERVAL_SECONDS="${EMBED_SHARD_MONITOR_INTERVAL_SECONDS:-10}"
+EMBED_FEATURE_CACHE="${EMBED_FEATURE_CACHE:-0}"
+EMBED_THIN_OUTPUT="${EMBED_THIN_OUTPUT:-$EMBED_FEATURE_CACHE}"
+EMBED_FEATURE_CACHE_ROOT="${EMBED_FEATURE_CACHE_ROOT:-$EMBED_PREFIX_ROOT/feature_cache}"
 MATERIALIZE_ONLY="${MATERIALIZE_ONLY:-0}"
 
 mkdir -p artifacts/idm outputs/cluster "$OUTPUT_DIR" "$SOURCE_PREFIX_ROOT" "$EMBED_PREFIX_ROOT" "$(dirname "$GPU_MONITOR_LOG")"
@@ -114,6 +117,13 @@ materialize_embedding_split() {
     else
       shard_monitor_args=(--gpu-monitor-output "${summary_path%.json}_gpu_monitor.csv" --gpu-monitor-interval-seconds "$EMBED_SHARD_MONITOR_INTERVAL_SECONDS")
     fi
+    local feature_cache_args=()
+    if [[ "$EMBED_FEATURE_CACHE" != "0" ]]; then
+      feature_cache_args=(--feature-cache-dir "$EMBED_FEATURE_CACHE_ROOT/${split_name}")
+    fi
+    if [[ "$EMBED_THIN_OUTPUT" != "0" ]]; then
+      feature_cache_args+=(--thin-output)
+    fi
     "${EMBED_PY[@]}" scripts/run_frame_embedding_shards.py \
       --input-path "$input_path" \
       --output-dir "$shard_dir" \
@@ -136,8 +146,17 @@ materialize_embedding_split() {
       --progress-rows "$EMBED_PROGRESS_ROWS" \
       "${PATH_MAP_ARGS[@]}" \
       "${shard_monitor_args[@]}" \
+      "${feature_cache_args[@]}" \
       --source-label "$source_label"
   else
+    local feature_cache_args=()
+    if [[ "$EMBED_FEATURE_CACHE" != "0" ]]; then
+      mkdir -p "$EMBED_FEATURE_CACHE_ROOT/${split_name}"
+      feature_cache_args=(--feature-cache-out "$EMBED_FEATURE_CACHE_ROOT/${split_name}/features.pt")
+    fi
+    if [[ "$EMBED_THIN_OUTPUT" != "0" ]]; then
+      feature_cache_args+=(--thin-output)
+    fi
     "${EMBED_PY[@]}" scripts/materialize_frame_embedding_features.py \
       --input-path "$input_path" \
       --output-path "$output_path" \
@@ -155,6 +174,7 @@ materialize_embedding_split() {
       --max-rows "$total_rows" \
       --progress-rows "$EMBED_PROGRESS_ROWS" \
       "${PATH_MAP_ARGS[@]}" \
+      "${feature_cache_args[@]}" \
       --source-label "$source_label"
   fi
 }
@@ -189,6 +209,9 @@ summary = {
   "paper_metrics": None,
   "train_embedding_summary": "$TRAIN_EMBED_SUMMARY",
   "target_embedding_summary": "$TARGET_EMBED_SUMMARY",
+  "feature_cache_enabled": "$EMBED_FEATURE_CACHE",
+  "thin_output": "$EMBED_THIN_OUTPUT",
+  "feature_cache_root": "$EMBED_FEATURE_CACHE_ROOT",
   "gpu_monitor_log": "$GPU_MONITOR_LOG",
   "claim_boundary": "Frozen frame-embedding prefix materialization only; no trained-model metric claim."
 }
@@ -231,6 +254,9 @@ summary = {
   "config": "$CONFIG",
   "train_embedding_summary": "$TRAIN_EMBED_SUMMARY",
   "target_embedding_summary": "$TARGET_EMBED_SUMMARY",
+  "feature_cache_enabled": "$EMBED_FEATURE_CACHE",
+  "thin_output": "$EMBED_THIN_OUTPUT",
+  "feature_cache_root": "$EMBED_FEATURE_CACHE_ROOT",
   "paper_metrics": json.load(open("artifacts/idm/g005_idm_frozen_frame_embedding_prefix320k_paper_metrics.json")),
   "gpu_monitor_log": "$GPU_MONITOR_LOG",
   "wandb_sidecar_status": "$WANDB_SIDECAR_STATUS",

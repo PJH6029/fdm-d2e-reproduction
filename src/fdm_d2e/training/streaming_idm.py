@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections import OrderedDict
 import os
 import glob
 import multiprocessing as mp
@@ -323,10 +324,58 @@ def _action_history_len_from_config(config: dict[str, Any]) -> int:
     return history_len
 
 
+_FEATURE_CACHE_TENSOR_LRU: "OrderedDict[str, Any]" = OrderedDict()
+_FEATURE_CACHE_TENSOR_LRU_MAX = 4
+
+
+def _load_feature_cache_tensor(path: str | Path) -> Any:
+    cache_path = str(Path(path))
+    cached = _FEATURE_CACHE_TENSOR_LRU.get(cache_path)
+    if cached is not None:
+        _FEATURE_CACHE_TENSOR_LRU.move_to_end(cache_path)
+        return cached
+    try:
+        import torch
+    except Exception as exc:  # pragma: no cover - only needed for external feature cache rows.
+        raise RuntimeError("external __streaming_idm_feature_cache rows require torch") from exc
+    try:
+        payload = torch.load(cache_path, map_location="cpu", weights_only=False)
+    except TypeError:  # pragma: no cover - older torch releases.
+        payload = torch.load(cache_path, map_location="cpu")
+    tensor = payload.get("features") if isinstance(payload, dict) else payload
+    if tensor is None:
+        raise ValueError(f"feature cache lacks features tensor: {cache_path}")
+    _FEATURE_CACHE_TENSOR_LRU[cache_path] = tensor
+    _FEATURE_CACHE_TENSOR_LRU.move_to_end(cache_path)
+    while len(_FEATURE_CACHE_TENSOR_LRU) > _FEATURE_CACHE_TENSOR_LRU_MAX:
+        _FEATURE_CACHE_TENSOR_LRU.popitem(last=False)
+    return tensor
+
+
+def _feature_cache_record_features(row: dict[str, Any]) -> list[float] | None:
+    ref = row.get("__streaming_idm_feature_cache")
+    if ref is None:
+        return None
+    if not isinstance(ref, dict):
+        raise ValueError("__streaming_idm_feature_cache must be an object")
+    path = ref.get("path")
+    row_index = ref.get("row_index")
+    if path is None or row_index is None:
+        raise ValueError("__streaming_idm_feature_cache requires path and row_index")
+    tensor = _load_feature_cache_tensor(str(path))
+    idx = int(row_index)
+    if idx < 0 or idx >= int(tensor.shape[0]):
+        raise IndexError(f"feature cache row_index out of bounds for {path}: {idx}")
+    return [float(value) for value in tensor[idx].float().tolist()]
+
+
 def _base_record_features(row: dict[str, Any], *, feature_mode: str) -> list[float]:
     override = row.get("__streaming_idm_features")
     if override is not None:
         return [float(value) for value in override]
+    cached = _feature_cache_record_features(row)
+    if cached is not None:
+        return cached
     return [float(value) for value in record_features(row, feature_mode=feature_mode)]
 
 
@@ -339,7 +388,7 @@ def _record_features_with_history(
     history: list[list[str]] | None = None,
     button_state: dict[str, float] | None = None,
 ) -> list[float]:
-    values = [float(value) for value in record_features(row, feature_mode=feature_mode)]
+    values = _base_record_features(row, feature_mode=feature_mode)
     if history_len <= 0:
         return values
     if history is None or button_state is None:

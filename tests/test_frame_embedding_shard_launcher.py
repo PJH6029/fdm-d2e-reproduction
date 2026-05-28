@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+
+import pytest
 from pathlib import Path
 
 from scripts.run_frame_embedding_shards import build_shard_plan, summarize_gpu_monitor
@@ -122,3 +124,64 @@ def test_summarize_gpu_monitor_parses_nvidia_smi_csv(tmp_path: Path) -> None:
     assert summary["by_index"]["0"]["samples"] == 2
     assert summary["by_index"]["0"]["mean"] == 50.0
     assert summary["by_index"]["1"]["max"] == 50.0
+
+
+def test_shard_launcher_can_emit_feature_cache_refs(tmp_path: Path) -> None:
+    pytest.importorskip("torch")
+    repo_root = Path(__file__).resolve().parents[1]
+    input_path = tmp_path / "input.jsonl"
+    input_path.write_text("\n".join(json.dumps(_row(idx), sort_keys=True) for idx in range(4)) + "\n")
+    summary_path = tmp_path / "artifacts" / "run_summary.json"
+    combined_path = tmp_path / "combined.jsonl"
+    feature_cache_dir = tmp_path / "feature_cache"
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(repo_root / "scripts" / "run_frame_embedding_shards.py"),
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(tmp_path / "shards"),
+            "--artifact-dir",
+            str(tmp_path / "artifacts"),
+            "--summary-out",
+            str(summary_path),
+            "--combined-output-path",
+            str(combined_path),
+            "--feature-cache-dir",
+            str(feature_cache_dir),
+            "--thin-output",
+            "--artifact-prefix",
+            "unit_cache",
+            "--total-rows",
+            "4",
+            "--shard-count",
+            "2",
+            "--backend",
+            "dummy-stat",
+            "--frame-source",
+            "compact-luma",
+            "--frame-offsets",
+            "0,2",
+            "--image-size",
+            "8",
+            "--no-summary-features",
+            "--no-gpu-monitor",
+        ],
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    summary = json.loads(summary_path.read_text())
+    assert summary["status"] == "pass"
+    assert summary["thin_output"] is True
+    assert summary["feature_cache_dir"] == str(feature_cache_dir.resolve())
+    rows = _read_jsonl(combined_path)
+    assert "frame" not in rows[0]
+    assert rows[0]["__streaming_idm_feature_cache"]["path"].endswith("shard_0000_features.pt")
+    assert rows[2]["__streaming_idm_feature_cache"]["path"].endswith("shard_0001_features.pt")
+    assert (feature_cache_dir / "shard_0000_features.pt").exists()
+    assert (feature_cache_dir / "shard_0001_features.pt").exists()

@@ -176,6 +176,8 @@ class FrameEmbeddingMaterializerConfig:
     progress_output: Path | None = None
     progress_rows: int = 50_000
     source_label: str = "g005_frozen_frame_embedding_materialization"
+    feature_cache_out: Path | None = None
+    thin_output: bool = False
 
 
 class _DummyStatEmbedder:
@@ -550,15 +552,36 @@ def _frames_for_row(
     raise ValueError("frame_source must be one of: video, compact-luma")
 
 
+_THIN_OUTPUT_KEYS = (
+    "schema",
+    "sequence_id",
+    "recording_id",
+    "cross_resolution_key",
+    "timestamp_ns",
+    "bin_index",
+    "game",
+    "split",
+    "source_id",
+    "resolution_tier",
+    "eval_split_tags",
+    "ground_truth_tokens",
+    "target_tokens",
+)
+
+
+def _thin_streaming_row(row: dict[str, Any]) -> dict[str, Any]:
+    return {key: row[key] for key in _THIN_OUTPUT_KEYS if key in row}
+
+
 def _flush_batch(
     rows: Sequence[dict[str, Any]],
     frames_by_row: Sequence[Sequence[bytes]],
     *,
     embedder: Any,
     config: FrameEmbeddingMaterializerConfig,
-) -> tuple[list[dict[str, Any]], int]:
+) -> tuple[list[dict[str, Any]], int, list[list[float]]]:
     if not rows:
-        return [], 0
+        return [], 0, []
     flat_frames = [frame for frames in frames_by_row for frame in frames]
     flat_embeddings = embedder.embed_frames(flat_frames)
     per_row = len(config.frame_offsets)
@@ -567,6 +590,7 @@ def _flush_batch(
             f"embedding count mismatch: got {len(flat_embeddings)} for rows={len(rows)} offsets={per_row}"
         )
     output_rows: list[dict[str, Any]] = []
+    feature_vectors: list[list[float]] = []
     embedding_dim = 0
     for row_idx, row in enumerate(rows):
         start = row_idx * per_row
@@ -583,7 +607,7 @@ def _flush_batch(
             summary_feature_count = len(summary_features)
             features.extend(float(value) for value in summary_features)
         rounded = _round_values(features, config.round_digits)
-        out_row = dict(row)
+        out_row = _thin_streaming_row(row) if config.thin_output else dict(row)
         metadata = {
             "schema": "g005_frozen_frame_embedding_features.row.v1",
             "backend": config.backend,
@@ -598,11 +622,33 @@ def _flush_batch(
             "summary_feature_count": summary_feature_count,
             "feature_dim": len(rounded),
         }
+        feature_vectors.append(rounded)
         out_row["__streaming_idm_features"] = rounded
         out_row["frame_embedding_feature_metadata"] = metadata
         out_row["frame_embedding_feature_fingerprint"] = _metadata_fingerprint(metadata)
         output_rows.append(out_row)
-    return output_rows, embedding_dim
+    return output_rows, embedding_dim, feature_vectors
+
+
+def _write_feature_cache(path: Path, features: Sequence[Sequence[float]], *, metadata: dict[str, Any]) -> dict[str, Any]:
+    try:
+        import torch
+    except Exception as exc:  # pragma: no cover - optional only for external feature cache mode.
+        raise RuntimeError("--feature-cache-out requires torch") from exc
+    ensure_dir(path.parent)
+    tensor = torch.tensor([[float(value) for value in row] for row in features], dtype=torch.float32)
+    feature_dim = int(tensor.shape[1]) if int(tensor.ndim) == 2 and int(tensor.shape[0]) else (len(features[0]) if features else 0)
+    payload = {
+        "schema": "streaming_idm_feature_cache.v1",
+        "features": tensor,
+        "rows": int(tensor.shape[0]),
+        "feature_dim": feature_dim,
+        "metadata": dict(metadata),
+    }
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    torch.save(payload, tmp_path)
+    tmp_path.replace(path)
+    return _source_metadata(path)
 
 
 def _write_progress(path: Path | None, payload: dict[str, Any]) -> None:
@@ -618,6 +664,8 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
     ensure_dir(Path(config.summary_out).parent)
     if config.progress_output is not None:
         ensure_dir(config.progress_output.parent)
+    if config.feature_cache_out is not None:
+        ensure_dir(Path(config.feature_cache_out).parent)
     embedder = _build_embedder(config)
     provider = _FramePairProvider(
         root=Path(".").resolve(),
@@ -632,7 +680,9 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
     source_rows_scanned = 0
     source_rows_skipped = 0
     feature_override_rows = 0
+    feature_cache_ref_rows = 0
     feature_lengths: list[int] = []
+    feature_cache_vectors: list[list[float]] = []
     embedding_dim_per_frame: int | None = None
     dataset_fingerprint = hashlib.sha256()
     batch_rows: list[dict[str, Any]] = []
@@ -650,6 +700,8 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
         "skip_rows": int(config.skip_rows),
         "max_rows": config.max_rows,
         "source_label": config.source_label,
+        "feature_cache_out": str(config.feature_cache_out) if config.feature_cache_out is not None else None,
+        "thin_output": bool(config.thin_output),
     }
     try:
         with tmp_path.open("w", encoding="utf-8", buffering=_JSONL_BUFFER) as out:
@@ -679,13 +731,24 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
                 frames, _missing_delta = _frames_for_row(row, provider=provider, config=config)
                 batch_frames.append(frames)
                 if len(batch_rows) >= max(1, int(config.batch_size)):
-                    output_rows, emb_dim = _flush_batch(batch_rows, batch_frames, embedder=embedder, config=config)
+                    output_rows, emb_dim, feature_vectors = _flush_batch(batch_rows, batch_frames, embedder=embedder, config=config)
                     embedding_dim_per_frame = emb_dim
-                    for out_row in output_rows:
+                    for out_row, features in zip(output_rows, feature_vectors):
+                        row_feature_index = len(feature_cache_vectors)
+                        feature_lengths.append(len(features))
+                        if config.feature_cache_out is not None:
+                            feature_cache_vectors.append(features)
+                            out_row.pop("__streaming_idm_features", None)
+                            out_row["__streaming_idm_feature_cache"] = {
+                                "schema": "streaming_idm_feature_cache_ref.v1",
+                                "path": str(config.feature_cache_out),
+                                "row_index": row_feature_index,
+                                "feature_dim": len(features),
+                            }
                         out.write(_dumps(out_row) + "\n")
                         rows_written += 1
                         feature_override_rows += int("__streaming_idm_features" in out_row)
-                        feature_lengths.append(len(out_row.get("__streaming_idm_features", [])))
+                        feature_cache_ref_rows += int("__streaming_idm_feature_cache" in out_row)
                     batch_rows = []
                     batch_frames = []
                 if config.progress_rows > 0 and rows_seen % int(config.progress_rows) == 0:
@@ -698,31 +761,65 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
                             "source_rows_skipped": source_rows_skipped,
                             "rows_written": rows_written,
                             "feature_override_rows": feature_override_rows,
+                            "feature_cache_ref_rows": feature_cache_ref_rows,
                             "missing_frames": int(provider.missing_frames),
                             "video_restarts": int(provider.video_restarts),
                             "elapsed_seconds": time.time() - started_at,
                         },
                     )
             if batch_rows:
-                output_rows, emb_dim = _flush_batch(batch_rows, batch_frames, embedder=embedder, config=config)
+                output_rows, emb_dim, feature_vectors = _flush_batch(batch_rows, batch_frames, embedder=embedder, config=config)
                 embedding_dim_per_frame = emb_dim
-                for out_row in output_rows:
+                for out_row, features in zip(output_rows, feature_vectors):
+                    row_feature_index = len(feature_cache_vectors)
+                    feature_lengths.append(len(features))
+                    if config.feature_cache_out is not None:
+                        feature_cache_vectors.append(features)
+                        out_row.pop("__streaming_idm_features", None)
+                        out_row["__streaming_idm_feature_cache"] = {
+                            "schema": "streaming_idm_feature_cache_ref.v1",
+                            "path": str(config.feature_cache_out),
+                            "row_index": row_feature_index,
+                            "feature_dim": len(features),
+                        }
                     out.write(_dumps(out_row) + "\n")
                     rows_written += 1
                     feature_override_rows += int("__streaming_idm_features" in out_row)
-                    feature_lengths.append(len(out_row.get("__streaming_idm_features", [])))
+                    feature_cache_ref_rows += int("__streaming_idm_feature_cache" in out_row)
     finally:
         provider.close()
     tmp_path.replace(output_path)
+    feature_cache_metadata = None
+    if config.feature_cache_out is not None:
+        feature_cache_metadata = _write_feature_cache(
+            Path(config.feature_cache_out),
+            feature_cache_vectors,
+            metadata={
+                "source_label": config.source_label,
+                "input_path": str(input_path),
+                "output_path": str(output_path),
+                "backend": config.backend,
+                "model_id": config.model_id,
+                "frame_offsets": list(config.frame_offsets),
+                "frame_source": config.frame_source,
+                "thin_output": bool(config.thin_output),
+            },
+        )
     unique_feature_lengths = sorted(set(feature_lengths))
     status = "pass"
     errors: list[str] = []
     if rows_seen != rows_written:
         status = "fail"
         errors.append(f"rows_seen ({rows_seen}) != rows_written ({rows_written})")
-    if feature_override_rows != rows_written:
+    if feature_override_rows + feature_cache_ref_rows != rows_written:
         status = "fail"
-        errors.append(f"feature_override_rows ({feature_override_rows}) != rows_written ({rows_written})")
+        errors.append(
+            "feature_override_rows + feature_cache_ref_rows "
+            f"({feature_override_rows} + {feature_cache_ref_rows}) != rows_written ({rows_written})"
+        )
+    if config.feature_cache_out is not None and feature_cache_ref_rows != rows_written:
+        status = "fail"
+        errors.append(f"feature_cache_ref_rows ({feature_cache_ref_rows}) != rows_written ({rows_written})")
     if len(unique_feature_lengths) != 1:
         status = "fail"
         errors.append(f"inconsistent feature lengths: {unique_feature_lengths[:8]}")
@@ -739,6 +836,10 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
         "source_rows_skipped": source_rows_skipped,
         "rows_written": rows_written,
         "feature_override_rows": feature_override_rows,
+        "feature_cache_ref_rows": feature_cache_ref_rows,
+        "feature_output_mode": "external_feature_cache" if config.feature_cache_out is not None else "inline_json",
+        "feature_cache": feature_cache_metadata,
+        "thin_output": bool(config.thin_output),
         "feature_dim": unique_feature_lengths[0] if unique_feature_lengths else 0,
         "unique_feature_lengths": unique_feature_lengths,
         "embedding_dim_per_frame": int(embedding_dim_per_frame or getattr(embedder, "embedding_dim", 0) or 0),
@@ -781,6 +882,8 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
             "source_rows_scanned": source_rows_scanned,
             "source_rows_skipped": source_rows_skipped,
             "rows_written": rows_written,
+            "feature_override_rows": feature_override_rows,
+            "feature_cache_ref_rows": feature_cache_ref_rows,
         },
     )
     return summary
