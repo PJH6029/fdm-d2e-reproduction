@@ -80,12 +80,19 @@
         "single_gpu_jsonl_materialization_still_underutilizes_h200",
         "contiguous_skip_row_sharding_validated",
         "two_gpu_debug_shards_materialized_1024_rows",
-        "late_monitor_prevents_strong_utilization_claim"
+        "late_monitor_prevents_strong_utilization_claim",
+        "fail_closed_shard_launcher_added",
+        "prefix_runner_can_use_monolithic_or_sharded_materialization"
       ],
       "gpu_monitor_artifacts": [
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_gpu_monitor.csv",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_b512_gpu_monitor.csv",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_late_gpu_monitor.csv"
+      ],
+      "implementation_artifacts": [
+        "scripts/run_frame_embedding_shards.py",
+        "scripts/run_g005_idm_frozen_frame_embedding_prefix.sh",
+        "tests/test_frame_embedding_shard_launcher.py"
       ],
       "name": "frozen_frame_embedding_materialization_gates",
       "rows": {
@@ -1065,7 +1072,7 @@
     }
   ],
   "recommended_next_actions": [
-    "Implement a fail-closed frozen-frame-embedding shard launcher with pre-launch GPU monitoring before any larger DINO prefix extraction.",
+    "Run a small DINO shard-launcher gate with pre-launch GPU monitoring before any larger frozen-frame prefix extraction.",
     "Do not promote threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, or sequence-prior action-history prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Do not reserve H200s for a simple NEP/label-offset branch: target autocorr at +100ms has keyboard=0.1745, mouse-button=0.0215, Pearson X/Y=0.4149/0.3862 and no nonzero shift meets paper targets on the 320k prefix.",
     "Next G005 branch must change the supervision/modeling problem, not just add causal action history: investigate teacher-assisted event decoding or per-recording latent state estimation that is causal at inference and validated on prefix rows before full 4xH200.",
@@ -1075,5 +1082,5 @@
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779929277.3640432
+  "updated_at_epoch": 1779929666.0805037
 }

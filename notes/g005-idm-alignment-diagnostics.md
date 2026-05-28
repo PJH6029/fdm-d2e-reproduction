@@ -564,3 +564,34 @@ shards, stores child PIDs without command substitution, waits fail-closed, and
 summarizes shard plus monitor evidence before any larger prefix/full extraction.
 Claim boundary: materialization throughput diagnostic only; no trained IDM metric
 evidence and no G005 success claim.
+
+### 2026-05-28 KST — fail-closed frame-embedding shard launcher
+
+Implemented a reusable shard launcher for the frozen frame-embedding branch so
+future DINO prefix extraction does not depend on ad-hoc shell backgrounding.
+
+Implementation:
+
+- `scripts/run_frame_embedding_shards.py` builds contiguous row shard plans,
+  starts `nvidia-smi` before materializer subprocesses, assigns optional
+  `CUDA_VISIBLE_DEVICES` per shard, waits fail-closed on every child, records
+  per-shard logs/progress/summaries, optionally concatenates shard JSONLs into
+  the monolithic path expected by the current streaming-IDM config, and writes a
+  combined summary with parsed GPU-utilization statistics.
+- `scripts/run_g005_idm_frozen_frame_embedding_prefix.sh` now supports
+  `EMBED_SHARD_COUNT>1`, `EMBED_SHARD_DEVICES`, and shard-local monitor settings;
+  `EMBED_BACKEND=dinov2-torchhub` uses the train extra so torch is available in
+  normal `uv` environments.
+- `tests/test_frame_embedding_shard_launcher.py` covers shard planning,
+  dummy-stat subprocess materialization/concat, and nvidia-smi CSV parsing.
+
+Verification: `python3 -m py_compile scripts/run_frame_embedding_shards.py
+scripts/materialize_frame_embedding_features.py
+src/fdm_d2e/data/frame_embedding_materializer.py`; `bash -n
+scripts/run_g005_idm_frozen_frame_embedding_prefix.sh`; and `uv run pytest -q
+tests/test_frame_embedding_materializer.py tests/test_frame_embedding_shard_launcher.py
+tests/test_training_run_scripts.py` => 30 passed.
+
+Claim boundary: launcher hardening only. The next GPU step must rerun a small
+sharded DINO materialization with this launcher and valid pre-launch monitoring
+before scaling to 320k train/target extraction or training.

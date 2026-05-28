@@ -37,6 +37,10 @@ EMBED_POOLING="${EMBED_POOLING:-cls}"
 EMBED_HF_PREPROCESS="${EMBED_HF_PREPROCESS:-manual-imagenet}"
 EMBED_PROGRESS_ROWS="${EMBED_PROGRESS_ROWS:-25000}"
 EMBED_PATH_MAP="${EMBED_PATH_MAP:-}"
+EMBED_SHARD_COUNT="${EMBED_SHARD_COUNT:-1}"
+EMBED_SHARD_DEVICES="${EMBED_SHARD_DEVICES:-}"
+EMBED_SHARD_MONITOR="${EMBED_SHARD_MONITOR:-1}"
+EMBED_SHARD_MONITOR_INTERVAL_SECONDS="${EMBED_SHARD_MONITOR_INTERVAL_SECONDS:-10}"
 MATERIALIZE_ONLY="${MATERIALIZE_ONLY:-0}"
 
 mkdir -p artifacts/idm outputs/cluster "$OUTPUT_DIR" "$SOURCE_PREFIX_ROOT" "$EMBED_PREFIX_ROOT" "$(dirname "$GPU_MONITOR_LOG")"
@@ -81,7 +85,7 @@ if [[ ! -s "$SOURCE_PREFIX_ROOT/target_all_eval.jsonl" ]]; then
     --source-label "g005_frozen_frame_embedding_source_target_prefix320k"
 fi
 
-if [[ "$EMBED_BACKEND" == "hf-vision" ]]; then
+if [[ "$EMBED_BACKEND" == "hf-vision" || "$EMBED_BACKEND" == "dinov2-torchhub" ]]; then
   EMBED_PY=(uv run --extra train python)
 else
   EMBED_PY=(uv run python)
@@ -91,43 +95,87 @@ if [[ -n "$EMBED_PATH_MAP" ]]; then
   PATH_MAP_ARGS=(--path-map "$EMBED_PATH_MAP")
 fi
 
-"${EMBED_PY[@]}" scripts/materialize_frame_embedding_features.py \
-  --input-path "$SOURCE_PREFIX_ROOT/train_core.jsonl" \
-  --output-path "$EMBED_PREFIX_ROOT/train_core.jsonl" \
-  --summary-out "$TRAIN_EMBED_SUMMARY" \
-  --progress-output "$TRAIN_EMBED_PROGRESS" \
-  --backend "$EMBED_BACKEND" \
-  --model-id "$EMBED_MODEL_ID" \
-  --frame-offsets "$EMBED_FRAME_OFFSETS" \
-  --frame-source "$EMBED_FRAME_SOURCE" \
-  --image-size "$EMBED_IMAGE_SIZE" \
-  --batch-size "$EMBED_BATCH_SIZE" \
-  --device "$EMBED_DEVICE" \
-  --embedding-pooling "$EMBED_POOLING" \
-  --hf-preprocess "$EMBED_HF_PREPROCESS" \
-  --max-rows "$MAX_TRAIN_ROWS" \
-  --progress-rows "$EMBED_PROGRESS_ROWS" \
-  "${PATH_MAP_ARGS[@]}" \
-  --source-label "g005_frozen_frame_embedding_train_prefix320k"
+materialize_embedding_split() {
+  local split_name="$1"
+  local input_path="$2"
+  local output_path="$3"
+  local summary_path="$4"
+  local progress_path="$5"
+  local total_rows="$6"
+  local source_label="$7"
 
-"${EMBED_PY[@]}" scripts/materialize_frame_embedding_features.py \
-  --input-path "$SOURCE_PREFIX_ROOT/target_all_eval.jsonl" \
-  --output-path "$EMBED_PREFIX_ROOT/target_all_eval.jsonl" \
-  --summary-out "$TARGET_EMBED_SUMMARY" \
-  --progress-output "$TARGET_EMBED_PROGRESS" \
-  --backend "$EMBED_BACKEND" \
-  --model-id "$EMBED_MODEL_ID" \
-  --frame-offsets "$EMBED_FRAME_OFFSETS" \
-  --frame-source "$EMBED_FRAME_SOURCE" \
-  --image-size "$EMBED_IMAGE_SIZE" \
-  --batch-size "$EMBED_BATCH_SIZE" \
-  --device "$EMBED_DEVICE" \
-  --embedding-pooling "$EMBED_POOLING" \
-  --hf-preprocess "$EMBED_HF_PREPROCESS" \
-  --max-rows "$MAX_TARGET_ROWS" \
-  --progress-rows "$EMBED_PROGRESS_ROWS" \
-  "${PATH_MAP_ARGS[@]}" \
-  --source-label "g005_frozen_frame_embedding_target_prefix320k"
+  if [[ "$EMBED_SHARD_COUNT" -gt 1 ]]; then
+    local shard_dir="$EMBED_PREFIX_ROOT/${split_name}_shards"
+    local artifact_prefix
+    artifact_prefix="$(basename "$summary_path" .json)"
+    local shard_monitor_args=()
+    if [[ "$EMBED_SHARD_MONITOR" == "0" ]]; then
+      shard_monitor_args=(--no-gpu-monitor)
+    else
+      shard_monitor_args=(--gpu-monitor-output "${summary_path%.json}_gpu_monitor.csv" --gpu-monitor-interval-seconds "$EMBED_SHARD_MONITOR_INTERVAL_SECONDS")
+    fi
+    "${EMBED_PY[@]}" scripts/run_frame_embedding_shards.py \
+      --input-path "$input_path" \
+      --output-dir "$shard_dir" \
+      --combined-output-path "$output_path" \
+      --summary-out "$summary_path" \
+      --artifact-dir "$(dirname "$summary_path")" \
+      --artifact-prefix "$artifact_prefix" \
+      --total-rows "$total_rows" \
+      --shard-count "$EMBED_SHARD_COUNT" \
+      --devices "$EMBED_SHARD_DEVICES" \
+      --backend "$EMBED_BACKEND" \
+      --model-id "$EMBED_MODEL_ID" \
+      --frame-offsets "$EMBED_FRAME_OFFSETS" \
+      --frame-source "$EMBED_FRAME_SOURCE" \
+      --image-size "$EMBED_IMAGE_SIZE" \
+      --batch-size "$EMBED_BATCH_SIZE" \
+      --device "$EMBED_DEVICE" \
+      --embedding-pooling "$EMBED_POOLING" \
+      --hf-preprocess "$EMBED_HF_PREPROCESS" \
+      --progress-rows "$EMBED_PROGRESS_ROWS" \
+      "${PATH_MAP_ARGS[@]}" \
+      "${shard_monitor_args[@]}" \
+      --source-label "$source_label"
+  else
+    "${EMBED_PY[@]}" scripts/materialize_frame_embedding_features.py \
+      --input-path "$input_path" \
+      --output-path "$output_path" \
+      --summary-out "$summary_path" \
+      --progress-output "$progress_path" \
+      --backend "$EMBED_BACKEND" \
+      --model-id "$EMBED_MODEL_ID" \
+      --frame-offsets "$EMBED_FRAME_OFFSETS" \
+      --frame-source "$EMBED_FRAME_SOURCE" \
+      --image-size "$EMBED_IMAGE_SIZE" \
+      --batch-size "$EMBED_BATCH_SIZE" \
+      --device "$EMBED_DEVICE" \
+      --embedding-pooling "$EMBED_POOLING" \
+      --hf-preprocess "$EMBED_HF_PREPROCESS" \
+      --max-rows "$total_rows" \
+      --progress-rows "$EMBED_PROGRESS_ROWS" \
+      "${PATH_MAP_ARGS[@]}" \
+      --source-label "$source_label"
+  fi
+}
+
+materialize_embedding_split \
+  train_core \
+  "$SOURCE_PREFIX_ROOT/train_core.jsonl" \
+  "$EMBED_PREFIX_ROOT/train_core.jsonl" \
+  "$TRAIN_EMBED_SUMMARY" \
+  "$TRAIN_EMBED_PROGRESS" \
+  "$MAX_TRAIN_ROWS" \
+  "g005_frozen_frame_embedding_train_prefix320k"
+
+materialize_embedding_split \
+  target_all_eval \
+  "$SOURCE_PREFIX_ROOT/target_all_eval.jsonl" \
+  "$EMBED_PREFIX_ROOT/target_all_eval.jsonl" \
+  "$TARGET_EMBED_SUMMARY" \
+  "$TARGET_EMBED_PROGRESS" \
+  "$MAX_TARGET_ROWS" \
+  "g005_frozen_frame_embedding_target_prefix320k"
 
 if [[ "$MATERIALIZE_ONLY" == "1" ]]; then
   python3 - <<PY
