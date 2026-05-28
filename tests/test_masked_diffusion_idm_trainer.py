@@ -33,6 +33,19 @@ def test_video_feature_vector_uses_configured_paths_and_padding():
     assert features[4:] == [0.0, 0.0]
 
 
+def test_video_feature_vector_flattens_luma_window_tokens():
+    row = _row(2, split="train_core")
+    row["compact_luma_window"] = [[0.1, 0.2], [0.3, 0.4]]
+    row["compact_luma_window_mask"] = [1, 0]
+    row["frame"]["stats"] = {"b": 0.6, "a": 0.5}
+    features = video_feature_vector(
+        row,
+        feature_paths=["compact_luma_window", "compact_luma_window_mask", "frame.stats"],
+        dim=10,
+    )
+    assert features == [0.1, 0.2, 0.3, 0.4, 1.0, 0.0, 0.5, 0.6, 0.0, 0.0]
+
+
 def test_train_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     if not torch_available():
         return

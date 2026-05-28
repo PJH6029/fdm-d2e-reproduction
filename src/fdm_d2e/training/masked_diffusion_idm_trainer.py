@@ -64,16 +64,33 @@ def _nested_get(row: dict[str, Any], path: str) -> Any:
 
 
 def _float_list(value: Any) -> list[float]:
+    """Flatten numeric frame/window summaries into a deterministic feature list.
+
+    The masked-diffusion IDM is meant to be conditioned on video/window tokens.
+    Earlier prefix probes only consumed shallow lists such as ``frame.features``;
+    luma-window rows materialized for G005 store frame windows as nested
+    ``list[list[float]]`` structures plus small numeric masks.  Flatten nested
+    numeric containers here so recipe-aligned probes can use richer video-window
+    evidence without adding a separate supervised/action-history feature path.
+    """
+
+    if isinstance(value, bool):
+        return [1.0 if value else 0.0]
+    if isinstance(value, (int, float)):
+        try:
+            return [float(value)]
+        except (TypeError, ValueError):
+            return [0.0]
     if isinstance(value, list):
         out: list[float] = []
         for item in value:
-            try:
-                out.append(float(item))
-            except (TypeError, ValueError):
-                out.append(0.0)
+            out.extend(_float_list(item))
         return out
-    if isinstance(value, (int, float)):
-        return [float(value)]
+    if isinstance(value, dict):
+        out: list[float] = []
+        for key in sorted(value):
+            out.extend(_float_list(value.get(key)))
+        return out
     return []
 
 
