@@ -283,3 +283,10 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 
 - The first `prefix320k` H200 attempt at `0ad160b` completed training/checkpoint quickly but entered a CPU-bound one-row-at-a-time calibration path with sustained GPU idle; it was terminated before metric outputs to preserve GPU time.
 - Updated the prefix320k config to keep `320,000` training rows but bound calibration to `2,000` held-out train rows and target evaluation to `5,000` rows (`button_event_budget_max_target_rows=5000`). This keeps the probe recipe-faithful while avoiding avoidable CPU-bound GPU reservation waste.
+
+## 2026-05-28 KST — G005 focal-prior prefix320k H200 probe
+
+- Ran bounded prefix320k config at commit `e137353` on 1×H200 reservation `rsv-jeonghunpark-20260528-979d0f` / pod `prod-rsv-jeonghunpark-20260528-979d0f`; copied evidence locally and cancelled the reservation after artifact copy.
+- Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_h200_*`, including run, GPU monitor, W&B status, resolved config, paper metrics, compact summary, semantic diagnostic, reservation context, and diagnosis. W&B run: `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/hq7lrhqs`.
+- Result remains negative/non-terminal: scaling to `320,000` training rows reduced target no-button FPR to `0.013382746551369158`, but keyboard key accuracy collapsed to `0.0`, exact mouse-button TP stayed `0`, strict button F1 `0.0`, and semantic diagnostic still had zero semantic overlap (`46` predictions all `MOUSE_RIGHT_DOWN` on the 2k diagnostic prefix).
+- Diagnosis: the 20k failure was not simply coverage; larger data with current focal/prior button-class objective is still not enough. Next branch should change the recipe-faithful modeling signal, e.g. video-token pretraining/rawer frame features or batched calibration/prediction infrastructure before full 4×H200 scaling.
