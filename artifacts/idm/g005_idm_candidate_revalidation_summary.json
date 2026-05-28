@@ -1,6 +1,6 @@
 {
   "active_goal_id": "G005-g014-idm-full-paper-target",
-  "candidate_count": 19,
+  "candidate_count": 20,
   "claim_boundary": "Revalidation/ranking artifact only; no G005 success claim and no FDM-1 parity claim.",
   "created_at_epoch": 1779902282.2046466,
   "diagnostic_artifacts": [
@@ -768,6 +768,58 @@
       "specialist_keyboard_delta_vs_base": -0.04275888307412551,
       "specialist_keyboard_delta_vs_nonvisual_prefix50k": -0.08699128650887833,
       "status": "pass"
+    },
+    {
+      "alignment": {
+        "examples": [],
+        "missing_base_prediction_rows": 0,
+        "sequence_id_mismatches": 0
+      },
+      "artifact": "artifacts/idm/g005_idm_key_hash_sequence_diagnostic_train2m_prefix320k_e1_lr01.json",
+      "base_metrics": {
+        "keyboard_accuracy": 0.19900156833292837,
+        "mouse_button_accuracy": 0.17256699910195208,
+        "pearson_x": 0.8002422301033372,
+        "pearson_y": 0.6427245596480502,
+        "policy": "base_all",
+        "scale_ratio_x": 1.0885514252305015,
+        "scale_ratio_y": 1.020365052063936,
+        "strict_mouse_button_f1": 0.2809433495505896,
+        "strict_no_button_fpr": 0.03749847397402865
+      },
+      "best_metrics": {
+        "keyboard_accuracy": 0.22216122629956506,
+        "mouse_button_accuracy": 0.17256699910195208,
+        "pearson_x": 0.8002422301033372,
+        "pearson_y": 0.6427245596480502,
+        "policy": "press_only_union_base_keys_press0.95",
+        "scale_ratio_x": 1.0885514252305015,
+        "scale_ratio_y": 1.020365052063936,
+        "strict_mouse_button_f1": 0.2809433495505896,
+        "strict_no_button_fpr": 0.03749847397402865
+      },
+      "best_policy": "press_only_union_base_keys_press0.95",
+      "claim_boundary": "CPU/storage-shell prefix scaling diagnostic only; no G005 completion claim and no GPU/full-corpus promotion evidence.",
+      "comparison_artifact": "artifacts/idm/g005_idm_key_hash_sequence_diagnostic_prefix320k_e2_lr01.json",
+      "decision": "reject_more_train_rows_for_hash_specialist",
+      "dim": 1048576,
+      "epochs": 1,
+      "finding_codes": [
+        "train2m_hash_aligned_prefix_has_zero_sequence_mismatches",
+        "train2m_hash_underperforms_320k_e2_hash_gate",
+        "train2m_hash_far_below_paper_keyboard_target",
+        "hash_scaling_plateau_requires_new_sequence_or_teacher_mechanism"
+      ],
+      "keyboard_delta_vs_320k_e2_hash": -0.01148979375575998,
+      "keyboard_delta_vs_base": 0.023159657966636688,
+      "learning_rate": 0.1,
+      "model_examples": 1848111,
+      "model_positive_press": 308979,
+      "model_positive_release": 97847,
+      "name": "key_hash_sequence_train2m_prefix320k",
+      "rows": 320000,
+      "status": "pass",
+      "train_rows": 2000000
     }
   ],
   "paper_targets": {
@@ -1863,6 +1915,44 @@
           "target": 0.73
         }
       ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": "artifacts/idm/g005_idm_key_hash_sequence_diagnostic_train2m_prefix320k_e1_lr01.json",
+      "audit_status": "rejected_prefix_diagnostic",
+      "button_gap_to_paper": 0.7844330008980479,
+      "candidate": "key_hash_sequence_train2m_prefix320k",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.507838773700435,
+      "metrics_path": "artifacts/idm/g005_idm_key_hash_sequence_diagnostic_train2m_prefix320k_e1_lr01.json",
+      "note": "Rejected simply scaling the held-only learned hash specialist to 2M train rows: aligned 320k eval keyboard drops to 0.2222 versus the prior 320k-train/e2 gate 0.2337 and remains far below paper target.",
+      "paper_keyboard_accuracy": 0.22216122629956506,
+      "paper_mouse_button_accuracy": 0.17256699910195208,
+      "paper_mouse_pearson_x": 0.8002422301033372,
+      "paper_mouse_pearson_y": 0.6427245596480502,
+      "paper_scale_ratio_x": 1.0885514252305015,
+      "paper_scale_ratio_y": 1.020365052063936,
+      "pearson_x_gap_to_paper": -0.00424223010333713,
+      "pearson_y_gap_to_paper": 0.14027544035194983,
+      "rows": 320000,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.2809433495505896,
+      "strict_no_button_fpr": 0.03749847397402865,
+      "top_audit_findings": [
+        {
+          "code": "more_train_rows_regress_vs_previous_hash_gate",
+          "previous_hash_keyboard": 0.23365102005532504,
+          "severity": "warning",
+          "train2m_keyboard": 0.22216122629956506
+        },
+        {
+          "actual": 0.22216122629956506,
+          "code": "paper_target_not_met",
+          "name": "keyboard_accuracy",
+          "severity": "error",
+          "target": 0.73
+        }
+      ]
     }
   ],
   "recommended_next_actions": [
@@ -1873,11 +1963,12 @@
     "The learned hashed key specialist is the first repeat-key branch with a real aligned-prefix gain: on 320k rows, press-only union improves keyboard from 0.1990 to 0.2337 with zero sequence mismatches while preserving button/motion from the base stream. It is still far below paper keyboard=0.73 and motion-y target, so continue with a stronger neural/teacher-assisted sequence model rather than checkpointing G005.",
     "Compact visual-transition hash features are rejected for the learned repeat-key branch: on the aligned 50k prefix, best keyboard=0.1950 underperforms the non-visual hash gate keyboard=0.1993 and remains far below paper keyboard=0.73; do not reserve GPUs for this exact visual-hash specialist.",
     "Top-key vocabulary binary specialist is rejected: on the aligned 50k prefix, base_all remains best at keyboard=0.1550 while the best topvocab specialist policy reaches only 0.1123 and is worse than the held-only hash gate 0.1993; do not reserve GPUs for this branch.",
+    "Scaling the held-only learned hash specialist to 2M train rows is rejected: aligned 320k keyboard=0.2222, below the prior 320k/e2 hash gate 0.2337 and far below paper target; future work needs a new sequence-state or teacher-assisted mechanism, not more rows for this hash model.",
     "Phase-aware held-key repeat heuristics are also rejected: on the aligned 50k prefix the best phase policy improves keyboard by only +0.00026 over base_all (0.15505 -> 0.15530), far below paper target. Do not spend GPU on handcrafted repeat phase features; next branch needs learned sequence/teacher-assisted supervision or released-GIDM distillation.",
     "Do not reserve H200s for threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, sequence-prior action history, or frozen-DINO-only prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779943732.3389294
+  "updated_at_epoch": 1779945045.2962515
 }

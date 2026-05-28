@@ -982,3 +982,27 @@ tokens rather than closing the hidden-repeat/new-key gap.
 Decision: do not reserve GPUs for the top-key vocabulary hash branch. Continue
 G005 with a qualitatively stronger sequence/teacher-assisted approach, not wider
 additive tabular/hash key candidates.
+
+### 2026-05-28 KST — held-only hash scaling to 2M train rows regresses
+
+Ran the best nonterminal held-key hash specialist with a larger CPU/storage-shell
+train prefix before spending H200 time on the branch.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_key_hash_sequence_diagnostic_train2m_prefix320k_e1_lr01.json`
+- comparison: `artifacts/idm/g005_idm_key_hash_sequence_diagnostic_prefix320k_e2_lr01.json`
+
+Result: reject more-row scaling for this hash model. The 2M-row / 1-epoch run
+keeps zero sequence-id mismatches on the aligned 320k eval prefix and trains on
+`1,848,111` held-key examples, but best policy
+`press_only_union_base_keys_press0.95` reaches keyboard `0.22216`. This is above
+base `0.19900`, but below the prior 320k-train / 2-epoch held-hash result
+`0.23365` and still far below the paper keyboard target `0.73`. Button and
+motion remain inherited from the base stream (button `0.17257`, Pearson X/Y
+`0.80024/0.64272`).
+
+Decision: do not reserve GPUs or expand full-corpus training for this hash
+specialist. The evidence now rejects additive hash/table variants, visual hash,
+top-vocabulary binary broadening, and simple train-row scaling; the next G005
+attempt must introduce a new sequence-state/teacher-assisted mechanism.
