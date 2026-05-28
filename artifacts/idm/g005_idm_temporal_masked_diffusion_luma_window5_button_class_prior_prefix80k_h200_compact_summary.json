@@ -1,0 +1,41 @@
+{
+  "artifact_sha256": {
+    "gpu_monitor": "3ee9ed0cbde2a768923a54e3ffca3ff4382da50e80dd4cb2e79222e3f6048916",
+    "metrics": "be9a2cbaca7f3164b92fe94e8db7a37cdf97d8c82a78944cfe5163ecbbf93b50",
+    "run": "644020585174f800597fa78f9e126ccd1b244a314909a10ce9091249617b1e2b",
+    "summary": "37952f07245c3b7eff551751c877805d867e433f94baca096a10b6b978b02a60",
+    "wandb_status": "547dc97205f7554f10d6b0f623b6d1bdc3a1531b8f31cac478c824b0531f462f"
+  },
+  "calibration_rows": 2000,
+  "claim_boundary": "Bounded 1xH200 prefix probe only; not G005 completion evidence and not FDM-1 parity.",
+  "config": "configs/model/idm_temporal_masked_diffusion_d2e_luma_window5_button_class_prior_prefix80k.yaml",
+  "diagnosis": "Button-class auxiliary kept no-button FPR under 0.10 but remained far below D2E paper G-IDM targets; candidate diagnostics still show weak key/button ranking and zero mouse-move exact candidate coverage. Do not checkpoint G005.",
+  "fit_rows": 78000,
+  "git_commit": "872fc69",
+  "model": "g005_idm_temporal_masked_diffusion_luma_window5_button_class_prior_prefix80k",
+  "observed": {
+    "keyboard_key_accuracy": 0.0008446738620366026,
+    "mouse_button_accuracy": 0.009345794392523364,
+    "mouse_button_f1": 0.011428571428571429,
+    "mouse_move_pearson_x": -0.021663538467187975,
+    "mouse_move_pearson_y": -0.022473224404370724,
+    "mouse_no_button_false_positive_rate": 0.07411982705373688,
+    "rows": 5000
+  },
+  "pod": "prod-rsv-jeonghunpark-20260529-e470e0",
+  "reservation_id": "rsv-jeonghunpark-20260529-e470e0",
+  "run_exit_code": 0,
+  "schema": "g005_idm_probe_compact_summary.v1",
+  "status": "nonterminal_negative_probe",
+  "target_rows": 5000,
+  "targets": {
+    "keyboard_key_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "mouse_move_pearson_x": 0.796,
+    "mouse_move_pearson_y": 0.783,
+    "mouse_no_button_false_positive_rate_max": 0.1
+  },
+  "train_rows": 80000,
+  "wall_clock_seconds": 1152,
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/b6ivhki8"
+}

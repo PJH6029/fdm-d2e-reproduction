@@ -461,3 +461,11 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Evidence prefix: `artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_observed_prior_prefix80k_h200_*`; compact summary status is `nonterminal_negative_probe`.
 - Result: observed-only prior fixed no-button FPR (`0.0`) but abstained on mouse buttons (`mouse_button_accuracy=0.0`, `mouse_button_f1=0.0`), keyboard remains tiny (`0.004426285325161729`), and mouse Pearson remains negative/near-zero (`x=-0.009400294094588639`, `y=0.01957355858983312`). Do **not** checkpoint G005.
 - Next recipe-faithful direction: scalar priors are insufficient; move to temporal action-token transition/span ranking or class-conditioned press/release recurrence learned from fit rows while keeping target labels out of scoring.
+
+## 2026-05-29T06:20 KST — G005 button-class prior temporal probe is negative
+
+- Ran commit/config `872fc69` / `configs/model/idm_temporal_masked_diffusion_d2e_luma_window5_button_class_prior_prefix80k.yaml` on 1×H200 reservation `rsv-jeonghunpark-20260529-e470e0` / pod `prod-rsv-jeonghunpark-20260529-e470e0`; W&B run `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/b6ivhki8`.
+- Evidence prefix: `artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_button_class_prior_prefix80k_h200_*`; compact summary status is `nonterminal_negative_probe`.
+- Result remains far below the G005 paper target: keyboard key accuracy `0.0008446738620366026`, mouse-button accuracy `0.009345794392523364`, mouse-button F1 `0.011428571428571429`, mouse-move Pearson X/Y `-0.021663538467187975` / `-0.022473224404370724`. The only gate met is no-button FPR `0.07411982705373688 <= 0.10`.
+- Diagnosis: temporal button-class ranking produced a few button true positives while preserving the no-button FPR cap, but key ranking collapsed and mouse-move candidate coverage remains broken. Do **not** checkpoint G005.
+- Operational hardening after the run: commit `44aeceb` removes per-token GPU-to-CPU syncs from temporal candidate ranking. The next active probe is the family-scoped key/button token-presence branch on the same reservation, commit `44aeceb`, W&B run `fk6wucuc`.
