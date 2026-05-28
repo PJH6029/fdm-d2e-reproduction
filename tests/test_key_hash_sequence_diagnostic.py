@@ -105,3 +105,37 @@ def test_hash_sequence_diagnostic_accepts_visual_hash_features(tmp_path: Path) -
 
     assert payload["include_visual_hash"] is True
     assert payload["alignment"]["sequence_id_mismatches"] == 0
+
+
+def test_hash_sequence_diagnostic_can_predict_top_vocab_nonheld_key(tmp_path: Path) -> None:
+    train = tmp_path / "train.jsonl"
+    target = tmp_path / "target.jsonl"
+    base = tmp_path / "base.jsonl"
+    row = {
+        "sequence_id": "train#000000",
+        "recording_id": "game/train",
+        "prior_key_hold_bins": {},
+        "previous_event_tokens": ["NOOP"],
+        "prior_action_tokens": ["NOOP"],
+        "ground_truth_tokens": ["KEY_PRESS_65"],
+    }
+    write_jsonl(train, [row])
+    write_jsonl(target, [{**row, "sequence_id": "target#000000", "recording_id": "game/target"}])
+    write_jsonl(base, [{"sequence_id": "target#000000", "predicted_tokens": []}])
+
+    payload = build_key_hash_sequence_diagnostic(
+        train_paths=[train],
+        target_paths=[target],
+        base_prediction_paths=[base],
+        max_train_rows=1,
+        max_target_rows=1,
+        dim=2048,
+        learning_rate=0.2,
+        candidate_key_count=1,
+        press_thresholds=[0.1],
+        release_thresholds=[0.9],
+    )
+
+    assert payload["candidate_key_codes"] == ["65"]
+    assert payload["alignment"]["sequence_id_mismatches"] == 0
+    assert payload["ranked_policies"][0]["keyboard_accuracy"] == 1.0

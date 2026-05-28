@@ -27,6 +27,12 @@ def main() -> int:
     parser.add_argument("--dim", type=int, default=1 << 18)
     parser.add_argument("--learning-rate", type=float, default=0.05)
     parser.add_argument(
+        "--candidate-key-count",
+        type=int,
+        default=0,
+        help="If >0, predict over the top-N train-prefix key codes in addition to held/prior-action keys.",
+    )
+    parser.add_argument(
         "--include-visual-hash",
         "--include-visual-features",
         dest="include_visual_hash",
@@ -48,6 +54,7 @@ def main() -> int:
         dim=args.dim,
         learning_rate=args.learning_rate,
         include_visual_hash=args.include_visual_hash,
+        candidate_key_count=args.candidate_key_count,
         press_thresholds=_floats(args.press_thresholds),
         release_thresholds=_floats(args.release_thresholds),
     )

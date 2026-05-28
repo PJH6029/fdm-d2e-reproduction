@@ -132,6 +132,19 @@ def _key_tokens(tokens: Sequence[str]) -> list[str]:
     return [str(t) for t in tokens if str(t).startswith("KEY_")]
 
 
+def _key_codes_from_tokens(tokens: Sequence[str]) -> set[str]:
+    codes: set[str] = set()
+    for token in tokens:
+        text = str(token)
+        for prefix in ("KEY_PRESS_", "KEY_RELEASE_", "KEY_DOWN_"):
+            if text.startswith(prefix):
+                code = text[len(prefix) :]
+                if code:
+                    codes.add(code)
+                break
+    return codes
+
+
 def _non_key_tokens(tokens: Sequence[str]) -> list[str]:
     return [str(t) for t in tokens if not str(t).startswith("KEY_")]
 
@@ -187,10 +200,13 @@ def _features(row: dict[str, Any], code: str, hold: int, *, include_visual_hash:
     sbin = _bucket(since)
     prev = _tokens(row, "previous_event_tokens")
     prior_codes = sorted(_holds(row))
+    held_now = int(code in prior_codes)
     feats = [
         "bias",
         f"code={code}",
         f"game={_recording_game(row)}",
+        f"held={held_now}",
+        f"code={code}|held={held_now}",
         f"code={code}|hbin={hbin}",
         f"code={code}|sbin={sbin}",
         f"hbin={hbin}|sbin={sbin}",
@@ -222,12 +238,45 @@ def _features(row: dict[str, Any], code: str, hold: int, *, include_visual_hash:
     return feats
 
 
+def _candidate_codes(row: dict[str, Any], key_vocab: Sequence[str] = ()) -> list[str]:
+    codes = set(_holds(row))
+    codes.update(_key_codes_from_tokens(_tokens(row, "previous_event_tokens")))
+    codes.update(_key_codes_from_tokens(_tokens(row, "prior_action_tokens")))
+    codes.update(str(code) for code in key_vocab)
+    return sorted(code for code in codes if code)
+
+
+def collect_top_key_codes(
+    train_paths: Sequence[str | Path] | str | Path,
+    *,
+    max_train_rows: int | None = 320_000,
+    limit: int = 0,
+) -> tuple[list[str], int]:
+    if int(limit) <= 0:
+        return [], 0
+    counts: Counter[str] = Counter()
+    rows = 0
+    for row in _iter_rows(train_paths, max_rows=max_train_rows):
+        rows += 1
+        counts.update(_key_codes_from_tokens(_tokens(row, "ground_truth_tokens")))
+    return [code for code, _count in counts.most_common(int(limit))], rows
+
+
 class HashedLogisticKeyModel:
-    def __init__(self, *, dim: int = 1 << 18, learning_rate: float = 0.05, l2: float = 0.0, include_visual_hash: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        dim: int = 1 << 18,
+        learning_rate: float = 0.05,
+        l2: float = 0.0,
+        include_visual_hash: bool = False,
+        candidate_key_codes: Sequence[str] = (),
+    ) -> None:
         self.dim = int(dim)
         self.learning_rate = float(learning_rate)
         self.l2 = float(l2)
         self.include_visual_hash = bool(include_visual_hash)
+        self.candidate_key_codes = tuple(str(code) for code in candidate_key_codes)
         self.press_weights = [0.0] * self.dim
         self.release_weights = [0.0] * self.dim
         self.examples = 0
@@ -259,7 +308,13 @@ class HashedLogisticKeyModel:
 
     def observe(self, row: dict[str, Any]) -> None:
         gt = set(_tokens(row, "ground_truth_tokens"))
-        for code, hold in _holds(row).items():
+        holds = _holds(row)
+        codes = set(_candidate_codes(row, self.candidate_key_codes))
+        # Include current positives during training so non-held press/release
+        # examples can teach the binary specialist.  Prediction never sees this.
+        codes.update(_key_codes_from_tokens(gt))
+        for code in sorted(codes):
+            hold = holds.get(code, 0)
             indices = self._indices(_features(row, code, hold, include_visual_hash=self.include_visual_hash))
             press = int(f"KEY_PRESS_{code}" in gt)
             release = int(f"KEY_RELEASE_{code}" in gt)
@@ -273,7 +328,9 @@ class HashedLogisticKeyModel:
 
     def predict(self, row: dict[str, Any], *, press_threshold: float, release_threshold: float) -> list[str]:
         out: list[str] = []
-        for code, hold in _holds(row).items():
+        holds = _holds(row)
+        for code in _candidate_codes(row, self.candidate_key_codes):
+            hold = holds.get(code, 0)
             indices = self._indices(_features(row, code, hold, include_visual_hash=self.include_visual_hash))
             if self._sigmoid(self._score(self.press_weights, indices)) >= float(press_threshold):
                 out.append(f"KEY_PRESS_{code}")
@@ -297,8 +354,15 @@ def train_hashed_key_model(
     dim: int = 1 << 18,
     learning_rate: float = 0.05,
     include_visual_hash: bool = False,
+    candidate_key_count: int = 0,
 ) -> tuple[HashedLogisticKeyModel, int]:
-    model = HashedLogisticKeyModel(dim=dim, learning_rate=learning_rate, include_visual_hash=include_visual_hash)
+    key_codes, _vocab_rows = collect_top_key_codes(train_paths, max_train_rows=max_train_rows, limit=candidate_key_count)
+    model = HashedLogisticKeyModel(
+        dim=dim,
+        learning_rate=learning_rate,
+        include_visual_hash=include_visual_hash,
+        candidate_key_codes=key_codes,
+    )
     rows = 0
     for _epoch in range(int(epochs)):
         rows = 0
@@ -346,6 +410,7 @@ def build_key_hash_sequence_diagnostic(
     dim: int = 1 << 18,
     learning_rate: float = 0.05,
     include_visual_hash: bool = False,
+    candidate_key_count: int = 0,
     press_thresholds: Sequence[float] = _DEFAULT_THRESHOLDS,
     release_thresholds: Sequence[float] = _DEFAULT_THRESHOLDS,
     split_tags: Sequence[str] = ("temporal", "heldout_recording", "heldout_game"),
@@ -357,6 +422,7 @@ def build_key_hash_sequence_diagnostic(
         dim=dim,
         learning_rate=learning_rate,
         include_visual_hash=include_visual_hash,
+        candidate_key_count=candidate_key_count,
     )
     policies: list[tuple[str, str, float | None, float | None]] = [("base_all", "base", None, None)]
     for press_th in press_thresholds:
@@ -453,6 +519,8 @@ def build_key_hash_sequence_diagnostic(
         "dim": int(dim),
         "learning_rate": float(learning_rate),
         "include_visual_hash": bool(include_visual_hash),
+        "candidate_key_count": int(candidate_key_count),
+        "candidate_key_codes": list(model.candidate_key_codes),
         "model_examples": model.examples,
         "model_positive_press": model.positive_press,
         "model_positive_release": model.positive_release,
