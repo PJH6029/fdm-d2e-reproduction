@@ -1,0 +1,61 @@
+{
+  "auto_timestamp_shift_from_screen": true,
+  "bin_ms": 50,
+  "by_recording_roots": [
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_*/by_recording"
+  ],
+  "chunk_context_seconds": 5.0,
+  "chunk_manifest_output": "artifacts/eval/g006_gidm_warmup_trim_pilot_chunked_manifest.json",
+  "chunk_seconds": 15.0,
+  "claim_boundary": "Warmup-trimmed released G-IDM pilot to debug teacher/baseline feasibility; not our-IDM paper-target success and not exact-split G006 completion.",
+  "conversion_summary": "artifacts/eval/g006_gidm_warmup_trim_pilot_conversion_summary.json",
+  "cuda_devices": [
+    "0",
+    "1"
+  ],
+  "d2e_repo": "outputs/external/D2E",
+  "filter_targets_to_prediction_windows": true,
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "hf_home": "outputs/external/hf-home",
+  "inference_log_dir": "artifacts/eval/gidm_warmup_trim_pilot_inference_logs",
+  "inference_summary": "artifacts/eval/g006_gidm_warmup_trim_pilot_inference_summary.json",
+  "manifest_path": "artifacts/eval/g006_gidm_warmup_trim_pilot_manifest.json",
+  "max_chunks": 1,
+  "max_context_length": 2048,
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "model_name": "released_generalist_idm_1b_warmup_trim_pilot",
+  "paper_metrics": {
+    "empty_bins_as_correct": false,
+    "model_name": "released_generalist_idm_1b_warmup_trim_pilot",
+    "output_path": "artifacts/eval/g006_gidm_warmup_trim_pilot_paper_metrics.json",
+    "prediction_paths": [
+      "outputs/gidm_warmup_trim_pilot/predictions.jsonl"
+    ],
+    "progress_output_path": "artifacts/eval/g006_gidm_warmup_trim_pilot_paper_metrics_progress.json",
+    "progress_rows": 100000,
+    "split_tags": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ],
+    "target_paths": [
+      "outputs/gidm_warmup_trim_pilot/targets.jsonl"
+    ]
+  },
+  "predictions": "outputs/gidm_warmup_trim_pilot/predictions.jsonl",
+  "schema": "g006_gidm_warmup_trim_pilot_config.v1",
+  "summary_out": "artifacts/eval/g006_gidm_warmup_trim_pilot_pipeline_summary.json",
+  "target_records": "outputs/gidm_warmup_trim_pilot/targets.jsonl",
+  "target_summary": "artifacts/eval/g006_gidm_warmup_trim_pilot_target_extraction_summary.json",
+  "uv_cache_dir": "outputs/external/uv-cache-desktop-minimal",
+  "wandb": {
+    "artifact_name": "g006-gidm-warmup-trim-pilot",
+    "enabled": true,
+    "env_file": ".env",
+    "group": "g006-gidm-exact-split",
+    "job_type": "eval-pilot",
+    "run_name": "g006-gidm-warmup-trim-pilot",
+    "tags": "g005,g006,gidm,warmup-trim,pilot"
+  },
+  "workers": 2
+}
