@@ -1,0 +1,53 @@
+{
+  "schema": "g005_frozen_frame_embedding_materializer.v1",
+  "status": "pass",
+  "error_count": 0,
+  "errors": [],
+  "source_label": "g005_frozen_frame_embedding_dummy_compact_luma_target_sample1k",
+  "input": {
+    "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-deb1ec0/outputs/data/d2e_event_state_duration_hierarchical_prefix320k/target_all_eval.jsonl",
+    "bytes": 6746586673,
+    "mtime_ns": 1779914711000000000,
+    "sha256": "1134e4ffbaf1bdb1c0dd40e5120d510082f667ee911e77857c18f4361796feba"
+  },
+  "output": {
+    "path": "outputs/data/d2e_frozen_frame_embedding_prefix320k_dummy/target_sample_1k_compact_luma.jsonl",
+    "bytes": 28280904,
+    "mtime_ns": 1779926754000000000,
+    "sha256": "59d5c63f4fe8c800134f2ac5d9ad912023c0027e43978b9736eecff9930ecd96"
+  },
+  "rows_seen": 1000,
+  "rows_written": 1000,
+  "feature_override_rows": 1000,
+  "feature_dim": 1004,
+  "unique_feature_lengths": [
+    1004
+  ],
+  "embedding_dim_per_frame": 12,
+  "backend": "dummy-stat",
+  "model_id": "deterministic-frame-statistics",
+  "frame_offsets": [
+    0,
+    2
+  ],
+  "frame_source": "compact-luma",
+  "image_size": 16,
+  "frame_fps": 20,
+  "missing_frame_policy": "zero",
+  "path_remaps": [],
+  "missing_frames": 0,
+  "video_restarts": 0,
+  "batch_size": 128,
+  "embedding_pooling": "cls",
+  "normalize_embeddings": true,
+  "include_embedding_deltas": true,
+  "include_summary_features": true,
+  "summary_feature_mode": "summary_compact_luma16_pair_shift_time_state_duration_prior_action",
+  "max_rows": 1000,
+  "round_digits": 6,
+  "dataset_fingerprint": "99f1e15b6f22168e27c5fdc32699e568cf25631c4444cb0ff849df4c99d4ced2",
+  "started_at_unix": 1779926750.5610769,
+  "finished_at_unix": 1779926759.6267571,
+  "elapsed_seconds": 9.065682649612427,
+  "claim_boundary": "Frozen frame-embedding materialization is a prefix-gated G005 diagnostic/preparation artifact. It is not trained-model evidence until a downstream IDM run beats the paper-target metrics."
+}

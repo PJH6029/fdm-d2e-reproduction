@@ -482,3 +482,14 @@ and verifies that streaming stats honor the generated
 Claim boundary: this is infrastructure/preparation only. It is not G005 success
 evidence unless a downstream prefix IDM run beats the paper-target metrics under
 `empty_bins_as_correct=false`.
+
+Storage/CPU sanity gate:
+
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dummy_compact_luma_target_sample1k_materialization_summary.json`
+  reports `status=pass` on 1,000 real D2E target-prefix rows from
+  `production-storage-shell-4`.
+- The gate used `dummy-stat`, `frame_source=compact-luma`, offsets `0,2`,
+  `feature_dim=1004`, and `missing_frames=0`; wall clock was about 9 seconds.
+- This validates row/provenance preservation plus streaming feature override
+  materialization on real D2E rows without requiring an H200 reservation or
+  `ffmpeg` on the storage shell. It is not trained-model evidence.
