@@ -1,0 +1,61 @@
+{
+  "schema": "gidm_manifest_inference_run.v1",
+  "manifest_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/g006_gidm_warmup_seekmode_pilot_manifest.json",
+  "chunk_manifest_output": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/g006_gidm_warmup_seekmode_pilot_chunked_manifest.json",
+  "d2e_repo": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/external/D2E",
+  "inference_script": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/external/D2E/inference_desktop_minimal.py",
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "workers": 1,
+  "cuda_devices": [
+    "0"
+  ],
+  "max_recordings": null,
+  "recording_keys": [],
+  "max_context_length": 2048,
+  "max_duration": null,
+  "max_chunks": 1,
+  "chunk_seconds": 15.0,
+  "chunk_context_seconds": 5.0,
+  "chunk_timestamp_mode": "ground_truth_aligned",
+  "chunk_seek_mode": "output_accurate",
+  "bin_ms": 50,
+  "resume": false,
+  "dry_run": false,
+  "planned_recordings": 1,
+  "planned_chunks": 1,
+  "chunked_recording_count": 1,
+  "completed_recordings": 1,
+  "failed_recordings": 0,
+  "completed_chunks": 1,
+  "failed_chunks": 0,
+  "rows": [
+    {
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv",
+      "prediction_mcap_path": "outputs/gidm_warmup_seekmode_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap",
+      "resolved_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/outputs/gidm_warmup_seekmode_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap",
+      "temp_prediction_mcap_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/outputs/gidm_warmup_seekmode_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap.tmp.1097.0",
+      "cuda_device": "0",
+      "log_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/gidm_warmup_seekmode_pilot_inference_logs/00000_0000_d2e_480p_Apex_Legends_0805_01.log",
+      "exit_code": 0,
+      "success": true,
+      "elapsed_seconds": 178.73648524284363,
+      "start_time_seconds": 1166.0,
+      "timestamp_offset_seconds": 1168.4170986,
+      "seek_mode": "output_accurate",
+      "output_exists": true,
+      "output_size": 26453,
+      "output_sha256": "fdc161ca4a3bdcb6b8b6a961222290e32d2e1cb5c9a488297608884567711911",
+      "chunk_index": 0,
+      "duration_seconds": 15.0,
+      "chunked": true
+    }
+  ],
+  "chunk_paths_by_key": {
+    "d2e_480p:Apex_Legends/0805_01": [
+      "outputs/gidm_warmup_seekmode_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap"
+    ]
+  },
+  "chunk_manifest_written": true,
+  "claim_boundary": "Released G-IDM inference execution evidence only; metric claims require conversion plus paper-metric artifacts."
+}

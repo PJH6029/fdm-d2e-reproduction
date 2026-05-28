@@ -1,0 +1,88 @@
+{
+  "schema": "g006_gidm_exact_split_pipeline_summary.v1",
+  "status": "pass",
+  "error_count": 0,
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "stage": "finalize",
+  "allow_partial": false,
+  "dry_run": false,
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "manifest_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/g006_gidm_warmup_seekmode_pilot_manifest.json",
+  "active_manifest_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/g006_gidm_warmup_seekmode_pilot_chunked_manifest.json",
+  "chunk_manifest_output": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/g006_gidm_warmup_seekmode_pilot_chunked_manifest.json",
+  "cuda_devices": [
+    "0"
+  ],
+  "workers": 1,
+  "max_recordings": null,
+  "max_chunks": 1,
+  "recording_keys": [],
+  "statuses": {
+    "target_extraction": {
+      "status": "pass",
+      "rows_written": 100,
+      "recording_count": 1,
+      "error_count": 0
+    },
+    "conversion": {
+      "status": "pass",
+      "rows_written": 100,
+      "recording_count": 1,
+      "missing_prediction_count": 0
+    },
+    "paper_metrics": {
+      "status": "pass",
+      "rows_seen": 100,
+      "error_count": 0
+    }
+  },
+  "artifacts": {
+    "manifest": {
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/g006_gidm_warmup_seekmode_pilot_manifest.json",
+      "exists": true,
+      "bytes": 2246
+    },
+    "inference_summary": {
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/g006_gidm_warmup_seekmode_pilot_inference_summary.json",
+      "exists": true,
+      "status": null,
+      "error_count": null,
+      "rows": null,
+      "alignment_rows": null
+    },
+    "target_summary": {
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/g006_gidm_warmup_seekmode_pilot_target_extraction_summary.json",
+      "exists": true,
+      "status": "pass",
+      "error_count": 0,
+      "rows": 100,
+      "alignment_rows": null
+    },
+    "conversion_summary": {
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/g006_gidm_warmup_seekmode_pilot_conversion_summary.json",
+      "exists": true,
+      "status": null,
+      "error_count": null,
+      "rows": 100,
+      "alignment_rows": null
+    },
+    "paper_metrics": {
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/g006_gidm_warmup_seekmode_pilot_paper_metrics.json",
+      "exists": true,
+      "status": "pass",
+      "error_count": 0,
+      "rows": null,
+      "alignment_rows": 100
+    }
+  },
+  "wall_clock_seconds": 5.9035632610321045,
+  "findings": [],
+  "claim_boundary": "Output-accurate ffmpeg seek pilot for released G-IDM alignment; not our-IDM paper-target success and not exact-split G006 completion.",
+  "wandb_status": {
+    "status": "pass",
+    "exit_code": 0,
+    "output": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-seekpilot/artifacts/eval/g006_gidm_exact_split_finalize_wandb_status.json",
+    "stdout_tail": "{\"status\": \"complete\", \"wandb_run_url\": \"https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/nmnwjjbc\"}\n",
+    "stderr_tail": "                                                                         g006_gidm_warmup_seekmode_pilot_conversion_summary/recording_count ▁\nwandb:                                                                                                                                                                                                                                                                              +126 ...\nwandb: \nwandb: Run summary:\nwandb:                                                                                                                                                                                                                  g006_gidm_warmup_seekmode_pilot_conversion_summary/allow_missing 0\nwandb:                                                                                                                                                                        g006_gidm_warmup_seekmode_pilot_conversion_summary/auto_shift_skipped_by_key/d2e_480p:Apex_Legends/0805_01 1\nwandb:                                                                                                                                                                                               g006_gidm_warmup_seekmode_pilot_conversion_summary/auto_timestamp_shift_from_screen 1\nwandb:                                                                                                                                                                                                                         g006_gidm_warmup_seekmode_pilot_conversion_summary/bin_ms 50\nwandb:                                                                                                                                                                             g006_gidm_warmup_seekmode_pilot_conversion_summary/decoded_event_counts/d2e_480p:Apex_Legends/0805_01 292\nwandb: g006_gidm_warmup_seekmode_pilot_conversion_summary/decoded_event_counts_by_path/d2e_480p:Apex_Legends/0805_01/outputs/gidm_warmup_seekmode_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap 292\nwandb:                                                                                                                                                                                           g006_gidm_warmup_seekmode_pilot_conversion_summary/filter_targets_to_prediction_windows 1\nwandb:                                                                                                                                                                                                       g006_gidm_warmup_seekmode_pilot_conversion_summary/missing_prediction_count 0\nwandb:                                                                                                                                                                         g006_gidm_warmup_seekmode_pilot_conversion_summary/prediction_window_counts/d2e_480p:Apex_Legends/0805_01 1\nwandb:                                                                                                                                                                                                                g006_gidm_warmup_seekmode_pilot_conversion_summary/recording_count 1\nwandb:                                                                                                                                                                                                                                                                              +126 ...\nwandb: \nwandb: 🚀 View run g006-gidm-warmup-output-accurate-seek-pilot-final at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/nmnwjjbc\nwandb: ⭐️ View project at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction\nwandb: Synced 4 W&B file(s), 0 media file(s), 4 artifact file(s) and 0 other file(s)\nwandb: Find logs at: outputs/wandb/wandb/run-20260528_082100-nmnwjjbc/logs\n"
+  }
+}

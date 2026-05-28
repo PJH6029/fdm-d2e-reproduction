@@ -1,0 +1,60 @@
+{
+  "claim_boundary": "Negative teacher-alignment diagnostic only. This is not our-IDM success, not G005 completion, and not exact-split G006 baseline evidence.",
+  "created_at_epoch": 1779956579.066157,
+  "decision": "reject_output_accurate_seek_mode_for_g005_teacher_rescue",
+  "evidence_paths": [
+    "configs/eval/g006_gidm_warmup_seekmode_pilot.yaml",
+    "artifacts/eval/g006_gidm_warmup_seekmode_pilot_manifest.json",
+    "artifacts/eval/g006_gidm_warmup_seekmode_pilot_chunked_manifest.json",
+    "artifacts/eval/g006_gidm_warmup_seekmode_pilot_inference_summary.json",
+    "artifacts/eval/g006_gidm_warmup_seekmode_pilot_target_extraction_summary.json",
+    "artifacts/eval/g006_gidm_warmup_seekmode_pilot_conversion_summary.json",
+    "artifacts/eval/g006_gidm_warmup_seekmode_pilot_paper_metrics.json",
+    "artifacts/eval/g006_gidm_warmup_seekmode_pilot_pipeline_summary.json",
+    "artifacts/eval/g006_gidm_warmup_seekmode_pilot_gpu_monitor.csv",
+    "outputs/gidm_warmup_seekmode_pilot/predictions.jsonl",
+    "outputs/gidm_warmup_seekmode_pilot/targets.jsonl"
+  ],
+  "gpu_monitor": {
+    "max_gpu_utilization": 48,
+    "nonzero_gpu_samples": 16,
+    "path": "artifacts/eval/g006_gidm_warmup_seekmode_pilot_gpu_monitor.csv",
+    "rows": 39
+  },
+  "inference": {
+    "chunk_seek_mode": "output_accurate",
+    "completed_chunks": 1,
+    "elapsed_seconds": 178.73648524284363
+  },
+  "metrics": {
+    "keyboard_accuracy": 0.0,
+    "mouse_button_accuracy": null,
+    "no_button_false_positive_rate": 0.0,
+    "pearson_x": -0.030385309930652738,
+    "pearson_y": 0.11309335723019706,
+    "rows_seen": 100,
+    "scale_ratio_x": 3.043532338308458,
+    "scale_ratio_y": 1.8700361010830324
+  },
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "paper_targets_pass": false,
+  "reason": "A real 1xH200 output_accurate ffmpeg seek pilot reproduced the warmup-trim failure pattern and remains far below paper targets.",
+  "reservation": {
+    "gpu_indices": [
+      1
+    ],
+    "id": "rsv-jeonghunpark-20260528-a71ffb",
+    "node_id": "4",
+    "status_after_copy": "cancelled"
+  },
+  "schema": "g005_gidm_warmup_seekmode_pilot_rejection.v1",
+  "status": "rejected",
+  "wandb_run_url": "{\"status\": \"complete\", \"wandb_run_url\": \"https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/nmnwjjbc\"}"
+}

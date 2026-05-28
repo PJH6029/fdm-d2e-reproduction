@@ -1174,3 +1174,18 @@ Evidence:
 - Unit tests cover generated upstream script patching, runner CLI propagation, exact-pipeline default propagation, and manifest seek-mode recording.
 
 Decision: this is infrastructure only, not a metric win. Do not treat it as G005 completion evidence. A future GPU pilot is only justified if it is tightly bounded (for example one 15s warmup chunk) and followed immediately by conversion/paper metrics plus reservation cancellation.
+
+### 2026-05-28 KST — output-accurate released-GIDM seek pilot rejected
+
+Ran the bounded real-GPU follow-up for the `chunk_seek_mode=output_accurate` hypothesis on MLXP reservation `rsv-jeonghunpark-20260528-a71ffb` (production node 4, one H200 GPU, cancelled after artifact copy). The pod used detached worktree commit `d3f9298`, copied `.env` for W&B/HF access without committing secrets, and logged W&B run `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/nmnwjjbc` for the terminal finalize pass.
+
+Evidence:
+
+- `configs/eval/g006_gidm_warmup_seekmode_pilot.yaml` — exact bounded pilot config with `chunk_seek_mode=output_accurate`, `resume=false`, one 15s chunk, and absolute PVC by-recording roots.
+- `artifacts/eval/g006_gidm_warmup_seekmode_pilot_inference_summary.json` — one chunk completed, `elapsed_seconds=178.736`, `seek_mode=output_accurate`, output SHA retained.
+- `artifacts/eval/g006_gidm_warmup_seekmode_pilot_paper_metrics.json` — 100 aligned rows, paper-metric artifact `status=pass` but metric values reject the branch.
+- `artifacts/eval/g006_gidm_warmup_seekmode_pilot_gpu_monitor.csv` — 39 monitor rows, max GPU utilization 48%, 16 nonzero-GPU samples.
+- `artifacts/idm/g005_gidm_warmup_seekmode_pilot_rejection.json` — explicit negative decision and sanitized reservation summary.
+- `outputs/gidm_warmup_seekmode_pilot/` — small target/prediction/MCAP evidence copied locally.
+
+Result: reject output-accurate ffmpeg seek as a released-GIDM teacher rescue. Metrics on the same 100-row warmup window stayed at keyboard `0.0`, mouse Pearson X/Y `-0.0304/0.1131`, scale ratios `3.04/1.87`, and no mouse-button positives. This matches the previous warmup-trim failure pattern and is nowhere near paper targets. Do not spend a larger G-IDM run on seek placement.

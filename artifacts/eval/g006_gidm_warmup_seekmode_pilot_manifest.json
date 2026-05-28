@@ -1,0 +1,58 @@
+{
+  "chunked_prediction_count": 1,
+  "claim_boundary": "Output-accurate seek pilot input manifest; not our-IDM metric evidence.",
+  "decode_summary_path": "artifacts/sources/d2e_full_corpus_decode_summary_accel64.json",
+  "manifest_fingerprint": "80aede7930b3747c10b2ce5159aa27325f55d409977ce52e3b623c106f1956c6",
+  "missing_decode_rows": [],
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "output_dir": "outputs/gidm_exact_split",
+  "recording_count": 1,
+  "recordings": [
+    {
+      "bin_index_max": 29274,
+      "bin_index_min": 23420,
+      "cross_resolution_key": "Apex_Legends/0805_01",
+      "game": "Apex_Legends",
+      "ground_truth_mcap_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mcap",
+      "inference_command": [
+        "uv",
+        "run",
+        "python",
+        "inference.py",
+        "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv",
+        "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01.mcap",
+        "--model",
+        "open-world-agents/Generalist-IDM-1B",
+        "--device",
+        "cuda",
+        "--max-context-length",
+        "2048"
+      ],
+      "prediction_mcap_path": "outputs/gidm_warmup_seekmode_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01.mcap",
+      "recording_id": "0805_01",
+      "row_count": 5855,
+      "source_id": "d2e_480p",
+      "split_tags": [
+        "temporal"
+      ],
+      "target_timing_records_path": null,
+      "target_timing_source": "target_record_scan",
+      "timestamp_max_ns": 1466117098600,
+      "timestamp_min_ns": 1173417098600,
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "upstream_model": "open-world-agents/Generalist-IDM-1B",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv"
+    }
+  ],
+  "schema": "gidm_inference_manifest.v1+warmup_trim_pilot_input+output_accurate_seek_input",
+  "source_manifest_path": "artifacts/eval/g006_gidm_chunked_pilot_2gpu_retry2_timing_enriched_manifest.json",
+  "source_mode": "decode_summary_split_counts",
+  "target_record_paths": [],
+  "target_rows": 5855,
+  "target_timing_enriched": true,
+  "target_timing_split_tags": [
+    "heldout_game",
+    "heldout_recording",
+    "temporal"
+  ]
+}
