@@ -1,0 +1,27 @@
+{
+  "blocking_failures": [
+    "keyboard_key_accuracy_zero",
+    "mouse_button_f1_zero",
+    "button_prediction_abstained_all_rows"
+  ],
+  "claim_boundary": "Failure-analysis artifact only; no G005 completion, no D2E G-IDM win, no FDM-1 parity claim.",
+  "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_compact_summary.json",
+  "interpretation": [
+    "Temporal sequence-level masked diffusion exercised the GPU much better and is more faithful to FDM-1 IDM than factor-only heads, but the first prefix80k configuration collapsed to no key/button emissions on the target prefix.",
+    "This is a model/calibration operating-point failure, not a completion signal: no-button FPR is zero only because predicted button examples are zero.",
+    "Next branch should keep temporal sequence modeling but add split-safe confidence budget/top-k unmasking for non-noop action tokens, stronger class weights or focal token loss, and possibly train longer/larger after a small calibration probe."
+  ],
+  "next_recipe_faithful_actions": [
+    "Add non-noop confidence budgeted iterative unmasking for temporal sequence outputs using held-out train/calibration rows, analogous to the earlier button budget but over full action-token slots.",
+    "Add focal or logit-adjusted token cross-entropy for sparse key/button tokens while preserving the sequence-level masked diffusion objective.",
+    "Run a smaller CPU/GPU calibration probe before another H200 reservation; then promote only if target emits nonzero key/button tokens under no-button FPR <= 0.10."
+  ],
+  "observed_wins": [
+    "gpu_utilization_improved_vs_factorized_keyspan",
+    "no_button_fpr_zero_due_to_button_abstention"
+  ],
+  "reservation_id": "rsv-jeonghunpark-20260529-72170e",
+  "schema": "g005_temporal_prefix80k_diagnosis.v1",
+  "status": "nonterminal_negative",
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/gjzroj4m"
+}

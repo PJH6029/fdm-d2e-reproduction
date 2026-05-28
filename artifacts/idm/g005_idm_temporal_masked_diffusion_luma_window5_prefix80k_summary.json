@@ -1,0 +1,59 @@
+{
+  "schema": "temporal_masked_diffusion_idm_train_summary.v1",
+  "status": "pass",
+  "model_name": "idm_temporal_masked_diffusion_d2e_luma_window5_prefix80k",
+  "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM over temporal action-token sequences conditioned on all D2E frame-window tokens in the local window.",
+  "train_rows": 80000,
+  "target_rows": 5000,
+  "vocab_size": 148,
+  "max_slots": 16,
+  "temporal_offsets": [
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3
+  ],
+  "temporal_window": 7,
+  "video_encoder_arch": "compact_luma_window_cnn",
+  "video_encoder_pretrain_history": [
+    {
+      "epoch": 1,
+      "video_reconstruction_loss": 0.011461827295273543,
+      "examples": 80000
+    }
+  ],
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 1.7966091056275124,
+      "action_loss": 1.7962169072116476,
+      "video_reconstruction_loss": 0.007844013741612435,
+      "masked_targets": 4801437
+    },
+    {
+      "epoch": 2,
+      "loss": 1.4115392873247912,
+      "action_loss": 1.4111701786757525,
+      "video_reconstruction_loss": 0.00738215449154377,
+      "masked_targets": 4801437
+    }
+  ],
+  "loss_weights": {
+    "noop_loss_weight": 0.05,
+    "pad_loss_weight": 0.0,
+    "action_loss_weight": 1.0,
+    "keyboard_loss_weight": 8.0,
+    "mouse_button_loss_weight": 16.0,
+    "mouse_move_loss_weight": 2.0,
+    "video_reconstruction_aux_weight": 0.05
+  },
+  "device": "cuda",
+  "checkpoint_path": "outputs/idm_temporal_masked_diffusion_d2e_luma_window5_prefix80k/checkpoint.pt",
+  "predictions_path": "outputs/idm_temporal_masked_diffusion_d2e_luma_window5_prefix80k/predictions.jsonl",
+  "metrics_path": "outputs/idm_temporal_masked_diffusion_d2e_luma_window5_prefix80k/paper_metrics.json",
+  "wall_clock_seconds": 312.15158915519714,
+  "claim_boundary": "Temporal prefix trainer scaffold; not G005 completion evidence without full-corpus 4xH200 run, recipe-alignment audit, paper/G-IDM target win, and split statistics."
+}

@@ -1,0 +1,123 @@
+{
+  "claim_boundary": "Non-terminal bounded G005 temporal sequence IDM probe. It does not meet D2E paper/G-IDM target wins and is not a G005 checkpoint.",
+  "commit": "aa481c7",
+  "config": "configs/model/idm_temporal_masked_diffusion_d2e_luma_window5_prefix80k.yaml",
+  "evidence_files": {
+    "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_compact_summary.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_gpu_monitor.csv",
+    "paper_metrics": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_paper_metrics.json",
+    "reservation_context": "artifacts/idm/g005_temporal_prefix80k_reservation_context.json",
+    "resolved_config": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_resolved_config.json",
+    "run": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_run.json",
+    "semantic_diagnostic": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_button_semantic_diagnostic.json",
+    "summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_summary.json",
+    "train_log": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_train.log",
+    "wandb_status": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_wandb_status.json"
+  },
+  "gpu_monitor": {
+    "avg_memory_used_mib": 4809.090909090909,
+    "avg_utilization_gpu_pct": 32.04545454545455,
+    "max_memory_used_mib": 7211.0,
+    "max_utilization_gpu_pct": 70.0,
+    "nonzero_utilization_rows": 15,
+    "rows": 22
+  },
+  "hashes": {
+    "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_button_semantic_diagnostic.json": "94aa074e33afa4f31efaca6c5eae47513a968a3a57d05ae99a17f6d5df78c62d",
+    "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_gpu_monitor.csv": "9ee0a4e2ab6d78062a0efe52da25dc32aeda0a87a56a4ffb256675e54e11b688",
+    "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_paper_metrics.json": "def22386a5370827a6cf75ff3de12d67e258bab827fd4ebfc8d437c714257629",
+    "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_resolved_config.json": "a0513d035641671b082759db5de456d180aee018d89042419e58c7116ff8bdb6",
+    "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_run.json": "356565def478094dd45ea7f3baa7bcb225b75e31fea1e45dcf1150b78390e54a",
+    "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_train.log": "8841a6697db7b7522dcc442fe0d39ab41bd3890a4d28554ff51def8feeb0d545",
+    "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_wandb_status.json": "1898ed396c1e491123429e8f12e597254e2e686793724c13025fac2573286c27",
+    "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_summary.json": "d287c9bc62cec43caf30deea07f1fc50a9833890236c5120978ae6e5ab13c0fe"
+  },
+  "metrics": {
+    "exact_button_tp": 0,
+    "keyboard_key_accuracy": 0.0,
+    "keyboard_strict_accuracy": 0.0,
+    "mouse_button_accuracy": 0.0,
+    "mouse_button_f1_strict": 0.0,
+    "mouse_move_pearson_x": 0.0018033799029715826,
+    "mouse_move_pearson_y": null,
+    "no_button_false_positive_rate": 0.0,
+    "predicted_button_examples": 0
+  },
+  "output_dir": "outputs/idm_temporal_masked_diffusion_d2e_luma_window5_prefix80k",
+  "pod": "prod-rsv-jeonghunpark-20260529-72170e",
+  "recipe_shape": {
+    "max_slots": 16,
+    "temporal_offsets": [
+      -3,
+      -2,
+      -1,
+      0,
+      1,
+      2,
+      3
+    ],
+    "temporal_window": 7,
+    "train_history_tail": {
+      "action_loss": 1.4111701786757525,
+      "epoch": 2,
+      "loss": 1.4115392873247912,
+      "masked_targets": 4801437,
+      "video_reconstruction_loss": 0.00738215449154377
+    },
+    "video_encoder_arch": "compact_luma_window_cnn",
+    "video_pretrain": {
+      "epoch": 1,
+      "examples": 80000,
+      "video_reconstruction_loss": 0.011461827295273543
+    },
+    "vocab_size": 148
+  },
+  "reservation_after_status": "cancelled",
+  "reservation_id": "rsv-jeonghunpark-20260529-72170e",
+  "rows": {
+    "target": 5000,
+    "train": 80000
+  },
+  "schema": "g005_temporal_prefix80k_compact_summary.v1",
+  "semantic_diagnostic": {
+    "exact_true_positive_examples": 0,
+    "ground_truth_examples": 50,
+    "predicted_examples": 0,
+    "rows": 2000,
+    "semantic_any_button_overlap_examples": 0,
+    "semantic_any_button_overlap_rate_on_gt": 0.0,
+    "top_ground_truth_button_tokens": [
+      [
+        "MOUSE_RIGHT_DOWN",
+        16
+      ],
+      [
+        "MOUSE_RIGHT_UP",
+        16
+      ],
+      [
+        "MOUSE_LEFT_DOWN",
+        8
+      ],
+      [
+        "MOUSE_LEFT_UP",
+        8
+      ],
+      [
+        "MOUSE_MIDDLE_DOWN",
+        5
+      ],
+      [
+        "MOUSE_MIDDLE_UP",
+        5
+      ]
+    ],
+    "top_predicted_button_tokens": []
+  },
+  "status": "pass",
+  "timing": {
+    "gpu_monitor_rows": 22,
+    "wall_clock_seconds": 312.15158915519714
+  },
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/gjzroj4m"
+}
