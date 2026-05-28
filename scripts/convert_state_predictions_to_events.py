@@ -15,6 +15,16 @@ from fdm_d2e.io_utils import write_json
 def main() -> int:
     parser = argparse.ArgumentParser(description="Convert held-state IDM prediction tokens into D2E press/release event tokens.")
     parser.add_argument("--prediction-path", action="append", required=True, help="State prediction JSONL path or glob. Repeatable.")
+    parser.add_argument(
+        "--seed-prior-target-path",
+        action="append",
+        default=[],
+        help=(
+            "Optional event-state target JSONL/glob aligned with prediction rows. "
+            "Only the first row per recording seeds the closed-loop held-state tracker from prior_action_tokens; "
+            "subsequent state comes from predictions."
+        ),
+    )
     parser.add_argument("--output", required=True, help="Converted prediction JSONL output.")
     parser.add_argument("--summary", required=True)
     parser.add_argument("--key-press-rows", type=int, default=1)
@@ -31,6 +41,7 @@ def main() -> int:
     payload = convert_state_prediction_file(
         prediction_paths=[str(path) for path in args.prediction_path],
         output_path=args.output,
+        seed_prior_paths=[str(path) for path in args.seed_prior_target_path] or None,
         key_press_rows=args.key_press_rows,
         key_release_rows=args.key_release_rows,
         button_press_rows=args.button_press_rows,

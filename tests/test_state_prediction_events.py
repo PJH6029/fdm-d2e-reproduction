@@ -50,3 +50,43 @@ def test_state_prediction_conversion_debounces_transitions(tmp_path: Path) -> No
     assert rows[1]["predicted_tokens"] == ["NOOP"]
     assert rows[2]["predicted_tokens"] == ["NOOP"]
     assert rows[3]["predicted_tokens"] == ["KEY_PRESS_65"]
+
+
+def test_state_prediction_conversion_can_seed_first_target_prior(tmp_path: Path) -> None:
+    source = tmp_path / "state_preds.jsonl"
+    target = tmp_path / "target.jsonl"
+    out = tmp_path / "events.jsonl"
+    write_jsonl(
+        source,
+        [
+            {"sequence_id": "rec#0", "recording_id": "rec", "predicted_tokens": ["KEY_DOWN_87", "MOUSE_LEFT_DOWN"]},
+            {"sequence_id": "rec#1", "recording_id": "rec", "predicted_tokens": ["KEY_DOWN_87"]},
+            {"sequence_id": "rec#2", "recording_id": "rec", "predicted_tokens": []},
+        ],
+    )
+    write_jsonl(
+        target,
+        [
+            {
+                "sequence_id": "rec#0",
+                "recording_id": "rec",
+                "prior_action_tokens": ["KEY_DOWN_87", "MOUSE_LEFT_DOWN"],
+            },
+            {"sequence_id": "rec#1", "recording_id": "rec", "prior_action_tokens": ["KEY_DOWN_87"]},
+            {"sequence_id": "rec#2", "recording_id": "rec", "prior_action_tokens": ["KEY_DOWN_87"]},
+        ],
+    )
+
+    summary = convert_state_prediction_file(
+        prediction_paths=[source],
+        seed_prior_paths=[target],
+        output_path=out,
+    )
+    rows = read_jsonl(out)
+
+    assert summary["status"] == "pass"
+    assert summary["seeded_recordings"] == 1
+    assert summary["seed_sequence_mismatches"] == 0
+    assert rows[0]["predicted_tokens"] == ["NOOP"]
+    assert rows[1]["predicted_tokens"] == ["MOUSE_LEFT_UP"]
+    assert rows[2]["predicted_tokens"] == ["KEY_RELEASE_87"]

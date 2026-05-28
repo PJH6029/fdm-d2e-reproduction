@@ -3,6 +3,7 @@ from __future__ import annotations
 import glob
 import json
 import time
+from itertools import zip_longest
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
@@ -62,6 +63,13 @@ def _tokens(row: dict[str, Any]) -> list[str]:
     return []
 
 
+def _prior_tokens(row: dict[str, Any]) -> list[str]:
+    value = row.get("prior_action_tokens")
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    return []
+
+
 def _held_keys(tokens: Sequence[str]) -> set[str]:
     keys: set[str] = set()
     for token in tokens:
@@ -91,6 +99,11 @@ class _DebouncedSetDiffer:
         self.committed: set[str] = set()
         self.present_counts: dict[str, int] = {}
         self.absent_counts: dict[str, int] = {}
+
+    def seed(self, committed: Iterable[str]) -> None:
+        self.committed = {str(item) for item in committed if str(item)}
+        self.present_counts = {}
+        self.absent_counts = {}
 
     def update(self, observed: set[str]) -> tuple[list[str], list[str]]:
         presses: list[str] = []
@@ -135,6 +148,50 @@ class _RecordingState:
         self.keys = _DebouncedSetDiffer(press_rows=key_press_rows, release_rows=key_release_rows)
         self.buttons = _DebouncedSetDiffer(press_rows=button_press_rows, release_rows=button_release_rows)
 
+    def seed_from_prior_tokens(self, tokens: Sequence[str]) -> None:
+        self.keys.seed(_held_keys(tokens))
+        self.buttons.seed(_held_buttons(tokens))
+
+
+def _iter_prediction_seed_pairs(
+    *,
+    prediction_paths: Sequence[str | Path],
+    seed_prior_paths: Sequence[str | Path] | None,
+    max_rows: int | None,
+) -> Iterable[tuple[dict[str, Any], dict[str, Any] | None]]:
+    prediction_iter = _iter_loaded_rows(_expand_paths(prediction_paths))
+    seed_iter = _iter_loaded_rows(_expand_paths(seed_prior_paths or [])) if seed_prior_paths else None
+    rows = 0
+    if seed_iter is None:
+        for prediction_row in prediction_iter:
+            if max_rows is not None and rows >= max_rows:
+                return
+            yield prediction_row, None
+            rows += 1
+        return
+    for prediction_row, seed_row in zip_longest(prediction_iter, seed_iter):
+        if max_rows is not None and rows >= max_rows:
+            return
+        if prediction_row is None or seed_row is None:
+            raise ValueError(
+                "state prediction prior seeding requires prediction and target-prior streams "
+                f"to have the same row count before max_rows; stopped at row {rows}"
+            )
+        yield prediction_row, seed_row
+        rows += 1
+
+
+def _iter_loaded_rows(paths: Sequence[Path]) -> Iterable[dict[str, Any]]:
+    for path in paths:
+        with path.open("r", encoding="utf-8", buffering=1024 * 1024) as source:
+            for line_no, line in enumerate(source, 1):
+                if not line.strip():
+                    continue
+                try:
+                    yield _loads(line)
+                except Exception as exc:
+                    raise ValueError(f"invalid JSONL row at {path}:{line_no}") from exc
+
 
 def convert_state_prediction_tokens(
     tokens: Sequence[str],
@@ -158,6 +215,7 @@ def convert_state_prediction_file(
     *,
     prediction_paths: Sequence[str | Path],
     output_path: str | Path,
+    seed_prior_paths: Sequence[str | Path] | None = None,
     key_press_rows: int = 1,
     key_release_rows: int = 1,
     button_press_rows: int = 1,
@@ -169,92 +227,111 @@ def convert_state_prediction_file(
     progress_rows: int = 1_000_000,
 ) -> dict[str, Any]:
     paths = _expand_paths(prediction_paths)
+    seed_paths = _expand_paths(seed_prior_paths or [])
     findings: list[dict[str, Any]] = []
     if not paths:
         findings.append({"severity": "error", "code": "missing_prediction_paths", "patterns": [str(path) for path in prediction_paths]})
+    if seed_prior_paths and not seed_paths:
+        findings.append({"severity": "error", "code": "missing_seed_prior_paths", "patterns": [str(path) for path in seed_prior_paths]})
     started = time.time()
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     tmp_output = output.with_suffix(output.suffix + ".tmp")
     states: dict[str, _RecordingState] = {}
+    seeded_recordings: set[str] = set()
     rows = 0
+    seed_rows = 0
+    seed_sequence_mismatches = 0
     key_event_rows = 0
     button_event_rows = 0
     mouse_motion_rows = 0
     if paths:
         with tmp_output.open("w", encoding="utf-8", buffering=1024 * 1024) as handle:
-            for path in paths:
-                with path.open("r", encoding="utf-8", buffering=1024 * 1024) as source:
-                    for line_no, line in enumerate(source, 1):
-                        if max_rows is not None and rows >= max_rows:
-                            break
-                        if not line.strip():
-                            continue
-                        try:
-                            row = _loads(line)
-                        except Exception as exc:
-                            raise ValueError(f"invalid JSONL row at {path}:{line_no}") from exc
-                        recording_id = _recording_id(row)
-                        state = states.setdefault(
-                            recording_id,
-                            _RecordingState(
-                                key_press_rows=key_press_rows,
-                                key_release_rows=key_release_rows,
-                                button_press_rows=button_press_rows,
-                                button_release_rows=button_release_rows,
-                            ),
-                        )
-                        converted = convert_state_prediction_tokens(
-                            _tokens(row),
-                            state,
-                            include_mouse_motion=include_mouse_motion,
-                        )
-                        out_row = {
-                            "schema": "state_prediction_eventified.v1",
-                            "sequence_id": row.get("sequence_id"),
-                            "recording_id": row.get("recording_id"),
-                            "predicted_tokens": converted,
-                            "conversion": {
-                                "key_press_rows": int(key_press_rows),
-                                "key_release_rows": int(key_release_rows),
-                                "button_press_rows": int(button_press_rows),
-                                "button_release_rows": int(button_release_rows),
-                                "include_mouse_motion": bool(include_mouse_motion),
-                                "include_state_prediction_tokens": bool(include_state_prediction_tokens),
-                            },
-                        }
-                        if include_state_prediction_tokens:
-                            out_row["state_prediction_tokens"] = _tokens(row)
-                        handle.write(_dumps(out_row) + "\n")
-                        rows += 1
-                        key_event_rows += int(any(token.startswith("KEY_") for token in converted))
-                        button_event_rows += int(
-                            any(token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")) for token in converted)
-                        )
-                        mouse_motion_rows += int(any(token.startswith(("MOUSE_DX_", "MOUSE_DY_")) for token in converted))
-                        if progress_output_path and progress_rows > 0 and rows % progress_rows == 0:
-                            write_json(
-                                progress_output_path,
-                                {
-                                    "schema": "state_prediction_eventification_progress.v1",
-                                    "status": "running",
-                                    "rows": rows,
-                                    "recordings": len(states),
-                                    "output_path": str(output),
-                                },
-                            )
-                    if max_rows is not None and rows >= max_rows:
-                        break
+            for row, seed_row in _iter_prediction_seed_pairs(
+                prediction_paths=paths,
+                seed_prior_paths=seed_paths or None,
+                max_rows=max_rows,
+            ):
+                recording_id = _recording_id(row)
+                state = states.setdefault(
+                    recording_id,
+                    _RecordingState(
+                        key_press_rows=key_press_rows,
+                        key_release_rows=key_release_rows,
+                        button_press_rows=button_press_rows,
+                        button_release_rows=button_release_rows,
+                    ),
+                )
+                if seed_row is not None:
+                    if str(seed_row.get("sequence_id")) != str(row.get("sequence_id")):
+                        seed_sequence_mismatches += 1
+                    if recording_id not in seeded_recordings:
+                        state.seed_from_prior_tokens(_prior_tokens(seed_row))
+                        seeded_recordings.add(recording_id)
+                    seed_rows += 1
+                converted = convert_state_prediction_tokens(
+                    _tokens(row),
+                    state,
+                    include_mouse_motion=include_mouse_motion,
+                )
+                out_row = {
+                    "schema": "state_prediction_eventified.v1",
+                    "sequence_id": row.get("sequence_id"),
+                    "recording_id": row.get("recording_id"),
+                    "predicted_tokens": converted,
+                    "conversion": {
+                        "key_press_rows": int(key_press_rows),
+                        "key_release_rows": int(key_release_rows),
+                        "button_press_rows": int(button_press_rows),
+                        "button_release_rows": int(button_release_rows),
+                        "include_mouse_motion": bool(include_mouse_motion),
+                        "include_state_prediction_tokens": bool(include_state_prediction_tokens),
+                        "seed_prior_from_target": bool(seed_paths),
+                    },
+                }
+                if include_state_prediction_tokens:
+                    out_row["state_prediction_tokens"] = _tokens(row)
+                handle.write(_dumps(out_row) + "\n")
+                rows += 1
+                key_event_rows += int(any(token.startswith("KEY_") for token in converted))
+                button_event_rows += int(
+                    any(token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")) for token in converted)
+                )
+                mouse_motion_rows += int(any(token.startswith(("MOUSE_DX_", "MOUSE_DY_")) for token in converted))
+                if progress_output_path and progress_rows > 0 and rows % progress_rows == 0:
+                    write_json(
+                        progress_output_path,
+                        {
+                            "schema": "state_prediction_eventification_progress.v1",
+                            "status": "running",
+                            "rows": rows,
+                            "recordings": len(states),
+                            "seeded_recordings": len(seeded_recordings),
+                            "output_path": str(output),
+                        },
+                    )
         tmp_output.replace(output)
     errors = [item for item in findings if item.get("severity") == "error"]
+    if seed_sequence_mismatches:
+        findings.append(
+            {
+                "severity": "warning",
+                "code": "seed_prior_sequence_id_mismatches",
+                "count": seed_sequence_mismatches,
+            }
+        )
     return {
         "schema": "state_prediction_eventification_summary.v1",
         "status": "pass" if not errors else "fail",
         "error_count": len(errors),
         "prediction_paths": [str(path) for path in paths],
+        "seed_prior_paths": [str(path) for path in seed_paths],
         "output_path": str(output),
         "rows": rows,
         "recordings": len(states),
+        "seed_rows": seed_rows,
+        "seeded_recordings": len(seeded_recordings),
+        "seed_sequence_mismatches": seed_sequence_mismatches,
         "key_event_rows": key_event_rows,
         "button_event_rows": button_event_rows,
         "mouse_motion_rows": mouse_motion_rows,
@@ -266,6 +343,7 @@ def convert_state_prediction_file(
             "button_release_rows": int(button_release_rows),
             "include_mouse_motion": bool(include_mouse_motion),
             "include_state_prediction_tokens": bool(include_state_prediction_tokens),
+            "seed_prior_from_target": bool(seed_paths),
         },
         "wall_clock_seconds": time.time() - started,
         "findings": findings,
