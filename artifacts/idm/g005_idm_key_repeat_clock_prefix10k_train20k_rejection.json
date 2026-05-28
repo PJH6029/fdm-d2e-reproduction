@@ -1,0 +1,90 @@
+{
+  "schema": "g005_idm_rejection.v1",
+  "decision": "reject_per_key_repeat_clock_prefix_gate",
+  "status": "rejected",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "created_at_epoch": 1779953357,
+  "run": {
+    "worktree_checkout": "1f04203",
+    "execution": "production-storage-shell-4 CPU/storage-shell",
+    "max_train_rows": 20000,
+    "max_target_rows": 10000,
+    "candidate_key_count": 8,
+    "clock_modes": [
+      "predicted",
+      "teacher_forced"
+    ],
+    "alignment": {
+      "sequence_id_mismatches": 0,
+      "missing_base_prediction_rows": 0,
+      "examples": []
+    }
+  },
+  "base_metrics": {
+    "policy": "base_all",
+    "keyboard_accuracy": 0.11677908937605397,
+    "mouse_button_accuracy": 0.22666666666666666,
+    "pearson_x": 0.7651583636283183,
+    "pearson_y": 0.7433467669999546,
+    "scale_ratio_x": 1.0619531169322916,
+    "scale_ratio_y": 1.114617706943762,
+    "strict_mouse_button_f1": 0.3582089552238806,
+    "strict_no_button_fpr": 0.018660924843637856
+  },
+  "best_policy": {
+    "policy": "base_all",
+    "keyboard_accuracy": 0.11677908937605397,
+    "mouse_button_accuracy": 0.22666666666666666,
+    "pearson_x": 0.7651583636283183,
+    "pearson_y": 0.7433467669999546,
+    "scale_ratio_x": 1.0619531169322916,
+    "scale_ratio_y": 1.114617706943762,
+    "strict_mouse_button_f1": 0.3582089552238806,
+    "strict_no_button_fpr": 0.018660924843637856
+  },
+  "best_clock_policy": {
+    "policy": "clock_union_base_keys_predicted_code_hold_since_age_th0.25_s3",
+    "keyboard_accuracy": 0.11670864819479429,
+    "mouse_button_accuracy": 0.22666666666666666,
+    "pearson_x": 0.7651583636283183,
+    "pearson_y": 0.7433467669999546,
+    "scale_ratio_x": 1.0619531169322916,
+    "scale_ratio_y": 1.114617706943762,
+    "strict_mouse_button_f1": 0.3582089552238806,
+    "strict_no_button_fpr": 0.018660924843637856
+  },
+  "best_predicted_clock_policy": {
+    "policy": "clock_union_base_keys_predicted_code_hold_since_age_th0.25_s3",
+    "keyboard_accuracy": 0.11670864819479429,
+    "mouse_button_accuracy": 0.22666666666666666,
+    "pearson_x": 0.7651583636283183,
+    "pearson_y": 0.7433467669999546,
+    "scale_ratio_x": 1.0619531169322916,
+    "scale_ratio_y": 1.114617706943762,
+    "strict_mouse_button_f1": 0.3582089552238806,
+    "strict_no_button_fpr": 0.018660924843637856
+  },
+  "best_teacher_forced_clock_policy": {
+    "policy": "clock_press_only_union_teacher_forced_code_age_phase_th0.25_s3",
+    "keyboard_accuracy": 0.08483754512635379,
+    "mouse_button_accuracy": 0.22666666666666666,
+    "pearson_x": 0.7651583636283183,
+    "pearson_y": 0.7433467669999546,
+    "scale_ratio_x": 1.0619531169322916,
+    "scale_ratio_y": 1.114617706943762,
+    "strict_mouse_button_f1": 0.3582089552238806,
+    "strict_no_button_fpr": 0.018660924843637856
+  },
+  "finding_codes": [
+    "predicted_clock_does_not_beat_base_keyboard",
+    "per_key_repeat_age_does_not_solve_hidden_repeat_keys_on_prefix",
+    "base_event_state_duration_context_remains_best_on_this_prefix",
+    "no_gpu_promotion_for_this_branch"
+  ],
+  "evidence": {
+    "diagnostic": "artifacts/idm/g005_idm_key_repeat_clock_diagnostic_prefix10k_train20k.json",
+    "predictions": "outputs/idm_diagnostics/g005_key_repeat_clock_prefix10k_train20k_predictions.jsonl"
+  },
+  "claim_boundary": "CPU prefix negative diagnostic only. The teacher-forced clock is not non-leaky evidence, and predicted-clock results do not justify GPU/full-corpus promotion.",
+  "next_action": "Do not scale per-key repeat-clock tables. Continue with a genuinely stronger learned sequence/state IDM or revisit metric/label formulation with official evaluator support."
+}

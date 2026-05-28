@@ -1110,3 +1110,17 @@ Result: reject warmup trimming as a released-GIDM teacher/timing rescue for G005
 Next branch: pivot back to a learned non-leaky sequence/state IDM architecture or a different teacher signal; do not spend a larger G-IDM warmup-trim scaling run unless a separate timing/alignment explanation appears.
 
 Follow-up row-shift sweep over the copied 100-row warmup pilot (`artifacts/eval/g006_gidm_warmup_trim_pilot_shift_sweep.json`) found that timing rescue is insufficient: the best keyboard shift was +47 rows / +2.35s with keyboard `0.1786` on only 53 overlapping rows; the best mouse-Pearson shift was +48 rows with Pearson X/Y `0.6477/0.6805` but keyboard only `0.0645`. This confirms that simple timestamp/row shifting does not turn the released-GIDM warmup pilot into a viable G005 paper-target path.
+
+### Per-key repeat-clock prefix rejection
+
+Date: 2026-05-28 KST.
+
+Implemented and ran a CPU/storage-shell per-key repeat-clock diagnostic (`scripts/build_g005_key_repeat_clock_diagnostic.py`, commit `1f04203`) to test whether key-repeat failures were caused by missing per-key last-press/release timing. The gate used 20k train rows, 10k target rows, top-8 key candidates, predicted-clock and teacher-forced-clock variants, and the current event-state-duration context predictions as the non-key/base stream.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_key_repeat_clock_diagnostic_prefix10k_train20k.json` — diagnostic payload with zero sequence mismatches.
+- `artifacts/idm/g005_idm_key_repeat_clock_prefix10k_train20k_rejection.json` — explicit negative decision.
+- `outputs/idm_diagnostics/g005_key_repeat_clock_prefix10k_train20k_predictions.jsonl` — small prediction sample copied from storage shell.
+
+Result: reject this branch. `base_all` remained best on the 10k prefix (`keyboard=0.11678`, mouse-button accuracy `0.22667`, Pearson X/Y `0.76516/0.74335`, no-button FPR `0.01866`). The best predicted-clock repeat policy slightly underperformed base (`keyboard=0.11671`) and no teacher-forced clock policy justified promotion. Do not reserve GPUs or run a larger table-clock sweep for this exact approach.

@@ -1034,6 +1034,31 @@
       "shift_sweep": "artifacts/eval/g006_gidm_warmup_trim_pilot_shift_sweep.json",
       "best_shift_keyboard_accuracy": 0.17857142857142858,
       "best_shift_seconds": 2.35
+    },
+    {
+      "artifact": "artifacts/idm/g005_idm_key_repeat_clock_diagnostic_prefix10k_train20k.json",
+      "rejection": "artifacts/idm/g005_idm_key_repeat_clock_prefix10k_train20k_rejection.json",
+      "decision": "reject_per_key_repeat_clock_prefix_gate",
+      "rows": 10000,
+      "train_rows": 20000,
+      "base_keyboard_accuracy": 0.11677908937605397,
+      "best_keyboard_accuracy": 0.11677908937605397,
+      "best_policy": "base_all",
+      "best_predicted_clock_keyboard_accuracy": 0.11670864819479429,
+      "best_teacher_forced_clock_keyboard_accuracy": 0.08483754512635379,
+      "strict_no_button_fpr": 0.018660924843637856,
+      "alignment": {
+        "sequence_id_mismatches": 0,
+        "missing_base_prediction_rows": 0,
+        "examples": []
+      },
+      "claim_boundary": "CPU prefix negative diagnostic only. The teacher-forced clock is not non-leaky evidence, and predicted-clock results do not justify GPU/full-corpus promotion.",
+      "finding_codes": [
+        "predicted_clock_does_not_beat_base_keyboard",
+        "per_key_repeat_age_does_not_solve_hidden_repeat_keys_on_prefix",
+        "base_event_state_duration_context_remains_best_on_this_prefix",
+        "no_gpu_promotion_for_this_branch"
+      ]
     }
   ],
   "paper_targets": {
@@ -2249,6 +2274,7 @@
     }
   ],
   "recommended_next_actions": [
+    "Per-key repeat-clock prefix gate is rejected: on 20k train / 10k target rows, base_all keyboard=0.11677908937605397 while best policy base_all keyboard=0.11677908937605397 and best predicted-clock keyboard=0.11670864819479429. Do not scale this table-clock branch.",
     "Warmup-trimmed released-GIDM teacher pilot is rejected: real 2GPU run on reservation rsv-jeonghunpark-20260528-82c473 passed infrastructure/W&B but on the 100-row eval window had keyboard=0.0, mouse Pearson X/Y=-0.030385309930652738/0.11309335723019706, button sample_count=0, no-button FPR=0.0. Do not scale this branch as the G005 paper-target path; pivot to a learned non-leaky sequence/state IDM architecture or different teacher signal.",
     "Do not promote frozen DINO-v2 compact-luma embeddings to full-corpus G005: the 320k 2xH200 prefix trained/evaluated successfully but achieved keyboard=0.0206, mouse-button=0.1046, Pearson X/Y=0.0199/0.0102 and heldout_game no-button FPR=0.1096.",
     "Keep the native-luma tensor-cache materialization path as infrastructure only; it solves throughput/cache issues but not the IDM paper-target metric problem.",
@@ -2266,5 +2292,5 @@
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779952382
+  "updated_at_epoch": 1779953357
 }
