@@ -454,3 +454,31 @@ prefix target rows. Continue with a branch that changes the supervision/modeling
 problem (teacher-assisted event decoding, causal per-recording latent state, or a
 learned future-key-state/event decoder) and prefix-gate it before any full 4xH200
 promotion. Do not claim target-autocorrelation metrics as trained-model evidence.
+
+### 2026-05-28 KST — prepared frozen frame-embedding prefix branch
+
+Implemented a new prefix-gated representation branch after rejecting simple
+label-offset/action-history variants. This branch materializes JSONL rows with
+`__streaming_idm_features` built from frozen per-frame embeddings plus the
+existing compact state-duration/event-context features, then reuses the streaming
+IDM trainer in MLP mode. It is intended to test whether stronger pretrained
+visual state representation helps keyboard/button decoding before any full-corpus
+4×H200 promotion.
+
+New artifacts/scripts:
+
+- `src/fdm_d2e/data/frame_embedding_materializer.py`
+- `scripts/materialize_frame_embedding_features.py`
+- `configs/model/idm_streaming_d2e_full_frozen_frame_embedding_prefix320k.yaml`
+- `configs/eval/g005_idm_frozen_frame_embedding_prefix320k_paper_metrics.yaml`
+- `scripts/run_g005_idm_frozen_frame_embedding_prefix.sh`
+
+Default real backend is `hf-vision` with `facebook/dinov2-small`, offsets `0,2`,
+CLS pooling, normalized embeddings, embedding deltas, and state-duration summary
+features. A `dummy-stat` backend provides deterministic dependency-light tests
+and verifies that streaming stats honor the generated
+`__streaming_idm_features` override.
+
+Claim boundary: this is infrastructure/preparation only. It is not G005 success
+evidence unless a downstream prefix IDM run beats the paper-target metrics under
+`empty_bins_as_correct=false`.
