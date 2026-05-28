@@ -552,6 +552,7 @@ def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, c
     button_event_budget_score_threshold = config.get("button_event_budget_score_threshold")
     button_event_budget_score_threshold = None if button_event_budget_score_threshold is None else float(button_event_budget_score_threshold)
     button_event_budget_applies_to_all_buttons = bool(config.get("button_event_budget_applies_to_all_buttons", False))
+    button_event_budget_rank_all_scores = bool(config.get("button_event_budget_rank_all_scores", False))
     width, height = _screen_size(row)
     model.eval()
     with torch.no_grad():
@@ -601,14 +602,14 @@ def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, c
                 and out.get("button_event") is not None
                 and button_event_force_topk > 0
                 and event_prob is not None
-                and float(event_prob) >= button_event_threshold
+                and (button_event_budget_rank_all_scores or float(event_prob) >= button_event_threshold)
                 and event_budget_pass
             ):
                 selected = sorted(
                     (
                         (float(prob), idx)
                         for idx, prob in enumerate(probs)
-                        if float(prob) >= button_event_min_token_probability
+                        if button_event_budget_rank_all_scores or float(prob) >= button_event_min_token_probability
                     ),
                     key=lambda item: (-item[0], item[1]),
                 )[: min(max_buttons, button_event_force_topk)]
@@ -1008,6 +1009,7 @@ def _calibrate_button_event_budget(
 
     event_threshold = float(config.get("button_event_threshold", 1.1))
     min_token_probability = float(config.get("button_event_min_token_probability", 0.0))
+    rank_all_scores = bool(config.get("button_event_budget_rank_all_scores", False))
     scored: list[dict[str, Any]] = []
     for idx, row in enumerate(probability_rows):
         event_prob = row.get("button_event_prob")
@@ -1016,7 +1018,7 @@ def _calibrate_button_event_budget(
         max_button_prob = max([float(value) for value in row.get("button_probs", [])] or [0.0])
         event_prob = float(event_prob)
         score = event_prob * max_button_prob
-        passes_thresholds = event_prob >= event_threshold and max_button_prob >= min_token_probability
+        passes_thresholds = rank_all_scores or (event_prob >= event_threshold and max_button_prob >= min_token_probability)
         if passes_thresholds:
             scored.append(
                 {
@@ -1073,6 +1075,7 @@ def _button_event_budget_predicts_row(
     button_threshold = float(config.get("button_threshold", 0.5))
     button_token_thresholds = config.get("button_token_thresholds") if isinstance(config.get("button_token_thresholds"), dict) else {}
     budget_applies_to_all = bool(config.get("button_event_budget_applies_to_all_buttons", False))
+    rank_all_scores = bool(config.get("button_event_budget_rank_all_scores", False))
 
     for idx, prob in enumerate(probs[: len(button_vocab)]):
         token = str(button_vocab[idx])
@@ -1085,8 +1088,8 @@ def _button_event_budget_predicts_row(
 
     max_button_prob = max(probs)
     return (
-        event_prob >= float(config.get("button_event_threshold", 1.1))
-        and max_button_prob >= float(config.get("button_event_min_token_probability", 0.0))
+        (rank_all_scores or event_prob >= float(config.get("button_event_threshold", 1.1)))
+        and (rank_all_scores or max_button_prob >= float(config.get("button_event_min_token_probability", 0.0)))
         and (event_prob * max_button_prob) >= float(score_threshold)
     )
 
@@ -1550,6 +1553,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             "button_event_budget_score_threshold": None if config.get("button_event_budget_score_threshold") is None else float(config.get("button_event_budget_score_threshold")),
             "button_event_budget_max_forced_events": None if config.get("button_event_budget_max_forced_events") is None else int(config.get("button_event_budget_max_forced_events")),
             "button_event_budget_applies_to_all_buttons": bool(config.get("button_event_budget_applies_to_all_buttons", False)),
+            "button_event_budget_rank_all_scores": bool(config.get("button_event_budget_rank_all_scores", False)),
             "key_token_threshold_count": len(config.get("key_token_thresholds", {}) if isinstance(config.get("key_token_thresholds"), dict) else {}),
             "button_token_threshold_count": len(config.get("button_token_thresholds", {}) if isinstance(config.get("button_token_thresholds"), dict) else {}),
         },

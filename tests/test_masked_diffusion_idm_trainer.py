@@ -143,6 +143,44 @@ def test_button_event_budget_uses_train_event_rate_without_target_labels():
     assert budget["selected_preview"][0]["index"] == 0
 
 
+def test_button_event_budget_can_rank_all_scores_when_absolute_gate_does_not_transfer():
+    probability_rows = [
+        {"button_event_prob": 0.40, "button_probs": [0.90]},
+        {"button_event_prob": 0.30, "button_probs": [0.80]},
+        {"button_event_prob": 0.20, "button_probs": [0.70]},
+    ]
+    rate_rows = [
+        {"ground_truth_tokens": ["MOUSE_LEFT_DOWN"]},
+        {"ground_truth_tokens": []},
+        {"ground_truth_tokens": []},
+    ]
+    strict = _calibrate_button_event_budget(
+        probability_rows,
+        rate_rows=rate_rows,
+        button_vocab=["MOUSE_LEFT_DOWN"],
+        config={
+            "button_event_threshold": 0.99,
+            "button_event_min_token_probability": 0.99,
+            "button_event_budget_rate_multiplier": 1.0,
+        },
+    )
+    relaxed = _calibrate_button_event_budget(
+        probability_rows,
+        rate_rows=rate_rows,
+        button_vocab=["MOUSE_LEFT_DOWN"],
+        config={
+            "button_event_threshold": 0.99,
+            "button_event_min_token_probability": 0.99,
+            "button_event_budget_rate_multiplier": 1.0,
+            "button_event_budget_rank_all_scores": True,
+        },
+    )
+    assert strict["threshold_candidate_count"] == 0
+    assert strict["score_threshold"] == 2.0
+    assert relaxed["threshold_candidate_count"] == 3
+    assert abs(relaxed["score_threshold"] - 0.36) < 1e-9
+
+
 def test_button_event_budget_multiplier_selects_calibration_recall_under_fpr_cap():
     probability_rows = [
         {"button_event_prob": 0.90, "button_probs": [0.90], "button_event_label": 1},
@@ -351,6 +389,7 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
             "button_event_budget_rate_multiplier": 1.0,
             "button_event_budget_rate_multiplier_candidates": [1.0, 2.0],
             "button_event_budget_applies_to_all_buttons": True,
+            "button_event_budget_rank_all_scores": True,
             "calibrate_thresholds": True,
             "factorized_calibration_fraction": 0.25,
             "factorized_calibration_max_rows": 2,
@@ -371,5 +410,6 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
     assert "button_event_min_token_probability" in summary["factorization"]
     assert "button_event_budget_score_threshold" in summary["factorization"]
     assert summary["factorization"]["button_event_budget_applies_to_all_buttons"] is True
+    assert summary["factorization"]["button_event_budget_rank_all_scores"] is True
     assert Path(summary["checkpoint_path"]).exists()
     assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 3
