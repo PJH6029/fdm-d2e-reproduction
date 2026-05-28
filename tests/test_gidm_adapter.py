@@ -1013,6 +1013,73 @@ def test_chunked_gidm_plan_uses_bin_indices_and_writes_manifest(tmp_path: Path):
     assert row["prediction_mcap_chunks"][0]["timestamp_eval_end_ns_exclusive"] == 319_803_399_000
     assert row["prediction_mcap_chunks"][0]["context_trim_seconds"] == 0.1
     assert row["chunked_prediction"]["chunk_count"] == len(paths_by_key["d2e_480p:Game/rec_001"])
+    assert row["chunked_prediction"]["timestamp_mode"] == "ground_truth_aligned"
+
+
+def test_chunked_gidm_plan_supports_diagnostic_timestamp_modes(tmp_path: Path):
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "gidm_inference_manifest.v1",
+                "recordings": [
+                    {
+                        "universe_row_id": "d2e_480p:Game/rec_001",
+                        "video_path": "/data/video.mkv",
+                        "prediction_mcap_path": str(tmp_path / "predicted" / "rec_001.mcap"),
+                        "timestamp_min_ns": 2_000_000_000,
+                        "timestamp_max_ns": 3_000_000_000,
+                        "bin_index_min": 20,
+                        "bin_index_max": 40,
+                        "row_count": 21,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    video_relative_plans, video_relative_paths = build_gidm_chunk_run_plan(
+        manifest_path=manifest,
+        cuda_devices=["0"],
+        log_dir=tmp_path / "logs",
+        chunk_seconds=0.5,
+        chunk_context_seconds=0.1,
+        bin_ms=50,
+        resume=False,
+        timestamp_mode="video_relative",
+    )
+    plus_base_plans, _ = build_gidm_chunk_run_plan(
+        manifest_path=manifest,
+        cuda_devices=["0"],
+        log_dir=tmp_path / "logs_plus",
+        chunk_seconds=0.5,
+        chunk_context_seconds=0.1,
+        bin_ms=50,
+        resume=False,
+        timestamp_mode="ground_truth_plus_base",
+    )
+
+    assert video_relative_plans[0].start_time_seconds == 0.9
+    assert video_relative_plans[0].timestamp_offset_seconds == 0.9
+    assert plus_base_plans[0].timestamp_offset_seconds == 2.9
+
+    chunk_manifest = tmp_path / "chunk_manifest_video_relative.json"
+    payload = write_chunked_gidm_manifest(
+        manifest_path=manifest,
+        output_path=chunk_manifest,
+        chunk_paths_by_key=video_relative_paths,
+        chunk_seconds=0.5,
+        chunk_context_seconds=0.1,
+        bin_ms=50,
+        timestamp_mode="video_relative",
+    )
+    row = payload["recordings"][0]
+    assert row["prediction_timestamps_aligned_to_ground_truth"] is False
+    assert row["prediction_mcap_chunks"][0]["timestamp_mode"] == "video_relative"
+    assert row["prediction_mcap_chunks"][0]["base_timestamp_seconds"] == 1.0
+    assert row["chunked_prediction"]["timestamp_mode"] == "video_relative"
+    assert "diagnostic manifest" in payload["claim_boundary"]
 
 
 def test_chunked_gidm_plan_can_limit_total_chunks_for_pilots(tmp_path: Path):

@@ -1124,3 +1124,40 @@ Evidence:
 - `outputs/idm_diagnostics/g005_key_repeat_clock_prefix10k_train20k_predictions.jsonl` — small prediction sample copied from storage shell.
 
 Result: reject this branch. `base_all` remained best on the 10k prefix (`keyboard=0.11678`, mouse-button accuracy `0.22667`, Pearson X/Y `0.76516/0.74335`, no-button FPR `0.01866`). The best predicted-clock repeat policy slightly underperformed base (`keyboard=0.11671`) and no teacher-forced clock policy justified promotion. Do not reserve GPUs or run a larger table-clock sweep for this exact approach.
+
+### 2026-05-28 KST — base-offset released-GIDM timing diagnostic retained, still rejected
+
+After the local reboot/resume, revalidated the warmup-trimmed released-GIDM
+pilot's suspicious `~2.4s` timing offset without reserving GPUs. Added a
+configurable chunk timestamp mode to the released-GIDM runner so future bounded
+pilots can explicitly test `ground_truth_aligned`, `video_relative`, and
+`ground_truth_plus_base` stamping instead of hand-editing generated scripts.
+Also added an auditable base-offset row-shift diagnostic over the copied warmup
+pilot JSONLs.
+
+Evidence:
+
+- `src/fdm_d2e/eval/gidm_runner.py` now exposes `chunk_timestamp_mode` for
+  chunked released-GIDM pilots; default remains `ground_truth_aligned` for
+  existing evidence paths.
+- `scripts/run_gidm_manifest_inference.py --chunk-timestamp-mode ...` and
+  `src/fdm_d2e/eval/gidm_exact_pipeline.py` pass the mode through to chunk
+  planning/manifest generation.
+- `src/fdm_d2e/eval/gidm_timestamp_diagnostic.py` and
+  `scripts/build_g006_gidm_base_offset_shift_diagnostic.py` generate the retained
+  base-offset diagnostic.
+- `artifacts/eval/g006_gidm_warmup_base_offset_shift_diagnostic.json` — status
+  `pass`, decision `rejected_no_base_offset_shift_meets_paper_targets`.
+
+Result: the manifest base offset is `2.4170986s` (`48.34` 50ms rows), matching
+the earlier sweep's best-shift neighborhood. However, base-offset correction
+still does not approach paper targets. Best keyboard is shift `+47` / `2.35s`
+with keyboard `0.1786`; best mouse-Pearson is shift `+48` / `2.40s` with
+Pearson X/Y `0.6477/0.6805`, keyboard only `0.0645`, no button positives, and
+all `paper_targets_pass=false`.
+
+Decision: keep timestamp-mode configurability for future exact-split G-IDM
+baseline diagnostics, but do not spend a larger G005 teacher run on this pilot
+unless a new alignment hypothesis is backed by stronger covered-window evidence.
+The immediate G005 path remains a stronger learned non-leaky sequence/teacher
+IDM, not promoting released-GIDM warmup timing rescue.

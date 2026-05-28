@@ -1,0 +1,4121 @@
+{
+  "schema": "gidm_base_offset_shift_diagnostic.v1",
+  "status": "pass",
+  "created_at_epoch": 1779954635,
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "manifest_path": "artifacts/eval/g006_gidm_warmup_trim_pilot_chunked_manifest.json",
+  "prediction_path": "outputs/gidm_warmup_trim_pilot/predictions.jsonl",
+  "target_path": "outputs/gidm_warmup_trim_pilot/targets.jsonl",
+  "baseline_contract_path": "artifacts/eval/g003_gidm_baseline_contract.json",
+  "bin_ms": 50,
+  "prediction_rows": 100,
+  "target_rows": 100,
+  "base_offsets": [
+    {
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "timestamp_min_ns": 1173417098600,
+      "bin_index_min": 23420,
+      "base_timestamp_ns": 2417098600,
+      "base_timestamp_seconds": 2.4170986,
+      "base_shift_rows_float": 48.341972,
+      "base_shift_rows_floor": 48,
+      "base_shift_rows_round": 48,
+      "base_shift_rows_ceil": 49
+    }
+  ],
+  "candidate_shifts": [
+    -49,
+    -48,
+    -47,
+    0,
+    47,
+    48,
+    49
+  ],
+  "paper_targets": {
+    "keyboard_accuracy": 0.7301,
+    "mouse_button_accuracy": 0.957283,
+    "pearson_x": 0.79585,
+    "pearson_y": 0.782817,
+    "scale_ratio_x": 1.231667,
+    "scale_ratio_y": 1.315
+  },
+  "best_by_keyboard": [
+    {
+      "row_shift": 47,
+      "timestamp_shift_seconds": 2.35,
+      "overlap_rows": 53,
+      "keyboard_accuracy": 0.17857142857142858,
+      "keyboard_sample_count": 28,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": 0.426039989657896,
+      "pearson_y": 0.5456648115773276,
+      "scale_ratio_x": 2.488986784140969,
+      "scale_ratio_y": 1.2068965517241381,
+      "mouse_move_sample_count": 39,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.17857142857142858,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": 0.426039989657896,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.5456648115773276,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 2.488986784140969,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 1.2068965517241381,
+          "target": 1.315,
+          "direction": "max",
+          "passed": true
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.426039989657896,
+              "pearson_y": 0.5456648115773276,
+              "scale_ratio_x": 2.488986784140969,
+              "scale_ratio_y": 1.2068965517241381,
+              "sample_count": 39,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.17857142857142858,
+              "sample_count": 28
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.5555555555555556,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.426039989657896,
+              "pearson_y": 0.5456648115773276,
+              "scale_ratio_x": 2.488986784140969,
+              "scale_ratio_y": 1.2068965517241381,
+              "sample_count": 39,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.17857142857142858,
+              "sample_count": 28
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.5555555555555556,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023467",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023468",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422"
+        }
+      ]
+    },
+    {
+      "row_shift": 48,
+      "timestamp_shift_seconds": 2.4,
+      "overlap_rows": 52,
+      "keyboard_accuracy": 0.06451612903225806,
+      "keyboard_sample_count": 31,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": 0.6477184300043904,
+      "pearson_y": 0.6805035238570543,
+      "scale_ratio_x": 2.5999999999999996,
+      "scale_ratio_y": 1.1918976545842217,
+      "mouse_move_sample_count": 37,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.06451612903225806,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": 0.6477184300043904,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.6805035238570543,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 2.5999999999999996,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 1.1918976545842217,
+          "target": 1.315,
+          "direction": "max",
+          "passed": true
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 52,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.6477184300043904,
+              "pearson_y": 0.6805035238570543,
+              "scale_ratio_x": 2.5999999999999996,
+              "scale_ratio_y": 1.1918976545842217,
+              "sample_count": 37,
+              "scale_sample_count": 52
+            },
+            "keyboard": {
+              "key_accuracy": 0.06451612903225806,
+              "sample_count": 31
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.2222222222222222,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 52,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 52,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.6477184300043904,
+              "pearson_y": 0.6805035238570543,
+              "scale_ratio_x": 2.5999999999999996,
+              "scale_ratio_y": 1.1918976545842217,
+              "sample_count": 37,
+              "scale_sample_count": 52
+            },
+            "keyboard": {
+              "key_accuracy": 0.06451612903225806,
+              "sample_count": 31
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.2222222222222222,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 52,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023468",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023470",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422"
+        }
+      ]
+    },
+    {
+      "row_shift": -49,
+      "timestamp_shift_seconds": -2.45,
+      "overlap_rows": 51,
+      "keyboard_accuracy": 0.0,
+      "keyboard_sample_count": 13,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": -0.17830391268079065,
+      "pearson_y": -0.004798228280656988,
+      "scale_ratio_x": 3.1704035874439467,
+      "scale_ratio_y": 4.503703703703704,
+      "mouse_move_sample_count": 43,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.0,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": -0.17830391268079065,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": -0.004798228280656988,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 3.1704035874439467,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 4.503703703703704,
+          "target": 1.315,
+          "direction": "max",
+          "passed": false
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 51,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.17830391268079065,
+              "pearson_y": -0.004798228280656988,
+              "scale_ratio_x": 3.1704035874439467,
+              "scale_ratio_y": 4.503703703703704,
+              "sample_count": 43,
+              "scale_sample_count": 51
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 13
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 51,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 51,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.17830391268079065,
+              "pearson_y": -0.004798228280656988,
+              "scale_ratio_x": 3.1704035874439467,
+              "scale_ratio_y": 4.503703703703704,
+              "sample_count": 43,
+              "scale_sample_count": 51
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 13
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 51,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023470"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023471"
+        }
+      ]
+    },
+    {
+      "row_shift": -48,
+      "timestamp_shift_seconds": -2.4,
+      "overlap_rows": 52,
+      "keyboard_accuracy": 0.0,
+      "keyboard_sample_count": 13,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": -0.2712569403607639,
+      "pearson_y": 0.004664017277746608,
+      "scale_ratio_x": 3.0873362445414845,
+      "scale_ratio_y": 4.470588235294118,
+      "mouse_move_sample_count": 43,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.0,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": -0.2712569403607639,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.004664017277746608,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 3.0873362445414845,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 4.470588235294118,
+          "target": 1.315,
+          "direction": "max",
+          "passed": false
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 52,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.2712569403607639,
+              "pearson_y": 0.004664017277746608,
+              "scale_ratio_x": 3.0873362445414845,
+              "scale_ratio_y": 4.470588235294118,
+              "sample_count": 43,
+              "scale_sample_count": 52
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 13
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 52,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 52,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.2712569403607639,
+              "pearson_y": 0.004664017277746608,
+              "scale_ratio_x": 3.0873362445414845,
+              "scale_ratio_y": 4.470588235294118,
+              "sample_count": 43,
+              "scale_sample_count": 52
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 13
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 52,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023468"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023470"
+        }
+      ]
+    },
+    {
+      "row_shift": -47,
+      "timestamp_shift_seconds": -2.35,
+      "overlap_rows": 53,
+      "keyboard_accuracy": 0.0,
+      "keyboard_sample_count": 14,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": -0.2594974809830298,
+      "pearson_y": 0.10240415380737602,
+      "scale_ratio_x": 3.0873362445414845,
+      "scale_ratio_y": 4.470588235294118,
+      "mouse_move_sample_count": 44,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.0,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": -0.2594974809830298,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.10240415380737602,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 3.0873362445414845,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 4.470588235294118,
+          "target": 1.315,
+          "direction": "max",
+          "passed": false
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.2594974809830298,
+              "pearson_y": 0.10240415380737602,
+              "scale_ratio_x": 3.0873362445414845,
+              "scale_ratio_y": 4.470588235294118,
+              "sample_count": 44,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 14
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.2594974809830298,
+              "pearson_y": 0.10240415380737602,
+              "scale_ratio_x": 3.0873362445414845,
+              "scale_ratio_y": 4.470588235294118,
+              "sample_count": 44,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 14
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023467"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023468"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469"
+        }
+      ]
+    }
+  ],
+  "best_by_mouse_pearson_sum": [
+    {
+      "row_shift": 48,
+      "timestamp_shift_seconds": 2.4,
+      "overlap_rows": 52,
+      "keyboard_accuracy": 0.06451612903225806,
+      "keyboard_sample_count": 31,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": 0.6477184300043904,
+      "pearson_y": 0.6805035238570543,
+      "scale_ratio_x": 2.5999999999999996,
+      "scale_ratio_y": 1.1918976545842217,
+      "mouse_move_sample_count": 37,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.06451612903225806,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": 0.6477184300043904,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.6805035238570543,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 2.5999999999999996,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 1.1918976545842217,
+          "target": 1.315,
+          "direction": "max",
+          "passed": true
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 52,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.6477184300043904,
+              "pearson_y": 0.6805035238570543,
+              "scale_ratio_x": 2.5999999999999996,
+              "scale_ratio_y": 1.1918976545842217,
+              "sample_count": 37,
+              "scale_sample_count": 52
+            },
+            "keyboard": {
+              "key_accuracy": 0.06451612903225806,
+              "sample_count": 31
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.2222222222222222,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 52,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 52,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.6477184300043904,
+              "pearson_y": 0.6805035238570543,
+              "scale_ratio_x": 2.5999999999999996,
+              "scale_ratio_y": 1.1918976545842217,
+              "sample_count": 37,
+              "scale_sample_count": 52
+            },
+            "keyboard": {
+              "key_accuracy": 0.06451612903225806,
+              "sample_count": 31
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.2222222222222222,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 52,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023468",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023470",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422"
+        }
+      ]
+    },
+    {
+      "row_shift": 49,
+      "timestamp_shift_seconds": 2.45,
+      "overlap_rows": 51,
+      "keyboard_accuracy": 0.0,
+      "keyboard_sample_count": 32,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": 0.6155950021186779,
+      "pearson_y": 0.614137445052558,
+      "scale_ratio_x": 2.684729064039409,
+      "scale_ratio_y": 1.1213483146067418,
+      "mouse_move_sample_count": 38,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.0,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": 0.6155950021186779,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.614137445052558,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 2.684729064039409,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 1.1213483146067418,
+          "target": 1.315,
+          "direction": "max",
+          "passed": true
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 51,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.6155950021186779,
+              "pearson_y": 0.614137445052558,
+              "scale_ratio_x": 2.684729064039409,
+              "scale_ratio_y": 1.1213483146067418,
+              "sample_count": 38,
+              "scale_sample_count": 51
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 32
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 51,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 51,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.6155950021186779,
+              "pearson_y": 0.614137445052558,
+              "scale_ratio_x": 2.684729064039409,
+              "scale_ratio_y": 1.1213483146067418,
+              "sample_count": 38,
+              "scale_sample_count": 51
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 32
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 51,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023470",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023471",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422"
+        }
+      ]
+    },
+    {
+      "row_shift": 47,
+      "timestamp_shift_seconds": 2.35,
+      "overlap_rows": 53,
+      "keyboard_accuracy": 0.17857142857142858,
+      "keyboard_sample_count": 28,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": 0.426039989657896,
+      "pearson_y": 0.5456648115773276,
+      "scale_ratio_x": 2.488986784140969,
+      "scale_ratio_y": 1.2068965517241381,
+      "mouse_move_sample_count": 39,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.17857142857142858,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": 0.426039989657896,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.5456648115773276,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 2.488986784140969,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 1.2068965517241381,
+          "target": 1.315,
+          "direction": "max",
+          "passed": true
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.426039989657896,
+              "pearson_y": 0.5456648115773276,
+              "scale_ratio_x": 2.488986784140969,
+              "scale_ratio_y": 1.2068965517241381,
+              "sample_count": 39,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.17857142857142858,
+              "sample_count": 28
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.5555555555555556,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.426039989657896,
+              "pearson_y": 0.5456648115773276,
+              "scale_ratio_x": 2.488986784140969,
+              "scale_ratio_y": 1.2068965517241381,
+              "sample_count": 39,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.17857142857142858,
+              "sample_count": 28
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.5555555555555556,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023467",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023468",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422"
+        }
+      ]
+    },
+    {
+      "row_shift": 0,
+      "timestamp_shift_seconds": 0.0,
+      "overlap_rows": 100,
+      "keyboard_accuracy": 0.0,
+      "keyboard_sample_count": 44,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": -0.030385309930652738,
+      "pearson_y": 0.11309335723019706,
+      "scale_ratio_x": 3.043532338308458,
+      "scale_ratio_y": 1.8700361010830324,
+      "mouse_move_sample_count": 86,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.0,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": -0.030385309930652738,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.11309335723019706,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 3.043532338308458,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 1.8700361010830324,
+          "target": 1.315,
+          "direction": "max",
+          "passed": false
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 100,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.030385309930652738,
+              "pearson_y": 0.11309335723019706,
+              "scale_ratio_x": 3.043532338308458,
+              "scale_ratio_y": 1.8700361010830324,
+              "sample_count": 86,
+              "scale_sample_count": 100
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 44
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 14
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 100,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 100,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.030385309930652738,
+              "pearson_y": 0.11309335723019706,
+              "scale_ratio_x": 3.043532338308458,
+              "scale_ratio_y": 1.8700361010830324,
+              "sample_count": 86,
+              "scale_sample_count": 100
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 44
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 14
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 100,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422"
+        }
+      ]
+    },
+    {
+      "row_shift": -47,
+      "timestamp_shift_seconds": -2.35,
+      "overlap_rows": 53,
+      "keyboard_accuracy": 0.0,
+      "keyboard_sample_count": 14,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": -0.2594974809830298,
+      "pearson_y": 0.10240415380737602,
+      "scale_ratio_x": 3.0873362445414845,
+      "scale_ratio_y": 4.470588235294118,
+      "mouse_move_sample_count": 44,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.0,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": -0.2594974809830298,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.10240415380737602,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 3.0873362445414845,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 4.470588235294118,
+          "target": 1.315,
+          "direction": "max",
+          "passed": false
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.2594974809830298,
+              "pearson_y": 0.10240415380737602,
+              "scale_ratio_x": 3.0873362445414845,
+              "scale_ratio_y": 4.470588235294118,
+              "sample_count": 44,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 14
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.2594974809830298,
+              "pearson_y": 0.10240415380737602,
+              "scale_ratio_x": 3.0873362445414845,
+              "scale_ratio_y": 4.470588235294118,
+              "sample_count": 44,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 14
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023467"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023468"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469"
+        }
+      ]
+    }
+  ],
+  "passing_shifts": [],
+  "rows": [
+    {
+      "row_shift": -49,
+      "timestamp_shift_seconds": -2.45,
+      "overlap_rows": 51,
+      "keyboard_accuracy": 0.0,
+      "keyboard_sample_count": 13,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": -0.17830391268079065,
+      "pearson_y": -0.004798228280656988,
+      "scale_ratio_x": 3.1704035874439467,
+      "scale_ratio_y": 4.503703703703704,
+      "mouse_move_sample_count": 43,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.0,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": -0.17830391268079065,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": -0.004798228280656988,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 3.1704035874439467,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 4.503703703703704,
+          "target": 1.315,
+          "direction": "max",
+          "passed": false
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 51,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.17830391268079065,
+              "pearson_y": -0.004798228280656988,
+              "scale_ratio_x": 3.1704035874439467,
+              "scale_ratio_y": 4.503703703703704,
+              "sample_count": 43,
+              "scale_sample_count": 51
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 13
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 51,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 51,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.17830391268079065,
+              "pearson_y": -0.004798228280656988,
+              "scale_ratio_x": 3.1704035874439467,
+              "scale_ratio_y": 4.503703703703704,
+              "sample_count": 43,
+              "scale_sample_count": 51
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 13
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 51,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023470"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023471"
+        }
+      ]
+    },
+    {
+      "row_shift": -48,
+      "timestamp_shift_seconds": -2.4,
+      "overlap_rows": 52,
+      "keyboard_accuracy": 0.0,
+      "keyboard_sample_count": 13,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": -0.2712569403607639,
+      "pearson_y": 0.004664017277746608,
+      "scale_ratio_x": 3.0873362445414845,
+      "scale_ratio_y": 4.470588235294118,
+      "mouse_move_sample_count": 43,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.0,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": -0.2712569403607639,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.004664017277746608,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 3.0873362445414845,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 4.470588235294118,
+          "target": 1.315,
+          "direction": "max",
+          "passed": false
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 52,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.2712569403607639,
+              "pearson_y": 0.004664017277746608,
+              "scale_ratio_x": 3.0873362445414845,
+              "scale_ratio_y": 4.470588235294118,
+              "sample_count": 43,
+              "scale_sample_count": 52
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 13
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 52,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 52,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.2712569403607639,
+              "pearson_y": 0.004664017277746608,
+              "scale_ratio_x": 3.0873362445414845,
+              "scale_ratio_y": 4.470588235294118,
+              "sample_count": 43,
+              "scale_sample_count": 52
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 13
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 52,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023468"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023470"
+        }
+      ]
+    },
+    {
+      "row_shift": -47,
+      "timestamp_shift_seconds": -2.35,
+      "overlap_rows": 53,
+      "keyboard_accuracy": 0.0,
+      "keyboard_sample_count": 14,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": -0.2594974809830298,
+      "pearson_y": 0.10240415380737602,
+      "scale_ratio_x": 3.0873362445414845,
+      "scale_ratio_y": 4.470588235294118,
+      "mouse_move_sample_count": 44,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.0,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": -0.2594974809830298,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.10240415380737602,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 3.0873362445414845,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 4.470588235294118,
+          "target": 1.315,
+          "direction": "max",
+          "passed": false
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.2594974809830298,
+              "pearson_y": 0.10240415380737602,
+              "scale_ratio_x": 3.0873362445414845,
+              "scale_ratio_y": 4.470588235294118,
+              "sample_count": 44,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 14
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.2594974809830298,
+              "pearson_y": 0.10240415380737602,
+              "scale_ratio_x": 3.0873362445414845,
+              "scale_ratio_y": 4.470588235294118,
+              "sample_count": 44,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 14
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 5
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023467"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023468"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469"
+        }
+      ]
+    },
+    {
+      "row_shift": 0,
+      "timestamp_shift_seconds": 0.0,
+      "overlap_rows": 100,
+      "keyboard_accuracy": 0.0,
+      "keyboard_sample_count": 44,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": -0.030385309930652738,
+      "pearson_y": 0.11309335723019706,
+      "scale_ratio_x": 3.043532338308458,
+      "scale_ratio_y": 1.8700361010830324,
+      "mouse_move_sample_count": 86,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.0,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": -0.030385309930652738,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.11309335723019706,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 3.043532338308458,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 1.8700361010830324,
+          "target": 1.315,
+          "direction": "max",
+          "passed": false
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 100,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.030385309930652738,
+              "pearson_y": 0.11309335723019706,
+              "scale_ratio_x": 3.043532338308458,
+              "scale_ratio_y": 1.8700361010830324,
+              "sample_count": 86,
+              "scale_sample_count": 100
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 44
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 14
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 100,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 100,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": -0.030385309930652738,
+              "pearson_y": 0.11309335723019706,
+              "scale_ratio_x": 3.043532338308458,
+              "scale_ratio_y": 1.8700361010830324,
+              "sample_count": 86,
+              "scale_sample_count": 100
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 44
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 14
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 100,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422"
+        }
+      ]
+    },
+    {
+      "row_shift": 47,
+      "timestamp_shift_seconds": 2.35,
+      "overlap_rows": 53,
+      "keyboard_accuracy": 0.17857142857142858,
+      "keyboard_sample_count": 28,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": 0.426039989657896,
+      "pearson_y": 0.5456648115773276,
+      "scale_ratio_x": 2.488986784140969,
+      "scale_ratio_y": 1.2068965517241381,
+      "mouse_move_sample_count": 39,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.17857142857142858,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": 0.426039989657896,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.5456648115773276,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 2.488986784140969,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 1.2068965517241381,
+          "target": 1.315,
+          "direction": "max",
+          "passed": true
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.426039989657896,
+              "pearson_y": 0.5456648115773276,
+              "scale_ratio_x": 2.488986784140969,
+              "scale_ratio_y": 1.2068965517241381,
+              "sample_count": 39,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.17857142857142858,
+              "sample_count": 28
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.5555555555555556,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 53,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.426039989657896,
+              "pearson_y": 0.5456648115773276,
+              "scale_ratio_x": 2.488986784140969,
+              "scale_ratio_y": 1.2068965517241381,
+              "sample_count": 39,
+              "scale_sample_count": 53
+            },
+            "keyboard": {
+              "key_accuracy": 0.17857142857142858,
+              "sample_count": 28
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.5555555555555556,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 53,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023467",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023468",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422"
+        }
+      ]
+    },
+    {
+      "row_shift": 48,
+      "timestamp_shift_seconds": 2.4,
+      "overlap_rows": 52,
+      "keyboard_accuracy": 0.06451612903225806,
+      "keyboard_sample_count": 31,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": 0.6477184300043904,
+      "pearson_y": 0.6805035238570543,
+      "scale_ratio_x": 2.5999999999999996,
+      "scale_ratio_y": 1.1918976545842217,
+      "mouse_move_sample_count": 37,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.06451612903225806,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": 0.6477184300043904,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.6805035238570543,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 2.5999999999999996,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 1.1918976545842217,
+          "target": 1.315,
+          "direction": "max",
+          "passed": true
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 52,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.6477184300043904,
+              "pearson_y": 0.6805035238570543,
+              "scale_ratio_x": 2.5999999999999996,
+              "scale_ratio_y": 1.1918976545842217,
+              "sample_count": 37,
+              "scale_sample_count": 52
+            },
+            "keyboard": {
+              "key_accuracy": 0.06451612903225806,
+              "sample_count": 31
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.2222222222222222,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 52,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 52,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.6477184300043904,
+              "pearson_y": 0.6805035238570543,
+              "scale_ratio_x": 2.5999999999999996,
+              "scale_ratio_y": 1.1918976545842217,
+              "sample_count": 37,
+              "scale_sample_count": 52
+            },
+            "keyboard": {
+              "key_accuracy": 0.06451612903225806,
+              "sample_count": 31
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.2222222222222222,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 52,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023468",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023470",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422"
+        }
+      ]
+    },
+    {
+      "row_shift": 49,
+      "timestamp_shift_seconds": 2.45,
+      "overlap_rows": 51,
+      "keyboard_accuracy": 0.0,
+      "keyboard_sample_count": 32,
+      "mouse_button_accuracy": null,
+      "mouse_button_sample_count": 0,
+      "pearson_x": 0.6155950021186779,
+      "pearson_y": 0.614137445052558,
+      "scale_ratio_x": 2.684729064039409,
+      "scale_ratio_y": 1.1213483146067418,
+      "mouse_move_sample_count": 38,
+      "strict_mouse_button_f1": null,
+      "no_button_fpr": 0.0,
+      "paper_target_results": {
+        "keyboard_accuracy": {
+          "observed": 0.0,
+          "target": 0.7301,
+          "direction": "min",
+          "passed": false
+        },
+        "mouse_button_accuracy": {
+          "observed": null,
+          "target": 0.957283,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_x": {
+          "observed": 0.6155950021186779,
+          "target": 0.79585,
+          "direction": "min",
+          "passed": false
+        },
+        "pearson_y": {
+          "observed": 0.614137445052558,
+          "target": 0.782817,
+          "direction": "min",
+          "passed": false
+        },
+        "scale_ratio_x": {
+          "observed": 2.684729064039409,
+          "target": 1.231667,
+          "direction": "max",
+          "passed": false
+        },
+        "scale_ratio_y": {
+          "observed": 1.1213483146067418,
+          "target": 1.315,
+          "direction": "max",
+          "passed": true
+        }
+      },
+      "paper_targets_pass": false,
+      "metrics": {
+        "all": {
+          "rows": 51,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.6155950021186779,
+              "pearson_y": 0.614137445052558,
+              "scale_ratio_x": 2.684729064039409,
+              "scale_ratio_y": 1.1213483146067418,
+              "sample_count": 38,
+              "scale_sample_count": 51
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 32
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 51,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        },
+        "eval_split:heldout_game": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:heldout_recording": {
+          "rows": 0,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": null,
+              "pearson_y": null,
+              "scale_ratio_x": null,
+              "scale_ratio_y": null,
+              "sample_count": 0,
+              "scale_sample_count": 0
+            },
+            "keyboard": {
+              "key_accuracy": null,
+              "sample_count": 0
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": null,
+              "num_examples": 0
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 0,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": null
+            }
+          }
+        },
+        "eval_split:temporal": {
+          "rows": 51,
+          "paper_compatible": {
+            "empty_bins_as_correct": false,
+            "mouse_move": {
+              "pearson_x": 0.6155950021186779,
+              "pearson_y": 0.614137445052558,
+              "scale_ratio_x": 2.684729064039409,
+              "scale_ratio_y": 1.1213483146067418,
+              "sample_count": 38,
+              "scale_sample_count": 51
+            },
+            "keyboard": {
+              "key_accuracy": 0.0,
+              "sample_count": 32
+            },
+            "mouse_button": {
+              "button_accuracy": null,
+              "sample_count": 0
+            }
+          },
+          "strict_local": {
+            "keyboard": {
+              "accuracy": 0.0,
+              "num_examples": 9
+            },
+            "mouse_button": {
+              "accuracy": null,
+              "num_examples": 0,
+              "predicted_examples": 0,
+              "exact_true_positive_examples": 0,
+              "false_positive_examples": 0,
+              "false_negative_examples": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null,
+              "no_button_examples": 51,
+              "no_button_false_positive_examples": 0,
+              "no_button_false_positive_rate": 0.0
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023469",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023420"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023470",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023421"
+        },
+        {
+          "prediction_sequence_id": "d2e_480p:Apex_Legends/0805_01#023471",
+          "target_sequence_id": "d2e_480p:Apex_Legends/0805_01#023422"
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "severity": "info",
+      "code": "no_base_offset_shift_meets_paper_targets"
+    }
+  ],
+  "decision": "rejected_no_base_offset_shift_meets_paper_targets",
+  "claim_boundary": "Released G-IDM base-offset timing diagnostic only. It is not our-IDM evidence, not a G005 completion claim, and not an FDM-1 parity claim."
+}

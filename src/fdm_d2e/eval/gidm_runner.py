@@ -14,6 +14,11 @@ from typing import Any, Sequence
 from fdm_d2e.io_utils import ensure_dir, read_json, sha256_file, write_json
 
 REMOVED_INLINE_DEPS = ("owa-cli @", "owa-env-gst @")
+GIDM_CHUNK_TIMESTAMP_MODES = (
+    "ground_truth_aligned",
+    "video_relative",
+    "ground_truth_plus_base",
+)
 
 
 @dataclass(frozen=True)
@@ -217,6 +222,31 @@ def _recording_timing(row: dict[str, Any], *, bin_ms: int) -> tuple[float, float
     return 0.0, max(int(bin_ms) / 1000.0, row_count * int(bin_ms) / 1000.0), 0.0
 
 
+def _chunk_timestamp_offset_seconds(*, cursor: float, base_timestamp_seconds: float, timestamp_mode: str) -> float:
+    """Return the timestamp offset passed to the patched upstream G-IDM runner.
+
+    `ground_truth_aligned` is the production/default path: each video chunk is
+    cut from video-relative time `cursor`, but screen messages are stamped in
+    D2E ground-truth time (`base + cursor`).
+
+    The other modes are bounded diagnostics for released-GIDM timing pilots. A
+    warmup-trimmed pilot showed a residual shift close to the recording base
+    offset, so future pilots need a way to verify whether upstream model outputs
+    are effectively video-relative or base-shifted without editing generated
+    scripts by hand. These modes must not be used as completion evidence unless
+    a downstream conversion/metric artifact proves the resulting timestamps.
+    """
+
+    normalized = str(timestamp_mode)
+    if normalized == "ground_truth_aligned":
+        return float(base_timestamp_seconds + cursor)
+    if normalized == "video_relative":
+        return float(cursor)
+    if normalized == "ground_truth_plus_base":
+        return float((2.0 * base_timestamp_seconds) + cursor)
+    raise ValueError(f"unsupported G-IDM chunk timestamp mode: {timestamp_mode!r}")
+
+
 def _chunk_output_path(prediction_mcap_path: str, *, universe_row_id: str, chunk_index: int, start_time: float, duration: float) -> Path:
     base = Path(prediction_mcap_path)
     safe = _safe_plan_name(universe_row_id)
@@ -232,7 +262,12 @@ def _chunk_schedule_for_row(
     chunk_seconds: float,
     chunk_context_seconds: float,
     bin_ms: int,
+    timestamp_mode: str = "ground_truth_aligned",
 ) -> list[dict[str, float | int]]:
+    if timestamp_mode not in GIDM_CHUNK_TIMESTAMP_MODES:
+        raise ValueError(
+            f"timestamp_mode must be one of {', '.join(GIDM_CHUNK_TIMESTAMP_MODES)}; got {timestamp_mode!r}"
+        )
     start_rel, end_rel, base_timestamp_seconds = _recording_timing(row, bin_ms=bin_ms)
     first_start = max(0.0, start_rel - float(chunk_context_seconds))
     final_end = max(first_start + int(bin_ms) / 1000.0, end_rel + float(chunk_context_seconds))
@@ -247,8 +282,18 @@ def _chunk_schedule_for_row(
                 "chunk_index": int(chunk_index),
                 "start_time_seconds": float(cursor),
                 "duration_seconds": float(duration),
-                "timestamp_offset_seconds": float(base_timestamp_seconds + cursor),
-                "timestamp_end_seconds": float(base_timestamp_seconds + cursor + duration),
+                "timestamp_offset_seconds": _chunk_timestamp_offset_seconds(
+                    cursor=float(cursor),
+                    base_timestamp_seconds=float(base_timestamp_seconds),
+                    timestamp_mode=str(timestamp_mode),
+                ),
+                "timestamp_end_seconds": _chunk_timestamp_offset_seconds(
+                    cursor=float(cursor + duration),
+                    base_timestamp_seconds=float(base_timestamp_seconds),
+                    timestamp_mode=str(timestamp_mode),
+                ),
+                "base_timestamp_seconds": float(base_timestamp_seconds),
+                "timestamp_mode": str(timestamp_mode),
             }
         )
         cursor += float(chunk_seconds)
@@ -268,6 +313,7 @@ def build_gidm_chunk_run_plan(
     max_chunks: int | None = None,
     recording_keys: Sequence[str] | None = None,
     resume: bool = True,
+    timestamp_mode: str = "ground_truth_aligned",
 ) -> tuple[list[GidmChunkRunPlan], dict[str, list[str]]]:
     if not cuda_devices:
         raise ValueError("at least one CUDA device is required")
@@ -303,6 +349,7 @@ def build_gidm_chunk_run_plan(
             chunk_seconds=float(chunk_seconds),
             chunk_context_seconds=float(chunk_context_seconds),
             bin_ms=int(bin_ms),
+            timestamp_mode=str(timestamp_mode),
         )
         chunk_paths: list[str] = []
         for scheduled in schedule:
@@ -484,6 +531,7 @@ def write_chunked_gidm_manifest(
     chunk_seconds: float,
     chunk_context_seconds: float,
     bin_ms: int,
+    timestamp_mode: str = "ground_truth_aligned",
 ) -> dict[str, Any]:
     manifest = copy.deepcopy(read_json(manifest_path))
     updated = 0
@@ -500,6 +548,7 @@ def write_chunked_gidm_manifest(
             chunk_seconds=float(chunk_seconds),
             chunk_context_seconds=float(chunk_context_seconds),
             bin_ms=int(bin_ms),
+            timestamp_mode=str(timestamp_mode),
         )
         chunk_rows = []
         for path, scheduled in zip(paths, schedule, strict=False):
@@ -515,6 +564,8 @@ def write_chunked_gidm_manifest(
                     "start_time_seconds": float(scheduled["start_time_seconds"]),
                     "duration_seconds": duration,
                     "timestamp_offset_seconds": timestamp_offset,
+                    "base_timestamp_seconds": float(scheduled.get("base_timestamp_seconds", 0.0)),
+                    "timestamp_mode": str(scheduled.get("timestamp_mode", timestamp_mode)),
                     "timestamp_start_ns": int(round(timestamp_offset * 1e9)),
                     "timestamp_end_ns_exclusive": int(round((timestamp_offset + duration) * 1e9)),
                     "context_trim_seconds": context_trim,
@@ -524,12 +575,12 @@ def write_chunked_gidm_manifest(
             )
         row["prediction_mcap_paths"] = paths
         row["prediction_mcap_chunks"] = chunk_rows
-        row["prediction_timestamps_aligned_to_ground_truth"] = True
+        row["prediction_timestamps_aligned_to_ground_truth"] = str(timestamp_mode) == "ground_truth_aligned"
         row["chunked_prediction"] = {
             "chunk_seconds": float(chunk_seconds),
             "chunk_context_seconds": float(chunk_context_seconds),
             "bin_ms": int(bin_ms),
-            "timestamp_mode": "ground_truth_aligned",
+            "timestamp_mode": str(timestamp_mode),
             "chunk_count": len(chunk_rows),
         }
         updated += 1
@@ -540,10 +591,16 @@ def write_chunked_gidm_manifest(
     manifest["schema"] = str(manifest.get("schema", "gidm_inference_manifest.v1")) + "+chunked"
     manifest["chunked_prediction_count"] = updated
     manifest["source_manifest_path"] = str(manifest_path)
-    manifest["claim_boundary"] = (
-        "Chunked released G-IDM inference manifest; timestamps are aligned to ground-truth recording time. "
-        "This is baseline/teacher infrastructure, not our-IDM metric success."
-    )
+    if str(timestamp_mode) == "ground_truth_aligned":
+        manifest["claim_boundary"] = (
+            "Chunked released G-IDM inference manifest; timestamps are aligned to ground-truth recording time. "
+            "This is baseline/teacher infrastructure, not our-IDM metric success."
+        )
+    else:
+        manifest["claim_boundary"] = (
+            "Chunked released G-IDM diagnostic manifest with non-default timestamp mode. "
+            "Do not use as model-quality evidence unless conversion and paper-metric artifacts validate alignment."
+        )
     write_json(output_path, manifest)
     return manifest
 
@@ -565,6 +622,7 @@ def run_gidm_manifest_inference(
     chunk_manifest_output: str | Path | None = None,
     bin_ms: int = 50,
     max_chunks: int | None = None,
+    chunk_timestamp_mode: str = "ground_truth_aligned",
     uv_cache_dir: str | Path = "outputs/external/uv-cache-desktop-minimal",
     hf_home: str | Path = "outputs/external/hf-home",
     log_dir: str | Path = "artifacts/eval/gidm_manifest_inference_logs",
@@ -586,6 +644,7 @@ def run_gidm_manifest_inference(
             chunk_context_seconds=float(chunk_context_seconds),
             bin_ms=int(bin_ms),
             resume=resume,
+            timestamp_mode=str(chunk_timestamp_mode),
         )
     else:
         plans = build_gidm_run_plan(
@@ -642,6 +701,7 @@ def run_gidm_manifest_inference(
             chunk_seconds=float(chunk_seconds),
             chunk_context_seconds=float(chunk_context_seconds),
             bin_ms=int(bin_ms),
+            timestamp_mode=str(chunk_timestamp_mode),
         )
     if chunk_seconds is not None:
         planned_recordings = len(chunk_paths_by_key)
@@ -698,6 +758,7 @@ def run_gidm_manifest_inference(
         "max_chunks": int(max_chunks) if max_chunks is not None else None,
         "chunk_seconds": float(chunk_seconds) if chunk_seconds is not None else None,
         "chunk_context_seconds": float(chunk_context_seconds) if chunk_seconds is not None else None,
+        "chunk_timestamp_mode": str(chunk_timestamp_mode) if chunk_seconds is not None else None,
         "bin_ms": int(bin_ms),
         "resume": bool(resume),
         "dry_run": bool(dry_run),

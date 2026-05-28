@@ -26,6 +26,15 @@ def main() -> int:
     parser.add_argument("--chunk-seconds", type=float, help="Run each manifest recording as timestamp-aligned video chunks.")
     parser.add_argument("--chunk-context-seconds", type=float, default=1.0)
     parser.add_argument("--chunk-manifest-output")
+    parser.add_argument(
+        "--chunk-timestamp-mode",
+        default="ground_truth_aligned",
+        choices=["ground_truth_aligned", "video_relative", "ground_truth_plus_base"],
+        help=(
+            "Timestamp offset mode for chunked released-GIDM pilots. Keep the default for completion evidence; "
+            "non-default modes are diagnostics for timing-alignment hypotheses."
+        ),
+    )
     parser.add_argument("--bin-ms", type=int, default=50)
     parser.add_argument("--max-chunks", type=int, help="Limit planned chunks for bounded pilots.")
     parser.add_argument("--uv-cache-dir", default="outputs/external/uv-cache-desktop-minimal")
@@ -48,6 +57,7 @@ def main() -> int:
         chunk_seconds=args.chunk_seconds,
         chunk_context_seconds=args.chunk_context_seconds,
         chunk_manifest_output=args.chunk_manifest_output,
+        chunk_timestamp_mode=args.chunk_timestamp_mode,
         bin_ms=args.bin_ms,
         max_chunks=args.max_chunks,
         uv_cache_dir=args.uv_cache_dir,
