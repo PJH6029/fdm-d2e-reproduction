@@ -98,12 +98,15 @@ def _is_mouse_button_token(token: str) -> bool:
     return token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_"))
 
 
-def _exact_set_label(row: dict[str, Any], predicate) -> tuple[str, ...]:
-    return tuple(sorted({str(token) for token in row.get("ground_truth_tokens", []) if predicate(str(token))}))
+def _exact_set_label(row: dict[str, Any], predicate, *, preserve_counts: bool = False) -> tuple[str, ...]:
+    tokens = [str(token) for token in row.get("ground_truth_tokens", []) if predicate(str(token))]
+    if not preserve_counts:
+        tokens = list(set(tokens))
+    return tuple(sorted(tokens))
 
 
-def _keyboard_label(row: dict[str, Any]) -> tuple[str, ...]:
-    return _exact_set_label(row, _is_keyboard_token)
+def _keyboard_label(row: dict[str, Any], *, preserve_counts: bool = False) -> tuple[str, ...]:
+    return _exact_set_label(row, _is_keyboard_token, preserve_counts=preserve_counts)
 
 
 def _button_label(row: dict[str, Any]) -> tuple[str, ...]:
@@ -139,6 +142,15 @@ def _uses_exact_set_head(mode: str) -> bool:
     return str(mode) in _EXACT_SET_HEAD_MODES
 
 
+def _keyboard_exact_set_preserve_counts(config: dict[str, Any]) -> bool:
+    return bool(config.get("keyboard_exact_set_preserve_counts", config.get("keyboard_preserve_counts", False)))
+
+
+def _keyboard_label_for_config(config: dict[str, Any]):
+    preserve_counts = _keyboard_exact_set_preserve_counts(config)
+    return lambda row: _keyboard_label(row, preserve_counts=preserve_counts)
+
+
 def _exact_set_head_dim(mode: str, classes: Sequence[tuple[str, ...]]) -> int:
     if mode == "softmax":
         return len(classes)
@@ -163,13 +175,23 @@ def _category_vocab_for_heads(stats: dict[str, Any], config: dict[str, Any]) -> 
     return vocab
 
 
+def _keyboard_class_counts_for_heads(stats: dict[str, Any], config: dict[str, Any]) -> dict[str, int]:
+    key = "keyboard_counted_class_counts" if _keyboard_exact_set_preserve_counts(config) else "keyboard_class_counts"
+    if key not in stats and key == "keyboard_counted_class_counts" and dict(stats.get("keyboard_class_counts", {})):
+        raise ValueError(
+            "keyboard_exact_set_preserve_counts=true requires stats with keyboard_counted_class_counts; "
+            "delete/rebuild streaming_stats.json or set rescan_stats=true"
+        )
+    return {str(k): int(v) for k, v in dict(stats.get(key, {})).items()}
+
+
 def _keyboard_classes_for_heads(stats: dict[str, Any], config: dict[str, Any]) -> list[tuple[str, ...]]:
     if not _uses_exact_set_head(str(config.get("keyboard_head_mode", "multilabel"))):
         return []
     if isinstance(config.get("keyboard_classes"), list):
         return [tuple(str(token) for token in row) for row in config["keyboard_classes"]]
     return _exact_set_classes_from_counts(
-        {str(k): int(v) for k, v in dict(stats.get("keyboard_class_counts", {})).items()},
+        _keyboard_class_counts_for_heads(stats, config),
         min_count=int(config.get("keyboard_softmax_min_count", 1)),
     )
 
@@ -800,6 +822,7 @@ def _empty_stats_accumulator() -> dict[str, Any]:
         "m2": [],
         "category_counts": Counter(),
         "keyboard_class_counts": Counter(),
+        "keyboard_counted_class_counts": Counter(),
         "button_class_counts": Counter(),
         "sequence_counts": Counter(),
         "last_tokens_by_recording": {},
@@ -855,6 +878,7 @@ def _scan_stats_partition(path: str | Path, feature_mode: str, *, residual_mouse
     m2: list[float] = []
     category_counts: Counter[str] = Counter()
     keyboard_class_counts: Counter[str] = Counter()
+    keyboard_counted_class_counts: Counter[str] = Counter()
     button_class_counts: Counter[str] = Counter()
     sequence_counts: Counter[tuple[str, ...]] = Counter()
     last_tokens_by_recording: dict[str, tuple[int, list[str]]] = {}
@@ -895,6 +919,7 @@ def _scan_stats_partition(path: str | Path, feature_mode: str, *, residual_mouse
             if _is_category_token(token):
                 category_counts[token] += 1
         keyboard_class_counts[_label_key(_keyboard_label(row))] += 1
+        keyboard_counted_class_counts[_label_key(_keyboard_label(row, preserve_counts=True))] += 1
         button_class_counts[_label_key(_button_label(row))] += 1
         tokens = _tokens(row)
         sequence_counts[tuple(tokens)] += 1
@@ -935,6 +960,7 @@ def _scan_stats_partition(path: str | Path, feature_mode: str, *, residual_mouse
         "m2": m2,
         "category_counts": dict(category_counts),
         "keyboard_class_counts": dict(keyboard_class_counts),
+        "keyboard_counted_class_counts": dict(keyboard_counted_class_counts),
         "button_class_counts": dict(button_class_counts),
         "sequence_counts": dict(sequence_counts),
         "last_tokens_by_recording": last_tokens_by_recording,
@@ -962,6 +988,7 @@ def _scan_streaming_idm_stats_with_action_history(
 ) -> dict[str, Any]:
     category_counts: Counter[str] = Counter()
     keyboard_class_counts: Counter[str] = Counter()
+    keyboard_counted_class_counts: Counter[str] = Counter()
     button_class_counts: Counter[str] = Counter()
     for path in paths:
         for row in iter_jsonl(path):
@@ -1026,6 +1053,7 @@ def _scan_streaming_idm_stats_with_action_history(
                 m2[idx] += delta * (value - mean[idx])
             tokens = _tokens(row)
             keyboard_class_counts[_label_key(_keyboard_label(row))] += 1
+            keyboard_counted_class_counts[_label_key(_keyboard_label(row, preserve_counts=True))] += 1
             button_class_counts[_label_key(_button_label(row))] += 1
             sequence_counts[tuple(tokens)] += 1
             timestamp_ns = row.get("timestamp_ns")
@@ -1087,6 +1115,7 @@ def _scan_streaming_idm_stats_with_action_history(
         "category_vocab": _category_vocab_from_counts(dict(category_counts), categorical_min_count),
         "category_counts": dict(sorted(dict(category_counts).items())),
         "keyboard_class_counts": dict(sorted(dict(keyboard_class_counts).items())),
+        "keyboard_counted_class_counts": dict(sorted(dict(keyboard_counted_class_counts).items())),
         "button_class_counts": dict(sorted(dict(button_class_counts).items())),
         "global_majority_tokens": list(sequence_counts.most_common(1)[0][0]) if sequence_counts else ["NOOP"],
         "last_tokens_by_recording": {key: list(tokens) for key, (_ts, tokens) in sorted(last_tokens_by_recording.items())},
@@ -1129,6 +1158,7 @@ def _scan_action_history_stats_partition(
     m2: list[float] = []
     category_counts: Counter[str] = Counter()
     keyboard_class_counts: Counter[str] = Counter()
+    keyboard_counted_class_counts: Counter[str] = Counter()
     button_class_counts: Counter[str] = Counter()
     sequence_counts: Counter[tuple[str, ...]] = Counter()
     last_tokens_by_recording: dict[str, tuple[int, list[str]]] = {}
@@ -1181,6 +1211,7 @@ def _scan_action_history_stats_partition(
                 category_counts[token] += 1
         tokens = _tokens(row)
         keyboard_class_counts[_label_key(_keyboard_label(row))] += 1
+        keyboard_counted_class_counts[_label_key(_keyboard_label(row, preserve_counts=True))] += 1
         button_class_counts[_label_key(_button_label(row))] += 1
         sequence_counts[tuple(tokens)] += 1
         timestamp_ns = row.get("timestamp_ns")
@@ -1221,6 +1252,7 @@ def _scan_action_history_stats_partition(
         "m2": m2,
         "category_counts": dict(category_counts),
         "keyboard_class_counts": dict(keyboard_class_counts),
+        "keyboard_counted_class_counts": dict(keyboard_counted_class_counts),
         "button_class_counts": dict(button_class_counts),
         "sequence_counts": dict(sequence_counts),
         "last_tokens_by_recording": last_tokens_by_recording,
@@ -1353,6 +1385,9 @@ def _merge_stats_partitions(
         acc["keyboard_class_counts"].update(
             {str(k): int(v) for k, v in dict(part.get("keyboard_class_counts", {})).items()}
         )
+        acc["keyboard_counted_class_counts"].update(
+            {str(k): int(v) for k, v in dict(part.get("keyboard_counted_class_counts", {})).items()}
+        )
         acc["button_class_counts"].update(
             {str(k): int(v) for k, v in dict(part.get("button_class_counts", {})).items()}
         )
@@ -1405,6 +1440,7 @@ def _merge_stats_partitions(
         "category_vocab": _category_vocab_from_counts(dict(acc["category_counts"]), categorical_min_count),
         "category_counts": dict(sorted(dict(acc["category_counts"]).items())),
         "keyboard_class_counts": dict(sorted(dict(acc["keyboard_class_counts"]).items())),
+        "keyboard_counted_class_counts": dict(sorted(dict(acc["keyboard_counted_class_counts"]).items())),
         "button_class_counts": dict(sorted(dict(acc["button_class_counts"]).items())),
         "global_majority_tokens": list(acc["sequence_counts"].most_common(1)[0][0]) if acc["sequence_counts"] else ["NOOP"],
         "last_tokens_by_recording": last_tokens_by_recording,
@@ -1994,6 +2030,7 @@ def _training_cache_identity(
         "dataset_fingerprint": str(stats["dataset_fingerprint"]),
         "category_vocab": list(category_vocab),
         "keyboard_head_mode": str(config.get("keyboard_head_mode", "multilabel")),
+        "keyboard_exact_set_preserve_counts": _keyboard_exact_set_preserve_counts(config),
         "keyboard_classes": [list(tokens) for tokens in keyboard_classes],
         "button_head_mode": str(config.get("button_head_mode", "multilabel")),
         "button_classes": [list(tokens) for tokens in button_classes],
@@ -2074,7 +2111,7 @@ def _flush_training_cache_chunk(
         "cat_y": cat_y,
     }
     if _uses_exact_set_head(str(config.get("keyboard_head_mode", "multilabel"))):
-        payload["keyboard_y"] = _exact_set_targets(torch, rows, keyboard_classes, _keyboard_label)
+        payload["keyboard_y"] = _exact_set_targets(torch, rows, keyboard_classes, _keyboard_label_for_config(config))
     if _uses_exact_set_head(str(config.get("button_head_mode", "multilabel"))):
         payload["button_y"] = _exact_set_targets(torch, rows, button_classes, _button_label)
     if mouse_head_mode == "axis_softmax":
@@ -2757,14 +2794,14 @@ def _train_one_epoch(
         keyboard_dim = _exact_set_head_dim(keyboard_head_mode, keyboard_classes)
         keyboard_end = category_end + keyboard_dim
         if keyboard_head_mode == "softmax":
-            keyboard_y = _exact_set_targets(torch, rows, keyboard_classes, _keyboard_label, device=device)
+            keyboard_y = _exact_set_targets(torch, rows, keyboard_classes, _keyboard_label_for_config(config), device=device)
             keyboard_loss = torch.nn.functional.cross_entropy(
                 pred[:, category_end:keyboard_end],
                 keyboard_y,
                 weight=keyboard_class_weight,
             )
         elif keyboard_head_mode == "hierarchical_softmax":
-            keyboard_y = _exact_set_targets(torch, rows, keyboard_classes, _keyboard_label, device=device)
+            keyboard_y = _exact_set_targets(torch, rows, keyboard_classes, _keyboard_label_for_config(config), device=device)
             keyboard_loss = _hierarchical_exact_set_loss(
                 torch,
                 pred[:, category_end:keyboard_end],
@@ -5980,7 +6017,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     )
     keyboard_class_weight = _exact_set_class_weights(
         torch,
-        {str(k): int(v) for k, v in stats.get("keyboard_class_counts", {}).items()},
+        _keyboard_class_counts_for_heads(stats, config),
         keyboard_classes,
         cap=float(config.get("keyboard_softmax_class_weight_cap", 20.0)),
         empty_weight=float(config.get("keyboard_softmax_no_key_weight", 1.0)),
@@ -5990,7 +6027,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
     if keyboard_head_mode == "hierarchical_softmax":
         keyboard_class_weight = _hierarchical_positive_class_weights(
             torch,
-            {str(k): int(v) for k, v in stats.get("keyboard_class_counts", {}).items()},
+            _keyboard_class_counts_for_heads(stats, config),
             keyboard_classes,
             cap=float(config.get("keyboard_softmax_class_weight_cap", 20.0)),
             positive_weight=float(config.get("keyboard_softmax_positive_weight", 1.0)),
@@ -5998,7 +6035,7 @@ def train_streaming_idm(config: dict[str, Any]) -> dict[str, Any]:
         )
     keyboard_event_pos_weight = _hierarchical_event_pos_weight(
         torch,
-        {str(k): int(v) for k, v in stats.get("keyboard_class_counts", {}).items()},
+        _keyboard_class_counts_for_heads(stats, config),
         keyboard_classes,
         cap=float(config.get("keyboard_hierarchical_event_pos_weight_cap", config.get("keyboard_softmax_class_weight_cap", 20.0))),
         device=device,

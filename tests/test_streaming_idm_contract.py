@@ -527,9 +527,86 @@ def test_streaming_idm_action_history_stats_parallel_by_path(tmp_path: Path):
     assert parallel_stats["action_history_vocab"] == serial_stats["action_history_vocab"]
     assert parallel_stats["category_counts"] == serial_stats["category_counts"]
     assert parallel_stats["keyboard_class_counts"] == serial_stats["keyboard_class_counts"]
+    assert parallel_stats["keyboard_counted_class_counts"] == serial_stats["keyboard_counted_class_counts"]
     assert parallel_stats["button_class_counts"] == serial_stats["button_class_counts"]
     assert parallel_stats["mean"] == pytest.approx(serial_stats["mean"])
     assert parallel_stats["std"] == pytest.approx(serial_stats["std"])
+
+
+def test_streaming_idm_preserves_duplicate_keyboard_exactset_classes(tmp_path: Path):
+    if not torch_available():
+        pytest.skip("torch extra is not installed")
+    torch = pytest.importorskip("torch")
+    train_path = tmp_path / "train.jsonl"
+    duplicate = _record(0, "train_core")
+    duplicate["ground_truth_tokens"] = ["MOUSE_DX_Z0", "MOUSE_DY_Z0", "KEY_PRESS_87", "KEY_PRESS_87"]
+    single = _record(1, "train_core")
+    single["ground_truth_tokens"] = ["MOUSE_DX_Z0", "MOUSE_DY_Z0", "KEY_PRESS_87"]
+    empty = _record(2, "train_core")
+    empty["ground_truth_tokens"] = ["MOUSE_DX_Z0", "MOUSE_DY_Z0"]
+    _write_jsonl(train_path, [duplicate, single, empty])
+
+    stats = scan_streaming_idm_stats(
+        train_path,
+        feature_mode="summary_compact_grid8_shift_surface_time",
+        categorical_min_count=1,
+    )
+    collapsed_key = json.dumps(["KEY_PRESS_87"], separators=(",", ":"))
+    duplicate_key = json.dumps(["KEY_PRESS_87", "KEY_PRESS_87"], separators=(",", ":"))
+    assert stats["keyboard_class_counts"][collapsed_key] == 2
+    assert stats["keyboard_counted_class_counts"][duplicate_key] == 1
+    assert stats["keyboard_counted_class_counts"][collapsed_key] == 1
+
+    config = {
+        "training_cache_dir": str(tmp_path / "cache"),
+        "training_cache_chunk_size": 3,
+        "feature_mode": "summary_compact_grid8_shift_surface_time",
+        "keyboard_head_mode": "softmax",
+        "keyboard_exact_set_preserve_counts": True,
+        "keyboard_softmax_min_count": 1,
+        "button_head_mode": "multilabel",
+        "mouse_head_mode": "axis_softmax",
+        "mouse_target_mode": "mean",
+        "mouse_axis_classes": MOUSE_AXIS_CLASSES,
+    }
+    keyboard_classes = streaming_idm._keyboard_classes_for_heads(stats, config)
+    assert ("KEY_PRESS_87", "KEY_PRESS_87") in keyboard_classes
+    assert ("KEY_PRESS_87",) in keyboard_classes
+    identity = _training_cache_identity(
+        train_path,
+        stats=stats,
+        config=config,
+        category_vocab=streaming_idm._category_vocab_for_heads(stats, config),
+        mouse_axis_classes=MOUSE_AXIS_CLASSES,
+    )
+    assert identity["keyboard_exact_set_preserve_counts"] is True
+
+    manifests = _build_training_cache_manifests(
+        [train_path],
+        stats=stats,
+        config=config,
+        category_vocab=streaming_idm._category_vocab_for_heads(stats, config),
+        mouse_axis_classes=MOUSE_AXIS_CLASSES,
+    )
+    payload = torch.load(manifests[0]["chunks"][0]["path"], map_location="cpu", weights_only=False)
+    duplicate_idx = keyboard_classes.index(("KEY_PRESS_87", "KEY_PRESS_87"))
+    single_idx = keyboard_classes.index(("KEY_PRESS_87",))
+    assert int(payload["keyboard_y"][0].item()) == duplicate_idx
+    assert int(payload["keyboard_y"][1].item()) == single_idx
+
+    decoded = _predicted_tokens_from_output(
+        [0.0, 0.0, -10.0, 10.0],
+        config={
+            "keyboard_head_mode": "softmax",
+            "keyboard_classes": [[], ["KEY_PRESS_87", "KEY_PRESS_87"]],
+            "keyboard_softmax_threshold": 0.0,
+            "button_head_mode": "multilabel",
+            "mouse_head_mode": "regression",
+        },
+        category_vocab=[],
+        mouse_axis_classes=[],
+    )
+    assert decoded.count("KEY_PRESS_87") == 2
 
 
 def test_streaming_idm_cache_precompute_validate_only_preserves_action_history(tmp_path: Path):
