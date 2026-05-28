@@ -26,6 +26,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _calibrate_temporal_non_noop_budget,
     _temporal_center_candidates,
     _target_slots,
+    _token_presence_targets,
     _tokens_from_family_budget_candidates,
     train_temporal_masked_diffusion_idm,
 )
@@ -334,6 +335,24 @@ def test_temporal_retrieval_prior_biases_action_token_candidates():
     assert candidates[0][0]["retrieval_score"] == 0.95
 
 
+def test_temporal_token_presence_biases_action_token_identity():
+    if not torch_available():
+        return
+    import torch
+
+    probabilities = torch.zeros((1, 2, 5), dtype=torch.float32)
+    probabilities[:, :, 2] = 0.01
+    probabilities[:, :, 3] = 0.02
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "KEY_PRESS_A", "MOUSE_LEFT_DOWN", "FDM1_MOUSE_DX_P01"]
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={"token_presence_candidate_score_blend": 0.9, "non_noop_budget_candidates_per_row": 8},
+        event_probabilities={"token_presence": torch.tensor([[0.98, 0.0, 0.99, 0.05, 0.04]])},
+    )
+    assert candidates[0][0]["token"] == "KEY_PRESS_A"
+
+
 def test_temporal_target_slots_can_preserve_padding_for_sparse_action_sequences():
     row = {"ground_truth_tokens": ["KEY_PRESS_A"], "frame": {"width": 854, "height": 480}}
 
@@ -342,6 +361,22 @@ def test_temporal_target_slots_can_preserve_padding_for_sparse_action_sequences(
 
     assert legacy_slots == ["KEY_PRESS_A", "NOOP", "NOOP", "NOOP"]
     assert pad_aware_slots == ["KEY_PRESS_A", "<FDM1_ACTION_PAD>", "<FDM1_ACTION_PAD>", "<FDM1_ACTION_PAD>"]
+
+
+def test_temporal_token_presence_targets_exclude_pad_and_noop_by_default():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "KEY_PRESS_A", "MOUSE_LEFT_DOWN"]
+    ids = torch.tensor([[[3, 0, 2], [4, 0, 0]]], dtype=torch.long)
+    targets = _token_presence_targets(torch, ids, vocab)
+
+    assert targets.shape == (1, 2, len(vocab))
+    assert targets[0, 0, 3].item() == 1.0
+    assert targets[0, 1, 4].item() == 1.0
+    assert targets[0, 0, 0].item() == 0.0
+    assert targets[0, 0, 2].item() == 0.0
 
 
 def test_button_class_prior_offsets_boost_rare_transition_tokens_without_target_labels():

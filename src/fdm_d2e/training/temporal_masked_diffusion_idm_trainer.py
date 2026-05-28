@@ -231,6 +231,8 @@ def _build_temporal_model(torch: Any, *, video_dim: int, vocab_size: int, max_sl
             self.head = nn.Linear(hidden_dim, vocab_size)
             self.key_event_head = nn.Linear(hidden_dim, 1) if self.event_auxiliary else None
             self.button_event_head = nn.Linear(hidden_dim, 1) if self.event_auxiliary else None
+            self.token_presence_auxiliary = bool(config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False)))
+            self.token_presence_head = nn.Linear(hidden_dim, vocab_size) if self.token_presence_auxiliary else None
 
         def video_embedding(self, video_features: Any) -> Any:
             flat = video_features.reshape(-1, video_features.shape[-1])
@@ -262,6 +264,9 @@ def _build_temporal_model(torch: Any, *, video_dim: int, vocab_size: int, max_sl
                 pooled = action_encoded.mean(dim=2)
                 payload["key_event_logits"] = self.key_event_head(pooled).squeeze(-1)
                 payload["button_event_logits"] = self.button_event_head(pooled).squeeze(-1)
+            if self.token_presence_auxiliary and self.token_presence_head is not None:
+                pooled = action_encoded.mean(dim=2)
+                payload["token_presence_logits"] = self.token_presence_head(pooled)
             return payload
 
         def forward(self, video_features: Any, corrupted_ids: Any) -> Any:
@@ -371,6 +376,59 @@ def _event_auxiliary_bce_loss(torch: Any, logits: Any, targets: Any, offset_mask
     return torch.nn.functional.binary_cross_entropy_with_logits(selected_logits, selected_targets, pos_weight=weight)
 
 
+def _token_presence_targets(torch: Any, target_ids: Any, vocab: Sequence[str], *, include_noop: bool = False) -> Any:
+    """Return multi-hot action-token-set targets for each temporal row.
+
+    This auxiliary target keeps the public FDM-1 shape (masked action-token
+    denoising) but adds a set-level token identity signal so sparse key/button
+    actions are not learned only through fixed slot positions.
+    """
+
+    batch, window, slots = target_ids.shape
+    vocab_size = len(vocab)
+    targets = torch.zeros((batch, window, vocab_size), dtype=torch.float32, device=target_ids.device)
+    targets.scatter_(2, target_ids.reshape(batch, window * slots).reshape(batch, window, slots), 1.0)
+    excluded = [
+        idx
+        for idx, token in enumerate(vocab)
+        if token in {"<FDM1_ACTION_PAD>", FDM1_ACTION_MASK} or (not include_noop and token == FDM1_ACTION_NOOP)
+    ]
+    if excluded:
+        targets[:, :, torch.tensor(excluded, dtype=torch.long, device=target_ids.device)] = 0.0
+    return targets
+
+
+def _token_presence_pos_weights(torch: Any, vocab: Sequence[str], config: dict[str, Any], *, device: Any) -> Any:
+    weights = torch.ones(len(vocab), dtype=torch.float32, device=device)
+    for idx, token in enumerate(vocab):
+        token = str(token)
+        if token in {"<FDM1_ACTION_PAD>", FDM1_ACTION_MASK}:
+            weights[idx] = 0.0
+        elif token == FDM1_ACTION_NOOP:
+            weights[idx] = float(config.get("token_presence_noop_pos_weight", 1.0))
+        elif token.startswith("KEY_"):
+            weights[idx] = float(config.get("token_presence_keyboard_pos_weight", config.get("key_event_pos_weight", 8.0)))
+        elif token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")):
+            weights[idx] = float(config.get("token_presence_mouse_button_pos_weight", config.get("button_event_pos_weight", 16.0)))
+        elif token.startswith(("FDM1_MOUSE_DX_", "FDM1_MOUSE_DY_", "MOUSE_DX_", "MOUSE_DY_")):
+            weights[idx] = float(config.get("token_presence_mouse_move_pos_weight", 2.0))
+        elif token.startswith("SCROLL_"):
+            weights[idx] = float(config.get("token_presence_scroll_pos_weight", 4.0))
+        else:
+            weights[idx] = float(config.get("token_presence_other_pos_weight", 2.0))
+    return weights
+
+
+def _token_presence_bce_loss(torch: Any, logits: Any, targets: Any, offset_mask: Any, pos_weights: Any) -> Any:
+    if logits is None:
+        return torch.tensor(0.0, device=targets.device)
+    selected_logits = logits[:, offset_mask, :]
+    selected_targets = targets[:, offset_mask, :]
+    if selected_targets.numel() == 0:
+        return torch.tensor(0.0, device=targets.device)
+    return torch.nn.functional.binary_cross_entropy_with_logits(selected_logits, selected_targets, pos_weight=pos_weights)
+
+
 def _is_predictable_action_token(token: str) -> bool:
     return token not in {"<FDM1_ACTION_PAD>", FDM1_ACTION_MASK, FDM1_ACTION_NOOP} and not token.startswith("<FDM1_ACTION_PAD")
 
@@ -447,13 +505,19 @@ def _temporal_final_center_probabilities(
             logits = model(feature_tensor, corrupted)
             best_id = torch.argmax(logits, dim=-1)
             corrupted = torch.where(masked, best_id, corrupted)
-        if bool(config.get("event_auxiliary_bias_candidates", config.get("temporal_event_auxiliary", config.get("event_auxiliary", False)))) and hasattr(model, "forward_with_aux"):
+        wants_aux_payload = (
+            bool(config.get("event_auxiliary_bias_candidates", config.get("temporal_event_auxiliary", config.get("event_auxiliary", False))))
+            or bool(config.get("token_presence_bias_candidates", config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False))))
+        )
+        if wants_aux_payload and hasattr(model, "forward_with_aux"):
             payload = model.forward_with_aux(feature_tensor, corrupted)
             final_logits = payload["action_logits"]
             event_probabilities = {
                 "keyboard": torch.sigmoid(payload["key_event_logits"][:, center]) if "key_event_logits" in payload else None,
                 "mouse_button": torch.sigmoid(payload["button_event_logits"][:, center]) if "button_event_logits" in payload else None,
             }
+            if "token_presence_logits" in payload:
+                event_probabilities["token_presence"] = torch.sigmoid(payload["token_presence_logits"][:, center, :])
         else:
             final_logits = model(feature_tensor, corrupted)
             event_probabilities = {}
@@ -489,6 +553,11 @@ def _temporal_center_candidates(
                     event_score = float(event_probabilities[family][batch_idx].detach().cpu())
                     blend = max(0.0, min(1.0, float(config.get("event_auxiliary_candidate_score_blend", 0.5))))
                     score = (1.0 - blend) * token_score + blend * event_score
+                if event_probabilities and event_probabilities.get("token_presence") is not None:
+                    presence_score = float(event_probabilities["token_presence"][batch_idx, token_idx].detach().cpu())
+                    blend = max(0.0, min(1.0, float(config.get("token_presence_candidate_score_blend", 0.0))))
+                    if blend > 0.0:
+                        score = (1.0 - blend) * score + blend * presence_score
                 retrieval_score = 0.0
                 if retrieval_priors and batch_idx < len(retrieval_priors):
                     retrieval_score = float(retrieval_priors[batch_idx].get(token, 0.0))
@@ -981,6 +1050,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     event_auxiliary = bool(config.get("temporal_event_auxiliary", config.get("event_auxiliary", False)))
     key_event_aux_weight = float(config.get("key_event_aux_weight", config.get("event_aux_weight", 0.0)) or 0.0)
     button_event_aux_weight = float(config.get("button_event_aux_weight", config.get("event_aux_weight", 0.0)) or 0.0)
+    token_presence_auxiliary = bool(config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False)))
+    token_presence_aux_weight = float(config.get("token_presence_aux_weight", 0.0) or 0.0)
+    token_presence_pos_weights = _token_presence_pos_weights(torch, vocab, config, device=device)
     event_offset_mask = _temporal_loss_offset_mask(torch, offsets, config, device=device)
     history: list[dict[str, Any]] = []
     for epoch in range(int(config.get("epochs", 1))):
@@ -990,6 +1062,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         total_video = 0.0
         total_key_event = 0.0
         total_button_event = 0.0
+        total_token_presence = 0.0
         total_targets = 0
         total_examples = 0
         for features, corrupted_ids, target_ids, loss_mask in loader:
@@ -997,7 +1070,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             corrupted_ids = corrupted_ids.to(device)
             target_ids = target_ids.to(device)
             loss_mask = loss_mask.to(device)
-            if event_auxiliary and hasattr(model, "forward_with_aux"):
+            if (event_auxiliary or token_presence_auxiliary) and hasattr(model, "forward_with_aux"):
                 payload = model.forward_with_aux(features, corrupted_ids)
                 logits = payload["action_logits"]
             else:
@@ -1007,6 +1080,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             video_loss = _masked_video_reconstruction_loss(model, torch, features, config=config) if video_reconstruction_aux_weight > 0.0 else torch.tensor(0.0, device=device)
             key_event_loss = torch.tensor(0.0, device=device)
             button_event_loss = torch.tensor(0.0, device=device)
+            token_presence_loss = torch.tensor(0.0, device=device)
             if event_auxiliary and (key_event_aux_weight > 0.0 or button_event_aux_weight > 0.0):
                 key_targets = _temporal_event_targets(torch, target_ids, vocab, ("KEY_",))
                 button_targets = _temporal_event_targets(torch, target_ids, vocab, ("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_"))
@@ -1024,7 +1098,27 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                     event_offset_mask,
                     pos_weight=float(config.get("button_event_pos_weight", 16.0)),
                 )
-            loss = action_loss + video_reconstruction_aux_weight * video_loss + key_event_aux_weight * key_event_loss + button_event_aux_weight * button_event_loss
+            if token_presence_auxiliary and token_presence_aux_weight > 0.0:
+                token_presence_targets = _token_presence_targets(
+                    torch,
+                    target_ids,
+                    vocab,
+                    include_noop=bool(config.get("token_presence_include_noop", False)),
+                )
+                token_presence_loss = _token_presence_bce_loss(
+                    torch,
+                    payload.get("token_presence_logits"),
+                    token_presence_targets,
+                    event_offset_mask,
+                    token_presence_pos_weights,
+                )
+            loss = (
+                action_loss
+                + video_reconstruction_aux_weight * video_loss
+                + key_event_aux_weight * key_event_loss
+                + button_event_aux_weight * button_event_loss
+                + token_presence_aux_weight * token_presence_loss
+            )
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), float(config.get("grad_clip_norm", 1.0)))
@@ -1036,6 +1130,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             total_video += float(video_loss.detach().cpu()) * batch
             total_key_event += float(key_event_loss.detach().cpu()) * batch
             total_button_event += float(button_event_loss.detach().cpu()) * batch
+            total_token_presence += float(token_presence_loss.detach().cpu()) * batch
             total_targets += count
             total_examples += batch
         history.append({
@@ -1045,6 +1140,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "video_reconstruction_loss": total_video / max(1, len(dataset)),
             "key_event_loss": total_key_event / max(1, total_examples),
             "button_event_loss": total_button_event / max(1, total_examples),
+            "token_presence_loss": total_token_presence / max(1, total_examples),
             "masked_targets": total_targets,
         })
     checkpoint_path = Path(output_dir) / "checkpoint.pt"
@@ -1158,6 +1254,13 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "key_event_pos_weight":float(config.get("key_event_pos_weight", 8.0)),
             "button_event_pos_weight":float(config.get("button_event_pos_weight", 16.0)),
             "event_auxiliary_candidate_score_blend":float(config.get("event_auxiliary_candidate_score_blend", 0.5)),
+            "temporal_token_presence_auxiliary":token_presence_auxiliary,
+            "token_presence_aux_weight":token_presence_aux_weight,
+            "token_presence_include_noop":bool(config.get("token_presence_include_noop", False)),
+            "token_presence_candidate_score_blend":float(config.get("token_presence_candidate_score_blend", 0.0)),
+            "token_presence_keyboard_pos_weight":float(config.get("token_presence_keyboard_pos_weight", config.get("key_event_pos_weight", 8.0))),
+            "token_presence_mouse_button_pos_weight":float(config.get("token_presence_mouse_button_pos_weight", config.get("button_event_pos_weight", 16.0))),
+            "token_presence_mouse_move_pos_weight":float(config.get("token_presence_mouse_move_pos_weight", 2.0)),
             "retrieval_action_prior_blend":float(config.get("retrieval_action_prior_blend", 0.35)),
             "token_loss_type":str(config.get("token_loss_type", "cross_entropy")),
             "token_focal_gamma":float(config.get("token_focal_gamma", config.get("focal_gamma", 2.0))),
