@@ -237,6 +237,71 @@ def _load_json(path: Path) -> dict[str, Any] | None:
         return None
 
 
+def _tail_text(text: str, limit: int = 4000) -> str:
+    if len(text) <= limit:
+        return text
+    return text[-limit:]
+
+
+def _dinov2_torchhub_model_name(model_id: str) -> str:
+    aliases = {
+        "facebook/dinov2-small": "dinov2_vits14",
+        "facebook/dinov2-base": "dinov2_vitb14",
+        "facebook/dinov2-large": "dinov2_vitl14",
+        "facebook/dinov2-giant": "dinov2_vitg14",
+    }
+    return aliases.get(model_id, model_id)
+
+
+def prewarm_backend_cache(args: argparse.Namespace, devices: Sequence[str]) -> dict[str, Any]:
+    """Populate shared model caches before launching concurrent shard workers.
+
+    Torch Hub can corrupt or partially remove the shared DINO repository cache if
+    several workers call ``torch.hub.load`` for the same uncached repository at
+    once.  The shard launcher is the only component that knows workers are about
+    to start concurrently, so it serially preloads the backend here.
+    """
+
+    if args.no_backend_cache_prewarm or args.backend != "dinov2-torchhub":
+        return {
+            "enabled": False,
+            "status": "skipped",
+            "reason": "disabled" if args.no_backend_cache_prewarm else f"backend={args.backend}",
+        }
+    model_name = _dinov2_torchhub_model_name(args.model_id)
+    env = os.environ.copy()
+    if devices and "CUDA_VISIBLE_DEVICES" not in env:
+        env["CUDA_VISIBLE_DEVICES"] = devices[0]
+    code = (
+        "import json, torch\n"
+        f"model_name = {model_name!r}\n"
+        "model = torch.hub.load('facebookresearch/dinov2', model_name, trust_repo=True)\n"
+        "model.eval()\n"
+        "print(json.dumps({'status': 'pass', 'model_name': model_name}))\n"
+    )
+    t0 = time.time()
+    proc = subprocess.run(
+        [str(args.python_executable), "-c", code],
+        cwd=_repo_root(),
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=args.prewarm_timeout_seconds,
+        check=False,
+    )
+    return {
+        "enabled": True,
+        "status": "pass" if proc.returncode == 0 else "fail",
+        "model_id": args.model_id,
+        "model_name": model_name,
+        "returncode": proc.returncode,
+        "elapsed_seconds": time.time() - t0,
+        "stdout_tail": _tail_text(proc.stdout),
+        "stderr_tail": _tail_text(proc.stderr),
+        "cuda_visible_devices": env.get("CUDA_VISIBLE_DEVICES"),
+    }
+
+
 def _concat_shards(specs: Sequence[ShardSpec], output_path: Path) -> int:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     rows = 0
@@ -269,6 +334,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--gpu-monitor-output", type=Path)
     parser.add_argument("--gpu-monitor-interval-seconds", type=int, default=30)
     parser.add_argument("--no-gpu-monitor", action="store_true")
+    parser.add_argument("--no-backend-cache-prewarm", action="store_true")
+    parser.add_argument("--prewarm-timeout-seconds", type=int, default=900)
     parser.add_argument("--backend", default="dummy-stat", choices=["dummy-stat", "hf-vision", "dinov2-torchhub"])
     parser.add_argument("--model-id", default="facebook/dinov2-small")
     parser.add_argument("--frame-offsets", default="0,2")
@@ -324,6 +391,42 @@ def main(argv: Sequence[str] | None = None) -> None:
     )
     started_at = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     t0 = time.time()
+    prewarm = prewarm_backend_cache(args, devices)
+    if prewarm.get("status") == "fail":
+        summary = {
+            "schema": "frame_embedding_shard_launcher.v1",
+            "status": "fail",
+            "started_at": started_at,
+            "finished_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            "elapsed_seconds": time.time() - t0,
+            "input_path": str(args.input_path),
+            "output_dir": str(args.output_dir),
+            "combined_output_path": str(args.combined_output_path) if args.combined_output_path else None,
+            "feature_cache_dir": str(args.feature_cache_dir) if args.feature_cache_dir is not None else None,
+            "thin_output": bool(args.thin_output),
+            "combined_rows": None,
+            "total_rows": args.total_rows,
+            "start_row": args.start_row,
+            "shard_count": len(specs),
+            "requested_shard_count": args.shard_count,
+            "rows_written": 0,
+            "failed_shards": [],
+            "shards": [],
+            "gpu_monitor": {"available": False, "path": str(args.gpu_monitor_output), "samples": 0, "by_index": {}},
+            "monitor_started_before_shards": False,
+            "devices": devices,
+            "backend": args.backend,
+            "model_id": args.model_id,
+            "frame_source": args.frame_source,
+            "frame_offsets": args.frame_offsets,
+            "batch_size": args.batch_size,
+            "device_arg": args.device,
+            "prewarm": prewarm,
+            "claim_boundary": "Frame-embedding shard launcher/materialization evidence only; no trained IDM metric claim.",
+        }
+        args.summary_out.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+        print(json.dumps({"status": "fail", "rows_written": 0, "summary_out": str(args.summary_out)}, sort_keys=True))
+        raise SystemExit(1)
     monitor = None if args.no_gpu_monitor else _start_monitor(args.gpu_monitor_output, args.gpu_monitor_interval_seconds)
     processes: list[tuple[ShardSpec, subprocess.Popen[str], Any, list[str]]] = []
     try:
@@ -405,6 +508,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         "frame_offsets": args.frame_offsets,
         "batch_size": args.batch_size,
         "device_arg": args.device,
+        "prewarm": prewarm,
         "claim_boundary": "Frame-embedding shard launcher/materialization evidence only; no trained IDM metric claim.",
     }
     args.summary_out.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")

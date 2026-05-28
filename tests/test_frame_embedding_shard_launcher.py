@@ -7,7 +7,11 @@ import sys
 import pytest
 from pathlib import Path
 
-from scripts.run_frame_embedding_shards import build_shard_plan, summarize_gpu_monitor
+from scripts.run_frame_embedding_shards import (
+    build_shard_plan,
+    prewarm_backend_cache,
+    summarize_gpu_monitor,
+)
 
 
 def _compact_fields(value: float) -> dict:
@@ -124,6 +128,28 @@ def test_summarize_gpu_monitor_parses_nvidia_smi_csv(tmp_path: Path) -> None:
     assert summary["by_index"]["0"]["samples"] == 2
     assert summary["by_index"]["0"]["mean"] == 50.0
     assert summary["by_index"]["1"]["max"] == 50.0
+
+
+def test_prewarm_backend_cache_skips_non_torchhub_backend() -> None:
+    class Args:
+        no_backend_cache_prewarm = False
+        backend = "dummy-stat"
+
+    summary = prewarm_backend_cache(Args(), [])
+    assert summary["status"] == "skipped"
+    assert summary["enabled"] is False
+    assert summary["reason"] == "backend=dummy-stat"
+
+
+def test_prewarm_backend_cache_can_be_disabled_for_torchhub() -> None:
+    class Args:
+        no_backend_cache_prewarm = True
+        backend = "dinov2-torchhub"
+
+    summary = prewarm_backend_cache(Args(), ["0"])
+    assert summary["status"] == "skipped"
+    assert summary["enabled"] is False
+    assert summary["reason"] == "disabled"
 
 
 def test_shard_launcher_can_emit_feature_cache_refs(tmp_path: Path) -> None:
