@@ -342,3 +342,16 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Implemented the follow-up to the weak temporal-button-span signal: factorized masked-diffusion IDM now supports a temporal key press/release span head and max/mean/offset span aggregation for key and button probabilities before held-out threshold/budget calibration.
 - New config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_keyspan_calibrated_prefix320k.yaml`. It keeps masked luma video-token pretraining and button span diffusion, adds `key_span_diffusion=true`, offsets `[-2,-1,0,1,2]`, `key_probability_source=key_span`, and max span aggregation for both key and button probabilities.
 - Rationale: previous span probe produced the first nonzero mouse-button TP while keyboard remained zero; this branch brings key press/release into the same FDM-1-shaped noncausal action-token span recipe and lets calibration rank high-confidence tokens across local temporal offsets.
+
+## 2026-05-29 KST — Global correction reaffirmed: FDM-1 recipe fidelity remains binding
+
+- Preserve the existing renewed ultragoal IDs/statuses, but interpret all G005+ implementation and evidence as reproducing the publicly inferable FDM-1 IDM/FDM training recipe on D2E, not arbitrary architecture/objective exploration.
+- Binding anchors: video encoder/compression-style screen-video tokens; IDM as noncausal masked diffusion over masked action-token sequences with iterative confidence unmasking; FDM as autoregressive next-action prediction over interleaved frame/action tokens; action tokens covering key press/release, scroll, binned mouse deltas, click/trajectory signals.
+- Novel exploration is allowed only to approximate unpublished FDM-1 internals faithfully on D2E and beat D2E paper/released G-IDM targets. Older heuristic/supervised/table branches are diagnostic unless rebuilt behind recipe-alignment gates.
+
+## 2026-05-29T01:16:00+09:00 KST — G005 key-span calibrated prefix320k H200 probe
+
+- Ran recipe-faithful key/button temporal span branch `45d7327` on 1×H200 reservation `rsv-jeonghunpark-20260529-eb3c31` / pod `prod-rsv-jeonghunpark-20260529-eb3c31`; copied redacted evidence locally and cancelled the reservation (`after_status=cancelled`). W&B run: `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/ewiclkhm`.
+- Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_*` plus `artifacts/idm/g005_keyspan_prefix320k_reservation_context.json`.
+- Result is negative/non-terminal: train rows `320000`, target rows `5000`, wall clock `826.9s`; no-button FPR stayed below gate (`0.04159`), but keyboard key accuracy `0.0`, mouse-button accuracy `0.0`, strict mouse-button F1 `0.0`, exact button TP `0`, and semantic button overlap `0`.
+- Diagnosis: key-span max aggregation did not rescue the compact factorized luma branch and regressed from the prior one-TP button-span probe. Next recipe-faithful step should avoid threshold-only tweaks and move toward a sequence-level masked action-token IDM with explicit temporal token positions plus tensorized/cached feature loading so H200 work is GPU-dominant.

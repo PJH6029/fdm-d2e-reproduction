@@ -1,0 +1,161 @@
+{
+  "claim_boundary": "Non-terminal bounded G005 recipe-faithful IDM probe. It does not meet D2E paper/G-IDM target wins and is not a G005 checkpoint.",
+  "commit": "45d7327",
+  "config": "configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_keyspan_calibrated_prefix320k.yaml",
+  "evidence_files": {
+    "compact_summary": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_compact_summary.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_gpu_monitor.csv",
+    "paper_metrics": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_paper_metrics.json",
+    "reservation_context": "artifacts/idm/g005_keyspan_prefix320k_reservation_context.json",
+    "resolved_config": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_resolved_config.json",
+    "run": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_run.json",
+    "semantic_diagnostic": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_button_semantic_diagnostic.json",
+    "train_log": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_train.log",
+    "wandb_status": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_wandb_status.json"
+  },
+  "gpu_monitor": {
+    "avg_memory_used_mib": 1434.3684210526317,
+    "avg_utilization_gpu_pct": 3.473684210526316,
+    "max_memory_used_mib": 2377.0,
+    "max_utilization_gpu_pct": 18.0,
+    "nonzero_utilization_rows": 15,
+    "rows": 57
+  },
+  "hashes": {
+    "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_button_semantic_diagnostic.json": "d104abaa89328d642c37edbd856fb50c84414f58c3aec106afd3072fc8ca4f57",
+    "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_gpu_monitor.csv": "21e3279f8783a81f5a49aba1252d1cf370113093c458081f6be9d293472a83e1",
+    "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_paper_metrics.json": "c0738b103e7e692ac6a82ad0c3a05cbd2b108552435519ca02179dee8cd241b5",
+    "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_resolved_config.json": "cb3b0f17194635b29aec82aea5577b334db6896a67bb7888158b954fd077ce5c",
+    "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_run.json": "c881164be4fb0e13efc785fbb8984a08fca4f0a38426ca6cbde767a4a452b5e5",
+    "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_train.log": "0e0ac701cd61b96f8303b3f0df27a85e6cee5e1d304674f4b2a189f357b72a53",
+    "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_wandb_status.json": "d8bcb9006c6c0933ff58d39906a63d1aacbb01cb9ed05c6b73974ee3fadb2f7f"
+  },
+  "large_uncommitted_artifacts": {
+    "full_summary_bytes": 40477367,
+    "full_summary_path": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_summary.json",
+    "full_summary_sha256": "d7126db7ecfe3d525f7aa664008e4a7475faebaa1ea9c9367ad90e0de4652151",
+    "note": "Full summary is copied locally only for compacting/hashing and should not be committed; raw checkpoint/predictions remain on the PVC worktree."
+  },
+  "metrics": {
+    "exact_button_tp": 0,
+    "keyboard_key_accuracy": 0.0,
+    "keyboard_strict_accuracy": 0.0,
+    "mouse_button_accuracy": 0.0,
+    "mouse_button_f1_strict": 0.0,
+    "mouse_button_precision": 0.0,
+    "mouse_button_recall": 0.0,
+    "mouse_button_strict_accuracy": 0.0,
+    "mouse_move_pearson_x": null,
+    "mouse_move_pearson_y": null,
+    "no_button_false_positive_rate": 0.041589458513485694,
+    "predicted_button_examples": 203
+  },
+  "output_dir": "outputs/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_keyspan_calibrated_prefix320k",
+  "pod": "prod-rsv-jeonghunpark-20260529-eb3c31",
+  "recipe_shape": {
+    "button_event_probability_source": "button_span_class",
+    "button_probability_source": "button_span_class",
+    "button_span_diffusion": true,
+    "button_span_offsets": [
+      -2,
+      -1,
+      0,
+      1,
+      2
+    ],
+    "button_span_probability_aggregation": "max",
+    "calibration_batch_size": 512,
+    "key_probability_source": "key_span",
+    "key_span_diffusion": true,
+    "key_span_offsets": [
+      -2,
+      -1,
+      0,
+      1,
+      2
+    ],
+    "key_span_probability_aggregation": "max",
+    "prediction_batch_size": 512,
+    "video_encoder_arch": "compact_luma_window_cnn",
+    "video_encoder_pretrain_epochs": 1,
+    "video_encoder_pretrain_objective": "masked_luma_reconstruction"
+  },
+  "reservation_after_status": "cancelled",
+  "reservation_id": "rsv-jeonghunpark-20260529-eb3c31",
+  "rows": {
+    "calibration": 2000,
+    "fit": 318000,
+    "target": 5000,
+    "train": 320000
+  },
+  "schema": "g005_keyspan_calibrated_prefix320k_compact_summary.v1",
+  "semantic_diagnostic": {
+    "exact_true_positive_examples": 0,
+    "ground_truth_examples": 50,
+    "predicted_examples": 83,
+    "rows": 2000,
+    "semantic_any_button_overlap_examples": 0,
+    "semantic_any_button_overlap_rate_on_gt": 0.0,
+    "top_ground_truth_button_tokens": [
+      [
+        "MOUSE_RIGHT_DOWN",
+        16
+      ],
+      [
+        "MOUSE_RIGHT_UP",
+        16
+      ],
+      [
+        "MOUSE_LEFT_DOWN",
+        8
+      ],
+      [
+        "MOUSE_LEFT_UP",
+        8
+      ],
+      [
+        "MOUSE_MIDDLE_DOWN",
+        5
+      ],
+      [
+        "MOUSE_MIDDLE_UP",
+        5
+      ]
+    ],
+    "top_predicted_button_tokens": [
+      [
+        "MOUSE_RIGHT_UP",
+        70
+      ],
+      [
+        "MOUSE_RIGHT_DOWN",
+        13
+      ]
+    ]
+  },
+  "status": "pass",
+  "timing": {
+    "gpu_monitor_rows": 57,
+    "wall_clock_seconds": 826.8938026428223
+  },
+  "train_history_tail": {
+    "button": 0.6331988545483763,
+    "button_class": 2.1180360918344943,
+    "button_event": 1.1002688321767362,
+    "button_span_class": 2.077732965769258,
+    "epoch": 2,
+    "examples": 318000,
+    "key": 0.2157609453831079,
+    "key_span": 0.21401812137597762,
+    "loss": 17.69848665786839,
+    "mouse_x": 1.6864343648046818,
+    "mouse_y": 1.5373082560473268,
+    "video_reconstruction": 0.00972764443053202
+  },
+  "video_pretrain": {
+    "epoch": 1,
+    "examples": 318000,
+    "video_reconstruction_loss": 0.01505550679236463
+  },
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/ewiclkhm"
+}

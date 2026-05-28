@@ -1,0 +1,30 @@
+{
+  "blocking_failures": [
+    "keyboard_key_accuracy",
+    "mouse_button_accuracy",
+    "mouse_button_f1_strict",
+    "button_semantic_overlap_zero",
+    "exact_mouse_button_tp_zero"
+  ],
+  "claim_boundary": "Failure-analysis artifact only; no G005 completion, no D2E G-IDM win, no FDM-1 parity claim.",
+  "compact_summary": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_keyspan_calibrated_prefix320k_h200_compact_summary.json",
+  "interpretation": [
+    "Adding temporal key-span diffusion and span-aware max aggregation did not recover D2E paper-compatible keyboard or mouse-button metrics.",
+    "The previous temporal button-span probe had one exact mouse-button TP; this key-span calibrated variant regressed to zero exact TP while keeping no-button FPR below 0.10.",
+    "The branch remains recipe-faithful as a public FDM-1 approximation (video-token pretraining plus noncausal masked action-token span denoising), but it is not competitive with D2E G-IDM targets.",
+    "GPU monitor shows the bounded 1xH200 probe is dominated by CPU row loading/calibration/prediction around a small model; next run should either vectorize/cache feature tensors or move to a stronger model where H200 compute is actually used."
+  ],
+  "next_recipe_faithful_actions": [
+    "Avoid more threshold-only/key-span tweaks on this compact luma factorized head; it has repeatedly produced zero keyboard accuracy and zero semantic button overlap.",
+    "Implement a sequence-level masked action-token IDM with explicit temporal token positions/windows and cached tensorized features so calibration/prediction are batched and GPU-dominant.",
+    "For IDM, prioritize FDM-1-like masked diffusion over full action-token sequences (not factor-only heads) using compact video tokens or stronger cached video embeddings before another H200 probe.",
+    "Carry this negative evidence into the G005 decision log; do not checkpoint G005 complete."
+  ],
+  "observed_wins": [
+    "no_button_fpr_within_probe_gate"
+  ],
+  "reservation_id": "rsv-jeonghunpark-20260529-eb3c31",
+  "schema": "g005_keyspan_calibrated_prefix320k_diagnosis.v1",
+  "status": "nonterminal_negative",
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/ewiclkhm"
+}
