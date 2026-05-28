@@ -34,7 +34,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input-path", required=True, type=Path)
     parser.add_argument("--output-path", required=True, type=Path)
     parser.add_argument("--summary-out", required=True, type=Path)
-    parser.add_argument("--backend", default="dummy-stat", choices=["dummy-stat", "hf-vision"])
+    parser.add_argument("--backend", default="dummy-stat", choices=["dummy-stat", "hf-vision", "dinov2-torchhub"])
     parser.add_argument("--model-id", default="facebook/dinov2-small")
     parser.add_argument("--frame-offsets", default="0,2", help="Comma-separated 50ms row/frame offsets, e.g. 0,1,2.")
     parser.add_argument(
