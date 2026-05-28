@@ -16,13 +16,13 @@ PUBLIC_RECIPE_MANIFEST: dict[str, Any] = {
         {
             "id": "fdm1_technical_report",
             "url": "https://si.inc/posts/fdm1/",
-            "accessed_date": "2026-05-28",
+            "accessed_date": "2026-05-29",
             "role": "primary_public_recipe_source",
         },
         {
             "id": "d2e_project_page",
             "url": "https://worv-ai.github.io/d2e/",
-            "accessed_date": "2026-05-28",
+            "accessed_date": "2026-05-29",
             "role": "D2E dataset/model/metric context",
         },
     ],

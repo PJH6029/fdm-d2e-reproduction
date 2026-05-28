@@ -429,6 +429,108 @@ def _token_presence_bce_loss(torch: Any, logits: Any, targets: Any, offset_mask:
     return torch.nn.functional.binary_cross_entropy_with_logits(selected_logits, selected_targets, pos_weight=pos_weights)
 
 
+def _candidate_token_prior_weights(
+    rows: Sequence[dict[str, Any]],
+    *,
+    vocab: Sequence[str],
+    max_slots: int,
+    preserve_pad_slots: bool,
+    config: dict[str, Any],
+) -> tuple[dict[str, float], dict[str, Any]]:
+    """Build train-only action-token prior weights for candidate ranking.
+
+    The public FDM-1 report does not disclose the IDM candidate scoring details,
+    but it does describe masked-diffusion action-token prediction and iterative
+    confidence unmasking.  This helper stays inside that recipe: it never reads
+    target/eval labels, and only adjusts train-fit action-token candidate scores
+    by the empirical sparsity of action tokens in the fit split.
+    """
+
+    if not bool(config.get("candidate_token_prior_correction", False)):
+        return {}, {"status": "skipped", "reason": "disabled"}
+    families = config.get("candidate_token_prior_families", ["keyboard", "mouse_button"])
+    if not isinstance(families, list) or not families:
+        families = ["keyboard", "mouse_button"]
+    selected_families = {str(family) for family in families}
+    token_set = {str(token) for token in vocab}
+    counts: dict[str, int] = {
+        str(token): 0
+        for token in vocab
+        if _is_predictable_action_token(str(token)) and _action_family(str(token)) in selected_families
+    }
+    for row in rows:
+        seen_in_row: set[str] = set()
+        for token in _target_slots(row, max_slots=max_slots, preserve_pad_slots=preserve_pad_slots):
+            token = str(token)
+            if token not in token_set or token not in counts:
+                continue
+            if bool(config.get("candidate_token_prior_count_once_per_row", True)):
+                if token in seen_in_row:
+                    continue
+                seen_in_row.add(token)
+            counts[token] += 1
+    if not counts:
+        return {}, {"status": "skipped", "reason": "no_selected_family_tokens"}
+    smoothing = max(0.0, float(config.get("candidate_token_prior_smoothing", 8.0)))
+    strength = max(0.0, float(config.get("candidate_token_prior_strength", 0.5)))
+    min_weight = max(0.0, float(config.get("candidate_token_prior_min_weight", 0.25)))
+    max_weight = max(min_weight, float(config.get("candidate_token_prior_max_weight", 8.0)))
+    weights: dict[str, float] = {}
+    family_payloads: dict[str, Any] = {}
+
+    def median(values: Sequence[float]) -> float:
+        ordered = sorted(float(value) for value in values)
+        if not ordered:
+            return 0.0
+        mid = len(ordered) // 2
+        if len(ordered) % 2:
+            return ordered[mid]
+        return 0.5 * (ordered[mid - 1] + ordered[mid])
+
+    for family in sorted(selected_families):
+        family_tokens = [token for token in counts if _action_family(token) == family]
+        if not family_tokens:
+            family_payloads[family] = {"status": "skipped", "reason": "no_family_tokens"}
+            continue
+        smoothed = {token: float(counts[token]) + smoothing for token in family_tokens}
+        positive_values = [value for token, value in smoothed.items() if counts[token] > 0]
+        reference = median(positive_values or list(smoothed.values()))
+        if reference <= 0.0 or strength <= 0.0:
+            for token in family_tokens:
+                weights[token] = 1.0
+        else:
+            for token in family_tokens:
+                raw = (reference / max(1e-12, smoothed[token])) ** strength
+                weights[token] = min(max_weight, max(min_weight, float(raw)))
+        family_payloads[family] = {
+            "status": "pass",
+            "tokens": len(family_tokens),
+            "observed_tokens": sum(1 for token in family_tokens if counts[token] > 0),
+            "total_count": sum(counts[token] for token in family_tokens),
+            "reference_smoothed_count": reference,
+            "count": _numeric_summary([float(counts[token]) for token in family_tokens]),
+            "weight": _numeric_summary([weights[token] for token in family_tokens]),
+        }
+    boosted = sorted(weights.items(), key=lambda item: (-item[1], item[0]))
+    suppressed = sorted(weights.items(), key=lambda item: (item[1], item[0]))
+    limit = max(1, int(config.get("candidate_token_prior_summary_limit", 12)))
+    summary = {
+        "schema": "temporal_candidate_token_prior.v1",
+        "status": "pass",
+        "rows": len(rows),
+        "families": family_payloads,
+        "strength": strength,
+        "smoothing": smoothing,
+        "min_weight": min_weight,
+        "max_weight": max_weight,
+        "count_once_per_row": bool(config.get("candidate_token_prior_count_once_per_row", True)),
+        "top_boosted": [{"token": token, "weight": weight, "count": counts.get(token, 0)} for token, weight in boosted[:limit]],
+        "top_suppressed": [{"token": token, "weight": weight, "count": counts.get(token, 0)} for token, weight in suppressed[:limit]],
+        "claim_boundary": "Train-fit action-token prior correction only. Target/eval labels are never used; this approximates unpublished FDM-1 masked-diffusion candidate scoring without claiming parity.",
+    }
+    return weights, summary
+
+
 def _is_predictable_action_token(token: str) -> bool:
     return token not in {"<FDM1_ACTION_PAD>", FDM1_ACTION_MASK, FDM1_ACTION_NOOP} and not token.startswith("<FDM1_ACTION_PAD")
 
@@ -532,6 +634,7 @@ def _temporal_center_candidates(
     config: dict[str, Any],
     event_probabilities: dict[str, Any] | None = None,
     retrieval_priors: Sequence[dict[str, float]] | None = None,
+    token_prior_weights: dict[str, float] | None = None,
 ) -> list[list[dict[str, Any]]]:
     if probabilities is None:
         return []
@@ -581,6 +684,10 @@ def _temporal_center_candidates(
                     if retrieval_score > 0.0:
                         blend = max(0.0, min(1.0, float(config.get("retrieval_action_prior_blend", 0.35))))
                         score = (1.0 - blend) * score + blend * retrieval_score
+                prior_weight = 1.0
+                if token_prior_weights:
+                    prior_weight = float(token_prior_weights.get(token, 1.0))
+                    score = max(0.0, min(1.0, score * prior_weight))
                 if score < min_probability:
                     continue
                 candidates.append(
@@ -588,6 +695,7 @@ def _temporal_center_candidates(
                         "score": score,
                         "token_probability": token_score,
                         "retrieval_score": retrieval_score,
+                        "prior_weight": prior_weight,
                         "slot": slot_idx,
                         "token_index": token_idx,
                         "token": token,
@@ -785,6 +893,7 @@ def _predict_temporal_tokens_batch(
     vocab: Sequence[str],
     device: Any,
     retrieval_index: dict[str, Any] | None = None,
+    token_prior_weights: dict[str, float] | None = None,
 ) -> list[list[str]]:
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
     noop_index = token_to_index.get(FDM1_ACTION_NOOP, token_to_index[FDM1_ACTION_MASK])
@@ -801,7 +910,14 @@ def _predict_temporal_tokens_batch(
     if center_probs is None or predicted_center_ids is None:
         return []
     retrieval_priors = _retrieval_priors_for_batch(model, torch, rows, features, retrieval_index=retrieval_index, config=config, device=device)
-    candidate_rows = _temporal_center_candidates(center_probs, vocab=vocab, config=config, event_probabilities=event_probabilities, retrieval_priors=retrieval_priors)
+    candidate_rows = _temporal_center_candidates(
+        center_probs,
+        vocab=vocab,
+        config=config,
+        event_probabilities=event_probabilities,
+        retrieval_priors=retrieval_priors,
+        token_prior_weights=token_prior_weights,
+    )
     family_budgeted = bool(config.get("family_non_noop_budgeted_unmasking", False))
     family_budgets = config.get("family_non_noop_budget", {})
     budgeted = bool(config.get("non_noop_budgeted_unmasking", False))
@@ -831,6 +947,7 @@ def _collect_temporal_probability_rows(
     vocab: Sequence[str],
     device: Any,
     retrieval_index: dict[str, Any] | None = None,
+    token_prior_weights: dict[str, float] | None = None,
 ) -> list[dict[str, Any]]:
     batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
     collected: list[dict[str, Any]] = []
@@ -847,7 +964,17 @@ def _collect_temporal_probability_rows(
             device=device,
         )
         retrieval_priors = _retrieval_priors_for_batch(model, torch, batch_rows, features[start_idx : start_idx + batch_size], retrieval_index=retrieval_index, config=config, device=device)
-        for row, candidates in zip(batch_rows, _temporal_center_candidates(center_probs, vocab=vocab, config=config, event_probabilities=event_probabilities, retrieval_priors=retrieval_priors)):
+        for row, candidates in zip(
+            batch_rows,
+            _temporal_center_candidates(
+                center_probs,
+                vocab=vocab,
+                config=config,
+                event_probabilities=event_probabilities,
+                retrieval_priors=retrieval_priors,
+                token_prior_weights=token_prior_weights,
+            ),
+        ):
             collected.append({"row": row, "candidates": candidates, "ground_truth_tokens": [str(token) for token in row.get("ground_truth_tokens", [])]})
     return collected
 
@@ -1321,6 +1448,13 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         device=device,
     )
     retrieval_summary = {key: value for key, value in retrieval_index.items() if key not in {"embeddings", "tokens"}}
+    candidate_token_prior_weights, candidate_token_prior_summary = _candidate_token_prior_weights(
+        fit_rows,
+        vocab=vocab,
+        max_slots=max_slots,
+        preserve_pad_slots=preserve_pad_slots,
+        config=config,
+    )
     non_noop_budget = {"status": "skipped", "reason": "disabled"}
     family_non_noop_budget = {"status": "skipped", "reason": "disabled"}
     probability_rows: list[dict[str, Any]] | None = None
@@ -1338,6 +1472,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             vocab=vocab,
             device=device,
             retrieval_index=retrieval_index,
+            token_prior_weights=candidate_token_prior_weights,
         )
     if bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False))) and probability_rows:
         non_noop_budget = _calibrate_temporal_non_noop_budget(probability_rows, config=config)
@@ -1366,6 +1501,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             vocab=vocab,
             device=device,
             retrieval_index=retrieval_index,
+            token_prior_weights=candidate_token_prior_weights,
         )
         candidate_family_diagnostics["target_prefix"] = _candidate_family_diagnostics(target_probability_rows, config=config)
     predictions_path = Path(output_dir) / "predictions.jsonl"
@@ -1384,6 +1520,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 vocab=vocab,
                 device=device,
                 retrieval_index=retrieval_index,
+                token_prior_weights=candidate_token_prior_weights,
             )
             for row, predicted_tokens in zip(batch_rows, batch_predictions):
                 handle.write(json.dumps({"sequence_id": row.get("sequence_id"), "predicted_tokens": predicted_tokens}, sort_keys=True) + "\n")
@@ -1416,6 +1553,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "family_non_noop_budget":family_non_noop_budget,
         "candidate_family_diagnostics":candidate_family_diagnostics,
         "retrieval_action_prior":retrieval_summary,
+        "candidate_token_prior":candidate_token_prior_summary,
         "loss_weights":{
             "noop_loss_weight":float(config.get("noop_loss_weight", 1.0)),
             "pad_loss_weight":float(config.get("pad_loss_weight", 0.0)),
@@ -1439,6 +1577,14 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "token_presence_mouse_button_pos_weight":float(config.get("token_presence_mouse_button_pos_weight", config.get("button_event_pos_weight", 16.0))),
             "token_presence_mouse_move_pos_weight":float(config.get("token_presence_mouse_move_pos_weight", 2.0)),
             "retrieval_action_prior_blend":float(config.get("retrieval_action_prior_blend", 0.35)),
+            "candidate_token_prior_correction":bool(config.get("candidate_token_prior_correction", False)),
+            "candidate_token_prior_strength":float(config.get("candidate_token_prior_strength", 0.5)),
+            "candidate_token_prior_smoothing":float(config.get("candidate_token_prior_smoothing", 8.0)),
+            "candidate_token_prior_min_weight":float(config.get("candidate_token_prior_min_weight", 0.25)),
+            "candidate_token_prior_max_weight":float(config.get("candidate_token_prior_max_weight", 8.0)),
+            "candidate_token_prior_families":list(config.get("candidate_token_prior_families", ["keyboard", "mouse_button"]))
+            if isinstance(config.get("candidate_token_prior_families", ["keyboard", "mouse_button"]), list)
+            else ["keyboard", "mouse_button"],
             "non_noop_budget_candidates_per_row":int(config.get("non_noop_budget_candidates_per_row", max_slots * 8)),
             "non_noop_budget_min_candidates_per_family":int(
                 config.get("non_noop_budget_min_candidates_per_family", config.get("candidate_min_candidates_per_family", 0)) or 0

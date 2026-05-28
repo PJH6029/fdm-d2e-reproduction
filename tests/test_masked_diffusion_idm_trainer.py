@@ -25,6 +25,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _calibrate_temporal_family_non_noop_budget,
     _calibrate_temporal_non_noop_budget,
     _candidate_family_diagnostics,
+    _candidate_token_prior_weights,
     _temporal_center_candidates,
     _target_slots,
     _token_presence_targets,
@@ -391,6 +392,58 @@ def test_temporal_candidates_can_preserve_low_scoring_family_candidates():
     assert {candidate["family"] for candidate in global_only[0]} == {"mouse_move"}
     assert "KEY_PRESS_A" in {candidate["token"] for candidate in family_preserved[0]}
     assert "MOUSE_LEFT_DOWN" in {candidate["token"] for candidate in family_preserved[0]}
+
+
+def test_candidate_token_prior_weights_boost_rare_train_tokens_without_target_labels():
+    rows = []
+    for idx in range(9):
+        row = _row(idx, split="train_core")
+        row["ground_truth_tokens"] = ["MOUSE_LEFT_DOWN"]
+        rows.append(row)
+    rare = _row(99, split="train_core")
+    rare["ground_truth_tokens"] = ["MOUSE_RIGHT_DOWN"]
+    rows.append(rare)
+
+    weights, summary = _candidate_token_prior_weights(
+        rows,
+        vocab=["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "MOUSE_LEFT_DOWN", "MOUSE_RIGHT_DOWN"],
+        max_slots=4,
+        preserve_pad_slots=True,
+        config={
+            "candidate_token_prior_correction": True,
+            "candidate_token_prior_families": ["mouse_button"],
+            "candidate_token_prior_strength": 1.0,
+            "candidate_token_prior_smoothing": 1.0,
+            "candidate_token_prior_max_weight": 4.0,
+        },
+    )
+
+    assert summary["status"] == "pass"
+    assert summary["families"]["mouse_button"]["total_count"] == 10
+    assert weights["MOUSE_RIGHT_DOWN"] > weights["MOUSE_LEFT_DOWN"]
+    assert summary["claim_boundary"].startswith("Train-fit action-token prior")
+
+
+def test_temporal_candidate_token_prior_adjusts_recipe_candidate_ranking():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "MOUSE_LEFT_DOWN", "MOUSE_RIGHT_DOWN"]
+    probabilities = torch.zeros((1, 1, len(vocab)), dtype=torch.float32)
+    probabilities[:, :, 3] = 0.50
+    probabilities[:, :, 4] = 0.30
+
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={"non_noop_budget_candidates_per_row": 4},
+        token_prior_weights={"MOUSE_LEFT_DOWN": 0.5, "MOUSE_RIGHT_DOWN": 2.0},
+    )
+
+    assert candidates[0][0]["token"] == "MOUSE_RIGHT_DOWN"
+    assert candidates[0][0]["prior_weight"] == 2.0
+    assert candidates[0][1]["token"] == "MOUSE_LEFT_DOWN"
 
 
 def test_candidate_family_diagnostics_reports_exact_coverage_and_ranks():
@@ -843,6 +896,10 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "retrieval_action_prior_top_k": 2,
             "retrieval_action_prior_temperature": 0.1,
             "retrieval_action_prior_blend": 0.2,
+            "candidate_token_prior_correction": True,
+            "candidate_token_prior_families": ["keyboard", "mouse_button"],
+            "candidate_token_prior_strength": 0.5,
+            "candidate_token_prior_smoothing": 1.0,
             "calibrate_non_noop_budget": True,
             "temporal_calibration_fraction": 0.2,
             "temporal_calibration_max_rows": 2,
@@ -874,6 +931,8 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["loss_weights"]["button_event_aux_weight"] == 0.2
     assert summary["loss_weights"]["event_auxiliary_candidate_score_blend"] == 0.25
     assert summary["loss_weights"]["retrieval_action_prior_blend"] == 0.2
+    assert summary["loss_weights"]["candidate_token_prior_correction"] is True
+    assert summary["candidate_token_prior"]["status"] == "pass"
     assert summary["retrieval_action_prior"]["status"] == "pass"
     assert summary["retrieval_action_prior"]["rows"] == 8
     assert any("key_event_loss" in row and "button_event_loss" in row for row in summary["history"])
