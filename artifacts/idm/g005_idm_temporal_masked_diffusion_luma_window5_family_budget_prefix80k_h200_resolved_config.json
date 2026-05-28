@@ -1,0 +1,575 @@
+{
+  "action_loss_weight": 1.0,
+  "batch_size": 128,
+  "calibrate_non_noop_budget": true,
+  "claim_boundary": "G005 bounded prefix candidate for public FDM-1 recipe reproduction on D2E using temporal sequence-level masked action-token diffusion plus split-safe family-specific confidence-budgeted unmasking. Not G005 completion evidence.",
+  "diffusion_steps": 16,
+  "dropout": 0.1,
+  "epochs": 2,
+  "fdm1_recipe": {
+    "action_tokenization": {
+      "keyboard_press_release_tokens": true,
+      "mouse_delta_binning": "exponential_normalized_xy",
+      "mouse_delta_bins_per_axis": 49,
+      "preserve_token_multiplicity": true,
+      "token_sequence_window": true
+    },
+    "fidelity": {
+      "claims_fdm1_parity": false,
+      "inferred_or_novel_components": [
+        "D2E compact luma video-token approximation",
+        "local temporal row window",
+        "weighted open-vocab action-token sequence loss",
+        "center-row emission for D2E paper-compatible metrics",
+        "bounded prefix row budget before full-corpus promotion",
+        "split-safe non-noop confidence-budgeted unmasking over temporal action-token candidates",
+        "focal sparse-token loss for key/button events",
+        "family-specific split-safe confidence-budget calibration for action-token families"
+      ],
+      "public_components": [
+        "video_encoder",
+        "masked_diffusion_idm",
+        "iterative_unmasking",
+        "key_and_mouse_action_tokens"
+      ],
+      "public_vs_inferred_recorded": true
+    },
+    "idm_objective": {
+      "conditioning": "all_window_frames_plus_masked_action_tokens",
+      "corruption": "mask/random corruption over temporal action-token slots",
+      "loss": "focal weighted cross entropy over a temporal masked action-token sequence, with sparse key/button weights and split-safe non-noop confidence-budget calibration",
+      "noncausal_frame_conditioning": true,
+      "type": "masked_diffusion_action_tokens"
+    },
+    "inference_schedule": {
+      "selection": "iteratively unmask highest-confidence temporal action-token slots, then apply held-out-train calibrated family-specific non-noop budgets before center-row emission",
+      "steps": 16,
+      "type": "iterative_unmasking"
+    },
+    "stage": "idm",
+    "video_encoder": {
+      "approximation": "Open D2E approximation: compact luma-window CNN with masked luma-token reconstruction, not the closed-source SI tokenizer.",
+      "enabled": true,
+      "input": "D2E compact luma16 frame-window video tokens over a temporal row window",
+      "public_anchor": "FDM-1 trains directly on compressed screen-video representations before inverse-dynamics labeling."
+    }
+  },
+  "fdm1_recipe_alignment": {
+    "non_noop_budgeted_unmasking": {
+      "claim_boundary": "Split-safe calibration only; target labels are evaluation/diagnostic evidence and no FDM-1 parity is claimed.",
+      "d2e_approximation": "Calibrate a confidence threshold over held-out D2E training rows for non-noop temporal action-token candidates, then apply it to unlabeled target rows without target labels.",
+      "public_anchor": "FDM-1 spends baseline effort on high-probability actions first and iteratively unmasks high-confidence action tokens."
+    },
+    "temporal_sequence_masked_diffusion": {
+      "claim_boundary": "Open recipe approximation on D2E; no FDM-1 internal-parity claim.",
+      "d2e_approximation": "Use D2E compact luma frame-window tokens and a local temporal action-token sequence around each row.",
+      "public_anchor": "FDM-1 IDM predicts masked action-token sequences noncausally from all frames and iteratively unmasks high-confidence positions."
+    },
+    "video_encoder_pretraining": {
+      "claim_boundary": "Not the closed-source FDM-1 tokenizer.",
+      "d2e_approximation": "Masked luma-token reconstruction pretraining over compact D2E frame-window tokens.",
+      "public_anchor": "FDM-1 reports a video encoder trained with masked compression/self-supervised prediction."
+    },
+    "family_non_noop_budgeted_unmasking": {
+      "public_anchor": "FDM-1 iteratively unmasks high-confidence action-token positions; family budgets preserve that schedule while preventing frequent mouse-motion tokens from consuming all non-noop emissions.",
+      "d2e_approximation": "Calibrate separate keyboard, mouse-button, and mouse-move confidence thresholds on held-out D2E training rows, then apply them to target rows without target-label access.",
+      "claim_boundary": "Split-safe calibration/inference approximation only; not a closed-source FDM-1 internal claim."
+    }
+  },
+  "grad_clip_norm": 1.0,
+  "hidden_dim": 384,
+  "keyboard_loss_weight": 12.0,
+  "lr": 0.00025,
+  "luma_aux_hidden_dim": 128,
+  "luma_encoder_channels": 48,
+  "luma_encoder_pool_hw": 2,
+  "luma_window_frames": 5,
+  "luma_window_size": 16,
+  "mask_probability": 0.75,
+  "max_action_tokens_per_bin": 16,
+  "max_target_rows": 5000,
+  "max_train_rows": 80000,
+  "model_name": "idm_temporal_masked_diffusion_d2e_luma_window5_family_budget_prefix80k",
+  "mouse_button_loss_weight": 24.0,
+  "mouse_move_loss_weight": 2.0,
+  "non_noop_budget_beta": 2.0,
+  "non_noop_budget_candidates_per_row": 64,
+  "non_noop_budget_max_no_button_fpr": 0.1,
+  "non_noop_budget_max_threshold_candidates": 256,
+  "non_noop_budget_max_tokens_per_row": 4,
+  "non_noop_budgeted_unmasking": true,
+  "non_noop_candidate_min_probability": 0.0,
+  "noop_loss_weight": 0.02,
+  "output_dir": "outputs/idm_temporal_masked_diffusion_d2e_luma_window5_family_budget_prefix80k",
+  "pad_loss_weight": 0.0,
+  "prediction_batch_size": 128,
+  "random_token_probability": 0.05,
+  "schema": "temporal_masked_diffusion_idm_config.v1",
+  "seed": 131,
+  "source_namespace": "d2e_luma_window5_corpus",
+  "summary_out": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_family_budget_prefix80k_summary.json",
+  "target_records": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_*/target_all_eval.jsonl",
+  "temporal_calibration_fraction": 0.025,
+  "temporal_calibration_max_rows": 2000,
+  "temporal_loss_offsets": [
+    -2,
+    -1,
+    0,
+    1,
+    2
+  ],
+  "temporal_offsets": [
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3
+  ],
+  "token_focal_gamma": 2.0,
+  "token_loss_type": "focal",
+  "train_records": "outputs/data/d2e_luma_window5_corpus_shards_accel64/shard_*/train_core.jsonl",
+  "transformer_heads": 6,
+  "transformer_layers": 4,
+  "video_encoder_arch": "compact_luma_window_cnn",
+  "video_encoder_pretrain_epochs": 1,
+  "video_encoder_pretrain_lr": 0.001,
+  "video_encoder_pretrain_mask_probability": 0.65,
+  "video_encoder_pretrain_weight_decay": 0.01,
+  "video_encoder_reconstruct_masked_only": true,
+  "video_feature_dim": 1295,
+  "video_feature_paths": [
+    "compact_luma_window",
+    "compact_luma_window_mask",
+    "frame.features",
+    "next_frame_features",
+    "frame_delta_features"
+  ],
+  "video_reconstruction_aux_weight": 0.05,
+  "vocab_min_count": 1,
+  "weight_decay": 0.01,
+  "calibrate_family_non_noop_budget": true,
+  "family_non_noop_budgeted_unmasking": true,
+  "family_non_noop_budget_families": [
+    "keyboard",
+    "mouse_button",
+    "mouse_move"
+  ],
+  "family_non_noop_budget_keyboard_max_tokens_per_row": 2,
+  "family_non_noop_budget_mouse_button_max_tokens_per_row": 2,
+  "family_non_noop_budget_mouse_move_max_tokens_per_row": 2,
+  "family_non_noop_budget_max_threshold_candidates": 256,
+  "family_non_noop_budget_max_no_button_fpr": 0.1,
+  "family_non_noop_budget_beta": 2.0,
+  "config_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma_window5_family_budget_prefix80k.yaml",
+  "non_noop_budget_score_threshold": 0.002123183337971568,
+  "family_non_noop_budget": {
+    "schema": "temporal_family_non_noop_budget_calibration.v1",
+    "status": "pass",
+    "rows": 2000,
+    "families": {
+      "keyboard": {
+        "status": "pass",
+        "family": "keyboard",
+        "selected_threshold": 0.007493532728403807,
+        "selected_row": {
+          "threshold": 0.007493532728403807,
+          "score": 0.011147830817353462,
+          "predicted_non_noop_tokens": 3918,
+          "keyboard_key_accuracy": 0.01003671970624235,
+          "mouse_button_accuracy": 0.0,
+          "mouse_button_f1": 0.0,
+          "no_button_false_positive_rate": 0.0,
+          "mouse_move_pearson_x": null,
+          "mouse_move_pearson_y": null
+        },
+        "candidate_count": 256,
+        "max_tokens_per_row": 2,
+        "sweep_preview": [
+          {
+            "threshold": 0.002152842003852129,
+            "score": 0.010882708585247884,
+            "predicted_non_noop_tokens": 3976,
+            "keyboard_key_accuracy": 0.010882708585247884,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.00394020089879632,
+            "score": 0.010917030567685589,
+            "predicted_non_noop_tokens": 3963,
+            "keyboard_key_accuracy": 0.010917030567685589,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.0056667232344150545,
+            "score": 0.009992688276870583,
+            "predicted_non_noop_tokens": 3937,
+            "keyboard_key_accuracy": 0.009992688276870583,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.0062919119372963905,
+            "score": 0.010009765625,
+            "predicted_non_noop_tokens": 3930,
+            "keyboard_key_accuracy": 0.010009765625,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.006738561671227217,
+            "score": 0.011135560988861723,
+            "predicted_non_noop_tokens": 3924,
+            "keyboard_key_accuracy": 0.010024449877750611,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "omitted_rows": 246
+          },
+          {
+            "threshold": 0.32490023970603943,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 142,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.5525640116462708,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 141,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.5536992417106629,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 141,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.5903906226158142,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 87,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 1.1,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 0,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          }
+        ]
+      },
+      "mouse_button": {
+        "status": "pass",
+        "family": "mouse_button",
+        "selected_threshold": 0.002123183337971568,
+        "selected_row": {
+          "threshold": 0.002123183337971568,
+          "score": 0.0,
+          "predicted_non_noop_tokens": 40,
+          "keyboard_key_accuracy": 0.0,
+          "mouse_button_accuracy": 0.0,
+          "mouse_button_f1": 0.0,
+          "no_button_false_positive_rate": 0.017543859649122806,
+          "mouse_move_pearson_x": null,
+          "mouse_move_pearson_y": null
+        },
+        "candidate_count": 177,
+        "max_tokens_per_row": 2,
+        "sweep_preview": [
+          {
+            "threshold": 0.002123183337971568,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 40,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.017543859649122806,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.0021241833379715682,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 40,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.017543859649122806,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.0021957801654934883,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 40,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.017543859649122806,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.0021967801654934884,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 40,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.017543859649122806,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.002258686115965247,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 40,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.017543859649122806,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "omitted_rows": 167
+          },
+          {
+            "threshold": 0.008203469216823578,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 1,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0005159958720330237,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.008204469216823577,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 1,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0005159958720330237,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.009924215264618397,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 1,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0005159958720330237,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.009925215264618396,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 0,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 1.1,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 0,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          }
+        ]
+      },
+      "mouse_move": {
+        "status": "pass",
+        "family": "mouse_move",
+        "selected_threshold": 0.811433421207428,
+        "selected_row": {
+          "threshold": 0.811433421207428,
+          "score": 0.011498830830820523,
+          "predicted_non_noop_tokens": 403,
+          "keyboard_key_accuracy": 0.0,
+          "mouse_button_accuracy": 0.0,
+          "mouse_button_f1": 0.0,
+          "no_button_false_positive_rate": 0.0,
+          "mouse_move_pearson_x": 0.022997661661641047,
+          "mouse_move_pearson_y": null
+        },
+        "candidate_count": 256,
+        "max_tokens_per_row": 2,
+        "sweep_preview": [
+          {
+            "threshold": 0.0022276071831583977,
+            "score": 0.011139985056446656,
+            "predicted_non_noop_tokens": 4000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022279970112893312,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.00704314395955205,
+            "score": 0.011139985056446656,
+            "predicted_non_noop_tokens": 4000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022279970112893312,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.007486403679311276,
+            "score": 0.011139985056446656,
+            "predicted_non_noop_tokens": 4000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022279970112893312,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.007548011598944664,
+            "score": 0.011139985056446656,
+            "predicted_non_noop_tokens": 4000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022279970112893312,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.007814206182956696,
+            "score": 0.011139985056446656,
+            "predicted_non_noop_tokens": 4000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022279970112893312,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "omitted_rows": 246
+          },
+          {
+            "threshold": 0.8036836252937317,
+            "score": -0.036996727846936424,
+            "predicted_non_noop_tokens": 1598,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": -0.07399345569387285,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.8074242472648621,
+            "score": -0.029892615652519317,
+            "predicted_non_noop_tokens": 1264,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": -0.059785231305038634,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.8099609480628968,
+            "score": 0.0010968384185542253,
+            "predicted_non_noop_tokens": 846,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.0021936768371084506,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.811433421207428,
+            "score": 0.011498830830820523,
+            "predicted_non_noop_tokens": 403,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022997661661641047,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 1.1,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 0,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          }
+        ]
+      }
+    },
+    "max_no_button_fpr": 0.1,
+    "claim_boundary": "Family budgets are calibrated on held-out training rows only; target labels remain evaluation/diagnostic only."
+  }
+}

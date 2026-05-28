@@ -1,0 +1,101 @@
+{
+  "schema": "g005_temporal_family_budget_prefix80k_diagnosis.v1",
+  "status": "action_required",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "evidence": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_family_budget_prefix80k_h200_compact_summary.json",
+  "primary_findings": [
+    {
+      "finding": "Family budgets created a nonzero keyboard signal versus the prior all-zero temporal probe.",
+      "evidence": 0.011649755730928222
+    },
+    {
+      "finding": "Mouse-button semantics are still not learned; family budget produced false positives but zero exact or semantic overlap.",
+      "evidence": {
+        "button_metrics": 0.0,
+        "diagnostic": {
+          "rows": 2000,
+          "predicted_examples": 18,
+          "ground_truth_examples": 50,
+          "exact_true_positive_examples": 0,
+          "any_token_overlap_wrong_examples": 0,
+          "both_positive_no_overlap_examples": 0,
+          "false_positive_examples": 18,
+          "false_negative_examples": 50,
+          "no_button_false_positive_examples": 18,
+          "no_button_false_positive_rate": 0.009230769230769232,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "semantic_any_button_overlap_examples": 0,
+          "semantic_any_button_overlap_rate_on_gt": 0.0,
+          "top_predicted_button_tokens": [
+            [
+              "MOUSE_LEFT_UP",
+              17
+            ],
+            [
+              "MOUSE_LEFT_DOWN",
+              8
+            ]
+          ],
+          "top_ground_truth_button_tokens": [
+            [
+              "MOUSE_RIGHT_DOWN",
+              16
+            ],
+            [
+              "MOUSE_RIGHT_UP",
+              16
+            ],
+            [
+              "MOUSE_LEFT_DOWN",
+              8
+            ],
+            [
+              "MOUSE_LEFT_UP",
+              8
+            ],
+            [
+              "MOUSE_MIDDLE_DOWN",
+              5
+            ],
+            [
+              "MOUSE_MIDDLE_UP",
+              5
+            ]
+          ],
+          "top_predicted_vs_ground_truth_pairs": []
+        }
+      }
+    },
+    {
+      "finding": "Mouse movement is unstable after family budgeting; X Pearson is negative and Y has no variance/undefined.",
+      "evidence": {
+        "pearson_x": -0.010852574641553906,
+        "pearson_y": null,
+        "scale_x": 379.5219123505976
+      }
+    },
+    {
+      "finding": "Prediction still has GPU-underutilized CPU/Python loop periods; vectorized inference is required before larger 4xH200 promotion.",
+      "evidence": {
+        "samples": 45,
+        "mean_util_pct": 20.622222222222224,
+        "max_util_pct": 69.0,
+        "mean_power_w": 182.59466666666665,
+        "max_memory_util_pct": 15.0
+      }
+    }
+  ],
+  "recommended_next_branch": {
+    "name": "action-event auxiliary inside temporal masked-diffusion IDM",
+    "recipe_fidelity": "Keep noncausal masked action-token diffusion, but add auxiliary event-presence heads/losses for sparse key/button families as an unpublished-detail approximation, not a heuristic postprocessor.",
+    "implementation_notes": [
+      "predict key/button event presence from temporal video/action-token representation during IDM denoising",
+      "use event logits only to bias masked token unmasking, preserving action-token sequence output",
+      "predeclare calibration on held-out training rows with no target labels",
+      "vectorize iterative unmasking to reduce CPU-bound prediction time"
+    ]
+  },
+  "checkpoint_policy": "Do not checkpoint G005; continue recipe-faithful exploration."
+}

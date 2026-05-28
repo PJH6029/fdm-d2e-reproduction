@@ -1,0 +1,570 @@
+{
+  "schema": "g005_temporal_family_budget_prefix80k_compact_summary.v1",
+  "status": "nonterminal_negative_probe",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "commit": "9db975d",
+  "wandb_run_id": null,
+  "wandb_run_url": null,
+  "reservation_context": "artifacts/idm/g005_family_budget_prefix80k_reservation_context.json",
+  "failed_reservation_context": "artifacts/idm/g005_family_budget_prefix80k_failed_reservation_context.json",
+  "artifacts": {
+    "run": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_family_budget_prefix80k_h200_run.json",
+    "summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_family_budget_prefix80k_summary.json",
+    "paper_metrics": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_family_budget_prefix80k_h200_paper_metrics.json",
+    "diagnostic": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_family_budget_prefix80k_h200_button_semantic_diagnostic.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_family_budget_prefix80k_h200_gpu_monitor.csv",
+    "predictions": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_family_budget_prefix80k_h200_predictions.jsonl"
+  },
+  "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM over temporal action-token sequences conditioned on all D2E frame-window tokens in the local window.",
+  "rows": {
+    "train": 80000,
+    "fit": 78000,
+    "calibration": 2000,
+    "target": 5000
+  },
+  "metrics": {
+    "keyboard_key_accuracy": 0.011649755730928222,
+    "keyboard_strict_accuracy": 0.004570383912248629,
+    "mouse_button_accuracy": 0.0,
+    "mouse_button_f1": 0.0,
+    "no_button_false_positive_rate": 0.004529544986617253,
+    "mouse_move_pearson_x": -0.010852574641553906,
+    "mouse_move_pearson_y": null,
+    "mouse_scale_ratio_x": 379.5219123505976,
+    "mouse_scale_ratio_y": null
+  },
+  "family_budget": {
+    "schema": "temporal_family_non_noop_budget_calibration.v1",
+    "status": "pass",
+    "rows": 2000,
+    "families": {
+      "keyboard": {
+        "status": "pass",
+        "family": "keyboard",
+        "selected_threshold": 0.007493532728403807,
+        "selected_row": {
+          "threshold": 0.007493532728403807,
+          "score": 0.011147830817353462,
+          "predicted_non_noop_tokens": 3918,
+          "keyboard_key_accuracy": 0.01003671970624235,
+          "mouse_button_accuracy": 0.0,
+          "mouse_button_f1": 0.0,
+          "no_button_false_positive_rate": 0.0,
+          "mouse_move_pearson_x": null,
+          "mouse_move_pearson_y": null
+        },
+        "candidate_count": 256,
+        "max_tokens_per_row": 2,
+        "sweep_preview": [
+          {
+            "threshold": 0.002152842003852129,
+            "score": 0.010882708585247884,
+            "predicted_non_noop_tokens": 3976,
+            "keyboard_key_accuracy": 0.010882708585247884,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.00394020089879632,
+            "score": 0.010917030567685589,
+            "predicted_non_noop_tokens": 3963,
+            "keyboard_key_accuracy": 0.010917030567685589,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.0056667232344150545,
+            "score": 0.009992688276870583,
+            "predicted_non_noop_tokens": 3937,
+            "keyboard_key_accuracy": 0.009992688276870583,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.0062919119372963905,
+            "score": 0.010009765625,
+            "predicted_non_noop_tokens": 3930,
+            "keyboard_key_accuracy": 0.010009765625,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.006738561671227217,
+            "score": 0.011135560988861723,
+            "predicted_non_noop_tokens": 3924,
+            "keyboard_key_accuracy": 0.010024449877750611,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "omitted_rows": 246
+          },
+          {
+            "threshold": 0.32490023970603943,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 142,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.5525640116462708,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 141,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.5536992417106629,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 141,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.5903906226158142,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 87,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 1.1,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 0,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          }
+        ]
+      },
+      "mouse_button": {
+        "status": "pass",
+        "family": "mouse_button",
+        "selected_threshold": 0.002123183337971568,
+        "selected_row": {
+          "threshold": 0.002123183337971568,
+          "score": 0.0,
+          "predicted_non_noop_tokens": 40,
+          "keyboard_key_accuracy": 0.0,
+          "mouse_button_accuracy": 0.0,
+          "mouse_button_f1": 0.0,
+          "no_button_false_positive_rate": 0.017543859649122806,
+          "mouse_move_pearson_x": null,
+          "mouse_move_pearson_y": null
+        },
+        "candidate_count": 177,
+        "max_tokens_per_row": 2,
+        "sweep_preview": [
+          {
+            "threshold": 0.002123183337971568,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 40,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.017543859649122806,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.0021241833379715682,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 40,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.017543859649122806,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.0021957801654934883,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 40,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.017543859649122806,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.0021967801654934884,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 40,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.017543859649122806,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.002258686115965247,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 40,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.017543859649122806,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "omitted_rows": 167
+          },
+          {
+            "threshold": 0.008203469216823578,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 1,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0005159958720330237,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.008204469216823577,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 1,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0005159958720330237,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.009924215264618397,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 1,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0005159958720330237,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.009925215264618396,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 0,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 1.1,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 0,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          }
+        ]
+      },
+      "mouse_move": {
+        "status": "pass",
+        "family": "mouse_move",
+        "selected_threshold": 0.811433421207428,
+        "selected_row": {
+          "threshold": 0.811433421207428,
+          "score": 0.011498830830820523,
+          "predicted_non_noop_tokens": 403,
+          "keyboard_key_accuracy": 0.0,
+          "mouse_button_accuracy": 0.0,
+          "mouse_button_f1": 0.0,
+          "no_button_false_positive_rate": 0.0,
+          "mouse_move_pearson_x": 0.022997661661641047,
+          "mouse_move_pearson_y": null
+        },
+        "candidate_count": 256,
+        "max_tokens_per_row": 2,
+        "sweep_preview": [
+          {
+            "threshold": 0.0022276071831583977,
+            "score": 0.011139985056446656,
+            "predicted_non_noop_tokens": 4000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022279970112893312,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.00704314395955205,
+            "score": 0.011139985056446656,
+            "predicted_non_noop_tokens": 4000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022279970112893312,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.007486403679311276,
+            "score": 0.011139985056446656,
+            "predicted_non_noop_tokens": 4000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022279970112893312,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.007548011598944664,
+            "score": 0.011139985056446656,
+            "predicted_non_noop_tokens": 4000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022279970112893312,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.007814206182956696,
+            "score": 0.011139985056446656,
+            "predicted_non_noop_tokens": 4000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022279970112893312,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "omitted_rows": 246
+          },
+          {
+            "threshold": 0.8036836252937317,
+            "score": -0.036996727846936424,
+            "predicted_non_noop_tokens": 1598,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": -0.07399345569387285,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.8074242472648621,
+            "score": -0.029892615652519317,
+            "predicted_non_noop_tokens": 1264,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": -0.059785231305038634,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.8099609480628968,
+            "score": 0.0010968384185542253,
+            "predicted_non_noop_tokens": 846,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.0021936768371084506,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.811433421207428,
+            "score": 0.011498830830820523,
+            "predicted_non_noop_tokens": 403,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.022997661661641047,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 1.1,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 0,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          }
+        ]
+      }
+    },
+    "max_no_button_fpr": 0.1,
+    "claim_boundary": "Family budgets are calibrated on held-out training rows only; target labels remain evaluation/diagnostic only."
+  },
+  "prediction_distribution": {
+    "rows": 5000,
+    "top_tokens": [
+      [
+        "KEY_PRESS_82",
+        4256
+      ],
+      [
+        "KEY_PRESS_87",
+        3271
+      ],
+      [
+        "KEY_RELEASE_82",
+        980
+      ],
+      [
+        "KEY_PRESS_160",
+        734
+      ],
+      [
+        "KEY_RELEASE_160",
+        354
+      ],
+      [
+        "MOUSE_DX_N1",
+        249
+      ],
+      [
+        "MOUSE_LEFT_UP",
+        21
+      ],
+      [
+        "MOUSE_LEFT_DOWN",
+        11
+      ],
+      [
+        "KEY_PRESS_65",
+        3
+      ],
+      [
+        "MOUSE_DX_P1",
+        2
+      ],
+      [
+        "MOUSE_RIGHT_UP",
+        1
+      ]
+    ],
+    "unique_tokens": 11
+  },
+  "button_diagnostic": {
+    "rows": 2000,
+    "predicted_examples": 18,
+    "ground_truth_examples": 50,
+    "exact_true_positive_examples": 0,
+    "any_token_overlap_wrong_examples": 0,
+    "both_positive_no_overlap_examples": 0,
+    "false_positive_examples": 18,
+    "false_negative_examples": 50,
+    "no_button_false_positive_examples": 18,
+    "no_button_false_positive_rate": 0.009230769230769232,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "semantic_any_button_overlap_examples": 0,
+    "semantic_any_button_overlap_rate_on_gt": 0.0,
+    "top_predicted_button_tokens": [
+      [
+        "MOUSE_LEFT_UP",
+        17
+      ],
+      [
+        "MOUSE_LEFT_DOWN",
+        8
+      ]
+    ],
+    "top_ground_truth_button_tokens": [
+      [
+        "MOUSE_RIGHT_DOWN",
+        16
+      ],
+      [
+        "MOUSE_RIGHT_UP",
+        16
+      ],
+      [
+        "MOUSE_LEFT_DOWN",
+        8
+      ],
+      [
+        "MOUSE_LEFT_UP",
+        8
+      ],
+      [
+        "MOUSE_MIDDLE_DOWN",
+        5
+      ],
+      [
+        "MOUSE_MIDDLE_UP",
+        5
+      ]
+    ],
+    "top_predicted_vs_ground_truth_pairs": []
+  },
+  "gpu_monitor": {
+    "samples": 45,
+    "mean_util_pct": 20.622222222222224,
+    "max_util_pct": 69.0,
+    "mean_power_w": 182.59466666666665,
+    "max_memory_util_pct": 15.0
+  },
+  "comparison_to_previous_temporal_budget": {
+    "previous_compact": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_budget_prefix80k_h200_compact_summary.json",
+    "improved_keyboard_from_zero": true,
+    "button_remains_zero_f1": true,
+    "motion_still_failed": true
+  },
+  "completion_decision": "not_checkpointed",
+  "why_not_complete": [
+    "bounded 80k/5k prefix, not full-corpus 4xH200",
+    "keyboard improved only to ~1.16% and remains far below D2E paper target",
+    "mouse-button accuracy/F1 remain zero",
+    "mouse motion Pearson remains negative/undefined",
+    "does not beat D2E paper/released G-IDM targets"
+  ],
+  "claim_boundary": "Negative bounded H200 probe for a public FDM-1-shaped temporal masked-diffusion IDM with split-safe family budgets; not G005 completion evidence."
+}

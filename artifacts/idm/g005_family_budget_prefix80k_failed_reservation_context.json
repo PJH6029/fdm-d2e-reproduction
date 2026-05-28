@@ -1,0 +1,32 @@
+{
+  "reservation_id": "rsv-jeonghunpark-20260529-b05f11",
+  "project_id": "production",
+  "project_label": "Production",
+  "namespace": "p-production",
+  "status": "cancelled",
+  "status_label": "cancelled",
+  "status_class": "cancelled",
+  "node_id": "4",
+  "gpu_start": 1,
+  "gpu_count": 1,
+  "gpu_indices": [
+    1
+  ],
+  "start_at": "2026-05-29T02:00:00+09:00",
+  "end_at": "2026-05-29T04:00:00+09:00",
+  "purpose": "Continuous GUI - FDM reproduction G005 recipe IDM temporal family-budget prefix80k probe",
+  "image_path": "ghcr.io/pjh6029/snupi-personal-codex:20260414",
+  "image_label": "Custom image",
+  "pod_phase": "",
+  "pod_status": "",
+  "pod_name": "prod-rsv-jeonghunpark-20260529-b05f11",
+  "personal_pvc_name": "personal-pvc-jeonghunpark",
+  "storage_claim_name": "personal-pvc-jeonghunpark",
+  "created_at": "2026-05-29T02:04:51+09:00",
+  "updated_at": "2026-05-29T02:07:04+09:00",
+  "redaction": "emails, access tokens, jupyter token, registry/managed image secrets, and viewer-secret flags omitted",
+  "raw_reservation_responses_removed": true,
+  "cancelled_after_startup_failure": true,
+  "startup_failure": "custom image_path without managed Codex shell env exited with Missing required env var: SHELL_SESSION_ID",
+  "claim_boundary": "Failed reservation context only; not model-quality evidence and not a G005 completion checkpoint."
+}
