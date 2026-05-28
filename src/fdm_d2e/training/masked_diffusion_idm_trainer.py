@@ -261,6 +261,12 @@ def train_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any]:
     device = torch.device("cuda" if torch.cuda.is_available() and not config.get("force_cpu") else "cpu")
     model = _build_model(torch, video_dim=feature_dim, vocab_size=len(vocab), max_slots=max_slots, config=config).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=float(config.get("lr", 2e-4)), weight_decay=float(config.get("weight_decay", 0.01)))
+    token_to_index = {token: idx for idx, token in enumerate(vocab)}
+    class_weights = torch.ones(len(vocab), dtype=torch.float32, device=device)
+    if FDM1_ACTION_NOOP in token_to_index:
+        class_weights[token_to_index[FDM1_ACTION_NOOP]] = float(config.get("noop_loss_weight", 1.0))
+    if "<FDM1_ACTION_PAD>" in token_to_index:
+        class_weights[token_to_index["<FDM1_ACTION_PAD>"]] = float(config.get("pad_loss_weight", 0.0))
     history: list[dict[str, Any]] = []
     for epoch in range(int(config.get("epochs", 1))):
         model.train()
@@ -274,7 +280,7 @@ def train_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any]:
             logits = model(features, corrupted_ids)
             if not bool(loss_mask.any()):
                 continue
-            loss = torch.nn.functional.cross_entropy(logits[loss_mask], target_ids[loss_mask])
+            loss = torch.nn.functional.cross_entropy(logits[loss_mask], target_ids[loss_mask], weight=class_weights)
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), float(config.get("grad_clip_norm", 1.0)))
@@ -328,6 +334,10 @@ def train_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any]:
         "target_rows": len(target_rows),
         "vocab_size": len(vocab),
         "max_slots": max_slots,
+        "loss_weights": {
+            "noop_loss_weight": float(config.get("noop_loss_weight", 1.0)),
+            "pad_loss_weight": float(config.get("pad_loss_weight", 0.0)),
+        },
         "device": str(device),
         "history": history,
         "checkpoint_path": str(checkpoint_path),
