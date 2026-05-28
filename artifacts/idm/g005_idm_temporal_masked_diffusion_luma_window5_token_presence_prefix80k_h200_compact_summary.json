@@ -1,0 +1,443 @@
+{
+  "schema": "g005_idm_temporal_masked_diffusion_probe_compact_summary.v1",
+  "status": "nonterminal_negative_probe",
+  "created_at_kst": "2026-05-29T04:14:40.723016+09:00",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "claim_boundary": "Negative bounded-prefix H200 probe evidence only. Token-presence auxiliary is recipe-faithful but regressed keyboard/button and does not satisfy G005.",
+  "commit": "dbe8b24",
+  "config": "configs/model/idm_temporal_masked_diffusion_d2e_luma_window5_token_presence_prefix80k.yaml",
+  "model_name": "idm_temporal_masked_diffusion_d2e_luma_window5_token_presence_prefix80k",
+  "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM over temporal action-token sequences conditioned on all D2E frame-window tokens in the local window.",
+  "method": {
+    "preserve_pad_action_slots": true,
+    "video_encoder_arch": "compact_luma_window_cnn",
+    "loss_weights": {
+      "noop_loss_weight": 0.05,
+      "pad_loss_weight": 0.0,
+      "preserve_pad_action_slots": true,
+      "action_loss_weight": 1.0,
+      "keyboard_loss_weight": 16.0,
+      "mouse_button_loss_weight": 36.0,
+      "mouse_move_loss_weight": 2.0,
+      "video_reconstruction_aux_weight": 0.05,
+      "temporal_event_auxiliary": true,
+      "key_event_aux_weight": 0.5,
+      "button_event_aux_weight": 1.0,
+      "key_event_pos_weight": 8.0,
+      "button_event_pos_weight": 24.0,
+      "event_auxiliary_candidate_score_blend": 0.2,
+      "temporal_token_presence_auxiliary": true,
+      "token_presence_aux_weight": 0.6,
+      "token_presence_include_noop": false,
+      "token_presence_candidate_score_blend": 0.55,
+      "token_presence_keyboard_pos_weight": 16.0,
+      "token_presence_mouse_button_pos_weight": 48.0,
+      "token_presence_mouse_move_pos_weight": 2.0,
+      "retrieval_action_prior_blend": 0.25,
+      "token_loss_type": "focal",
+      "token_focal_gamma": 2.0
+    },
+    "family_non_noop_budget": {
+      "schema": "temporal_family_non_noop_budget_calibration.v1",
+      "status": "pass",
+      "rows": 2000,
+      "families": {
+        "keyboard": {
+          "status": "pass",
+          "family": "keyboard",
+          "selected_threshold": 0.06335407215512533,
+          "selected_row": {
+            "threshold": 0.06335407215512533,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 302,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          "candidate_count": 384,
+          "max_tokens_per_row": 2,
+          "sweep_preview": [
+            {
+              "threshold": 0.06335407215512533,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 302,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.06338659113869653,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 302,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.07146339534097933,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 301,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.09293580979108812,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 300,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.09554102592170238,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 299,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "omitted_rows": 374
+            },
+            {
+              "threshold": 0.8248873150348663,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 48,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.8441003638505936,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 44,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.8809661471843719,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 30,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.9167894685268403,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 15,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 1.1,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 0,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            }
+          ]
+        },
+        "mouse_button": {
+          "status": "skipped",
+          "reason": "no_family_candidates",
+          "max_tokens_per_row": 0
+        },
+        "mouse_move": {
+          "status": "pass",
+          "family": "mouse_move",
+          "selected_threshold": 0.7081112473661303,
+          "selected_row": {
+            "threshold": 0.7081112473661303,
+            "score": 0.03496526952343933,
+            "predicted_non_noop_tokens": 3367,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.06519012303285114,
+            "mouse_move_pearson_y": 0.004740416014027511
+          },
+          "candidate_count": 384,
+          "max_tokens_per_row": 2,
+          "sweep_preview": [
+            {
+              "threshold": 0.042261713938205506,
+              "score": 0.0087492280203125,
+              "predicted_non_noop_tokens": 4000,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": 0.013755122386555137,
+              "mouse_move_pearson_y": 0.003743333654069862
+            },
+            {
+              "threshold": 0.05896907265635289,
+              "score": 0.0087492280203125,
+              "predicted_non_noop_tokens": 4000,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": 0.013755122386555137,
+              "mouse_move_pearson_y": 0.003743333654069862
+            },
+            {
+              "threshold": 0.060378792744293405,
+              "score": 0.0087492280203125,
+              "predicted_non_noop_tokens": 4000,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": 0.013755122386555137,
+              "mouse_move_pearson_y": 0.003743333654069862
+            },
+            {
+              "threshold": 0.06236153099855781,
+              "score": 0.0087492280203125,
+              "predicted_non_noop_tokens": 4000,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": 0.013755122386555137,
+              "mouse_move_pearson_y": 0.003743333654069862
+            },
+            {
+              "threshold": 0.06760784736073017,
+              "score": 0.0087492280203125,
+              "predicted_non_noop_tokens": 4000,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": 0.013755122386555137,
+              "mouse_move_pearson_y": 0.003743333654069862
+            },
+            {
+              "omitted_rows": 374
+            },
+            {
+              "threshold": 0.9081738458404541,
+              "score": -0.005867138637319842,
+              "predicted_non_noop_tokens": 369,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": -0.011734277274639684,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.9128071031533183,
+              "score": -0.0038920980229811687,
+              "predicted_non_noop_tokens": 255,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": -0.007784196045962337,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.9131790906580389,
+              "score": -0.0038920980229811687,
+              "predicted_non_noop_tokens": 255,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": -0.007784196045962337,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.9140720836276411,
+              "score": -0.0032962261409653177,
+              "predicted_non_noop_tokens": 245,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": -0.0065924522819306355,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 1.1,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 0,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            }
+          ]
+        }
+      },
+      "max_no_button_fpr": 0.1,
+      "claim_boundary": "Family budgets are calibrated on held-out training rows only; target labels remain evaluation/diagnostic only."
+    },
+    "retrieval_action_prior": {
+      "schema": "temporal_retrieval_action_prior_index.v1",
+      "status": "pass",
+      "rows": 78000,
+      "embedding_dim": 384,
+      "top_k": 32,
+      "temperature": 0.08,
+      "claim_boundary": "Retrieval index uses fit/train rows only as a video/action-token denoising prior; target labels are never indexed."
+    },
+    "token_presence_result": "Token presence trained (loss recorded) but calibration reported no mouse_button family candidates and target button predictions stayed zero."
+  },
+  "data_scope": {
+    "train_rows": 80000,
+    "fit_rows": 78000,
+    "calibration_rows": 2000,
+    "target_rows": 5000,
+    "temporal_window": 7,
+    "split_tags": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ]
+  },
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "observed_metrics_all": {
+    "paper_keyboard_key_accuracy": 0.00545950864422202,
+    "paper_mouse_button_accuracy": 0.0,
+    "paper_mouse_move_pearson_x": -0.0014051218711625421,
+    "paper_mouse_move_pearson_y": -0.0004541619912197641,
+    "paper_mouse_scale_ratio_x": 30.231672484925422,
+    "paper_mouse_scale_ratio_y": 15137.0,
+    "strict_keyboard_accuracy": 0.003656307129798903,
+    "strict_mouse_button_f1": 0.0,
+    "strict_no_button_false_positive_rate": 0.0
+  },
+  "target_gap": {
+    "keyboard_key_accuracy_gap": -0.7245404913557779,
+    "mouse_button_accuracy_gap": -0.957,
+    "pearson_x_gap": -0.7974051218711626,
+    "pearson_y_gap": -0.7834541619912198
+  },
+  "failure_signature": {
+    "button_semantic_overlap": 0,
+    "diagnostic_ground_truth_examples": 50,
+    "diagnostic_predicted_examples": 0,
+    "exact_button_tp": 0,
+    "mouse_button_false_negatives": 143,
+    "family_budget_mouse_button_status": "skipped",
+    "note": "Token-presence blended scores eliminated mouse-button family candidates during calibration and regressed keyboard versus PAD-aware-only run."
+  },
+  "gpu_monitor": {
+    "samples": 86,
+    "gpu_indices": [
+      0
+    ],
+    "avg_gpu_utilization_pct": 23.290697674418606,
+    "max_gpu_utilization_pct": 71.0,
+    "avg_memory_utilization_pct": 3.1627906976744184,
+    "max_memory_utilization_pct": 15.0,
+    "avg_power_watts": 174.19220930232558,
+    "low_utilization_diagnosis": "Training used H200, but post-checkpoint prediction/retrieval remains low-utilization and should be vectorized/sharded before scale-up."
+  },
+  "wandb": {
+    "status": "complete",
+    "run_name": "g005_idm_temporal_masked_diffusion_luma_window5_token_presence_prefix80k_h200",
+    "wandb_run_id": "f0pvzrrs",
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/f0pvzrrs"
+  },
+  "evidence": {
+    "run": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_token_presence_prefix80k_h200_run.json",
+      "sha256": "a30dc3f4dcf56e7aaf329f8d30e60f71788d22427aead09be6ee230a73d95b33",
+      "bytes": 2676
+    },
+    "summary": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_token_presence_prefix80k_summary.json",
+      "sha256": "555e59bcf7ff9655419e25fa884ceb206f4b5d82065baa0744e57ae1d3174c64",
+      "bytes": 22072
+    },
+    "metrics": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_token_presence_prefix80k_h200_paper_metrics.json",
+      "sha256": "2a186f2a1e226e04b09f0bc46baef28a05d6bcd2ebb8228387da92c1f3213e96",
+      "bytes": 11261
+    },
+    "diag": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_token_presence_prefix80k_h200_button_semantic_diagnostic.json",
+      "sha256": "94aa074e33afa4f31efaca6c5eae47513a968a3a57d05ae99a17f6d5df78c62d",
+      "bytes": 20302
+    },
+    "gpu": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_token_presence_prefix80k_h200_gpu_monitor.csv",
+      "sha256": "b8071bc0fee9515dcebe54bc80d1bd8ef70d1cd556f4416edae8c40c5feb7d71",
+      "bytes": 5916
+    },
+    "wandb": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_token_presence_prefix80k_h200_wandb_status.json",
+      "sha256": "aa15ddf7670a456ccc166df7fd682f13197f504e274989dbe69894591eef1c10",
+      "bytes": 1074
+    },
+    "resolved_config": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_token_presence_prefix80k_h200_resolved_config.json",
+      "sha256": "e0a02613ad542063d996d37e7624cd5bf06ee612dbeebd5eab14e7dffacc6d95",
+      "bytes": 22297
+    },
+    "predictions": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_token_presence_prefix80k_h200_predictions.jsonl",
+      "sha256": "dacddb282d4d09f61e1e9768f1342963c64dab5498ff39600938e2d85aaedd6e",
+      "bytes": 525621
+    },
+    "reservation": {
+      "path": "artifacts/idm/g005_token_presence_prefix80k_reservation_context.json",
+      "sha256": "1335bd4020f05cec17ac141cc89e2fcd9dd083c87bb6722515f32a0c7a3e55f5",
+      "bytes": 1608
+    }
+  },
+  "next_branch_recommendation": "Reject this token-presence blend as configured. Keep PAD-aware slots, but inspect why token-presence removes button-family candidates; next code should expose per-family candidate histograms/logits and/or add explicit family-gated button transition head inside temporal sequence before another H200 run."
+}

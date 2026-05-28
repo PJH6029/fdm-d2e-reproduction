@@ -1,0 +1,64 @@
+{
+  "schema": "g005_idm_temporal_masked_diffusion_probe_diagnosis.v1",
+  "status": "blocked_for_completion_continue_exploration",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "created_at_kst": "2026-05-29T04:14:40.723016+09:00",
+  "question": "Did token-presence temporal IDM beat D2E paper G-IDM targets?",
+  "answer": "No; it regressed from PAD-aware-only and emitted no button predictions.",
+  "evidence_summary": {
+    "paper_keyboard_key_accuracy": 0.00545950864422202,
+    "paper_mouse_button_accuracy": 0.0,
+    "paper_mouse_move_pearson_x": -0.0014051218711625421,
+    "paper_mouse_move_pearson_y": -0.0004541619912197641,
+    "paper_mouse_scale_ratio_x": 30.231672484925422,
+    "paper_mouse_scale_ratio_y": 15137.0,
+    "strict_keyboard_accuracy": 0.003656307129798903,
+    "strict_mouse_button_f1": 0.0,
+    "strict_no_button_false_positive_rate": 0.0
+  },
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "root_cause_hypotheses_ranked": [
+    {
+      "rank": 1,
+      "hypothesis": "Token-presence BCE is dominated by negative action-vocab labels or blended too strongly, suppressing mouse-button candidates entirely.",
+      "evidence": [
+        "family budget mouse_button status=skipped/no_family_candidates",
+        "diagnostic predicted button examples=0"
+      ]
+    },
+    {
+      "rank": 2,
+      "hypothesis": "PAD-aware-only keyboard gain is fragile; token-presence changed candidate ranking/calibration away from transferable key tokens.",
+      "evidence": [
+        "keyboard dropped from 0.02465 to 0.00546"
+      ]
+    },
+    {
+      "rank": 3,
+      "hypothesis": "Prediction/retrieval path still underutilizes H200 after checkpoint.",
+      "evidence": [
+        {
+          "samples": 86,
+          "gpu_indices": [
+            0
+          ],
+          "avg_gpu_utilization_pct": 23.290697674418606,
+          "max_gpu_utilization_pct": 71.0,
+          "avg_memory_utilization_pct": 3.1627906976744184,
+          "max_memory_utilization_pct": 15.0,
+          "avg_power_watts": 174.19220930232558,
+          "low_utilization_diagnosis": "Training used H200, but post-checkpoint prediction/retrieval remains low-utilization and should be vectorized/sharded before scale-up."
+        }
+      ]
+    }
+  ],
+  "decision": "Do not checkpoint G005 complete. Preserve this branch as negative evidence and continue from PAD-aware slots with better diagnostics/family-gated identity learning.",
+  "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_token_presence_prefix80k_h200_compact_summary.json"
+}
