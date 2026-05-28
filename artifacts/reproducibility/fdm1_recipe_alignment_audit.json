@@ -1,0 +1,26 @@
+{
+  "schema": "fdm1_recipe_alignment_audit.v1",
+  "status": "pass",
+  "error_count": 0,
+  "recipe_manifest": "artifacts/reproducibility/fdm1_public_recipe_manifest.json",
+  "candidate_configs": [
+    {
+      "path": "configs/model/idm_masked_diffusion_d2e_prefix320k.yaml",
+      "stage": "idm",
+      "status": "pass",
+      "error_count": 0,
+      "findings": [],
+      "sha256": "0ec419cf8b626ed8e19ee324690bb0733e449cd18d67fc8f62089ffe049b9768"
+    },
+    {
+      "path": "configs/model/fdm_interleaved_autoregressive_d2e_scaffold.yaml",
+      "stage": "fdm",
+      "status": "pass",
+      "error_count": 0,
+      "findings": [],
+      "sha256": "c7f309491ae520c420b15dfa563449a8547ecdd4a56ccf6cd67cf95dbb1cc4be"
+    }
+  ],
+  "findings": [],
+  "claim_boundary": "Recipe-alignment audit only; metric success and full D2E training evidence remain separate G005/G009 gates."
+}

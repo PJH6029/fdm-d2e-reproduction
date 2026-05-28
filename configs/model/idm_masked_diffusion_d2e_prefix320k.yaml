@@ -1,0 +1,65 @@
+{
+  "schema": "masked_diffusion_idm_config.v1",
+  "model_name": "idm_masked_diffusion_d2e_prefix320k",
+  "claim_boundary": "G005 prefix candidate scaffold for public FDM-1 recipe reproduction on D2E; not completion evidence until trained/evaluated and audited.",
+  "train_records": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/train_core.jsonl",
+  "target_records": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl",
+  "output_dir": "outputs/idm_masked_diffusion_d2e_prefix320k",
+  "summary_out": "artifacts/idm/idm_masked_diffusion_d2e_prefix320k_summary.json",
+  "max_train_rows": 320000,
+  "max_target_rows": 320000,
+  "fdm1_recipe": {
+    "stage": "idm",
+    "video_encoder": {
+      "enabled": true,
+      "input": "D2E screen-video frame windows",
+      "public_anchor": "FDM-1 trains directly on video and uses a high-compression video encoder.",
+      "approximation": "D2E prefix scaffold starts from compact luma/window frame tokens and will be replaced or initialized by a masked-compression video encoder when full-scale run is promoted."
+    },
+    "idm_objective": {
+      "type": "masked_diffusion_action_tokens",
+      "conditioning": "all_window_frames_plus_masked_action_tokens",
+      "noncausal_frame_conditioning": true,
+      "corruption": "random mask/noise action-token slots across the labeling window",
+      "loss": "cross_entropy_on_corrupted_action_slots"
+    },
+    "inference_schedule": {
+      "type": "iterative_unmasking",
+      "steps": 16,
+      "selection": "top_k_highest_confidence_masked_slots_per_step"
+    },
+    "action_tokenization": {
+      "keyboard_press_release_tokens": true,
+      "mouse_delta_bins_per_axis": 49,
+      "mouse_delta_binning": "exponential_normalized_xy",
+      "preserve_token_multiplicity": true,
+      "max_action_tokens_per_bin": 16,
+      "include_click_position_auxiliary": true
+    },
+    "fidelity": {
+      "public_vs_inferred_recorded": true,
+      "claims_fdm1_parity": false,
+      "public_components": ["video_encoder", "masked_diffusion_idm", "iterative_unmasking", "key_and_mouse_action_tokens"],
+      "inferred_or_novel_components": ["exact D2E window size", "compact luma bootstrap encoder", "slot budget", "promotion thresholds"]
+    }
+  },
+  "video_encoder": {
+    "arch": "masked_video_token_encoder_scaffold",
+    "frame_window": 16,
+    "patch_size": 16,
+    "token_dim": 256
+  },
+  "masked_diffusion_idm": {
+    "window_bins": 16,
+    "max_action_tokens_per_bin": 16,
+    "mask_probability": 0.65,
+    "random_token_probability": 0.10,
+    "diffusion_steps": 16,
+    "hidden_dim": 768,
+    "transformer_layers": 6,
+    "transformer_heads": 12,
+    "batch_size": 256,
+    "lr": 0.0002,
+    "epochs": 2
+  }
+}

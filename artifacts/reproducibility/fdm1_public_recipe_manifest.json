@@ -1,0 +1,43 @@
+{
+  "schema": "fdm1_public_recipe_manifest.v1",
+  "status": "pass",
+  "sources": [
+    {
+      "id": "fdm1_technical_report",
+      "url": "https://si.inc/posts/fdm1/",
+      "accessed_date": "2026-05-28",
+      "role": "primary_public_recipe_source"
+    },
+    {
+      "id": "d2e_project_page",
+      "url": "https://worv-ai.github.io/d2e/",
+      "accessed_date": "2026-05-28",
+      "role": "D2E dataset/model/metric context"
+    }
+  ],
+  "public_recipe_constraints": {
+    "global": [
+      "Use D2E data to reproduce the public FDM-1 IDM/FDM training recipe shape, not arbitrary easier objectives.",
+      "Record public-vs-inferred-vs-novel choices and never claim closed-source FDM-1 parity."
+    ],
+    "video_encoder": [
+      "Operate on screen video rather than isolated screenshots where feasible.",
+      "Use masked/self-supervised compression-style representation learning or an explicitly documented approximation."
+    ],
+    "idm": [
+      "Condition on all frames in the labeling window and masked action-token slots.",
+      "Use a non-causal masked-diffusion/iterative-unmask objective over action tokens.",
+      "Use an iterative denoising/unmasking inference schedule, targeting the public 16-step schedule when feasible."
+    ],
+    "fdm": [
+      "Train an autoregressive next-action model on interleaved frame and action tokens.",
+      "Use direct video/action-token modeling rather than VLM screenshot CoT/tool-use proxies."
+    ],
+    "action_tokenization": [
+      "Represent key press/release events as tokens.",
+      "Represent mouse movement as discrete binned X/Y components; prefer 49 exponential bins per public FDM-1 description where feasible.",
+      "Consider click-position/trajectory auxiliary prediction for mouse movements when feasible."
+    ]
+  },
+  "claim_boundary": "This manifest captures only publicly described recipe constraints; it is not evidence of FDM-1 internal parity or metric success."
+}

@@ -19,6 +19,18 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Trained policies must eventually execute stable action sequences in desktop/game harnesses, not only offline metrics.
 - Final package must include method, baseline comparison, ablation/scaling curves, failure analysis, reproducible training pipeline, and trained checkpoints.
 
+## 2026-05-28 course correction: FDM-1 recipe fidelity is global
+
+- Keep the existing renewed ultragoal stories and ordering, but reinterpret every implementation choice through this mission: **reproduce the publicly described FDM-1 IDM/FDM training recipe on the D2E dataset**, then beat D2E paper/repo G-IDM targets with evidence-bound D2E training/evaluation.
+- Do not choose arbitrary architectures/objectives merely because they are easy to implement or locally improve a metric. Novel exploration is allowed only to fill unpublished FDM-1 details in service of the public recipe.
+- Public FDM-1 recipe anchors to preserve:
+  - train/use a video encoder for high-compression screen video representations, with masked/self-supervised compression-style objectives where possible;
+  - IDM is non-causal and predicts actions from all frames plus masked action tokens using a masked-diffusion/iterative unmasking objective and inference schedule;
+  - FDM is an autoregressive next-action model over **interleaved frame and action tokens**, not a screenshot/VLM/CoT/tool-use proxy;
+  - action tokens include key press/release and mouse deltas; mouse movement should be represented as discrete binned X/Y components, with click-position/trajectory auxiliary targets considered when feasible.
+- Existing supervised MLP/luma-conv, heuristic, table, and post-hoc ensemble branches are now diagnostic baselines or failure evidence only. Future completion evidence for G005+ must include an FDM-1 recipe-alignment manifest/audit proving that the candidate uses the recipe-shaped architecture/objective, in addition to metric gates.
+- No FDM-1 parity claim: because FDM-1 internals are not public, record which details are directly public, which are inferred, and which are novel approximations.
+
 ## Current ultragoal gates
 
 - Active aggregate Codex/OMX ultragoal covers G001–G009 in `.omx/ultragoal/goals.json`; do not complete the aggregate Codex goal until all stories are complete.

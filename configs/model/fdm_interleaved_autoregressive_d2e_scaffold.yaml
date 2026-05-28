@@ -1,0 +1,54 @@
+{
+  "schema": "fdm_interleaved_autoregressive_config.v1",
+  "model_name": "fdm_interleaved_autoregressive_d2e_scaffold",
+  "claim_boundary": "G008/G009 recipe scaffold for public FDM-1 forward-dynamics reproduction on D2E; not completion evidence until trained/evaluated and audited.",
+  "train_records": "outputs/data/d2e_full_corpus/train_core.jsonl",
+  "pseudo_labeled_records": "outputs/idm_masked_diffusion_d2e_full/pseudolabels.jsonl",
+  "target_records": "outputs/data/d2e_full_corpus/target_all_eval.jsonl",
+  "output_dir": "outputs/fdm_interleaved_autoregressive_d2e",
+  "summary_out": "artifacts/fdm/fdm_interleaved_autoregressive_d2e_summary.json",
+  "fdm1_recipe": {
+    "stage": "fdm",
+    "video_encoder": {
+      "enabled": true,
+      "input": "D2E screen-video frame/action token streams",
+      "public_anchor": "FDM-1 trains directly on video and action tokens rather than screenshot VLM tool proxies.",
+      "approximation": "Use the same D2E masked-compression/video-token encoder family as the IDM when promoted to full training."
+    },
+    "fdm_objective": {
+      "type": "autoregressive_next_action_prediction",
+      "interleaved_frame_action_tokens": true,
+      "direct_video_action_modeling": true,
+      "uses_vlm_cot_or_tool_proxy": false,
+      "training_stream": "interleave video frame tokens and ground-truth or calibrated IDM pseudo-label action tokens; predict next action token autoregressively"
+    },
+    "action_tokenization": {
+      "keyboard_press_release_tokens": true,
+      "mouse_delta_bins_per_axis": 49,
+      "mouse_delta_binning": "exponential_normalized_xy",
+      "include_click_position_auxiliary": true,
+      "source": "fdm_d2e.training.masked_diffusion_idm"
+    },
+    "fidelity": {
+      "public_vs_inferred_recorded": true,
+      "claims_fdm1_parity": false,
+      "public_components": ["interleaved_frame_action_training", "autoregressive_next_action_prediction", "direct_video_action_tokens", "key_and_mouse_action_tokens"],
+      "inferred_or_novel_components": ["exact D2E context window", "token packing strategy", "loss weighting", "no-button false-positive calibration"]
+    }
+  },
+  "transformer": {
+    "context_tokens": 32768,
+    "hidden_dim": 768,
+    "layers": 12,
+    "heads": 12,
+    "dropout": 0.1,
+    "causal": true
+  },
+  "training": {
+    "batch_tokens": 131072,
+    "lr": 0.00015,
+    "epochs": 2,
+    "mask_action_events_to_slow_overfitting": true,
+    "calibrate_no_button_false_positive_rate": true
+  }
+}

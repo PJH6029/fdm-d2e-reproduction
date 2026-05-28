@@ -1,0 +1,15 @@
+{
+  "schema": "fdm1_recipe_alignment_config.v1",
+  "recipe_manifest": "artifacts/reproducibility/fdm1_public_recipe_manifest.json",
+  "output_path": "artifacts/reproducibility/fdm1_recipe_alignment_audit.json",
+  "candidate_configs": [
+    {
+      "stage": "idm",
+      "path": "configs/model/idm_masked_diffusion_d2e_prefix320k.yaml"
+    },
+    {
+      "stage": "fdm",
+      "path": "configs/model/fdm_interleaved_autoregressive_d2e_scaffold.yaml"
+    }
+  ]
+}
