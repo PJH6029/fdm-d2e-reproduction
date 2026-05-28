@@ -70,10 +70,18 @@
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_shard0_progress.json",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_shard1_progress.json",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_shard0.log",
-        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_shard1.log"
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_shard1.log",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_run_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_gpu_monitor.csv",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_shard0_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_shard1_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_shard0_progress.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_shard1_progress.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_shard0.log",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_shard1.log"
       ],
       "claim_boundary": "Materialization/code-path gates only; no trained-model metric evidence; late sharded monitor is not a strong GPU-utilization claim.",
-      "decision": "sharded_extraction_works_but_needs_proper_launcher_and_monitor_before_scale",
+      "decision": "launcher_validated_but_dinov2_materialization_needs_larger_or_tensor_cached_gate_before_scale",
       "finding_codes": [
         "materializer_works_on_real_rows",
         "torchhub_dinov2_works_on_debug_gpu",
@@ -82,23 +90,52 @@
         "two_gpu_debug_shards_materialized_1024_rows",
         "late_monitor_prevents_strong_utilization_claim",
         "fail_closed_shard_launcher_added",
-        "prefix_runner_can_use_monolithic_or_sharded_materialization"
+        "prefix_runner_can_use_monolithic_or_sharded_materialization",
+        "fail_closed_shard_launcher_gpu_gate_passed",
+        "prelaunch_monitor_validated",
+        "short_dinov2_gate_still_low_mean_gpu_utilization"
       ],
       "gpu_monitor_artifacts": [
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_gpu_monitor.csv",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_b512_gpu_monitor.csv",
-        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_late_gpu_monitor.csv"
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_late_gpu_monitor.csv",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_gpu_monitor.csv"
       ],
       "implementation_artifacts": [
         "scripts/run_frame_embedding_shards.py",
         "scripts/run_g005_idm_frozen_frame_embedding_prefix.sh",
         "tests/test_frame_embedding_shard_launcher.py"
       ],
+      "launcher_debug_gate": {
+        "checkout": "4c84904",
+        "combined_rows": 1024,
+        "elapsed_seconds": 26.183505058288574,
+        "gpu_utilization_by_index": {
+          "0": {
+            "max": 64.0,
+            "mean": 2.576923076923077,
+            "samples": 26
+          },
+          "1": {
+            "max": 3.0,
+            "mean": 0.11538461538461539,
+            "samples": 26
+          }
+        },
+        "monitor_quality": "valid_prelaunch_monitor_short_sample_low_mean_utilization",
+        "monitor_started_before_shards": true,
+        "namespace": "p-debug",
+        "pod": "debug-rsv-jeonghunpark-20260527-1ea75c",
+        "reservation_id": "rsv-jeonghunpark-20260527-1ea75c",
+        "rows_written": 1024,
+        "shard_count": 2
+      },
       "name": "frozen_frame_embedding_materialization_gates",
       "rows": {
         "dinov2_small_compact_luma_cpu": 16,
         "dinov2_torchhub_gpu_b128": 1024,
         "dinov2_torchhub_gpu_b512": 1024,
+        "dinov2_torchhub_gpu_launcher_2x512_total": 1024,
         "dinov2_torchhub_gpu_sharded_2x512_total": 1024,
         "dummy_compact_luma": 1000,
         "hf_tiny_compact_luma": 16
@@ -119,11 +156,12 @@
           512
         ]
       },
-      "status": "pass_sharded_codepath_late_monitor",
+      "status": "pass_launcher_monitor_validated_low_mean_util",
       "timing_seconds": {
         "dinov2_small_compact_luma_cpu_16_rows": 280.816091299057,
         "dinov2_torchhub_gpu_b128_1024_rows": 45.7456533908844,
         "dinov2_torchhub_gpu_b512_1024_rows": 46.3034188747406,
+        "dinov2_torchhub_gpu_launcher_wall_clock_1024_rows": 26.183505058288574,
         "dinov2_torchhub_gpu_sharded_shard0_512_rows": 26.275585412979126,
         "dinov2_torchhub_gpu_sharded_shard1_512_rows": 26.702742338180542,
         "dinov2_torchhub_gpu_sharded_wall_clock_1024_rows_approx": 26.702742338180542
@@ -1072,7 +1110,7 @@
     }
   ],
   "recommended_next_actions": [
-    "Run a small DINO shard-launcher gate with pre-launch GPU monitoring before any larger frozen-frame prefix extraction.",
+    "Before full frozen-frame extraction, run a larger amortization/tensor-cache gate with the validated shard launcher; do not assume high H200 utilization from 1k rows.",
     "Do not promote threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, or sequence-prior action-history prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Do not reserve H200s for a simple NEP/label-offset branch: target autocorr at +100ms has keyboard=0.1745, mouse-button=0.0215, Pearson X/Y=0.4149/0.3862 and no nonzero shift meets paper targets on the 320k prefix.",
     "Next G005 branch must change the supervision/modeling problem, not just add causal action history: investigate teacher-assisted event decoding or per-recording latent state estimation that is causal at inference and validated on prefix rows before full 4xH200.",
@@ -1082,5 +1120,5 @@
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779929666.0805037
+  "updated_at_epoch": 1779929881.0862002
 }

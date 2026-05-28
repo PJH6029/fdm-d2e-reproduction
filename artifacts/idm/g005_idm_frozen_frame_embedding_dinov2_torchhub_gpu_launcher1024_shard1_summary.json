@@ -1,0 +1,57 @@
+{
+  "schema": "g005_frozen_frame_embedding_materializer.v1",
+  "status": "pass",
+  "error_count": 0,
+  "errors": [],
+  "source_label": "g005_dinov2_launcher1024_shard1",
+  "input": {
+    "path": "/tmp/g005_target_sample1024.jsonl",
+    "bytes": 20960300,
+    "mtime_ns": 1779928174128495843,
+    "sha256": "2caed2a3510bb130dc22e836ab874058d00686bb59b3c8d3e8f7ff6f53815cc5"
+  },
+  "output": {
+    "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-4c84904-frameembed-launcher-debug/outputs/data/g005_debug_dinov2_launcher1024/shards/shard_0001.jsonl",
+    "bytes": 19842257,
+    "mtime_ns": 1779929809000000000,
+    "sha256": "481f6ec099211d0911b6e0b7ede02a646b98102367582bbdd1a82ed825f75368"
+  },
+  "rows_seen": 512,
+  "source_rows_scanned": 1024,
+  "source_rows_skipped": 512,
+  "rows_written": 512,
+  "feature_override_rows": 512,
+  "feature_dim": 2120,
+  "unique_feature_lengths": [
+    2120
+  ],
+  "embedding_dim_per_frame": 384,
+  "backend": "dinov2-torchhub",
+  "model_id": "facebook/dinov2-small",
+  "frame_offsets": [
+    0,
+    2
+  ],
+  "frame_source": "compact-luma",
+  "image_size": 224,
+  "frame_fps": 20,
+  "missing_frame_policy": "zero",
+  "path_remaps": [],
+  "missing_frames": 0,
+  "video_restarts": 0,
+  "batch_size": 128,
+  "embedding_pooling": "cls",
+  "hf_preprocess": null,
+  "normalize_embeddings": true,
+  "include_embedding_deltas": true,
+  "include_summary_features": true,
+  "summary_feature_mode": "summary_compact_luma16_pair_shift_time_state_duration_prior_action",
+  "max_rows": 512,
+  "skip_rows": 512,
+  "round_digits": 6,
+  "dataset_fingerprint": "da0b043729e15fc56c8cbcfdf4e1105ff9b63508309ef05cf393f6f367c62d83",
+  "started_at_unix": 1779929784.683633,
+  "finished_at_unix": 1779929809.6754866,
+  "elapsed_seconds": 24.991853952407837,
+  "claim_boundary": "Frozen frame-embedding materialization is a prefix-gated G005 diagnostic/preparation artifact. It is not trained-model evidence until a downstream IDM run beats the paper-target metrics."
+}

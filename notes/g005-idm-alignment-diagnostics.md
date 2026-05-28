@@ -595,3 +595,34 @@ tests/test_training_run_scripts.py` => 30 passed.
 Claim boundary: launcher hardening only. The next GPU step must rerun a small
 sharded DINO materialization with this launcher and valid pre-launch monitoring
 before scaling to 320k train/target extraction or training.
+
+### 2026-05-28 KST — shard-launcher debug GPU gate
+
+Reran the 1,024-row DINO materialization gate with the new fail-closed launcher
+on the still-active debug reservation `rsv-jeonghunpark-20260527-1ea75c`
+(before the 11:00 KST expiration). The pod worktree was reset to `4c84904`.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_run_summary.json`
+  — `status=pass`, `rows_written=1024`, `combined_rows=1024`, `shard_count=2`,
+  elapsed `26.18s`, `monitor_started_before_shards=true`.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_shard0_summary.json`
+  and `..._shard1_summary.json` — both `status=pass`, `rows_written=512`;
+  shard 1 records `source_rows_skipped=512`, proving the contiguous skip range.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_gpu_monitor.csv`
+  — pre-launch monitor with 52 samples over GPUs 0 and 1.
+- Per-shard logs/progress files record the exact materializer commands and
+  torchhub DINO cache path.
+
+Finding: the launcher fixes the previous evidence bug: it waits on child PIDs,
+concatenates the shard outputs, and captures a monitor from before launch. The
+short 1,024-row gate still shows low mean utilization (GPU0 mean `2.58%`, GPU1
+mean `0.12%`, max `64%`/`3%`) even though both GPUs allocate DINO memory, so do
+not scale straight to a full 320k train+target extraction expecting high H200
+utilization. Next gate should either use larger per-shard row counts to amortize
+model load/JSON overhead or write/read tensor caches directly, and it must keep
+the same launcher summary/monitor evidence.
+
+Claim boundary: materialization launcher validation only; no trained IDM metric
+evidence and no G005 success claim.
