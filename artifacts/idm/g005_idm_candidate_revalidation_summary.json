@@ -1,6 +1,6 @@
 {
   "active_goal_id": "G005-g014-idm-full-paper-target",
-  "candidate_count": 21,
+  "candidate_count": 22,
   "claim_boundary": "Revalidation/ranking artifact only; no G005 success claim and no FDM-1 parity claim.",
   "created_at_epoch": 1779902282.2046466,
   "diagnostic_artifacts": [
@@ -869,6 +869,60 @@
       "name": "button_hash_sequence_prefix50k",
       "rows": 50000,
       "specialist_button_delta_vs_base": -0.08091923221012595,
+      "status": "pass",
+      "train_rows": 320000
+    },
+    {
+      "alignment": {
+        "examples": [],
+        "missing_base_prediction_rows": 0,
+        "sequence_id_mismatches": 0
+      },
+      "artifact": "artifacts/idm/g005_idm_key_hash_sequence_countaware_diagnostic_prefix50k_e2_lr01.json",
+      "best_count_delta_vs_noncount_prefix50k": -0.0057489859376604335,
+      "best_count_metrics": {
+        "keyboard_accuracy": 0.19353091387448734,
+        "mouse_button_accuracy": 0.1613823715916297,
+        "pearson_x": 0.7598068765377537,
+        "pearson_y": 0.6793739696281583,
+        "policy": "press_count_union_base_keys_press0.35_double0.95",
+        "scale_ratio_x": 1.2942006105201567,
+        "scale_ratio_y": 1.244073424630026,
+        "strict_mouse_button_f1": 0.267483978824185,
+        "strict_no_button_fpr": 0.0389908256880734
+      },
+      "best_count_policy": "press_count_union_base_keys_press0.35_double0.95",
+      "best_metrics": {
+        "keyboard_accuracy": 0.19446192573945878,
+        "mouse_button_accuracy": 0.1613823715916297,
+        "pearson_x": 0.7598068765377537,
+        "pearson_y": 0.6793739696281583,
+        "policy": "press_only_union_base_keys_press0.35",
+        "scale_ratio_x": 1.2942006105201567,
+        "scale_ratio_y": 1.244073424630026,
+        "strict_mouse_button_f1": 0.267483978824185,
+        "strict_no_button_fpr": 0.0389908256880734
+      },
+      "best_policy": "press_only_union_base_keys_press0.35",
+      "claim_boundary": "CPU/storage-shell aligned-prefix count-aware key diagnostic only; no G005 completion claim and no GPU/full-corpus promotion evidence.",
+      "comparison_artifact": "artifacts/idm/g005_idm_key_hash_sequence_diagnostic_prefix50k_e2_lr01.json",
+      "decision": "reject_countaware_double_press_hash",
+      "dim": 524288,
+      "epochs": 2,
+      "finding_codes": [
+        "target_key_multiplicity_bottleneck_confirmed",
+        "countaware_hash_aligned_prefix_has_zero_sequence_mismatches",
+        "countaware_hash_underperforms_noncount_hash_gate",
+        "do_not_reserve_gpu_for_countaware_hash_specialist"
+      ],
+      "keyboard_delta_vs_noncount_prefix50k": -0.004817974072688996,
+      "learning_rate": 0.1,
+      "model_examples": 555438,
+      "model_positive_double_press": 31850,
+      "model_positive_press": 104284,
+      "model_positive_release": 36972,
+      "name": "key_hash_sequence_countaware_prefix50k",
+      "rows": 50000,
       "status": "pass",
       "train_rows": 320000
     }
@@ -2043,6 +2097,46 @@
           "target": 0.957
         }
       ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": "artifacts/idm/g005_idm_key_hash_sequence_countaware_diagnostic_prefix50k_e2_lr01.json",
+      "audit_status": "rejected_prefix_diagnostic",
+      "button_gap_to_paper": 0.7956176284083702,
+      "candidate": "key_hash_sequence_countaware_prefix50k",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.5355380742605412,
+      "metrics_path": "artifacts/idm/g005_idm_key_hash_sequence_countaware_diagnostic_prefix50k_e2_lr01.json",
+      "note": "Rejected count-aware double-press hash: key multiplicity is real, but the best 50k policy reaches keyboard 0.1945, below the non-count held-hash 0.1993 and far below paper target.",
+      "paper_keyboard_accuracy": 0.19446192573945878,
+      "paper_mouse_button_accuracy": 0.1613823715916297,
+      "paper_mouse_pearson_x": 0.7598068765377537,
+      "paper_mouse_pearson_y": 0.6793739696281583,
+      "paper_scale_ratio_x": 1.2942006105201567,
+      "paper_scale_ratio_y": 1.244073424630026,
+      "pearson_x_gap_to_paper": 0.036193123462246346,
+      "pearson_y_gap_to_paper": 0.1036260303718417,
+      "rows": 50000,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.267483978824185,
+      "strict_no_button_fpr": 0.0389908256880734,
+      "top_audit_findings": [
+        {
+          "best_count_keyboard": 0.19353091387448734,
+          "best_count_policy": "press_count_union_base_keys_press0.35_double0.95",
+          "code": "countaware_regresses_vs_noncount_hash",
+          "countaware_keyboard": 0.19446192573945878,
+          "noncount_keyboard": 0.19927989981214778,
+          "severity": "warning"
+        },
+        {
+          "actual": 0.19446192573945878,
+          "code": "paper_target_not_met",
+          "name": "keyboard_accuracy",
+          "severity": "error",
+          "target": 0.73
+        }
+      ]
     }
   ],
   "recommended_next_actions": [
@@ -2056,10 +2150,11 @@
     "Scaling the held-only learned hash specialist to 2M train rows is rejected: aligned 320k keyboard=0.2222, below the prior 320k/e2 hash gate 0.2337 and far below paper target; future work needs a new sequence-state or teacher-assisted mechanism, not more rows for this hash model.",
     "Phase-aware held-key repeat heuristics are also rejected: on the aligned 50k prefix the best phase policy improves keyboard by only +0.00026 over base_all (0.15505 -> 0.15530), far below paper target. Do not spend GPU on handcrafted repeat phase features; next branch needs learned sequence/teacher-assisted supervision or released-GIDM distillation.",
     "Mouse-button hash sequence specialist is rejected: on the aligned 50k prefix, base_all remains best at button=0.1614, while the best specialist drops to 0.0805 and risks no-button FPR >0.10; button endpoint needs a different learned head/teacher signal.",
+    "Count-aware double-press key hashing is rejected: target key multiplicity is real (16,532 count=2 key-token cases in the 320k prefix), but the aligned 50k count-aware gate reaches keyboard=0.1945, below non-count hash=0.1993; solving this needs a stronger sequence/teacher model, not another hash head.",
     "Do not reserve H200s for threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, sequence-prior action history, or frozen-DINO-only prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779947708.4359357
+  "updated_at_epoch": 1779948410.317721
 }

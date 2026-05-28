@@ -1032,3 +1032,30 @@ raises no-button FPR to `0.10274`, exceeding the desired <=`0.10` gate.
 Decision: do not reserve GPUs for this mouse-button hash specialist. The button
 endpoint needs a different learned head, calibrated logits, or teacher signal;
 prior-button-state hashing is not sufficient.
+
+### 2026-05-28 KST — count-aware double-press hash rejected
+
+Found a structural issue in earlier key-hash diagnostics: they deduped key tokens
+before paper-metric evaluation, while D2E target bins can contain repeated key
+presses. On the aligned 320k target prefix, `16,532` key-token cases have count
+`2` and `16,511` rows contain at least one repeated key token. Added a
+double-press hash head and count-preserving max-count union policy, then ran a
+CPU/storage-shell aligned 50k gate.
+
+Evidence:
+
+- `src/fdm_d2e/eval/key_hash_sequence_diagnostic.py`
+- `scripts/build_g005_key_hash_sequence_diagnostic.py`
+- `tests/test_key_hash_sequence_diagnostic.py`
+- `artifacts/idm/g005_idm_key_hash_sequence_countaware_diagnostic_prefix50k_e2_lr01.json`
+
+Result: reject this count-aware hash branch. It trains on `555,438` held-key
+examples with `31,850` double-press positives and has zero sequence-id
+mismatches, but best overall policy reaches keyboard `0.19446`, below the
+non-count held-hash 50k result `0.19928`. The best explicit count-aware policy
+(`press_count_union_base_keys_press0.35_double0.95`) reaches only `0.19353`.
+
+Decision: count multiplicity is a real bottleneck, but a separate hashed
+double-press head does not solve it. Next G005 branch should use a stronger
+sequence/teacher model that jointly predicts key identity, repeat count, release,
+and closed-loop state, rather than additive hash heads.
