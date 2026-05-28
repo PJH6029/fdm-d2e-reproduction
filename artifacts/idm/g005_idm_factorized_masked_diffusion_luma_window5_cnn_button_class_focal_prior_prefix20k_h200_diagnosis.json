@@ -1,0 +1,227 @@
+{
+  "button_class_conditional_prior_correction": true,
+  "button_class_loss": "focal",
+  "calibration_selected_row": {
+    "budget": {
+      "budget_rate": 0.07250000000000001,
+      "max_forced_events": 146,
+      "rate_source_positive_rate": 0.029,
+      "rate_source_positives": 58,
+      "rate_source_rows": 2000,
+      "score_threshold": 0.28463743532668834,
+      "threshold_candidate_count": 2000
+    },
+    "max_false_positive_rate": 0.1,
+    "metrics": {
+      "f1": 0.06862745098039216,
+      "false_positive_rate": 0.07157569515962925,
+      "fbeta": 0.10479041916167664,
+      "fn": 51,
+      "fp": 139,
+      "negative_examples": 1942,
+      "positive_examples": 58,
+      "precision": 0.04794520547945205,
+      "predicted_examples": 146,
+      "recall": 0.1206896551724138,
+      "tn": 1803,
+      "tp": 7
+    },
+    "multiplier": 2.5,
+    "score": 0.10479041916167664
+  },
+  "claim_boundary": "Negative/diagnostic 1xH200 prefix evidence. Focal/prior correction preserved FPR<=0.10 and improved keyboard over relaxed-budget probe, but button predictions still collapsed to MOUSE_LEFT_DOWN with zero exact/semantic target TP; not G005 completion evidence.",
+  "diagnostic_best_offset_by_semantic_overlap": {
+    "any_token_overlap_wrong_examples": 1,
+    "both_positive_no_overlap_examples": 2,
+    "exact_true_positive_examples": 0,
+    "f1": 0.0,
+    "false_negative_examples": 50,
+    "false_positive_examples": 146,
+    "ground_truth_examples": 50,
+    "no_button_false_positive_examples": 143,
+    "no_button_false_positive_rate": 0.07352185089974293,
+    "offset": 5,
+    "precision": 0.0,
+    "predicted_examples": 146,
+    "recall": 0.0,
+    "rows": 1995,
+    "semantic_any_button_overlap_examples": 1,
+    "semantic_any_button_overlap_rate_on_gt": 0.02
+  },
+  "diagnostic_exact_true_positive_examples": 0,
+  "diagnostic_mapping": {
+    "best_one_to_one_mapping": {
+      "mapping": {
+        "MOUSE_LEFT_DOWN": "MOUSE_RIGHT_DOWN"
+      },
+      "metrics": {
+        "any_token_overlap_wrong_examples": 0,
+        "both_positive_no_overlap_examples": 1,
+        "exact_true_positive_examples": 1,
+        "f1": 0.01020408163265306,
+        "false_negative_examples": 49,
+        "false_positive_examples": 145,
+        "ground_truth_examples": 50,
+        "no_button_false_positive_examples": 144,
+        "no_button_false_positive_rate": 0.07384615384615385,
+        "precision": 0.00684931506849315,
+        "predicted_examples": 146,
+        "recall": 0.02,
+        "rows": 2000,
+        "semantic_any_button_overlap_examples": 1,
+        "semantic_any_button_overlap_rate_on_gt": 0.02,
+        "top_ground_truth_button_tokens": [
+          [
+            "MOUSE_RIGHT_DOWN",
+            16
+          ],
+          [
+            "MOUSE_RIGHT_UP",
+            16
+          ],
+          [
+            "MOUSE_LEFT_DOWN",
+            8
+          ],
+          [
+            "MOUSE_LEFT_UP",
+            8
+          ],
+          [
+            "MOUSE_MIDDLE_DOWN",
+            5
+          ],
+          [
+            "MOUSE_MIDDLE_UP",
+            5
+          ]
+        ],
+        "top_predicted_button_tokens": [
+          [
+            "MOUSE_RIGHT_DOWN",
+            146
+          ]
+        ],
+        "top_predicted_vs_ground_truth_pairs": [
+          [
+            "MOUSE_RIGHT_DOWN => MOUSE_RIGHT_DOWN",
+            1
+          ],
+          [
+            "MOUSE_RIGHT_DOWN => MOUSE_RIGHT_UP",
+            1
+          ]
+        ]
+      }
+    },
+    "claim_boundary": "Mapping diagnostics use target labels to diagnose semantic/ranking failures only; mappings are not valid calibration/training evidence unless revalidated without target leakage.",
+    "cooccurrence_top": [
+      [
+        "MOUSE_LEFT_DOWN=>MOUSE_RIGHT_DOWN",
+        1
+      ],
+      [
+        "MOUSE_LEFT_DOWN=>MOUSE_RIGHT_UP",
+        1
+      ]
+    ],
+    "greedy_mapping": {
+      "MOUSE_LEFT_DOWN": "MOUSE_RIGHT_UP"
+    },
+    "greedy_metrics": {
+      "any_token_overlap_wrong_examples": 0,
+      "both_positive_no_overlap_examples": 1,
+      "exact_true_positive_examples": 1,
+      "f1": 0.01020408163265306,
+      "false_negative_examples": 49,
+      "false_positive_examples": 145,
+      "ground_truth_examples": 50,
+      "no_button_false_positive_examples": 144,
+      "no_button_false_positive_rate": 0.07384615384615385,
+      "precision": 0.00684931506849315,
+      "predicted_examples": 146,
+      "recall": 0.02,
+      "rows": 2000,
+      "semantic_any_button_overlap_examples": 1,
+      "semantic_any_button_overlap_rate_on_gt": 0.02,
+      "top_ground_truth_button_tokens": [
+        [
+          "MOUSE_RIGHT_DOWN",
+          16
+        ],
+        [
+          "MOUSE_RIGHT_UP",
+          16
+        ],
+        [
+          "MOUSE_LEFT_DOWN",
+          8
+        ],
+        [
+          "MOUSE_LEFT_UP",
+          8
+        ],
+        [
+          "MOUSE_MIDDLE_DOWN",
+          5
+        ],
+        [
+          "MOUSE_MIDDLE_UP",
+          5
+        ]
+      ],
+      "top_predicted_button_tokens": [
+        [
+          "MOUSE_RIGHT_UP",
+          146
+        ]
+      ],
+      "top_predicted_vs_ground_truth_pairs": [
+        [
+          "MOUSE_RIGHT_UP => MOUSE_RIGHT_DOWN",
+          1
+        ],
+        [
+          "MOUSE_RIGHT_UP => MOUSE_RIGHT_UP",
+          1
+        ]
+      ]
+    },
+    "ground_truth_vocab": [
+      "MOUSE_LEFT_DOWN",
+      "MOUSE_LEFT_UP",
+      "MOUSE_MIDDLE_DOWN",
+      "MOUSE_MIDDLE_UP",
+      "MOUSE_RIGHT_DOWN",
+      "MOUSE_RIGHT_UP"
+    ],
+    "predicted_vocab": [
+      "MOUSE_LEFT_DOWN"
+    ]
+  },
+  "diagnostic_predicted_examples": 146,
+  "diagnostic_semantic_overlap_examples": 0,
+  "diagnostic_top_predicted_button_tokens": [
+    [
+      "MOUSE_LEFT_DOWN",
+      146
+    ]
+  ],
+  "git_head": "ac5a35f",
+  "keyboard_key_accuracy": 0.020469596628537028,
+  "mouse_button_accuracy": 0.0,
+  "reservation_id": "rsv-jeonghunpark-20260528-e44aec",
+  "schema": "g005_idm_focal_prior_prefix_diagnosis.v1",
+  "selected_budget_max_forced_events": 146,
+  "selected_budget_multiplier": 2.5,
+  "selected_budget_score_threshold": 0.28681713287580307,
+  "status": "non_terminal_fpr_pass_recall_fail",
+  "strict_exact_true_positive_examples": 0,
+  "strict_mouse_button_f1": 0.0,
+  "strict_mouse_button_recall": 0.0,
+  "strict_no_button_fpr": 0.07384615384615385,
+  "strict_predicted_button_examples": 146,
+  "target_rows": 2000,
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/o3u03fjy",
+  "wandb_status_path": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix20k_h200_wandb_status.json"
+}
