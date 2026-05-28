@@ -1,0 +1,54 @@
+{
+  "schema": "g005_state_luma_pair_perrow_prior_delta_probe.v1",
+  "status": "pass",
+  "rows": 1000000,
+  "sequence_id_mismatches": 0,
+  "key_event_rows": 811996,
+  "button_event_rows": 291596,
+  "groups": {
+    "all": {
+      "rows": 1000000,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.4139330464343594,
+          "pearson_y": 0.05052794580545932,
+          "scale_ratio_x": 1.223771547208333,
+          "scale_ratio_y": 5.652136099509809,
+          "sample_count": 920221,
+          "scale_sample_count": 1000000
+        },
+        "keyboard": {
+          "key_accuracy": 0.0222667259246412,
+          "sample_count": 1845040
+        },
+        "mouse_button": {
+          "button_accuracy": 0.05179847951889255,
+          "sample_count": 334894
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.02092425318853818,
+          "num_examples": 177354
+        },
+        "mouse_button": {
+          "accuracy": 0.44467194872251403,
+          "num_examples": 33699,
+          "predicted_examples": 291596,
+          "exact_true_positive_examples": 14985,
+          "false_positive_examples": 276611,
+          "false_negative_examples": 18714,
+          "precision": 0.051389593821588773,
+          "recall": 0.44467194872251403,
+          "f1": 0.09213175732796385,
+          "no_button_examples": 966301,
+          "no_button_false_positive_examples": 272491,
+          "no_button_false_positive_rate": 0.28199391286979936
+        }
+      }
+    }
+  },
+  "wall_clock_seconds": 216.95877504348755,
+  "claim_boundary": "Leaky diagnostic: compares predicted held-state to each target row prior_action_tokens; not G005 completion evidence."
+}
