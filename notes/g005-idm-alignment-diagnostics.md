@@ -901,3 +901,33 @@ small to justify an H200 run.
 
 Decision: learned/teacher-assisted key-repeat supervision remains the next
 viable direction; handcrafted hold-age/phase tables are exhausted.
+
+### 2026-05-28 KST — learned hashed key-repeat diagnostic improves but remains far below target
+
+After rejecting handcrafted hold/phase tables, implemented a lightweight learned
+hashed logistic key specialist that predicts held-key press/release events from
+causal event-state-duration features and composes with the aligned
+`event_state_duration_context` base stream.
+
+Evidence:
+
+- `src/fdm_d2e/eval/key_hash_sequence_diagnostic.py`
+- `scripts/build_g005_key_hash_sequence_diagnostic.py`
+- `tests/test_key_hash_sequence_diagnostic.py`
+- `artifacts/idm/g005_idm_key_hash_sequence_diagnostic_prefix50k.json`
+- `artifacts/idm/g005_idm_key_hash_sequence_diagnostic_prefix50k_e2_lr01.json`
+- `artifacts/idm/g005_idm_key_hash_sequence_diagnostic_prefix320k_e2_lr01.json`
+
+Result: promising diagnostic, not success. On the aligned 320k prefix, the best
+policy `press_only_union_base_keys_press0.65` improves keyboard from base
+`0.1990` to `0.2337` with zero sequence-id mismatches, while preserving base
+mouse-button `0.1726`, Pearson X/Y `0.8002/0.6427`, strict button F1 `0.2809`,
+and no-button FPR `0.0375`. This is the first repeat-key branch to materially
+beat the aligned base keyboard metric.
+
+However, it remains far below the paper keyboard target `0.73`, does not improve
+mouse-button, and leaves Pearson Y below the paper target. Do not checkpoint G005
+or promote this exact CPU model as a final candidate. The next branch should use
+this as evidence for a stronger learned sequence/teacher-assisted key-repeat
+model (e.g. neural sequence specialist, released-GIDM teacher targets, or richer
+per-key temporal state) and must prefix-gate against the 320k aligned metrics.

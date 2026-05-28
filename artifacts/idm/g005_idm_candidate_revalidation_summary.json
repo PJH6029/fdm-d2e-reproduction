@@ -615,6 +615,47 @@
       "name": "key_phase_repeat_diagnostic_prefix50k",
       "rows": 50000,
       "status": "pass"
+    },
+    {
+      "alignment": {
+        "examples": [],
+        "missing_base_prediction_rows": 0,
+        "sequence_id_mismatches": 0
+      },
+      "artifact": "artifacts/idm/g005_idm_key_hash_sequence_diagnostic_prefix320k_e2_lr01.json",
+      "base_metrics": {
+        "keyboard_accuracy": 0.19900156833292837,
+        "mouse_button_accuracy": 0.17256699910195208,
+        "pearson_x": 0.8002422301033372,
+        "pearson_y": 0.6427245596480502,
+        "scale_ratio_x": 1.0885514252305015,
+        "scale_ratio_y": 1.020365052063936,
+        "strict_mouse_button_f1": 0.2809433495505896,
+        "strict_no_button_fpr": 0.03749847397402865
+      },
+      "best_metrics": {
+        "keyboard_accuracy": 0.23365102005532504,
+        "mouse_button_accuracy": 0.17256699910195208,
+        "pearson_x": 0.8002422301033372,
+        "pearson_y": 0.6427245596480502,
+        "scale_ratio_x": 1.0885514252305015,
+        "scale_ratio_y": 1.020365052063936,
+        "strict_mouse_button_f1": 0.2809433495505896,
+        "strict_no_button_fpr": 0.03749847397402865
+      },
+      "best_policy": "press_only_union_base_keys_press0.65",
+      "claim_boundary": "CPU prefix diagnostic only; not full-corpus 4xH200 evidence and not G005 completion.",
+      "decision": "promising_but_not_paper_target_continue_learned_sequence_branch",
+      "finding_codes": [
+        "learned_hash_key_repeat_improves_keyboard_prefix",
+        "still_below_paper_keyboard_target",
+        "motion_y_still_below_paper_target",
+        "zero_sequence_id_mismatches"
+      ],
+      "keyboard_delta_vs_base": 0.03464945172239667,
+      "name": "key_hash_sequence_diagnostic_prefix320k",
+      "rows": 320000,
+      "status": "pass"
     }
   ],
   "paper_targets": {
@@ -1621,11 +1662,12 @@
     "Keep the native-luma tensor-cache materialization path as infrastructure only; it solves throughput/cache issues but not the IDM paper-target metric problem.",
     "Key-event taxonomy shows the dominant keyboard blocker is held-repeat/same-bin key decoding: only 36.5% of key tokens are visible to prior->next state differencing, while an oracle repeat/tap key decoder plus state-delta buttons reaches keyboard=0.7418 and button=0.9754 on the 320k prefix. Next candidate should train a non-leaky key-repeat/tap specialist and pair it with state-transition button decoding and improved motion, not another frozen visual embedding alone.",
     "A simple train-prefix repeat/release lookup specialist is now rejected: on a 50k aligned prefix it reports zero base/target sequence mismatches, but base_all remains best (keyboard=0.1550, button=0.1614, Pearson X/Y=0.7598/0.6794) and every repeat-table replacement/union policy reduces keyboard. Next key branch needs a learned sequence model or teacher/distillation signal, not tabular hold-age thresholds.",
+    "The learned hashed key specialist is the first repeat-key branch with a real aligned-prefix gain: on 320k rows, press-only union improves keyboard from 0.1990 to 0.2337 with zero sequence mismatches while preserving button/motion from the base stream. It is still far below paper keyboard=0.73 and motion-y target, so continue with a stronger neural/teacher-assisted sequence model rather than checkpointing G005.",
     "Phase-aware held-key repeat heuristics are also rejected: on the aligned 50k prefix the best phase policy improves keyboard by only +0.00026 over base_all (0.15505 -> 0.15530), far below paper target. Do not spend GPU on handcrafted repeat phase features; next branch needs learned sequence/teacher-assisted supervision or released-GIDM distillation.",
     "Do not reserve H200s for threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, sequence-prior action history, or frozen-DINO-only prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779940663.1426759
+  "updated_at_epoch": 1779941749.0910625
 }
