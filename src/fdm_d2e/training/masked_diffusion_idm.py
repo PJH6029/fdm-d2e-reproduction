@@ -123,6 +123,16 @@ def fdm1_mouse_axis_delta(
     return (1.0 if offset > 0 else -1.0) * normalized_midpoint * max(1.0, float(screen_extent))
 
 
+def fdm1_mouse_axis_token_from_class(axis: str, class_index: int, *, bins: int = FDM1_MOUSE_AXIS_BINS) -> str:
+    """Return the public-recipe mouse-axis token name for a 49-bin class index."""
+
+    normalized_axis = axis.lower()
+    if normalized_axis not in {"x", "y"}:
+        raise ValueError("axis must be 'x' or 'y'")
+    prefix = "FDM1_MOUSE_DX" if normalized_axis == "x" else "FDM1_MOUSE_DY"
+    return f"{prefix}_{_sign_suffix(int(class_index), bins=bins)}"
+
+
 def fdm1_mouse_axis_token(axis: str, delta: int | float, *, screen_extent: int | float) -> str:
     normalized_axis = axis.lower()
     if normalized_axis not in {"x", "y"}:

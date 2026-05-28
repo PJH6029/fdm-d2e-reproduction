@@ -13,9 +13,14 @@ from fdm_d2e.io_utils import ensure_dir, write_json
 from fdm_d2e.training.masked_diffusion_idm import (
     FDM1_ACTION_MASK,
     FDM1_ACTION_NOOP,
+    FDM1_MOUSE_AXIS_BINS,
+    FDM1_MOUSE_AXIS_ZERO_INDEX,
     canonical_action_slot_record,
+    canonical_fdm1_action_tokens,
     corrupt_action_slots,
     d2e_metric_tokens_from_fdm1_tokens,
+    fdm1_mouse_axis_class,
+    fdm1_mouse_axis_token_from_class,
     iterative_unmask_counts,
     select_topk_masked,
 )
@@ -229,6 +234,328 @@ def _predict_tokens_for_row(model: Any, torch: Any, row: dict[str, Any], *, conf
     width, height = _screen_size(row)
     return d2e_metric_tokens_from_fdm1_tokens(tokens, screen_width=width, screen_height=height)
 
+_FACTOR_BUTTON_PREFIXES = ("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")
+
+
+def _aggregate_mouse_delta(row: dict[str, Any]) -> tuple[float, float]:
+    dx = 0.0
+    dy = 0.0
+    saw_event = False
+    for event in row.get("events", []) or []:
+        if not isinstance(event, dict) or event.get("type") != "mouse_move":
+            continue
+        saw_event = True
+        dx += float(event.get("dx", 0) or 0)
+        dy += float(event.get("dy", 0) or 0)
+    if saw_event:
+        return dx, dy
+    for token in row.get("ground_truth_tokens", []) or []:
+        value = None
+        try:
+            from fdm_d2e.tokenization.actions import token_to_delta_class
+
+            value = token_to_delta_class(str(token))
+        except Exception:
+            value = None
+        if value is None:
+            continue
+        if str(token).startswith("MOUSE_DX_"):
+            dx += float(value)
+        elif str(token).startswith("MOUSE_DY_"):
+            dy += float(value)
+    return dx, dy
+
+
+def _factorized_token_vocab(
+    rows: Sequence[dict[str, Any]],
+    *,
+    prefixes: tuple[str, ...],
+    max_tokens: int,
+    min_count: int,
+) -> list[str]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        for token in canonical_fdm1_action_tokens(row, include_noop=False):
+            if token.startswith(prefixes):
+                counts[token] = counts.get(token, 0) + 1
+    ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+    return [token for token, count in ranked if count >= int(min_count)][: max(1, int(max_tokens))]
+
+
+def _factorized_targets(
+    row: dict[str, Any],
+    *,
+    key_vocab: Sequence[str],
+    button_vocab: Sequence[str],
+) -> dict[str, Any]:
+    width, height = _screen_size(row)
+    dx, dy = _aggregate_mouse_delta(row)
+    tokens = set(canonical_fdm1_action_tokens(row, include_noop=False))
+    return {
+        "mouse_x_class": fdm1_mouse_axis_class(dx, screen_extent=width),
+        "mouse_y_class": fdm1_mouse_axis_class(dy, screen_extent=height),
+        "key_labels": [1.0 if token in tokens else 0.0 for token in key_vocab],
+        "button_labels": [1.0 if token in tokens else 0.0 for token in button_vocab],
+    }
+
+
+class _FactorizedMaskedDiffusionDataset:
+    """Typed masked action-token planes for the FDM-1-shaped IDM objective."""
+
+    def __init__(self, rows: Sequence[dict[str, Any]], *, config: dict[str, Any], key_vocab: Sequence[str], button_vocab: Sequence[str]) -> None:
+        torch = require_torch()
+        self.torch = torch
+        self.rows = list(rows)
+        self.config = dict(config)
+        self.key_vocab = list(key_vocab)
+        self.button_vocab = list(button_vocab)
+        self.feature_paths = list(config.get("video_feature_paths", ["frame.features", "next_frame_features", "frame_delta_features"]))
+        self.feature_dim = int(config.get("video_feature_dim", 64))
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, idx: int) -> tuple[Any, Any, Any, Any, Any]:
+        row = self.rows[idx]
+        target = _factorized_targets(row, key_vocab=self.key_vocab, button_vocab=self.button_vocab)
+        features = video_feature_vector(row, feature_paths=self.feature_paths, dim=self.feature_dim)
+        return (
+            self.torch.tensor(features, dtype=self.torch.float32),
+            self.torch.tensor(int(target["mouse_x_class"]), dtype=self.torch.long),
+            self.torch.tensor(int(target["mouse_y_class"]), dtype=self.torch.long),
+            self.torch.tensor(target["key_labels"], dtype=self.torch.float32),
+            self.torch.tensor(target["button_labels"], dtype=self.torch.float32),
+        )
+
+
+def _build_factorized_model(torch: Any, *, video_dim: int, key_count: int, button_count: int, config: dict[str, Any]) -> Any:
+    nn = torch.nn
+    hidden_dim = int(config.get("hidden_dim", 256))
+    layers = int(config.get("transformer_layers", 4))
+    heads = int(config.get("transformer_heads", 4))
+    dropout = float(config.get("dropout", 0.1))
+    plane_count = 5  # video + masked mouse-x, mouse-y, key-set, button-set planes
+
+    class FactorizedMaskedDiffusionIDM(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.video_proj = nn.Sequential(nn.Linear(video_dim, hidden_dim), nn.GELU(), nn.LayerNorm(hidden_dim))
+            self.mask_embed = nn.Parameter(torch.randn(plane_count, hidden_dim) * 0.02)
+            self.plane_embed = nn.Embedding(plane_count, hidden_dim)
+            encoder_layer = nn.TransformerEncoderLayer(
+                d_model=hidden_dim,
+                nhead=heads,
+                dim_feedforward=hidden_dim * 4,
+                dropout=dropout,
+                batch_first=True,
+                activation="gelu",
+            )
+            self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=layers)
+            self.mouse_x_head = nn.Linear(hidden_dim, FDM1_MOUSE_AXIS_BINS)
+            self.mouse_y_head = nn.Linear(hidden_dim, FDM1_MOUSE_AXIS_BINS)
+            self.key_head = nn.Linear(hidden_dim, key_count) if key_count else None
+            self.button_head = nn.Linear(hidden_dim, button_count) if button_count else None
+
+        def forward(self, video_features: Any) -> dict[str, Any]:
+            batch = video_features.shape[0]
+            positions = torch.arange(plane_count, device=video_features.device)
+            tokens = self.mask_embed.unsqueeze(0).expand(batch, plane_count, -1) + self.plane_embed(positions).unsqueeze(0)
+            tokens[:, 0, :] = self.video_proj(video_features) + self.plane_embed(positions[0]).unsqueeze(0)
+            encoded = self.encoder(tokens)
+            out: dict[str, Any] = {
+                "mouse_x": self.mouse_x_head(encoded[:, 1, :]),
+                "mouse_y": self.mouse_y_head(encoded[:, 2, :]),
+                "key": None if self.key_head is None else self.key_head(encoded[:, 3, :]),
+                "button": None if self.button_head is None else self.button_head(encoded[:, 4, :]),
+            }
+            return out
+
+    return FactorizedMaskedDiffusionIDM()
+
+
+def _positive_weight(torch: Any, rows: Sequence[dict[str, Any]], *, vocab: Sequence[str], prefix: str, cap: float) -> Any:
+    if not vocab:
+        return None
+    positives = [0 for _ in vocab]
+    for row in rows:
+        tokens = set(canonical_fdm1_action_tokens(row, include_noop=False))
+        for idx, token in enumerate(vocab):
+            positives[idx] += int(token in tokens)
+    total = max(1, len(rows))
+    weights = []
+    for count in positives:
+        if count <= 0:
+            weights.append(float(cap))
+        else:
+            weights.append(min(float(cap), max(1.0, (total - count) / float(count))))
+    return torch.tensor(weights, dtype=torch.float32)
+
+
+def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, config: dict[str, Any], key_vocab: Sequence[str], button_vocab: Sequence[str], device: Any) -> list[str]:
+    feature_paths = list(config.get("video_feature_paths", ["frame.features", "next_frame_features", "frame_delta_features"]))
+    feature_dim = int(config.get("video_feature_dim", 64))
+    features = torch.tensor([video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim)], dtype=torch.float32, device=device)
+    key_threshold = float(config.get("key_threshold", 0.5))
+    button_threshold = float(config.get("button_threshold", 0.5))
+    max_keys = int(config.get("max_predicted_keys", 4))
+    max_buttons = int(config.get("max_predicted_buttons", 2))
+    width, height = _screen_size(row)
+    model.eval()
+    with torch.no_grad():
+        out = model(features)
+        x_class = int(torch.argmax(out["mouse_x"], dim=-1).detach().cpu()[0])
+        y_class = int(torch.argmax(out["mouse_y"], dim=-1).detach().cpu()[0])
+        fdm1_tokens: list[str] = []
+        if x_class != FDM1_MOUSE_AXIS_ZERO_INDEX:
+            fdm1_tokens.append(fdm1_mouse_axis_token_from_class("x", x_class))
+        if y_class != FDM1_MOUSE_AXIS_ZERO_INDEX:
+            fdm1_tokens.append(fdm1_mouse_axis_token_from_class("y", y_class))
+        if out.get("key") is not None and key_vocab:
+            probs = torch.sigmoid(out["key"][0]).detach().cpu().tolist()
+            selected = sorted(((float(prob), idx) for idx, prob in enumerate(probs) if prob >= key_threshold), key=lambda item: (-item[0], item[1]))[:max_keys]
+            fdm1_tokens.extend(str(key_vocab[idx]) for _, idx in selected)
+        if out.get("button") is not None and button_vocab:
+            probs = torch.sigmoid(out["button"][0]).detach().cpu().tolist()
+            selected = sorted(((float(prob), idx) for idx, prob in enumerate(probs) if prob >= button_threshold), key=lambda item: (-item[0], item[1]))[:max_buttons]
+            fdm1_tokens.extend(str(button_vocab[idx]) for _, idx in selected)
+    return d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height)
+
+
+def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any]:
+    if not torch_available():
+        raise RuntimeError("torch unavailable; run `uv sync --extra train` or use the MLXP training image")
+    torch = require_torch()
+    start = time.time()
+    output_dir = ensure_dir(config.get("output_dir", "outputs/idm_factorized_masked_diffusion_d2e"))
+    train_paths = _expand_paths(config.get("train_records")) + _expand_paths(config.get("train_record_paths"))
+    target_paths = _expand_paths(config.get("target_records")) + _expand_paths(config.get("target_record_paths"))
+    max_train_rows = config.get("max_train_rows")
+    max_target_rows = config.get("max_target_rows")
+    train_rows = list(_iter_jsonl(train_paths, max_rows=int(max_train_rows) if max_train_rows is not None else None))
+    target_rows = list(_iter_jsonl(target_paths, max_rows=int(max_target_rows) if max_target_rows is not None else None))
+    if not train_rows:
+        raise ValueError("no train rows found for factorized masked-diffusion IDM")
+    if not target_rows:
+        raise ValueError("no target rows found for factorized masked-diffusion IDM")
+
+    key_vocab = _factorized_token_vocab(
+        train_rows,
+        prefixes=("KEY_",),
+        max_tokens=int(config.get("max_key_tokens", 128)),
+        min_count=int(config.get("key_min_count", 1)),
+    )
+    button_vocab = _factorized_token_vocab(
+        train_rows,
+        prefixes=_FACTOR_BUTTON_PREFIXES,
+        max_tokens=int(config.get("max_button_tokens", 8)),
+        min_count=int(config.get("button_min_count", 1)),
+    )
+    feature_dim = int(config.get("video_feature_dim", 64))
+    dataset = _FactorizedMaskedDiffusionDataset(train_rows, config=config, key_vocab=key_vocab, button_vocab=button_vocab)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=int(config.get("batch_size", 64)), shuffle=True)
+    device = torch.device("cuda" if torch.cuda.is_available() and not config.get("force_cpu") else "cpu")
+    model = _build_factorized_model(torch, video_dim=feature_dim, key_count=len(key_vocab), button_count=len(button_vocab), config=config).to(device)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=float(config.get("lr", 2e-4)), weight_decay=float(config.get("weight_decay", 0.01)))
+    key_pos_weight = _positive_weight(torch, train_rows, vocab=key_vocab, prefix="KEY_", cap=float(config.get("key_pos_weight_cap", 100.0)))
+    button_pos_weight = _positive_weight(torch, train_rows, vocab=button_vocab, prefix="MOUSE_", cap=float(config.get("button_pos_weight_cap", 100.0)))
+    if key_pos_weight is not None:
+        key_pos_weight = key_pos_weight.to(device)
+    if button_pos_weight is not None:
+        button_pos_weight = button_pos_weight.to(device)
+    history: list[dict[str, Any]] = []
+    for epoch in range(int(config.get("epochs", 1))):
+        model.train()
+        totals = {"loss": 0.0, "mouse_x": 0.0, "mouse_y": 0.0, "key": 0.0, "button": 0.0, "examples": 0}
+        for features, mouse_x, mouse_y, key_labels, button_labels in loader:
+            features = features.to(device)
+            mouse_x = mouse_x.to(device)
+            mouse_y = mouse_y.to(device)
+            key_labels = key_labels.to(device)
+            button_labels = button_labels.to(device)
+            out = model(features)
+            mouse_x_loss = torch.nn.functional.cross_entropy(out["mouse_x"], mouse_x)
+            mouse_y_loss = torch.nn.functional.cross_entropy(out["mouse_y"], mouse_y)
+            key_loss = torch.tensor(0.0, device=device)
+            if out.get("key") is not None and key_labels.numel():
+                key_loss = torch.nn.functional.binary_cross_entropy_with_logits(out["key"], key_labels, pos_weight=key_pos_weight)
+            button_loss = torch.tensor(0.0, device=device)
+            if out.get("button") is not None and button_labels.numel():
+                button_loss = torch.nn.functional.binary_cross_entropy_with_logits(out["button"], button_labels, pos_weight=button_pos_weight)
+            loss = (
+                float(config.get("mouse_x_loss_weight", config.get("mouse_loss_weight", 1.0))) * mouse_x_loss
+                + float(config.get("mouse_y_loss_weight", config.get("mouse_loss_weight", 1.0))) * mouse_y_loss
+                + float(config.get("key_loss_weight", 1.0)) * key_loss
+                + float(config.get("button_loss_weight", 1.0)) * button_loss
+            )
+            optimizer.zero_grad(set_to_none=True)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), float(config.get("grad_clip_norm", 1.0)))
+            optimizer.step()
+            batch = int(features.shape[0])
+            totals["loss"] += float(loss.detach().cpu()) * batch
+            totals["mouse_x"] += float(mouse_x_loss.detach().cpu()) * batch
+            totals["mouse_y"] += float(mouse_y_loss.detach().cpu()) * batch
+            totals["key"] += float(key_loss.detach().cpu()) * batch
+            totals["button"] += float(button_loss.detach().cpu()) * batch
+            totals["examples"] += batch
+        denom = max(1, int(totals.pop("examples")))
+        history.append({"epoch": epoch + 1, **{key: value / denom for key, value in totals.items()}, "examples": denom})
+
+    checkpoint_path = Path(output_dir) / "checkpoint.pt"
+    torch.save(
+        {
+            "schema": "factorized_masked_diffusion_idm_checkpoint.v1",
+            "model_state_dict": model.state_dict(),
+            "key_vocab": key_vocab,
+            "button_vocab": button_vocab,
+            "config": config,
+            "feature_dim": feature_dim,
+        },
+        checkpoint_path,
+    )
+    predictions_path = Path(output_dir) / "predictions.jsonl"
+    with predictions_path.open("w", encoding="utf-8") as handle:
+        for row in target_rows:
+            predicted_tokens = _predict_factorized_tokens(model, torch, row, config=config, key_vocab=key_vocab, button_vocab=button_vocab, device=device)
+            handle.write(json.dumps({"sequence_id": row.get("sequence_id"), "predicted_tokens": predicted_tokens or [FDM1_ACTION_NOOP]}, sort_keys=True) + "\n")
+
+    metrics_path = Path(output_dir) / "paper_metrics.json"
+    write_paper_idm_metrics(
+        prediction_paths=[predictions_path],
+        target_paths=target_paths,
+        output_path=metrics_path,
+        model_name=str(config.get("model_name", "factorized_masked_diffusion_idm")),
+        max_rows=len(target_rows),
+    )
+    summary = {
+        "schema": "factorized_masked_diffusion_idm_train_summary.v1",
+        "status": "pass",
+        "model_name": str(config.get("model_name", "factorized_masked_diffusion_idm")),
+        "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM with typed masked action-token planes for mouse/key/button factors.",
+        "train_rows": len(train_rows),
+        "target_rows": len(target_rows),
+        "key_vocab_size": len(key_vocab),
+        "button_vocab_size": len(button_vocab),
+        "device": str(device),
+        "history": history,
+        "checkpoint_path": str(checkpoint_path),
+        "predictions_path": str(predictions_path),
+        "metrics_path": str(metrics_path),
+        "factorization": {
+            "mouse_axis_bins": FDM1_MOUSE_AXIS_BINS,
+            "key_vocab": key_vocab,
+            "button_vocab": button_vocab,
+            "key_threshold": float(config.get("key_threshold", 0.5)),
+            "button_threshold": float(config.get("button_threshold", 0.5)),
+        },
+        "wall_clock_seconds": time.time() - start,
+        "claim_boundary": "Factorized prefix trainer scaffold; not G005 completion evidence without full-corpus 4xH200 run, recipe-alignment audit, paper-target win, and split statistics.",
+    }
+    summary_path = Path(config.get("summary_out", Path(output_dir) / "summary.json"))
+    write_json(summary_path, summary)
+    write_json(Path(output_dir) / "resolved_config.json", config)
+    return summary
+
 
 def train_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any]:
     nested = config.get("masked_diffusion_idm")
@@ -237,6 +564,8 @@ def train_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any]:
         # `masked_diffusion_idm` for readability.  Promote them to trainer
         # defaults while letting explicit top-level runtime keys win.
         config = {**nested, **config}
+    if config.get("factorized_action_tokens") or str(config.get("trainer_mode", "")).lower() == "factorized":
+        return train_factorized_masked_diffusion_idm(config)
     if not torch_available():
         raise RuntimeError("torch unavailable; run `uv sync --extra train` or use the MLXP training image")
     torch = require_torch()

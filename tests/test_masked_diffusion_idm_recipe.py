@@ -17,6 +17,7 @@ from fdm_d2e.training.masked_diffusion_idm import (
     corrupt_action_slots,
     fdm1_mouse_axis_class,
     fdm1_mouse_axis_token,
+    fdm1_mouse_axis_token_from_class,
     iterative_unmask_counts,
     select_topk_masked,
 )
@@ -34,6 +35,7 @@ def test_fdm1_mouse_axis_bins_are_symmetric_and_exponential():
     assert fdm1_mouse_axis_token("y", -1, screen_extent=1080).startswith("FDM1_MOUSE_DY_N")
     assert fdm1_mouse_axis_delta(small, screen_extent=1920) > 0
     assert fdm1_mouse_axis_delta(neg_small, screen_extent=1920) < 0
+    assert fdm1_mouse_axis_token_from_class("x", small).startswith("FDM1_MOUSE_DX_P")
 
 
 def test_canonical_tokens_preserve_event_multiplicity_and_press_release():

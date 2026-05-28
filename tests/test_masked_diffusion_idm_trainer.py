@@ -81,3 +81,49 @@ def test_train_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert metrics["status"] == "pass"
     assert metrics["alignment"]["rows_seen"] == 3
     assert "masked-diffusion IDM" in summary["recipe_alignment"]
+
+
+def test_train_factorized_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
+    if not torch_available():
+        return
+    train_path = tmp_path / "train_factorized.jsonl"
+    target_path = tmp_path / "target_factorized.jsonl"
+    rows = [_row(i, split="train_core") for i in range(8)]
+    rows[1]["ground_truth_tokens"] = ["KEY_RELEASE_W", "MOUSE_LEFT_DOWN", "MOUSE_DX_N1", "MOUSE_DY_P1"]
+    rows[3]["ground_truth_tokens"] = ["KEY_PRESS_A", "MOUSE_LEFT_UP", "MOUSE_DX_P1", "MOUSE_DY_N1"]
+    _write_jsonl(train_path, rows)
+    _write_jsonl(target_path, [_row(i, split="eval") for i in range(8, 11)])
+    summary = train_masked_diffusion_idm(
+        {
+            "model_name": "unit_factorized_masked_diffusion_idm",
+            "factorized_action_tokens": True,
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(tmp_path / "out_factorized"),
+            "summary_out": str(tmp_path / "summary_factorized.json"),
+            "max_train_rows": 8,
+            "max_target_rows": 3,
+            "video_feature_paths": ["frame.features", "next_frame_features", "frame_delta_features"],
+            "video_feature_dim": 6,
+            "hidden_dim": 16,
+            "transformer_layers": 1,
+            "transformer_heads": 4,
+            "dropout": 0.0,
+            "batch_size": 2,
+            "epochs": 1,
+            "lr": 0.001,
+            "force_cpu": True,
+            "key_threshold": 0.99,
+            "button_threshold": 0.99,
+        }
+    )
+    assert summary["schema"] == "factorized_masked_diffusion_idm_train_summary.v1"
+    assert summary["status"] == "pass"
+    assert summary["key_vocab_size"] >= 2
+    assert summary["button_vocab_size"] >= 2
+    assert summary["factorization"]["mouse_axis_bins"] == 49
+    assert Path(summary["checkpoint_path"]).exists()
+    metrics = read_json(summary["metrics_path"])
+    assert metrics["status"] == "pass"
+    assert metrics["alignment"]["rows_seen"] == 3
+    assert "typed masked action-token planes" in summary["recipe_alignment"]

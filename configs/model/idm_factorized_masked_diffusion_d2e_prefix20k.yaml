@@ -1,0 +1,69 @@
+{
+  "schema": "factorized_masked_diffusion_idm_config.v1",
+  "model_name": "idm_factorized_masked_diffusion_d2e_prefix20k",
+  "claim_boundary": "G005 prefix candidate for public FDM-1 recipe reproduction on D2E using typed masked action-token planes; not completion evidence until trained/evaluated and audited.",
+  "factorized_action_tokens": true,
+  "train_records": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/train_core.jsonl",
+  "target_records": "outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl",
+  "output_dir": "outputs/idm_factorized_masked_diffusion_d2e_prefix20k",
+  "summary_out": "artifacts/idm/g005_idm_factorized_masked_diffusion_prefix20k_summary.json",
+  "max_train_rows": 20000,
+  "max_target_rows": 2000,
+  "video_feature_paths": ["frame.features", "next_frame_features", "frame_delta_features"],
+  "video_feature_dim": 15,
+  "max_key_tokens": 128,
+  "max_button_tokens": 8,
+  "key_min_count": 1,
+  "button_min_count": 1,
+  "key_threshold": 0.5,
+  "button_threshold": 0.5,
+  "max_predicted_keys": 4,
+  "max_predicted_buttons": 2,
+  "hidden_dim": 128,
+  "transformer_layers": 2,
+  "transformer_heads": 4,
+  "dropout": 0.1,
+  "batch_size": 512,
+  "lr": 0.0003,
+  "epochs": 3,
+  "mouse_loss_weight": 1.0,
+  "key_loss_weight": 1.0,
+  "button_loss_weight": 1.0,
+  "key_pos_weight_cap": 100.0,
+  "button_pos_weight_cap": 100.0,
+  "seed": 31,
+  "fdm1_recipe": {
+    "stage": "idm",
+    "video_encoder": {
+      "enabled": true,
+      "input": "D2E screen-video frame/window features as bootstrap video tokens",
+      "public_anchor": "FDM-1 trains directly on screen video representations before inverse-dynamics action-token prediction.",
+      "approximation": "Prefix candidate uses compact D2E frame/window summaries until full video-token caches are promoted."
+    },
+    "idm_objective": {
+      "type": "masked_diffusion_action_tokens",
+      "conditioning": "all_window_frames_plus_masked_action_tokens",
+      "noncausal_frame_conditioning": true,
+      "corruption": "typed action-token planes are initialized as mask queries and denoised from noncausal frame/window features",
+      "loss": "cross_entropy_for_mouse_axis_tokens_plus_bce_for_key_and_button_token_sets"
+    },
+    "inference_schedule": {
+      "type": "iterative_unmasking",
+      "steps": 16,
+      "selection": "typed factor heads decode masked mouse/key/button action-token planes"
+    },
+    "action_tokenization": {
+      "keyboard_press_release_tokens": true,
+      "mouse_delta_bins_per_axis": 49,
+      "mouse_delta_binning": "exponential_normalized_xy",
+      "preserve_token_multiplicity": true,
+      "factorized_planes": ["mouse_x", "mouse_y", "keyboard_event_set", "mouse_button_event_set"]
+    },
+    "fidelity": {
+      "public_vs_inferred_recorded": true,
+      "claims_fdm1_parity": false,
+      "public_components": ["video_encoder", "masked_diffusion_idm", "iterative_unmasking", "key_and_mouse_action_tokens"],
+      "inferred_or_novel_components": ["typed token factorization", "D2E prefix row budget", "compact frame/window bootstrap features", "key/button decision thresholds"]
+    }
+  }
+}
