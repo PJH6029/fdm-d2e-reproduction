@@ -329,6 +329,19 @@ def _is_predictable_action_token(token: str) -> bool:
     return token not in {"<FDM1_ACTION_PAD>", FDM1_ACTION_MASK, FDM1_ACTION_NOOP} and not token.startswith("<FDM1_ACTION_PAD")
 
 
+def _action_family(token: str) -> str:
+    token = str(token)
+    if token.startswith("KEY_"):
+        return "keyboard"
+    if token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")):
+        return "mouse_button"
+    if token.startswith(("FDM1_MOUSE_DX_", "FDM1_MOUSE_DY_", "MOUSE_DX_", "MOUSE_DY_")):
+        return "mouse_move"
+    if token.startswith("SCROLL_"):
+        return "scroll"
+    return "other"
+
+
 def _temporal_window_features_for_batch(
     *,
     rows: Sequence[dict[str, Any]],
@@ -432,6 +445,40 @@ def _tokens_from_non_noop_candidates(candidates: Sequence[dict[str, Any]], *, th
     return tokens
 
 
+def _tokens_from_family_budget_candidates(
+    candidates: Sequence[dict[str, Any]],
+    *,
+    family_budgets: dict[str, Any],
+) -> list[str]:
+    tokens: list[str] = []
+    seen: set[str] = set()
+    families = family_budgets.get("families", family_budgets) if isinstance(family_budgets, dict) else {}
+    if not isinstance(families, dict):
+        return tokens
+    for family, budget in families.items():
+        if not isinstance(budget, dict) or budget.get("status") not in {None, "pass"}:
+            continue
+        threshold = float(budget.get("selected_threshold", budget.get("threshold", 1.1)))
+        max_tokens = max(0, int(budget.get("max_tokens_per_row", 0)))
+        if max_tokens <= 0:
+            continue
+        emitted = 0
+        for candidate in candidates:
+            token = str(candidate.get("token", ""))
+            if _action_family(token) != str(family):
+                continue
+            if float(candidate.get("score", 0.0)) < threshold:
+                continue
+            if not _is_predictable_action_token(token) or token in seen:
+                continue
+            tokens.append(token)
+            seen.add(token)
+            emitted += 1
+            if emitted >= max_tokens:
+                break
+    return tokens
+
+
 def _predict_temporal_tokens_batch(
     model: Any,
     torch: Any,
@@ -460,13 +507,17 @@ def _predict_temporal_tokens_batch(
     if center_probs is None or predicted_center_ids is None:
         return []
     candidate_rows = _temporal_center_candidates(center_probs, vocab=vocab, config=config)
+    family_budgeted = bool(config.get("family_non_noop_budgeted_unmasking", False))
+    family_budgets = config.get("family_non_noop_budget", {})
     budgeted = bool(config.get("non_noop_budgeted_unmasking", False))
     budget_threshold = float(config.get("non_noop_budget_score_threshold", config.get("non_noop_threshold", 1.1)))
     budget_max_tokens = max(1, int(config.get("non_noop_budget_max_tokens_per_row", config.get("max_predicted_non_noop_tokens", 4))))
     predictions: list[list[str]] = []
     for batch_idx, row in enumerate(rows):
         center_ids = [int(value) for value in predicted_center_ids[batch_idx, :].detach().cpu().tolist()]
-        if budgeted:
+        if family_budgeted:
+            fdm1_tokens = _tokens_from_family_budget_candidates(candidate_rows[batch_idx], family_budgets=family_budgets)
+        elif budgeted:
             fdm1_tokens = _tokens_from_non_noop_candidates(candidate_rows[batch_idx], threshold=budget_threshold, max_tokens=budget_max_tokens)
         else:
             fdm1_tokens = [str(vocab[idx]) for idx in center_ids if idx != noop_index and _is_predictable_action_token(str(vocab[idx]))]
@@ -502,6 +553,122 @@ def _collect_temporal_probability_rows(
         for row, candidates in zip(batch_rows, _temporal_center_candidates(center_probs, vocab=vocab, config=config)):
             collected.append({"row": row, "candidates": candidates, "ground_truth_tokens": [str(token) for token in row.get("ground_truth_tokens", [])]})
     return collected
+
+
+def _family_budget_score(family: str, metrics: dict[str, Any], *, max_button_fpr: float, beta: float) -> float:
+    paper = metrics["paper_compatible"]
+    strict = metrics["strict_local"]
+    if family == "keyboard":
+        return float(paper["keyboard"].get("key_accuracy") or 0.0) + 0.25 * float(strict["keyboard"].get("accuracy") or 0.0)
+    if family == "mouse_button":
+        strict_button = strict["mouse_button"]
+        precision = float(strict_button.get("precision") or 0.0)
+        recall = float(strict_button.get("recall") or 0.0)
+        if precision + recall > 0:
+            beta2 = beta * beta
+            fbeta = (1.0 + beta2) * precision * recall / max(1e-12, beta2 * precision + recall)
+        else:
+            fbeta = 0.0
+        fpr = strict_button.get("no_button_false_positive_rate")
+        fpr_penalty = 0.0 if fpr is None or float(fpr) <= max_button_fpr else (float(fpr) - max_button_fpr) * 10.0
+        return fbeta + 0.25 * float(paper["mouse_button"].get("button_accuracy") or 0.0) - fpr_penalty
+    if family == "mouse_move":
+        move = paper["mouse_move"]
+        px = float(move.get("pearson_x") or 0.0)
+        py = float(move.get("pearson_y") or 0.0)
+        return 0.5 * (px + py)
+    return 0.0
+
+
+def _calibrate_temporal_family_non_noop_budget(probability_rows: Sequence[dict[str, Any]], *, config: dict[str, Any]) -> dict[str, Any]:
+    if not probability_rows:
+        return {"status": "skipped", "reason": "no_probability_rows"}
+    families = config.get("family_non_noop_budget_families", ["keyboard", "mouse_button", "mouse_move"])
+    if not isinstance(families, list):
+        families = ["keyboard", "mouse_button", "mouse_move"]
+    max_button_fpr = float(config.get("family_non_noop_budget_max_no_button_fpr", config.get("non_noop_budget_max_no_button_fpr", 0.10)))
+    beta = float(config.get("family_non_noop_budget_beta", config.get("non_noop_budget_beta", 2.0)))
+    max_threshold_candidates = max(2, int(config.get("family_non_noop_budget_max_threshold_candidates", config.get("non_noop_budget_max_threshold_candidates", 256))))
+    family_payloads: dict[str, Any] = {}
+    for family in [str(item) for item in families]:
+        family_candidates = [
+            float(candidate.get("score", 0.0))
+            for row in probability_rows
+            for candidate in row.get("candidates", [])
+            if _action_family(str(candidate.get("token", ""))) == family
+        ]
+        if not family_candidates:
+            family_payloads[family] = {"status": "skipped", "reason": "no_family_candidates", "max_tokens_per_row": 0}
+            continue
+        raw_candidates = [
+            float(value)
+            for value in config.get(f"family_non_noop_budget_{family}_threshold_candidates", config.get("family_non_noop_budget_threshold_candidates", []))
+            if isinstance(value, (int, float))
+        ]
+        raw_candidates.extend(family_candidates)
+        raw_candidates.extend(min(1.0, value + 1e-6) for value in family_candidates)
+        raw_candidates.append(1.1)
+        thresholds = sorted({max(0.0, min(1.1, float(value))) for value in raw_candidates})
+        if len(thresholds) > max_threshold_candidates:
+            thresholds = [
+                thresholds[min(len(thresholds) - 1, int(round(idx * (len(thresholds) - 1) / (max_threshold_candidates - 1))))]
+                for idx in range(max_threshold_candidates)
+            ]
+            thresholds = sorted(set(thresholds + [1.1]))
+        max_tokens = max(
+            0,
+            int(
+                config.get(
+                    f"family_non_noop_budget_{family}_max_tokens_per_row",
+                    config.get("family_non_noop_budget_max_tokens_per_row", config.get("non_noop_budget_max_tokens_per_row", 4)),
+                )
+            ),
+        )
+        rows: list[dict[str, Any]] = []
+        for threshold in thresholds:
+            acc = _PaperMetricAccumulator(empty_bins_as_correct=False)
+            predicted_non_noop = 0
+            for item in probability_rows:
+                family_row_candidates = [candidate for candidate in item.get("candidates", []) if _action_family(str(candidate.get("token", ""))) == family]
+                fdm1_tokens = _tokens_from_non_noop_candidates(family_row_candidates, threshold=threshold, max_tokens=max_tokens)
+                predicted_non_noop += len(fdm1_tokens)
+                width, height = _screen_size(item["row"])
+                pred_tokens = d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height) or [FDM1_ACTION_NOOP]
+                acc.update(pred_tokens, item.get("ground_truth_tokens", []))
+            metrics = acc.metrics()
+            score = _family_budget_score(family, metrics, max_button_fpr=max_button_fpr, beta=beta)
+            strict_button = metrics["strict_local"]["mouse_button"]
+            rows.append(
+                {
+                    "threshold": threshold,
+                    "score": score,
+                    "predicted_non_noop_tokens": predicted_non_noop,
+                    "keyboard_key_accuracy": metrics["paper_compatible"]["keyboard"].get("key_accuracy"),
+                    "mouse_button_accuracy": metrics["paper_compatible"]["mouse_button"].get("button_accuracy"),
+                    "mouse_button_f1": strict_button.get("f1"),
+                    "no_button_false_positive_rate": strict_button.get("no_button_false_positive_rate"),
+                    "mouse_move_pearson_x": metrics["paper_compatible"]["mouse_move"].get("pearson_x"),
+                    "mouse_move_pearson_y": metrics["paper_compatible"]["mouse_move"].get("pearson_y"),
+                }
+            )
+        selected = max(rows, key=lambda row: (float(row["score"]), int(row["predicted_non_noop_tokens"]), -float(row["threshold"])))
+        family_payloads[family] = {
+            "status": "pass",
+            "family": family,
+            "selected_threshold": float(selected["threshold"]),
+            "selected_row": selected,
+            "candidate_count": len(rows),
+            "max_tokens_per_row": max_tokens,
+            "sweep_preview": rows[:5] + ([] if len(rows) <= 10 else [{"omitted_rows": len(rows) - 10}]) + rows[-5:],
+        }
+    return {
+        "schema": "temporal_family_non_noop_budget_calibration.v1",
+        "status": "pass" if any(row.get("status") == "pass" for row in family_payloads.values()) else "skipped",
+        "rows": len(probability_rows),
+        "families": family_payloads,
+        "max_no_button_fpr": max_button_fpr,
+        "claim_boundary": "Family budgets are calibrated on held-out training rows only; target labels remain evaluation/diagnostic only.",
+    }
 
 
 def _calibrate_temporal_non_noop_budget(probability_rows: Sequence[dict[str, Any]], *, config: dict[str, Any]) -> dict[str, Any]:
@@ -681,7 +848,13 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "temporal_offsets": offsets,
     }, checkpoint_path)
     non_noop_budget = {"status": "skipped", "reason": "disabled"}
-    if bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False))) and calibration_rows:
+    family_non_noop_budget = {"status": "skipped", "reason": "disabled"}
+    probability_rows: list[dict[str, Any]] | None = None
+    needs_probability_rows = (
+        bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False)))
+        or bool(config.get("calibrate_family_non_noop_budget", config.get("family_non_noop_budgeted_unmasking", False)))
+    )
+    if needs_probability_rows and calibration_rows:
         probability_rows = _collect_temporal_probability_rows(
             model,
             torch,
@@ -691,11 +864,17 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             vocab=vocab,
             device=device,
         )
+    if bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False))) and probability_rows:
         non_noop_budget = _calibrate_temporal_non_noop_budget(probability_rows, config=config)
         if non_noop_budget.get("status") == "pass":
             config["non_noop_budgeted_unmasking"] = True
             config["non_noop_budget_score_threshold"] = float(non_noop_budget["selected_threshold"])
             config["non_noop_budget_max_tokens_per_row"] = int(non_noop_budget["max_tokens_per_row"])
+    if bool(config.get("calibrate_family_non_noop_budget", config.get("family_non_noop_budgeted_unmasking", False))) and probability_rows:
+        family_non_noop_budget = _calibrate_temporal_family_non_noop_budget(probability_rows, config=config)
+        if family_non_noop_budget.get("status") == "pass":
+            config["family_non_noop_budgeted_unmasking"] = True
+            config["family_non_noop_budget"] = family_non_noop_budget
     predictions_path = Path(output_dir) / "predictions.jsonl"
     prediction_batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
     with predictions_path.open("w", encoding="utf-8") as handle:
@@ -739,6 +918,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "video_encoder_pretrain_history":video_pretrain_history,
         "history":history,
         "non_noop_budget":non_noop_budget,
+        "family_non_noop_budget":family_non_noop_budget,
         "loss_weights":{
             "noop_loss_weight":float(config.get("noop_loss_weight", 1.0)),
             "pad_loss_weight":float(config.get("pad_loss_weight", 0.0)),

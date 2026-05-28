@@ -1,0 +1,50 @@
+{
+  "schema": "g005_temporal_budget_prefix80k_diagnosis.v1",
+  "status": "action_required",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "evidence": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_budget_prefix80k_h200_compact_summary.json",
+  "primary_findings": [
+    {
+      "finding": "Temporal masked-diffusion recipe surface runs end-to-end with video pretraining, calibration, W&B, and H200 evidence.",
+      "evidence": "run status pass; checkpoint/predictions/metrics generated"
+    },
+    {
+      "finding": "Model collapses to frequent small mouse-motion tokens and almost never emits semantically correct key/button events.",
+      "evidence": "top predicted tokens [('MOUSE_DY_Z0', 5000), ('MOUSE_DX_N2', 4992), ('MOUSE_DX_N1', 4992), ('MOUSE_DX_N3', 2955), ('MOUSE_DY_P1', 2034), ('MOUSE_DY_N1', 10), ('KEY_PRESS_65', 8), ('KEY_RELEASE_65', 8)]; keyboard=0; button F1=0; diagnostic predicted button examples=0"
+    },
+    {
+      "finding": "Single global non-noop budget is not sufficient: calibration selected many non-noop tokens but objective score stayed zero.",
+      "evidence": {
+        "threshold": 0.0020489429589360952,
+        "score": 0.0,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_fbeta": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_non_noop_tokens": 8000
+      }
+    },
+    {
+      "finding": "Post-training prediction phase is GPU-underutilized and CPU/Python-loop heavy; future full-corpus runs need batched/vectorized inference and/or larger batch before 4xH200 promotion.",
+      "evidence": {
+        "samples": 42,
+        "mean_util_pct": 23.142857142857142,
+        "max_util_pct": 70.0,
+        "mean_power_w": 189.5197619047619,
+        "max_memory_util_pct": 15.0
+      }
+    }
+  ],
+  "recommended_next_branch": {
+    "name": "family-budgeted temporal masked-diffusion IDM",
+    "recipe_fidelity": "Preserve FDM-1 public IDM shape; change only split-safe iterative unmasking/calibration to allocate separate key/button/mouse budgets instead of a single non-noop threshold.",
+    "implementation_notes": [
+      "family-specific candidate extraction from center-token probabilities",
+      "held-out-train calibration for keyboard/button/mouse families with button FPR cap",
+      "prediction summary records family budgets and no target-label calibration"
+    ]
+  },
+  "checkpoint_policy": "Do not checkpoint G005; continue exploration under recipe-alignment gate."
+}

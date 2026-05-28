@@ -370,3 +370,11 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Evidence files: `artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_prefix80k_h200_*` plus `artifacts/idm/g005_temporal_prefix80k_reservation_context.json`.
 - Result is negative/non-terminal: train rows `80000`, target rows `5000`, wall clock `312.2s`, temporal window `7`, vocab `148`; no-button FPR is `0.0` only because button predictions collapsed to `0`, while keyboard key accuracy `0.0`, mouse-button F1 `0.0`, exact button TP `0`, and semantic overlap `0`.
 - Operationally, GPU utilization improved versus factorized keyspan (peak about `70%` on the monitor), so the temporal sequence path is a better recipe-faithful execution surface. Next branch should keep sequence masked diffusion but add split-safe non-noop confidence-budget/top-k unmasking plus focal/logit-adjusted sparse action-token loss before another H200 probe.
+
+## 2026-05-29T02:03:24+09:00 KST — G005 temporal budget H200 probe is negative; family-budget branch added
+
+- Evidence copied from reservation `rsv-jeonghunpark-20260529-085253` / pod `prod-rsv-jeonghunpark-20260529-085253`, then the reservation was cancelled after evidence copy. Redacted context: `artifacts/idm/g005_temporal_budget_prefix80k_reservation_context.json`.
+- Probe commit/run: `f885eb0`, W&B run `itixp40j`, config `configs/model/idm_temporal_masked_diffusion_d2e_luma_window5_budget_prefix80k.yaml`.
+- Terminal evidence: `artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_budget_prefix80k_h200_run.json` status=pass and `artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_budget_prefix80k_h200_compact_summary.json` status=`nonterminal_negative_probe`.
+- Metrics on the bounded 80k/5k probe remain far below G005: keyboard key accuracy `0.0`, mouse-button accuracy/F1 `0.0`, no-button FPR `0.0002058884`, mouse-move Pearson X/Y `-0.000255/-0.025478`. Do **not** checkpoint G005.
+- Diagnosis: the recipe-shaped temporal masked-diffusion surface runs end-to-end, but single global non-noop budget collapses to frequent small mouse-move tokens and does not learn key/button semantics. Added the next recipe-faithful branch: family-specific held-out-train confidence budgets for keyboard/mouse-button/mouse-move action-token families, preserving the public FDM-1 iterative unmasking shape.

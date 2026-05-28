@@ -21,7 +21,12 @@ from fdm_d2e.training.masked_diffusion_idm_trainer import (
     train_masked_diffusion_idm,
     video_feature_vector,
 )
-from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import _calibrate_temporal_non_noop_budget, train_temporal_masked_diffusion_idm
+from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
+    _calibrate_temporal_family_non_noop_budget,
+    _calibrate_temporal_non_noop_budget,
+    _tokens_from_family_budget_candidates,
+    train_temporal_masked_diffusion_idm,
+)
 
 
 def _row(idx: int, *, split: str) -> dict:
@@ -253,6 +258,59 @@ def test_temporal_non_noop_budget_selects_threshold_from_train_heldout_rows():
     assert payload["selected_threshold"] <= 0.88
     assert payload["selected_row"]["predicted_non_noop_tokens"] >= 2
     assert payload["selected_row"]["no_button_false_positive_rate"] == 0.0
+
+
+def test_temporal_family_non_noop_budget_calibrates_separate_action_families():
+    rows = [
+        {
+            "row": {"ground_truth_tokens": ["KEY_PRESS_A"], "frame": {"width": 854, "height": 480}},
+            "ground_truth_tokens": ["KEY_PRESS_A"],
+            "candidates": [
+                {"score": 0.92, "token": "KEY_PRESS_A", "slot": 0, "token_index": 2},
+                {"score": 0.40, "token": "MOUSE_LEFT_DOWN", "slot": 1, "token_index": 3},
+                {"score": 0.95, "token": "FDM1_MOUSE_DX_P01", "slot": 2, "token_index": 4},
+            ],
+        },
+        {
+            "row": {"ground_truth_tokens": ["MOUSE_LEFT_DOWN"], "frame": {"width": 854, "height": 480}},
+            "ground_truth_tokens": ["MOUSE_LEFT_DOWN"],
+            "candidates": [
+                {"score": 0.30, "token": "KEY_PRESS_A", "slot": 0, "token_index": 2},
+                {"score": 0.89, "token": "MOUSE_LEFT_DOWN", "slot": 1, "token_index": 3},
+                {"score": 0.93, "token": "FDM1_MOUSE_DX_P01", "slot": 2, "token_index": 4},
+            ],
+        },
+        {
+            "row": {"ground_truth_tokens": [], "frame": {"width": 854, "height": 480}},
+            "ground_truth_tokens": [],
+            "candidates": [
+                {"score": 0.10, "token": "KEY_PRESS_A", "slot": 0, "token_index": 2},
+                {"score": 0.15, "token": "MOUSE_LEFT_DOWN", "slot": 1, "token_index": 3},
+                {"score": 0.20, "token": "FDM1_MOUSE_DX_P01", "slot": 2, "token_index": 4},
+            ],
+        },
+    ]
+    payload = _calibrate_temporal_family_non_noop_budget(
+        rows,
+        config={
+            "family_non_noop_budget_families": ["keyboard", "mouse_button", "mouse_move"],
+            "family_non_noop_budget_keyboard_max_tokens_per_row": 1,
+            "family_non_noop_budget_mouse_button_max_tokens_per_row": 1,
+            "family_non_noop_budget_mouse_move_max_tokens_per_row": 1,
+            "family_non_noop_budget_max_no_button_fpr": 0.0,
+            "family_non_noop_budget_max_threshold_candidates": 16,
+        },
+    )
+    assert payload["status"] == "pass"
+    assert payload["families"]["keyboard"]["selected_threshold"] <= 0.92
+    assert payload["families"]["mouse_button"]["selected_threshold"] <= 0.89
+    assert payload["families"]["mouse_button"]["selected_row"]["no_button_false_positive_rate"] == 0.0
+    tokens = _tokens_from_family_budget_candidates(
+        rows[1]["candidates"],
+        family_budgets=payload,
+    )
+    assert "MOUSE_LEFT_DOWN" in tokens
+    assert "KEY_PRESS_A" not in tokens
 
 
 def test_button_class_prior_offsets_boost_rare_transition_tokens_without_target_labels():
