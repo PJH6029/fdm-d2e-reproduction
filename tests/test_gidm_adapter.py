@@ -383,8 +383,10 @@ def test_convert_gidm_mcap_predictions_can_filter_to_chunk_windows(tmp_path: Pat
                         "prediction_mcap_chunks": [
                             {
                                 "prediction_mcap_path": str(chunk),
-                                "timestamp_start_ns": 2_400_000_000,
-                                "timestamp_end_ns_exclusive": 2_450_000_000,
+                                "timestamp_start_ns": 2_300_000_000,
+                                "timestamp_end_ns_exclusive": 2_600_000_000,
+                                "timestamp_eval_start_ns": 2_400_000_000,
+                                "timestamp_eval_end_ns_exclusive": 2_450_000_000,
                             }
                         ],
                         "prediction_timestamps_aligned_to_ground_truth": True,
@@ -1007,6 +1009,9 @@ def test_chunked_gidm_plan_uses_bin_indices_and_writes_manifest(tmp_path: Path):
     assert row["prediction_mcap_paths"] == paths_by_key["d2e_480p:Game/rec_001"]
     assert row["prediction_mcap_chunks"][0]["timestamp_start_ns"] == 319_403_399_000
     assert row["prediction_mcap_chunks"][0]["timestamp_end_ns_exclusive"] == 319_903_399_000
+    assert row["prediction_mcap_chunks"][0]["timestamp_eval_start_ns"] == 319_503_399_000
+    assert row["prediction_mcap_chunks"][0]["timestamp_eval_end_ns_exclusive"] == 319_803_399_000
+    assert row["prediction_mcap_chunks"][0]["context_trim_seconds"] == 0.1
     assert row["chunked_prediction"]["chunk_count"] == len(paths_by_key["d2e_480p:Game/rec_001"])
 
 

@@ -102,8 +102,8 @@ def _prediction_windows_ns(row: dict[str, Any], *, bin_ms: int = 50) -> list[tup
             if not isinstance(chunk, dict):
                 continue
             try:
-                start_ns = int(chunk.get("timestamp_start_ns"))
-                end_ns = int(chunk.get("timestamp_end_ns_exclusive"))
+                start_ns = int(chunk.get("timestamp_eval_start_ns", chunk.get("timestamp_start_ns")))
+                end_ns = int(chunk.get("timestamp_eval_end_ns_exclusive", chunk.get("timestamp_end_ns_exclusive")))
             except (TypeError, ValueError):
                 try:
                     start_ns = int(round(float(chunk["timestamp_offset_seconds"]) * 1e9))

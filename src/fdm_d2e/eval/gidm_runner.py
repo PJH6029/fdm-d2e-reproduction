@@ -505,6 +505,9 @@ def write_chunked_gidm_manifest(
         for path, scheduled in zip(paths, schedule, strict=False):
             timestamp_offset = float(scheduled["timestamp_offset_seconds"])
             duration = float(scheduled["duration_seconds"])
+            context_trim = min(float(chunk_context_seconds), max(0.0, duration / 2.0 - float(bin_ms) / 1000.0))
+            eval_start = timestamp_offset + context_trim
+            eval_end = timestamp_offset + max(context_trim, duration - context_trim)
             chunk_rows.append(
                 {
                     "chunk_index": int(scheduled["chunk_index"]),
@@ -514,6 +517,9 @@ def write_chunked_gidm_manifest(
                     "timestamp_offset_seconds": timestamp_offset,
                     "timestamp_start_ns": int(round(timestamp_offset * 1e9)),
                     "timestamp_end_ns_exclusive": int(round((timestamp_offset + duration) * 1e9)),
+                    "context_trim_seconds": context_trim,
+                    "timestamp_eval_start_ns": int(round(eval_start * 1e9)),
+                    "timestamp_eval_end_ns_exclusive": int(round(eval_end * 1e9)),
                 }
             )
         row["prediction_mcap_paths"] = paths
