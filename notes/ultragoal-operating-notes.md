@@ -142,3 +142,10 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Evidence copied locally under `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_prefix20k_h200_*`; W&B artifact run: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_prefix20k_h200_wandb_status.json`; reservation `rsv-jeonghunpark-20260528-4df5dc` was cancelled after evidence copy.
 - Result is still non-terminal: keyboard key accuracy `0.020192307692307693`, mouse-button accuracy/F1 `0.0`, no-button FPR `0.0`. CNN video encoder recovers some keyboard performance versus flat luma-window (`0.01578`) but remains below the compact-frame factorized prefix (`~0.0239`) and below all G005 targets.
 - Next branch should explicitly address sparse mouse-button recall inside the recipe-aligned typed masked-diffusion objective (for example, separate button down/up denoising head or recall-constrained button calibration) before any full-corpus 4×H200 G005 launch.
+
+## 2026-05-28 KST — G005 button-event masked-diffusion prefix probe
+
+- Ran a fourth 1×H200 prefix probe at commit `9d5f082` with compact luma-window CNN video encoder plus auxiliary sparse button-event denoising inside the typed masked action-token objective.
+- Evidence copied locally under `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_prefix20k_h200_*`; W&B artifact run: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_prefix20k_h200_wandb_status.json`; reservation `rsv-jeonghunpark-20260528-29dc14` was cancelled after evidence copy.
+- Result is negative/non-terminal: keyboard key accuracy `0.012219717641475857`, mouse-button accuracy/F1 `0.0`, no-button FPR `0.0`. Button-event calibration saturated: thresholds <= `0.45` predicted every row (`FPR=1.0`), thresholds >= `0.50` predicted none, so bounded-FPR calibration selected zero-recall behavior.
+- Next branch: add probability-quantile/dynamic threshold candidates for sparse button event/token calibration so the calibration grid can choose between saturated coarse thresholds before any more scaling or full-corpus launch.

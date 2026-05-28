@@ -1,0 +1,45 @@
+{
+  "button_event_calibration_selected": {
+    "f1": 0.0,
+    "false_positive_rate": 0.0,
+    "fbeta": 0.0,
+    "fn": 58,
+    "fp": 0,
+    "precision": null,
+    "recall": 0.0,
+    "score": 0.0,
+    "threshold": 0.5,
+    "tn": 1942,
+    "tp": 0
+  },
+  "claim_boundary": "This is negative prefix evidence only; it does not satisfy G005 or any full-corpus paper-target win.",
+  "commit": "9d5f082",
+  "diagnosis": [
+    "Auxiliary button-event denoising head trained and calibrated, but its calibration probabilities are saturated: thresholds <=0.45 predict every row, thresholds >=0.50 predict none.",
+    "Bounded-FPR calibration therefore selected threshold 0.50 with zero recall, keeping no-button FPR at 0.0 but failing mouse-button accuracy/F1.",
+    "Keyboard regressed to 0.01222, so the next branch should improve calibration granularity/probability ranking before more scaling."
+  ],
+  "evidence": {
+    "gpu_monitor": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_prefix20k_h200_gpu_monitor.csv",
+    "paper_metrics": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_prefix20k_h200_paper_metrics.json",
+    "resolved_config": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_prefix20k_h200_resolved_config.json",
+    "run": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_prefix20k_h200_run.json",
+    "summary": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_prefix20k_h200_summary.json",
+    "wandb": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_prefix20k_h200_wandb_status.json"
+  },
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "metrics": {
+    "keyboard_key_accuracy": 0.012219717641475857,
+    "mouse_button_accuracy": 0.0,
+    "no_button_false_positive_rate": 0.0,
+    "strict_mouse_button_f1": 0.0
+  },
+  "next_action": "Add probability-quantile/dynamic threshold candidates for sparse button event/token calibration and rerun a bounded prefix probe; do not checkpoint G005.",
+  "probe": "factorized_masked_diffusion_luma_window5_cnn_button_event_prefix20k_h200",
+  "reservation_id": "rsv-jeonghunpark-20260528-29dc14",
+  "schema": "g005_idm_prefix_probe_diagnosis.v1",
+  "status": "non_terminal_regression",
+  "target_rows": 2000,
+  "train_rows": 20000,
+  "updated_at": "2026-05-28T20:55:13.823543+09:00"
+}
