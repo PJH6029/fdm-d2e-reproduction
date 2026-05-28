@@ -701,6 +701,11 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "diffusion_steps": 4,
             "token_loss_type": "focal",
             "token_focal_gamma": 1.5,
+            "temporal_event_auxiliary": True,
+            "event_aux_weight": 0.2,
+            "key_event_pos_weight": 2.0,
+            "button_event_pos_weight": 3.0,
+            "event_auxiliary_candidate_score_blend": 0.25,
             "calibrate_non_noop_budget": True,
             "temporal_calibration_fraction": 0.2,
             "temporal_calibration_max_rows": 2,
@@ -727,6 +732,11 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["loss_weights"]["keyboard_loss_weight"] == 2.0
     assert summary["loss_weights"]["mouse_button_loss_weight"] == 3.0
     assert summary["loss_weights"]["token_loss_type"] == "focal"
+    assert summary["loss_weights"]["temporal_event_auxiliary"] is True
+    assert summary["loss_weights"]["key_event_aux_weight"] == 0.2
+    assert summary["loss_weights"]["button_event_aux_weight"] == 0.2
+    assert summary["loss_weights"]["event_auxiliary_candidate_score_blend"] == 0.25
+    assert any("key_event_loss" in row and "button_event_loss" in row for row in summary["history"])
     assert summary["non_noop_budget"]["status"] in {"pass", "skipped"}
     assert "temporal action-token sequences" in summary["recipe_alignment"]
     assert Path(summary["checkpoint_path"]).exists()
