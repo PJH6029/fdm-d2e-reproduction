@@ -399,18 +399,24 @@ class _TorchHubDinov2Embedder:
     def _pixel_values_from_gray_bytes(self, frames: Sequence[bytes]) -> Any:
         return _gray_byte_frames_to_imagenet_tensor(self.torch, frames, self.image_size)
 
-    def embed_frames(self, frames: Sequence[bytes]) -> list[list[float]]:
+    def embed_frames_tensor(self, frames: Sequence[bytes]) -> Any:
         if not frames:
-            return []
+            raise ValueError("no frames to embed")
         torch = self.torch
         pixel_values = self._pixel_values_from_gray_bytes(frames).to(self.device)
-        with torch.no_grad():
+        with torch.inference_mode():
             output = self.model(pixel_values).detach()
             if self.normalize_embeddings:
                 output = torch.nn.functional.normalize(output, dim=-1)
         output = output.cpu().float()
         if self.embedding_dim is None:
             self.embedding_dim = int(output.shape[-1])
+        return output
+
+    def embed_frames(self, frames: Sequence[bytes]) -> list[list[float]]:
+        if not frames:
+            return []
+        output = self.embed_frames_tensor(frames)
         return [[float(value) for value in row] for row in output.tolist()]
 
 
@@ -573,18 +579,111 @@ def _thin_streaming_row(row: dict[str, Any]) -> dict[str, Any]:
     return {key: row[key] for key in _THIN_OUTPUT_KEYS if key in row}
 
 
+def _summary_features_for_row(row: dict[str, Any], *, config: FrameEmbeddingMaterializerConfig) -> list[float]:
+    if not config.include_summary_features:
+        return []
+    return [
+        float(value)
+        for value in record_features(row, feature_mode=config.summary_feature_mode)
+    ]
+
+
+def _round_tensor_values(torch: Any, values: Any, digits: int | None) -> Any:
+    if digits is None or digits < 0:
+        return values.float()
+    scale = float(10 ** int(digits))
+    return torch.round(values.float() * scale) / scale
+
+
+def _features_tensor_from_embeddings(
+    rows: Sequence[dict[str, Any]],
+    embeddings: Any,
+    *,
+    config: FrameEmbeddingMaterializerConfig,
+) -> tuple[Any, int, int]:
+    """Build one CPU tensor of row features without Pythonizing embeddings.
+
+    The DINO/HF frozen-embedding path can produce hundreds of millions of
+    floats.  In external feature-cache mode those floats are saved to a tensor
+    cache, so converting every embedding row to nested Python lists and then
+    back to a tensor only adds CPU overhead and keeps H200s idle.  This helper
+    keeps the large embedding block as a tensor and only tensorizes the much
+    smaller summary/context features.
+    """
+
+    if not rows:
+        raise ValueError("rows must not be empty")
+    import torch as torch_module  # local optional train dependency
+
+    if int(embeddings.ndim) != 2:
+        raise ValueError(f"expected 2D embedding tensor, got shape={tuple(embeddings.shape)}")
+    per_row = len(config.frame_offsets)
+    expected_frames = len(rows) * per_row
+    if int(embeddings.shape[0]) != expected_frames:
+        raise ValueError(
+            f"embedding count mismatch: got {int(embeddings.shape[0])} for rows={len(rows)} offsets={per_row}"
+        )
+    embedding_dim = int(embeddings.shape[-1])
+    reshaped = embeddings.float().reshape(len(rows), per_row, embedding_dim)
+    pieces = [reshaped.reshape(len(rows), per_row * embedding_dim)]
+    if config.include_embedding_deltas:
+        deltas = reshaped[:, 1:, :] - reshaped[:, :1, :]
+        pieces.append(deltas.reshape(len(rows), max(0, per_row - 1) * embedding_dim))
+    summary_feature_count = 0
+    if config.include_summary_features:
+        summary_rows = [_summary_features_for_row(row, config=config) for row in rows]
+        summary_feature_count = len(summary_rows[0]) if summary_rows else 0
+        if any(len(row) != summary_feature_count for row in summary_rows):
+            raise ValueError("inconsistent summary feature lengths in frame-embedding batch")
+        pieces.append(torch_module.tensor(summary_rows, dtype=torch_module.float32))
+    features = torch_module.cat([piece.cpu().float() for piece in pieces], dim=1)
+    return _round_tensor_values(torch_module, features, config.round_digits), embedding_dim, summary_feature_count
+
+
 def _flush_batch(
     rows: Sequence[dict[str, Any]],
     frames_by_row: Sequence[Sequence[bytes]],
     *,
     embedder: Any,
     config: FrameEmbeddingMaterializerConfig,
-) -> tuple[list[dict[str, Any]], int, list[list[float]]]:
+) -> tuple[list[dict[str, Any]], int, list[list[float]], Any | None]:
     if not rows:
-        return [], 0, []
+        return [], 0, [], None
     flat_frames = [frame for frames in frames_by_row for frame in frames]
-    flat_embeddings = embedder.embed_frames(flat_frames)
     per_row = len(config.frame_offsets)
+    use_tensor_cache_path = config.feature_cache_out is not None and hasattr(embedder, "embed_frames_tensor")
+    if use_tensor_cache_path:
+        flat_embedding_tensor = embedder.embed_frames_tensor(flat_frames)
+        feature_tensor, embedding_dim, summary_feature_count = _features_tensor_from_embeddings(
+            rows,
+            flat_embedding_tensor,
+            config=config,
+        )
+        feature_dim = int(feature_tensor.shape[1]) if int(feature_tensor.ndim) == 2 else 0
+        output_rows: list[dict[str, Any]] = []
+        for row in rows:
+            out_row = _thin_streaming_row(row) if config.thin_output else dict(row)
+            metadata = {
+                "schema": "g005_frozen_frame_embedding_features.row.v1",
+                "backend": config.backend,
+                "model_id": config.model_id if config.backend != "dummy-stat" else "deterministic-frame-statistics",
+                "frame_offsets": list(config.frame_offsets),
+                "embedding_pooling": config.embedding_pooling if config.backend != "dummy-stat" else "stats",
+                "hf_preprocess": config.hf_preprocess if config.backend == "hf-vision" else None,
+                "embedding_dim_per_frame": int(embedding_dim),
+                "include_embedding_deltas": bool(config.include_embedding_deltas),
+                "include_summary_features": bool(config.include_summary_features),
+                "summary_feature_mode": config.summary_feature_mode if config.include_summary_features else None,
+                "summary_feature_count": int(summary_feature_count),
+                "feature_dim": feature_dim,
+                "tensor_cache_direct": True,
+            }
+            out_row["frame_embedding_feature_metadata"] = metadata
+            out_row["frame_embedding_feature_fingerprint"] = _metadata_fingerprint(metadata)
+            output_rows.append(out_row)
+        return output_rows, int(embedding_dim), [], feature_tensor
+
+    flat_embeddings = embedder.embed_frames(flat_frames)
     if len(flat_embeddings) != len(rows) * per_row:
         raise ValueError(
             f"embedding count mismatch: got {len(flat_embeddings)} for rows={len(rows)} offsets={per_row}"
@@ -601,11 +700,9 @@ def _flush_batch(
             features.extend(float(value) for value in embedding)
         if config.include_embedding_deltas:
             features.extend(_embedding_deltas(embeddings))
-        summary_feature_count = 0
-        if config.include_summary_features:
-            summary_features = record_features(row, feature_mode=config.summary_feature_mode)
-            summary_feature_count = len(summary_features)
-            features.extend(float(value) for value in summary_features)
+        summary_features = _summary_features_for_row(row, config=config)
+        summary_feature_count = len(summary_features)
+        features.extend(summary_features)
         rounded = _round_values(features, config.round_digits)
         out_row = _thin_streaming_row(row) if config.thin_output else dict(row)
         metadata = {
@@ -627,16 +724,19 @@ def _flush_batch(
         out_row["frame_embedding_feature_metadata"] = metadata
         out_row["frame_embedding_feature_fingerprint"] = _metadata_fingerprint(metadata)
         output_rows.append(out_row)
-    return output_rows, embedding_dim, feature_vectors
+    return output_rows, embedding_dim, feature_vectors, None
 
 
-def _write_feature_cache(path: Path, features: Sequence[Sequence[float]], *, metadata: dict[str, Any]) -> dict[str, Any]:
+def _write_feature_cache(path: Path, features: Sequence[Sequence[float]] | Any, *, metadata: dict[str, Any]) -> dict[str, Any]:
     try:
         import torch
     except Exception as exc:  # pragma: no cover - optional only for external feature cache mode.
         raise RuntimeError("--feature-cache-out requires torch") from exc
     ensure_dir(path.parent)
-    tensor = torch.tensor([[float(value) for value in row] for row in features], dtype=torch.float32)
+    if hasattr(features, "detach") and hasattr(features, "shape"):
+        tensor = features.detach().cpu().float().contiguous()
+    else:
+        tensor = torch.tensor([[float(value) for value in row] for row in features], dtype=torch.float32)
     feature_dim = int(tensor.shape[1]) if int(tensor.ndim) == 2 and int(tensor.shape[0]) else (len(features[0]) if features else 0)
     payload = {
         "schema": "streaming_idm_feature_cache.v1",
@@ -683,6 +783,8 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
     feature_cache_ref_rows = 0
     feature_lengths: list[int] = []
     feature_cache_vectors: list[list[float]] = []
+    feature_cache_tensors: list[Any] = []
+    feature_cache_total_rows = 0
     embedding_dim_per_frame: int | None = None
     dataset_fingerprint = hashlib.sha256()
     batch_rows: list[dict[str, Any]] = []
@@ -731,24 +833,33 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
                 frames, _missing_delta = _frames_for_row(row, provider=provider, config=config)
                 batch_frames.append(frames)
                 if len(batch_rows) >= max(1, int(config.batch_size)):
-                    output_rows, emb_dim, feature_vectors = _flush_batch(batch_rows, batch_frames, embedder=embedder, config=config)
+                    output_rows, emb_dim, feature_vectors, feature_tensor = _flush_batch(batch_rows, batch_frames, embedder=embedder, config=config)
                     embedding_dim_per_frame = emb_dim
-                    for out_row, features in zip(output_rows, feature_vectors):
-                        row_feature_index = len(feature_cache_vectors)
-                        feature_lengths.append(len(features))
+                    if feature_tensor is not None:
+                        feature_cache_tensors.append(feature_tensor)
+                        batch_feature_lengths = [int(feature_tensor.shape[1]) for _ in output_rows]
+                    else:
+                        batch_feature_lengths = [len(features) for features in feature_vectors]
+                    for row_offset, out_row in enumerate(output_rows):
+                        features = feature_vectors[row_offset] if feature_tensor is None else None
+                        row_feature_index = feature_cache_total_rows + row_offset
+                        feature_lengths.append(batch_feature_lengths[row_offset])
                         if config.feature_cache_out is not None:
-                            feature_cache_vectors.append(features)
+                            if features is not None:
+                                feature_cache_vectors.append(features)
                             out_row.pop("__streaming_idm_features", None)
                             out_row["__streaming_idm_feature_cache"] = {
                                 "schema": "streaming_idm_feature_cache_ref.v1",
                                 "path": str(config.feature_cache_out),
                                 "row_index": row_feature_index,
-                                "feature_dim": len(features),
+                                "feature_dim": batch_feature_lengths[row_offset],
                             }
                         out.write(_dumps(out_row) + "\n")
                         rows_written += 1
                         feature_override_rows += int("__streaming_idm_features" in out_row)
                         feature_cache_ref_rows += int("__streaming_idm_feature_cache" in out_row)
+                    if config.feature_cache_out is not None:
+                        feature_cache_total_rows += len(output_rows)
                     batch_rows = []
                     batch_frames = []
                 if config.progress_rows > 0 and rows_seen % int(config.progress_rows) == 0:
@@ -768,32 +879,48 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
                         },
                     )
             if batch_rows:
-                output_rows, emb_dim, feature_vectors = _flush_batch(batch_rows, batch_frames, embedder=embedder, config=config)
+                output_rows, emb_dim, feature_vectors, feature_tensor = _flush_batch(batch_rows, batch_frames, embedder=embedder, config=config)
                 embedding_dim_per_frame = emb_dim
-                for out_row, features in zip(output_rows, feature_vectors):
-                    row_feature_index = len(feature_cache_vectors)
-                    feature_lengths.append(len(features))
+                if feature_tensor is not None:
+                    feature_cache_tensors.append(feature_tensor)
+                    batch_feature_lengths = [int(feature_tensor.shape[1]) for _ in output_rows]
+                else:
+                    batch_feature_lengths = [len(features) for features in feature_vectors]
+                for row_offset, out_row in enumerate(output_rows):
+                    features = feature_vectors[row_offset] if feature_tensor is None else None
+                    row_feature_index = feature_cache_total_rows + row_offset
+                    feature_lengths.append(batch_feature_lengths[row_offset])
                     if config.feature_cache_out is not None:
-                        feature_cache_vectors.append(features)
+                        if features is not None:
+                            feature_cache_vectors.append(features)
                         out_row.pop("__streaming_idm_features", None)
                         out_row["__streaming_idm_feature_cache"] = {
                             "schema": "streaming_idm_feature_cache_ref.v1",
                             "path": str(config.feature_cache_out),
                             "row_index": row_feature_index,
-                            "feature_dim": len(features),
+                            "feature_dim": batch_feature_lengths[row_offset],
                         }
                     out.write(_dumps(out_row) + "\n")
                     rows_written += 1
                     feature_override_rows += int("__streaming_idm_features" in out_row)
                     feature_cache_ref_rows += int("__streaming_idm_feature_cache" in out_row)
+                if config.feature_cache_out is not None:
+                    feature_cache_total_rows += len(output_rows)
     finally:
         provider.close()
     tmp_path.replace(output_path)
     feature_cache_metadata = None
     if config.feature_cache_out is not None:
+        cache_payload: Sequence[Sequence[float]] | Any
+        if feature_cache_tensors:
+            import torch
+
+            cache_payload = torch.cat([tensor.detach().cpu().float() for tensor in feature_cache_tensors], dim=0)
+        else:
+            cache_payload = feature_cache_vectors
         feature_cache_metadata = _write_feature_cache(
             Path(config.feature_cache_out),
-            feature_cache_vectors,
+            cache_payload,
             metadata={
                 "source_label": config.source_label,
                 "input_path": str(input_path),

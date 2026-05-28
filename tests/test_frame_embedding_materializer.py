@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from fdm_d2e.data import frame_embedding_materializer as fem
 from fdm_d2e.data.frame_embedding_materializer import (
     FrameEmbeddingMaterializerConfig,
     _gray_byte_frames_to_imagenet_tensor,
@@ -312,3 +313,57 @@ def test_materializer_can_write_external_feature_cache_refs_with_thin_rows(tmp_p
     cached_stats = scan_streaming_idm_stats(output_path, feature_mode="summary")
     assert cached_stats["input_dim"] == inline_summary["feature_dim"]
     assert cached_stats["num_examples"] == 3
+
+
+def test_materializer_tensor_embedder_avoids_python_feature_vectors_for_cache(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    torch = pytest.importorskip("torch")
+
+    class TensorOnlyEmbedder:
+        backend = "tensor-only"
+        embedding_dim = 2
+
+        def embed_frames(self, frames):  # pragma: no cover - must not be called in cache mode.
+            raise AssertionError("external feature cache path should use embed_frames_tensor")
+
+        def embed_frames_tensor(self, frames):
+            values = torch.arange(len(frames) * 2, dtype=torch.float32).reshape(len(frames), 2)
+            self.embedding_dim = 2
+            return values
+
+    monkeypatch.setattr(fem, "_build_embedder", lambda _config: TensorOnlyEmbedder())
+    rows = [_row(Path(f"/root/work/data/missing_{idx}.mkv#frame={idx}"), 0.2 + idx, idx=idx) for idx in range(3)]
+    input_path = tmp_path / "input.jsonl"
+    input_path.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
+    output_path = tmp_path / "thin.jsonl"
+    summary_path = tmp_path / "summary.json"
+    cache_path = tmp_path / "features.pt"
+
+    summary = materialize_frame_embedding_features(
+        FrameEmbeddingMaterializerConfig(
+            input_path=input_path,
+            output_path=output_path,
+            summary_out=summary_path,
+            backend="tensor-only",
+            frame_source="compact-luma",
+            frame_offsets=(0, 2),
+            image_size=8,
+            include_summary_features=False,
+            feature_cache_out=cache_path,
+            thin_output=True,
+            batch_size=2,
+            round_digits=-1,
+        )
+    )
+
+    assert summary["status"] == "pass"
+    assert summary["feature_cache_ref_rows"] == 3
+    payload = torch.load(cache_path, map_location="cpu", weights_only=False)
+    assert tuple(payload["features"].shape) == (3, 6)
+    assert payload["features"][0].tolist() == [0.0, 1.0, 2.0, 3.0, 2.0, 2.0]
+    thin_rows = _read_jsonl(output_path)
+    assert thin_rows[0]["__streaming_idm_feature_cache"]["row_index"] == 0
+    assert thin_rows[2]["__streaming_idm_feature_cache"]["row_index"] == 2
+    assert thin_rows[0]["frame_embedding_feature_metadata"]["tensor_cache_direct"] is True
