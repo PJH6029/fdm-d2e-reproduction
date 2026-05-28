@@ -1,0 +1,57 @@
+{
+  "schema": "g005_frozen_frame_embedding_materializer.v1",
+  "status": "pass",
+  "error_count": 0,
+  "errors": [],
+  "source_label": "g005_dinov2_launcher4096_vec_shard1",
+  "input": {
+    "path": "/tmp/g005_target_sample4096.jsonl",
+    "bytes": 83758477,
+    "mtime_ns": 1779929971811316037,
+    "sha256": "aa418b0c5cde4a0da404e9ce4435028c9b954814e43baef1675a9f63a7ebfdb6"
+  },
+  "output": {
+    "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-03efbb7-frameembed-optimized-debug/outputs/data/g005_debug_dinov2_launcher4096_vec/shards/shard_0001.jsonl",
+    "bytes": 79313140,
+    "mtime_ns": 1779930394000000000,
+    "sha256": "4274423c133c3523bac1a8809f6069bc5cfb88bcdd1b62071d68111b52142b50"
+  },
+  "rows_seen": 2048,
+  "source_rows_scanned": 4096,
+  "source_rows_skipped": 2048,
+  "rows_written": 2048,
+  "feature_override_rows": 2048,
+  "feature_dim": 2120,
+  "unique_feature_lengths": [
+    2120
+  ],
+  "embedding_dim_per_frame": 384,
+  "backend": "dinov2-torchhub",
+  "model_id": "facebook/dinov2-small",
+  "frame_offsets": [
+    0,
+    2
+  ],
+  "frame_source": "compact-luma",
+  "image_size": 224,
+  "frame_fps": 20,
+  "missing_frame_policy": "zero",
+  "path_remaps": [],
+  "missing_frames": 0,
+  "video_restarts": 0,
+  "batch_size": 256,
+  "embedding_pooling": "cls",
+  "hf_preprocess": null,
+  "normalize_embeddings": true,
+  "include_embedding_deltas": true,
+  "include_summary_features": true,
+  "summary_feature_mode": "summary_compact_luma16_pair_shift_time_state_duration_prior_action",
+  "max_rows": 2048,
+  "skip_rows": 2048,
+  "round_digits": 6,
+  "dataset_fingerprint": "22ea6d7e87a0d9a8f21b92752f54ef97060f86baf8659250387def6dc6d4509a",
+  "started_at_unix": 1779930304.344716,
+  "finished_at_unix": 1779930394.5052118,
+  "elapsed_seconds": 90.16049599647522,
+  "claim_boundary": "Frozen frame-embedding materialization is a prefix-gated G005 diagnostic/preparation artifact. It is not trained-model evidence until a downstream IDM run beats the paper-target metrics."
+}

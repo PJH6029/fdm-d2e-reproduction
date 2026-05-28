@@ -656,3 +656,28 @@ feature path or otherwise batch CPU preprocessing/serialization so H200 wall-clo
 is dominated by model forward work before spending a production reservation.
 Claim boundary: materialization throughput evidence only; no trained IDM metric
 evidence and no G005 success claim.
+
+### 2026-05-28 KST — vectorized compact-luma preprocessing gate
+
+After commit `03efbb7` vectorized compact-luma byte-frame batching before the
+DINO forward pass, reran the same 4,096-row launcher gate on the debug pod.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_run_summary.json`
+  — `status=pass`, `rows_written=4096`, `combined_rows=4096`, elapsed `91.67s`.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_gpu_monitor.csv`
+  — valid pre-launch monitor, GPU0/GPU1 max utilization `10%`/`59%`, means
+  `0.24%`/`1.14%`.
+- Per-shard logs no longer show the previous non-writable `torch.frombuffer`
+  warning.
+
+Finding: vectorized preprocessing slightly improves wall-clock versus the prior
+4,096-row gate (`93.64s` → `91.67s`) and cleans the warning, but it does not fix
+mean GPU utilization. This falsifies the hypothesis that the per-frame tensor
+construction loop was the dominant bottleneck. Full DINO extraction still needs a
+larger change (binary/tensor cache writer, more aggressive batching around model
+forward, or a different representation branch) before production-scale GPU use.
+
+Claim boundary: preprocessing/throughput diagnostic only; no trained IDM metric
+evidence and no G005 success claim.

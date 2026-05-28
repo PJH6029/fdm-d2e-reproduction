@@ -86,10 +86,18 @@
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_shard0_progress.json",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_shard1_progress.json",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_shard0.log",
-        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_shard1.log"
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_shard1.log",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_run_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_gpu_monitor.csv",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_shard0_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_shard1_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_shard0_progress.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_shard1_progress.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_shard0.log",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_shard1.log"
       ],
       "claim_boundary": "Materialization/code-path gates only; no trained-model metric evidence; late sharded monitor is not a strong GPU-utilization claim.",
-      "decision": "do_not_scale_json_expanded_dinov2_path_without_tensor_cache_or_cpu_serialization_fix",
+      "decision": "do_not_scale_dinov2_branch_until_binary_cache_or_larger_representation_change",
       "finding_codes": [
         "materializer_works_on_real_rows",
         "torchhub_dinov2_works_on_debug_gpu",
@@ -104,14 +112,18 @@
         "short_dinov2_gate_still_low_mean_gpu_utilization",
         "launcher_4096_gate_passed",
         "larger_gate_observed_h200_spikes_but_low_mean_utilization",
-        "json_expanded_dinov2_path_not_scale_ready"
+        "json_expanded_dinov2_path_not_scale_ready",
+        "vectorized_compact_luma_preprocess_gate_passed",
+        "per_frame_tensor_loop_not_dominant_bottleneck",
+        "dinov2_branch_needs_binary_cache_or_representation_pivot"
       ],
       "gpu_monitor_artifacts": [
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_gpu_monitor.csv",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_b512_gpu_monitor.csv",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_late_gpu_monitor.csv",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher1024_gpu_monitor.csv",
-        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_gpu_monitor.csv"
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_gpu_monitor.csv",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_launcher4096_vec_gpu_monitor.csv"
       ],
       "implementation_artifacts": [
         "scripts/run_frame_embedding_shards.py",
@@ -141,6 +153,32 @@
         "reservation_id": "rsv-jeonghunpark-20260527-1ea75c",
         "rows_written": 4096,
         "shard_count": 2
+      },
+      "launcher_4096_vectorized_gate": {
+        "baseline_elapsed_seconds": 93.63837718963623,
+        "checkout": "03efbb7",
+        "combined_rows": 4096,
+        "elapsed_seconds": 91.671217918396,
+        "gpu_utilization_by_index": {
+          "0": {
+            "max": 10.0,
+            "mean": 0.24175824175824176,
+            "samples": 91
+          },
+          "1": {
+            "max": 59.0,
+            "mean": 1.1428571428571428,
+            "samples": 91
+          }
+        },
+        "monitor_quality": "valid_prelaunch_monitor_vectorization_insufficient",
+        "monitor_started_before_shards": true,
+        "namespace": "p-debug",
+        "pod": "debug-rsv-jeonghunpark-20260527-1ea75c",
+        "reservation_id": "rsv-jeonghunpark-20260527-1ea75c",
+        "rows_written": 4096,
+        "shard_count": 2,
+        "wall_clock_speedup_vs_previous_4096_gate": 1.0214588538901204
       },
       "launcher_debug_gate": {
         "checkout": "4c84904",
@@ -172,6 +210,7 @@
         "dinov2_torchhub_gpu_b128": 1024,
         "dinov2_torchhub_gpu_b512": 1024,
         "dinov2_torchhub_gpu_launcher_2x2048_total": 4096,
+        "dinov2_torchhub_gpu_launcher_2x2048_total_vectorized_preprocess": 4096,
         "dinov2_torchhub_gpu_launcher_2x512_total": 1024,
         "dinov2_torchhub_gpu_sharded_2x512_total": 1024,
         "dummy_compact_luma": 1000,
@@ -193,13 +232,14 @@
           512
         ]
       },
-      "status": "pass_launcher_validated_jsonl_path_still_low_mean_util",
+      "status": "pass_launcher_validated_vectorization_insufficient",
       "timing_seconds": {
         "dinov2_small_compact_luma_cpu_16_rows": 280.816091299057,
         "dinov2_torchhub_gpu_b128_1024_rows": 45.7456533908844,
         "dinov2_torchhub_gpu_b512_1024_rows": 46.3034188747406,
         "dinov2_torchhub_gpu_launcher_wall_clock_1024_rows": 26.183505058288574,
         "dinov2_torchhub_gpu_launcher_wall_clock_4096_rows": 93.63837718963623,
+        "dinov2_torchhub_gpu_launcher_wall_clock_4096_rows_vectorized_preprocess": 91.671217918396,
         "dinov2_torchhub_gpu_sharded_shard0_512_rows": 26.275585412979126,
         "dinov2_torchhub_gpu_sharded_shard1_512_rows": 26.702742338180542,
         "dinov2_torchhub_gpu_sharded_wall_clock_1024_rows_approx": 26.702742338180542
@@ -1148,7 +1188,7 @@
     }
   ],
   "recommended_next_actions": [
-    "Implement a compact tensor-cache/materialized-feature path or CPU serialization fix before any full DINO frozen-frame extraction; the 4,096-row launcher gate still has low mean H200 utilization.",
+    "Pivot frozen-frame work to a binary/tensor-cache feature path or a stronger teacher/representation branch; vectorized compact-luma preprocessing only improved 4,096-row DINO extraction by about 2%.",
     "Do not promote threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, or sequence-prior action-history prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Do not reserve H200s for a simple NEP/label-offset branch: target autocorr at +100ms has keyboard=0.1745, mouse-button=0.0215, Pearson X/Y=0.4149/0.3862 and no nonzero shift meets paper targets on the 320k prefix.",
     "Next G005 branch must change the supervision/modeling problem, not just add causal action history: investigate teacher-assisted event decoding or per-recording latent state estimation that is causal at inference and validated on prefix rows before full 4xH200.",
@@ -1158,5 +1198,5 @@
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779930134.5381894
+  "updated_at_epoch": 1779930444.8870072
 }
