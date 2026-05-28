@@ -340,6 +340,11 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
             "button_threshold": 0.99,
             "button_event_auxiliary": True,
             "button_event_loss_weight": 1.0,
+            "button_transition_softmax": True,
+            "button_probability_source": "button_class",
+            "button_event_probability_source": "button_class",
+            "button_class_loss_weight": 1.0,
+            "button_class_no_button_weight": 0.2,
             "button_event_threshold": 0.5,
             "button_event_force_topk": 1,
             "button_event_budgeted_unmasking": True,
@@ -359,6 +364,10 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
     assert summary["button_event_budget"]["status"] == "pass"
     assert summary["button_event_budget"]["multiplier_calibration"]["status"] == "pass"
     assert summary["factorization"]["button_event_auxiliary"] is True
+    assert summary["factorization"]["button_transition_softmax"] is True
+    assert summary["factorization"]["button_probability_source"] == "button_class"
+    assert summary["factorization"]["button_event_probability_source"] == "button_class"
+    assert any("button_class" in row for row in summary["history"])
     assert "button_event_min_token_probability" in summary["factorization"]
     assert "button_event_budget_score_threshold" in summary["factorization"]
     assert summary["factorization"]["button_event_budget_applies_to_all_buttons"] is True
