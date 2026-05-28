@@ -1,0 +1,68 @@
+{
+  "schema": "g005_idm_temporal_masked_diffusion_probe_diagnosis.v1",
+  "status": "blocked_for_completion_continue_exploration",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "created_at_kst": "2026-05-29T03:13:30.445936+09:00",
+  "question": "Did the FDM-1-style temporal masked-diffusion IDM with train-only retrieval priors beat the D2E paper G-IDM targets?",
+  "answer": "No.",
+  "evidence_summary": {
+    "paper_keyboard_key_accuracy": 0.01042054335690361,
+    "paper_mouse_button_accuracy": 0.0,
+    "paper_mouse_move_pearson_x": 0.02968279912722567,
+    "paper_mouse_move_pearson_y": null,
+    "paper_mouse_scale_ratio_x": 246.1498708010336,
+    "paper_mouse_scale_ratio_y": null,
+    "strict_keyboard_accuracy": 0.01736745886654479,
+    "strict_mouse_button_f1": 0.0,
+    "strict_no_button_false_positive_rate": 0.0
+  },
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "root_cause_hypotheses_ranked": [
+    {
+      "rank": 1,
+      "hypothesis": "The visual encoder/retrieval prior clusters similar luma windows but does not learn the sparse key/button action identity boundary required by D2E paper metrics.",
+      "evidence": [
+        "keyboard key accuracy remains 0.0104 vs 0.73 target",
+        "button semantic overlap and exact TP are zero despite train-only retrieval index status=pass"
+      ]
+    },
+    {
+      "rank": 2,
+      "hypothesis": "Family threshold calibration optimizes no-button FPR too conservatively and collapses button recall.",
+      "evidence": [
+        "strict no-button FPR is 0.0, but strict mouse-button recall/F1 are 0.0 and false negatives=143/143"
+      ]
+    },
+    {
+      "rank": 3,
+      "hypothesis": "Post-checkpoint prediction/retrieval path has low H200 utilization and must be vectorized/batched before larger probes.",
+      "evidence": [
+        {
+          "samples": 57,
+          "gpu_indices": [
+            0
+          ],
+          "avg_gpu_utilization_pct": 21.350877192982455,
+          "max_gpu_utilization_pct": 71.0,
+          "avg_memory_utilization_pct": 2.8771929824561404,
+          "max_memory_utilization_pct": 15.0,
+          "avg_power_watts": 167.92543859649123,
+          "low_utilization_diagnosis": "GPU utilization was strong during training/embedding phases but dropped during post-checkpoint retrieval/prediction, indicating CPU/Python or small-batch retrieval bottleneck for future scaling hardening."
+        }
+      ]
+    }
+  ],
+  "decision": "Do not checkpoint G005 complete. Keep G005 in progress and launch the next recipe-faithful branch only after fixing action identity learning and/or retrieval vectorization.",
+  "next_actions": [
+    "Stay recipe-faithful but replace post-hoc sparse thresholding with contrastive/video-token/action-token alignment or larger/full-corpus masked-diffusion pretraining that directly improves masked action identity; retrieval-only prior is insufficient.",
+    "Preserve retrieval probe as negative evidence; do not re-run this exact branch without a new action-token learning change."
+  ],
+  "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_retrieval_prior_prefix80k_h200_compact_summary.json"
+}
