@@ -1,0 +1,68 @@
+{
+  "schema": "g005_idm_temporal_masked_diffusion_probe_diagnosis.v1",
+  "status": "blocked_for_completion_continue_exploration",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "created_at_kst": "2026-05-29T03:41:29.773336+09:00",
+  "question": "Did PAD-aware temporal masked-diffusion IDM beat D2E paper G-IDM targets?",
+  "answer": "No.",
+  "evidence_summary": {
+    "paper_keyboard_key_accuracy": 0.02465233881163085,
+    "paper_mouse_button_accuracy": 0.0,
+    "paper_mouse_move_pearson_x": -0.03867230660931357,
+    "paper_mouse_move_pearson_y": -0.01642279983645264,
+    "paper_mouse_scale_ratio_x": 358.1203007518797,
+    "paper_mouse_scale_ratio_y": 571.2075471698114,
+    "strict_keyboard_accuracy": 0.07952468007312614,
+    "strict_mouse_button_f1": 0.0,
+    "strict_no_button_false_positive_rate": 0.0
+  },
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "improvement_over_prior_retrieval_probe": {
+    "keyboard_key_accuracy_delta": 0.014231795454727239,
+    "strict_keyboard_accuracy_delta": 0.062157221206581355
+  },
+  "root_cause_hypotheses_ranked": [
+    {
+      "rank": 1,
+      "hypothesis": "PAD-aware loss reduces NOOP padding collapse and helps keyboard, but softmax candidate calibration still does not create transferable button token identity.",
+      "evidence": [
+        "diagnostic predicted button examples=0 while ground truth button examples=50",
+        "strict target button false negatives=143/143"
+      ]
+    },
+    {
+      "rank": 2,
+      "hypothesis": "Mouse movement tokenization/prediction remains poorly aligned after PAD-aware change.",
+      "evidence": [
+        "Pearson X/Y negative and scale ratios hundreds of times target range"
+      ]
+    },
+    {
+      "rank": 3,
+      "hypothesis": "Post-checkpoint retrieval/prediction path is under-utilizing H200, making larger probes inefficient until vectorized/sharded.",
+      "evidence": [
+        {
+          "samples": 69,
+          "gpu_indices": [
+            0
+          ],
+          "avg_gpu_utilization_pct": 23.231884057971016,
+          "max_gpu_utilization_pct": 71.0,
+          "avg_memory_utilization_pct": 3.536231884057971,
+          "max_memory_utilization_pct": 15.0,
+          "avg_power_watts": 194.02608695652174,
+          "low_utilization_diagnosis": "Training used H200 moderately, but post-checkpoint prediction/retrieval stayed low-utilization; future scaling should vectorize or shard retrieval/prediction."
+        }
+      ]
+    }
+  ],
+  "decision": "Do not checkpoint G005 complete. Preserve as positive keyboard-direction evidence only and continue recipe-faithful action identity learning.",
+  "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_padaware_prefix80k_h200_compact_summary.json"
+}

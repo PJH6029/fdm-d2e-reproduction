@@ -1,0 +1,563 @@
+{
+  "schema": "g005_idm_temporal_masked_diffusion_probe_compact_summary.v1",
+  "status": "nonterminal_negative_probe",
+  "created_at_kst": "2026-05-29T03:41:29.773336+09:00",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "claim_boundary": "Negative bounded-prefix H200 probe evidence only. PAD-aware temporal masked-diffusion improved keyboard but does not satisfy paper targets or G005 completion.",
+  "commit": "fdf2ed6",
+  "config": "configs/model/idm_temporal_masked_diffusion_d2e_luma_window5_padaware_prefix80k.yaml",
+  "model_name": "idm_temporal_masked_diffusion_d2e_luma_window5_padaware_prefix80k",
+  "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM over temporal action-token sequences conditioned on all D2E frame-window tokens in the local window.",
+  "method": {
+    "preserve_pad_action_slots": true,
+    "video_encoder_arch": "compact_luma_window_cnn",
+    "loss_weights": {
+      "noop_loss_weight": 0.05,
+      "pad_loss_weight": 0.0,
+      "preserve_pad_action_slots": true,
+      "action_loss_weight": 1.0,
+      "keyboard_loss_weight": 16.0,
+      "mouse_button_loss_weight": 32.0,
+      "mouse_move_loss_weight": 2.0,
+      "video_reconstruction_aux_weight": 0.05,
+      "temporal_event_auxiliary": true,
+      "key_event_aux_weight": 0.5,
+      "button_event_aux_weight": 1.0,
+      "key_event_pos_weight": 8.0,
+      "button_event_pos_weight": 24.0,
+      "event_auxiliary_candidate_score_blend": 0.25,
+      "retrieval_action_prior_blend": 0.45,
+      "token_loss_type": "focal",
+      "token_focal_gamma": 2.0
+    },
+    "family_non_noop_budget": {
+      "schema": "temporal_family_non_noop_budget_calibration.v1",
+      "status": "pass",
+      "rows": 2000,
+      "families": {
+        "keyboard": {
+          "status": "pass",
+          "family": "keyboard",
+          "selected_threshold": 0.27214678399434683,
+          "selected_row": {
+            "threshold": 0.27214678399434683,
+            "score": 0.03851851851851852,
+            "predicted_non_noop_tokens": 877,
+            "keyboard_key_accuracy": 0.018518518518518517,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          "candidate_count": 256,
+          "max_tokens_per_row": 2,
+          "sweep_preview": [
+            {
+              "threshold": 0.000945011226576753,
+              "score": 0.011012101210121012,
+              "predicted_non_noop_tokens": 2123,
+              "keyboard_key_accuracy": 0.009900990099009901,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.0025616407583584078,
+              "score": 0.01105920799692426,
+              "predicted_non_noop_tokens": 2112,
+              "keyboard_key_accuracy": 0.009948096885813149,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.002574114514234476,
+              "score": 0.01105920799692426,
+              "predicted_non_noop_tokens": 2112,
+              "keyboard_key_accuracy": 0.009948096885813149,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.0025771159780560993,
+              "score": 0.011063512668878311,
+              "predicted_non_noop_tokens": 2111,
+              "keyboard_key_accuracy": 0.0099524015577672,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.0025840224694800564,
+              "score": 0.011063512668878311,
+              "predicted_non_noop_tokens": 2111,
+              "keyboard_key_accuracy": 0.0099524015577672,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "omitted_rows": 246
+            },
+            {
+              "threshold": 0.3451618195900917,
+              "score": 0.03347670250896057,
+              "predicted_non_noop_tokens": 627,
+              "keyboard_key_accuracy": 0.017921146953405017,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.35276592768898607,
+              "score": 0.037546754675467545,
+              "predicted_non_noop_tokens": 395,
+              "keyboard_key_accuracy": 0.0231023102310231,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.38777747335082297,
+              "score": 0.026056270863137818,
+              "predicted_non_noop_tokens": 248,
+              "keyboard_key_accuracy": 0.017167381974248927,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.5680951625108719,
+              "score": 0.017403896787783042,
+              "predicted_non_noop_tokens": 199,
+              "keyboard_key_accuracy": 0.011848341232227487,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 1.1,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 0,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            }
+          ]
+        },
+        "mouse_button": {
+          "status": "pass",
+          "family": "mouse_button",
+          "selected_threshold": 0.029251059690093624,
+          "selected_row": {
+            "threshold": 0.029251059690093624,
+            "score": 0.08868169038833246,
+            "predicted_non_noop_tokens": 27,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.05952380952380952,
+            "mouse_button_f1": 0.09411764705882353,
+            "no_button_false_positive_rate": 0.009287925696594427,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          "candidate_count": 256,
+          "max_tokens_per_row": 2,
+          "sweep_preview": [
+            {
+              "threshold": 0.0009178012769552879,
+              "score": 0.08279877283502998,
+              "predicted_non_noop_tokens": 44,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.04950495049504951,
+              "mouse_button_f1": 0.08163265306122448,
+              "no_button_false_positive_rate": 0.015995872033023734,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.0010558162321103737,
+              "score": 0.08329764071813542,
+              "predicted_non_noop_tokens": 42,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.050505050505050504,
+              "mouse_button_f1": 0.08247422680412371,
+              "no_button_false_positive_rate": 0.015479876160990712,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.0010569061774984001,
+              "score": 0.08406097516234362,
+              "predicted_non_noop_tokens": 40,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.05154639175257732,
+              "mouse_button_f1": 0.08421052631578947,
+              "no_button_false_positive_rate": 0.014447884416924664,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.0010587496577752753,
+              "score": 0.08484248255046219,
+              "predicted_non_noop_tokens": 38,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.05263157894736842,
+              "mouse_button_f1": 0.08602150537634409,
+              "no_button_false_positive_rate": 0.013415892672858616,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.0010592833929220214,
+              "score": 0.08564302628003573,
+              "predicted_non_noop_tokens": 36,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.053763440860215055,
+              "mouse_button_f1": 0.08791208791208792,
+              "no_button_false_positive_rate": 0.01238390092879257,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "omitted_rows": 246
+            },
+            {
+              "threshold": 0.03338151129267115,
+              "score": 0.02396825396825397,
+              "predicted_non_noop_tokens": 2,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.015873015873015872,
+              "mouse_button_f1": 0.03125,
+              "no_button_false_positive_rate": 0.0005159958720330237,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.03338381455580727,
+              "score": 0.02396825396825397,
+              "predicted_non_noop_tokens": 2,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.015873015873015872,
+              "mouse_button_f1": 0.03125,
+              "no_button_false_positive_rate": 0.0005159958720330237,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.033389970374289785,
+              "score": 0.02396825396825397,
+              "predicted_non_noop_tokens": 2,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.015873015873015872,
+              "mouse_button_f1": 0.03125,
+              "no_button_false_positive_rate": 0.0005159958720330237,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.033484585400972516,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 1,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0005159958720330237,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 1.1,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 0,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            }
+          ]
+        },
+        "mouse_move": {
+          "status": "pass",
+          "family": "mouse_move",
+          "selected_threshold": 0.6309667783789337,
+          "selected_row": {
+            "threshold": 0.6309667783789337,
+            "score": 0.017855348552443057,
+            "predicted_non_noop_tokens": 1544,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.021872097956748698,
+            "mouse_move_pearson_y": 0.013838599148137419
+          },
+          "candidate_count": 256,
+          "max_tokens_per_row": 2,
+          "sweep_preview": [
+            {
+              "threshold": 0.0009061881573870778,
+              "score": -0.00326238652029446,
+              "predicted_non_noop_tokens": 4000,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": -0.0070073455276368195,
+              "mouse_move_pearson_y": 0.00048257248704789985
+            },
+            {
+              "threshold": 0.0029317489825189114,
+              "score": -0.00326238652029446,
+              "predicted_non_noop_tokens": 4000,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": -0.0070073455276368195,
+              "mouse_move_pearson_y": 0.00048257248704789985
+            },
+            {
+              "threshold": 0.003284859929069877,
+              "score": -0.00326238652029446,
+              "predicted_non_noop_tokens": 4000,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": -0.0070073455276368195,
+              "mouse_move_pearson_y": 0.00048257248704789985
+            },
+            {
+              "threshold": 0.005281939171254635,
+              "score": -0.00326238652029446,
+              "predicted_non_noop_tokens": 4000,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": -0.0070073455276368195,
+              "mouse_move_pearson_y": 0.00048257248704789985
+            },
+            {
+              "threshold": 0.0055708626674711706,
+              "score": -0.00326238652029446,
+              "predicted_non_noop_tokens": 4000,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": -0.0070073455276368195,
+              "mouse_move_pearson_y": 0.00048257248704789985
+            },
+            {
+              "omitted_rows": 246
+            },
+            {
+              "threshold": 0.804997980594635,
+              "score": 0.012202771194885912,
+              "predicted_non_noop_tokens": 498,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": 0.021977326792721935,
+              "mouse_move_pearson_y": 0.0024282155970498888
+            },
+            {
+              "threshold": 0.8155995607376099,
+              "score": 0.012182241670113654,
+              "predicted_non_noop_tokens": 301,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": 0.02325918148443352,
+              "mouse_move_pearson_y": 0.0011053018557937863
+            },
+            {
+              "threshold": 0.8223442302474976,
+              "score": 0.011656910962805394,
+              "predicted_non_noop_tokens": 238,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": 0.023313821925610788,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 0.8278459906578064,
+              "score": 0.009857714219226,
+              "predicted_non_noop_tokens": 143,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": 0.019715428438452,
+              "mouse_move_pearson_y": null
+            },
+            {
+              "threshold": 1.1,
+              "score": 0.0,
+              "predicted_non_noop_tokens": 0,
+              "keyboard_key_accuracy": 0.0,
+              "mouse_button_accuracy": 0.0,
+              "mouse_button_f1": 0.0,
+              "no_button_false_positive_rate": 0.0,
+              "mouse_move_pearson_x": null,
+              "mouse_move_pearson_y": null
+            }
+          ]
+        }
+      },
+      "max_no_button_fpr": 0.1,
+      "claim_boundary": "Family budgets are calibrated on held-out training rows only; target labels remain evaluation/diagnostic only."
+    },
+    "retrieval_action_prior": {
+      "schema": "temporal_retrieval_action_prior_index.v1",
+      "status": "pass",
+      "rows": 78000,
+      "embedding_dim": 384,
+      "top_k": 32,
+      "temperature": 0.08,
+      "claim_boundary": "Retrieval index uses fit/train rows only as a video/action-token denoising prior; target labels are never indexed."
+    },
+    "key_change_vs_retrieval_prior": "keyboard key accuracy improved from retrieval-prior 0.01042054335690361 to 0.02465233881163085 after preserving PAD slots, but still far below target 0.73."
+  },
+  "data_scope": {
+    "train_rows": 80000,
+    "fit_rows": 78000,
+    "calibration_rows": 2000,
+    "target_rows": 5000,
+    "temporal_window": 7,
+    "split_tags": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ]
+  },
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783,
+    "scale_ratio_x_max": 1.23,
+    "scale_ratio_y_max": 1.31
+  },
+  "observed_metrics_all": {
+    "paper_keyboard_key_accuracy": 0.02465233881163085,
+    "paper_mouse_button_accuracy": 0.0,
+    "paper_mouse_move_pearson_x": -0.03867230660931357,
+    "paper_mouse_move_pearson_y": -0.01642279983645264,
+    "paper_mouse_scale_ratio_x": 358.1203007518797,
+    "paper_mouse_scale_ratio_y": 571.2075471698114,
+    "strict_keyboard_accuracy": 0.07952468007312614,
+    "strict_mouse_button_f1": 0.0,
+    "strict_no_button_false_positive_rate": 0.0
+  },
+  "target_gap": {
+    "keyboard_key_accuracy_gap": -0.7053476611883691,
+    "mouse_button_accuracy_gap": -0.957,
+    "pearson_x_gap": -0.8346723066093136,
+    "pearson_y_gap": -0.7994227998364527
+  },
+  "failure_signature": {
+    "button_semantic_overlap": 0,
+    "diagnostic_ground_truth_examples": 50,
+    "diagnostic_predicted_examples": 0,
+    "exact_button_tp": 0,
+    "mouse_button_false_negatives": 143,
+    "note": "PAD-aware loss made target keyboard nonzero and higher than prior temporal retrieval probe, but button emission still abstains entirely on target and mouse motion regressed."
+  },
+  "gpu_monitor": {
+    "samples": 69,
+    "gpu_indices": [
+      0
+    ],
+    "avg_gpu_utilization_pct": 23.231884057971016,
+    "max_gpu_utilization_pct": 71.0,
+    "avg_memory_utilization_pct": 3.536231884057971,
+    "max_memory_utilization_pct": 15.0,
+    "avg_power_watts": 194.02608695652174,
+    "low_utilization_diagnosis": "Training used H200 moderately, but post-checkpoint prediction/retrieval stayed low-utilization; future scaling should vectorize or shard retrieval/prediction."
+  },
+  "wandb": {
+    "status": "complete",
+    "run_name": "g005_idm_temporal_masked_diffusion_luma_window5_padaware_prefix80k_h200",
+    "wandb_run_id": "av941smb",
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/av941smb"
+  },
+  "evidence": {
+    "run": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_padaware_prefix80k_h200_run.json",
+      "sha256": "d07ade8797ddcc0492a82bc141cdc4b656f3c80b119f454fcb950a62c1bbde9c",
+      "bytes": 2540
+    },
+    "summary": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_padaware_prefix80k_summary.json",
+      "sha256": "21d43356aab718379b1d4ae99f6aa6198448bc157c66912217f5f9d7b134db55",
+      "bytes": 27605
+    },
+    "metrics": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_padaware_prefix80k_h200_paper_metrics.json",
+      "sha256": "7b1281a08d9f776110ce3bac5680627100fac2575c60ff624d613077d004e942",
+      "bytes": 11257
+    },
+    "diag": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_padaware_prefix80k_h200_button_semantic_diagnostic.json",
+      "sha256": "94aa074e33afa4f31efaca6c5eae47513a968a3a57d05ae99a17f6d5df78c62d",
+      "bytes": 20302
+    },
+    "gpu": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_padaware_prefix80k_h200_gpu_monitor.csv",
+      "sha256": "b162a653e94829bf901018ea4971e58d734dae0293c09d2440c87274ef98db19",
+      "bytes": 4732
+    },
+    "wandb": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_padaware_prefix80k_h200_wandb_status.json",
+      "sha256": "b13aef301c7ff57605fac11f5b7aaa4cdec2fad7eeaf592ee7c02c7e831a2a0a",
+      "bytes": 1063
+    },
+    "resolved_config": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_padaware_prefix80k_h200_resolved_config.json",
+      "sha256": "5a0fad0bfdd5a94ef54fbf2625d3d4ec97fb8c724b7c9bc5c794dabf10ff134a",
+      "bytes": 26338
+    },
+    "predictions": {
+      "path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_padaware_prefix80k_h200_predictions.jsonl",
+      "sha256": "6e9045b660d2bffb26c27efda8771c348fdcc3cbb9b24f6abf477368d1a6e0e1",
+      "bytes": 493551
+    },
+    "reservation": {
+      "path": "artifacts/idm/g005_padaware_prefix80k_reservation_context.json",
+      "sha256": "6a123a142c05f6a307d9bb46f624de469fc18f10495f268eca43e9f1439fb4f4",
+      "bytes": 1413
+    }
+  },
+  "next_branch_recommendation": "Keep PAD-aware sequence diffusion, but add a recipe-faithful action-token identity objective: contrastive matching between video tokens and true action-token sets or family-aware token-presence logits calibrated with train-only targets, rather than relying on thresholded softmax candidates alone."
+}
