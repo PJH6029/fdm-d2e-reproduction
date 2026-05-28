@@ -5,7 +5,7 @@ import random
 from dataclasses import dataclass
 from typing import Any, Iterable, Sequence
 
-from fdm_d2e.tokenization.actions import _clean_key, token_to_delta_class
+from fdm_d2e.tokenization.actions import _clean_key, bin_delta, token_to_delta_class
 
 FDM1_ACTION_PAD = "<FDM1_ACTION_PAD>"
 FDM1_ACTION_MASK = "<FDM1_ACTION_MASK>"
@@ -85,6 +85,42 @@ def fdm1_mouse_axis_class(
     magnitude = math.log1p(normalized * (base - 1.0)) / math.log(base)
     bucket = max(1, min(half, int(math.ceil(magnitude * half))))
     return bins // 2 + (bucket if value > 0 else -bucket)
+
+
+def _suffix_to_class_index(suffix: str, *, bins: int = FDM1_MOUSE_AXIS_BINS) -> int:
+    zero = bins // 2
+    normalized = str(suffix).upper()
+    if normalized in {"Z0", "Z00"}:
+        return zero
+    if len(normalized) < 2 or normalized[0] not in {"P", "N"}:
+        raise ValueError(f"invalid FDM1 mouse-axis suffix: {suffix}")
+    magnitude = int(normalized[1:])
+    if magnitude < 1 or magnitude > zero:
+        raise ValueError(f"FDM1 mouse-axis suffix magnitude out of range: {suffix}")
+    return zero + (magnitude if normalized[0] == "P" else -magnitude)
+
+
+def fdm1_mouse_axis_delta(
+    class_index: int,
+    *,
+    screen_extent: int | float,
+    bins: int = FDM1_MOUSE_AXIS_BINS,
+    exp_base: float = FDM1_MOUSE_EXP_BASE,
+) -> float:
+    """Representative pixel delta for an inferred FDM-1-style axis bin."""
+
+    bins = int(bins)
+    zero = bins // 2
+    offset = int(class_index) - zero
+    if offset == 0:
+        return 0.0
+    half = zero
+    bucket = min(half, max(1, abs(offset)))
+    base = max(2.0, float(exp_base))
+    lower = 0.0 if bucket == 1 else (base ** ((bucket - 1) / half) - 1.0) / (base - 1.0)
+    upper = (base ** (bucket / half) - 1.0) / (base - 1.0)
+    normalized_midpoint = (lower + upper) / 2.0
+    return (1.0 if offset > 0 else -1.0) * normalized_midpoint * max(1.0, float(screen_extent))
 
 
 def fdm1_mouse_axis_token(axis: str, delta: int | float, *, screen_extent: int | float) -> str:
@@ -177,6 +213,40 @@ def canonical_action_slot_record(
     kept = tuple(tokens[:max_slots])
     overflow = tuple(tokens[max_slots:])
     return ActionSlotRecord(tokens=kept, overflow_tokens=overflow, source_token_count=len(tokens), max_slots=max_slots)
+
+
+def d2e_metric_tokens_from_fdm1_tokens(
+    tokens: Iterable[str],
+    *,
+    screen_width: int = 854,
+    screen_height: int = 480,
+    drop_noop: bool = True,
+) -> list[str]:
+    """Convert recipe-shaped FDM1 mouse-bin tokens back to D2E metric tokens.
+
+    The model can train with 49-bin public-recipe mouse tokens while D2E paper
+    metrics expect the repo's coarser `MOUSE_DX_*` / `MOUSE_DY_*` token family.
+    This adapter is intentionally lossy and auditable: exact D2E metric success
+    must be evaluated after this conversion, not on private FDM1 token names.
+    """
+
+    converted: list[str] = []
+    for raw in tokens:
+        token = str(raw)
+        if token in SPECIAL_ACTION_TOKENS or (drop_noop and token == FDM1_ACTION_NOOP):
+            continue
+        if token.startswith("FDM1_MOUSE_DX_"):
+            suffix = token.rsplit("_", 1)[-1]
+            delta = fdm1_mouse_axis_delta(_suffix_to_class_index(suffix), screen_extent=screen_width)
+            converted.append(f"MOUSE_DX_{bin_delta(delta)}")
+            continue
+        if token.startswith("FDM1_MOUSE_DY_"):
+            suffix = token.rsplit("_", 1)[-1]
+            delta = fdm1_mouse_axis_delta(_suffix_to_class_index(suffix), screen_extent=screen_height)
+            converted.append(f"MOUSE_DY_{bin_delta(delta)}")
+            continue
+        converted.append(token)
+    return converted or ([FDM1_ACTION_NOOP] if not drop_noop else [])
 
 
 def build_action_vocab(rows: Iterable[dict[str, Any]], *, max_slots: int, min_count: int = 1) -> list[str]:

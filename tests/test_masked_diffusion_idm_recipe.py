@@ -12,6 +12,8 @@ from fdm_d2e.training.masked_diffusion_idm import (
     FDM1_ACTION_PAD,
     canonical_action_slot_record,
     canonical_fdm1_action_tokens,
+    d2e_metric_tokens_from_fdm1_tokens,
+    fdm1_mouse_axis_delta,
     corrupt_action_slots,
     fdm1_mouse_axis_class,
     fdm1_mouse_axis_token,
@@ -30,6 +32,8 @@ def test_fdm1_mouse_axis_bins_are_symmetric_and_exponential():
     assert neg_small == 24 - (small - 24)
     assert fdm1_mouse_axis_token("x", 1, screen_extent=1920).startswith("FDM1_MOUSE_DX_P")
     assert fdm1_mouse_axis_token("y", -1, screen_extent=1080).startswith("FDM1_MOUSE_DY_N")
+    assert fdm1_mouse_axis_delta(small, screen_extent=1920) > 0
+    assert fdm1_mouse_axis_delta(neg_small, screen_extent=1920) < 0
 
 
 def test_canonical_tokens_preserve_event_multiplicity_and_press_release():
@@ -81,3 +85,19 @@ def test_iterative_unmask_schedule_and_topk_selection():
     assert len(counts) == 16
     assert counts[-1] == 0
     assert select_topk_masked([0.2, 0.9, 0.9, 0.1], [True, True, True, False], k=2) == [1, 2]
+
+
+def test_fdm1_tokens_convert_back_to_d2e_metric_tokens():
+    tokens = [
+        "KEY_PRESS_W",
+        fdm1_mouse_axis_token("x", 8, screen_extent=854),
+        fdm1_mouse_axis_token("y", -8, screen_extent=480),
+        FDM1_ACTION_NOOP,
+        FDM1_ACTION_PAD,
+    ]
+    converted = d2e_metric_tokens_from_fdm1_tokens(tokens, screen_width=854, screen_height=480)
+    assert converted[0] == "KEY_PRESS_W"
+    assert any(token.startswith("MOUSE_DX_") for token in converted)
+    assert any(token.startswith("MOUSE_DY_") for token in converted)
+    assert FDM1_ACTION_NOOP not in converted
+    assert FDM1_ACTION_PAD not in converted
