@@ -1,0 +1,41 @@
+{
+  "schema": "masked_diffusion_idm_train_summary.v1",
+  "status": "pass",
+  "model_name": "idm_masked_diffusion_d2e_prefix20k_keyheavy",
+  "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM over action tokens; bootstrap video features are explicitly approximate.",
+  "train_rows": 20000,
+  "target_rows": 2000,
+  "vocab_size": 115,
+  "max_slots": 16,
+  "loss_weights": {
+    "noop_loss_weight": 0.005,
+    "pad_loss_weight": 0.0,
+    "action_loss_weight": 1.0,
+    "keyboard_loss_weight": 128.0,
+    "mouse_button_loss_weight": 256.0,
+    "mouse_move_loss_weight": 0.05
+  },
+  "device": "cuda",
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 3.6294833911744773,
+      "masked_targets": 208627
+    },
+    {
+      "epoch": 2,
+      "loss": 3.145105715309993,
+      "masked_targets": 208627
+    },
+    {
+      "epoch": 3,
+      "loss": 3.0806618853044636,
+      "masked_targets": 208627
+    }
+  ],
+  "checkpoint_path": "outputs/idm_masked_diffusion_d2e_prefix20k_keyheavy/checkpoint.pt",
+  "predictions_path": "outputs/idm_masked_diffusion_d2e_prefix20k_keyheavy/predictions.jsonl",
+  "metrics_path": "outputs/idm_masked_diffusion_d2e_prefix20k_keyheavy/paper_metrics.json",
+  "wall_clock_seconds": 33.20421051979065,
+  "claim_boundary": "Prefix trainer scaffold; not G005 completion evidence without full-corpus 4xH200 run, recipe-alignment audit, paper-target win, and split statistics."
+}
