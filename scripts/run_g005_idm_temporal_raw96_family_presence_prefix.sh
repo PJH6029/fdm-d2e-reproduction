@@ -43,9 +43,11 @@ if [[ "$ENABLE_WANDB_SIDECAR" != "0" && -n "${WANDB_PROJECT:-}" ]]; then
   uv run --with wandb python scripts/watch_wandb_training.py \
     --env-file .env \
     --train-history "$OUTPUT_DIR/train_history.json" \
+    --rank-progress-dir "$OUTPUT_DIR/rank_progress" \
     --gpu-monitor "$GPU_MONITOR_LOG" \
     --run-summary "$RUN_SUMMARY" \
     --checkpoint "$OUTPUT_DIR/checkpoint.pt" \
+    --metadata "$OUTPUT_DIR/checkpoint_metadata.json" \
     --output "$WANDB_SIDECAR_STATUS" \
     --pid-file "$WANDB_SIDECAR_PID_FILE" \
     --run-name "$MODEL_SLUG" \
