@@ -139,3 +139,39 @@ def test_hash_sequence_diagnostic_can_predict_top_vocab_nonheld_key(tmp_path: Pa
     assert payload["candidate_key_codes"] == ["65"]
     assert payload["alignment"]["sequence_id_mismatches"] == 0
     assert payload["ranked_policies"][0]["keyboard_accuracy"] == 1.0
+
+
+def test_hash_sequence_diagnostic_can_emit_double_press_count(tmp_path: Path) -> None:
+    train = tmp_path / "train.jsonl"
+    target = tmp_path / "target.jsonl"
+    base = tmp_path / "base.jsonl"
+    row = {
+        "sequence_id": "train#000000",
+        "recording_id": "game/train",
+        "prior_key_hold_bins": {"87": 8},
+        "prior_since_key_transition_bins": 4,
+        "previous_event_tokens": ["KEY_PRESS_87"],
+        "prior_action_tokens": ["KEY_DOWN_87"],
+        "ground_truth_tokens": ["KEY_PRESS_87", "KEY_PRESS_87"],
+    }
+    write_jsonl(train, [row])
+    write_jsonl(target, [{**row, "sequence_id": "target#000000", "recording_id": "game/target"}])
+    write_jsonl(base, [{"sequence_id": "target#000000", "predicted_tokens": ["KEY_PRESS_87"]}])
+
+    payload = build_key_hash_sequence_diagnostic(
+        train_paths=[train],
+        target_paths=[target],
+        base_prediction_paths=[base],
+        max_train_rows=1,
+        max_target_rows=1,
+        dim=2048,
+        learning_rate=0.2,
+        press_thresholds=[0.9],
+        release_thresholds=[0.99],
+        double_press_thresholds=[0.1],
+    )
+
+    assert payload["model_positive_double_press"] == 1
+    assert payload["alignment"]["sequence_id_mismatches"] == 0
+    assert payload["ranked_policies"][0]["policy"].startswith("press_count_union_base_keys")
+    assert payload["ranked_policies"][0]["keyboard_accuracy"] == 1.0

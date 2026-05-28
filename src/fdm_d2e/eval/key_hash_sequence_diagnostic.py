@@ -278,9 +278,11 @@ class HashedLogisticKeyModel:
         self.include_visual_hash = bool(include_visual_hash)
         self.candidate_key_codes = tuple(str(code) for code in candidate_key_codes)
         self.press_weights = [0.0] * self.dim
+        self.double_press_weights = [0.0] * self.dim
         self.release_weights = [0.0] * self.dim
         self.examples = 0
         self.positive_press = 0
+        self.positive_double_press = 0
         self.positive_release = 0
 
     def _indices(self, features: Sequence[str]) -> list[int]:
@@ -307,7 +309,8 @@ class HashedLogisticKeyModel:
             weights[idx] = (weights[idx] * decay) + (lr * grad)
 
     def observe(self, row: dict[str, Any]) -> None:
-        gt = set(_tokens(row, "ground_truth_tokens"))
+        gt_counts = Counter(_tokens(row, "ground_truth_tokens"))
+        gt = set(gt_counts)
         holds = _holds(row)
         codes = set(_candidate_codes(row, self.candidate_key_codes))
         # Include current positives during training so non-held press/release
@@ -316,26 +319,41 @@ class HashedLogisticKeyModel:
         for code in sorted(codes):
             hold = holds.get(code, 0)
             indices = self._indices(_features(row, code, hold, include_visual_hash=self.include_visual_hash))
-            press = int(f"KEY_PRESS_{code}" in gt)
+            press_count = int(gt_counts.get(f"KEY_PRESS_{code}", 0))
+            press = int(press_count >= 1)
+            double_press = int(press_count >= 2)
             release = int(f"KEY_RELEASE_{code}" in gt)
             self.positive_press += press
+            self.positive_double_press += double_press
             self.positive_release += release
             # Positives are rare, so give them a modest fixed boost without making
             # every held key fire.  This is still a diagnostic, not final training.
             self._update(self.press_weights, indices, press, class_weight=8.0 if press else 1.0)
+            self._update(self.double_press_weights, indices, double_press, class_weight=12.0 if double_press else 1.0)
             self._update(self.release_weights, indices, release, class_weight=4.0 if release else 1.0)
             self.examples += 1
 
-    def predict(self, row: dict[str, Any], *, press_threshold: float, release_threshold: float) -> list[str]:
+    def predict(
+        self,
+        row: dict[str, Any],
+        *,
+        press_threshold: float,
+        release_threshold: float,
+        double_press_threshold: float | None = None,
+    ) -> list[str]:
         out: list[str] = []
         holds = _holds(row)
         for code in _candidate_codes(row, self.candidate_key_codes):
             hold = holds.get(code, 0)
             indices = self._indices(_features(row, code, hold, include_visual_hash=self.include_visual_hash))
-            if self._sigmoid(self._score(self.press_weights, indices)) >= float(press_threshold):
+            if double_press_threshold is not None and self._sigmoid(self._score(self.double_press_weights, indices)) >= float(double_press_threshold):
+                out.extend([f"KEY_PRESS_{code}", f"KEY_PRESS_{code}"])
+            elif self._sigmoid(self._score(self.press_weights, indices)) >= float(press_threshold):
                 out.append(f"KEY_PRESS_{code}")
             if self._sigmoid(self._score(self.release_weights, indices)) >= float(release_threshold):
                 out.append(f"KEY_RELEASE_{code}")
+        if double_press_threshold is not None:
+            return out
         # Deduplicate while preserving order.
         seen: set[str] = set()
         deduped: list[str] = []
@@ -383,6 +401,16 @@ def _metrics(accs: dict[str, _PaperMetricAccumulator]) -> dict[str, Any]:
     return {name: acc.metrics() for name, acc in sorted(accs.items())}
 
 
+def _merge_max_counts(base_tokens: Sequence[str], specialist_tokens: Sequence[str]) -> list[str]:
+    base_counts = Counter(str(token) for token in base_tokens)
+    specialist_counts = Counter(str(token) for token in specialist_tokens)
+    ordered = list(dict.fromkeys([str(token) for token in list(base_tokens) + list(specialist_tokens)]))
+    out: list[str] = []
+    for token in ordered:
+        out.extend([token] * max(base_counts.get(token, 0), specialist_counts.get(token, 0)))
+    return out
+
+
 def _summary(group: dict[str, Any]) -> dict[str, Any]:
     pc = group["paper_compatible"]
     strict = group["strict_local"]
@@ -413,6 +441,7 @@ def build_key_hash_sequence_diagnostic(
     candidate_key_count: int = 0,
     press_thresholds: Sequence[float] = _DEFAULT_THRESHOLDS,
     release_thresholds: Sequence[float] = _DEFAULT_THRESHOLDS,
+    double_press_thresholds: Sequence[float] = (),
     split_tags: Sequence[str] = ("temporal", "heldout_recording", "heldout_game"),
 ) -> dict[str, Any]:
     model, train_rows = train_hashed_key_model(
@@ -430,6 +459,8 @@ def build_key_hash_sequence_diagnostic(
             policies.append((f"replace_base_keys_press{press_th:g}_release{release_th:g}", "replace", float(press_th), float(release_th)))
             policies.append((f"union_base_keys_press{press_th:g}_release{release_th:g}", "union", float(press_th), float(release_th)))
             policies.append((f"press_only_union_base_keys_press{press_th:g}", "press_union", float(press_th), None))
+        for double_th in double_press_thresholds:
+            policies.append((f"press_count_union_base_keys_press{press_th:g}_double{double_th:g}", "press_count_union", float(press_th), float(double_th)))
     # Preserve insertion order but remove duplicate press_only labels emitted for each release threshold.
     seen: set[str] = set()
     unique_policies: list[tuple[str, str, float | None, float | None]] = []
@@ -470,10 +501,21 @@ def build_key_hash_sequence_diagnostic(
                     specialist = model.predict(
                         row,
                         press_threshold=float(press_th),
-                        release_threshold=1.1 if release_th is None else float(release_th),
+                        release_threshold=1.1 if mode == "press_count_union" or release_th is None else float(release_th),
+                        double_press_threshold=float(release_th) if mode == "press_count_union" and release_th is not None else None,
                     )
-                    if mode == "press_union":
+                    if mode in {"press_union", "press_count_union"}:
                         specialist = [token for token in specialist if token.startswith("KEY_PRESS_")]
+                    if mode == "press_count_union":
+                        key_tokens = _merge_max_counts(_key_tokens(base_tokens), specialist)
+                        pred_tokens = non_key + key_tokens
+                        accs[name]["all"].update(pred_tokens, gt)
+                        for tag in split_tags:
+                            if tag in tags:
+                                accs[name][f"eval_split:{tag}"].update(pred_tokens, gt)
+                        if best_tokens_for_export is None and name != "base_all":
+                            best_tokens_for_export = pred_tokens
+                        continue
                     if mode in {"union", "press_union"}:
                         key_tokens = []
                         seen_keys: set[str] = set()
@@ -523,6 +565,7 @@ def build_key_hash_sequence_diagnostic(
         "candidate_key_codes": list(model.candidate_key_codes),
         "model_examples": model.examples,
         "model_positive_press": model.positive_press,
+        "model_positive_double_press": model.positive_double_press,
         "model_positive_release": model.positive_release,
         "alignment": alignment,
         "policies": policy_payloads,

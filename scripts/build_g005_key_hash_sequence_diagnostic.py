@@ -41,6 +41,12 @@ def main() -> int:
     )
     parser.add_argument("--press-thresholds", nargs="+", default=["0.35,0.5,0.65,0.8"])
     parser.add_argument("--release-thresholds", nargs="+", default=["0.35,0.5,0.65,0.8"])
+    parser.add_argument(
+        "--double-press-thresholds",
+        nargs="+",
+        default=[],
+        help="Optional thresholds for count-aware held-key double-press policies.",
+    )
     args = parser.parse_args()
     payload = write_key_hash_sequence_diagnostic(
         train_paths=args.train_records,
@@ -57,6 +63,7 @@ def main() -> int:
         candidate_key_count=args.candidate_key_count,
         press_thresholds=_floats(args.press_thresholds),
         release_thresholds=_floats(args.release_thresholds),
+        double_press_thresholds=_floats(args.double_press_thresholds),
     )
     best = payload["ranked_policies"][0] if payload.get("ranked_policies") else {}
     print(
