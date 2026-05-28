@@ -327,3 +327,11 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Implemented the next recipe-faithful branch after masked video-token pretraining did not improve key/button metrics: the factorized masked-diffusion IDM can now train an auxiliary noncausal button span head over neighboring press/release action-token offsets.
 - New config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_video_pretrain_span_prefix320k.yaml`. It keeps masked luma video-token pretraining and adds `button_span_diffusion=true`, offsets `[-2,-1,0,1,2]`, `button_span_loss_weight=2.0`, and uses the current-offset span logits for button probabilities.
 - Rationale: FDM-1's public IDM labels masked action-token sequences noncausally; D2E button failures look like press/release timing/type collapse, so the next bounded probe should learn temporal action-token spans rather than only isolated per-frame button classes.
+
+
+## 2026-05-29T00:45:58+09:00 KST — G005 temporal span prefix320k H200 probe
+
+- Ran temporal button action-token span branch `3e286ab` on 1×H200 reservation `rsv-jeonghunpark-20260529-818342` / pod `prod-rsv-jeonghunpark-20260529-818342`; copied redacted evidence locally and cancelled the reservation (`after_status=cancelled`). W&B run: `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/l8q0m6ih`.
+- Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_video_pretrain_span_prefix320k_h200_*` plus `artifacts/idm/g005_span_prefix320k_reservation_context.json`.
+- Result is still non-terminal but is the first positive mouse-button signal in this renewed branch: exact TP `1`, strict button F1 `0.005263157894736842`, no-button FPR `0.047971999176446366` under 0.10. However keyboard key accuracy remains `0.0` and 2k semantic diagnostic overlap remains `0`.
+- Next action: keep span diffusion but add held-out span-aware calibration/recovery (optimize F-beta under no-button FPR <= 0.10) and add analogous key press/release span head before another full training launch.

@@ -1,0 +1,24 @@
+{
+  "assessment": [
+    "Temporal span diffusion produced a small positive signal: strict mouse-button exact TP 1 and F1 0.005263157894736842 on 5k target rows.",
+    "No-button FPR remains under the 0.10 gate (0.047971999176446366), but predicted button events increased to 237 with many false positives.",
+    "Keyboard key accuracy remains zero and the 2k semantic diagnostic prefix still has zero semantic overlap, so this is only a weak direction signal, not a useful IDM."
+  ],
+  "evidence": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_video_pretrain_span_prefix320k_h200_compact_summary.json",
+  "metrics": {
+    "keyboard_key_accuracy": 0.0,
+    "mouse_button_accuracy": 0.0025380710659898475,
+    "mouse_button_exact_tp": 1,
+    "mouse_button_f1_strict": 0.005263157894736842,
+    "no_button_false_positive_rate": 0.047971999176446366,
+    "semantic_overlap_examples": 0,
+    "semantic_overlap_rate_on_gt": 0.0
+  },
+  "next_recipe_faithful_actions": [
+    "Keep temporal span diffusion, but add span-aware calibration that optimizes held-out exact TP/F-beta under the no-button FPR <=0.10 constraint rather than using raw current-offset span probabilities.",
+    "Split key press/release into an analogous temporal span head because keyboard accuracy remains zero.",
+    "Run a smaller calibration-only recovery from this checkpoint before another training launch if checkpoint/predictions remain on the PVC."
+  ],
+  "schema": "g005_recipe_idm_span_prefix320k_h200_diagnosis.v1",
+  "status": "non_terminal_partial_signal"
+}
