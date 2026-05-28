@@ -1004,6 +1004,32 @@
       "storage_log": "artifacts/idm/g005_idm_visual_action_retrieval_diagnostic_prefix50k_train100k_storage.log",
       "strict_no_button_fpr": 0.04110009829619921,
       "train_rows": 100000
+    },
+    {
+      "artifact": "artifacts/idm/g005_gidm_warmup_trim_pilot_rejection.json",
+      "decision": "reject_warmup_trimmed_released_gidm_teacher_pilot",
+      "best_policy": "released_generalist_idm_1b_warmup_trim_pilot",
+      "best_keyboard_accuracy": 0.0,
+      "best_mouse_button_accuracy": null,
+      "best_pearson_x": -0.030385309930652738,
+      "best_pearson_y": 0.11309335723019706,
+      "strict_no_button_fpr": 0.0,
+      "rows": 100,
+      "alignment": {
+        "rows_seen": 100,
+        "sequence_id_mismatches": 0,
+        "missing_prediction_rows": 0,
+        "missing_target_rows": 0,
+        "examples": []
+      },
+      "claim_boundary": "Negative G005 teacher-feasibility diagnostic only. This does not complete G005 IDM paper-target win and does not complete G006 exact-split released-GIDM baseline.",
+      "finding_codes": [
+        "real_gpu_warmup_trimmed_gidm_pipeline_passed_infrastructure_checks",
+        "keyboard_accuracy_zero_on_eval_window",
+        "mouse_motion_far_below_paper_targets",
+        "mouse_button_endpoint_not_measured_in_this_tiny_temporal_window",
+        "warmup_trimming_does_not_rescue_released_gidm_teacher_pilot"
+      ]
     }
   ],
   "paper_targets": {
@@ -2219,6 +2245,7 @@
     }
   ],
   "recommended_next_actions": [
+    "Warmup-trimmed released-GIDM teacher pilot is rejected: real 2GPU run on reservation rsv-jeonghunpark-20260528-82c473 passed infrastructure/W&B but on the 100-row eval window had keyboard=0.0, mouse Pearson X/Y=-0.030385309930652738/0.11309335723019706, button sample_count=0, no-button FPR=0.0. Do not scale this branch as the G005 paper-target path; pivot to a learned non-leaky sequence/state IDM architecture or different teacher signal.",
     "Do not promote frozen DINO-v2 compact-luma embeddings to full-corpus G005: the 320k 2xH200 prefix trained/evaluated successfully but achieved keyboard=0.0206, mouse-button=0.1046, Pearson X/Y=0.0199/0.0102 and heldout_game no-button FPR=0.1096.",
     "Keep the native-luma tensor-cache materialization path as infrastructure only; it solves throughput/cache issues but not the IDM paper-target metric problem.",
     "Key-event taxonomy shows the dominant keyboard blocker is held-repeat/same-bin key decoding: only 36.5% of key tokens are visible to prior->next state differencing, while an oracle repeat/tap key decoder plus state-delta buttons reaches keyboard=0.7418 and button=0.9754 on the 320k prefix. Next candidate should train a non-leaky key-repeat/tap specialist and pair it with state-transition button decoding and improved motion, not another frozen visual embedding alone.",
@@ -2235,5 +2262,5 @@
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779950577.2903602
+  "updated_at_epoch": 1779952129
 }

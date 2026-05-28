@@ -1,0 +1,35 @@
+{
+  "schema": "gidm_mcap_conversion_summary.v1",
+  "manifest_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/artifacts/eval/g006_gidm_warmup_trim_pilot_chunked_manifest.json",
+  "target_record_paths": [
+    "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/outputs/gidm_warmup_trim_pilot/targets.jsonl"
+  ],
+  "predictions_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/outputs/gidm_warmup_trim_pilot/predictions.jsonl",
+  "recording_count": 1,
+  "rows_written": 100,
+  "decoded_event_counts": {
+    "d2e_480p:Apex_Legends/0805_01": 292
+  },
+  "decoded_event_counts_by_path": {
+    "d2e_480p:Apex_Legends/0805_01": {
+      "outputs/gidm_warmup_trim_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap": 292
+    }
+  },
+  "missing_prediction_count": 0,
+  "allow_missing": true,
+  "bin_ms": 50,
+  "timestamp_shift_ns": 0,
+  "auto_timestamp_shift_from_screen": true,
+  "filter_targets_to_prediction_windows": true,
+  "prediction_window_counts": {
+    "d2e_480p:Apex_Legends/0805_01": 1
+  },
+  "filtered_out_target_rows_by_key": {},
+  "timestamp_shifts_by_key": {
+    "d2e_480p:Apex_Legends/0805_01": 0
+  },
+  "auto_shift_skipped_by_key": {
+    "d2e_480p:Apex_Legends/0805_01": true
+  },
+  "claim_boundary": "This converts released G-IDM MCAP predictions to the local predictions.jsonl metric boundary; metric claims require a separate paper-metric/audit artifact."
+}

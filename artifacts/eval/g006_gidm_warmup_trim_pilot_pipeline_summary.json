@@ -4,17 +4,17 @@
   "error_count": 0,
   "goal_id": "G005-g014-idm-full-paper-target",
   "stage": "all",
-  "allow_partial": false,
-  "dry_run": true,
+  "allow_partial": true,
+  "dry_run": false,
   "model": "open-world-agents/Generalist-IDM-1B",
-  "manifest_path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/artifacts/eval/g006_gidm_warmup_trim_pilot_manifest.json",
-  "active_manifest_path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/artifacts/eval/g006_gidm_warmup_trim_pilot_chunked_manifest.json",
-  "chunk_manifest_output": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/artifacts/eval/g006_gidm_warmup_trim_pilot_chunked_manifest.json",
+  "manifest_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/artifacts/eval/g006_gidm_warmup_trim_pilot_manifest.json",
+  "active_manifest_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/artifacts/eval/g006_gidm_warmup_trim_pilot_chunked_manifest.json",
+  "chunk_manifest_output": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/artifacts/eval/g006_gidm_warmup_trim_pilot_chunked_manifest.json",
   "cuda_devices": [
     "0",
     "1"
   ],
-  "workers": 2,
+  "workers": 1,
   "max_recordings": null,
   "max_chunks": 1,
   "recording_keys": [],
@@ -22,18 +22,35 @@
     "inference": {
       "status": "pass",
       "planned_recordings": 1,
-      "completed_recordings": 0,
+      "completed_recordings": 1,
       "failed_recordings": 0
+    },
+    "target_extraction": {
+      "status": "pass",
+      "rows_written": 100,
+      "recording_count": 1,
+      "error_count": 0
+    },
+    "conversion": {
+      "status": "pass",
+      "rows_written": 100,
+      "recording_count": 1,
+      "missing_prediction_count": 0
+    },
+    "paper_metrics": {
+      "status": "pass",
+      "rows_seen": 100,
+      "error_count": 0
     }
   },
   "artifacts": {
     "manifest": {
-      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/artifacts/eval/g006_gidm_warmup_trim_pilot_manifest.json",
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/artifacts/eval/g006_gidm_warmup_trim_pilot_manifest.json",
       "exists": true,
       "bytes": 2273
     },
     "inference_summary": {
-      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/artifacts/eval/g006_gidm_warmup_trim_pilot_inference_summary.json",
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/artifacts/eval/g006_gidm_warmup_trim_pilot_inference_summary.json",
       "exists": true,
       "status": null,
       "error_count": null,
@@ -41,19 +58,38 @@
       "alignment_rows": null
     },
     "target_summary": {
-      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/artifacts/eval/g006_gidm_warmup_trim_pilot_target_extraction_summary.json",
-      "exists": false
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/artifacts/eval/g006_gidm_warmup_trim_pilot_target_extraction_summary.json",
+      "exists": true,
+      "status": "pass",
+      "error_count": 0,
+      "rows": 100,
+      "alignment_rows": null
     },
     "conversion_summary": {
-      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/artifacts/eval/g006_gidm_warmup_trim_pilot_conversion_summary.json",
-      "exists": false
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/artifacts/eval/g006_gidm_warmup_trim_pilot_conversion_summary.json",
+      "exists": true,
+      "status": null,
+      "error_count": null,
+      "rows": 100,
+      "alignment_rows": null
     },
     "paper_metrics": {
-      "path": "/home/top321902/code/snupi/continuous-gui/fdm-d2e-reproduction/artifacts/eval/g006_gidm_warmup_trim_pilot_paper_metrics.json",
-      "exists": false
+      "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/artifacts/eval/g006_gidm_warmup_trim_pilot_paper_metrics.json",
+      "exists": true,
+      "status": "pass",
+      "error_count": 0,
+      "rows": null,
+      "alignment_rows": 100
     }
   },
-  "wall_clock_seconds": 0.0011649131774902344,
+  "wall_clock_seconds": 137.25940656661987,
   "findings": [],
-  "claim_boundary": "Warmup-trimmed released G-IDM pilot to debug teacher/baseline feasibility; not our-IDM paper-target success and not exact-split G006 completion."
+  "claim_boundary": "Warmup-trimmed released G-IDM pilot to debug teacher/baseline feasibility; not our-IDM paper-target success and not exact-split G006 completion.",
+  "wandb_status": {
+    "status": "pass",
+    "exit_code": 0,
+    "output": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-warmup-df25e79/artifacts/eval/g006_gidm_exact_split_all_wandb_status.json",
+    "stdout_tail": "{\"status\": \"complete\", \"wandb_run_url\": \"https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/zp6wpkpb\"}\n",
+    "stderr_tail": "                                                                                                                                                                                                   g006_gidm_warmup_trim_pilot_conversion_summary/recording_count ▁\nwandb:                                                                                                                                                                                                                                                                      +129 ...\nwandb: \nwandb: Run summary:\nwandb:                                                                                                                                                                                                              g006_gidm_warmup_trim_pilot_conversion_summary/allow_missing 1\nwandb:                                                                                                                                                                    g006_gidm_warmup_trim_pilot_conversion_summary/auto_shift_skipped_by_key/d2e_480p:Apex_Legends/0805_01 1\nwandb:                                                                                                                                                                                           g006_gidm_warmup_trim_pilot_conversion_summary/auto_timestamp_shift_from_screen 1\nwandb:                                                                                                                                                                                                                     g006_gidm_warmup_trim_pilot_conversion_summary/bin_ms 50\nwandb:                                                                                                                                                                         g006_gidm_warmup_trim_pilot_conversion_summary/decoded_event_counts/d2e_480p:Apex_Legends/0805_01 292\nwandb: g006_gidm_warmup_trim_pilot_conversion_summary/decoded_event_counts_by_path/d2e_480p:Apex_Legends/0805_01/outputs/gidm_warmup_trim_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap 292\nwandb:                                                                                                                                                                                       g006_gidm_warmup_trim_pilot_conversion_summary/filter_targets_to_prediction_windows 1\nwandb:                                                                                                                                                                                                   g006_gidm_warmup_trim_pilot_conversion_summary/missing_prediction_count 0\nwandb:                                                                                                                                                                     g006_gidm_warmup_trim_pilot_conversion_summary/prediction_window_counts/d2e_480p:Apex_Legends/0805_01 1\nwandb:                                                                                                                                                                                                            g006_gidm_warmup_trim_pilot_conversion_summary/recording_count 1\nwandb:                                                                                                                                                                                                                                                                      +129 ...\nwandb: \nwandb: 🚀 View run g006-gidm-warmup-trim-pilot at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/zp6wpkpb\nwandb: ⭐️ View project at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction\nwandb: Synced 4 W&B file(s), 0 media file(s), 6 artifact file(s) and 0 other file(s)\nwandb: Find logs at: outputs/wandb/wandb/run-20260528_070552-zp6wpkpb/logs\n"
+  }
 }

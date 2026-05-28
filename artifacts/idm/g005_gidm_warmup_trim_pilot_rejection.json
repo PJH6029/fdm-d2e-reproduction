@@ -1,0 +1,92 @@
+{
+  "schema": "g005_idm_rejection.v1",
+  "decision": "reject_warmup_trimmed_released_gidm_teacher_pilot",
+  "status": "rejected",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "created_at_epoch": 1779952129,
+  "reservation": {
+    "reservation_id": "rsv-jeonghunpark-20260528-82c473",
+    "status_after_collection": "cancelled",
+    "node_id": "4",
+    "gpu_indices": [
+      1,
+      2
+    ],
+    "start_at": "2026-05-28T16:00:00+09:00",
+    "cancelled_at_approx": "2026-05-28T16:07:46+09:00",
+    "pod_name": "prod-rsv-jeonghunpark-20260528-82c473"
+  },
+  "run": {
+    "worktree_checkout": "df25e79",
+    "model": "open-world-agents/Generalist-IDM-1B",
+    "chunk_seconds": 15.0,
+    "chunk_context_seconds": 5.0,
+    "eval_rows": 100,
+    "wall_clock_seconds": 137.25940656661987,
+    "statuses": {
+      "inference": {
+        "status": "pass",
+        "planned_recordings": 1,
+        "completed_recordings": 1,
+        "failed_recordings": 0
+      },
+      "target_extraction": {
+        "status": "pass",
+        "rows_written": 100,
+        "recording_count": 1,
+        "error_count": 0
+      },
+      "conversion": {
+        "status": "pass",
+        "rows_written": 100,
+        "recording_count": 1,
+        "missing_prediction_count": 0
+      },
+      "paper_metrics": {
+        "status": "pass",
+        "rows_seen": 100,
+        "error_count": 0
+      }
+    },
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/zp6wpkpb"
+  },
+  "paper_target_thresholds": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783
+  },
+  "observed_metrics": {
+    "keyboard_accuracy": 0.0,
+    "keyboard_sample_count": 44,
+    "mouse_button_accuracy": null,
+    "mouse_button_sample_count": 0,
+    "pearson_x": -0.030385309930652738,
+    "pearson_y": 0.11309335723019706,
+    "scale_ratio_x": 3.043532338308458,
+    "scale_ratio_y": 1.8700361010830324,
+    "strict_no_button_fpr": 0.0,
+    "rows": 100
+  },
+  "finding_codes": [
+    "real_gpu_warmup_trimmed_gidm_pipeline_passed_infrastructure_checks",
+    "keyboard_accuracy_zero_on_eval_window",
+    "mouse_motion_far_below_paper_targets",
+    "mouse_button_endpoint_not_measured_in_this_tiny_temporal_window",
+    "warmup_trimming_does_not_rescue_released_gidm_teacher_pilot"
+  ],
+  "evidence": {
+    "pipeline_summary": "artifacts/eval/g006_gidm_warmup_trim_pilot_pipeline_summary.json",
+    "inference_summary": "artifacts/eval/g006_gidm_warmup_trim_pilot_inference_summary.json",
+    "target_summary": "artifacts/eval/g006_gidm_warmup_trim_pilot_target_extraction_summary.json",
+    "conversion_summary": "artifacts/eval/g006_gidm_warmup_trim_pilot_conversion_summary.json",
+    "paper_metrics": "artifacts/eval/g006_gidm_warmup_trim_pilot_paper_metrics.json",
+    "wandb_status": "artifacts/eval/g006_gidm_exact_split_all_wandb_status.json",
+    "inference_log_dir": "artifacts/eval/gidm_warmup_trim_pilot_inference_logs/",
+    "local_prediction_sample": "outputs/gidm_warmup_trim_pilot/predictions.jsonl",
+    "local_target_sample": "outputs/gidm_warmup_trim_pilot/targets.jsonl",
+    "local_predicted_mcap": "outputs/gidm_warmup_trim_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap"
+  },
+  "claim_boundary": "Negative G005 teacher-feasibility diagnostic only. This does not complete G005 IDM paper-target win and does not complete G006 exact-split released-GIDM baseline.",
+  "next_action": "Pivot G005 back to learned non-leaky sequence/state IDM architecture or a different teacher signal; do not scale this released-GIDM warmup-trim pilot as the paper-target path."
+}

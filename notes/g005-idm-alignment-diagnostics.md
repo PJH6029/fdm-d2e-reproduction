@@ -1091,3 +1091,20 @@ Evidence:
 Result: reject visual/state action-memory retrieval. The storage-shell gate used clean worktree `c75f86c`, 100k train rows, 50k target rows, and zero sequence-id mismatches. Best policy `retrieval_union_categorical_base_motion_state_only_th0.2_s1` reached keyboard `0.15816` versus base `0.15505`, while button dropped to `0.15585`; Pearson X/Y stayed at base `0.75981/0.67937`; no-button FPR was `0.04110`. This underperforms both the held-key hash 50k gate (`0.19928`) and the joint key-state table (`0.16187`), and is far below paper target `0.73`.
 
 Decision: do not promote approximate visual/action-memory retrieval. The immediate remaining viable route is not another quantized CPU memory/table branch; use released-GIDM/teacher debugging or a genuinely stronger neural sequence model with explicit repeat-key supervision and calibrated motion/button heads.
+
+### Warmup-trimmed released-GIDM teacher pilot rejection
+
+Date: 2026-05-28 KST.
+
+Ran a real 2GPU warmup-trimmed released `open-world-agents/Generalist-IDM-1B` pilot on MLXP reservation `rsv-jeonghunpark-20260528-82c473` (production node 4 GPUs `[1,2]`, cancelled after evidence collection). The pod used a clean detached worktree at commit `df25e79`, copied `.env` for W&B/HF access without committing secrets, and logged W&B run `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/zp6wpkpb`.
+
+Evidence:
+
+- `artifacts/eval/g006_gidm_warmup_trim_pilot_pipeline_summary.json` — pipeline `status=pass`, one completed 15s chunk, 100 eval rows, zero missing predictions.
+- `artifacts/eval/g006_gidm_warmup_trim_pilot_paper_metrics.json` — paper-compatible metric pass over aligned rows but metric values reject the branch.
+- `artifacts/idm/g005_gidm_warmup_trim_pilot_rejection.json` — explicit negative decision and sanitized reservation summary.
+- `outputs/gidm_warmup_trim_pilot/` — small local target/prediction/MCAP pilot evidence copied from the pod.
+
+Result: reject warmup trimming as a released-GIDM teacher/timing rescue for G005. On the 100-row temporal eval window, keyboard accuracy was `0.0`, mouse Pearson X/Y were `-0.0304/0.1131`, scale ratios were too high (`3.04/1.87`), and the window had no mouse-button positives, so button accuracy was not measured. No-button FPR was `0.0`, but only because no button predictions occurred. This does not approach the D2E paper targets and must not be promoted to a G005 paper-target path or G006 exact-split completion.
+
+Next branch: pivot back to a learned non-leaky sequence/state IDM architecture or a different teacher signal; do not spend a larger G-IDM warmup-trim scaling run unless a separate timing/alignment explanation appears.
