@@ -352,11 +352,56 @@ def _build_factorized_model(torch: Any, *, video_dim: int, key_count: int, butto
     heads = int(config.get("transformer_heads", 4))
     dropout = float(config.get("dropout", 0.1))
     plane_count = 5  # video + masked mouse-x, mouse-y, key-set, button-set planes
+    video_encoder_arch = str(config.get("video_encoder_arch", "flat_mlp")).lower()
+    luma_window_frames = int(config.get("luma_window_frames", 5))
+    luma_window_size = int(config.get("luma_window_size", 16))
+    luma_window_dim = max(0, luma_window_frames * luma_window_size * luma_window_size)
+
+    class CompactLumaWindowEncoder(nn.Module):
+        """Small video encoder for compact D2E luma-window bootstrap tokens."""
+
+        def __init__(self) -> None:
+            super().__init__()
+            channels = int(config.get("luma_encoder_channels", 32))
+            pooled_hw = int(config.get("luma_encoder_pool_hw", 2))
+            self.luma_dim = min(video_dim, luma_window_dim)
+            self.aux_dim = max(0, video_dim - self.luma_dim)
+            self.frames = max(1, luma_window_frames)
+            self.size = max(1, luma_window_size)
+            self.conv = nn.Sequential(
+                nn.Conv3d(1, channels, kernel_size=(3, 3, 3), padding=(1, 1, 1)),
+                nn.GELU(),
+                nn.Conv3d(channels, channels * 2, kernel_size=(3, 3, 3), padding=(1, 1, 1)),
+                nn.GELU(),
+                nn.AdaptiveAvgPool3d((1, pooled_hw, pooled_hw)),
+                nn.Flatten(),
+            )
+            conv_dim = channels * 2 * pooled_hw * pooled_hw
+            aux_hidden = int(config.get("luma_aux_hidden_dim", min(hidden_dim, 128)))
+            self.aux_proj = nn.Sequential(nn.Linear(self.aux_dim, aux_hidden), nn.GELU()) if self.aux_dim else None
+            merged_dim = conv_dim + (aux_hidden if self.aux_proj is not None else 0)
+            self.out = nn.Sequential(nn.Linear(merged_dim, hidden_dim), nn.GELU(), nn.LayerNorm(hidden_dim))
+
+        def forward(self, video_features: Any) -> Any:
+            batch = video_features.shape[0]
+            luma = video_features[:, : self.luma_dim]
+            expected = self.frames * self.size * self.size
+            if self.luma_dim < expected:
+                pad = torch.zeros((batch, expected - self.luma_dim), device=video_features.device, dtype=video_features.dtype)
+                luma = torch.cat([luma, pad], dim=1)
+            luma = luma[:, :expected].reshape(batch, 1, self.frames, self.size, self.size)
+            parts = [self.conv(luma)]
+            if self.aux_proj is not None:
+                parts.append(self.aux_proj(video_features[:, self.luma_dim :]))
+            return self.out(torch.cat(parts, dim=1))
 
     class FactorizedMaskedDiffusionIDM(nn.Module):
         def __init__(self) -> None:
             super().__init__()
-            self.video_proj = nn.Sequential(nn.Linear(video_dim, hidden_dim), nn.GELU(), nn.LayerNorm(hidden_dim))
+            if video_encoder_arch in {"compact_luma_window_cnn", "luma_window_cnn", "video_luma_cnn"}:
+                self.video_proj = CompactLumaWindowEncoder()
+            else:
+                self.video_proj = nn.Sequential(nn.Linear(video_dim, hidden_dim), nn.GELU(), nn.LayerNorm(hidden_dim))
             self.mask_embed = nn.Parameter(torch.randn(plane_count, hidden_dim) * 0.02)
             self.plane_embed = nn.Embedding(plane_count, hidden_dim)
             encoder_layer = nn.TransformerEncoderLayer(

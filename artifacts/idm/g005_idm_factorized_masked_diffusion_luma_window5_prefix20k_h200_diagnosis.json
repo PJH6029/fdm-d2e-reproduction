@@ -1,0 +1,32 @@
+{
+  "claim_boundary": "This is negative prefix evidence only; it does not satisfy G005 or any full-corpus paper-target win.",
+  "commit": "7ede19c",
+  "diagnosis": [
+    "Compact luma-window video tokens are available and train on H200, but flat video projection still underfits sparse key/button events on the 20k prefix.",
+    "No-button FPR stays below the renewed hard target on this shard prefix (0.03385 <= 0.10), but mouse-button recall/F1 remain 0.0.",
+    "The next recipe-aligned branch should replace the flat luma projection with a compact luma-window CNN/video encoder while keeping typed masked action-token planes."
+  ],
+  "evidence": {
+    "gpu_monitor": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_prefix20k_h200_gpu_monitor.csv",
+    "paper_metrics": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_prefix20k_h200_paper_metrics.json",
+    "resolved_config": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_prefix20k_h200_resolved_config.json",
+    "run": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_prefix20k_h200_run.json",
+    "summary": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_prefix20k_h200_summary.json",
+    "wandb": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_prefix20k_h200_wandb_status.json"
+  },
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "metrics": {
+    "keyboard_key_accuracy": 0.015781922525107604,
+    "mouse_button_accuracy": 0.0,
+    "no_button_false_positive_rate": 0.033846153846153845,
+    "strict_mouse_button_f1": 0.0
+  },
+  "next_action": "Run the compact-luma-window CNN masked-diffusion IDM prefix probe after code validation; do not revive state/action-prior shortcuts as G005 completion candidates.",
+  "probe": "factorized_masked_diffusion_luma_window5_prefix20k_h200",
+  "reservation_id": "rsv-jeonghunpark-20260528-91d7a9",
+  "schema": "g005_idm_prefix_probe_diagnosis.v1",
+  "status": "non_terminal_regression",
+  "target_rows": 2000,
+  "train_rows": 20000,
+  "updated_at": "2026-05-28T20:35:04.118896+09:00"
+}
