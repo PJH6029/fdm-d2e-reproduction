@@ -136,7 +136,51 @@ def _non_key_tokens(tokens: Sequence[str]) -> list[str]:
     return [str(t) for t in tokens if not str(t).startswith("KEY_")]
 
 
-def _features(row: dict[str, Any], code: str, hold: int) -> list[str]:
+def _quantized(value: float, *, scale: float = 10.0, cap: int = 20) -> int:
+    return max(-cap, min(cap, int(round(float(value) * scale))))
+
+
+def _visual_hash_features(row: dict[str, Any]) -> list[str]:
+    frame = row.get("frame") if isinstance(row.get("frame"), dict) else {}
+    cur = frame.get("luma16") if isinstance(frame, dict) else None
+    nxt = row.get("next_frame_luma16")
+    if not isinstance(cur, list) or not isinstance(nxt, list) or len(cur) != 256 or len(nxt) != 256:
+        return []
+    try:
+        cur_f = [float(v) for v in cur]
+        nxt_f = [float(v) for v in nxt]
+    except (TypeError, ValueError):
+        return []
+    delta = [b - a for a, b in zip(cur_f, nxt_f)]
+    feats = [
+        f"lum_mean={_quantized(sum(cur_f) / 256.0, scale=20)}",
+        f"next_lum_mean={_quantized(sum(nxt_f) / 256.0, scale=20)}",
+        f"delta_mean={_quantized(sum(delta) / 256.0, scale=50)}",
+        f"delta_abs={_quantized(sum(abs(v) for v in delta) / 256.0, scale=50)}",
+        f"delta_pos_frac={_quantized(sum(1 for v in delta if v > 0.01) / 256.0, scale=10)}",
+        f"delta_neg_frac={_quantized(sum(1 for v in delta if v < -0.01) / 256.0, scale=10)}",
+    ]
+    # 4x4 block transition sketch.  This keeps visual context cheap enough for
+    # CPU prefix screening while exposing localized motion/brightness changes.
+    for by in range(4):
+        for bx in range(4):
+            vals = []
+            cur_vals = []
+            for y in range(by * 4, (by + 1) * 4):
+                for x in range(bx * 4, (bx + 1) * 4):
+                    idx = y * 16 + x
+                    vals.append(delta[idx])
+                    cur_vals.append(cur_f[idx])
+            mean = sum(vals) / len(vals)
+            abs_mean = sum(abs(v) for v in vals) / len(vals)
+            cur_mean = sum(cur_vals) / len(cur_vals)
+            feats.append(f"block{by}{bx}_cur={_quantized(cur_mean, scale=10)}")
+            feats.append(f"block{by}{bx}_d={_quantized(mean, scale=50)}")
+            feats.append(f"block{by}{bx}_ad={_quantized(abs_mean, scale=50)}")
+    return feats
+
+
+def _features(row: dict[str, Any], code: str, hold: int, *, include_visual_hash: bool = False) -> list[str]:
     idx = sequence_bin_index(row)
     since = _since(row)
     hbin = _bucket(hold)
@@ -171,14 +215,19 @@ def _features(row: dict[str, Any], code: str, hold: int) -> list[str]:
         if other != code:
             feats.append(f"held_with={other}")
             feats.append(f"code={code}|held_with={other}")
+    if include_visual_hash:
+        for visual in _visual_hash_features(row):
+            feats.append(f"vis={visual}")
+            feats.append(f"code={code}|vis={visual}")
     return feats
 
 
 class HashedLogisticKeyModel:
-    def __init__(self, *, dim: int = 1 << 18, learning_rate: float = 0.05, l2: float = 0.0) -> None:
+    def __init__(self, *, dim: int = 1 << 18, learning_rate: float = 0.05, l2: float = 0.0, include_visual_hash: bool = False) -> None:
         self.dim = int(dim)
         self.learning_rate = float(learning_rate)
         self.l2 = float(l2)
+        self.include_visual_hash = bool(include_visual_hash)
         self.press_weights = [0.0] * self.dim
         self.release_weights = [0.0] * self.dim
         self.examples = 0
@@ -211,7 +260,7 @@ class HashedLogisticKeyModel:
     def observe(self, row: dict[str, Any]) -> None:
         gt = set(_tokens(row, "ground_truth_tokens"))
         for code, hold in _holds(row).items():
-            indices = self._indices(_features(row, code, hold))
+            indices = self._indices(_features(row, code, hold, include_visual_hash=self.include_visual_hash))
             press = int(f"KEY_PRESS_{code}" in gt)
             release = int(f"KEY_RELEASE_{code}" in gt)
             self.positive_press += press
@@ -225,7 +274,7 @@ class HashedLogisticKeyModel:
     def predict(self, row: dict[str, Any], *, press_threshold: float, release_threshold: float) -> list[str]:
         out: list[str] = []
         for code, hold in _holds(row).items():
-            indices = self._indices(_features(row, code, hold))
+            indices = self._indices(_features(row, code, hold, include_visual_hash=self.include_visual_hash))
             if self._sigmoid(self._score(self.press_weights, indices)) >= float(press_threshold):
                 out.append(f"KEY_PRESS_{code}")
             if self._sigmoid(self._score(self.release_weights, indices)) >= float(release_threshold):
@@ -247,8 +296,9 @@ def train_hashed_key_model(
     epochs: int = 1,
     dim: int = 1 << 18,
     learning_rate: float = 0.05,
+    include_visual_hash: bool = False,
 ) -> tuple[HashedLogisticKeyModel, int]:
-    model = HashedLogisticKeyModel(dim=dim, learning_rate=learning_rate)
+    model = HashedLogisticKeyModel(dim=dim, learning_rate=learning_rate, include_visual_hash=include_visual_hash)
     rows = 0
     for _epoch in range(int(epochs)):
         rows = 0
@@ -295,6 +345,7 @@ def build_key_hash_sequence_diagnostic(
     epochs: int = 1,
     dim: int = 1 << 18,
     learning_rate: float = 0.05,
+    include_visual_hash: bool = False,
     press_thresholds: Sequence[float] = _DEFAULT_THRESHOLDS,
     release_thresholds: Sequence[float] = _DEFAULT_THRESHOLDS,
     split_tags: Sequence[str] = ("temporal", "heldout_recording", "heldout_game"),
@@ -305,6 +356,7 @@ def build_key_hash_sequence_diagnostic(
         epochs=epochs,
         dim=dim,
         learning_rate=learning_rate,
+        include_visual_hash=include_visual_hash,
     )
     policies: list[tuple[str, str, float | None, float | None]] = [("base_all", "base", None, None)]
     for press_th in press_thresholds:
@@ -400,6 +452,7 @@ def build_key_hash_sequence_diagnostic(
         "epochs": int(epochs),
         "dim": int(dim),
         "learning_rate": float(learning_rate),
+        "include_visual_hash": bool(include_visual_hash),
         "model_examples": model.examples,
         "model_positive_press": model.positive_press,
         "model_positive_release": model.positive_release,

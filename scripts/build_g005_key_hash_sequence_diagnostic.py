@@ -26,6 +26,13 @@ def main() -> int:
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--dim", type=int, default=1 << 18)
     parser.add_argument("--learning-rate", type=float, default=0.05)
+    parser.add_argument(
+        "--include-visual-hash",
+        "--include-visual-features",
+        dest="include_visual_hash",
+        action="store_true",
+        help="Add compact luma transition hash features to each held-key example.",
+    )
     parser.add_argument("--press-thresholds", nargs="+", default=["0.35,0.5,0.65,0.8"])
     parser.add_argument("--release-thresholds", nargs="+", default=["0.35,0.5,0.65,0.8"])
     args = parser.parse_args()
@@ -40,6 +47,7 @@ def main() -> int:
         epochs=args.epochs,
         dim=args.dim,
         learning_rate=args.learning_rate,
+        include_visual_hash=args.include_visual_hash,
         press_thresholds=_floats(args.press_thresholds),
         release_thresholds=_floats(args.release_thresholds),
     )
