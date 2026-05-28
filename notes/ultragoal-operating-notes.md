@@ -188,3 +188,9 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_budget_prefix20k_h200_*`, including run, GPU monitor, W&B status, resolved config, paper metrics, compacted summary, reservation context, and diagnosis.
 - Result is negative/non-terminal: the train-label confidence budget limited event-head forced unmasking to `58` target rows, but target predicted mouse-button examples still reached `710`, no-button FPR worsened to `0.3569`, and strict button F1 was only `0.00526`.
 - Diagnosis: direct per-token button predictions now dominate overfire; next branch must route **all** mouse-button emission through a confidence budget or direct-button abstention gate, while keeping the FDM-1-shaped masked action-token recipe.
+
+## 2026-05-28 KST — Next G005 branch: all-button confidence budget
+
+- Implemented follow-up after the event-budget negative probe: `button_event_budget_applies_to_all_buttons=true` makes the confidence budget gate direct per-token mouse-button emissions as well as event-head forced emissions.
+- Candidate config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_allbudget_prefix20k.yaml`. This stays within the public FDM-1-shaped masked action-token IDM and treats the budget as confidence-based iterative unmasking/abstention rather than a supervised shortcut.
+- Bounded H200 probe should verify whether target no-button FPR drops near `<=0.10` without eliminating all button recall.

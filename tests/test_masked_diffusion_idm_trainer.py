@@ -308,6 +308,7 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
             "button_event_force_topk": 1,
             "button_event_budgeted_unmasking": True,
             "button_event_budget_rate_multiplier": 1.0,
+            "button_event_budget_applies_to_all_buttons": True,
             "calibrate_thresholds": True,
             "factorized_calibration_fraction": 0.25,
             "factorized_calibration_max_rows": 2,
@@ -322,5 +323,6 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
     assert summary["factorization"]["button_event_auxiliary"] is True
     assert "button_event_min_token_probability" in summary["factorization"]
     assert "button_event_budget_score_threshold" in summary["factorization"]
+    assert summary["factorization"]["button_event_budget_applies_to_all_buttons"] is True
     assert Path(summary["checkpoint_path"]).exists()
     assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 3
