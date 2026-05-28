@@ -79,9 +79,83 @@ def _center_index(offsets: Sequence[int]) -> int:
     return list(offsets).index(0) if 0 in offsets else len(offsets) // 2
 
 
+def _raw_video_frame_offsets(config: dict[str, Any]) -> list[int]:
+    raw = config.get("raw_video_frame_offsets", config.get("video_frame_offsets"))
+    if raw is None:
+        raw = [0, int(config.get("next_frame_offset", 1))]
+    offsets = [int(value) for value in raw] if isinstance(raw, list) else [0, int(raw)]
+    if not offsets:
+        offsets = [0]
+    return list(dict.fromkeys(offsets))
+
+
+def _raw_video_feature_dim(config: dict[str, Any]) -> int:
+    if config.get("video_feature_dim") is not None:
+        return int(config["video_feature_dim"])
+    image_size = int(config.get("raw_video_image_size", config.get("video_image_size", 96)))
+    frame_dim = len(_raw_video_frame_offsets(config)) * image_size * image_size
+    aux_dim = int(config.get("raw_video_aux_feature_dim", 0) or 0)
+    return int(frame_dim + max(0, aux_dim))
+
+
+def _configured_video_feature_dim(config: dict[str, Any]) -> int:
+    source = str(config.get("video_feature_source", "json")).lower()
+    if source in {"raw_frames", "raw_video_frames", "frame_provider"}:
+        return _raw_video_feature_dim(config)
+    return int(config.get("video_feature_dim", 64))
+
+
+def _precompute_raw_video_features(rows: Sequence[dict[str, Any]], *, config: dict[str, Any]) -> list[list[float]]:
+    """Load downsampled raw screen-video frames for temporal IDM conditioning.
+
+    This is the bridge from the compact-luma diagnostic probes back to the
+    public FDM-1 recipe shape: the IDM remains a non-causal masked action-token
+    diffusion model, but the conditioning tokens now come directly from D2E
+    frame/video references instead of pre-materialized 16x16 summary features.
+    Full-corpus promotion should replace this in-memory prefix path with the
+    existing tensor-cache infrastructure, but the feature contract is identical:
+    a deterministic sequence of normalized screen-video tokens plus optional
+    train/eval row metadata features.
+    """
+
+    from fdm_d2e.training.video_idm import _FramePairProvider
+
+    image_size = int(config.get("raw_video_image_size", config.get("video_image_size", 96)))
+    offsets = _raw_video_frame_offsets(config)
+    expected_frame_dim = len(offsets) * image_size * image_size
+    aux_paths = list(config.get("raw_video_aux_feature_paths", []))
+    aux_dim = int(config.get("raw_video_aux_feature_dim", 0) or 0)
+    feature_dim = _raw_video_feature_dim(config)
+    provider = _FramePairProvider(
+        root=Path(config.get("root", ".")).resolve(),
+        image_size=image_size,
+        fps=int(config.get("raw_video_frame_fps", config.get("video_frame_fps", 20))),
+        next_frame_offset=int(config.get("next_frame_offset", 1)),
+        missing_frame_policy=str(config.get("raw_video_missing_frame_policy", config.get("missing_frame_policy", "error"))),
+    )
+    features: list[list[float]] = []
+    try:
+        for row in rows:
+            frame_bytes = b"".join(provider.frames(row, offsets=offsets))
+            values = [float(value) / 255.0 for value in frame_bytes[:expected_frame_dim]]
+            if len(values) < expected_frame_dim:
+                values.extend([0.0] * (expected_frame_dim - len(values)))
+            if aux_dim > 0 and aux_paths:
+                values.extend(video_feature_vector(row, feature_paths=aux_paths, dim=aux_dim))
+            if len(values) < feature_dim:
+                values.extend([0.0] * (feature_dim - len(values)))
+            features.append(values[:feature_dim])
+    finally:
+        provider.close()
+    return features
+
+
 def _precompute_features(rows: Sequence[dict[str, Any]], *, config: dict[str, Any]) -> list[list[float]]:
+    source = str(config.get("video_feature_source", "json")).lower()
+    if source in {"raw_frames", "raw_video_frames", "frame_provider"}:
+        return _precompute_raw_video_features(rows, config=config)
     feature_paths = list(config.get("video_feature_paths", ["compact_luma_window", "compact_luma_window_mask", "frame.features", "next_frame_features", "frame_delta_features"]))
-    feature_dim = int(config.get("video_feature_dim", 64))
+    feature_dim = _configured_video_feature_dim(config)
     return [video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim) for row in rows]
 
 
@@ -180,6 +254,9 @@ def _build_temporal_model(
     luma_window_frames = int(config.get("luma_window_frames", 5))
     luma_window_size = int(config.get("luma_window_size", 16))
     luma_window_dim = max(0, luma_window_frames * luma_window_size * luma_window_size)
+    raw_video_frames = len(_raw_video_frame_offsets(config))
+    raw_video_size = int(config.get("raw_video_image_size", config.get("video_image_size", 96)))
+    raw_video_dim = max(0, raw_video_frames * raw_video_size * raw_video_size)
     button_vocab = _button_class_vocab(vocab or [])
     key_vocab = _key_class_vocab(vocab or [])
 
@@ -219,12 +296,57 @@ def _build_temporal_model(
                 parts.append(self.aux_proj(video_features[:, self.luma_dim :]))
             return self.out(torch.cat(parts, dim=1))
 
+    class RawVideoFrameEncoder(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            channels = int(config.get("raw_video_encoder_channels", config.get("luma_encoder_channels", 32)))
+            pooled_hw = int(config.get("raw_video_encoder_pool_hw", config.get("luma_encoder_pool_hw", 2)))
+            self.raw_dim = min(video_dim, raw_video_dim)
+            self.aux_dim = max(0, video_dim - self.raw_dim)
+            self.frames = max(1, raw_video_frames)
+            self.size = max(1, raw_video_size)
+            self.conv = nn.Sequential(
+                nn.Conv3d(1, channels, kernel_size=(3, 5, 5), padding=(1, 2, 2), stride=(1, 2, 2)),
+                nn.GELU(),
+                nn.Conv3d(channels, channels * 2, kernel_size=(3, 3, 3), padding=(1, 1, 1), stride=(1, 2, 2)),
+                nn.GELU(),
+                nn.Conv3d(channels * 2, channels * 2, kernel_size=(3, 3, 3), padding=(1, 1, 1)),
+                nn.GELU(),
+                nn.AdaptiveAvgPool3d((1, pooled_hw, pooled_hw)),
+                nn.Flatten(),
+            )
+            conv_dim = channels * 2 * pooled_hw * pooled_hw
+            aux_hidden = int(config.get("raw_video_aux_hidden_dim", config.get("luma_aux_hidden_dim", min(hidden_dim, 128))))
+            self.aux_proj = nn.Sequential(nn.Linear(self.aux_dim, aux_hidden), nn.GELU()) if self.aux_dim else None
+            merged_dim = conv_dim + (aux_hidden if self.aux_proj is not None else 0)
+            self.out = nn.Sequential(nn.Linear(merged_dim, hidden_dim), nn.GELU(), nn.LayerNorm(hidden_dim))
+
+        def forward(self, video_features: Any) -> Any:
+            batch = int(video_features.shape[0])
+            expected = self.frames * self.size * self.size
+            raw = video_features[:, : self.raw_dim]
+            if self.raw_dim < expected:
+                pad = torch.zeros((batch, expected - self.raw_dim), device=video_features.device, dtype=video_features.dtype)
+                raw = torch.cat([raw, pad], dim=1)
+            raw = raw[:, :expected].reshape(batch, 1, self.frames, self.size, self.size)
+            parts = [self.conv(raw)]
+            if self.aux_proj is not None:
+                parts.append(self.aux_proj(video_features[:, self.raw_dim :]))
+            return self.out(torch.cat(parts, dim=1))
+
     class TemporalMaskedDiffusionIDM(nn.Module):
         def __init__(self) -> None:
             super().__init__()
             self.offsets = list(offsets)
-            self.video_reconstruction_dim = luma_window_dim if video_encoder_arch in {"compact_luma_window_cnn", "luma_window_cnn", "video_luma_cnn"} else 0
-            if self.video_reconstruction_dim > 0:
+            if video_encoder_arch in {"raw_video_cnn", "raw_frame_cnn", "raw_video_frame_cnn"}:
+                self.video_reconstruction_dim = raw_video_dim
+            elif video_encoder_arch in {"compact_luma_window_cnn", "luma_window_cnn", "video_luma_cnn"}:
+                self.video_reconstruction_dim = luma_window_dim
+            else:
+                self.video_reconstruction_dim = 0
+            if video_encoder_arch in {"raw_video_cnn", "raw_frame_cnn", "raw_video_frame_cnn"}:
+                self.video_proj = RawVideoFrameEncoder()
+            elif self.video_reconstruction_dim > 0:
                 self.video_proj = CompactLumaWindowEncoder()
             else:
                 self.video_proj = nn.Sequential(nn.Linear(video_dim, hidden_dim), nn.GELU(), nn.LayerNorm(hidden_dim))
@@ -1496,7 +1618,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             fit_rows = train_rows[:-calibration_count] or train_rows
     offsets = _temporal_offsets(config)
     max_slots = int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))
-    feature_dim = int(config.get("video_feature_dim", 64))
+    feature_dim = _configured_video_feature_dim(config)
+    config = {**config, "video_feature_dim": feature_dim}
     preserve_pad_slots = bool(config.get("preserve_pad_action_slots", config.get("pad_action_slots_as_pad", False)))
     vocab = _build_vocab(train_rows, max_slots=max_slots, min_count=int(config.get("vocab_min_count", 1)), preserve_pad_slots=preserve_pad_slots)
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
@@ -1666,6 +1789,15 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "token_presence_loss": total_token_presence / max(1, total_examples),
             "masked_targets": total_targets,
         })
+    train_history_path = Path(output_dir) / "train_history.json"
+    write_json(
+        train_history_path,
+        {
+            "schema": "temporal_masked_diffusion_idm_train_history.v1",
+            "model_name": str(config.get("model_name", "temporal_masked_diffusion_idm")),
+            "history": history,
+        },
+    )
     checkpoint_path = Path(output_dir) / "checkpoint.pt"
     torch.save({
         "schema":"temporal_masked_diffusion_idm_checkpoint.v1",
@@ -1784,7 +1916,15 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "preserve_pad_action_slots":preserve_pad_slots,
         "temporal_offsets":offsets,
         "temporal_window":len(offsets),
+        "video_feature_source":str(config.get("video_feature_source", "json")),
+        "video_feature_dim":feature_dim,
         "video_encoder_arch":str(config.get("video_encoder_arch", "flat_mlp")),
+        "raw_video_frame_offsets":_raw_video_frame_offsets(config)
+        if str(config.get("video_feature_source", "json")).lower() in {"raw_frames", "raw_video_frames", "frame_provider"}
+        else None,
+        "raw_video_image_size":int(config.get("raw_video_image_size", config.get("video_image_size", 96)))
+        if str(config.get("video_feature_source", "json")).lower() in {"raw_frames", "raw_video_frames", "frame_provider"}
+        else None,
         "video_encoder_pretrain_history":video_pretrain_history,
         "history":history,
         "non_noop_budget":non_noop_budget,
@@ -1853,6 +1993,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         },
         "device":str(device),
         "checkpoint_path":str(checkpoint_path),
+        "train_history_path":str(train_history_path),
         "predictions_path":str(predictions_path),
         "metrics_path":str(metrics_path),
         "wall_clock_seconds":time.time()-start,

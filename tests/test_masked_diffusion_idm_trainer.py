@@ -26,6 +26,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _calibrate_temporal_non_noop_budget,
     _candidate_family_diagnostics,
     _candidate_token_prior_weights,
+    _precompute_features,
     _temporal_button_class_targets,
     _temporal_center_candidates,
     _temporal_family_token_presence_targets,
@@ -52,6 +53,11 @@ def _write_jsonl(path: Path, rows: list[dict]) -> None:
     path.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n", encoding="utf-8")
 
 
+def _write_pgm(path: Path, values: list[int], *, width: int = 2, height: int = 2) -> None:
+    payload = bytes(max(0, min(255, int(value))) for value in values)
+    path.write_bytes(f"P5\n{width} {height}\n255\n".encode("ascii") + payload)
+
+
 def test_video_feature_vector_uses_configured_paths_and_padding():
     row = _row(1, split="train_core")
     features = video_feature_vector(row, feature_paths=["frame.features", "next_frame_features"], dim=6)
@@ -70,6 +76,28 @@ def test_video_feature_vector_flattens_luma_window_tokens():
         dim=10,
     )
     assert features == [0.1, 0.2, 0.3, 0.4, 1.0, 0.0, 0.5, 0.6, 0.0, 0.0]
+
+
+def test_temporal_raw_video_feature_source_reads_frame_offsets(tmp_path: Path):
+    _write_pgm(tmp_path / "frame_000000.ppm", [0, 64, 128, 255])
+    _write_pgm(tmp_path / "frame_000001.ppm", [255, 128, 64, 0])
+    row = {
+        "sequence_id": "raw-video#0",
+        "frame": {"path": str(tmp_path / "frame_000000.ppm"), "index": 0, "width": 2, "height": 2},
+        "ground_truth_tokens": [],
+    }
+    features = _precompute_features(
+        [row],
+        config={
+            "video_feature_source": "raw_frames",
+            "raw_video_image_size": 2,
+            "raw_video_frame_offsets": [0, 1],
+            "raw_video_missing_frame_policy": "error",
+            "video_feature_dim": 8,
+        },
+    )
+    assert len(features) == 1
+    assert features[0] == [0.0, 64 / 255.0, 128 / 255.0, 1.0, 1.0, 128 / 255.0, 64 / 255.0, 0.0]
 
 
 def test_button_event_calibration_uses_dynamic_probability_thresholds():
@@ -1087,3 +1115,80 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert Path(summary["checkpoint_path"]).exists()
     assert Path(summary["predictions_path"]).exists()
     assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 4
+
+
+def test_train_temporal_masked_diffusion_idm_raw_video_cnn_tiny_smoke(tmp_path: Path):
+    if not torch_available():
+        return
+    frame_dir = tmp_path / "frames"
+    frame_dir.mkdir()
+    for idx in range(8):
+        _write_pgm(
+            frame_dir / f"frame_{idx:06d}.ppm",
+            [1 + idx * 20, 240 - idx * 10, 40 + idx, 80 + idx],
+        )
+    train_path = tmp_path / "train_raw_temporal.jsonl"
+    target_path = tmp_path / "target_raw_temporal.jsonl"
+
+    def raw_row(idx: int, *, split: str) -> dict:
+        row = _row(idx, split=split)
+        row["frame"] = {
+            "path": str(frame_dir / f"frame_{idx:06d}.ppm"),
+            "index": idx,
+            "width": 2,
+            "height": 2,
+        }
+        row["ground_truth_tokens"] = ["KEY_PRESS_A", "MOUSE_LEFT_DOWN"] if idx % 3 == 0 else []
+        return row
+
+    _write_jsonl(train_path, [raw_row(i, split="train_core") for i in range(5)])
+    _write_jsonl(target_path, [raw_row(i, split="eval") for i in range(5, 8)])
+    summary = train_temporal_masked_diffusion_idm(
+        {
+            "model_name": "unit_temporal_masked_diffusion_raw_video_idm",
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(tmp_path / "out_raw_temporal"),
+            "summary_out": str(tmp_path / "summary_raw_temporal.json"),
+            "max_train_rows": 5,
+            "max_target_rows": 3,
+            "max_action_tokens_per_bin": 4,
+            "temporal_offsets": [0],
+            "temporal_loss_offsets": [0],
+            "video_feature_source": "raw_frames",
+            "raw_video_image_size": 2,
+            "raw_video_frame_offsets": [0],
+            "raw_video_missing_frame_policy": "error",
+            "video_feature_dim": 4,
+            "video_encoder_arch": "raw_video_cnn",
+            "raw_video_encoder_channels": 2,
+            "raw_video_encoder_pool_hw": 1,
+            "hidden_dim": 16,
+            "transformer_layers": 1,
+            "transformer_heads": 4,
+            "dropout": 0.0,
+            "batch_size": 2,
+            "prediction_batch_size": 2,
+            "epochs": 1,
+            "lr": 0.001,
+            "mask_probability": 0.75,
+            "random_token_probability": 0.0,
+            "diffusion_steps": 2,
+            "video_encoder_pretrain_epochs": 1,
+            "video_encoder_pretrain_mask_probability": 0.5,
+            "video_reconstruction_aux_weight": 0.05,
+            "force_cpu": True,
+            "noop_loss_weight": 0.1,
+            "keyboard_loss_weight": 2.0,
+            "mouse_button_loss_weight": 3.0,
+        }
+    )
+    assert summary["schema"] == "temporal_masked_diffusion_idm_train_summary.v1"
+    assert summary["status"] == "pass"
+    assert summary["video_feature_source"] == "raw_frames"
+    assert summary["video_encoder_arch"] == "raw_video_cnn"
+    assert summary["raw_video_frame_offsets"] == [0]
+    assert summary["raw_video_image_size"] == 2
+    assert summary["video_encoder_pretrain_history"]
+    assert Path(summary["checkpoint_path"]).exists()
+    assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 3

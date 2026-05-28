@@ -477,3 +477,9 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Observed prefix metrics over 5,000 target rows: keyboard key accuracy `0.005309734513274336`, mouse-button accuracy `0.008888888888888889`, mouse-button F1 `0.01366742596810934`, no-button FPR `0.05744286596664608`, mouse Pearson X/Y `-0.03636286748261065` / `null`.
 - Do not checkpoint `G005-g014-idm-full-paper-target`; this fails the D2E paper-target gates by large margins despite staying under the no-button FPR cap.
 - Course-correction implication: compact luma16 temporal masked-diffusion probes are diagnostic only. Next G005 work should move to a raw 480p/video-token recipe-faithful IDM or stronger video encoder/cache adaptation while preserving the FDM-1-public recipe anchor: noncausal masked action-token diffusion over video/compressed-screen tokens.
+
+## 2026-05-29T07:05 KST — Next G005 branch moves from compact luma to raw screen-video tokens
+
+- Implemented a raw-frame feature source for the temporal masked-diffusion IDM so G005 can test the FDM-1-public recipe with decoded D2E frame references instead of compact luma16 diagnostic rows.
+- New config: `configs/model/idm_temporal_masked_diffusion_d2e_raw96_family_presence_prefix80k.yaml` (`video_feature_source=raw_frames`, `video_encoder_arch=raw_video_cnn`, raw offsets `[0,1,2]`, 96×96 grayscale tokens, masked raw-frame reconstruction auxiliary, same temporal masked action-token diffusion/family-presence gates).
+- New launcher: `scripts/run_g005_idm_temporal_raw96_family_presence_prefix.sh` with GPU monitor and W&B sidecar support. This is a bounded prefix probe only; do not checkpoint G005 unless D2E paper-target gates are actually beaten.
