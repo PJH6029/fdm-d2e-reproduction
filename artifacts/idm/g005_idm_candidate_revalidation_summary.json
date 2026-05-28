@@ -3,6 +3,82 @@
   "candidate_count": 16,
   "claim_boundary": "Revalidation/ranking artifact only; no G005 success claim and no FDM-1 parity claim.",
   "created_at_epoch": 1779902282.2046466,
+  "diagnostic_artifacts": [
+    {
+      "artifact": "artifacts/idm/g005_idm_nep_offset_target_autocorr_prefix320k.json",
+      "best_nonzero_shift_by_metric": {
+        "keyboard_accuracy": {
+          "shift": -4,
+          "value": 0.19084946567309313
+        },
+        "mouse_button_accuracy": {
+          "shift": -3,
+          "value": 0.05744033692091717
+        },
+        "pearson_x": {
+          "shift": -1,
+          "value": 0.7687360622696963
+        },
+        "pearson_y": {
+          "shift": -1,
+          "value": 0.7424076496578984
+        },
+        "scale_ratio_x": {
+          "shift": -3,
+          "value": 1.000063171970232
+        },
+        "scale_ratio_y": {
+          "shift": -1,
+          "value": 1.000085162845654
+        }
+      },
+      "claim_boundary": "target_autocorr is a temporal-offset diagnostic/oracle over ground-truth targets, not a trained model result and not valid G005 completion evidence.",
+      "decision": "reject_simple_nep_or_label_offset_gpu_branch",
+      "expected_nep_shift": 2,
+      "expected_nep_shift_ms": 100,
+      "expected_shift_metrics": {
+        "keyboard_accuracy": 0.17447975052483541,
+        "mouse_button_accuracy": 0.021471352695219798,
+        "pearson_x": 0.41486074393357936,
+        "pearson_y": 0.38618132090750656,
+        "rows": 319956.0,
+        "scale_ratio_x": 1.0000844777184257,
+        "scale_ratio_y": 1.0001143637266852,
+        "strict_mouse_button_f1": 0.02999942749184176,
+        "strict_no_button_fpr": 0.01838553063237614
+      },
+      "expected_shift_paper_target_passes": false,
+      "finding_codes": [
+        "expected_nep_shift_target_autocorr_below_paper_targets",
+        "no_nonzero_target_autocorr_shift_meets_all_paper_targets"
+      ],
+      "name": "nep_offset_target_autocorr_prefix320k",
+      "raw_artifact": "artifacts/idm/g005_idm_nep_offset_target_autocorr_prefix320k_raw.json",
+      "rows": 320000,
+      "status": "pass"
+    },
+    {
+      "artifacts": [
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dummy_compact_luma_target_sample1k_materialization_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_hf_tiny_compact_luma_target_sample16_materialization_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_small_compact_luma_target_sample16_materialization_summary.json"
+      ],
+      "claim_boundary": "Materialization/code-path gates only; no trained-model metric evidence.",
+      "decision": "prepared_prefix_gate_requires_gpu_for_prefix_scale_dinov2",
+      "finding_codes": [
+        "materializer_works_on_real_rows",
+        "hf_manual_preprocess_works_without_torchvision",
+        "dinov2_cpu_too_slow_for_prefix_scale"
+      ],
+      "name": "frozen_frame_embedding_materialization_gates",
+      "rows": {
+        "dinov2_small_compact_luma": 16,
+        "dummy_compact_luma": 1000,
+        "hf_tiny_compact_luma": 16
+      },
+      "status": "pass_codepath_only"
+    }
+  ],
   "paper_targets": {
     "keyboard_accuracy": 0.73,
     "mouse_button_accuracy": 0.957,
@@ -948,64 +1024,10 @@
     "Do not promote threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, or sequence-prior action-history prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Do not reserve H200s for a simple NEP/label-offset branch: target autocorr at +100ms has keyboard=0.1745, mouse-button=0.0215, Pearson X/Y=0.4149/0.3862 and no nonzero shift meets paper targets on the 320k prefix.",
     "Next G005 branch must change the supervision/modeling problem, not just add causal action history: investigate teacher-assisted event decoding or per-recording latent state estimation that is causal at inference and validated on prefix rows before full 4xH200.",
-    "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible."
+    "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible.",
+    "Use a reserved GPU, with expiration check and utilization monitoring, for any prefix-scale DINO frozen-frame materialization; storage CPU validated only 16 DINO rows and is too slow for 320k."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779925440,
-  "diagnostic_artifacts": [
-    {
-      "name": "nep_offset_target_autocorr_prefix320k",
-      "artifact": "artifacts/idm/g005_idm_nep_offset_target_autocorr_prefix320k.json",
-      "raw_artifact": "artifacts/idm/g005_idm_nep_offset_target_autocorr_prefix320k_raw.json",
-      "status": "pass",
-      "rows": 320000,
-      "expected_nep_shift": 2,
-      "expected_nep_shift_ms": 100,
-      "expected_shift_metrics": {
-        "rows": 319956.0,
-        "keyboard_accuracy": 0.17447975052483541,
-        "mouse_button_accuracy": 0.021471352695219798,
-        "pearson_x": 0.41486074393357936,
-        "pearson_y": 0.38618132090750656,
-        "scale_ratio_x": 1.0000844777184257,
-        "scale_ratio_y": 1.0001143637266852,
-        "strict_mouse_button_f1": 0.02999942749184176,
-        "strict_no_button_fpr": 0.01838553063237614
-      },
-      "expected_shift_paper_target_passes": false,
-      "best_nonzero_shift_by_metric": {
-        "keyboard_accuracy": {
-          "shift": -4,
-          "value": 0.19084946567309313
-        },
-        "mouse_button_accuracy": {
-          "shift": -3,
-          "value": 0.05744033692091717
-        },
-        "pearson_x": {
-          "shift": -1,
-          "value": 0.7687360622696963
-        },
-        "pearson_y": {
-          "shift": -1,
-          "value": 0.7424076496578984
-        },
-        "scale_ratio_x": {
-          "shift": -3,
-          "value": 1.000063171970232
-        },
-        "scale_ratio_y": {
-          "shift": -1,
-          "value": 1.000085162845654
-        }
-      },
-      "finding_codes": [
-        "expected_nep_shift_target_autocorr_below_paper_targets",
-        "no_nonzero_target_autocorr_shift_meets_all_paper_targets"
-      ],
-      "decision": "reject_simple_nep_or_label_offset_gpu_branch",
-      "claim_boundary": "target_autocorr is a temporal-offset diagnostic/oracle over ground-truth targets, not a trained model result and not valid G005 completion evidence."
-    }
-  ]
+  "updated_at_epoch": 1779927749.8188865
 }

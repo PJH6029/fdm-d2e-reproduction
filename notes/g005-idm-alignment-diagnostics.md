@@ -499,3 +499,9 @@ Storage/CPU sanity gate:
   `frame_source=compact-luma`, `feature_dim=1064`, and `missing_frames=0`.
   This only proves the HF/manual-preprocess code path; it is not a candidate
   model result and does not replace a real DINO/ViT prefix gate.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_small_compact_luma_target_sample16_materialization_summary.json`
+  validates the intended default frozen model `facebook/dinov2-small` on 16 real
+  D2E rows with `embedding_dim_per_frame=384`, `feature_dim=2120`, and
+  `missing_frames=0`. CPU wall clock was about 281 seconds for only 16 rows, so
+  any prefix-scale DINO materialization should run on a reserved GPU with
+  utilization monitoring rather than on the storage shell.
