@@ -24,6 +24,7 @@ from fdm_d2e.training.masked_diffusion_idm_trainer import (
 from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _calibrate_temporal_family_non_noop_budget,
     _calibrate_temporal_non_noop_budget,
+    _temporal_center_candidates,
     _tokens_from_family_budget_candidates,
     train_temporal_masked_diffusion_idm,
 )
@@ -311,6 +312,25 @@ def test_temporal_family_non_noop_budget_calibrates_separate_action_families():
     )
     assert "MOUSE_LEFT_DOWN" in tokens
     assert "KEY_PRESS_A" not in tokens
+
+
+def test_temporal_retrieval_prior_biases_action_token_candidates():
+    if not torch_available():
+        return
+    import torch
+
+    probabilities = torch.zeros((1, 2, 5), dtype=torch.float32)
+    probabilities[:, :, 2] = 0.01
+    probabilities[:, :, 3] = 0.01
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "KEY_PRESS_A", "MOUSE_LEFT_DOWN", "FDM1_MOUSE_DX_P01"]
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={"retrieval_action_prior_blend": 0.9, "non_noop_budget_candidates_per_row": 8},
+        retrieval_priors=[{"MOUSE_LEFT_DOWN": 0.95}],
+    )
+    assert candidates[0][0]["token"] == "MOUSE_LEFT_DOWN"
+    assert candidates[0][0]["retrieval_score"] == 0.95
 
 
 def test_button_class_prior_offsets_boost_rare_transition_tokens_without_target_labels():
@@ -706,6 +726,10 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "key_event_pos_weight": 2.0,
             "button_event_pos_weight": 3.0,
             "event_auxiliary_candidate_score_blend": 0.25,
+            "retrieval_action_prior_enabled": True,
+            "retrieval_action_prior_top_k": 2,
+            "retrieval_action_prior_temperature": 0.1,
+            "retrieval_action_prior_blend": 0.2,
             "calibrate_non_noop_budget": True,
             "temporal_calibration_fraction": 0.2,
             "temporal_calibration_max_rows": 2,
@@ -736,6 +760,9 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["loss_weights"]["key_event_aux_weight"] == 0.2
     assert summary["loss_weights"]["button_event_aux_weight"] == 0.2
     assert summary["loss_weights"]["event_auxiliary_candidate_score_blend"] == 0.25
+    assert summary["loss_weights"]["retrieval_action_prior_blend"] == 0.2
+    assert summary["retrieval_action_prior"]["status"] == "pass"
+    assert summary["retrieval_action_prior"]["rows"] == 8
     assert any("key_event_loss" in row and "button_event_loss" in row for row in summary["history"])
     assert summary["non_noop_budget"]["status"] in {"pass", "skipped"}
     assert "temporal action-token sequences" in summary["recipe_alignment"]

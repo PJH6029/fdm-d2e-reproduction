@@ -462,6 +462,7 @@ def _temporal_center_candidates(
     vocab: Sequence[str],
     config: dict[str, Any],
     event_probabilities: dict[str, Any] | None = None,
+    retrieval_priors: Sequence[dict[str, float]] | None = None,
 ) -> list[list[dict[str, Any]]]:
     if probabilities is None:
         return []
@@ -483,12 +484,114 @@ def _temporal_center_candidates(
                     event_score = float(event_probabilities[family][batch_idx].detach().cpu())
                     blend = max(0.0, min(1.0, float(config.get("event_auxiliary_candidate_score_blend", 0.5))))
                     score = (1.0 - blend) * token_score + blend * event_score
+                retrieval_score = 0.0
+                if retrieval_priors and batch_idx < len(retrieval_priors):
+                    retrieval_score = float(retrieval_priors[batch_idx].get(token, 0.0))
+                    if retrieval_score > 0.0:
+                        blend = max(0.0, min(1.0, float(config.get("retrieval_action_prior_blend", 0.35))))
+                        score = (1.0 - blend) * score + blend * retrieval_score
                 if score < min_probability:
                     continue
-                candidates.append({"score": score, "token_probability": token_score, "slot": slot_idx, "token_index": token_idx, "token": token})
+                candidates.append({"score": score, "token_probability": token_score, "retrieval_score": retrieval_score, "slot": slot_idx, "token_index": token_idx, "token": token})
         candidates.sort(key=lambda item: (-float(item["score"]), int(item["slot"]), int(item["token_index"])))
         batch_candidates.append(candidates[:max_candidates])
     return batch_candidates
+
+
+def _retrieval_tokens(row: dict[str, Any], *, max_slots: int) -> list[str]:
+    tokens: list[str] = []
+    seen: set[str] = set()
+    for token in _target_slots(row, max_slots=max_slots):
+        token = str(token)
+        if not _is_predictable_action_token(token) or token in seen:
+            continue
+        tokens.append(token)
+        seen.add(token)
+    return tokens
+
+
+def _build_temporal_retrieval_prior_index(
+    model: Any,
+    torch: Any,
+    rows: Sequence[dict[str, Any]],
+    features: Sequence[Sequence[float]],
+    *,
+    config: dict[str, Any],
+    vocab: Sequence[str],
+    device: Any,
+) -> dict[str, Any]:
+    if not bool(config.get("retrieval_action_prior_enabled", False)):
+        return {"status": "skipped", "reason": "disabled"}
+    max_rows = config.get("retrieval_action_prior_max_rows")
+    limit = min(len(rows), int(max_rows)) if max_rows is not None else len(rows)
+    if limit <= 0:
+        return {"status": "skipped", "reason": "no_rows"}
+    batch_size = max(1, int(config.get("retrieval_action_prior_batch_size", config.get("prediction_batch_size", config.get("batch_size", 64)))))
+    token_vocab = set(str(token) for token in vocab)
+    embeddings: list[Any] = []
+    token_rows: list[list[str]] = []
+    model.eval()
+    with torch.no_grad():
+        for start in range(0, limit, batch_size):
+            batch_features = torch.tensor([[list(row)] for row in features[start : start + batch_size]], dtype=torch.float32, device=device)
+            encoded = model.video_embedding(batch_features)[:, 0, :]
+            encoded = torch.nn.functional.normalize(encoded, p=2, dim=-1)
+            embeddings.append(encoded.detach())
+            for row in rows[start : start + batch_size]:
+                token_rows.append([token for token in _retrieval_tokens(row, max_slots=int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))) if token in token_vocab])
+    if not embeddings:
+        return {"status": "skipped", "reason": "no_embeddings"}
+    matrix = torch.cat(embeddings, dim=0).to(device)
+    return {
+        "schema": "temporal_retrieval_action_prior_index.v1",
+        "status": "pass",
+        "rows": int(matrix.shape[0]),
+        "embedding_dim": int(matrix.shape[1]),
+        "tokens": token_rows,
+        "embeddings": matrix,
+        "top_k": int(config.get("retrieval_action_prior_top_k", 16)),
+        "temperature": float(config.get("retrieval_action_prior_temperature", 0.07)),
+        "claim_boundary": "Retrieval index uses fit/train rows only as a video/action-token denoising prior; target labels are never indexed.",
+    }
+
+
+def _retrieval_priors_for_batch(
+    model: Any,
+    torch: Any,
+    rows: Sequence[dict[str, Any]],
+    features: Sequence[Sequence[float]],
+    *,
+    retrieval_index: dict[str, Any] | None,
+    config: dict[str, Any],
+    device: Any,
+) -> list[dict[str, float]] | None:
+    del rows
+    if not retrieval_index or retrieval_index.get("status") != "pass":
+        return None
+    embeddings = retrieval_index.get("embeddings")
+    token_rows = retrieval_index.get("tokens")
+    if embeddings is None or not token_rows:
+        return None
+    if not features:
+        return []
+    top_k = max(1, min(int(config.get("retrieval_action_prior_top_k", retrieval_index.get("top_k", 16))), int(embeddings.shape[0])))
+    temperature = max(1e-6, float(config.get("retrieval_action_prior_temperature", retrieval_index.get("temperature", 0.07))))
+    batch_features = torch.tensor([[list(row)] for row in features], dtype=torch.float32, device=device)
+    model.eval()
+    with torch.no_grad():
+        query = model.video_embedding(batch_features)[:, 0, :]
+        query = torch.nn.functional.normalize(query, p=2, dim=-1)
+        scores = query @ embeddings.T
+        values, indices = torch.topk(scores, k=top_k, dim=1)
+        weights = torch.softmax(values / temperature, dim=1)
+    priors: list[dict[str, float]] = []
+    for row_indices, row_weights in zip(indices.detach().cpu().tolist(), weights.detach().cpu().tolist()):
+        acc: dict[str, float] = {}
+        for retrieval_row_idx, weight in zip(row_indices, row_weights):
+            for token in token_rows[int(retrieval_row_idx)]:
+                acc[token] = acc.get(token, 0.0) + float(weight)
+        priors.append(acc)
+    return priors
 
 
 def _tokens_from_non_noop_candidates(candidates: Sequence[dict[str, Any]], *, threshold: float, max_tokens: int) -> list[str]:
@@ -552,8 +655,8 @@ def _predict_temporal_tokens_batch(
     config: dict[str, Any],
     vocab: Sequence[str],
     device: Any,
+    retrieval_index: dict[str, Any] | None = None,
 ) -> list[list[str]]:
-    del features  # Features are indexed from all_features so temporal offsets can clamp at corpus boundaries.
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
     noop_index = token_to_index.get(FDM1_ACTION_NOOP, token_to_index[FDM1_ACTION_MASK])
     center_probs, predicted_center_ids, event_probabilities = _temporal_final_center_probabilities(
@@ -568,7 +671,8 @@ def _predict_temporal_tokens_batch(
     )
     if center_probs is None or predicted_center_ids is None:
         return []
-    candidate_rows = _temporal_center_candidates(center_probs, vocab=vocab, config=config, event_probabilities=event_probabilities)
+    retrieval_priors = _retrieval_priors_for_batch(model, torch, rows, features, retrieval_index=retrieval_index, config=config, device=device)
+    candidate_rows = _temporal_center_candidates(center_probs, vocab=vocab, config=config, event_probabilities=event_probabilities, retrieval_priors=retrieval_priors)
     family_budgeted = bool(config.get("family_non_noop_budgeted_unmasking", False))
     family_budgets = config.get("family_non_noop_budget", {})
     budgeted = bool(config.get("non_noop_budgeted_unmasking", False))
@@ -597,6 +701,7 @@ def _collect_temporal_probability_rows(
     config: dict[str, Any],
     vocab: Sequence[str],
     device: Any,
+    retrieval_index: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
     collected: list[dict[str, Any]] = []
@@ -612,7 +717,8 @@ def _collect_temporal_probability_rows(
             vocab=vocab,
             device=device,
         )
-        for row, candidates in zip(batch_rows, _temporal_center_candidates(center_probs, vocab=vocab, config=config, event_probabilities=event_probabilities)):
+        retrieval_priors = _retrieval_priors_for_batch(model, torch, batch_rows, features[start_idx : start_idx + batch_size], retrieval_index=retrieval_index, config=config, device=device)
+        for row, candidates in zip(batch_rows, _temporal_center_candidates(center_probs, vocab=vocab, config=config, event_probabilities=event_probabilities, retrieval_priors=retrieval_priors)):
             collected.append({"row": row, "candidates": candidates, "ground_truth_tokens": [str(token) for token in row.get("ground_truth_tokens", [])]})
     return collected
 
@@ -945,6 +1051,16 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "feature_dim": feature_dim,
         "temporal_offsets": offsets,
     }, checkpoint_path)
+    retrieval_index = _build_temporal_retrieval_prior_index(
+        model,
+        torch,
+        fit_rows,
+        fit_features,
+        config={**config, "max_slots": max_slots},
+        vocab=vocab,
+        device=device,
+    )
+    retrieval_summary = {key: value for key, value in retrieval_index.items() if key not in {"embeddings", "tokens"}}
     non_noop_budget = {"status": "skipped", "reason": "disabled"}
     family_non_noop_budget = {"status": "skipped", "reason": "disabled"}
     probability_rows: list[dict[str, Any]] | None = None
@@ -961,6 +1077,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             config={**config, "max_slots": max_slots},
             vocab=vocab,
             device=device,
+            retrieval_index=retrieval_index,
         )
     if bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False))) and probability_rows:
         non_noop_budget = _calibrate_temporal_non_noop_budget(probability_rows, config=config)
@@ -988,6 +1105,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 config={**config, "max_slots": max_slots},
                 vocab=vocab,
                 device=device,
+                retrieval_index=retrieval_index,
             )
             for row, predicted_tokens in zip(batch_rows, batch_predictions):
                 handle.write(json.dumps({"sequence_id": row.get("sequence_id"), "predicted_tokens": predicted_tokens}, sort_keys=True) + "\n")
@@ -1017,6 +1135,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "history":history,
         "non_noop_budget":non_noop_budget,
         "family_non_noop_budget":family_non_noop_budget,
+        "retrieval_action_prior":retrieval_summary,
         "loss_weights":{
             "noop_loss_weight":float(config.get("noop_loss_weight", 1.0)),
             "pad_loss_weight":float(config.get("pad_loss_weight", 0.0)),
@@ -1031,6 +1150,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "key_event_pos_weight":float(config.get("key_event_pos_weight", 8.0)),
             "button_event_pos_weight":float(config.get("button_event_pos_weight", 16.0)),
             "event_auxiliary_candidate_score_blend":float(config.get("event_auxiliary_candidate_score_blend", 0.5)),
+            "retrieval_action_prior_blend":float(config.get("retrieval_action_prior_blend", 0.35)),
             "token_loss_type":str(config.get("token_loss_type", "cross_entropy")),
             "token_focal_gamma":float(config.get("token_focal_gamma", config.get("focal_gamma", 2.0))),
         },
