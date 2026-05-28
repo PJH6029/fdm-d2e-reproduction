@@ -417,6 +417,11 @@ def _build_factorized_model(torch: Any, *, video_dim: int, key_count: int, butto
             self.mouse_y_head = nn.Linear(hidden_dim, FDM1_MOUSE_AXIS_BINS)
             self.key_head = nn.Linear(hidden_dim, key_count) if key_count else None
             self.button_head = nn.Linear(hidden_dim, button_count) if button_count else None
+            self.button_event_head = (
+                nn.Linear(hidden_dim, 1)
+                if button_count and bool(config.get("button_event_auxiliary", False))
+                else None
+            )
 
         def forward(self, video_features: Any) -> dict[str, Any]:
             batch = video_features.shape[0]
@@ -429,6 +434,7 @@ def _build_factorized_model(torch: Any, *, video_dim: int, key_count: int, butto
                 "mouse_y": self.mouse_y_head(encoded[:, 2, :]),
                 "key": None if self.key_head is None else self.key_head(encoded[:, 3, :]),
                 "button": None if self.button_head is None else self.button_head(encoded[:, 4, :]),
+                "button_event": None if self.button_event_head is None else self.button_event_head(encoded[:, 4, :]).squeeze(-1),
             }
             return out
 
@@ -453,16 +459,29 @@ def _positive_weight(torch: Any, rows: Sequence[dict[str, Any]], *, vocab: Seque
     return torch.tensor(weights, dtype=torch.float32)
 
 
+def _binary_positive_weight(torch: Any, positives: int, total: int, *, cap: float) -> Any:
+    positives = max(0, int(positives))
+    total = max(1, int(total))
+    if positives <= 0:
+        weight = float(cap)
+    else:
+        weight = min(float(cap), max(1.0, (total - positives) / float(positives)))
+    return torch.tensor(weight, dtype=torch.float32)
+
+
 def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, config: dict[str, Any], key_vocab: Sequence[str], button_vocab: Sequence[str], device: Any) -> list[str]:
     feature_paths = list(config.get("video_feature_paths", ["frame.features", "next_frame_features", "frame_delta_features"]))
     feature_dim = int(config.get("video_feature_dim", 64))
     features = torch.tensor([video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim)], dtype=torch.float32, device=device)
     key_threshold = float(config.get("key_threshold", 0.5))
     button_threshold = float(config.get("button_threshold", 0.5))
+    button_event_threshold = float(config.get("button_event_threshold", 1.1))
     key_token_thresholds = config.get("key_token_thresholds") if isinstance(config.get("key_token_thresholds"), dict) else {}
     button_token_thresholds = config.get("button_token_thresholds") if isinstance(config.get("button_token_thresholds"), dict) else {}
     max_keys = int(config.get("max_predicted_keys", 4))
     max_buttons = int(config.get("max_predicted_buttons", 2))
+    button_event_force_topk = int(config.get("button_event_force_topk", 1))
+    button_event_min_token_probability = float(config.get("button_event_min_token_probability", 0.0))
     width, height = _screen_size(row)
     model.eval()
     with torch.no_grad():
@@ -495,6 +514,20 @@ def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, c
                 ),
                 key=lambda item: (-item[0], item[1]),
             )[:max_buttons]
+            if (
+                not selected
+                and out.get("button_event") is not None
+                and button_event_force_topk > 0
+                and float(torch.sigmoid(out["button_event"][0]).detach().cpu()) >= button_event_threshold
+            ):
+                selected = sorted(
+                    (
+                        (float(prob), idx)
+                        for idx, prob in enumerate(probs)
+                        if float(prob) >= button_event_min_token_probability
+                    ),
+                    key=lambda item: (-item[0], item[1]),
+                )[: min(max_buttons, button_event_force_topk)]
             fdm1_tokens.extend(str(button_vocab[idx]) for _, idx in selected)
     return d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height)
 
@@ -561,7 +594,7 @@ def _score_button_threshold(
             model,
             torch,
             row,
-            config={**config, "key_threshold": 1.1, "button_threshold": threshold},
+            config={**config, "key_threshold": 1.1, "button_threshold": threshold, "button_event_threshold": 1.1, "button_event_force_topk": 0},
             key_vocab=key_vocab,
             button_vocab=button_vocab,
             device=device,
@@ -608,15 +641,85 @@ def _collect_factorized_probability_rows(
             target = _factorized_targets(row, key_vocab=key_vocab, button_vocab=button_vocab)
             key_probs = torch.sigmoid(out["key"][0]).detach().cpu().tolist() if out.get("key") is not None and key_vocab else []
             button_probs = torch.sigmoid(out["button"][0]).detach().cpu().tolist() if out.get("button") is not None and button_vocab else []
+            button_event_prob = (
+                float(torch.sigmoid(out["button_event"][0]).detach().cpu())
+                if out.get("button_event") is not None
+                else None
+            )
             collected.append(
                 {
                     "key_probs": [float(value) for value in key_probs],
                     "button_probs": [float(value) for value in button_probs],
+                    "button_event_prob": button_event_prob,
                     "key_labels": [int(value) for value in target["key_labels"]],
                     "button_labels": [int(value) for value in target["button_labels"]],
+                    "button_event_label": int(any(target["button_labels"])),
                 }
             )
     return collected
+
+
+def _calibrate_button_event_threshold(
+    probability_rows: Sequence[dict[str, Any]],
+    *,
+    candidates: Sequence[float],
+    max_false_positive_rate: float,
+    beta: float = 2.0,
+) -> dict[str, Any]:
+    rows: list[dict[str, Any]] = []
+    beta_sq = max(0.01, float(beta) ** 2)
+    for threshold in candidates:
+        tp = fp = fn = tn = 0
+        for row in probability_rows:
+            prob = row.get("button_event_prob")
+            if prob is None:
+                continue
+            truth = bool(row.get("button_event_label"))
+            pred = float(prob) >= float(threshold)
+            if pred and truth:
+                tp += 1
+            elif pred and not truth:
+                fp += 1
+            elif (not pred) and truth:
+                fn += 1
+            else:
+                tn += 1
+        precision = tp / (tp + fp) if (tp + fp) else None
+        recall = tp / (tp + fn) if (tp + fn) else None
+        f1 = (2 * tp) / ((2 * tp) + fp + fn) if ((2 * tp) + fp + fn) else 0.0
+        fbeta = ((1.0 + beta_sq) * tp) / (((1.0 + beta_sq) * tp) + beta_sq * fn + fp) if (((1.0 + beta_sq) * tp) + beta_sq * fn + fp) else 0.0
+        fpr = fp / (fp + tn) if (fp + tn) else 0.0
+        fpr_penalty = max(0.0, fpr - float(max_false_positive_rate))
+        rows.append(
+            {
+                "threshold": float(threshold),
+                "score": float(fbeta) - fpr_penalty,
+                "tp": tp,
+                "fp": fp,
+                "fn": fn,
+                "tn": tn,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1,
+                "fbeta": fbeta,
+                "false_positive_rate": fpr,
+            }
+        )
+    if not rows:
+        return {"status": "skipped", "reason": "no_button_event_probs", "selected": None, "rows": []}
+    feasible = [row for row in rows if float(row["false_positive_rate"]) <= float(max_false_positive_rate)]
+    pool = feasible or rows
+    # Recall is the target failure mode, but FPR must stay bounded for downstream
+    # no-button gates.  Use F-beta first, then recall, then lower threshold.
+    best = max(pool, key=lambda row: (row["score"], row.get("recall") or 0.0, -row["threshold"]))
+    return {
+        "status": "pass",
+        "selected": float(best["threshold"]),
+        "max_false_positive_rate": float(max_false_positive_rate),
+        "beta": float(beta),
+        "selected_row": best,
+        "rows": rows,
+    }
 
 
 def _calibrate_per_token_thresholds(
@@ -734,10 +837,21 @@ def _calibrate_factorized_thresholds(
         )
         config["key_token_thresholds"] = key_token_payload["selected"]
         config["button_token_thresholds"] = button_token_payload["selected"]
+        button_event_payload = {"status": "skipped", "reason": "button_event_auxiliary_disabled"}
+        if config.get("button_event_auxiliary"):
+            button_event_payload = _calibrate_button_event_threshold(
+                probability_rows,
+                candidates=candidates,
+                max_false_positive_rate=float(config.get("button_event_calibration_max_no_button_fpr", config.get("calibration_max_no_button_fpr", 0.10))),
+                beta=float(config.get("button_event_calibration_beta", 2.0)),
+            )
+            if button_event_payload.get("selected") is not None:
+                config["button_event_threshold"] = float(button_event_payload["selected"])
         per_token_payload = {
             "status": "pass",
             "key_token_thresholds": key_token_payload,
             "button_token_thresholds": button_token_payload,
+            "button_event_threshold": button_event_payload,
         }
     return {
         "schema": "factorized_threshold_calibration.v1",
@@ -801,14 +915,28 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
     optimizer = torch.optim.AdamW(model.parameters(), lr=float(config.get("lr", 2e-4)), weight_decay=float(config.get("weight_decay", 0.01)))
     key_pos_weight = _positive_weight(torch, train_rows, vocab=key_vocab, prefix="KEY_", cap=float(config.get("key_pos_weight_cap", 100.0)))
     button_pos_weight = _positive_weight(torch, train_rows, vocab=button_vocab, prefix="MOUSE_", cap=float(config.get("button_pos_weight_cap", 100.0)))
+    button_event_pos_weight = None
+    if config.get("button_event_auxiliary") and button_vocab:
+        button_event_positives = 0
+        for row in train_rows:
+            tokens = set(canonical_fdm1_action_tokens(row, include_noop=False))
+            button_event_positives += int(any(token in tokens for token in button_vocab))
+        button_event_pos_weight = _binary_positive_weight(
+            torch,
+            button_event_positives,
+            len(train_rows),
+            cap=float(config.get("button_event_pos_weight_cap", config.get("button_pos_weight_cap", 100.0))),
+        )
     if key_pos_weight is not None:
         key_pos_weight = key_pos_weight.to(device)
     if button_pos_weight is not None:
         button_pos_weight = button_pos_weight.to(device)
+    if button_event_pos_weight is not None:
+        button_event_pos_weight = button_event_pos_weight.to(device)
     history: list[dict[str, Any]] = []
     for epoch in range(int(config.get("epochs", 1))):
         model.train()
-        totals = {"loss": 0.0, "mouse_x": 0.0, "mouse_y": 0.0, "key": 0.0, "button": 0.0, "examples": 0}
+        totals = {"loss": 0.0, "mouse_x": 0.0, "mouse_y": 0.0, "key": 0.0, "button": 0.0, "button_event": 0.0, "examples": 0}
         for features, mouse_x, mouse_y, key_labels, button_labels in loader:
             features = features.to(device)
             mouse_x = mouse_x.to(device)
@@ -824,11 +952,20 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             button_loss = torch.tensor(0.0, device=device)
             if out.get("button") is not None and button_labels.numel():
                 button_loss = torch.nn.functional.binary_cross_entropy_with_logits(out["button"], button_labels, pos_weight=button_pos_weight)
+            button_event_loss = torch.tensor(0.0, device=device)
+            if out.get("button_event") is not None and button_labels.numel():
+                button_event_labels = (button_labels.sum(dim=1) > 0).float()
+                button_event_loss = torch.nn.functional.binary_cross_entropy_with_logits(
+                    out["button_event"],
+                    button_event_labels,
+                    pos_weight=button_event_pos_weight,
+                )
             loss = (
                 float(config.get("mouse_x_loss_weight", config.get("mouse_loss_weight", 1.0))) * mouse_x_loss
                 + float(config.get("mouse_y_loss_weight", config.get("mouse_loss_weight", 1.0))) * mouse_y_loss
                 + float(config.get("key_loss_weight", 1.0)) * key_loss
                 + float(config.get("button_loss_weight", 1.0)) * button_loss
+                + float(config.get("button_event_loss_weight", 0.0)) * button_event_loss
             )
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
@@ -840,6 +977,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             totals["mouse_y"] += float(mouse_y_loss.detach().cpu()) * batch
             totals["key"] += float(key_loss.detach().cpu()) * batch
             totals["button"] += float(button_loss.detach().cpu()) * batch
+            totals["button_event"] += float(button_event_loss.detach().cpu()) * batch
             totals["examples"] += batch
         denom = max(1, int(totals.pop("examples")))
         history.append({"epoch": epoch + 1, **{key: value / denom for key, value in totals.items()}, "examples": denom})
@@ -905,6 +1043,9 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             "button_vocab": button_vocab,
             "key_threshold": float(config.get("key_threshold", 0.5)),
             "button_threshold": float(config.get("button_threshold", 0.5)),
+            "button_event_auxiliary": bool(config.get("button_event_auxiliary", False)),
+            "button_event_threshold": float(config.get("button_event_threshold", 1.1)),
+            "button_event_force_topk": int(config.get("button_event_force_topk", 1)),
             "key_token_threshold_count": len(config.get("key_token_thresholds", {}) if isinstance(config.get("key_token_thresholds"), dict) else {}),
             "button_token_threshold_count": len(config.get("button_token_thresholds", {}) if isinstance(config.get("button_token_thresholds"), dict) else {}),
         },

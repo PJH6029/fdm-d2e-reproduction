@@ -128,6 +128,10 @@ def test_train_factorized_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "force_cpu": True,
             "key_threshold": 0.99,
             "button_threshold": 0.99,
+            "button_event_auxiliary": True,
+            "button_event_loss_weight": 1.0,
+            "button_event_threshold": 0.5,
+            "button_event_force_topk": 1,
             "calibrate_thresholds": True,
             "factorized_calibration_fraction": 0.25,
             "factorized_calibration_max_rows": 2,
@@ -200,6 +204,10 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
             "force_cpu": True,
             "key_threshold": 0.99,
             "button_threshold": 0.99,
+            "button_event_auxiliary": True,
+            "button_event_loss_weight": 1.0,
+            "button_event_threshold": 0.5,
+            "button_event_force_topk": 1,
             "calibrate_thresholds": True,
             "factorized_calibration_fraction": 0.25,
             "factorized_calibration_max_rows": 2,
@@ -209,5 +217,7 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
     )
     assert summary["status"] == "pass"
     assert summary["threshold_calibration"]["status"] == "pass"
+    assert summary["threshold_calibration"]["per_token"]["button_event_threshold"]["status"] == "pass"
+    assert summary["factorization"]["button_event_auxiliary"] is True
     assert Path(summary["checkpoint_path"]).exists()
     assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 3
