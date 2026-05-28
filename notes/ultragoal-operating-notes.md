@@ -181,3 +181,10 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Implemented a recipe-faithful follow-up branch after joint-gate partial improvement: forced mouse-button unmasking can now be capped by a train/calibration-label event-rate prior while selecting highest-confidence unlabeled target candidates.
 - Candidate config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_budget_prefix20k.yaml`. It keeps the FDM-1-shaped video-token + noncausal masked action-token IDM and adds confidence-budgeted iterative unmasking as an inferred/novel public-recipe approximation.
 - Intended bounded-probe success criterion before scaling: target no-button FPR near or below `0.10` while preserving nonzero button recall; still not G005 completion without full-corpus paper-target win.
+
+## 2026-05-28 KST — G005 confidence-budgeted button-unmasking H200 prefix probe
+
+- Ran commit `c0bf3b3` on 1×H200 reservation `rsv-jeonghunpark-20260528-4187c7` / pod `prod-rsv-jeonghunpark-20260528-4187c7`; copied evidence locally and cancelled the reservation after artifact copy.
+- Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_budget_prefix20k_h200_*`, including run, GPU monitor, W&B status, resolved config, paper metrics, compacted summary, reservation context, and diagnosis.
+- Result is negative/non-terminal: the train-label confidence budget limited event-head forced unmasking to `58` target rows, but target predicted mouse-button examples still reached `710`, no-button FPR worsened to `0.3569`, and strict button F1 was only `0.00526`.
+- Diagnosis: direct per-token button predictions now dominate overfire; next branch must route **all** mouse-button emission through a confidence budget or direct-button abstention gate, while keeping the FDM-1-shaped masked action-token recipe.
