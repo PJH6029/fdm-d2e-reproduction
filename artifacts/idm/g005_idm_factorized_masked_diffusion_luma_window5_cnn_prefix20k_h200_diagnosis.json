@@ -1,0 +1,32 @@
+{
+  "claim_boundary": "This is prefix evidence only; it does not satisfy G005 or any full-corpus paper-target win.",
+  "commit": "673e011",
+  "diagnosis": [
+    "Compact luma-window CNN video encoder improves keyboard over flat luma-window projection (0.02019 vs 0.01578) while preserving no-button FPR 0.0.",
+    "It is still below the earlier compact-frame factorized prefix keyboard result (~0.0239) and recovers no mouse-button true positives.",
+    "Next branch needs either larger prefix/full-corpus scaling with the best video encoder or a recipe-aligned button-event objective (e.g. separate down/up token denoising with recall-constrained calibration) before a 4xH200 G005 launch."
+  ],
+  "evidence": {
+    "gpu_monitor": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_prefix20k_h200_gpu_monitor.csv",
+    "paper_metrics": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_prefix20k_h200_paper_metrics.json",
+    "resolved_config": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_prefix20k_h200_resolved_config.json",
+    "run": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_prefix20k_h200_run.json",
+    "summary": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_prefix20k_h200_summary.json",
+    "wandb": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_prefix20k_h200_wandb_status.json"
+  },
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "metrics": {
+    "keyboard_key_accuracy": 0.020192307692307693,
+    "mouse_button_accuracy": 0.0,
+    "no_button_false_positive_rate": 0.0,
+    "strict_mouse_button_f1": 0.0
+  },
+  "next_action": "Implement a button-event recall-focused typed masked-diffusion head/calibration or run a larger-prefix CNN scaling probe only if it improves button recall on prefix; do not checkpoint G005.",
+  "probe": "factorized_masked_diffusion_luma_window5_cnn_prefix20k_h200",
+  "reservation_id": "rsv-jeonghunpark-20260528-4df5dc",
+  "schema": "g005_idm_prefix_probe_diagnosis.v1",
+  "status": "non_terminal_partial_recovery",
+  "target_rows": 2000,
+  "train_rows": 20000,
+  "updated_at": "2026-05-28T20:41:18.444698+09:00"
+}

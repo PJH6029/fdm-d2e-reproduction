@@ -135,3 +135,10 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Evidence copied locally under `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_prefix20k_h200_*`; W&B artifact run: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_prefix20k_h200_wandb_status.json`; reservation `rsv-jeonghunpark-20260528-91d7a9` was cancelled after evidence copy.
 - Result remains non-terminal: keyboard key accuracy `0.015781922525107604`, mouse-button accuracy/F1 `0.0`, no-button FPR `0.033846153846153845`. Luma-window video tokens alone did not recover button recall or paper-target keyboard accuracy.
 - Next recipe-aligned branch implemented locally: a compact luma-window CNN video encoder feeding the same masked action-token planes (`configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_prefix20k.yaml`). Run this bounded H200 probe before considering larger/full-corpus masked-diffusion IDM launches.
+
+## 2026-05-28 KST — G005 compact luma-window CNN masked-diffusion prefix probe
+
+- Ran a third 1×H200 prefix probe at commit `673e011` with a compact luma-window CNN video encoder feeding the same typed masked action-token planes.
+- Evidence copied locally under `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_prefix20k_h200_*`; W&B artifact run: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_prefix20k_h200_wandb_status.json`; reservation `rsv-jeonghunpark-20260528-4df5dc` was cancelled after evidence copy.
+- Result is still non-terminal: keyboard key accuracy `0.020192307692307693`, mouse-button accuracy/F1 `0.0`, no-button FPR `0.0`. CNN video encoder recovers some keyboard performance versus flat luma-window (`0.01578`) but remains below the compact-frame factorized prefix (`~0.0239`) and below all G005 targets.
+- Next branch should explicitly address sparse mouse-button recall inside the recipe-aligned typed masked-diffusion objective (for example, separate button down/up denoising head or recall-constrained button calibration) before any full-corpus 4×H200 G005 launch.
