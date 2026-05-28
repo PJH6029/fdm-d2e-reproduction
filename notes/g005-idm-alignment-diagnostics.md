@@ -1189,3 +1189,36 @@ Evidence:
 - `outputs/gidm_warmup_seekmode_pilot/` — small target/prediction/MCAP evidence copied locally.
 
 Result: reject output-accurate ffmpeg seek as a released-GIDM teacher rescue. Metrics on the same 100-row warmup window stayed at keyboard `0.0`, mouse Pearson X/Y `-0.0304/0.1131`, scale ratios `3.04/1.87`, and no mouse-button positives. This matches the previous warmup-trim failure pattern and is nowhere near paper targets. Do not spend a larger G-IDM run on seek placement.
+
+### 2026-05-28 KST — expanded/count-aware repeat priors rejected
+
+Ran two CPU/storage-shell diagnostics after the state-delta oracle showed that
+hidden held-key repeats dominate the remaining keyboard gap.
+
+Evidence:
+
+- `artifacts/idm/g005_state_transition_expanded_repeat_context_diagnostics_summary.json`
+- `artifacts/idm/g005_idm_expanded_repeat_context_key_repeat_prior_prefix320k_metrics.json`
+- `artifacts/idm/g005_idm_expanded_repeat_context_causal_keyboard_repeat_policy_matrix.json`
+- `artifacts/idm/g005_idm_key_press_multiplicity_prefix320k.json`
+- `artifacts/idm/g005_idm_key_repeat_count_prior_prefix320k_metrics.json`
+- `artifacts/idm/g005_idm_repeat_context_count_prior_rejection.json`
+
+Findings:
+
+- Adding hold-modulo context to the binary repeat prior only improves the
+  noncausal keyboard upper-bound from the previous `0.5426` to `0.5430`.
+- The target prefix has many duplicate binned key repeats: `16,530` key-press
+  token occurrences have count `2` in the first `320,000` target rows.
+- A count-aware repeat prior that can emit two `KEY_PRESS_*` tokens still reaches
+  only keyboard `0.5463` (`global_hold_mod_ge12_th0.5`), far below the `0.73`
+  paper target. It preserves the noncausal state-delta mouse-button result
+  (`0.9754`) and previous-motion Pearson (`0.7687/0.7425`), but those are still
+  not valid G005 completion evidence and motion remains below the paper target.
+
+Decision: reject tabular held-duration/modulo/count priors. The next branch must
+learn a causal latent key-state/repeat-count decoder or use teacher-assisted
+sequence supervision; simple context tables are exhausted. Preserve
+state-transition button and autoregressive motion as specialist-head ideas only
+after replacing their noncausal state/motion sources with trainable causal
+predictors.

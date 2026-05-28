@@ -1,0 +1,18 @@
+{
+  "claim_boundary": "Diagnostic data-shape evidence only; not trained-model evidence and not G005 completion evidence.",
+  "created_at_epoch": 1779958222,
+  "duplicate_key_press_rows": 16509,
+  "duplicate_key_press_token_occurrences": 16530,
+  "finding": "A large prefix slice contains count=2 KEY_PRESS tokens; binary held-repeat diagnostics cannot exactly match those rows, motivating the count-aware screen.",
+  "key_press_token_count_histogram": {
+    "1": 32726,
+    "2": 16530
+  },
+  "key_rows_with_key_press": 48162,
+  "max_key_press_count_per_token_per_row": 2,
+  "max_rows": 320000,
+  "rows": 320000,
+  "schema": "g005_key_press_multiplicity_prefix320k.v1",
+  "source": "production-storage-shell-2 one-off scan of outputs/data/d2e_event_state_duration_context_shards_accel64/shard_*/target_all_eval.jsonl",
+  "status": "pass"
+}

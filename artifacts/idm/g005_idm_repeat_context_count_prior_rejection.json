@@ -1,0 +1,68 @@
+{
+  "best_binary_repeat_prior": {
+    "keyboard_accuracy": 0.5430083921873627,
+    "mouse_button_accuracy": 0.9754424778761062,
+    "pearson_x": 0.7687087053983602,
+    "pearson_y": 0.7424529931783539,
+    "policy": "global_hold_mod_th0.5",
+    "scale_ratio_x": 1.0001756310144025,
+    "scale_ratio_y": 1.000020839820968,
+    "strict_button_f1": 0.9933156620951942,
+    "strict_no_button_fpr": 0.0
+  },
+  "best_count_repeat_prior": {
+    "keyboard_accuracy": 0.5463326517555854,
+    "mouse_button_accuracy": 0.9754424778761062,
+    "pearson_x": 0.7687087053983602,
+    "pearson_y": 0.7424529931783539,
+    "policy": "global_hold_mod_ge12_th0.5",
+    "scale_ratio_x": 1.0001756310144025,
+    "scale_ratio_y": 1.000020839820968,
+    "strict_button_f1": 0.9933156620951942,
+    "strict_no_button_fpr": 0.0
+  },
+  "best_count_usage": {
+    "predicted_double_press_tokens": 340,
+    "predicted_key_press_tokens": 42451
+  },
+  "claim_boundary": "Negative diagnostic decision only. Metrics with state_delta are noncausal upper bounds and must not be presented as G005 success.",
+  "created_at_epoch": 1779958222,
+  "decision": "reject_repeat_context_and_count_priors",
+  "evidence": {
+    "count_repeat_context_metrics": "artifacts/idm/g005_idm_key_repeat_count_prior_prefix320k_metrics.json",
+    "expanded_repeat_context_metrics": "artifacts/idm/g005_idm_expanded_repeat_context_key_repeat_prior_prefix320k_metrics.json",
+    "multiplicity_scan": "artifacts/idm/g005_idm_key_press_multiplicity_prefix320k.json"
+  },
+  "findings": [
+    {
+      "code": "expanded_mod_context_only_adds_small_keyboard_gain",
+      "detail": "best expanded binary prior keyboard=0.543008",
+      "severity": "info"
+    },
+    {
+      "code": "count_aware_repeat_prior_still_below_keyboard_target",
+      "detail": "best count-aware keyboard=0.546333 < target 0.73",
+      "severity": "error"
+    },
+    {
+      "code": "motion_still_below_paper_target",
+      "detail": "previous-motion pearson=(0.768709,0.742453) < targets (0.796,0.783)",
+      "severity": "error"
+    },
+    {
+      "code": "button_pass_is_noncausal_state_delta_only",
+      "detail": "mouse-button target is passed only because this diagnostic uses next_state_delta; it is not valid completion evidence.",
+      "severity": "warning"
+    }
+  ],
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "next_branch": "Train or decode a causal latent key-state/repeat-count model; tabular held-duration/count priors are exhausted. Preserve state-transition button and autoregressive motion as specialist heads only after causal replacement.",
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783
+  },
+  "schema": "g005_idm_rejection.v1",
+  "status": "rejected"
+}
