@@ -454,3 +454,10 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Evidence prefix: `artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_family_prior_prefix80k_h200_*`; compact summary status is `nonterminal_negative_probe`.
 - Result remains far below G005: keyboard accuracy `0.0`, mouse-button accuracy `0.009655172413793104`, mouse-button F1 `0.017569546120058566`, mouse Pearson X/Y `-0.020508166087411902` / `0.027789736684099717`, and no-button FPR `0.10582664196005764` fails the <=0.10 cap. Do **not** checkpoint G005.
 - Diagnosis: train-fit inverse-frequency prior over-boosted zero/near-zero fit-count tokens (e.g. `KEY_PRESS_54`, `MOUSE_MIDDLE_*`) because the vocab still included calibration-only train-heldout tokens; exact key/button candidate coverage fell. Next branch should keep recipe-faithful train-only candidate scoring but avoid boosting unseen-in-fit tokens.
+
+## 2026-05-29T05:55:00+09:00 KST — G005 observed-prior probe is safe but still negative
+
+- Ran commit/config `3c7f376` / `configs/model/idm_temporal_masked_diffusion_d2e_luma_window5_observed_prior_prefix80k.yaml` on 1×H200 reservation `rsv-jeonghunpark-20260529-6cca9f`; copied evidence locally and cancelled the reservation (`after.status=cancelled`). W&B run: `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/9suesvrq`.
+- Evidence prefix: `artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_observed_prior_prefix80k_h200_*`; compact summary status is `nonterminal_negative_probe`.
+- Result: observed-only prior fixed no-button FPR (`0.0`) but abstained on mouse buttons (`mouse_button_accuracy=0.0`, `mouse_button_f1=0.0`), keyboard remains tiny (`0.004426285325161729`), and mouse Pearson remains negative/near-zero (`x=-0.009400294094588639`, `y=0.01957355858983312`). Do **not** checkpoint G005.
+- Next recipe-faithful direction: scalar priors are insufficient; move to temporal action-token transition/span ranking or class-conditioned press/release recurrence learned from fit rows while keeping target labels out of scoring.

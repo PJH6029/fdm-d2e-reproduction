@@ -1,0 +1,146 @@
+{
+  "claim_boundary": "Diagnostic interpretation of bounded prefix evidence; no FDM-1 parity, paper-target win, or final G005 claim.",
+  "decision": "Do not checkpoint G005. Observed-only prior is safer for FPR but not enough for sparse button/key recall.",
+  "evidence": {
+    "button_predicted_examples": 0,
+    "calibration_top_button_tokens": [
+      {
+        "rows_as_top_family_candidate": 1876,
+        "token": "MOUSE_LEFT_DOWN"
+      },
+      {
+        "rows_as_top_family_candidate": 124,
+        "token": "MOUSE_MIDDLE_UP"
+      }
+    ],
+    "candidate_prior_top_boosted": [
+      {
+        "count": 2,
+        "token": "MOUSE_MIDDLE_DOWN",
+        "weight": 4.0
+      },
+      {
+        "count": 2,
+        "token": "MOUSE_MIDDLE_UP",
+        "weight": 4.0
+      },
+      {
+        "count": 1,
+        "token": "KEY_PRESS_20",
+        "weight": 2.0976176963403033
+      },
+      {
+        "count": 1,
+        "token": "KEY_PRESS_34",
+        "weight": 2.0976176963403033
+      },
+      {
+        "count": 1,
+        "token": "KEY_PRESS_56",
+        "weight": 2.0976176963403033
+      },
+      {
+        "count": 1,
+        "token": "KEY_PRESS_96",
+        "weight": 2.0976176963403033
+      },
+      {
+        "count": 1,
+        "token": "KEY_RELEASE_20",
+        "weight": 2.0976176963403033
+      },
+      {
+        "count": 1,
+        "token": "KEY_RELEASE_34",
+        "weight": 2.0976176963403033
+      }
+    ],
+    "candidate_prior_top_suppressed": [
+      {
+        "count": 1661,
+        "token": "KEY_PRESS_160",
+        "weight": 0.25
+      },
+      {
+        "count": 426,
+        "token": "KEY_PRESS_32",
+        "weight": 0.25
+      },
+      {
+        "count": 0,
+        "token": "KEY_PRESS_54",
+        "weight": 0.25
+      },
+      {
+        "count": 2343,
+        "token": "KEY_PRESS_65",
+        "weight": 0.25
+      },
+      {
+        "count": 2303,
+        "token": "KEY_PRESS_68",
+        "weight": 0.25
+      },
+      {
+        "count": 1157,
+        "token": "KEY_PRESS_83",
+        "weight": 0.25
+      },
+      {
+        "count": 2417,
+        "token": "KEY_PRESS_87",
+        "weight": 0.25
+      },
+      {
+        "count": 348,
+        "token": "KEY_PRESS_89",
+        "weight": 0.25
+      }
+    ],
+    "no_button_fpr": 0.0,
+    "observed_metrics": {
+      "keyboard_accuracy": 0.004426285325161729,
+      "mouse_button_accuracy": 0.0,
+      "mouse_button_f1": 0.0,
+      "mouse_move_pearson_x": -0.009400294094588639,
+      "mouse_move_pearson_y": 0.01957355858983312,
+      "mouse_scale_ratio_x": 19.397271431480352,
+      "mouse_scale_ratio_y": 302.74,
+      "no_button_false_positive_rate": 0.0
+    },
+    "paper_target_results": {
+      "keyboard_accuracy": {
+        "observed": 0.004426285325161729,
+        "pass": false,
+        "target": 0.73
+      },
+      "mouse_button_accuracy": {
+        "observed": 0.0,
+        "pass": false,
+        "target": 0.957
+      },
+      "mouse_move_pearson_x": {
+        "observed": -0.009400294094588639,
+        "pass": false,
+        "target": 0.796
+      },
+      "mouse_move_pearson_y": {
+        "observed": 0.01957355858983312,
+        "pass": false,
+        "target": 0.783
+      },
+      "no_button_false_positive_rate": {
+        "observed": 0.0,
+        "pass": true,
+        "target_max": 0.1
+      }
+    },
+    "target_button_exact_candidate_rate": 0.5,
+    "target_keyboard_exact_candidate_rate": 0.14634146341463414
+  },
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "next_action": "Move from scalar family priors to recipe-faithful temporal action-token transition/span ranking: learn or calibrate press/release class and recency-conditioned button candidates from fit rows, keeping target labels out of scoring.",
+  "root_cause_hypothesis": "Suppressing unseen-in-fit prior weights fixed the no-button false-positive cap but made mouse-button emission abstain completely; the ranking bottleneck is now sparse button recall under train-heldout family thresholding, while keyboard remains far below paper target and mouse-move scale remains unstable.",
+  "schema": "g005_observed_prior_probe_diagnosis.v1",
+  "status": "nonterminal_negative_probe"
+}
