@@ -31,6 +31,14 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Existing supervised MLP/luma-conv, heuristic, table, and post-hoc ensemble branches are now diagnostic baselines or failure evidence only. Future completion evidence for G005+ must include an FDM-1 recipe-alignment manifest/audit proving that the candidate uses the recipe-shaped architecture/objective, in addition to metric gates.
 - No FDM-1 parity claim: because FDM-1 internals are not public, record which details are directly public, which are inferred, and which are novel approximations.
 
+
+## 2026-05-29T01:48:58+09:00 KST — User reaffirmed FDM-1 recipe fidelity as the renewed mission
+
+- Global instruction for all remaining ultragoal execution: preserve the existing G001–G012 goal list/statuses, but treat G005+ as **FDM-1 public IDM/FDM training-recipe reproduction on D2E** rather than arbitrary architecture/objective search.
+- Mission target: train the FDM-1-shaped IDM/FDM recipe on D2E and produce artifacts that beat D2E paper/released G-IDM targets; exact-split G-IDM remains the follow-up baseline after paper targets are beaten.
+- Novel exploration is allowed only to approximate unpublished FDM-1 internals while preserving recipe shape: video encoder/compression-style screen-video tokens; non-causal masked-diffusion IDM over action-token sequences with iterative confidence unmasking; autoregressive FDM over interleaved frame/action data; key press/release plus binned mouse/click/trajectory-style tokens.
+- Branches using arbitrary supervised MLPs, tables, heuristic calibration, or non-interleaved proxy objectives remain diagnostic/failure evidence unless explicitly rebuilt behind the recipe-alignment manifest/audit gates.
+
 ## Current ultragoal gates
 
 - Active aggregate Codex/OMX ultragoal covers G001–G009 in `.omx/ultragoal/goals.json`; do not complete the aggregate Codex goal until all stories are complete.

@@ -7,6 +7,16 @@ These instructions apply to this repository and all child paths unless a deeper 
 ## Non-negotiable research contract
 
 - **No FDM-1 parity claim.** We can reproduce/approximate method ideas, not claim equivalence to the closed-source system.
+- **FDM-1 recipe fidelity is global for G005+.** Keep the existing ultragoal
+  stories, but implement/evaluate them as D2E training of the publicly
+  described FDM-1 recipe, not arbitrary easier architectures or objectives.
+  Novel exploration may fill unpublished details only when it preserves the
+  recipe shape: video-encoder/compression-style screen tokens; non-causal
+  masked-diffusion IDM over masked action-token sequences with iterative
+  confidence unmasking; autoregressive FDM over interleaved frame/action
+  tokens; key press/release plus binned mouse/click/trajectory-style action
+  tokens. Heuristic/supervised/table branches are diagnostics unless rebuilt
+  behind recipe-alignment gates.
 - **No non-game, robotics, or car-transfer claims.** Keep scope to game/desktop control.
 - **No weak smoke-only success.** Final success requires real D2E training/evaluation, not tiny subsets or dry-run paths.
 - **Full D2E gate:** consume D2E 480p plus available original/FHD/QHD sources where required by the active plan. Audited exclusions are allowed only with retry logs, reasons, and impact analysis.
@@ -27,6 +37,13 @@ These instructions apply to this repository and all child paths unless a deeper 
 - Do not commit secrets, tokens, kubeconfigs, private reservation payloads, or unredacted sensitive MLXP data.
 
 ## Current ultragoal state (authoritative as of 2026-05-23 KST)
+
+**Renewed-goal override as of 2026-05-29 KST:** the active OMX/Codex
+objective is now the renewed G001–G012 plan in `.omx/ultragoal/goals.json`,
+with `G005-g014-idm-full-paper-target` still in progress. Earlier G001–G009
+completion notes remain provenance for prior gates, not permission to complete
+the renewed aggregate objective. Keep the existing renewed goals/statuses and
+continue from G005 under the FDM-1 recipe-fidelity rule above.
 
 Active aggregate Codex objective:
 
