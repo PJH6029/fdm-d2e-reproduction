@@ -1059,3 +1059,19 @@ Decision: count multiplicity is a real bottleneck, but a separate hashed
 double-press head does not solve it. Next G005 branch should use a stronger
 sequence/teacher model that jointly predicts key identity, repeat count, release,
 and closed-loop state, rather than additive hash heads.
+
+### 2026-05-28 KST — joint key-state table diagnostic rejected
+
+Implemented a bounded joint sequence-state diagnostic that predicts the full key-event multiset from causal held-key/state contexts instead of independent per-key hash heads. The storage-shell gate used a clean worktree at `67532a3`, existing aligned `event_state_duration_context` base predictions, 100k train rows, and the first 50k target rows with selected lookup contexts (`held_codes_only`, `held_bucket_only`, `held_mod_since_phase`, `chain:specific_to_global`).
+
+Evidence:
+
+- `src/fdm_d2e/eval/joint_key_state_diagnostic.py`
+- `scripts/build_g005_joint_key_state_diagnostic.py`
+- `tests/test_joint_key_state_diagnostic.py`
+- `artifacts/idm/g005_idm_joint_key_state_diagnostic_prefix50k_train100k_selected.json`
+- `artifacts/idm/g005_idm_joint_key_state_diagnostic_prefix50k_train100k_selected_storage.log`
+
+Result: reject this joint table branch. Alignment has zero sequence-id mismatches and the best policy (`joint_union_held_bucket_only_top_th0.05_s1`) improves the 50k base keyboard from `0.15505` to only `0.16187`, while preserving base button `0.16138`, Pearson X/Y `0.75981/0.67937`, strict button F1 `0.26748`, and no-button FPR `0.03899`. This is below the previous held-key hash 50k gate (`0.19928`) and far below the paper keyboard target `0.73`.
+
+Decision: do not reserve GPUs for this table/memorization specialist. Independent hash/table and joint tabular sequence-state variants are exhausted; the next viable G005 branch must move to a stronger learned sequence/teacher-assisted mechanism rather than another CPU table over held-key metadata.
