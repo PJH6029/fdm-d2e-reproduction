@@ -65,12 +65,12 @@
   "calibration_dynamic_threshold_max_candidates": 192,
   "calibration_dynamic_thresholds": true,
   "calibration_max_no_button_fpr": 0.1,
-  "claim_boundary": "G005 larger prefix-scaling candidate for public FDM-1 recipe reproduction on D2E using focal categorical button-transition denoising plus train-only conditional prior correction; tests whether broader multi-shard D2E coverage fixes sparse button-token semantics before any full 4xH200 promotion.",
+  "claim_boundary": "G005 larger prefix-scaling candidate for public FDM-1 recipe reproduction on D2E using focal categorical button-transition denoising plus train-only conditional prior correction; uses 320k train rows with bounded 2k calibration/5k target evaluation to avoid CPU-bound GPU idle while testing whether broader D2E coverage fixes sparse button-token semantics.",
   "dropout": 0.1,
   "epochs": 2,
   "factorized_action_tokens": true,
-  "factorized_calibration_fraction": 0.05,
-  "factorized_calibration_max_rows": 10000,
+  "factorized_calibration_fraction": 0.01,
+  "factorized_calibration_max_rows": 2000,
   "fdm1_recipe": {
     "action_tokenization": {
       "factorized_planes": [
@@ -136,7 +136,7 @@
     },
     "stage": "idm",
     "video_encoder": {
-      "approximation": "Larger prefix candidate uses compact luma-window CNN video tokens over 320k D2E rows before typed masked action-token prediction; this tests data-scale coverage while preserving the public FDM-1 recipe shape and no parity claim.",
+      "approximation": "Larger prefix candidate uses compact luma-window CNN video tokens over 320k D2E training rows before typed masked action-token prediction; calibration/eval rows are bounded to avoid CPU-bound GPU idle while preserving the public FDM-1 recipe shape and no parity claim.",
       "enabled": true,
       "input": "D2E compact luma16 frame-window tokens from outputs/data/d2e_luma_window5_corpus_shards_accel64 plus frame deltas as bootstrap video-token conditioning",
       "public_anchor": "FDM-1 trains directly on screen video representations before inverse-dynamics action-token prediction."
@@ -157,7 +157,7 @@
   "max_key_tokens": 128,
   "max_predicted_buttons": 1,
   "max_predicted_keys": 4,
-  "max_target_rows": 10000,
+  "max_target_rows": 5000,
   "max_train_rows": 320000,
   "model_name": "idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_class_focal_prior_prefix320k",
   "mouse_loss_weight": 1.0,
@@ -205,5 +205,5 @@
   "button_class_conditional_prior_correction": true,
   "button_class_conditional_prior_alpha": 1.0,
   "button_class_prior_smoothing": 1.0,
-  "button_event_budget_max_target_rows": 10000
+  "button_event_budget_max_target_rows": 5000
 }

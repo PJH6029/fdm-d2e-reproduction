@@ -278,3 +278,8 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Implemented a larger recipe-faithful scaling candidate after 20k-row focal/prior still collapsed mouse-button semantics: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_class_focal_prior_prefix320k.yaml`.
 - It keeps the public FDM-1-shaped video-token + noncausal masked action-token IDM, focal categorical mouse-button transition denoising, train-only conditional prior correction, and iterative confidence-budgeted unmasking, but increases training coverage to `320,000` rows and calibration to up to `10,000` held-out train rows.
 - Intended bounded H200 probe criterion: determine whether sparse button semantic collapse is primarily a 20k-prefix coverage issue before making heavier architecture changes or full-corpus 4×H200 launches.
+
+## 2026-05-28 KST — G005 prefix320k calibration throttle
+
+- The first `prefix320k` H200 attempt at `0ad160b` completed training/checkpoint quickly but entered a CPU-bound one-row-at-a-time calibration path with sustained GPU idle; it was terminated before metric outputs to preserve GPU time.
+- Updated the prefix320k config to keep `320,000` training rows but bound calibration to `2,000` held-out train rows and target evaluation to `5,000` rows (`button_event_budget_max_target_rows=5000`). This keeps the probe recipe-faithful while avoiding avoidable CPU-bound GPU reservation waste.
