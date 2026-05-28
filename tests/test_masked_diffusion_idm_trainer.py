@@ -424,6 +424,38 @@ def test_candidate_token_prior_weights_boost_rare_train_tokens_without_target_la
     assert summary["claim_boundary"].startswith("Train-fit action-token prior")
 
 
+def test_candidate_token_prior_does_not_boost_tokens_unseen_in_fit_rows():
+    row = _row(1, split="train_core")
+    row["ground_truth_tokens"] = ["MOUSE_LEFT_DOWN"]
+
+    weights, summary = _candidate_token_prior_weights(
+        [row],
+        vocab=[
+            "<FDM1_ACTION_PAD>",
+            "<FDM1_ACTION_MASK>",
+            "NOOP",
+            "MOUSE_LEFT_DOWN",
+            "MOUSE_MIDDLE_DOWN",
+        ],
+        max_slots=4,
+        preserve_pad_slots=True,
+        config={
+            "candidate_token_prior_correction": True,
+            "candidate_token_prior_families": ["mouse_button"],
+            "candidate_token_prior_strength": 1.0,
+            "candidate_token_prior_smoothing": 1.0,
+            "candidate_token_prior_unseen_weight": 0.25,
+            "candidate_token_prior_min_weight": 0.25,
+            "candidate_token_prior_max_weight": 4.0,
+        },
+    )
+
+    assert summary["families"]["mouse_button"]["unseen_tokens"] == 1
+    assert summary["unseen_weight"] == 0.25
+    assert weights["MOUSE_MIDDLE_DOWN"] == 0.25
+    assert weights["MOUSE_LEFT_DOWN"] >= 1.0
+
+
 def test_temporal_candidate_token_prior_adjusts_recipe_candidate_ranking():
     if not torch_available():
         return

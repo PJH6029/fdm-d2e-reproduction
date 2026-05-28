@@ -475,6 +475,10 @@ def _candidate_token_prior_weights(
     strength = max(0.0, float(config.get("candidate_token_prior_strength", 0.5)))
     min_weight = max(0.0, float(config.get("candidate_token_prior_min_weight", 0.25)))
     max_weight = max(min_weight, float(config.get("candidate_token_prior_max_weight", 8.0)))
+    unseen_weight = max(
+        min_weight,
+        min(max_weight, float(config.get("candidate_token_prior_unseen_weight", 1.0))),
+    )
     weights: dict[str, float] = {}
     family_payloads: dict[str, Any] = {}
 
@@ -500,12 +504,16 @@ def _candidate_token_prior_weights(
                 weights[token] = 1.0
         else:
             for token in family_tokens:
+                if counts[token] <= 0:
+                    weights[token] = unseen_weight
+                    continue
                 raw = (reference / max(1e-12, smoothed[token])) ** strength
                 weights[token] = min(max_weight, max(min_weight, float(raw)))
         family_payloads[family] = {
             "status": "pass",
             "tokens": len(family_tokens),
             "observed_tokens": sum(1 for token in family_tokens if counts[token] > 0),
+            "unseen_tokens": sum(1 for token in family_tokens if counts[token] <= 0),
             "total_count": sum(counts[token] for token in family_tokens),
             "reference_smoothed_count": reference,
             "count": _numeric_summary([float(counts[token]) for token in family_tokens]),
@@ -523,10 +531,11 @@ def _candidate_token_prior_weights(
         "smoothing": smoothing,
         "min_weight": min_weight,
         "max_weight": max_weight,
+        "unseen_weight": unseen_weight,
         "count_once_per_row": bool(config.get("candidate_token_prior_count_once_per_row", True)),
         "top_boosted": [{"token": token, "weight": weight, "count": counts.get(token, 0)} for token, weight in boosted[:limit]],
         "top_suppressed": [{"token": token, "weight": weight, "count": counts.get(token, 0)} for token, weight in suppressed[:limit]],
-        "claim_boundary": "Train-fit action-token prior correction only. Target/eval labels are never used; this approximates unpublished FDM-1 masked-diffusion candidate scoring without claiming parity.",
+        "claim_boundary": "Train-fit action-token prior correction only. Target/eval labels are never used; unseen-in-fit tokens receive a fixed neutral/suppression weight rather than an inverse-frequency boost.",
     }
     return weights, summary
 
@@ -1582,6 +1591,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "candidate_token_prior_smoothing":float(config.get("candidate_token_prior_smoothing", 8.0)),
             "candidate_token_prior_min_weight":float(config.get("candidate_token_prior_min_weight", 0.25)),
             "candidate_token_prior_max_weight":float(config.get("candidate_token_prior_max_weight", 8.0)),
+            "candidate_token_prior_unseen_weight":float(config.get("candidate_token_prior_unseen_weight", 1.0)),
             "candidate_token_prior_families":list(config.get("candidate_token_prior_families", ["keyboard", "mouse_button"]))
             if isinstance(config.get("candidate_token_prior_families", ["keyboard", "mouse_button"]), list)
             else ["keyboard", "mouse_button"],
