@@ -386,3 +386,11 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Terminal evidence: `artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_family_budget_prefix80k_h200_run.json` status=pass and compact summary status=`nonterminal_negative_probe`.
 - Metrics: keyboard key accuracy improved from `0.0` to `0.01165`, but mouse-button accuracy/F1 remain `0.0`, no-button FPR is `0.00453`, mouse-move Pearson X is `-0.01085`, Y is undefined. This is **not** a G005 paper-target win and must not be checkpointed.
 - Next recipe-faithful direction: add sparse key/button event-presence auxiliary losses/heads inside the temporal masked-diffusion IDM representation and use them only to bias iterative action-token unmasking; also vectorize prediction before any larger full-corpus/4xH200 promotion.
+
+## 2026-05-29T02:46:57+09:00 KST — G005 event-aux temporal probe is negative
+
+- Commit/config: `1675273`, `configs/model/idm_temporal_masked_diffusion_d2e_luma_window5_event_aux_prefix80k.yaml`.
+- Reservation `rsv-jeonghunpark-20260529-f72f38` ran managed Codex pod `prod-rsv-jeonghunpark-20260529-f72f38` and was cancelled after evidence copy. Redacted context: `artifacts/idm/g005_event_aux_prefix80k_reservation_context.json`.
+- Terminal evidence: `artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_event_aux_prefix80k_h200_run.json` status=pass; compact summary status=`nonterminal_negative_probe`.
+- Metrics on target are all nonterminal: keyboard key accuracy `0.0`, mouse-button accuracy/F1 `0.0`, no-button FPR `0.0`, mouse movement Pearson undefined. Train-heldout calibration showed keyboard signal (`0.03466`) but target emission abstained/regressed. Do **not** checkpoint G005.
+- Next recipe-faithful direction: bootstrap masked-diffusion IDM with video/action-token retrieval priors from train video embeddings, then use those priors as denoising/candidate bias without target-label calibration or post-hoc metric heuristics.

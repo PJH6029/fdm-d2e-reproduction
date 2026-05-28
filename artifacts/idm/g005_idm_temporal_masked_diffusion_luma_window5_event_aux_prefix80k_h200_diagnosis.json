@@ -1,0 +1,101 @@
+{
+  "schema": "g005_temporal_event_aux_prefix80k_diagnosis.v1",
+  "status": "action_required",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "evidence": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_event_aux_prefix80k_h200_compact_summary.json",
+  "primary_findings": [
+    {
+      "finding": "Event auxiliary heads learned nonzero train-heldout keyboard calibration signal but did not transfer to target emission.",
+      "evidence": {
+        "calibration_keyboard": {
+          "keyboard_key_accuracy": 0.03466204506065858,
+          "mouse_button_accuracy": 0.0,
+          "mouse_button_f1": 0.0,
+          "mouse_move_pearson_x": null,
+          "mouse_move_pearson_y": null,
+          "no_button_false_positive_rate": 0.0,
+          "predicted_non_noop_tokens": 380,
+          "score": 0.04577315617176969,
+          "threshold": 0.06697393469512462
+        },
+        "target_keyboard": 0.0
+      }
+    },
+    {
+      "finding": "No mouse-button candidates survived calibration/emission; button F1 remains zero by abstention.",
+      "evidence": {
+        "family_mouse_button": null,
+        "diagnostic": {
+          "rows": 2000,
+          "predicted_examples": 0,
+          "ground_truth_examples": 50,
+          "exact_true_positive_examples": 0,
+          "any_token_overlap_wrong_examples": 0,
+          "both_positive_no_overlap_examples": 0,
+          "false_positive_examples": 0,
+          "false_negative_examples": 50,
+          "no_button_false_positive_examples": 0,
+          "no_button_false_positive_rate": 0.0,
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "semantic_any_button_overlap_examples": 0,
+          "semantic_any_button_overlap_rate_on_gt": 0.0,
+          "top_predicted_button_tokens": [],
+          "top_ground_truth_button_tokens": [
+            [
+              "MOUSE_RIGHT_DOWN",
+              16
+            ],
+            [
+              "MOUSE_RIGHT_UP",
+              16
+            ],
+            [
+              "MOUSE_LEFT_DOWN",
+              8
+            ],
+            [
+              "MOUSE_LEFT_UP",
+              8
+            ],
+            [
+              "MOUSE_MIDDLE_DOWN",
+              5
+            ],
+            [
+              "MOUSE_MIDDLE_UP",
+              5
+            ]
+          ],
+          "top_predicted_vs_ground_truth_pairs": []
+        }
+      }
+    },
+    {
+      "finding": "Event-biased candidate scoring over-regularized motion and produced all-noop/undefined movement metrics.",
+      "evidence": {
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "mouse_move_pearson_x": null,
+        "mouse_move_pearson_y": null,
+        "mouse_scale_ratio_x": null,
+        "mouse_scale_ratio_y": null
+      }
+    }
+  ],
+  "recommended_next_branch": {
+    "name": "two-stage recipe-faithful video/action contrastive retrieval bootstrap before masked diffusion",
+    "recipe_fidelity": "Still an FDM-1 IDM training approximation: use video encoder to retrieve temporally nearby action-token candidates as denoising priors, then train masked-diffusion IDM; no post-hoc metric heuristic.",
+    "implementation_notes": [
+      "build train-heldout action-token prior from video embeddings only",
+      "feed retrieved candidate action tokens as masked-token prior embeddings or sampling bias",
+      "keep target labels unused for calibration",
+      "first test on bounded prefix before full-corpus promotion"
+    ]
+  },
+  "checkpoint_policy": "Do not checkpoint G005; continue recipe-faithful exploration."
+}
