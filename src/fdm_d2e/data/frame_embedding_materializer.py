@@ -156,6 +156,7 @@ class FrameEmbeddingMaterializerConfig:
     backend: str = "dummy-stat"
     model_id: str = "facebook/dinov2-small"
     frame_offsets: tuple[int, ...] = (0, 2)
+    frame_source: str = "video"
     image_size: int = 224
     frame_fps: int = 20
     missing_frame_policy: str = "zero"
@@ -326,6 +327,82 @@ def _row_for_frame_lookup(row: dict[str, Any], path_remaps: Sequence[tuple[str, 
     return mapped_row
 
 
+def _float_to_byte(value: Any) -> int:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        numeric = 0.0
+    if numeric <= 1.0:
+        numeric *= 255.0
+    return max(0, min(255, int(round(numeric))))
+
+
+def _luma_values_for_offset(row: dict[str, Any], offset: int) -> list[Any] | None:
+    frame = row.get("frame")
+    if int(offset) <= 0 and isinstance(frame, dict) and isinstance(frame.get("luma16"), list):
+        return list(frame.get("luma16") or [])
+    if int(offset) > 0 and isinstance(row.get("next_frame_luma16"), list):
+        return list(row.get("next_frame_luma16") or [])
+    return None
+
+
+def _compact_luma_frame(
+    row: dict[str, Any],
+    *,
+    offset: int,
+    image_size: int,
+    missing_frame_policy: str,
+) -> tuple[bytes, bool]:
+    values = _luma_values_for_offset(row, int(offset))
+    if values is None:
+        if missing_frame_policy == "zero":
+            return bytes(int(image_size) * int(image_size)), True
+        raise FileNotFoundError("missing compact luma frame fields")
+    side = int(math.sqrt(len(values)))
+    if side * side != len(values) or side <= 0:
+        if missing_frame_policy == "zero":
+            return bytes(int(image_size) * int(image_size)), True
+        raise ValueError(f"expected square compact luma field, got {len(values)} values")
+    image_size = int(image_size)
+    out = bytearray(image_size * image_size)
+    for y in range(image_size):
+        src_y = min(side - 1, y * side // image_size)
+        for x in range(image_size):
+            src_x = min(side - 1, x * side // image_size)
+            out[y * image_size + x] = _float_to_byte(values[src_y * side + src_x])
+    return bytes(out), False
+
+
+def _frames_for_row(
+    row: dict[str, Any],
+    *,
+    provider: _FramePairProvider,
+    config: FrameEmbeddingMaterializerConfig,
+) -> tuple[list[bytes], int]:
+    source = config.frame_source.replace("_", "-").lower()
+    if source == "video":
+        return provider.frames(_row_for_frame_lookup(row, config.path_remaps), offsets=config.frame_offsets), 0
+    if source in {"compact-luma", "luma16"}:
+        missing_before = provider.missing_frames
+        frames: list[bytes] = []
+        for offset in config.frame_offsets:
+            try:
+                frame, missing = _compact_luma_frame(
+                    row,
+                    offset=int(offset),
+                    image_size=int(config.image_size),
+                    missing_frame_policy=str(config.missing_frame_policy),
+                )
+            except FileNotFoundError:
+                provider.missing_frames += 1
+                raise
+            frames.append(frame)
+            if missing:
+                provider.missing_frames += 1
+        return frames, provider.missing_frames - missing_before
+    raise ValueError("frame_source must be one of: video, compact-luma")
+
+
 def _flush_batch(
     rows: Sequence[dict[str, Any]],
     frames_by_row: Sequence[Sequence[bytes]],
@@ -418,6 +495,7 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
         "backend": config.backend,
         "model_id": config.model_id,
         "frame_offsets": list(config.frame_offsets),
+        "frame_source": config.frame_source,
         "path_remaps": list(config.path_remaps),
         "source_label": config.source_label,
     }
@@ -442,7 +520,8 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
                 )
                 dataset_fingerprint.update(b"\n")
                 batch_rows.append(row)
-                batch_frames.append(provider.frames(_row_for_frame_lookup(row, config.path_remaps), offsets=config.frame_offsets))
+                frames, _missing_delta = _frames_for_row(row, provider=provider, config=config)
+                batch_frames.append(frames)
                 if len(batch_rows) >= max(1, int(config.batch_size)):
                     output_rows, emb_dim = _flush_batch(batch_rows, batch_frames, embedder=embedder, config=config)
                     embedding_dim_per_frame = emb_dim
@@ -506,6 +585,7 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
         "backend": config.backend,
         "model_id": config.model_id if config.backend != "dummy-stat" else "deterministic-frame-statistics",
         "frame_offsets": list(config.frame_offsets),
+        "frame_source": config.frame_source,
         "image_size": int(config.image_size),
         "frame_fps": int(config.frame_fps),
         "missing_frame_policy": str(config.missing_frame_policy),

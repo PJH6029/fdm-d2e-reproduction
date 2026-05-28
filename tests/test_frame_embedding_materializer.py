@@ -177,3 +177,30 @@ def test_materializer_uses_path_remap_without_rewriting_output_rows(tmp_path: Pa
     assert summary["path_remaps"] == [{"from": "/root/work", "to": str(actual_root)}]
     out_row = _read_jsonl(output_path)[0]
     assert out_row["frame"]["path"] == str(logical_path)
+
+
+def test_materializer_can_use_compact_luma_without_ffmpeg_or_frame_files(tmp_path: Path) -> None:
+    row = _row(Path("/root/work/data/missing.mkv#frame=100"), 0.2, idx=0)
+    input_path = tmp_path / "input.jsonl"
+    input_path.write_text(json.dumps(row, sort_keys=True) + "\n")
+    output_path = tmp_path / "out.jsonl"
+    summary_path = tmp_path / "summary.json"
+
+    summary = materialize_frame_embedding_features(
+        FrameEmbeddingMaterializerConfig(
+            input_path=input_path,
+            output_path=output_path,
+            summary_out=summary_path,
+            backend="dummy-stat",
+            frame_source="compact-luma",
+            frame_offsets=(0, 2),
+            image_size=8,
+            include_summary_features=False,
+        )
+    )
+
+    assert summary["status"] == "pass"
+    assert summary["frame_source"] == "compact-luma"
+    assert summary["missing_frames"] == 0
+    out_row = _read_jsonl(output_path)[0]
+    assert len(out_row["__streaming_idm_features"]) == 12 * 3

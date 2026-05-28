@@ -37,6 +37,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--backend", default="dummy-stat", choices=["dummy-stat", "hf-vision"])
     parser.add_argument("--model-id", default="facebook/dinov2-small")
     parser.add_argument("--frame-offsets", default="0,2", help="Comma-separated 50ms row/frame offsets, e.g. 0,1,2.")
+    parser.add_argument(
+        "--frame-source",
+        default="video",
+        choices=["video", "compact-luma"],
+        help="Use video/PPM frame.path decoding or compact luma16 fields already present in D2E JSONL rows.",
+    )
     parser.add_argument("--image-size", type=int, default=224)
     parser.add_argument("--frame-fps", type=int, default=20)
     parser.add_argument("--missing-frame-policy", default="zero", choices=["zero", "error"])
@@ -74,6 +80,7 @@ def main() -> None:
         backend=args.backend,
         model_id=args.model_id,
         frame_offsets=parse_offsets(args.frame_offsets),
+        frame_source=args.frame_source,
         image_size=args.image_size,
         frame_fps=args.frame_fps,
         missing_frame_policy=args.missing_frame_policy,

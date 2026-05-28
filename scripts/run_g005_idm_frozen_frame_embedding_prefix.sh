@@ -29,6 +29,7 @@ MAX_TARGET_ROWS="${MAX_TARGET_ROWS:-320000}"
 EMBED_BACKEND="${EMBED_BACKEND:-hf-vision}"
 EMBED_MODEL_ID="${EMBED_MODEL_ID:-facebook/dinov2-small}"
 EMBED_FRAME_OFFSETS="${EMBED_FRAME_OFFSETS:-0,2}"
+EMBED_FRAME_SOURCE="${EMBED_FRAME_SOURCE:-video}"
 EMBED_IMAGE_SIZE="${EMBED_IMAGE_SIZE:-224}"
 EMBED_BATCH_SIZE="${EMBED_BATCH_SIZE:-16}"
 EMBED_DEVICE="${EMBED_DEVICE:-auto}"
@@ -97,6 +98,7 @@ fi
   --backend "$EMBED_BACKEND" \
   --model-id "$EMBED_MODEL_ID" \
   --frame-offsets "$EMBED_FRAME_OFFSETS" \
+  --frame-source "$EMBED_FRAME_SOURCE" \
   --image-size "$EMBED_IMAGE_SIZE" \
   --batch-size "$EMBED_BATCH_SIZE" \
   --device "$EMBED_DEVICE" \
@@ -114,6 +116,7 @@ fi
   --backend "$EMBED_BACKEND" \
   --model-id "$EMBED_MODEL_ID" \
   --frame-offsets "$EMBED_FRAME_OFFSETS" \
+  --frame-source "$EMBED_FRAME_SOURCE" \
   --image-size "$EMBED_IMAGE_SIZE" \
   --batch-size "$EMBED_BATCH_SIZE" \
   --device "$EMBED_DEVICE" \
