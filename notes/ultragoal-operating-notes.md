@@ -149,3 +149,16 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Evidence copied locally under `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_prefix20k_h200_*`; W&B artifact run: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_prefix20k_h200_wandb_status.json`; reservation `rsv-jeonghunpark-20260528-29dc14` was cancelled after evidence copy.
 - Result is negative/non-terminal: keyboard key accuracy `0.012219717641475857`, mouse-button accuracy/F1 `0.0`, no-button FPR `0.0`. Button-event calibration saturated: thresholds <= `0.45` predicted every row (`FPR=1.0`), thresholds >= `0.50` predicted none, so bounded-FPR calibration selected zero-recall behavior.
 - Next branch: add probability-quantile/dynamic threshold candidates for sparse button event/token calibration so the calibration grid can choose between saturated coarse thresholds before any more scaling or full-corpus launch.
+
+## 2026-05-28 KST — Course correction reaffirmed during G005
+
+- User reaffirmed a global mission correction: keep existing renewed ultragoal IDs/status, but G005+ must use the **public FDM-1 IDM/FDM architecture and training recipe on D2E**, not arbitrary architecture/objective choices. Novel work is allowed only to approximate unpublished FDM-1 internals and improve metric performance while staying recipe-faithful.
+- Public recipe anchors currently in force: video encoder/compression-style screen-video tokens; non-causal masked-diffusion IDM over masked action tokens with iterative unmasking; FDM autoregressive next-action prediction over interleaved frame/action tokens; key press/release and binned mouse/action tokens. No FDM-1 parity claim.
+- Existing supervised MLP/state/table/heuristic branches remain diagnostic baselines or negative evidence only unless rebuilt into the public recipe shape and passing `fdm1_recipe_alignment` gates.
+
+## 2026-05-28 KST — G005 dynamic button-event masked-diffusion prefix probe
+
+- Copied terminal 1×H200 evidence for commit `fd65d03` from reservation `rsv-jeonghunpark-20260528-aac42f` / pod `prod-rsv-jeonghunpark-20260528-aac42f`; reservation was cancelled after copy to avoid idle GPU.
+- Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_dynamic_prefix20k_h200_*`, including run, GPU monitor, W&B status, resolved config, paper metrics, summary, reservation context, and diagnosis.
+- Result is negative/non-terminal: dynamic calibration chose button-event threshold `0.42894818050956723`, with calibration recall `0.1724` at FPR `0.0917`, but target strict no-button FPR rose to `0.5482`, strict mouse-button F1 remained `0.0`, and exact true-positive button examples stayed `0`.
+- Diagnosis: threshold quantiles overfit prefix calibration and do not transfer to target rows. Next recipe-faithful G005 branch needs split-robust calibration/abstention or target-invariant button ranking diagnostics before any larger/full 4×H200 promotion.

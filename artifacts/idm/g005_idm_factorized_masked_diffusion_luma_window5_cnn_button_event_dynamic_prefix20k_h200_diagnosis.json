@@ -1,0 +1,55 @@
+{
+  "calibration_rows": 2000,
+  "calibration_selected_button_event_threshold": {
+    "f1": 0.08130081300813008,
+    "false_positive_rate": 0.09165808444902163,
+    "fbeta": 0.14084507042253522,
+    "fn": 48,
+    "fp": 178,
+    "precision": 0.05319148936170213,
+    "recall": 0.1724137931034483,
+    "score": 0.14084507042253522,
+    "threshold": 0.42894818050956723,
+    "tn": 1764,
+    "tp": 10
+  },
+  "candidate": "idm_factorized_masked_diffusion_luma_window5_cnn_button_event_dynamic_prefix20k_h200",
+  "claim_boundary": "Prefix-probe evidence only; it does not beat D2E paper/repo G-IDM targets and does not complete G005.",
+  "commit": "fd65d03",
+  "diagnosis": [
+    "Dynamic probability-quantile calibration recovered nonzero button-event recall on held-out train calibration rows while respecting the calibration FPR cap.",
+    "The selected threshold transferred poorly to target rows: strict no-button FPR jumped to 0.5482051282051282 and there were zero exact mouse-button true positives.",
+    "This branch remains FDM-1-recipe-shaped but is not a viable G005 promotion candidate; dynamic thresholding alone overfits prefix calibration and should not be scaled without split-robust calibration/transfer diagnostics."
+  ],
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "next_branch_requirements": [
+    "Keep the FDM-1 public recipe: video-token encoder plus non-causal masked-diffusion action-token IDM; do not promote supervised/state-table shortcuts.",
+    "Before any larger/full 4xH200 run, add split-robust calibration diagnostics or a target-invariant button-event ranking/abstention guard to prevent calibration-to-target FPR blow-up.",
+    "Preserve this artifact as negative evidence for the G005 exploration ledger, not completion evidence."
+  ],
+  "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM with typed masked action-token planes for mouse/key/button factors.",
+  "reservation": {
+    "after_status": "cancelled",
+    "before_status": "running",
+    "pod_name": "prod-rsv-jeonghunpark-20260528-aac42f",
+    "reservation_id": "rsv-jeonghunpark-20260528-aac42f"
+  },
+  "schema": "g005_recipe_probe_diagnosis.v1",
+  "status": "non_terminal_negative_evidence",
+  "target_metrics": {
+    "paper_keyboard_key_accuracy": 0.013836477987421384,
+    "paper_mouse_button_accuracy": 0.0006561679790026247,
+    "strict_mouse_button_exact_true_positive_examples": 0,
+    "strict_mouse_button_f1": 0.0,
+    "strict_mouse_button_false_negative_examples": 50,
+    "strict_mouse_button_false_positive_examples": 1087,
+    "strict_mouse_button_no_button_fpr": 0.5482051282051282,
+    "strict_mouse_button_precision": 0.0,
+    "strict_mouse_button_predicted_examples": 1087,
+    "strict_mouse_button_recall": 0.0
+  },
+  "target_rows": 2000,
+  "train_rows": 20000,
+  "wall_clock_seconds": 156.3873176574707,
+  "wandb_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/hl8aq3rw"
+}
