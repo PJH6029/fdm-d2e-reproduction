@@ -1006,3 +1006,29 @@ Decision: do not reserve GPUs or expand full-corpus training for this hash
 specialist. The evidence now rejects additive hash/table variants, visual hash,
 top-vocabulary binary broadening, and simple train-row scaling; the next G005
 attempt must introduce a new sequence-state/teacher-assisted mechanism.
+
+### 2026-05-28 KST — mouse-button hash specialist rejected
+
+Added a CPU prefix diagnostic for mouse-button down/up events using prior button
+held-state, previous events, prior action tokens, and hashed online features.
+A first broad 320k sweep was intentionally terminated after ~31 minutes because
+73 policies over 320k rows were too slow for a single CPU gate; the bounded
+50k/narrow-threshold gate below is the retained evidence.
+
+Evidence:
+
+- `src/fdm_d2e/eval/button_hash_sequence_diagnostic.py`
+- `scripts/build_g005_button_hash_sequence_diagnostic.py`
+- `tests/test_button_hash_sequence_diagnostic.py`
+- `artifacts/idm/g005_idm_button_hash_sequence_diagnostic_prefix50k_e2_lr01.json`
+
+Result: reject this button hash branch. Alignment has zero sequence-id
+mismatches and the model trains on `1,920,000` button-code examples across two
+epochs, but `base_all` remains best at mouse-button accuracy `0.16138`, strict
+button F1 `0.26748`, and no-button FPR `0.03899`. The best specialist policy
+(`replace_base_buttons_down0.95_up0.65`) drops button accuracy to `0.08046` and
+raises no-button FPR to `0.10274`, exceeding the desired <=`0.10` gate.
+
+Decision: do not reserve GPUs for this mouse-button hash specialist. The button
+endpoint needs a different learned head, calibrated logits, or teacher signal;
+prior-button-state hashing is not sufficient.
