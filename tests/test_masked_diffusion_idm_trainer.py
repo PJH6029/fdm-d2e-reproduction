@@ -65,10 +65,12 @@ def test_train_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "force_cpu": True,
             "seed": 11,
             "noop_loss_weight": 0.2,
+            "keyboard_loss_weight": 2.0,
         }
     )
     assert summary["status"] == "pass"
     assert summary["loss_weights"]["noop_loss_weight"] == 0.2
+    assert summary["loss_weights"]["keyboard_loss_weight"] == 2.0
     assert summary["train_rows"] == 6
     assert summary["target_rows"] == 3
     assert Path(summary["checkpoint_path"]).exists()

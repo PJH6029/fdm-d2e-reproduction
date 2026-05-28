@@ -1,0 +1,37 @@
+{
+  "schema": "masked_diffusion_idm_train_summary.v1",
+  "status": "pass",
+  "model_name": "idm_masked_diffusion_d2e_prefix20k_wnoop05",
+  "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM over action tokens; bootstrap video features are explicitly approximate.",
+  "train_rows": 20000,
+  "target_rows": 2000,
+  "vocab_size": 115,
+  "max_slots": 16,
+  "loss_weights": {
+    "noop_loss_weight": 0.05,
+    "pad_loss_weight": 0.0
+  },
+  "device": "cuda",
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 3.6697242807745174,
+      "masked_targets": 208614
+    },
+    {
+      "epoch": 2,
+      "loss": 2.9884367229778346,
+      "masked_targets": 208614
+    },
+    {
+      "epoch": 3,
+      "loss": 2.777863859734877,
+      "masked_targets": 208614
+    }
+  ],
+  "checkpoint_path": "outputs/idm_masked_diffusion_d2e_prefix20k_wnoop05/checkpoint.pt",
+  "predictions_path": "outputs/idm_masked_diffusion_d2e_prefix20k_wnoop05/predictions.jsonl",
+  "metrics_path": "outputs/idm_masked_diffusion_d2e_prefix20k_wnoop05/paper_metrics.json",
+  "wall_clock_seconds": 33.08365988731384,
+  "claim_boundary": "Prefix trainer scaffold; not G005 completion evidence without full-corpus 4xH200 run, recipe-alignment audit, paper-target win, and split statistics."
+}

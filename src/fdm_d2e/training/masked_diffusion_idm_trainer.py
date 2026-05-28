@@ -263,10 +263,19 @@ def train_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any]:
     optimizer = torch.optim.AdamW(model.parameters(), lr=float(config.get("lr", 2e-4)), weight_decay=float(config.get("weight_decay", 0.01)))
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
     class_weights = torch.ones(len(vocab), dtype=torch.float32, device=device)
-    if FDM1_ACTION_NOOP in token_to_index:
-        class_weights[token_to_index[FDM1_ACTION_NOOP]] = float(config.get("noop_loss_weight", 1.0))
-    if "<FDM1_ACTION_PAD>" in token_to_index:
-        class_weights[token_to_index["<FDM1_ACTION_PAD>"]] = float(config.get("pad_loss_weight", 0.0))
+    for token, idx in token_to_index.items():
+        if token == FDM1_ACTION_NOOP:
+            class_weights[idx] = float(config.get("noop_loss_weight", 1.0))
+        elif token == "<FDM1_ACTION_PAD>":
+            class_weights[idx] = float(config.get("pad_loss_weight", 0.0))
+        elif token.startswith("KEY_"):
+            class_weights[idx] = float(config.get("keyboard_loss_weight", config.get("action_loss_weight", 1.0)))
+        elif token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")):
+            class_weights[idx] = float(config.get("mouse_button_loss_weight", config.get("action_loss_weight", 1.0)))
+        elif token.startswith(("FDM1_MOUSE_DX_", "FDM1_MOUSE_DY_")):
+            class_weights[idx] = float(config.get("mouse_move_loss_weight", config.get("action_loss_weight", 1.0)))
+        elif token.startswith("SCROLL_"):
+            class_weights[idx] = float(config.get("scroll_loss_weight", config.get("action_loss_weight", 1.0)))
     history: list[dict[str, Any]] = []
     for epoch in range(int(config.get("epochs", 1))):
         model.train()
@@ -337,6 +346,10 @@ def train_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any]:
         "loss_weights": {
             "noop_loss_weight": float(config.get("noop_loss_weight", 1.0)),
             "pad_loss_weight": float(config.get("pad_loss_weight", 0.0)),
+            "action_loss_weight": float(config.get("action_loss_weight", 1.0)),
+            "keyboard_loss_weight": float(config.get("keyboard_loss_weight", config.get("action_loss_weight", 1.0))),
+            "mouse_button_loss_weight": float(config.get("mouse_button_loss_weight", config.get("action_loss_weight", 1.0))),
+            "mouse_move_loss_weight": float(config.get("mouse_move_loss_weight", config.get("action_loss_weight", 1.0))),
         },
         "device": str(device),
         "history": history,
