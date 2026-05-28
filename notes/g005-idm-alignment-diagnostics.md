@@ -931,3 +931,29 @@ or promote this exact CPU model as a final candidate. The next branch should use
 this as evidence for a stronger learned sequence/teacher-assisted key-repeat
 model (e.g. neural sequence specialist, released-GIDM teacher targets, or richer
 per-key temporal state) and must prefix-gate against the 320k aligned metrics.
+
+### 2026-05-28 KST — compact visual hash does not improve learned repeat-key gate
+
+Extended the learned hashed key-repeat diagnostic with optional compact luma
+transition hash features, then ran a CPU/storage-shell aligned prefix gate before
+spending GPU time.
+
+Evidence:
+
+- `src/fdm_d2e/eval/key_hash_sequence_diagnostic.py`
+- `scripts/build_g005_key_hash_sequence_diagnostic.py`
+- `tests/test_key_hash_sequence_diagnostic.py`
+- `artifacts/idm/g005_idm_key_hash_sequence_visual_diagnostic_prefix50k_e2_lr01.json`
+
+Result: reject this visual-hash branch. On the aligned 50k prefix, the run has
+zero sequence-id mismatches and best policy
+`press_only_union_base_keys_press0.5`, but keyboard reaches only `0.19496`.
+That is above the aligned base `0.15505`, but below the non-visual learned hash
+50k gate (`0.19928`) and far below the paper keyboard target `0.73`. Button and
+motion metrics are inherited from the base stream (button `0.16138`, Pearson
+X/Y `0.75981/0.67937`) and also miss paper targets.
+
+Decision: do not reserve H200s for compact visual-transition hash features in
+this repeat-key specialist. The next G005 branch should move beyond additive
+hashed features toward a stronger learned sequence/teacher-assisted model or
+released G-IDM exact-split distillation, while preserving aligned-prefix gates.

@@ -1,6 +1,6 @@
 {
   "active_goal_id": "G005-g014-idm-full-paper-target",
-  "candidate_count": 17,
+  "candidate_count": 18,
   "claim_boundary": "Revalidation/ranking artifact only; no G005 success claim and no FDM-1 parity claim.",
   "created_at_epoch": 1779902282.2046466,
   "diagnostic_artifacts": [
@@ -655,6 +655,51 @@
       "keyboard_delta_vs_base": 0.03464945172239667,
       "name": "key_hash_sequence_diagnostic_prefix320k",
       "rows": 320000,
+      "status": "pass"
+    },
+    {
+      "alignment": {
+        "examples": [],
+        "missing_base_prediction_rows": 0,
+        "sequence_id_mismatches": 0
+      },
+      "artifact": "artifacts/idm/g005_idm_key_hash_sequence_visual_diagnostic_prefix50k_e2_lr01.json",
+      "base_metrics": {
+        "keyboard_accuracy": 0.15504749637739496,
+        "mouse_button_accuracy": 0.1613823715916297,
+        "pearson_x": 0.7598068765377537,
+        "pearson_y": 0.6793739696281583,
+        "policy": "base_all",
+        "scale_ratio_x": 1.2942006105201567,
+        "scale_ratio_y": 1.244073424630026,
+        "strict_mouse_button_f1": 0.267483978824185,
+        "strict_no_button_fpr": 0.0389908256880734
+      },
+      "best_metrics": {
+        "keyboard_accuracy": 0.19495928654517256,
+        "mouse_button_accuracy": 0.1613823715916297,
+        "pearson_x": 0.7598068765377537,
+        "pearson_y": 0.6793739696281583,
+        "policy": "press_only_union_base_keys_press0.5",
+        "scale_ratio_x": 1.2942006105201567,
+        "scale_ratio_y": 1.244073424630026,
+        "strict_mouse_button_f1": 0.267483978824185,
+        "strict_no_button_fpr": 0.0389908256880734
+      },
+      "best_policy": "press_only_union_base_keys_press0.5",
+      "claim_boundary": "CPU aligned-prefix diagnostic only; no G005 completion claim and no GPU/full-corpus promotion evidence.",
+      "decision": "reject_visual_hash_features_for_repeat_key_branch",
+      "finding_codes": [
+        "visual_hash_aligned_prefix_has_zero_sequence_mismatches",
+        "visual_hash_underperforms_nonvisual_hashed_repeat_gate_on_prefix50k",
+        "visual_hash_best_keyboard_far_below_paper_target",
+        "do_not_reserve_gpu_for_visual_hash_repeat_specialist"
+      ],
+      "keyboard_delta_vs_base": 0.0399117901677776,
+      "keyboard_delta_vs_nonvisual_prefix50k": -0.004320613266975221,
+      "name": "key_hash_sequence_visual_diagnostic_prefix50k",
+      "nonvisual_comparison_artifact": "artifacts/idm/g005_idm_key_hash_sequence_diagnostic_prefix50k_e2_lr01.json",
+      "rows": 50000,
       "status": "pass"
     }
   ],
@@ -1655,6 +1700,58 @@
           "target": 0.1
         }
       ]
+    },
+    {
+      "audit_error_count": null,
+      "audit_path": "artifacts/idm/g005_idm_key_hash_sequence_visual_diagnostic_prefix50k_e2_lr01.json",
+      "audit_status": "rejected_prefix_diagnostic",
+      "button_gap_to_paper": 0.7956176284083702,
+      "candidate": "key_hash_sequence_visual_diagnostic_prefix50k",
+      "empty_bins_as_correct": false,
+      "keyboard_gap_to_paper": 0.5350407134548274,
+      "metrics_path": "artifacts/idm/g005_idm_key_hash_sequence_visual_diagnostic_prefix50k_e2_lr01.json",
+      "note": "Rejected compact visual-transition hash features for the learned repeat-key diagnostic: aligned 50k prefix improved over base but underperformed the non-visual hash gate and remains far below paper keyboard target.",
+      "paper_keyboard_accuracy": 0.19495928654517256,
+      "paper_mouse_button_accuracy": 0.1613823715916297,
+      "paper_mouse_pearson_x": 0.7598068765377537,
+      "paper_mouse_pearson_y": 0.6793739696281583,
+      "paper_scale_ratio_x": 1.2942006105201567,
+      "paper_scale_ratio_y": 1.244073424630026,
+      "pearson_x_gap_to_paper": 0.036193123462246346,
+      "pearson_y_gap_to_paper": 0.1036260303718417,
+      "rows": 50000,
+      "status": "pass",
+      "strict_mouse_button_f1": 0.267483978824185,
+      "strict_no_button_fpr": 0.0389908256880734,
+      "top_audit_findings": [
+        {
+          "code": "prefix_visual_hash_regresses_vs_nonvisual_hash",
+          "nonvisual_keyboard": 0.19927989981214778,
+          "severity": "warning",
+          "visual_keyboard": 0.19495928654517256
+        },
+        {
+          "actual": 0.19495928654517256,
+          "code": "paper_target_not_met",
+          "name": "keyboard_accuracy",
+          "severity": "error",
+          "target": 0.73
+        },
+        {
+          "actual": 0.1613823715916297,
+          "code": "paper_target_not_met",
+          "name": "mouse_button_accuracy",
+          "severity": "error",
+          "target": 0.957
+        },
+        {
+          "actual": 0.6793739696281583,
+          "code": "paper_target_not_met",
+          "name": "pearson_y",
+          "severity": "error",
+          "target": 0.783
+        }
+      ]
     }
   ],
   "recommended_next_actions": [
@@ -1663,11 +1760,12 @@
     "Key-event taxonomy shows the dominant keyboard blocker is held-repeat/same-bin key decoding: only 36.5% of key tokens are visible to prior->next state differencing, while an oracle repeat/tap key decoder plus state-delta buttons reaches keyboard=0.7418 and button=0.9754 on the 320k prefix. Next candidate should train a non-leaky key-repeat/tap specialist and pair it with state-transition button decoding and improved motion, not another frozen visual embedding alone.",
     "A simple train-prefix repeat/release lookup specialist is now rejected: on a 50k aligned prefix it reports zero base/target sequence mismatches, but base_all remains best (keyboard=0.1550, button=0.1614, Pearson X/Y=0.7598/0.6794) and every repeat-table replacement/union policy reduces keyboard. Next key branch needs a learned sequence model or teacher/distillation signal, not tabular hold-age thresholds.",
     "The learned hashed key specialist is the first repeat-key branch with a real aligned-prefix gain: on 320k rows, press-only union improves keyboard from 0.1990 to 0.2337 with zero sequence mismatches while preserving button/motion from the base stream. It is still far below paper keyboard=0.73 and motion-y target, so continue with a stronger neural/teacher-assisted sequence model rather than checkpointing G005.",
+    "Compact visual-transition hash features are rejected for the learned repeat-key branch: on the aligned 50k prefix, best keyboard=0.1950 underperforms the non-visual hash gate keyboard=0.1993 and remains far below paper keyboard=0.73; do not reserve GPUs for this exact visual-hash specialist.",
     "Phase-aware held-key repeat heuristics are also rejected: on the aligned 50k prefix the best phase policy improves keyboard by only +0.00026 over base_all (0.15505 -> 0.15530), far below paper target. Do not spend GPU on handcrafted repeat phase features; next branch needs learned sequence/teacher-assisted supervision or released-GIDM distillation.",
     "Do not reserve H200s for threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, sequence-prior action history, or frozen-DINO-only prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779941749.0910625
+  "updated_at_epoch": 1779942538.4026773
 }
