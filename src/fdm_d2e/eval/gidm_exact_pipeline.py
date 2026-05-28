@@ -157,6 +157,7 @@ def run_gidm_exact_split_pipeline(
                 chunk_context_seconds=float(config.get("chunk_context_seconds", 1.0)),
                 chunk_manifest_output=_path(root_path, config["chunk_manifest_output"]) if config.get("chunk_manifest_output") else None,
                 chunk_timestamp_mode=str(config.get("chunk_timestamp_mode", "ground_truth_aligned")),
+                chunk_seek_mode=str(config.get("chunk_seek_mode", "input_fast")),
                 bin_ms=int(config.get("bin_ms", 50)),
                 max_chunks=config.get("max_chunks"),
                 uv_cache_dir=_path(root_path, config.get("uv_cache_dir", "outputs/external/uv-cache-desktop-minimal")),

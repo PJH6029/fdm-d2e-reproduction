@@ -1,0 +1,87 @@
+{
+  "chunked_prediction_count": 1,
+  "claim_boundary": "Chunked released G-IDM inference manifest; timestamps are aligned to ground-truth recording time. This is baseline/teacher infrastructure, not our-IDM metric success.",
+  "decode_summary_path": "artifacts/sources/d2e_full_corpus_decode_summary_accel64.json",
+  "manifest_fingerprint": "80aede7930b3747c10b2ce5159aa27325f55d409977ce52e3b623c106f1956c6",
+  "missing_decode_rows": [],
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "output_dir": "outputs/gidm_exact_split",
+  "recording_count": 1,
+  "recordings": [
+    {
+      "bin_index_max": 29274,
+      "bin_index_min": 23420,
+      "cross_resolution_key": "Apex_Legends/0805_01",
+      "game": "Apex_Legends",
+      "ground_truth_mcap_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mcap",
+      "inference_command": [
+        "uv",
+        "run",
+        "python",
+        "inference.py",
+        "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv",
+        "outputs/gidm_exact_split/predicted_mcap/d2e_480p_Apex_Legends_0805_01.mcap",
+        "--model",
+        "open-world-agents/Generalist-IDM-1B",
+        "--device",
+        "cuda",
+        "--max-context-length",
+        "2048"
+      ],
+      "prediction_mcap_path": "outputs/gidm_warmup_trim_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01.mcap",
+      "recording_id": "0805_01",
+      "row_count": 5855,
+      "source_id": "d2e_480p",
+      "split_tags": [
+        "temporal"
+      ],
+      "target_timing_records_path": null,
+      "target_timing_source": "target_record_scan",
+      "timestamp_max_ns": 1466117098600,
+      "timestamp_min_ns": 1173417098600,
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "upstream_model": "open-world-agents/Generalist-IDM-1B",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv",
+      "prediction_mcap_paths": [
+        "outputs/gidm_warmup_trim_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap"
+      ],
+      "prediction_mcap_chunks": [
+        {
+          "chunk_index": 0,
+          "prediction_mcap_path": "outputs/gidm_warmup_trim_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap",
+          "start_time_seconds": 1166.0,
+          "duration_seconds": 15.0,
+          "timestamp_offset_seconds": 1168.4170986,
+          "base_timestamp_seconds": 2.4170986,
+          "timestamp_mode": "ground_truth_aligned",
+          "seek_mode": "output_accurate",
+          "timestamp_start_ns": 1168417098600,
+          "timestamp_end_ns_exclusive": 1183417098600,
+          "context_trim_seconds": 5.0,
+          "timestamp_eval_start_ns": 1173417098600,
+          "timestamp_eval_end_ns_exclusive": 1178417098600
+        }
+      ],
+      "prediction_timestamps_aligned_to_ground_truth": true,
+      "chunked_prediction": {
+        "chunk_seconds": 15.0,
+        "chunk_context_seconds": 5.0,
+        "bin_ms": 50,
+        "timestamp_mode": "ground_truth_aligned",
+        "seek_mode": "output_accurate",
+        "chunk_count": 1
+      }
+    }
+  ],
+  "schema": "gidm_inference_manifest.v1+warmup_trim_pilot_input+chunked",
+  "source_manifest_path": "artifacts/eval/g006_gidm_warmup_trim_pilot_manifest.json",
+  "source_mode": "decode_summary_split_counts",
+  "target_record_paths": [],
+  "target_rows": 5855,
+  "target_timing_enriched": true,
+  "target_timing_split_tags": [
+    "heldout_game",
+    "heldout_recording",
+    "temporal"
+  ]
+}

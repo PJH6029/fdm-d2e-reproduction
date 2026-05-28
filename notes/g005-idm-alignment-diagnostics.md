@@ -1161,3 +1161,16 @@ baseline diagnostics, but do not spend a larger G005 teacher run on this pilot
 unless a new alignment hypothesis is backed by stronger covered-window evidence.
 The immediate G005 path remains a stronger learned non-leaky sequence/teacher
 IDM, not promoting released-GIDM warmup timing rescue.
+
+### 2026-05-28 KST — released-GIDM ffmpeg seek-mode diagnostic infrastructure
+
+Added a second bounded released-GIDM alignment knob for future teacher pilots: `chunk_seek_mode`. The historical/default path remains `input_fast`, which emits `ffmpeg -ss <start> -i <video> ...`. The new diagnostic path `output_accurate` emits `ffmpeg -i <video> -ss <start> ...` so a future tiny GPU pilot can test whether keyframe/input-seek drift explains the poor warmup-trimmed released-GIDM alignment.
+
+Evidence:
+
+- `src/fdm_d2e/eval/gidm_runner.py` now carries `chunk_seek_mode` through chunk plans, runner rows, and chunked manifests; default is `input_fast` to preserve existing evidence.
+- `scripts/run_gidm_manifest_inference.py --chunk-seek-mode {input_fast,output_accurate}` and `src/fdm_d2e/eval/gidm_exact_pipeline.py` pass the mode through.
+- `artifacts/eval/g006_gidm_warmup_seekmode_dry_run_summary.json` and `artifacts/eval/g006_gidm_warmup_seekmode_dry_run_chunked_manifest.json` prove the output-accurate plan/manifest without reserving GPUs.
+- Unit tests cover generated upstream script patching, runner CLI propagation, exact-pipeline default propagation, and manifest seek-mode recording.
+
+Decision: this is infrastructure only, not a metric win. Do not treat it as G005 completion evidence. A future GPU pilot is only justified if it is tightly bounded (for example one 15s warmup chunk) and followed immediately by conversion/paper metrics plus reservation cancellation.

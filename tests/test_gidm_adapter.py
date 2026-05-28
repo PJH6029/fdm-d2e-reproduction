@@ -475,6 +475,9 @@ def test_prepare_desktop_minimal_inference_script_keeps_desktop_constants(tmp_pa
     assert "owa-env-gst @" not in text
     assert "--start-time" in text
     assert "--timestamp-offset" in text
+    assert "--seek-mode" in text
+    assert 'seek_mode == "input_fast"' in text
+    assert 'seek_mode == "output_accurate"' in text
     assert "timestamp_offset_seconds" in text
     assert "imageio-ffmpeg==0.5.1" in text
     assert "_ffmpeg_executable()" in text
@@ -596,6 +599,7 @@ def test_gidm_runner_passes_chunk_offsets_to_upstream(tmp_path: Path, monkeypatc
         max_duration=12.5,
         start_time=10.0,
         timestamp_offset=319.5,
+        seek_mode="output_accurate",
         uv_cache_dir=repo / "uv-cache",
         hf_home=repo / "hf-home",
     )
@@ -603,8 +607,10 @@ def test_gidm_runner_passes_chunk_offsets_to_upstream(tmp_path: Path, monkeypatc
     assert seen["cmd"][seen["cmd"].index("--max-duration") + 1] == "12.5"
     assert seen["cmd"][seen["cmd"].index("--start-time") + 1] == "10.0"
     assert seen["cmd"][seen["cmd"].index("--timestamp-offset") + 1] == "319.5"
+    assert seen["cmd"][seen["cmd"].index("--seek-mode") + 1] == "output_accurate"
     assert row["start_time_seconds"] == 10.0
     assert row["timestamp_offset_seconds"] == 319.5
+    assert row["seek_mode"] == "output_accurate"
 
 
 def test_gidm_runner_skips_existing_output_at_run_time(tmp_path: Path, monkeypatch):
@@ -993,6 +999,7 @@ def test_chunked_gidm_plan_uses_bin_indices_and_writes_manifest(tmp_path: Path):
     assert len(plans) >= 3
     assert plans[0].start_time_seconds == 0.9
     assert plans[0].timestamp_offset_seconds == 319.403399
+    assert plans[0].seek_mode == "input_fast"
     assert paths_by_key["d2e_480p:Game/rec_001"][0].endswith(".mcap")
 
     chunk_manifest = tmp_path / "chunk_manifest.json"
@@ -1014,6 +1021,7 @@ def test_chunked_gidm_plan_uses_bin_indices_and_writes_manifest(tmp_path: Path):
     assert row["prediction_mcap_chunks"][0]["context_trim_seconds"] == 0.1
     assert row["chunked_prediction"]["chunk_count"] == len(paths_by_key["d2e_480p:Game/rec_001"])
     assert row["chunked_prediction"]["timestamp_mode"] == "ground_truth_aligned"
+    assert row["chunked_prediction"]["seek_mode"] == "input_fast"
 
 
 def test_chunked_gidm_plan_supports_diagnostic_timestamp_modes(tmp_path: Path):
@@ -1059,26 +1067,40 @@ def test_chunked_gidm_plan_supports_diagnostic_timestamp_modes(tmp_path: Path):
         resume=False,
         timestamp_mode="ground_truth_plus_base",
     )
+    accurate_seek_plans, accurate_seek_paths = build_gidm_chunk_run_plan(
+        manifest_path=manifest,
+        cuda_devices=["0"],
+        log_dir=tmp_path / "logs_accurate_seek",
+        chunk_seconds=0.5,
+        chunk_context_seconds=0.1,
+        bin_ms=50,
+        resume=False,
+        seek_mode="output_accurate",
+    )
 
     assert video_relative_plans[0].start_time_seconds == 0.9
     assert video_relative_plans[0].timestamp_offset_seconds == 0.9
     assert plus_base_plans[0].timestamp_offset_seconds == 2.9
+    assert accurate_seek_plans[0].seek_mode == "output_accurate"
 
     chunk_manifest = tmp_path / "chunk_manifest_video_relative.json"
     payload = write_chunked_gidm_manifest(
         manifest_path=manifest,
         output_path=chunk_manifest,
-        chunk_paths_by_key=video_relative_paths,
+        chunk_paths_by_key=accurate_seek_paths,
         chunk_seconds=0.5,
         chunk_context_seconds=0.1,
         bin_ms=50,
         timestamp_mode="video_relative",
+        seek_mode="output_accurate",
     )
     row = payload["recordings"][0]
     assert row["prediction_timestamps_aligned_to_ground_truth"] is False
     assert row["prediction_mcap_chunks"][0]["timestamp_mode"] == "video_relative"
+    assert row["prediction_mcap_chunks"][0]["seek_mode"] == "output_accurate"
     assert row["prediction_mcap_chunks"][0]["base_timestamp_seconds"] == 1.0
     assert row["chunked_prediction"]["timestamp_mode"] == "video_relative"
+    assert row["chunked_prediction"]["seek_mode"] == "output_accurate"
     assert "diagnostic manifest" in payload["claim_boundary"]
 
 

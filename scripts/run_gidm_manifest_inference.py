@@ -35,6 +35,15 @@ def main() -> int:
             "non-default modes are diagnostics for timing-alignment hypotheses."
         ),
     )
+    parser.add_argument(
+        "--chunk-seek-mode",
+        default="input_fast",
+        choices=["input_fast", "output_accurate"],
+        help=(
+            "ffmpeg seek placement for chunked released-GIDM pilots. input_fast is historical/default; "
+            "output_accurate is a bounded diagnostic for keyframe seek drift."
+        ),
+    )
     parser.add_argument("--bin-ms", type=int, default=50)
     parser.add_argument("--max-chunks", type=int, help="Limit planned chunks for bounded pilots.")
     parser.add_argument("--uv-cache-dir", default="outputs/external/uv-cache-desktop-minimal")
@@ -58,6 +67,7 @@ def main() -> int:
         chunk_context_seconds=args.chunk_context_seconds,
         chunk_manifest_output=args.chunk_manifest_output,
         chunk_timestamp_mode=args.chunk_timestamp_mode,
+        chunk_seek_mode=args.chunk_seek_mode,
         bin_ms=args.bin_ms,
         max_chunks=args.max_chunks,
         uv_cache_dir=args.uv_cache_dir,

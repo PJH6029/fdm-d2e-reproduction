@@ -1,0 +1,53 @@
+{
+  "schema": "gidm_manifest_inference_run.v1",
+  "manifest_path": "artifacts/eval/g006_gidm_warmup_trim_pilot_manifest.json",
+  "chunk_manifest_output": "artifacts/eval/g006_gidm_warmup_seekmode_dry_run_chunked_manifest.json",
+  "d2e_repo": "outputs/external/D2E",
+  "inference_script": "outputs/external/D2E/inference_desktop_minimal.py",
+  "model": "open-world-agents/Generalist-IDM-1B",
+  "workers": 1,
+  "cuda_devices": [
+    "0"
+  ],
+  "max_recordings": 1,
+  "recording_keys": [],
+  "max_context_length": 2048,
+  "max_duration": null,
+  "max_chunks": 1,
+  "chunk_seconds": 15.0,
+  "chunk_context_seconds": 5.0,
+  "chunk_timestamp_mode": "ground_truth_aligned",
+  "chunk_seek_mode": "output_accurate",
+  "bin_ms": 50,
+  "resume": false,
+  "dry_run": true,
+  "planned_recordings": 1,
+  "planned_chunks": 1,
+  "chunked_recording_count": 1,
+  "completed_recordings": 0,
+  "failed_recordings": 0,
+  "completed_chunks": 0,
+  "failed_chunks": 0,
+  "rows": [
+    {
+      "index": 0,
+      "chunk_index": 0,
+      "universe_row_id": "d2e_480p:Apex_Legends/0805_01",
+      "video_path": "/root/work/data/d2e/cache_accel64/d2e_480p/Apex_Legends/0805_01.mkv",
+      "prediction_mcap_path": "outputs/gidm_warmup_trim_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap",
+      "cuda_device": "0",
+      "log_path": "artifacts/eval/gidm_manifest_inference_logs/00000_0000_d2e_480p_Apex_Legends_0805_01.log",
+      "start_time_seconds": 1166.0,
+      "duration_seconds": 15.0,
+      "timestamp_offset_seconds": 1168.4170986,
+      "seek_mode": "output_accurate"
+    }
+  ],
+  "chunk_paths_by_key": {
+    "d2e_480p:Apex_Legends/0805_01": [
+      "outputs/gidm_warmup_trim_pilot/predicted_mcap/d2e_480p_Apex_Legends_0805_01_chunks/d2e_480p_Apex_Legends_0805_01/chunk_0000_start000001166000_dur000015000.mcap"
+    ]
+  },
+  "chunk_manifest_written": true,
+  "claim_boundary": "Released G-IDM inference execution evidence only; metric claims require conversion plus paper-metric artifacts."
+}

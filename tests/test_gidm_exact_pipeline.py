@@ -64,6 +64,7 @@ def test_gidm_exact_pipeline_inference_stage_delegates_resume_run(tmp_path: Path
     assert calls["cuda_devices"] == ["2", "3"]
     assert calls["max_recordings"] == 3
     assert calls["resume"] is True
+    assert calls["chunk_seek_mode"] == "input_fast"
     assert (tmp_path / "artifacts/pipeline_summary.json").exists()
 
 

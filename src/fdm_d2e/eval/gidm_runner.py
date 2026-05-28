@@ -19,6 +19,10 @@ GIDM_CHUNK_TIMESTAMP_MODES = (
     "video_relative",
     "ground_truth_plus_base",
 )
+GIDM_CHUNK_SEEK_MODES = (
+    "input_fast",
+    "output_accurate",
+)
 
 
 @dataclass(frozen=True)
@@ -43,6 +47,7 @@ class GidmChunkRunPlan:
     start_time_seconds: float
     duration_seconds: float
     timestamp_offset_seconds: float
+    seek_mode: str = "input_fast"
 
 
 def prepare_desktop_minimal_inference_script(d2e_repo: str | Path) -> Path:
@@ -81,11 +86,26 @@ def prepare_desktop_minimal_inference_script(d2e_repo: str | Path) -> Path:
             "        raise FileNotFoundError(\"ffmpeg is not installed and imageio-ffmpeg is unavailable\") from exc\n"
             "    return imageio_ffmpeg.get_ffmpeg_exe()\n"
             "\n\n"
-            "def preprocess_video(input_path: str, output_path: str, duration: float, start_time: float = 0.0) -> str:\n"
+            "def preprocess_video(\n"
+            "    input_path: str,\n"
+            "    output_path: str,\n"
+            "    duration: float,\n"
+            "    start_time: float = 0.0,\n"
+            "    seek_mode: str = \"input_fast\",\n"
+            ") -> str:\n"
+            "    seek_mode = str(seek_mode)\n"
+            "    if seek_mode not in {\"input_fast\", \"output_accurate\"}:\n"
+            "        raise ValueError(f\"unsupported seek_mode: {seek_mode!r}\")\n"
         ),
         '        "ffmpeg",\n': '        _ffmpeg_executable(),\n',
         '        "-y",\n        "-i",\n': (
-            '        "-y",\n        *(["-ss", str(float(start_time))] if float(start_time) > 0 else []),\n        "-i",\n'
+            '        "-y",\n'
+            '        *(["-ss", str(float(start_time))] if float(start_time) > 0 and seek_mode == "input_fast" else []),\n'
+            '        "-i",\n'
+        ),
+        "        input_path,\n": (
+            "        input_path,\n"
+            '        *(["-ss", str(float(start_time))] if float(start_time) > 0 and seek_mode == "output_accurate" else []),\n'
         ),
         "def create_mcap_from_video(video_path: str, mcap_path: str, fps: float = 20.0):\n": (
             "def create_mcap_from_video(\n"
@@ -121,6 +141,12 @@ def prepare_desktop_minimal_inference_script(d2e_repo: str | Path) -> Path:
             '        default=None,\n'
             '        help="Timestamp offset in seconds to stamp the first preprocessed frame; defaults to start-time",\n'
             '    )\n'
+            '    parser.add_argument(\n'
+            '        "--seek-mode",\n'
+            '        choices=["input_fast", "output_accurate"],\n'
+            '        default="input_fast",\n'
+            '        help="ffmpeg seek placement for chunked inference; input_fast preserves historical behavior",\n'
+            '    )\n'
         ),
         "        # Preprocess video if max_duration is specified\n        if args.max_duration is not None:\n            logger.info(f\"Preprocessing video (max {args.max_duration}s)...\")\n            processed_video = str(tmpdir / \"processed.mkv\")\n            preprocess_video(str(input_video), processed_video, args.max_duration)\n        else:\n            processed_video = str(input_video)\n": (
             "        # Preprocess video if max_duration or start_time is specified.\n"
@@ -128,7 +154,13 @@ def prepare_desktop_minimal_inference_script(d2e_repo: str | Path) -> Path:
             "            duration = args.max_duration if args.max_duration is not None else max(0.0, get_video_duration(str(input_video)) - float(args.start_time))\n"
             "            logger.info(f\"Preprocessing video (start {args.start_time}s, duration {duration}s)...\")\n"
             "            processed_video = str(tmpdir / \"processed.mkv\")\n"
-            "            preprocess_video(str(input_video), processed_video, duration, start_time=float(args.start_time))\n"
+            "            preprocess_video(\n"
+            "                str(input_video),\n"
+            "                processed_video,\n"
+            "                duration,\n"
+            "                start_time=float(args.start_time),\n"
+            "                seek_mode=str(args.seek_mode),\n"
+            "            )\n"
             "        else:\n"
             "            processed_video = str(input_video)\n"
         ),
@@ -247,6 +279,13 @@ def _chunk_timestamp_offset_seconds(*, cursor: float, base_timestamp_seconds: fl
     raise ValueError(f"unsupported G-IDM chunk timestamp mode: {timestamp_mode!r}")
 
 
+def _validate_chunk_seek_mode(seek_mode: str) -> str:
+    normalized = str(seek_mode)
+    if normalized not in GIDM_CHUNK_SEEK_MODES:
+        raise ValueError(f"seek_mode must be one of {', '.join(GIDM_CHUNK_SEEK_MODES)}; got {seek_mode!r}")
+    return normalized
+
+
 def _chunk_output_path(prediction_mcap_path: str, *, universe_row_id: str, chunk_index: int, start_time: float, duration: float) -> Path:
     base = Path(prediction_mcap_path)
     safe = _safe_plan_name(universe_row_id)
@@ -314,6 +353,7 @@ def build_gidm_chunk_run_plan(
     recording_keys: Sequence[str] | None = None,
     resume: bool = True,
     timestamp_mode: str = "ground_truth_aligned",
+    seek_mode: str = "input_fast",
 ) -> tuple[list[GidmChunkRunPlan], dict[str, list[str]]]:
     if not cuda_devices:
         raise ValueError("at least one CUDA device is required")
@@ -323,6 +363,7 @@ def build_gidm_chunk_run_plan(
         raise ValueError("chunk_context_seconds must be non-negative")
     if max_chunks is not None and int(max_chunks) <= 0:
         raise ValueError("max_chunks must be positive when provided")
+    seek_mode = _validate_chunk_seek_mode(str(seek_mode))
     manifest = read_json(manifest_path)
     wanted = set(str(key) for key in (recording_keys or []))
     rows = []
@@ -382,6 +423,7 @@ def build_gidm_chunk_run_plan(
                     start_time_seconds=float(chunk_start),
                     duration_seconds=float(duration),
                     timestamp_offset_seconds=float(scheduled["timestamp_offset_seconds"]),
+                    seek_mode=seek_mode,
                 )
             )
         if chunk_paths:
@@ -401,7 +443,10 @@ def _run_one(
     hf_home: str | Path,
     start_time: float | None = None,
     timestamp_offset: float | None = None,
+    seek_mode: str | None = None,
 ) -> dict[str, Any]:
+    if seek_mode is not None:
+        seek_mode = _validate_chunk_seek_mode(str(seek_mode))
     manifest_output_path = Path(plan.prediction_mcap_path)
     output_path = manifest_output_path if manifest_output_path.is_absolute() else (Path.cwd() / manifest_output_path).resolve()
     ensure_dir(output_path.parent)
@@ -421,6 +466,7 @@ def _run_one(
             "elapsed_seconds": 0.0,
             "start_time_seconds": start_time,
             "timestamp_offset_seconds": timestamp_offset,
+            "seek_mode": seek_mode,
             "output_exists": True,
             "output_size": output_path.stat().st_size,
             "output_sha256": sha256_file(output_path),
@@ -456,6 +502,8 @@ def _run_one(
         cmd.extend(["--start-time", str(float(start_time))])
     if timestamp_offset is not None:
         cmd.extend(["--timestamp-offset", str(float(timestamp_offset))])
+    if seek_mode is not None:
+        cmd.extend(["--seek-mode", str(seek_mode)])
     started = time.time()
     with Path(plan.log_path).open("w", encoding="utf-8") as log_handle:
         proc = subprocess.run(cmd, cwd=d2e_repo, env=env, stdout=log_handle, stderr=subprocess.STDOUT, text=True)
@@ -478,6 +526,7 @@ def _run_one(
         "elapsed_seconds": ended - started,
         "start_time_seconds": start_time,
         "timestamp_offset_seconds": timestamp_offset,
+        "seek_mode": seek_mode,
         "output_exists": output_path.exists(),
         "output_size": output_path.stat().st_size if output_path.exists() else 0,
         "output_sha256": sha256_file(output_path) if output_path.exists() and output_path.is_file() else None,
@@ -510,6 +559,7 @@ def _run_chunk(
         max_duration=plan.duration_seconds,
         start_time=plan.start_time_seconds,
         timestamp_offset=plan.timestamp_offset_seconds,
+        seek_mode=plan.seek_mode,
         uv_cache_dir=uv_cache_dir,
         hf_home=hf_home,
     )
@@ -517,6 +567,7 @@ def _run_chunk(
         {
             "chunk_index": plan.chunk_index,
             "duration_seconds": plan.duration_seconds,
+            "seek_mode": plan.seek_mode,
             "chunked": True,
         }
     )
@@ -532,8 +583,10 @@ def write_chunked_gidm_manifest(
     chunk_context_seconds: float,
     bin_ms: int,
     timestamp_mode: str = "ground_truth_aligned",
+    seek_mode: str = "input_fast",
 ) -> dict[str, Any]:
     manifest = copy.deepcopy(read_json(manifest_path))
+    seek_mode = _validate_chunk_seek_mode(str(seek_mode))
     updated = 0
     selected_rows: list[dict[str, Any]] = []
     for row in manifest.get("recordings", []):
@@ -566,6 +619,7 @@ def write_chunked_gidm_manifest(
                     "timestamp_offset_seconds": timestamp_offset,
                     "base_timestamp_seconds": float(scheduled.get("base_timestamp_seconds", 0.0)),
                     "timestamp_mode": str(scheduled.get("timestamp_mode", timestamp_mode)),
+                    "seek_mode": seek_mode,
                     "timestamp_start_ns": int(round(timestamp_offset * 1e9)),
                     "timestamp_end_ns_exclusive": int(round((timestamp_offset + duration) * 1e9)),
                     "context_trim_seconds": context_trim,
@@ -581,6 +635,7 @@ def write_chunked_gidm_manifest(
             "chunk_context_seconds": float(chunk_context_seconds),
             "bin_ms": int(bin_ms),
             "timestamp_mode": str(timestamp_mode),
+            "seek_mode": seek_mode,
             "chunk_count": len(chunk_rows),
         }
         updated += 1
@@ -623,6 +678,7 @@ def run_gidm_manifest_inference(
     bin_ms: int = 50,
     max_chunks: int | None = None,
     chunk_timestamp_mode: str = "ground_truth_aligned",
+    chunk_seek_mode: str = "input_fast",
     uv_cache_dir: str | Path = "outputs/external/uv-cache-desktop-minimal",
     hf_home: str | Path = "outputs/external/hf-home",
     log_dir: str | Path = "artifacts/eval/gidm_manifest_inference_logs",
@@ -645,6 +701,7 @@ def run_gidm_manifest_inference(
             bin_ms=int(bin_ms),
             resume=resume,
             timestamp_mode=str(chunk_timestamp_mode),
+            seek_mode=str(chunk_seek_mode),
         )
     else:
         plans = build_gidm_run_plan(
@@ -702,6 +759,7 @@ def run_gidm_manifest_inference(
             chunk_context_seconds=float(chunk_context_seconds),
             bin_ms=int(bin_ms),
             timestamp_mode=str(chunk_timestamp_mode),
+            seek_mode=str(chunk_seek_mode),
         )
     if chunk_seconds is not None:
         planned_recordings = len(chunk_paths_by_key)
@@ -759,6 +817,7 @@ def run_gidm_manifest_inference(
         "chunk_seconds": float(chunk_seconds) if chunk_seconds is not None else None,
         "chunk_context_seconds": float(chunk_context_seconds) if chunk_seconds is not None else None,
         "chunk_timestamp_mode": str(chunk_timestamp_mode) if chunk_seconds is not None else None,
+        "chunk_seek_mode": str(chunk_seek_mode) if chunk_seconds is not None else None,
         "bin_ms": int(bin_ms),
         "resume": bool(resume),
         "dry_run": bool(dry_run),
