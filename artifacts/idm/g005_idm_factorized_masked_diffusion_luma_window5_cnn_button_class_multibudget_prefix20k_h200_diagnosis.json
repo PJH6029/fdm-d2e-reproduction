@@ -1,0 +1,49 @@
+{
+  "button_event_min_token_probability": 0.4116910861263275,
+  "button_event_threshold": 0.9840797034481764,
+  "calibration_selected_row": {
+    "budget": {
+      "budget_rate": 0.07250000000000001,
+      "max_forced_events": 146,
+      "rate_source_positive_rate": 0.029,
+      "rate_source_positives": 58,
+      "rate_source_rows": 2000,
+      "score_threshold": 0.40533919367020865,
+      "threshold_candidate_count": 155
+    },
+    "max_false_positive_rate": 0.1,
+    "metrics": {
+      "f1": 0.029411764705882353,
+      "false_positive_rate": 0.07363542739443872,
+      "fbeta": 0.04491017964071856,
+      "fn": 55,
+      "fp": 143,
+      "negative_examples": 1942,
+      "positive_examples": 58,
+      "precision": 0.02054794520547945,
+      "predicted_examples": 146,
+      "recall": 0.05172413793103448,
+      "tn": 1799,
+      "tp": 3
+    },
+    "multiplier": 2.5,
+    "score": 0.04491017964071856
+  },
+  "claim_boundary": "Negative/diagnostic 1xH200 prefix evidence. Categorical button transition training ran, but target budget candidates were zero after calibration thresholds; not G005 completion evidence.",
+  "git_head": "baf4cee",
+  "keyboard_key_accuracy": 0.019089926761916197,
+  "mouse_button_accuracy": 0.0,
+  "reservation_id": "rsv-jeonghunpark-20260528-96293f",
+  "schema": "g005_idm_button_class_prefix_diagnosis.v1",
+  "selected_budget_max_forced_events": 146,
+  "selected_budget_multiplier": 2.5,
+  "status": "non_terminal_zero_predictions",
+  "strict_exact_true_positive_examples": 0,
+  "strict_mouse_button_f1": 0.0,
+  "strict_mouse_button_recall": 0.0,
+  "strict_no_button_fpr": 0.0,
+  "strict_predicted_button_examples": 0,
+  "target_rows": 2000,
+  "target_threshold_candidate_count": 0,
+  "wandb_status_path": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_multibudget_prefix20k_h200_wandb_status.json"
+}
