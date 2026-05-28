@@ -194,3 +194,10 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Implemented follow-up after the event-budget negative probe: `button_event_budget_applies_to_all_buttons=true` makes the confidence budget gate direct per-token mouse-button emissions as well as event-head forced emissions.
 - Candidate config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_allbudget_prefix20k.yaml`. This stays within the public FDM-1-shaped masked action-token IDM and treats the budget as confidence-based iterative unmasking/abstention rather than a supervised shortcut.
 - Bounded H200 probe should verify whether target no-button FPR drops near `<=0.10` without eliminating all button recall.
+
+## 2026-05-28 KST — G005 all-button confidence-budget H200 prefix probe
+
+- Ran commit `bb5a34c` on 1×H200 reservation `rsv-jeonghunpark-20260528-93de5c` / pod `prod-rsv-jeonghunpark-20260528-93de5c`; copied evidence locally and cancelled the reservation after artifact copy.
+- Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_allbudget_prefix20k_h200_*`, including run, GPU monitor, W&B status, resolved config, paper metrics, compacted summary, reservation context, and diagnosis.
+- Result is useful but non-terminal: all-button confidence budgeting reduced target no-button FPR to `0.02923` (passes the local FPR gate), but exact mouse-button true positives fell to `0`, strict button F1 stayed `0.0`, and paper-compatible mouse-button accuracy was `0.0`.
+- Next branch should keep the all-button budget for FPR control but recover recall via train-only budget multiplier/score sweep or better button-token ranking. Do not promote to full 4×H200 until prefix has both `<=0.10` FPR and nonzero useful recall.

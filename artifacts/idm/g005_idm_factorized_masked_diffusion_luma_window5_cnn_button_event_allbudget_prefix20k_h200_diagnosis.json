@@ -1,0 +1,141 @@
+{
+  "button_event_budget": {
+    "budget_rate": 0.029,
+    "cap_rate": 0.1,
+    "claim_boundary": "Uses labeled train/calibration event-rate prior plus unlabeled target confidence scores only; target labels are not used.",
+    "max_forced_events": 58,
+    "rate_multiplier": 1.0,
+    "rate_source": "calibration_labels",
+    "rate_source_positive_rate": 0.029,
+    "rate_source_positives": 58,
+    "rate_source_rows": 2000,
+    "schema": "button_event_confidence_budget.v1",
+    "score_threshold": 0.3074266843857316,
+    "selected_preview": [
+      {
+        "event_prob": 0.5867649912834167,
+        "index": 910,
+        "max_button_prob": 0.5248085260391235,
+        "score": 0.3079392702068091
+      },
+      {
+        "event_prob": 0.5867401957511902,
+        "index": 911,
+        "max_button_prob": 0.5248126983642578,
+        "score": 0.30792870537095496
+      },
+      {
+        "event_prob": 0.586711049079895,
+        "index": 912,
+        "max_button_prob": 0.5248356461524963,
+        "score": 0.3079268725486557
+      },
+      {
+        "event_prob": 0.5867956876754761,
+        "index": 909,
+        "max_button_prob": 0.5247550010681152,
+        "score": 0.30792397171290986
+      },
+      {
+        "event_prob": 0.5868229269981384,
+        "index": 908,
+        "max_button_prob": 0.5246857404708862,
+        "score": 0.3078976219773111
+      },
+      {
+        "event_prob": 0.5866642594337463,
+        "index": 913,
+        "max_button_prob": 0.5248076915740967,
+        "score": 0.3078859157224514
+      },
+      {
+        "event_prob": 0.5868314504623413,
+        "index": 907,
+        "max_button_prob": 0.5245957970619202,
+        "score": 0.30784931249629466
+      },
+      {
+        "event_prob": 0.5866023898124695,
+        "index": 914,
+        "max_button_prob": 0.5247771739959717,
+        "score": 0.3078355443850711
+      },
+      {
+        "event_prob": 0.5868231058120728,
+        "index": 906,
+        "max_button_prob": 0.5245146751403809,
+        "score": 0.3077973307098887
+      },
+      {
+        "event_prob": 0.5855950713157654,
+        "index": 741,
+        "max_button_prob": 0.525593101978302,
+        "score": 0.3077847300360581
+      }
+    ],
+    "status": "pass",
+    "target_rows_scored": 2000,
+    "threshold_candidate_count": 910
+  },
+  "calibration_rows": 2000,
+  "calibration_selected_button_event_threshold": {
+    "f1": 0.11290322580645161,
+    "false_positive_rate": 0.09062821833161688,
+    "fbeta": 0.19662921348314608,
+    "fn": 44,
+    "fp": 176,
+    "min_token_probability": 0.5243125557899475,
+    "precision": 0.07368421052631578,
+    "recall": 0.2413793103448276,
+    "score": 0.19662921348314608,
+    "threshold": 0.5806693434715271,
+    "tn": 1766,
+    "tp": 14
+  },
+  "candidate": "idm_factorized_masked_diffusion_luma_window5_cnn_button_event_allbudget_prefix20k_h200",
+  "claim_boundary": "Prefix-probe evidence only; FPR passes on this prefix but recall/paper target fail, so this does not complete G005.",
+  "commit": "bb5a34c",
+  "comparison_to_event_budget": {
+    "absolute_fpr_delta": -0.32769230769230767,
+    "current_no_button_fpr": 0.02923076923076923,
+    "previous_candidate": "idm_factorized_masked_diffusion_luma_window5_cnn_button_event_budget_prefix20k_h200",
+    "previous_no_button_fpr": 0.3569230769230769
+  },
+  "diagnosis": [
+    "Applying the confidence budget to all mouse-button emissions reduced target no-button FPR below 0.10.",
+    "The same gate eliminated exact target mouse-button true positives in this prefix, leaving strict button F1 at 0.0.",
+    "This is a useful recipe-faithful operating point for false-positive control, but the next branch must recover recall within the budget, likely by ranking/choosing button tokens more accurately or using a modest budget multiplier sweep without target labels."
+  ],
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "next_branch_requirements": [
+    "Keep all-button confidence budgeting to preserve FPR control.",
+    "Add train-only budget multiplier/score sweep or better button-token ranking to recover nonzero target recall while maintaining target FPR <=0.10.",
+    "Do not checkpoint G005 until full-corpus recipe-faithful IDM beats D2E paper/repo G-IDM targets."
+  ],
+  "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM with typed masked action-token planes for mouse/key/button factors.",
+  "reservation": {
+    "after_status": "cancelled",
+    "before_status": "running",
+    "pod_name": "prod-rsv-jeonghunpark-20260528-93de5c",
+    "reservation_id": "rsv-jeonghunpark-20260528-93de5c"
+  },
+  "schema": "g005_recipe_probe_diagnosis.v1",
+  "status": "non_terminal_fpr_pass_recall_fail",
+  "target_metrics": {
+    "paper_keyboard_key_accuracy": 0.019577227960605334,
+    "paper_mouse_button_accuracy": 0.0,
+    "strict_mouse_button_accuracy": 0.0,
+    "strict_mouse_button_exact_true_positive_examples": 0,
+    "strict_mouse_button_f1": 0.0,
+    "strict_mouse_button_false_negative_examples": 50,
+    "strict_mouse_button_false_positive_examples": 58,
+    "strict_mouse_button_no_button_fpr": 0.02923076923076923,
+    "strict_mouse_button_precision": 0.0,
+    "strict_mouse_button_predicted_examples": 58,
+    "strict_mouse_button_recall": 0.0
+  },
+  "target_rows": 2000,
+  "train_rows": 20000,
+  "wall_clock_seconds": 199.36149263381958,
+  "wandb_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/cl9yv6xb"
+}
