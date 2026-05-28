@@ -1222,3 +1222,49 @@ sequence supervision; simple context tables are exhausted. Preserve
 state-transition button and autoregressive motion as specialist-head ideas only
 after replacing their noncausal state/motion sources with trainable causal
 predictors.
+
+### 2026-05-28 KST — count-preserving hierarchical exact-set prefix rejected
+
+Implemented an opt-in `keyboard_exact_set_preserve_counts` path so the
+streaming IDM exact-set keyboard head can train and decode duplicate key tokens
+inside a D2E bin instead of collapsing them to a set. Then ran a bounded 1×H200
+prefix gate on reservation `rsv-jeonghunpark-20260528-7524c1` using commit
+`bbae584`, 320k train rows, 320k target rows, W&B sidecar logging, and cancelled
+the reservation after copying artifacts.
+
+Evidence:
+
+- `src/fdm_d2e/training/streaming_idm.py` — count-preserving stats,
+  cache identity, exact-set target generation, and decode-compatible class
+  handling via `keyboard_exact_set_preserve_counts`.
+- `tests/test_streaming_idm_contract.py` — duplicate-key stats/cache/decode
+  regression test.
+- `configs/model/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k.yaml`
+  and `scripts/run_g005_idm_event_state_duration_counted_hierarchical_prefix.sh`.
+- `artifacts/idm/g005_idm_event_state_duration_counted_hierarchical_prefix320k_paper_metrics.json`
+  — paper-compatible metrics, `status=pass`, 320k aligned rows, zero sequence
+  mismatches.
+- `outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/metrics.json`
+  — strict/local metric artifact.
+- `artifacts/idm/g005_idm_event_state_duration_counted_hierarchical_prefix320k_rejection.json`
+  — explicit negative decision with split metrics and duplicate-class stats.
+
+Findings:
+
+- Count preservation is real in the train prefix: 499 counted keyboard classes
+  vs 413 collapsed classes, 91 duplicate-counted classes, and 15,711 duplicate
+  counted training rows; top duplicate is two `KEY_PRESS_87` tokens (3,963
+  rows).
+- Metrics remain far below paper targets: all-row paper-compatible keyboard
+  `0.0898`, mouse-button `0.1507`, Pearson X/Y `0.1206/0.0277`. Heldout splits
+  are similarly poor: temporal keyboard `0.0925`, heldout-recording `0.0979`,
+  heldout-game `0.0779`.
+- It only slightly improves collapsed hierarchical prefix keyboard/button
+  (`0.0825/0.1476 -> 0.0898/0.1507`) and badly underperforms the sequence-prior
+  motion branch (`0.6426/0.5972` Pearson X/Y), so it is not a promotion path.
+
+Decision: reject count-preserving hierarchical exact-set as a standalone G005
+paper-target route. Keep the implementation because it fixes a real label
+fidelity bug, but the next branch should combine count-preserving key labels
+with a stronger causal visual/motion/sequence teacher or specialist ensemble;
+do not launch a full-corpus counted-only 4×H200 run.

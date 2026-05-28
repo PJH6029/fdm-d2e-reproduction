@@ -1,0 +1,6354 @@
+{
+  "schema": "streaming_idm_train_summary.v1",
+  "metadata": {
+    "schema": "idm_checkpoint_metadata.v1",
+    "model": "streaming_idm_d2e_full_event_state_duration_counted_hierarchical_prefix320k",
+    "dataset_fingerprint": "c019f1b8bd3aecce1d3285f718548c335eab70354a4504a8c03a8f5074d53d0a",
+    "config_fingerprint": "f7fd4a03959829fec1ce99e780b97e9c0203066e9e2ae5aaec9b5933aeade548",
+    "config_path": "configs/model/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k.yaml",
+    "resolved_config_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/resolved_config.json",
+    "train_records": 320000,
+    "target_records": 320000,
+    "train_records_path": "outputs/data/d2e_event_state_duration_counted_hierarchical_prefix320k/train_core.jsonl",
+    "target_records_path": "outputs/data/d2e_event_state_duration_counted_hierarchical_prefix320k/target_all_eval.jsonl",
+    "data_universe": {
+      "path": "artifacts/sources/d2e_full_data_universe_manifest.json",
+      "exists": true,
+      "sha256": "549cd16aa992bc76c3bea9f571100fe5cc721ca706e7d50f2c9e40fd2d21c8f8",
+      "bytes": 1477181
+    },
+    "data_universe_fingerprint": "a4d96c1b35a770a5ce426a3407af4fbd728ddac9a648cdb4746e2f827f803216",
+    "split_contract": {
+      "path": "artifacts/sources/d2e_full_split_contract.json",
+      "exists": true,
+      "sha256": "e64e90f3745108a2813d4d4f84ee69a08f4cb7e46923371983006c481dadde98",
+      "bytes": 466810
+    },
+    "split_contract_fingerprint": "a4d96c1b35a770a5ce426a3407af4fbd728ddac9a648cdb4746e2f827f803216",
+    "split_id": "a4d96c1b35a770a5ce426a3407af4fbd728ddac9a648cdb4746e2f827f803216",
+    "source_namespace": "d2e_event_state_duration_context_corpus_counted_hierarchical_prefix320k",
+    "source_ids": [
+      "d2e_480p",
+      "d2e_original"
+    ],
+    "resolution_tiers": [
+      "480p",
+      "original_fhd_qhd"
+    ],
+    "target_source_ids": [
+      "d2e_480p",
+      "d2e_original"
+    ],
+    "target_resolution_tiers": [
+      "480p",
+      "original_fhd_qhd"
+    ],
+    "split_names": [
+      "train_core"
+    ],
+    "eval_split_tags": [],
+    "target_eval_split_tags": [
+      "heldout_game",
+      "heldout_recording",
+      "temporal"
+    ],
+    "pseudo_label_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/pseudolabels.jsonl",
+    "filtered_pseudo_label_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/pseudolabels.jsonl",
+    "checkpoint_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/checkpoint.pt",
+    "metrics_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/metrics.json",
+    "label_quality_report_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/label_quality_report.json",
+    "statistical_comparison_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/statistical_comparison.json",
+    "convergence_report_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/convergence_report.json",
+    "convergence_plateau_met": false,
+    "calibration": {
+      "mode": "global_threshold_streaming_cache",
+      "category_threshold": 0.99,
+      "category_thresholds": {
+        "MOUSE_X1_DOWN": 0.99,
+        "MOUSE_X1_UP": 0.99
+      },
+      "source": "training_cache",
+      "softmax": {
+        "status": "computed",
+        "source": "training_cache",
+        "observed_examples": 262144,
+        "max_examples": 262144,
+        "beta": 1.0,
+        "heads": {
+          "keyboard": {
+            "threshold": 0.55,
+            "grid": [
+              0.0,
+              0.05,
+              0.1,
+              0.15,
+              0.2,
+              0.25,
+              0.3,
+              0.35,
+              0.4,
+              0.45,
+              0.5,
+              0.55,
+              0.6,
+              0.65,
+              0.7,
+              0.75,
+              0.8,
+              0.85,
+              0.9,
+              0.95,
+              0.975,
+              0.99
+            ],
+            "tp": 3300,
+            "fp": 48524,
+            "fn": 49596,
+            "predicted_positive": 51824,
+            "positive_examples": 52896,
+            "no_event_examples": 209248,
+            "no_event_false_positive_examples": 20184,
+            "score": 0.06302521008403363,
+            "precision": 0.06367706082124112,
+            "recall": 0.06238656987295826,
+            "no_event_false_positive_rate": 0.09645970331855024,
+            "max_no_event_false_positive_rate": 0.2,
+            "constraint_satisfied": true,
+            "eligible_thresholds": 13,
+            "no_key_examples": 209248,
+            "no_key_false_positive_examples": 20184,
+            "no_key_false_positive_rate": 0.09645970331855024
+          },
+          "button": {
+            "threshold": 0.75,
+            "grid": [
+              0.0,
+              0.05,
+              0.1,
+              0.15,
+              0.2,
+              0.25,
+              0.3,
+              0.35,
+              0.4,
+              0.45,
+              0.5,
+              0.55,
+              0.6,
+              0.65,
+              0.7,
+              0.75,
+              0.8,
+              0.85,
+              0.9,
+              0.95,
+              0.975,
+              0.99
+            ],
+            "tp": 3052,
+            "fp": 4504,
+            "fn": 3974,
+            "predicted_positive": 7556,
+            "positive_examples": 7026,
+            "no_event_examples": 255118,
+            "no_event_false_positive_examples": 4375,
+            "score": 0.418598271841997,
+            "precision": 0.4039174166225516,
+            "recall": 0.43438656419015087,
+            "no_event_false_positive_rate": 0.017148927163116674,
+            "max_no_event_false_positive_rate": 0.08,
+            "constraint_satisfied": true,
+            "eligible_thresholds": 13,
+            "no_button_examples": 255118,
+            "no_button_false_positive_examples": 4375,
+            "no_button_false_positive_rate": 0.017148927163116674
+          }
+        }
+      },
+      "keyboard_softmax_threshold": 0.55,
+      "button_softmax_threshold": 0.75,
+      "mouse_output_gain": 31.094813804046673,
+      "mouse_output_gain_x": 32.0,
+      "mouse_output_gain_y": 30.189627608093346,
+      "mouse_output_gain_info": {
+        "mode": "train_abs_ratio_per_axis",
+        "source": "training_cache",
+        "status": "computed",
+        "configured_gain": 1.0,
+        "raw_ratio": 39.74374885446567,
+        "unclipped_gain": 39.74374885446567,
+        "gain": 31.094813804046673,
+        "raw_ratio_x": 45.96412181275397,
+        "raw_ratio_y": 30.189627608093346,
+        "gain_x": 32.0,
+        "gain_y": 30.189627608093346,
+        "min_gain": 0.1,
+        "max_gain": 32.0,
+        "predicted_abs_mean": 0.1725496742874384,
+        "target_abs_mean": 6.857770919799805,
+        "predicted_abs_x_mean": 0.20901595801115036,
+        "predicted_abs_y_mean": 0.13608339056372643,
+        "target_abs_x_mean": 9.607234954833984,
+        "target_abs_y_mean": 4.108306884765625,
+        "value_count": 524288,
+        "max_examples": 262144
+      },
+      "last_train_loss": 41.86719602270971,
+      "prediction_fingerprint": "80e4bffe545d174cb56dde8314ddfd6463c4b76f8884bb953bc4bed471af4385"
+    },
+    "feature_mode": "summary_compact_luma16_pair_shift_time_state_duration_prior_action",
+    "input_dim": 968,
+    "action_history_len": 0,
+    "action_history_dim": 0,
+    "action_history_feedback": "none",
+    "categorical_vocab": [
+      "MOUSE_X1_DOWN",
+      "MOUSE_X1_UP"
+    ],
+    "keyboard_head_mode": "hierarchical_softmax",
+    "keyboard_classes": [
+      [],
+      [
+        "KEY_PRESS_112"
+      ],
+      [
+        "KEY_PRESS_118"
+      ],
+      [
+        "KEY_PRESS_13"
+      ],
+      [
+        "KEY_PRESS_160"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_160"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_160",
+        "KEY_PRESS_32"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_160",
+        "KEY_PRESS_65"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_160",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_160",
+        "KEY_PRESS_87",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_160",
+        "KEY_RELEASE_160"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_32"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_32",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_51"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_65"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_65",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_68",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_69"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_69",
+        "KEY_RELEASE_160"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_70"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_82"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_87",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_162"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_69"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_RELEASE_160"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_RELEASE_162"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_RELEASE_162",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_160",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_161"
+      ],
+      [
+        "KEY_PRESS_162"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_PRESS_162"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_PRESS_162",
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_PRESS_32"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_PRESS_52"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_PRESS_65"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_PRESS_69"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_PRESS_70"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_162"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_RELEASE_162"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_RELEASE_27"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_162",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_164"
+      ],
+      [
+        "KEY_PRESS_188"
+      ],
+      [
+        "KEY_PRESS_189"
+      ],
+      [
+        "KEY_PRESS_192",
+        "KEY_RELEASE_192"
+      ],
+      [
+        "KEY_PRESS_20",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_220"
+      ],
+      [
+        "KEY_PRESS_27"
+      ],
+      [
+        "KEY_PRESS_27",
+        "KEY_RELEASE_27"
+      ],
+      [
+        "KEY_PRESS_32"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_32"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_32",
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_32",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_32",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_65"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_65",
+        "KEY_PRESS_65"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_68",
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_68",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_68",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_69",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_87",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_PRESS_87",
+        "KEY_PRESS_9"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_RELEASE_160"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_51"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_32",
+        "KEY_RELEASE_9"
+      ],
+      [
+        "KEY_PRESS_34"
+      ],
+      [
+        "KEY_PRESS_37"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_37"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_37",
+        "KEY_PRESS_38",
+        "KEY_PRESS_38"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_37",
+        "KEY_PRESS_49"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_37",
+        "KEY_RELEASE_37"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_38"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_38",
+        "KEY_PRESS_38"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_38",
+        "KEY_PRESS_38",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_38",
+        "KEY_RELEASE_37"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_38",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_39"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_39",
+        "KEY_RELEASE_37"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_39",
+        "KEY_RELEASE_39"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_PRESS_40"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_RELEASE_161",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_RELEASE_37"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_RELEASE_37",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_RELEASE_39"
+      ],
+      [
+        "KEY_PRESS_37",
+        "KEY_RELEASE_40"
+      ],
+      [
+        "KEY_PRESS_38"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_38"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_38",
+        "KEY_PRESS_39"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_38",
+        "KEY_PRESS_39",
+        "KEY_PRESS_39"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_38",
+        "KEY_PRESS_39",
+        "KEY_PRESS_39",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_38",
+        "KEY_PRESS_49"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_38",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_39"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_39",
+        "KEY_PRESS_39"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_39",
+        "KEY_RELEASE_37"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_39",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_39",
+        "KEY_RELEASE_39"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_PRESS_40"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_RELEASE_37"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_RELEASE_37",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_38",
+        "KEY_RELEASE_39"
+      ],
+      [
+        "KEY_PRESS_39"
+      ],
+      [
+        "KEY_PRESS_39",
+        "KEY_PRESS_39"
+      ],
+      [
+        "KEY_PRESS_39",
+        "KEY_PRESS_39",
+        "KEY_RELEASE_38",
+        "KEY_RELEASE_39"
+      ],
+      [
+        "KEY_PRESS_39",
+        "KEY_PRESS_39",
+        "KEY_RELEASE_39"
+      ],
+      [
+        "KEY_PRESS_39",
+        "KEY_PRESS_40"
+      ],
+      [
+        "KEY_PRESS_39",
+        "KEY_PRESS_40",
+        "KEY_PRESS_40"
+      ],
+      [
+        "KEY_PRESS_39",
+        "KEY_PRESS_49"
+      ],
+      [
+        "KEY_PRESS_39",
+        "KEY_PRESS_72"
+      ],
+      [
+        "KEY_PRESS_39",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_39",
+        "KEY_RELEASE_37"
+      ],
+      [
+        "KEY_PRESS_39",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_39",
+        "KEY_RELEASE_39"
+      ],
+      [
+        "KEY_PRESS_40"
+      ],
+      [
+        "KEY_PRESS_40",
+        "KEY_PRESS_40"
+      ],
+      [
+        "KEY_PRESS_40",
+        "KEY_PRESS_40",
+        "KEY_RELEASE_40"
+      ],
+      [
+        "KEY_PRESS_40",
+        "KEY_RELEASE_37"
+      ],
+      [
+        "KEY_PRESS_40",
+        "KEY_RELEASE_40"
+      ],
+      [
+        "KEY_PRESS_48"
+      ],
+      [
+        "KEY_PRESS_49"
+      ],
+      [
+        "KEY_PRESS_49",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_49",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_49",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_49",
+        "KEY_RELEASE_49"
+      ],
+      [
+        "KEY_PRESS_50"
+      ],
+      [
+        "KEY_PRESS_50",
+        "KEY_PRESS_65"
+      ],
+      [
+        "KEY_PRESS_50",
+        "KEY_PRESS_65",
+        "KEY_PRESS_65"
+      ],
+      [
+        "KEY_PRESS_50",
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_50",
+        "KEY_PRESS_69"
+      ],
+      [
+        "KEY_PRESS_50",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_50",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_50",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_51"
+      ],
+      [
+        "KEY_PRESS_51",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_51",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_51",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_51",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_52"
+      ],
+      [
+        "KEY_PRESS_52",
+        "KEY_PRESS_52"
+      ],
+      [
+        "KEY_PRESS_52",
+        "KEY_PRESS_65"
+      ],
+      [
+        "KEY_PRESS_52",
+        "KEY_RELEASE_52"
+      ],
+      [
+        "KEY_PRESS_52",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_52",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_53"
+      ],
+      [
+        "KEY_PRESS_54"
+      ],
+      [
+        "KEY_PRESS_56"
+      ],
+      [
+        "KEY_PRESS_56",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_65",
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_65",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_65",
+        "KEY_PRESS_83",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_65",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_65",
+        "KEY_PRESS_87",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_65",
+        "KEY_PRESS_87",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_65",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_65",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_65",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_65",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_67"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_68",
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_68",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_68",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_68",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_68",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_68",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_69"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_69",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_69",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_69",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_69"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_70"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_70",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_82"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_82",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_83",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_87",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_160"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_162"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_52"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_69"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_69",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_70"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_77"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_82"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_65",
+        "KEY_RELEASE_88"
+      ],
+      [
+        "KEY_PRESS_66"
+      ],
+      [
+        "KEY_PRESS_67"
+      ],
+      [
+        "KEY_PRESS_67",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_67",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_67",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_PRESS_83",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_PRESS_87",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_PRESS_9"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_68",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_81"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_83",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_87",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_87",
+        "KEY_PRESS_9"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_88"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_9"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_PRESS_9",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_160"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_162"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_27"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_49"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_50"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_68",
+        "KEY_RELEASE_9"
+      ],
+      [
+        "KEY_PRESS_69"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_PRESS_69"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_PRESS_69",
+        "KEY_RELEASE_69"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_PRESS_87",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_69"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_RELEASE_160"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_RELEASE_69"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_69",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_70"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_PRESS_70"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_PRESS_70",
+        "KEY_RELEASE_70"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_PRESS_87",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_RELEASE_160"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_RELEASE_49"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_RELEASE_70"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_70",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_71"
+      ],
+      [
+        "KEY_PRESS_72"
+      ],
+      [
+        "KEY_PRESS_73"
+      ],
+      [
+        "KEY_PRESS_73",
+        "KEY_RELEASE_73"
+      ],
+      [
+        "KEY_PRESS_74"
+      ],
+      [
+        "KEY_PRESS_75",
+        "KEY_PRESS_76"
+      ],
+      [
+        "KEY_PRESS_76"
+      ],
+      [
+        "KEY_PRESS_77"
+      ],
+      [
+        "KEY_PRESS_78"
+      ],
+      [
+        "KEY_PRESS_80"
+      ],
+      [
+        "KEY_PRESS_81"
+      ],
+      [
+        "KEY_PRESS_82"
+      ],
+      [
+        "KEY_PRESS_82",
+        "KEY_PRESS_82"
+      ],
+      [
+        "KEY_PRESS_82",
+        "KEY_PRESS_82",
+        "KEY_RELEASE_82"
+      ],
+      [
+        "KEY_PRESS_82",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_82",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_82",
+        "KEY_RELEASE_160"
+      ],
+      [
+        "KEY_PRESS_82",
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_82",
+        "KEY_RELEASE_51"
+      ],
+      [
+        "KEY_PRESS_82",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_82",
+        "KEY_RELEASE_82"
+      ],
+      [
+        "KEY_PRESS_82",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_PRESS_83",
+        "KEY_PRESS_83"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_PRESS_83",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_PRESS_9"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_RELEASE_162"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_RELEASE_27"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_67"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_RELEASE_69"
+      ],
+      [
+        "KEY_PRESS_83",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_PRESS_84"
+      ],
+      [
+        "KEY_PRESS_84",
+        "KEY_PRESS_84"
+      ],
+      [
+        "KEY_PRESS_86"
+      ],
+      [
+        "KEY_PRESS_86",
+        "KEY_PRESS_86"
+      ],
+      [
+        "KEY_PRESS_86",
+        "KEY_RELEASE_86"
+      ],
+      [
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_PRESS_87"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_39"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_PRESS_87",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_PRESS_9"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_160"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_162"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_67"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_69"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_70"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_87",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_87",
+        "KEY_RELEASE_9"
+      ],
+      [
+        "KEY_PRESS_88"
+      ],
+      [
+        "KEY_PRESS_88",
+        "KEY_PRESS_88"
+      ],
+      [
+        "KEY_PRESS_88",
+        "KEY_RELEASE_88"
+      ],
+      [
+        "KEY_PRESS_89"
+      ],
+      [
+        "KEY_PRESS_89",
+        "KEY_RELEASE_89"
+      ],
+      [
+        "KEY_PRESS_9"
+      ],
+      [
+        "KEY_PRESS_9",
+        "KEY_PRESS_9"
+      ],
+      [
+        "KEY_PRESS_9",
+        "KEY_PRESS_9",
+        "KEY_RELEASE_9"
+      ],
+      [
+        "KEY_PRESS_9",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_PRESS_9",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_PRESS_9",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_PRESS_9",
+        "KEY_RELEASE_9"
+      ],
+      [
+        "KEY_PRESS_90"
+      ],
+      [
+        "KEY_PRESS_96"
+      ],
+      [
+        "KEY_PRESS_96",
+        "KEY_RELEASE_96"
+      ],
+      [
+        "KEY_PRESS_97"
+      ],
+      [
+        "KEY_PRESS_97",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_PRESS_98"
+      ],
+      [
+        "KEY_PRESS_98",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_RELEASE_112"
+      ],
+      [
+        "KEY_RELEASE_118"
+      ],
+      [
+        "KEY_RELEASE_13"
+      ],
+      [
+        "KEY_RELEASE_13",
+        "KEY_RELEASE_37"
+      ],
+      [
+        "KEY_RELEASE_160"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_51"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_52"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_69"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_70"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_82"
+      ],
+      [
+        "KEY_RELEASE_160",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_161"
+      ],
+      [
+        "KEY_RELEASE_162"
+      ],
+      [
+        "KEY_RELEASE_162",
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_RELEASE_162",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_RELEASE_164"
+      ],
+      [
+        "KEY_RELEASE_164",
+        "KEY_RELEASE_9"
+      ],
+      [
+        "KEY_RELEASE_188"
+      ],
+      [
+        "KEY_RELEASE_189"
+      ],
+      [
+        "KEY_RELEASE_20"
+      ],
+      [
+        "KEY_RELEASE_220"
+      ],
+      [
+        "KEY_RELEASE_27"
+      ],
+      [
+        "KEY_RELEASE_32"
+      ],
+      [
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_50"
+      ],
+      [
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_RELEASE_32",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_34"
+      ],
+      [
+        "KEY_RELEASE_37"
+      ],
+      [
+        "KEY_RELEASE_37",
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_RELEASE_37",
+        "KEY_RELEASE_39"
+      ],
+      [
+        "KEY_RELEASE_37",
+        "KEY_RELEASE_40"
+      ],
+      [
+        "KEY_RELEASE_38"
+      ],
+      [
+        "KEY_RELEASE_38",
+        "KEY_RELEASE_39"
+      ],
+      [
+        "KEY_RELEASE_38",
+        "KEY_RELEASE_40"
+      ],
+      [
+        "KEY_RELEASE_39"
+      ],
+      [
+        "KEY_RELEASE_39",
+        "KEY_RELEASE_40"
+      ],
+      [
+        "KEY_RELEASE_40"
+      ],
+      [
+        "KEY_RELEASE_48"
+      ],
+      [
+        "KEY_RELEASE_49"
+      ],
+      [
+        "KEY_RELEASE_49",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_RELEASE_50"
+      ],
+      [
+        "KEY_RELEASE_50",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_RELEASE_50",
+        "KEY_RELEASE_70"
+      ],
+      [
+        "KEY_RELEASE_51"
+      ],
+      [
+        "KEY_RELEASE_51",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_RELEASE_51",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_52"
+      ],
+      [
+        "KEY_RELEASE_52",
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_RELEASE_52",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_53"
+      ],
+      [
+        "KEY_RELEASE_53",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_54"
+      ],
+      [
+        "KEY_RELEASE_56"
+      ],
+      [
+        "KEY_RELEASE_65"
+      ],
+      [
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_69"
+      ],
+      [
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_69",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_70"
+      ],
+      [
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_RELEASE_65",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_66"
+      ],
+      [
+        "KEY_RELEASE_67"
+      ],
+      [
+        "KEY_RELEASE_67",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_RELEASE_67",
+        "KEY_RELEASE_88"
+      ],
+      [
+        "KEY_RELEASE_68"
+      ],
+      [
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_81"
+      ],
+      [
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_87",
+        "KEY_RELEASE_9"
+      ],
+      [
+        "KEY_RELEASE_68",
+        "KEY_RELEASE_9"
+      ],
+      [
+        "KEY_RELEASE_69"
+      ],
+      [
+        "KEY_RELEASE_69",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_70"
+      ],
+      [
+        "KEY_RELEASE_70",
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_RELEASE_70",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_71"
+      ],
+      [
+        "KEY_RELEASE_72"
+      ],
+      [
+        "KEY_RELEASE_73"
+      ],
+      [
+        "KEY_RELEASE_74"
+      ],
+      [
+        "KEY_RELEASE_75"
+      ],
+      [
+        "KEY_RELEASE_76"
+      ],
+      [
+        "KEY_RELEASE_77"
+      ],
+      [
+        "KEY_RELEASE_78"
+      ],
+      [
+        "KEY_RELEASE_80"
+      ],
+      [
+        "KEY_RELEASE_81"
+      ],
+      [
+        "KEY_RELEASE_82"
+      ],
+      [
+        "KEY_RELEASE_82",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_83"
+      ],
+      [
+        "KEY_RELEASE_84"
+      ],
+      [
+        "KEY_RELEASE_84",
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_86"
+      ],
+      [
+        "KEY_RELEASE_87"
+      ],
+      [
+        "KEY_RELEASE_87",
+        "KEY_RELEASE_9"
+      ],
+      [
+        "KEY_RELEASE_88"
+      ],
+      [
+        "KEY_RELEASE_89"
+      ],
+      [
+        "KEY_RELEASE_9"
+      ],
+      [
+        "KEY_RELEASE_90"
+      ],
+      [
+        "KEY_RELEASE_96"
+      ],
+      [
+        "KEY_RELEASE_97"
+      ],
+      [
+        "KEY_RELEASE_98"
+      ]
+    ],
+    "button_head_mode": "hierarchical_softmax",
+    "button_classes": [
+      [],
+      [
+        "MOUSE_LEFT_DOWN"
+      ],
+      [
+        "MOUSE_LEFT_DOWN",
+        "MOUSE_LEFT_UP"
+      ],
+      [
+        "MOUSE_LEFT_DOWN",
+        "MOUSE_LEFT_UP",
+        "MOUSE_RIGHT_DOWN"
+      ],
+      [
+        "MOUSE_LEFT_DOWN",
+        "MOUSE_LEFT_UP",
+        "MOUSE_RIGHT_UP"
+      ],
+      [
+        "MOUSE_LEFT_DOWN",
+        "MOUSE_RIGHT_DOWN"
+      ],
+      [
+        "MOUSE_LEFT_UP"
+      ],
+      [
+        "MOUSE_LEFT_UP",
+        "MOUSE_RIGHT_DOWN"
+      ],
+      [
+        "MOUSE_LEFT_UP",
+        "MOUSE_RIGHT_UP"
+      ],
+      [
+        "MOUSE_MIDDLE_DOWN"
+      ],
+      [
+        "MOUSE_MIDDLE_UP"
+      ],
+      [
+        "MOUSE_RIGHT_DOWN"
+      ],
+      [
+        "MOUSE_RIGHT_DOWN",
+        "MOUSE_RIGHT_UP"
+      ],
+      [
+        "MOUSE_RIGHT_UP"
+      ]
+    ],
+    "mouse_head_mode": "regression",
+    "mouse_target_mode": "sum",
+    "mouse_emit_mode": "decompose",
+    "mouse_max_tokens_per_axis": 32,
+    "mouse_axis_classes": [],
+    "distributed": {
+      "enabled": false,
+      "world_size": 1,
+      "backend": null,
+      "rank0_device": "cuda"
+    },
+    "training_cache": {
+      "enabled": true,
+      "dir": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/train_cache",
+      "manifest_paths": [
+        "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/train_cache/train_core-33f7607111cd3dae520e.manifest.json"
+      ],
+      "rows": 320000,
+      "chunk_size": 32768,
+      "shard_by_path": false,
+      "progress_interval_batches": 25,
+      "shard_assignment": {
+        "mode": "greedy_rows",
+        "world_size": 1,
+        "ranks": [
+          {
+            "rank": 0,
+            "manifest_indices": [
+              0
+            ],
+            "rows": 320000,
+            "bytes": 1249308010
+          }
+        ],
+        "row_load_min": 320000,
+        "row_load_max": 320000,
+        "byte_load_min": 1249308010,
+        "byte_load_max": 1249308010
+      }
+    }
+  },
+  "metrics": {
+    "schema": "metrics.v1",
+    "stage": "fdm_eval",
+    "num_examples": 320000,
+    "keyboard": {
+      "status": "computed",
+      "accuracy": 0.08106046789249416,
+      "num_examples": 60313
+    },
+    "mouse_button": {
+      "status": "computed",
+      "accuracy": 0.3947790245019464,
+      "num_examples": 8734,
+      "predicted_examples": 18244,
+      "exact_true_positive_examples": 3448,
+      "false_positive_examples": 14796,
+      "false_negative_examples": 5286,
+      "precision": 0.1889936417452313,
+      "recall": 0.3947790245019464,
+      "f1": 0.2556156868559567,
+      "no_button_examples": 311266,
+      "no_button_false_positive_examples": 14399,
+      "no_button_false_positive_rate": 0.04625946939273804
+    },
+    "mouse_move": {
+      "status": "computed",
+      "pearson": 0.1515403734668267,
+      "scale_ratio": 1.0083907829117813,
+      "num_values": 240244
+    },
+    "failure_count": 319929
+  },
+  "label_quality_report": {
+    "schema": "idm_label_quality_report.v1",
+    "model": "streaming_idm_d2e_full_event_state_duration_counted_hierarchical_prefix320k",
+    "target_records": 320000,
+    "model_metrics": {
+      "schema": "metrics.v1",
+      "stage": "fdm_eval",
+      "num_examples": 320000,
+      "keyboard": {
+        "status": "computed",
+        "accuracy": 0.08106046789249416,
+        "num_examples": 60313
+      },
+      "mouse_button": {
+        "status": "computed",
+        "accuracy": 0.3947790245019464,
+        "num_examples": 8734,
+        "predicted_examples": 18244,
+        "exact_true_positive_examples": 3448,
+        "false_positive_examples": 14796,
+        "false_negative_examples": 5286,
+        "precision": 0.1889936417452313,
+        "recall": 0.3947790245019464,
+        "f1": 0.2556156868559567,
+        "no_button_examples": 311266,
+        "no_button_false_positive_examples": 14399,
+        "no_button_false_positive_rate": 0.04625946939273804
+      },
+      "mouse_move": {
+        "status": "computed",
+        "pearson": 0.1515403734668267,
+        "scale_ratio": 1.0083907829117813,
+        "num_values": 240244
+      },
+      "failure_count": 319929
+    },
+    "baseline_metrics": {
+      "noop": {
+        "schema": "metrics.v1",
+        "stage": "fdm_eval",
+        "num_examples": 320000,
+        "keyboard": {
+          "status": "computed",
+          "accuracy": 0.0,
+          "num_examples": 60313
+        },
+        "mouse_button": {
+          "status": "computed",
+          "accuracy": 0.0,
+          "num_examples": 8734,
+          "predicted_examples": 0,
+          "exact_true_positive_examples": 0,
+          "false_positive_examples": 0,
+          "false_negative_examples": 8734,
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "no_button_examples": 311266,
+          "no_button_false_positive_examples": 0,
+          "no_button_false_positive_rate": 0.0
+        },
+        "mouse_move": {
+          "status": "absent",
+          "pearson": null,
+          "scale_ratio": null,
+          "num_values": 0
+        },
+        "failure_count": 155831
+      },
+      "global_majority": {
+        "schema": "metrics.v1",
+        "stage": "fdm_eval",
+        "num_examples": 320000,
+        "keyboard": {
+          "status": "computed",
+          "accuracy": 0.0,
+          "num_examples": 60313
+        },
+        "mouse_button": {
+          "status": "computed",
+          "accuracy": 0.0,
+          "num_examples": 8734,
+          "predicted_examples": 0,
+          "exact_true_positive_examples": 0,
+          "false_positive_examples": 0,
+          "false_negative_examples": 8734,
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "no_button_examples": 311266,
+          "no_button_false_positive_examples": 0,
+          "no_button_false_positive_rate": 0.0
+        },
+        "mouse_move": {
+          "status": "absent",
+          "pearson": null,
+          "scale_ratio": null,
+          "num_values": 0
+        },
+        "failure_count": 155831
+      },
+      "last_seen_train": {
+        "schema": "metrics.v1",
+        "stage": "fdm_eval",
+        "num_examples": 320000,
+        "keyboard": {
+          "status": "computed",
+          "accuracy": 0.007129474574304047,
+          "num_examples": 60313
+        },
+        "mouse_button": {
+          "status": "computed",
+          "accuracy": 0.010075566750629723,
+          "num_examples": 8734,
+          "predicted_examples": 2575,
+          "exact_true_positive_examples": 88,
+          "false_positive_examples": 2487,
+          "false_negative_examples": 8646,
+          "precision": 0.0341747572815534,
+          "recall": 0.010075566750629723,
+          "f1": 0.015562826067733664,
+          "no_button_examples": 311266,
+          "no_button_false_positive_examples": 2399,
+          "no_button_false_positive_rate": 0.007707234326910103
+        },
+        "mouse_move": {
+          "status": "computed",
+          "pearson": 0.01828134800695884,
+          "scale_ratio": 3.3631786762522267,
+          "num_values": 83274
+        },
+        "failure_count": 193252
+      }
+    },
+    "groups_by_model": {
+      "streaming_idm_d2e_full_event_state_duration_counted_hierarchical_prefix320k": {
+        "all": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 320000,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.08106046789249416,
+            "num_examples": 60313
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.3947790245019464,
+            "num_examples": 8734,
+            "predicted_examples": 18244,
+            "exact_true_positive_examples": 3448,
+            "false_positive_examples": 14796,
+            "false_negative_examples": 5286,
+            "precision": 0.1889936417452313,
+            "recall": 0.3947790245019464,
+            "f1": 0.2556156868559567,
+            "no_button_examples": 311266,
+            "no_button_false_positive_examples": 14399,
+            "no_button_false_positive_rate": 0.04625946939273804
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.1515403734668267,
+            "scale_ratio": 1.0083907829117813,
+            "num_values": 240244
+          },
+          "failure_count": 319929
+        },
+        "eval_tag:heldout_game": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 144695,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.09180224789750845,
+            "num_examples": 25446
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.39609483960948394,
+            "num_examples": 5019,
+            "predicted_examples": 13085,
+            "exact_true_positive_examples": 1988,
+            "false_positive_examples": 11097,
+            "false_negative_examples": 3031,
+            "precision": 0.1519296904852885,
+            "recall": 0.39609483960948394,
+            "f1": 0.21961997348652232,
+            "no_button_examples": 139676,
+            "no_button_false_positive_examples": 10838,
+            "no_button_false_positive_rate": 0.07759386007617629
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.15460553879867256,
+            "scale_ratio": 1.2508213553222636,
+            "num_values": 120606
+          },
+          "failure_count": 144654
+        },
+        "eval_tag:heldout_recording": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 85542,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.10932663668749636,
+            "num_examples": 17123
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.38931110566315275,
+            "num_examples": 4079,
+            "predicted_examples": 6593,
+            "exact_true_positive_examples": 1588,
+            "false_positive_examples": 5005,
+            "false_negative_examples": 2491,
+            "precision": 0.2408615197937206,
+            "recall": 0.38931110566315275,
+            "f1": 0.29760119940029983,
+            "no_button_examples": 81463,
+            "no_button_false_positive_examples": 4822,
+            "no_button_false_positive_rate": 0.05919251684813965
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.1426727175364288,
+            "scale_ratio": 1.8203739399550989,
+            "num_values": 89352
+          },
+          "failure_count": 85523
+        },
+        "eval_tag:temporal": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 156284,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.05977777045072373,
+            "num_examples": 30329
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.4240647682858738,
+            "num_examples": 3582,
+            "predicted_examples": 5750,
+            "exact_true_positive_examples": 1519,
+            "false_positive_examples": 4231,
+            "false_negative_examples": 2063,
+            "precision": 0.26417391304347826,
+            "recall": 0.4240647682858738,
+            "f1": 0.32554650664380624,
+            "no_button_examples": 152702,
+            "no_button_false_positive_examples": 4133,
+            "no_button_false_positive_rate": 0.027065788267344237
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.154013534742423,
+            "scale_ratio": 1.0807910238745173,
+            "num_values": 95104
+          },
+          "failure_count": 156256
+        },
+        "game:Apex_Legends": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 31797,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.10775073850049233,
+            "num_examples": 7109
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.42363636363636364,
+            "num_examples": 550,
+            "predicted_examples": 797,
+            "exact_true_positive_examples": 233,
+            "false_positive_examples": 564,
+            "false_negative_examples": 317,
+            "precision": 0.29234629861982436,
+            "recall": 0.42363636363636364,
+            "f1": 0.3459539717891611,
+            "no_button_examples": 31247,
+            "no_button_false_positive_examples": 544,
+            "no_button_false_positive_rate": 0.01740967132844753
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.1823538750188993,
+            "scale_ratio": 1.065618959042804,
+            "num_values": 35822
+          },
+          "failure_count": 31788
+        },
+        "game:Battlefield_6_Open_Beta": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 20592,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.10680882903105125,
+            "num_examples": 5346
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.20105820105820105,
+            "num_examples": 567,
+            "predicted_examples": 1173,
+            "exact_true_positive_examples": 114,
+            "false_positive_examples": 1059,
+            "false_negative_examples": 453,
+            "precision": 0.09718670076726342,
+            "recall": 0.20105820105820105,
+            "f1": 0.1310344827586207,
+            "no_button_examples": 20025,
+            "no_button_false_positive_examples": 969,
+            "no_button_false_positive_rate": 0.04838951310861423
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.19503015722774733,
+            "scale_ratio": 2.5521661758106147,
+            "num_values": 28812
+          },
+          "failure_count": 20588
+        },
+        "game:Brotato": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 13473,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.03711985688729875,
+            "num_examples": 2236
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.5,
+            "num_examples": 200,
+            "predicted_examples": 169,
+            "exact_true_positive_examples": 100,
+            "false_positive_examples": 69,
+            "false_negative_examples": 100,
+            "precision": 0.591715976331361,
+            "recall": 0.5,
+            "f1": 0.5420054200542005,
+            "no_button_examples": 13273,
+            "no_button_false_positive_examples": 69,
+            "no_button_false_positive_rate": 0.005198523318014014
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.3128236143075268,
+            "scale_ratio": 1.9059727778596203,
+            "num_values": 5616
+          },
+          "failure_count": 13471
+        },
+        "game:Cyberpunk_2077": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 7321,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.16349047141424272,
+            "num_examples": 997
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.5,
+            "num_examples": 34,
+            "predicted_examples": 46,
+            "exact_true_positive_examples": 17,
+            "false_positive_examples": 29,
+            "false_negative_examples": 17,
+            "precision": 0.3695652173913043,
+            "recall": 0.5,
+            "f1": 0.425,
+            "no_button_examples": 7287,
+            "no_button_false_positive_examples": 29,
+            "no_button_false_positive_rate": 0.003979689858652395
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.20365439025079884,
+            "scale_ratio": 2.1984250326175307,
+            "num_values": 3598
+          },
+          "failure_count": 7320
+        },
+        "game:Dinkum": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 5936,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0504950495049505,
+            "num_examples": 1010
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.3645833333333333,
+            "num_examples": 192,
+            "predicted_examples": 170,
+            "exact_true_positive_examples": 70,
+            "false_positive_examples": 100,
+            "false_negative_examples": 122,
+            "precision": 0.4117647058823529,
+            "recall": 0.3645833333333333,
+            "f1": 0.3867403314917127,
+            "no_button_examples": 5744,
+            "no_button_false_positive_examples": 93,
+            "no_button_false_positive_rate": 0.016190807799442895
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.11283094058994769,
+            "scale_ratio": 4.195784601642614,
+            "num_values": 3826
+          },
+          "failure_count": 5936
+        },
+        "game:Eternal_Return": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 13789,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0845771144278607,
+            "num_examples": 1206
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.45001975503753455,
+            "num_examples": 2531,
+            "predicted_examples": 3872,
+            "exact_true_positive_examples": 1139,
+            "false_positive_examples": 2733,
+            "false_negative_examples": 1392,
+            "precision": 0.29416322314049587,
+            "recall": 0.45001975503753455,
+            "f1": 0.3557707324691551,
+            "no_button_examples": 11258,
+            "no_button_false_positive_examples": 2663,
+            "no_button_false_positive_rate": 0.236542902824658
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.15878855443749718,
+            "scale_ratio": 3.909715442962918,
+            "num_values": 16774
+          },
+          "failure_count": 13787
+        },
+        "game:Euro_Truck_Simulator_2": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 55272,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.007440039158100832,
+            "num_examples": 10215
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.3673469387755102,
+            "num_examples": 49,
+            "predicted_examples": 35,
+            "exact_true_positive_examples": 18,
+            "false_positive_examples": 17,
+            "false_negative_examples": 31,
+            "precision": 0.5142857142857142,
+            "recall": 0.3673469387755102,
+            "f1": 0.42857142857142855,
+            "no_button_examples": 55223,
+            "no_button_false_positive_examples": 17,
+            "no_button_false_positive_rate": 0.0003078427466816363
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.09864215529940644,
+            "scale_ratio": 1.5460182599466208,
+            "num_values": 1550
+          },
+          "failure_count": 55272
+        },
+        "game:Grounded": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 8927,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0669831223628692,
+            "num_examples": 1896
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.47733333333333333,
+            "num_examples": 375,
+            "predicted_examples": 498,
+            "exact_true_positive_examples": 179,
+            "false_positive_examples": 319,
+            "false_negative_examples": 196,
+            "precision": 0.35943775100401604,
+            "recall": 0.47733333333333333,
+            "f1": 0.41008018327605955,
+            "no_button_examples": 8552,
+            "no_button_false_positive_examples": 312,
+            "no_button_false_positive_rate": 0.03648269410664172
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.2190075587047215,
+            "scale_ratio": 3.7107525271771102,
+            "num_values": 10346
+          },
+          "failure_count": 8924
+        },
+        "game:Monster_Hunter_Wilds": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 11849,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.09684300341296928,
+            "num_examples": 2344
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.31175468483816016,
+            "num_examples": 587,
+            "predicted_examples": 497,
+            "exact_true_positive_examples": 183,
+            "false_positive_examples": 314,
+            "false_negative_examples": 404,
+            "precision": 0.3682092555331992,
+            "recall": 0.31175468483816016,
+            "f1": 0.3376383763837638,
+            "no_button_examples": 11262,
+            "no_button_false_positive_examples": 307,
+            "no_button_false_positive_rate": 0.027259811756348784
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.0849022558041291,
+            "scale_ratio": 4.314082708948861,
+            "num_values": 7118
+          },
+          "failure_count": 11847
+        },
+        "game:Raft": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 7914,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.10223835450695705,
+            "num_examples": 1653
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.452,
+            "num_examples": 500,
+            "predicted_examples": 715,
+            "exact_true_positive_examples": 226,
+            "false_positive_examples": 489,
+            "false_negative_examples": 274,
+            "precision": 0.31608391608391606,
+            "recall": 0.452,
+            "f1": 0.3720164609053498,
+            "no_button_examples": 7414,
+            "no_button_false_positive_examples": 483,
+            "no_button_false_positive_rate": 0.06514701915295387
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.1947634366752612,
+            "scale_ratio": 2.7148531433647602,
+            "num_values": 8536
+          },
+          "failure_count": 7913
+        },
+        "game:Rainbow_Six": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 130906,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.09216171617161716,
+            "num_examples": 24240
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.3412379421221865,
+            "num_examples": 2488,
+            "predicted_examples": 9213,
+            "exact_true_positive_examples": 849,
+            "false_positive_examples": 8364,
+            "false_negative_examples": 1639,
+            "precision": 0.09215239335721263,
+            "recall": 0.3412379421221865,
+            "f1": 0.1451158020681993,
+            "no_button_examples": 128418,
+            "no_button_false_positive_examples": 8175,
+            "no_button_false_positive_rate": 0.06365930009811709
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.16602343639330355,
+            "scale_ratio": 1.4247669613084004,
+            "num_values": 103832
+          },
+          "failure_count": 130867
+        },
+        "game:Stardew_Valley": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 12224,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.15526443474041726,
+            "num_examples": 2061
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.48411497730711045,
+            "num_examples": 661,
+            "predicted_examples": 1059,
+            "exact_true_positive_examples": 320,
+            "false_positive_examples": 739,
+            "false_negative_examples": 341,
+            "precision": 0.3021718602455146,
+            "recall": 0.48411497730711045,
+            "f1": 0.37209302325581395,
+            "no_button_examples": 11563,
+            "no_button_false_positive_examples": 738,
+            "no_button_false_positive_rate": 0.06382426705872178
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.16498216267227228,
+            "scale_ratio": 1.3805835560142963,
+            "num_values": 14414
+          },
+          "failure_count": 12216
+        },
+        "resolution_tier:480p": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 258600,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.07755775577557755,
+            "num_examples": 49086
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.3833829251544976,
+            "num_examples": 4369,
+            "predicted_examples": 11517,
+            "exact_true_positive_examples": 1675,
+            "false_positive_examples": 9842,
+            "false_negative_examples": 2694,
+            "precision": 0.14543717982113397,
+            "recall": 0.3833829251544976,
+            "f1": 0.2108775022031978,
+            "no_button_examples": 254231,
+            "no_button_false_positive_examples": 9617,
+            "no_button_false_positive_rate": 0.03782780227430958
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.1643765842337647,
+            "scale_ratio": 1.2421481982956055,
+            "num_values": 173242
+          },
+          "failure_count": 258538
+        },
+        "resolution_tier:original_fhd_qhd": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 61400,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.09637481072414715,
+            "num_examples": 11227
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.4061855670103093,
+            "num_examples": 4365,
+            "predicted_examples": 6727,
+            "exact_true_positive_examples": 1773,
+            "false_positive_examples": 4954,
+            "false_negative_examples": 2592,
+            "precision": 0.26356473911104505,
+            "recall": 0.4061855670103093,
+            "f1": 0.31968986657050125,
+            "no_button_examples": 57035,
+            "no_button_false_positive_examples": 4782,
+            "no_button_false_positive_rate": 0.08384325414219339
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.14605880953168746,
+            "scale_ratio": 2.7184417759445867,
+            "num_values": 67002
+          },
+          "failure_count": 61391
+        },
+        "source_id:d2e_480p": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 258600,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.07755775577557755,
+            "num_examples": 49086
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.3833829251544976,
+            "num_examples": 4369,
+            "predicted_examples": 11517,
+            "exact_true_positive_examples": 1675,
+            "false_positive_examples": 9842,
+            "false_negative_examples": 2694,
+            "precision": 0.14543717982113397,
+            "recall": 0.3833829251544976,
+            "f1": 0.2108775022031978,
+            "no_button_examples": 254231,
+            "no_button_false_positive_examples": 9617,
+            "no_button_false_positive_rate": 0.03782780227430958
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.1643765842337647,
+            "scale_ratio": 1.2421481982956055,
+            "num_values": 173242
+          },
+          "failure_count": 258538
+        },
+        "source_id:d2e_original": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 61400,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.09637481072414715,
+            "num_examples": 11227
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.4061855670103093,
+            "num_examples": 4365,
+            "predicted_examples": 6727,
+            "exact_true_positive_examples": 1773,
+            "false_positive_examples": 4954,
+            "false_negative_examples": 2592,
+            "precision": 0.26356473911104505,
+            "recall": 0.4061855670103093,
+            "f1": 0.31968986657050125,
+            "no_button_examples": 57035,
+            "no_button_false_positive_examples": 4782,
+            "no_button_false_positive_rate": 0.08384325414219339
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.14605880953168746,
+            "scale_ratio": 2.7184417759445867,
+            "num_values": 67002
+          },
+          "failure_count": 61391
+        },
+        "split_heldout_game:heldout_game": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 144695,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.09180224789750845,
+            "num_examples": 25446
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.39609483960948394,
+            "num_examples": 5019,
+            "predicted_examples": 13085,
+            "exact_true_positive_examples": 1988,
+            "false_positive_examples": 11097,
+            "false_negative_examples": 3031,
+            "precision": 0.1519296904852885,
+            "recall": 0.39609483960948394,
+            "f1": 0.21961997348652232,
+            "no_button_examples": 139676,
+            "no_button_false_positive_examples": 10838,
+            "no_button_false_positive_rate": 0.07759386007617629
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.15460553879867256,
+            "scale_ratio": 1.2508213553222636,
+            "num_values": 120606
+          },
+          "failure_count": 144654
+        },
+        "split_heldout_game:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 175305,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0732210973126452,
+            "num_examples": 34867
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.39300134589502017,
+            "num_examples": 3715,
+            "predicted_examples": 5159,
+            "exact_true_positive_examples": 1460,
+            "false_positive_examples": 3699,
+            "false_negative_examples": 2255,
+            "precision": 0.2830005815080442,
+            "recall": 0.39300134589502017,
+            "f1": 0.32905116069416274,
+            "no_button_examples": 171590,
+            "no_button_false_positive_examples": 3561,
+            "no_button_false_positive_rate": 0.02075295763156361
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.1537387552128492,
+            "scale_ratio": 1.42961305073173,
+            "num_values": 119638
+          },
+          "failure_count": 175275
+        },
+        "split_heldout_recording:heldout_recording": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 85542,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.10932663668749636,
+            "num_examples": 17123
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.38931110566315275,
+            "num_examples": 4079,
+            "predicted_examples": 6593,
+            "exact_true_positive_examples": 1588,
+            "false_positive_examples": 5005,
+            "false_negative_examples": 2491,
+            "precision": 0.2408615197937206,
+            "recall": 0.38931110566315275,
+            "f1": 0.29760119940029983,
+            "no_button_examples": 81463,
+            "no_button_false_positive_examples": 4822,
+            "no_button_false_positive_rate": 0.05919251684813965
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.1426727175364288,
+            "scale_ratio": 1.8203739399550989,
+            "num_values": 89352
+          },
+          "failure_count": 85523
+        },
+        "split_heldout_recording:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 234458,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.06985413290113453,
+            "num_examples": 43190
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.3995703544575725,
+            "num_examples": 4655,
+            "predicted_examples": 11651,
+            "exact_true_positive_examples": 1860,
+            "false_positive_examples": 9791,
+            "false_negative_examples": 2795,
+            "precision": 0.15964294910308127,
+            "recall": 0.3995703544575725,
+            "f1": 0.22813688212927757,
+            "no_button_examples": 229803,
+            "no_button_false_positive_examples": 9577,
+            "no_button_false_positive_rate": 0.04167482582907969
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.16135644750883943,
+            "scale_ratio": 1.2738077742461134,
+            "num_values": 150892
+          },
+          "failure_count": 234406
+        },
+        "split_temporal:heldout_temporal": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 156284,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.05977777045072373,
+            "num_examples": 30329
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.4240647682858738,
+            "num_examples": 3582,
+            "predicted_examples": 5750,
+            "exact_true_positive_examples": 1519,
+            "false_positive_examples": 4231,
+            "false_negative_examples": 2063,
+            "precision": 0.26417391304347826,
+            "recall": 0.4240647682858738,
+            "f1": 0.32554650664380624,
+            "no_button_examples": 152702,
+            "no_button_false_positive_examples": 4133,
+            "no_button_false_positive_rate": 0.027065788267344237
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.154013534742423,
+            "scale_ratio": 1.0807910238745173,
+            "num_values": 95104
+          },
+          "failure_count": 156256
+        },
+        "split_temporal:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 163716,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.1025880469583778,
+            "num_examples": 29984
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.37441770186335405,
+            "num_examples": 5152,
+            "predicted_examples": 12494,
+            "exact_true_positive_examples": 1929,
+            "false_positive_examples": 10565,
+            "false_negative_examples": 3223,
+            "precision": 0.15439410917240276,
+            "recall": 0.37441770186335405,
+            "f1": 0.2186331179870792,
+            "no_button_examples": 158564,
+            "no_button_false_positive_examples": 10266,
+            "no_button_false_positive_rate": 0.06474357357281603
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.15060924012338175,
+            "scale_ratio": 1.0288734804529565,
+            "num_values": 145140
+          },
+          "failure_count": 163673
+        }
+      },
+      "noop": {
+        "all": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 320000,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 60313
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 8734,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 8734,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 311266,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 155831
+        },
+        "eval_tag:heldout_game": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 144695,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 25446
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5019,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 5019,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 139676,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 72450
+        },
+        "eval_tag:heldout_recording": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 85542,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 17123
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4079,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4079,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 81463,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 52492
+        },
+        "eval_tag:temporal": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 156284,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 30329
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 3582,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 3582,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 152702,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 69437
+        },
+        "game:Apex_Legends": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 31797,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 7109
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 550,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 550,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 31247,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 20548
+        },
+        "game:Battlefield_6_Open_Beta": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 20592,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5346
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 567,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 567,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 20025,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 16180
+        },
+        "game:Brotato": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 13473,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2236
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 200,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 200,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 13273,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 5160
+        },
+        "game:Cyberpunk_2077": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 7321,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 997
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 34,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 34,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 7287,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 2510
+        },
+        "game:Dinkum": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 5936,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1010
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 192,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 192,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 5744,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 2753
+        },
+        "game:Eternal_Return": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 13789,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1206
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2531,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 2531,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 11258,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 8941
+        },
+        "game:Euro_Truck_Simulator_2": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 55272,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 10215
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 49,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 49,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 55223,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 11010
+        },
+        "game:Grounded": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 8927,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1896
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 375,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 375,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 8552,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 6030
+        },
+        "game:Monster_Hunter_Wilds": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 11849,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2344
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 587,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 587,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 11262,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 5539
+        },
+        "game:Raft": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 7914,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1653
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 500,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 500,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 7414,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 5279
+        },
+        "game:Rainbow_Six": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 130906,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 24240
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2488,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 2488,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 128418,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 63509
+        },
+        "game:Stardew_Valley": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 12224,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2061
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 661,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 661,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 11563,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 8372
+        },
+        "resolution_tier:480p": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 258600,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 49086
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4369,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4369,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 254231,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 116637
+        },
+        "resolution_tier:original_fhd_qhd": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 61400,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 11227
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4365,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4365,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 57035,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 39194
+        },
+        "source_id:d2e_480p": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 258600,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 49086
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4369,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4369,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 254231,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 116637
+        },
+        "source_id:d2e_original": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 61400,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 11227
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4365,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4365,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 57035,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 39194
+        },
+        "split_heldout_game:heldout_game": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 144695,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 25446
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5019,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 5019,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 139676,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 72450
+        },
+        "split_heldout_game:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 175305,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 34867
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 3715,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 3715,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 171590,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 83381
+        },
+        "split_heldout_recording:heldout_recording": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 85542,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 17123
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4079,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4079,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 81463,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 52492
+        },
+        "split_heldout_recording:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 234458,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 43190
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4655,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4655,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 229803,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 103339
+        },
+        "split_temporal:heldout_temporal": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 156284,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 30329
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 3582,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 3582,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 152702,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 69437
+        },
+        "split_temporal:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 163716,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 29984
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5152,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 5152,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 158564,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 86394
+        }
+      },
+      "global_majority": {
+        "all": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 320000,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 60313
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 8734,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 8734,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 311266,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 155831
+        },
+        "eval_tag:heldout_game": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 144695,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 25446
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5019,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 5019,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 139676,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 72450
+        },
+        "eval_tag:heldout_recording": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 85542,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 17123
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4079,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4079,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 81463,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 52492
+        },
+        "eval_tag:temporal": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 156284,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 30329
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 3582,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 3582,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 152702,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 69437
+        },
+        "game:Apex_Legends": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 31797,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 7109
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 550,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 550,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 31247,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 20548
+        },
+        "game:Battlefield_6_Open_Beta": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 20592,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5346
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 567,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 567,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 20025,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 16180
+        },
+        "game:Brotato": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 13473,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2236
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 200,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 200,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 13273,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 5160
+        },
+        "game:Cyberpunk_2077": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 7321,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 997
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 34,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 34,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 7287,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 2510
+        },
+        "game:Dinkum": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 5936,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1010
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 192,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 192,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 5744,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 2753
+        },
+        "game:Eternal_Return": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 13789,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1206
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2531,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 2531,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 11258,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 8941
+        },
+        "game:Euro_Truck_Simulator_2": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 55272,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 10215
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 49,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 49,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 55223,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 11010
+        },
+        "game:Grounded": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 8927,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1896
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 375,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 375,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 8552,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 6030
+        },
+        "game:Monster_Hunter_Wilds": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 11849,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2344
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 587,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 587,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 11262,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 5539
+        },
+        "game:Raft": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 7914,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1653
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 500,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 500,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 7414,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 5279
+        },
+        "game:Rainbow_Six": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 130906,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 24240
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2488,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 2488,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 128418,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 63509
+        },
+        "game:Stardew_Valley": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 12224,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2061
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 661,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 661,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 11563,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 8372
+        },
+        "resolution_tier:480p": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 258600,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 49086
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4369,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4369,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 254231,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 116637
+        },
+        "resolution_tier:original_fhd_qhd": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 61400,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 11227
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4365,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4365,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 57035,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 39194
+        },
+        "source_id:d2e_480p": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 258600,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 49086
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4369,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4369,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 254231,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 116637
+        },
+        "source_id:d2e_original": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 61400,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 11227
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4365,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4365,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 57035,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 39194
+        },
+        "split_heldout_game:heldout_game": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 144695,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 25446
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5019,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 5019,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 139676,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 72450
+        },
+        "split_heldout_game:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 175305,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 34867
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 3715,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 3715,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 171590,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 83381
+        },
+        "split_heldout_recording:heldout_recording": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 85542,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 17123
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4079,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4079,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 81463,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 52492
+        },
+        "split_heldout_recording:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 234458,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 43190
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4655,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4655,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 229803,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 103339
+        },
+        "split_temporal:heldout_temporal": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 156284,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 30329
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 3582,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 3582,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 152702,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 69437
+        },
+        "split_temporal:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 163716,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 29984
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5152,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 5152,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 158564,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 86394
+        }
+      },
+      "last_seen_train": {
+        "all": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 320000,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.007129474574304047,
+            "num_examples": 60313
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.010075566750629723,
+            "num_examples": 8734,
+            "predicted_examples": 2575,
+            "exact_true_positive_examples": 88,
+            "false_positive_examples": 2487,
+            "false_negative_examples": 8646,
+            "precision": 0.0341747572815534,
+            "recall": 0.010075566750629723,
+            "f1": 0.015562826067733664,
+            "no_button_examples": 311266,
+            "no_button_false_positive_examples": 2399,
+            "no_button_false_positive_rate": 0.007707234326910103
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.01828134800695884,
+            "scale_ratio": 3.3631786762522267,
+            "num_values": 83274
+          },
+          "failure_count": 193252
+        },
+        "eval_tag:heldout_game": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 144695,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 25446
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5019,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 5019,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 139676,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 72450
+        },
+        "eval_tag:heldout_recording": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 85542,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.020673947322315017,
+            "num_examples": 17123
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4079,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4079,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 81463,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.012920322970959545,
+            "scale_ratio": 4.64108645077934,
+            "num_values": 33680
+          },
+          "failure_count": 67244
+        },
+        "eval_tag:temporal": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 156284,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.004912789739193511,
+            "num_examples": 30329
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.024567280848687884,
+            "num_examples": 3582,
+            "predicted_examples": 2575,
+            "exact_true_positive_examples": 88,
+            "false_positive_examples": 2487,
+            "false_negative_examples": 3494,
+            "precision": 0.0341747572815534,
+            "recall": 0.024567280848687884,
+            "f1": 0.02858535000812084,
+            "no_button_examples": 152702,
+            "no_button_false_positive_examples": 2399,
+            "no_button_false_positive_rate": 0.01571033778208537
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.021461934887928254,
+            "scale_ratio": 2.4867397827962474,
+            "num_values": 56834
+          },
+          "failure_count": 94710
+        },
+        "game:Apex_Legends": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 31797,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.06048670699113799,
+            "num_examples": 7109
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 550,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 550,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 31247,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.008938248802773652,
+            "scale_ratio": 4.965688515002511,
+            "num_values": 35822
+          },
+          "failure_count": 31797
+        },
+        "game:Battlefield_6_Open_Beta": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 20592,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5346
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 567,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 567,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 20025,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 16180
+        },
+        "game:Brotato": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 13473,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2236
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 200,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 200,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 13273,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.04521893427854161,
+            "scale_ratio": 1.0620828604250652,
+            "num_values": 2740
+          },
+          "failure_count": 9217
+        },
+        "game:Cyberpunk_2077": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 7321,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 997
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 34,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 34,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 7287,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": -0.0560894084003367,
+            "scale_ratio": 1.7198123945719437,
+            "num_values": 2484
+          },
+          "failure_count": 5924
+        },
+        "game:Dinkum": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 5936,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1010
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 192,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 192,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 5744,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": -0.017301002625965196,
+            "scale_ratio": 2.1371767693739296,
+            "num_values": 3826
+          },
+          "failure_count": 5936
+        },
+        "game:Eternal_Return": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 13789,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1206
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2531,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 2531,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 11258,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 8941
+        },
+        "game:Euro_Truck_Simulator_2": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 55272,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 10215
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 49,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 49,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 55223,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 11010
+        },
+        "game:Grounded": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 8927,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1896
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 375,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 375,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 8552,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.03375406766524972,
+            "scale_ratio": 1.322098265264263,
+            "num_values": 10346
+          },
+          "failure_count": 8927
+        },
+        "game:Monster_Hunter_Wilds": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 11849,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2344
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 587,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 587,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 11262,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": -0.02512733993511218,
+            "scale_ratio": 1.4879394846486222,
+            "num_values": 7118
+          },
+          "failure_count": 11849
+        },
+        "game:Raft": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 7914,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 1653
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 500,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 500,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 7414,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.011754145071385549,
+            "scale_ratio": 1.0593937775105449,
+            "num_values": 8536
+          },
+          "failure_count": 7914
+        },
+        "game:Rainbow_Six": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 130906,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 24240
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2488,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 2488,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 128418,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 63509
+        },
+        "game:Stardew_Valley": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 12224,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 2061
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.13313161875945537,
+            "num_examples": 661,
+            "predicted_examples": 2575,
+            "exact_true_positive_examples": 88,
+            "false_positive_examples": 2487,
+            "false_negative_examples": 573,
+            "precision": 0.0341747572815534,
+            "recall": 0.13313161875945537,
+            "f1": 0.054388133498145856,
+            "no_button_examples": 11563,
+            "no_button_false_positive_examples": 2399,
+            "no_button_false_positive_rate": 0.20747210931419183
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.017211394382065107,
+            "scale_ratio": 6.420912397641972,
+            "num_values": 12402
+          },
+          "failure_count": 12048
+        },
+        "resolution_tier:480p": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 258600,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.008760135272786539,
+            "num_examples": 49086
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4369,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4369,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 254231,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.01858532037716508,
+            "scale_ratio": 3.6074454293095126,
+            "num_values": 63870
+          },
+          "failure_count": 141168
+        },
+        "resolution_tier:original_fhd_qhd": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 61400,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 11227
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.02016036655211913,
+            "num_examples": 4365,
+            "predicted_examples": 2575,
+            "exact_true_positive_examples": 88,
+            "false_positive_examples": 2487,
+            "false_negative_examples": 4277,
+            "precision": 0.0341747572815534,
+            "recall": 0.02016036655211913,
+            "f1": 0.025360230547550433,
+            "no_button_examples": 57035,
+            "no_button_false_positive_examples": 2399,
+            "no_button_false_positive_rate": 0.042061891820811784
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": -0.008219452406091605,
+            "scale_ratio": 1.1577108813861712,
+            "num_values": 19404
+          },
+          "failure_count": 52084
+        },
+        "source_id:d2e_480p": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 258600,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.008760135272786539,
+            "num_examples": 49086
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4369,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4369,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 254231,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.01858532037716508,
+            "scale_ratio": 3.6074454293095126,
+            "num_values": 63870
+          },
+          "failure_count": 141168
+        },
+        "source_id:d2e_original": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 61400,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 11227
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.02016036655211913,
+            "num_examples": 4365,
+            "predicted_examples": 2575,
+            "exact_true_positive_examples": 88,
+            "false_positive_examples": 2487,
+            "false_negative_examples": 4277,
+            "precision": 0.0341747572815534,
+            "recall": 0.02016036655211913,
+            "f1": 0.025360230547550433,
+            "no_button_examples": 57035,
+            "no_button_false_positive_examples": 2399,
+            "no_button_false_positive_rate": 0.042061891820811784
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": -0.008219452406091605,
+            "scale_ratio": 1.1577108813861712,
+            "num_values": 19404
+          },
+          "failure_count": 52084
+        },
+        "split_heldout_game:heldout_game": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 144695,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 25446
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5019,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 5019,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 139676,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "absent",
+            "pearson": null,
+            "scale_ratio": null,
+            "num_values": 0
+          },
+          "failure_count": 72450
+        },
+        "split_heldout_game:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 175305,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.01233257808242751,
+            "num_examples": 34867
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.023687752355316286,
+            "num_examples": 3715,
+            "predicted_examples": 2575,
+            "exact_true_positive_examples": 88,
+            "false_positive_examples": 2487,
+            "false_negative_examples": 3627,
+            "precision": 0.0341747572815534,
+            "recall": 0.023687752355316286,
+            "f1": 0.027980922098569158,
+            "no_button_examples": 171590,
+            "no_button_false_positive_examples": 2399,
+            "no_button_false_positive_rate": 0.013981001223847543
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.01828134800695884,
+            "scale_ratio": 3.3631786762522267,
+            "num_values": 83274
+          },
+          "failure_count": 120802
+        },
+        "split_heldout_recording:heldout_recording": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 85542,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.020673947322315017,
+            "num_examples": 17123
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 4079,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 4079,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 81463,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.012920322970959545,
+            "scale_ratio": 4.64108645077934,
+            "num_values": 33680
+          },
+          "failure_count": 67244
+        },
+        "split_heldout_recording:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 234458,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.0017596665894883076,
+            "num_examples": 43190
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.01890440386680988,
+            "num_examples": 4655,
+            "predicted_examples": 2575,
+            "exact_true_positive_examples": 88,
+            "false_positive_examples": 2487,
+            "false_negative_examples": 4567,
+            "precision": 0.0341747572815534,
+            "recall": 0.01890440386680988,
+            "f1": 0.02434301521438451,
+            "no_button_examples": 229803,
+            "no_button_false_positive_examples": 2399,
+            "no_button_false_positive_rate": 0.010439376335382914
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.012485899346232001,
+            "scale_ratio": 1.891945791977357,
+            "num_values": 49594
+          },
+          "failure_count": 126008
+        },
+        "split_temporal:heldout_temporal": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 156284,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.004912789739193511,
+            "num_examples": 30329
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.024567280848687884,
+            "num_examples": 3582,
+            "predicted_examples": 2575,
+            "exact_true_positive_examples": 88,
+            "false_positive_examples": 2487,
+            "false_negative_examples": 3494,
+            "precision": 0.0341747572815534,
+            "recall": 0.024567280848687884,
+            "f1": 0.02858535000812084,
+            "no_button_examples": 152702,
+            "no_button_false_positive_examples": 2399,
+            "no_button_false_positive_rate": 0.01571033778208537
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.021461934887928254,
+            "scale_ratio": 2.4867397827962474,
+            "num_values": 56834
+          },
+          "failure_count": 94710
+        },
+        "split_temporal:train": {
+          "schema": "metrics.v1",
+          "stage": "fdm_eval",
+          "num_examples": 163716,
+          "keyboard": {
+            "status": "computed",
+            "accuracy": 0.009371664887940235,
+            "num_examples": 29984
+          },
+          "mouse_button": {
+            "status": "computed",
+            "accuracy": 0.0,
+            "num_examples": 5152,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 5152,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 158564,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          },
+          "mouse_move": {
+            "status": "computed",
+            "pearson": 0.009882607716933266,
+            "scale_ratio": 4.473754820405604,
+            "num_values": 26440
+          },
+          "failure_count": 98542
+        }
+      }
+    },
+    "cluster_count": 22
+  },
+  "statistical_comparison": {
+    "schema": "stat_comparison.v1",
+    "reference_baseline": "noop",
+    "correction": "holm_bonferroni",
+    "cluster_key": "recording_id",
+    "comparisons": [
+      {
+        "model": "streaming_idm_d2e_full_event_state_duration_counted_hierarchical_prefix320k",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.09222380009573512,
+        "ci": [
+          0.0635561927400819,
+          0.12943445887156418
+        ],
+        "p_value": 0.0,
+        "num_clusters": 22,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 22,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "keyboard_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.005567683545194535,
+        "ci": [
+          0.0,
+          0.013971611305943632
+        ],
+        "p_value": 0.125,
+        "num_clusters": 22,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "streaming_idm_d2e_full_event_state_duration_counted_hierarchical_prefix320k",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.4103891749412647,
+        "ci": [
+          0.36798914584413567,
+          0.44656694945359554
+        ],
+        "p_value": 0.0,
+        "num_clusters": 21,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 21,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_accuracy",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.023809523809523808,
+        "ci": [
+          0.0,
+          0.07142857142857142
+        ],
+        "p_value": 0.357,
+        "num_clusters": 21,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "streaming_idm_d2e_full_event_state_duration_counted_hierarchical_prefix320k",
+        "reference": "noop",
+        "endpoint": "mouse_button_precision",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_precision",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_precision",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "streaming_idm_d2e_full_event_state_duration_counted_hierarchical_prefix320k",
+        "reference": "noop",
+        "endpoint": "mouse_button_f1",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.3437855668652098,
+        "ci": [
+          0.2806048517322243,
+          0.40173361583425804
+        ],
+        "p_value": 0.0,
+        "num_clusters": 21,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "mouse_button_f1",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 21,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "mouse_button_f1",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0030465112253552818,
+        "ci": [
+          0.0,
+          0.009139533676065844
+        ],
+        "p_value": 0.3665,
+        "num_clusters": 21,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "streaming_idm_d2e_full_event_state_duration_counted_hierarchical_prefix320k",
+        "reference": "noop",
+        "endpoint": "no_button_false_positive_rate",
+        "direction": "lower",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": -0.04231513680302797,
+        "ci": [
+          -0.06911004494435043,
+          -0.021465143194210543
+        ],
+        "p_value": 1.0,
+        "num_clusters": 22,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "noop",
+        "endpoint": "no_button_false_positive_rate",
+        "direction": "lower",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 22,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "last_seen_train",
+        "reference": "noop",
+        "endpoint": "no_button_false_positive_rate",
+        "direction": "lower",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": -0.045454545454545456,
+        "ci": [
+          -0.13636363636363635,
+          0.0
+        ],
+        "p_value": 1.0,
+        "num_clusters": 22,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "streaming_idm_d2e_full_event_state_duration_counted_hierarchical_prefix320k",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "computed",
+        "delta": 0.19476596797098158,
+        "ci": [
+          0.15905670945455766,
+          0.2334138473524232
+        ],
+        "p_value": 0.0,
+        "num_clusters": 13,
+        "p_adjusted_holm": 0.0,
+        "reject_holm_0_05": true
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_pearson",
+        "direction": "higher",
+        "min_effect": 0.05,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "streaming_idm_d2e_full_event_state_duration_counted_hierarchical_prefix320k",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "computed",
+        "delta": -0.20375157440827374,
+        "ci": [
+          -0.7263164224886816,
+          0.4070192673847255
+        ],
+        "p_value": 1.0,
+        "num_clusters": 13,
+        "p_adjusted_holm": 1.0,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "noop",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      },
+      {
+        "model": "global_majority",
+        "reference": "last_seen_train",
+        "endpoint": "mouse_move_scale_ratio_distance",
+        "direction": "lower",
+        "min_effect": 0.1,
+        "status": "no_shared_clusters",
+        "delta": null,
+        "ci": [
+          null,
+          null
+        ],
+        "p_value": null,
+        "num_clusters": 0,
+        "p_adjusted_holm": null,
+        "reject_holm_0_05": false
+      }
+    ]
+  },
+  "convergence_report": {
+    "schema": "streaming_convergence_report.v1",
+    "score_mode": "composite_primary",
+    "direction": "higher",
+    "eval_interval_epochs": 0,
+    "patience": 3,
+    "min_relative_improvement": 0.01,
+    "plateau_met": false,
+    "num_validation_checkpoints": 0,
+    "recent_relative_improvements": [],
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 70.86675803269011,
+        "validation_score": null,
+        "validation_examples": null
+      },
+      {
+        "epoch": 2,
+        "train_loss": 56.93301323999332,
+        "validation_score": null,
+        "validation_examples": null
+      },
+      {
+        "epoch": 3,
+        "train_loss": 51.45741223685349,
+        "validation_score": null,
+        "validation_examples": null
+      },
+      {
+        "epoch": 4,
+        "train_loss": 47.499195871473866,
+        "validation_score": null,
+        "validation_examples": null
+      },
+      {
+        "epoch": 5,
+        "train_loss": 44.235785254949256,
+        "validation_score": null,
+        "validation_examples": null
+      },
+      {
+        "epoch": 6,
+        "train_loss": 41.86719602270971,
+        "validation_score": null,
+        "validation_examples": null
+      }
+    ],
+    "report_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/convergence_report.json"
+  },
+  "history_tail": [
+    {
+      "epoch": 2,
+      "loss": 56.93301323999332,
+      "loss_sum": 18235610.79296875,
+      "batches": 79,
+      "examples": 320000,
+      "training_cache": true,
+      "training_cache_shard_by_path": false
+    },
+    {
+      "epoch": 3,
+      "loss": 51.45741223685349,
+      "loss_sum": 16475629.810546875,
+      "batches": 79,
+      "examples": 320000,
+      "training_cache": true,
+      "training_cache_shard_by_path": false
+    },
+    {
+      "epoch": 4,
+      "loss": 47.499195871473866,
+      "loss_sum": 15221956.798828125,
+      "batches": 79,
+      "examples": 320000,
+      "training_cache": true,
+      "training_cache_shard_by_path": false
+    },
+    {
+      "epoch": 5,
+      "loss": 44.235785254949256,
+      "loss_sum": 14175559.529296875,
+      "batches": 79,
+      "examples": 320000,
+      "training_cache": true,
+      "training_cache_shard_by_path": false
+    },
+    {
+      "epoch": 6,
+      "loss": 41.86719602270971,
+      "loss_sum": 13418764.68359375,
+      "batches": 79,
+      "examples": 320000,
+      "training_cache": true,
+      "training_cache_shard_by_path": false
+    }
+  ],
+  "device": "cuda",
+  "stats_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/streaming_stats.json",
+  "predictions_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/predictions.jsonl",
+  "prediction_resume": {
+    "enabled": true,
+    "existing_rows": 0,
+    "write_mode": "w",
+    "pseudolabel_validation": true,
+    "closed_loop_state_context": {
+      "enabled": false,
+      "source": null,
+      "seed_from_train": false,
+      "seed_rows": 0,
+      "seed_from_first_target_prior": false,
+      "target_prior_seed_recordings": 0
+    }
+  }
+}

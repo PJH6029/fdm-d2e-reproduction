@@ -1,0 +1,251 @@
+{
+  "all_metrics": {
+    "keyboard_accuracy": 0.08980619058227117,
+    "mouse_button_accuracy": 0.15072486920404168,
+    "no_button_false_positive_rate": 0.04625946939273804,
+    "pearson_x": 0.1206131625390987,
+    "pearson_y": 0.027686269029742864,
+    "rows": 320000,
+    "scale_ratio_x": 2.1258848162070993,
+    "scale_ratio_y": 1.227204339810557,
+    "strict_mouse_button_f1": 0.2556156868559567
+  },
+  "claim_boundary": "Negative G005 prefix diagnostic only; not G005 completion evidence and not a paper-target win.",
+  "commit": "bbae584",
+  "count_preservation_stats": {
+    "collapsed_keyboard_classes": 413,
+    "counted_keyboard_classes": 499,
+    "duplicate_counted_classes": 91,
+    "duplicate_counted_rows": 15711,
+    "top_duplicate_counted_classes": [
+      {
+        "count": 3963,
+        "tokens": [
+          "KEY_PRESS_87",
+          "KEY_PRESS_87"
+        ]
+      },
+      {
+        "count": 2247,
+        "tokens": [
+          "KEY_PRESS_38",
+          "KEY_PRESS_38"
+        ]
+      },
+      {
+        "count": 1914,
+        "tokens": [
+          "KEY_PRESS_68",
+          "KEY_PRESS_68"
+        ]
+      },
+      {
+        "count": 1676,
+        "tokens": [
+          "KEY_PRESS_65",
+          "KEY_PRESS_65"
+        ]
+      },
+      {
+        "count": 1619,
+        "tokens": [
+          "KEY_PRESS_83",
+          "KEY_PRESS_83"
+        ]
+      },
+      {
+        "count": 1289,
+        "tokens": [
+          "KEY_PRESS_160",
+          "KEY_PRESS_160"
+        ]
+      },
+      {
+        "count": 597,
+        "tokens": [
+          "KEY_PRESS_32",
+          "KEY_PRESS_32"
+        ]
+      },
+      {
+        "count": 578,
+        "tokens": [
+          "KEY_PRESS_40",
+          "KEY_PRESS_40"
+        ]
+      },
+      {
+        "count": 509,
+        "tokens": [
+          "KEY_PRESS_39",
+          "KEY_PRESS_39"
+        ]
+      },
+      {
+        "count": 362,
+        "tokens": [
+          "KEY_PRESS_37",
+          "KEY_PRESS_37"
+        ]
+      },
+      {
+        "count": 151,
+        "tokens": [
+          "KEY_PRESS_82",
+          "KEY_PRESS_82"
+        ]
+      },
+      {
+        "count": 123,
+        "tokens": [
+          "KEY_PRESS_69",
+          "KEY_PRESS_69"
+        ]
+      },
+      {
+        "count": 90,
+        "tokens": [
+          "KEY_PRESS_9",
+          "KEY_PRESS_9"
+        ]
+      },
+      {
+        "count": 79,
+        "tokens": [
+          "KEY_PRESS_65",
+          "KEY_PRESS_65",
+          "KEY_PRESS_87",
+          "KEY_PRESS_87"
+        ]
+      },
+      {
+        "count": 70,
+        "tokens": [
+          "KEY_PRESS_162",
+          "KEY_PRESS_162"
+        ]
+      },
+      {
+        "count": 66,
+        "tokens": [
+          "KEY_PRESS_160",
+          "KEY_PRESS_160",
+          "KEY_PRESS_87",
+          "KEY_PRESS_87"
+        ]
+      },
+      {
+        "count": 30,
+        "tokens": [
+          "KEY_PRESS_70",
+          "KEY_PRESS_70"
+        ]
+      },
+      {
+        "count": 29,
+        "tokens": [
+          "KEY_PRESS_68",
+          "KEY_PRESS_68",
+          "KEY_RELEASE_68"
+        ]
+      },
+      {
+        "count": 29,
+        "tokens": [
+          "KEY_PRESS_87",
+          "KEY_PRESS_87",
+          "KEY_RELEASE_87"
+        ]
+      },
+      {
+        "count": 25,
+        "tokens": [
+          "KEY_PRESS_65",
+          "KEY_PRESS_65",
+          "KEY_RELEASE_65"
+        ]
+      }
+    ],
+    "train_examples": 320000
+  },
+  "created_at": "2026-05-28T09:53:59.255167+00:00",
+  "decision": "reject_count_preserving_hierarchical_exactset_prefix",
+  "paper_metrics_path": "artifacts/idm/g005_idm_event_state_duration_counted_hierarchical_prefix320k_paper_metrics.json",
+  "paper_targets": {
+    "keyboard_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "pearson_x": 0.796,
+    "pearson_y": 0.783
+  },
+  "prior_prefix_comparison": {
+    "event_all_full": {
+      "keyboard_accuracy": 0.20262943313604903,
+      "mouse_button_accuracy": 0.17769864671991165,
+      "pearson_x": 0.7502068587019377,
+      "pearson_y": 0.6969669280423696
+    },
+    "sequence_prior": {
+      "keyboard_accuracy": 0.009123407714406239,
+      "mouse_button_accuracy": 0.04138144649217903,
+      "pearson_x": 0.6426021753917011,
+      "pearson_y": 0.5972448437938398
+    },
+    "set_hierarchical": {
+      "keyboard_accuracy": 0.08251553495847254,
+      "mouse_button_accuracy": 0.14756849746150297,
+      "pearson_x": 0.09122707021324634,
+      "pearson_y": 0.040197530925466116
+    }
+  },
+  "reason": "Count-preserving exact-set labels slightly improve keyboard/button over collapsed hierarchical prefix but remain far below D2E paper targets and destroy motion performance; not eligible for full-corpus promotion.",
+  "reservation": {
+    "cancel_requested_after_artifact_copy": true,
+    "end_at": "2026-05-28T20:00:00+09:00",
+    "gpu_indices": [
+      0
+    ],
+    "node_id": "6",
+    "pod": "prod-rsv-jeonghunpark-20260528-7524c1",
+    "reservation_id": "rsv-jeonghunpark-20260528-7524c1",
+    "start_at": "2026-05-28T18:00:00+09:00"
+  },
+  "run_summary_path": "artifacts/idm/g005_idm_event_state_duration_counted_hierarchical_prefix320k_run_summary.json",
+  "schema": "g005_counted_hierarchical_prefix_rejection.v1",
+  "split_metrics": {
+    "eval_split:heldout_game": {
+      "keyboard_accuracy": 0.07790526435033095,
+      "mouse_button_accuracy": 0.12830099103910747,
+      "no_button_false_positive_rate": 0.07759386007617629,
+      "pearson_x": 0.1385826235658881,
+      "pearson_y": 0.05035580870467009,
+      "rows": 144695,
+      "scale_ratio_x": 1.9819724258181226,
+      "scale_ratio_y": 2.7427253573258925,
+      "strict_mouse_button_f1": 0.21961997348652232
+    },
+    "eval_split:heldout_recording": {
+      "keyboard_accuracy": 0.09786463442239493,
+      "mouse_button_accuracy": 0.1794560711758164,
+      "no_button_false_positive_rate": 0.05919251684813965,
+      "pearson_x": 0.12976258180607508,
+      "pearson_y": 0.026696690409091034,
+      "rows": 85542,
+      "scale_ratio_x": 3.153880971089686,
+      "scale_ratio_y": 2.0877858502453015,
+      "strict_mouse_button_f1": 0.29760119940029983
+    },
+    "eval_split:temporal": {
+      "keyboard_accuracy": 0.09247773366241013,
+      "mouse_button_accuracy": 0.19643293427803568,
+      "no_button_false_positive_rate": 0.027065788267344237,
+      "pearson_x": 0.11191784410095142,
+      "pearson_y": 0.022729033081761014,
+      "rows": 156284,
+      "scale_ratio_x": 1.7597839967282347,
+      "scale_ratio_y": 1.4154967109270313,
+      "strict_mouse_button_f1": 0.32554650664380624
+    }
+  },
+  "status": "rejected",
+  "strict_metrics_path": "outputs/idm_streaming_d2e_full_event_state_duration_counted_hierarchical_prefix320k/metrics.json"
+}
