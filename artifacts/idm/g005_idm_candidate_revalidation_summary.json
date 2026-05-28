@@ -61,22 +61,35 @@
       "artifacts": [
         "artifacts/idm/g005_idm_frozen_frame_embedding_dummy_compact_luma_target_sample1k_materialization_summary.json",
         "artifacts/idm/g005_idm_frozen_frame_embedding_hf_tiny_compact_luma_target_sample16_materialization_summary.json",
-        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_small_compact_luma_target_sample16_materialization_summary.json"
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_small_compact_luma_target_sample16_materialization_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_materialization_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_b512_materialization_summary.json"
       ],
       "claim_boundary": "Materialization/code-path gates only; no trained-model metric evidence.",
-      "decision": "prepared_prefix_gate_requires_gpu_for_prefix_scale_dinov2",
+      "decision": "do_not_scale_current_jsonl_materializer_without_parallel_shards_or_tensor_cache",
       "finding_codes": [
         "materializer_works_on_real_rows",
-        "hf_manual_preprocess_works_without_torchvision",
-        "dinov2_cpu_too_slow_for_prefix_scale"
+        "torchhub_dinov2_works_on_debug_gpu",
+        "single_gpu_jsonl_materialization_still_underutilizes_h200"
+      ],
+      "gpu_monitor_artifacts": [
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_gpu_monitor.csv",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_b512_gpu_monitor.csv"
       ],
       "name": "frozen_frame_embedding_materialization_gates",
       "rows": {
-        "dinov2_small_compact_luma": 16,
+        "dinov2_small_compact_luma_cpu": 16,
+        "dinov2_torchhub_gpu_b128": 1024,
+        "dinov2_torchhub_gpu_b512": 1024,
         "dummy_compact_luma": 1000,
         "hf_tiny_compact_luma": 16
       },
-      "status": "pass_codepath_only"
+      "status": "pass_codepath_gpu_bottleneck_observed",
+      "timing_seconds": {
+        "dinov2_small_compact_luma_cpu_16_rows": 280.816091299057,
+        "dinov2_torchhub_gpu_b128_1024_rows": 45.7456533908844,
+        "dinov2_torchhub_gpu_b512_1024_rows": 46.3034188747406
+      }
     }
   ],
   "paper_targets": {
@@ -1025,9 +1038,10 @@
     "Do not reserve H200s for a simple NEP/label-offset branch: target autocorr at +100ms has keyboard=0.1745, mouse-button=0.0215, Pearson X/Y=0.4149/0.3862 and no nonzero shift meets paper targets on the 320k prefix.",
     "Next G005 branch must change the supervision/modeling problem, not just add causal action history: investigate teacher-assisted event decoding or per-recording latent state estimation that is causal at inference and validated on prefix rows before full 4xH200.",
     "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible.",
-    "Use a reserved GPU, with expiration check and utilization monitoring, for any prefix-scale DINO frozen-frame materialization; storage CPU validated only 16 DINO rows and is too slow for 320k."
+    "Use a reserved GPU, with expiration check and utilization monitoring, for any prefix-scale DINO frozen-frame materialization; storage CPU validated only 16 DINO rows and is too slow for 320k.",
+    "Before prefix-scale frozen DINO training, replace monolithic JSONL embedding materialization with sharded/tensor-cache extraction or multi-worker GPU-fed extraction; 1,024-row debug H200 gates took ~46s and showed low nvidia-smi utilization."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779927749.8188865
+  "updated_at_epoch": 1779928522.3737934
 }

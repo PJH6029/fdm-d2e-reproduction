@@ -505,3 +505,29 @@ Storage/CPU sanity gate:
   `missing_frames=0`. CPU wall clock was about 281 seconds for only 16 rows, so
   any prefix-scale DINO materialization should run on a reserved GPU with
   utilization monitoring rather than on the storage shell.
+
+### 2026-05-28 KST — debug GPU DINO materialization gate
+
+Used the active debug reservation `rsv-jeonghunpark-20260527-1ea75c`
+(`p-debug`, pod `debug-rsv-jeonghunpark-20260527-1ea75c`, expires
+2026-05-28 11:00 KST) to validate the new `dinov2-torchhub` backend on a
+1,024-row real D2E target sample copied from the production storage shell. No
+production reservation was created.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_materialization_summary.json`
+  — `status=pass`, `rows_written=1024`, `feature_dim=2120`, elapsed `45.75s`.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_gpu_monitor.csv`
+  — debug H200 monitor evidence for the optimized batch-128 run.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_b512_materialization_summary.json`
+  — batch-512 rerun, `status=pass`, elapsed `46.30s`.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_b512_gpu_monitor.csv`
+  — debug H200 monitor evidence for batch 512.
+
+Finding: torchhub DINO now runs on the GPU pod without transformers/torchvision,
+but the current JSONL materializer is still too low-throughput and too low-util
+for prefix/full scale. Batch 512 did not improve wall-clock versus batch 128.
+Do not launch full 320k train+target materialization with this monolithic path.
+Next implementation should shard/parallelize extraction and/or write tensor-cache
+features directly before any larger H200 reservation.
