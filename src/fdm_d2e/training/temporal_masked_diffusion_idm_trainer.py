@@ -153,7 +153,20 @@ class _TemporalMaskedDiffusionDataset:
         )
 
 
-def _build_temporal_model(torch: Any, *, video_dim: int, vocab_size: int, max_slots: int, offsets: Sequence[int], config: dict[str, Any]) -> Any:
+def _button_class_vocab(vocab: Sequence[str]) -> list[str]:
+    return [str(token) for token in vocab if _action_family(str(token)) == "mouse_button"]
+
+
+def _build_temporal_model(
+    torch: Any,
+    *,
+    video_dim: int,
+    vocab_size: int,
+    max_slots: int,
+    offsets: Sequence[int],
+    config: dict[str, Any],
+    vocab: Sequence[str] | None = None,
+) -> Any:
     nn = torch.nn
     hidden_dim = int(config.get("hidden_dim", 256))
     layers = int(config.get("transformer_layers", 4))
@@ -163,6 +176,7 @@ def _build_temporal_model(torch: Any, *, video_dim: int, vocab_size: int, max_sl
     luma_window_frames = int(config.get("luma_window_frames", 5))
     luma_window_size = int(config.get("luma_window_size", 16))
     luma_window_dim = max(0, luma_window_frames * luma_window_size * luma_window_size)
+    button_vocab = _button_class_vocab(vocab or [])
 
     class CompactLumaWindowEncoder(nn.Module):
         def __init__(self) -> None:
@@ -219,6 +233,8 @@ def _build_temporal_model(torch: Any, *, video_dim: int, vocab_size: int, max_sl
             self.offset_embed = nn.Embedding(len(offsets), hidden_dim)
             self.type_embed = nn.Embedding(2, hidden_dim)  # 0=video, 1=action
             self.event_auxiliary = bool(config.get("temporal_event_auxiliary", config.get("event_auxiliary", False)))
+            self.button_class_auxiliary = bool(config.get("temporal_button_class_auxiliary", False)) and bool(button_vocab)
+            self.button_class_count = len(button_vocab)
             encoder_layer = nn.TransformerEncoderLayer(
                 d_model=hidden_dim,
                 nhead=heads,
@@ -231,6 +247,7 @@ def _build_temporal_model(torch: Any, *, video_dim: int, vocab_size: int, max_sl
             self.head = nn.Linear(hidden_dim, vocab_size)
             self.key_event_head = nn.Linear(hidden_dim, 1) if self.event_auxiliary else None
             self.button_event_head = nn.Linear(hidden_dim, 1) if self.event_auxiliary else None
+            self.button_class_head = nn.Linear(hidden_dim, self.button_class_count + 1) if self.button_class_auxiliary else None
             self.token_presence_auxiliary = bool(config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False)))
             self.token_presence_head = nn.Linear(hidden_dim, vocab_size) if self.token_presence_auxiliary else None
 
@@ -264,6 +281,9 @@ def _build_temporal_model(torch: Any, *, video_dim: int, vocab_size: int, max_sl
                 pooled = action_encoded.mean(dim=2)
                 payload["key_event_logits"] = self.key_event_head(pooled).squeeze(-1)
                 payload["button_event_logits"] = self.button_event_head(pooled).squeeze(-1)
+            if self.button_class_auxiliary and self.button_class_head is not None:
+                pooled = action_encoded.mean(dim=2)
+                payload["button_class_logits"] = self.button_class_head(pooled)
             if self.token_presence_auxiliary and self.token_presence_head is not None:
                 pooled = action_encoded.mean(dim=2)
                 payload["token_presence_logits"] = self.token_presence_head(pooled)
@@ -365,6 +385,23 @@ def _temporal_event_targets(torch: Any, target_ids: Any, vocab: Sequence[str], p
     return (target_ids.unsqueeze(-1) == index_tensor.view(1, 1, 1, -1)).any(dim=(-1, -2)).float()
 
 
+def _temporal_button_class_targets(torch: Any, target_ids: Any, vocab: Sequence[str], button_vocab: Sequence[str]) -> Any:
+    """Return 0=no-button, 1..N=button action-token class per temporal row."""
+
+    if not button_vocab:
+        return torch.zeros(target_ids.shape[:2], dtype=torch.long, device=target_ids.device)
+    class_by_token = {str(token): idx + 1 for idx, token in enumerate(button_vocab)}
+    mapping = torch.zeros(len(vocab), dtype=torch.long, device=target_ids.device)
+    for token_idx, token in enumerate(vocab):
+        class_idx = class_by_token.get(str(token))
+        if class_idx is not None:
+            mapping[token_idx] = int(class_idx)
+    mapped = mapping[target_ids]
+    # D2E bins normally have at most one click transition token; max keeps the
+    # target deterministic if a rare multi-button bin appears.
+    return mapped.max(dim=2).values
+
+
 def _event_auxiliary_bce_loss(torch: Any, logits: Any, targets: Any, offset_mask: Any, *, pos_weight: float) -> Any:
     if logits is None:
         return torch.tensor(0.0, device=targets.device)
@@ -374,6 +411,26 @@ def _event_auxiliary_bce_loss(torch: Any, logits: Any, targets: Any, offset_mask
         return torch.tensor(0.0, device=targets.device)
     weight = torch.tensor(float(pos_weight), dtype=selected_logits.dtype, device=selected_logits.device)
     return torch.nn.functional.binary_cross_entropy_with_logits(selected_logits, selected_targets, pos_weight=weight)
+
+
+def _button_class_auxiliary_loss(torch: Any, logits: Any, targets: Any, offset_mask: Any, config: dict[str, Any]) -> Any:
+    if logits is None or logits.shape[-1] <= 1:
+        return torch.tensor(0.0, device=targets.device)
+    selected_logits = logits[:, offset_mask, :].reshape(-1, logits.shape[-1])
+    selected_targets = targets[:, offset_mask].reshape(-1)
+    if selected_targets.numel() == 0:
+        return torch.tensor(0.0, device=targets.device)
+    no_button_weight = float(config.get("button_class_no_button_weight", 0.05))
+    button_weight = float(config.get("button_class_button_weight", config.get("button_event_pos_weight", 16.0)))
+    weights = torch.ones(logits.shape[-1], dtype=selected_logits.dtype, device=selected_logits.device) * button_weight
+    weights[0] = no_button_weight
+    loss = torch.nn.functional.cross_entropy(selected_logits, selected_targets, weight=weights, reduction="none")
+    gamma = float(config.get("button_class_focal_gamma", 0.0) or 0.0)
+    if gamma > 0.0:
+        probs = torch.softmax(selected_logits, dim=-1)
+        pt = probs.gather(1, selected_targets.unsqueeze(1)).squeeze(1).clamp_min(1e-8)
+        loss = ((1.0 - pt) ** gamma) * loss
+    return loss.mean()
 
 
 def _token_presence_targets(torch: Any, target_ids: Any, vocab: Sequence[str], *, include_noop: bool = False) -> Any:
@@ -618,6 +675,7 @@ def _temporal_final_center_probabilities(
             corrupted = torch.where(masked, best_id, corrupted)
         wants_aux_payload = (
             bool(config.get("event_auxiliary_bias_candidates", config.get("temporal_event_auxiliary", config.get("event_auxiliary", False))))
+            or bool(config.get("button_class_bias_candidates", config.get("temporal_button_class_auxiliary", False)))
             or bool(config.get("token_presence_bias_candidates", config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False))))
         )
         if wants_aux_payload and hasattr(model, "forward_with_aux"):
@@ -629,6 +687,8 @@ def _temporal_final_center_probabilities(
             }
             if "token_presence_logits" in payload:
                 event_probabilities["token_presence"] = torch.sigmoid(payload["token_presence_logits"][:, center, :])
+            if "button_class_logits" in payload:
+                event_probabilities["button_class"] = torch.softmax(payload["button_class_logits"][:, center, :], dim=-1)
         else:
             final_logits = model(feature_tensor, corrupted)
             event_probabilities = {}
@@ -667,6 +727,8 @@ def _temporal_center_candidates(
         candidate_families = ["keyboard", "mouse_button", "mouse_move"]
     candidate_families = [str(family) for family in candidate_families]
     min_probability = float(config.get("non_noop_candidate_min_probability", 0.0))
+    button_vocab = _button_class_vocab(vocab)
+    button_class_index = {token: idx + 1 for idx, token in enumerate(button_vocab)}
     batch_candidates: list[list[dict[str, Any]]] = []
     for batch_idx in range(int(probabilities.shape[0])):
         candidates: list[dict[str, Any]] = []
@@ -687,6 +749,14 @@ def _temporal_center_candidates(
                     blend = max(0.0, min(1.0, float(config.get("token_presence_candidate_score_blend", 0.0))))
                     if blend > 0.0:
                         score = (1.0 - blend) * score + blend * presence_score
+                button_class_score = 0.0
+                if family == "mouse_button" and event_probabilities and event_probabilities.get("button_class") is not None:
+                    class_idx = button_class_index.get(token)
+                    if class_idx is not None and class_idx < int(event_probabilities["button_class"].shape[1]):
+                        button_class_score = float(event_probabilities["button_class"][batch_idx, class_idx].detach().cpu())
+                        blend = max(0.0, min(1.0, float(config.get("button_class_candidate_score_blend", 0.0))))
+                        if blend > 0.0:
+                            score = (1.0 - blend) * score + blend * button_class_score
                 retrieval_score = 0.0
                 if retrieval_priors and batch_idx < len(retrieval_priors):
                     retrieval_score = float(retrieval_priors[batch_idx].get(token, 0.0))
@@ -705,6 +775,7 @@ def _temporal_center_candidates(
                         "token_probability": token_score,
                         "retrieval_score": retrieval_score,
                         "prior_weight": prior_weight,
+                        "button_class_score": button_class_score,
                         "slot": slot_idx,
                         "token_index": token_idx,
                         "token": token,
@@ -1336,7 +1407,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     dataset = _TemporalMaskedDiffusionDataset(features=fit_features, target_ids=fit_target_ids, config={**config, "max_slots": max_slots}, vocab=vocab)
     loader = torch.utils.data.DataLoader(dataset, batch_size=int(config.get("batch_size", 64)), shuffle=True)
     device = torch.device("cuda" if torch.cuda.is_available() and not config.get("force_cpu") else "cpu")
-    model = _build_temporal_model(torch, video_dim=feature_dim, vocab_size=len(vocab), max_slots=max_slots, offsets=offsets, config=config).to(device)
+    model = _build_temporal_model(torch, video_dim=feature_dim, vocab_size=len(vocab), max_slots=max_slots, offsets=offsets, config=config, vocab=vocab).to(device)
     video_pretrain_history = _pretrain_video_encoder(model, torch, loader, config=config, device=device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=float(config.get("lr", 2e-4)), weight_decay=float(config.get("weight_decay", 0.01)))
     class_weights = _class_weights(torch, vocab, config, device=device)
@@ -1344,6 +1415,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     event_auxiliary = bool(config.get("temporal_event_auxiliary", config.get("event_auxiliary", False)))
     key_event_aux_weight = float(config.get("key_event_aux_weight", config.get("event_aux_weight", 0.0)) or 0.0)
     button_event_aux_weight = float(config.get("button_event_aux_weight", config.get("event_aux_weight", 0.0)) or 0.0)
+    button_class_auxiliary = bool(config.get("temporal_button_class_auxiliary", False))
+    button_class_aux_weight = float(config.get("button_class_aux_weight", 0.0) or 0.0)
+    button_vocab = _button_class_vocab(vocab)
     token_presence_auxiliary = bool(config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False)))
     token_presence_aux_weight = float(config.get("token_presence_aux_weight", 0.0) or 0.0)
     token_presence_pos_weights = _token_presence_pos_weights(torch, vocab, config, device=device)
@@ -1356,6 +1430,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         total_video = 0.0
         total_key_event = 0.0
         total_button_event = 0.0
+        total_button_class = 0.0
         total_token_presence = 0.0
         total_targets = 0
         total_examples = 0
@@ -1364,7 +1439,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             corrupted_ids = corrupted_ids.to(device)
             target_ids = target_ids.to(device)
             loss_mask = loss_mask.to(device)
-            if (event_auxiliary or token_presence_auxiliary) and hasattr(model, "forward_with_aux"):
+            if (event_auxiliary or button_class_auxiliary or token_presence_auxiliary) and hasattr(model, "forward_with_aux"):
                 payload = model.forward_with_aux(features, corrupted_ids)
                 logits = payload["action_logits"]
             else:
@@ -1374,6 +1449,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             video_loss = _masked_video_reconstruction_loss(model, torch, features, config=config) if video_reconstruction_aux_weight > 0.0 else torch.tensor(0.0, device=device)
             key_event_loss = torch.tensor(0.0, device=device)
             button_event_loss = torch.tensor(0.0, device=device)
+            button_class_loss = torch.tensor(0.0, device=device)
             token_presence_loss = torch.tensor(0.0, device=device)
             if event_auxiliary and (key_event_aux_weight > 0.0 or button_event_aux_weight > 0.0):
                 key_targets = _temporal_event_targets(torch, target_ids, vocab, ("KEY_",))
@@ -1391,6 +1467,15 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                     button_targets,
                     event_offset_mask,
                     pos_weight=float(config.get("button_event_pos_weight", 16.0)),
+                )
+            if button_class_auxiliary and button_class_aux_weight > 0.0 and button_vocab:
+                button_class_targets = _temporal_button_class_targets(torch, target_ids, vocab, button_vocab)
+                button_class_loss = _button_class_auxiliary_loss(
+                    torch,
+                    payload.get("button_class_logits"),
+                    button_class_targets,
+                    event_offset_mask,
+                    config,
                 )
             if token_presence_auxiliary and token_presence_aux_weight > 0.0:
                 token_presence_targets = _token_presence_targets(
@@ -1411,6 +1496,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 + video_reconstruction_aux_weight * video_loss
                 + key_event_aux_weight * key_event_loss
                 + button_event_aux_weight * button_event_loss
+                + button_class_aux_weight * button_class_loss
                 + token_presence_aux_weight * token_presence_loss
             )
             optimizer.zero_grad(set_to_none=True)
@@ -1424,6 +1510,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             total_video += float(video_loss.detach().cpu()) * batch
             total_key_event += float(key_event_loss.detach().cpu()) * batch
             total_button_event += float(button_event_loss.detach().cpu()) * batch
+            total_button_class += float(button_class_loss.detach().cpu()) * batch
             total_token_presence += float(token_presence_loss.detach().cpu()) * batch
             total_targets += count
             total_examples += batch
@@ -1434,6 +1521,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "video_reconstruction_loss": total_video / max(1, len(dataset)),
             "key_event_loss": total_key_event / max(1, total_examples),
             "button_event_loss": total_button_event / max(1, total_examples),
+            "button_class_loss": total_button_class / max(1, total_examples),
             "token_presence_loss": total_token_presence / max(1, total_examples),
             "masked_targets": total_targets,
         })
@@ -1575,6 +1663,13 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "temporal_event_auxiliary":event_auxiliary,
             "key_event_aux_weight":key_event_aux_weight,
             "button_event_aux_weight":button_event_aux_weight,
+            "temporal_button_class_auxiliary":button_class_auxiliary,
+            "button_class_aux_weight":button_class_aux_weight,
+            "button_class_vocab_size":len(button_vocab),
+            "button_class_no_button_weight":float(config.get("button_class_no_button_weight", 0.05)),
+            "button_class_button_weight":float(config.get("button_class_button_weight", config.get("button_event_pos_weight", 16.0))),
+            "button_class_focal_gamma":float(config.get("button_class_focal_gamma", 0.0) or 0.0),
+            "button_class_candidate_score_blend":float(config.get("button_class_candidate_score_blend", 0.0)),
             "key_event_pos_weight":float(config.get("key_event_pos_weight", 8.0)),
             "button_event_pos_weight":float(config.get("button_event_pos_weight", 16.0)),
             "event_auxiliary_candidate_score_blend":float(config.get("event_auxiliary_candidate_score_blend", 0.5)),

@@ -26,6 +26,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _calibrate_temporal_non_noop_budget,
     _candidate_family_diagnostics,
     _candidate_token_prior_weights,
+    _temporal_button_class_targets,
     _temporal_center_candidates,
     _target_slots,
     _token_presence_targets,
@@ -478,6 +479,40 @@ def test_temporal_candidate_token_prior_adjusts_recipe_candidate_ranking():
     assert candidates[0][1]["token"] == "MOUSE_LEFT_DOWN"
 
 
+def test_temporal_button_class_targets_map_click_tokens_to_row_classes():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "MOUSE_LEFT_DOWN", "MOUSE_RIGHT_UP"]
+    ids = torch.tensor([[[0, 2, 2], [4, 0, 2], [3, 4, 0]]], dtype=torch.long)
+    targets = _temporal_button_class_targets(torch, ids, vocab, ["MOUSE_LEFT_DOWN", "MOUSE_RIGHT_UP"])
+
+    assert targets.tolist() == [[0, 2, 2]]
+
+
+def test_temporal_button_class_biases_mouse_button_candidate_identity():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "MOUSE_LEFT_DOWN", "MOUSE_RIGHT_UP"]
+    probabilities = torch.zeros((1, 1, len(vocab)), dtype=torch.float32)
+    probabilities[:, :, 3] = 0.40
+    probabilities[:, :, 4] = 0.20
+    button_class = torch.tensor([[0.05, 0.05, 0.90]], dtype=torch.float32)
+
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={"non_noop_budget_candidates_per_row": 4, "button_class_candidate_score_blend": 0.9},
+        event_probabilities={"button_class": button_class},
+    )
+
+    assert candidates[0][0]["token"] == "MOUSE_RIGHT_UP"
+    assert candidates[0][0]["button_class_score"] == pytest.approx(0.90)
+
+
 def test_candidate_family_diagnostics_reports_exact_coverage_and_ranks():
     rows = [
         {
@@ -924,6 +959,11 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "key_event_pos_weight": 2.0,
             "button_event_pos_weight": 3.0,
             "event_auxiliary_candidate_score_blend": 0.25,
+            "temporal_button_class_auxiliary": True,
+            "button_class_aux_weight": 0.3,
+            "button_class_no_button_weight": 0.1,
+            "button_class_button_weight": 4.0,
+            "button_class_candidate_score_blend": 0.4,
             "retrieval_action_prior_enabled": True,
             "retrieval_action_prior_top_k": 2,
             "retrieval_action_prior_temperature": 0.1,
@@ -962,12 +1002,16 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["loss_weights"]["key_event_aux_weight"] == 0.2
     assert summary["loss_weights"]["button_event_aux_weight"] == 0.2
     assert summary["loss_weights"]["event_auxiliary_candidate_score_blend"] == 0.25
+    assert summary["loss_weights"]["temporal_button_class_auxiliary"] is True
+    assert summary["loss_weights"]["button_class_aux_weight"] == 0.3
+    assert summary["loss_weights"]["button_class_candidate_score_blend"] == 0.4
     assert summary["loss_weights"]["retrieval_action_prior_blend"] == 0.2
     assert summary["loss_weights"]["candidate_token_prior_correction"] is True
     assert summary["candidate_token_prior"]["status"] == "pass"
     assert summary["retrieval_action_prior"]["status"] == "pass"
     assert summary["retrieval_action_prior"]["rows"] == 8
     assert any("key_event_loss" in row and "button_event_loss" in row for row in summary["history"])
+    assert any("button_class_loss" in row for row in summary["history"])
     assert summary["non_noop_budget"]["status"] in {"pass", "skipped"}
     assert "temporal action-token sequences" in summary["recipe_alignment"]
     assert Path(summary["checkpoint_path"]).exists()
