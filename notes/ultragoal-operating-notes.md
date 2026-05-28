@@ -246,3 +246,16 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Added `src/fdm_d2e/eval/button_semantic_ranking_diagnostic.py` and `scripts/build_g005_button_semantic_ranking_diagnostic.py` to inspect prefix IDM mouse-button failures without changing training or calibration.
 - The diagnostic reports exact vs semantic overlap, predicted/ground-truth token distributions, offset sweeps, target-label-only mapping hypotheses, and examples. Claim boundary: target labels are used only for failure analysis; mappings/offsets are not valid training/calibration evidence unless revalidated without target leakage.
 - Use this on the latest relaxed-budget prefix predictions before the next recipe-faithful correction; expected question is whether target positives are near top-ranked predictions under a token mapping or temporal offset, or whether visual/action conditioning itself is insufficient.
+
+## 2026-05-28 KST — Global FDM-1 recipe course correction is binding
+
+- User issued a major global correction: keep the current renewed ultragoal/story IDs and statuses, but G005+ work must reproduce the **public FDM-1 IDM/FDM training recipe on D2E**, not choose arbitrary architectures/objectives for convenience.
+- Binding public recipe anchors from the FDM-1 technical report: video encoder/compression-style screen-video tokens; non-causal masked-diffusion IDM over masked action tokens with iterative confidence unmasking; FDM autoregressive next-action prediction over interleaved frame/action tokens; discrete key press/release and mouse movement/click tokens. Unpublished internals may be approximated only by clearly marked, recipe-faithful exploration.
+- Mission framing: D2E-trained FDM-1-shaped IDM/FDM artifacts must first beat D2E paper/released G-IDM targets. Existing renewed goals remain; old supervised/state/action-prior/heuristic branches are diagnostic only unless rebuilt behind `fdm1_recipe_alignment` gates.
+
+## 2026-05-28 KST — G005 relaxed-budget button semantic diagnostic evidence
+
+- Copied diagnostic evidence from 1×H200 diagnostic reservation `rsv-jeonghunpark-20260528-1080ce` / pod `prod-rsv-jeonghunpark-20260528-1080ce` and cancelled the reservation after artifact copy.
+- Evidence files: `artifacts/idm/g005_button_semantic_ranking_relaxed_prefix20k_h200_diagnostic.json` and `artifacts/idm/g005_button_semantic_ranking_relaxed_prefix20k_h200_reservation_context.json`.
+- Result: on 2,000 target rows, relaxed-budget masked-diffusion IDM predicted `175` mouse-button examples with no-button FPR `0.08871794871794872`, but exact TP `0`, semantic overlap `0`, and all predicted button tokens collapsed to `MOUSE_LEFT_DOWN` while ground truth included left/right/middle down/up events.
+- Offset/mapping diagnostics do not rescue the branch: best offset has semantic overlap `1`, and best target-label-only one-to-one mapping gives only `1` exact TP (`F1≈0.0089`). This confirms the next G005 branch must improve recipe-faithful button-token semantic conditioning/ranking, not merely thresholds/budget size or target-label calibration.
