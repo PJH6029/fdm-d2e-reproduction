@@ -334,7 +334,7 @@ class _TorchHubDinov2Embedder:
             "facebook/dinov2-giant": "dinov2_vitg14",
         }
         self.model_name = aliases.get(model_id, model_id)
-        self.model = torch.hub.load("facebookresearch/dinov2", self.model_name)
+        self.model = torch.hub.load("facebookresearch/dinov2", self.model_name, trust_repo=True)
         self.model.eval()
         self.model.to(self.device)
         self.embedding_dim: int | None = None
