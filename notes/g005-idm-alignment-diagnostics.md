@@ -493,3 +493,9 @@ Storage/CPU sanity gate:
 - This validates row/provenance preservation plus streaming feature override
   materialization on real D2E rows without requiring an H200 reservation or
   `ffmpeg` on the storage shell. It is not trained-model evidence.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_hf_tiny_compact_luma_target_sample16_materialization_summary.json`
+  additionally validates the `hf-vision` backend on 16 real D2E rows with
+  `hf-internal-testing/tiny-random-vit`, `hf_preprocess=manual-imagenet`,
+  `frame_source=compact-luma`, `feature_dim=1064`, and `missing_frames=0`.
+  This only proves the HF/manual-preprocess code path; it is not a candidate
+  model result and does not replace a real DINO/ViT prefix gate.
