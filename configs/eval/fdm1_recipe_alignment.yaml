@@ -1,35 +1,39 @@
 {
-  "schema": "fdm1_recipe_alignment_config.v1",
-  "recipe_manifest": "artifacts/reproducibility/fdm1_public_recipe_manifest.json",
-  "output_path": "artifacts/reproducibility/fdm1_recipe_alignment_audit.json",
   "candidate_configs": [
     {
-      "stage": "idm",
-      "path": "configs/model/idm_masked_diffusion_d2e_prefix320k.yaml"
+      "path": "configs/model/idm_masked_diffusion_d2e_prefix320k.yaml",
+      "stage": "idm"
     },
     {
-      "stage": "idm",
-      "path": "configs/model/idm_factorized_masked_diffusion_d2e_prefix20k.yaml"
+      "path": "configs/model/idm_factorized_masked_diffusion_d2e_prefix20k.yaml",
+      "stage": "idm"
     },
     {
-      "stage": "idm",
-      "path": "configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_prefix20k.yaml"
+      "path": "configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_prefix20k.yaml",
+      "stage": "idm"
     },
     {
-      "stage": "idm",
-      "path": "configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_prefix20k.yaml"
+      "path": "configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_prefix20k.yaml",
+      "stage": "idm"
     },
     {
-      "stage": "idm",
-      "path": "configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_prefix20k.yaml"
+      "path": "configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_prefix20k.yaml",
+      "stage": "idm"
     },
     {
-      "stage": "idm",
-      "path": "configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_dynamic_prefix20k.yaml"
+      "path": "configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_dynamic_prefix20k.yaml",
+      "stage": "idm"
     },
     {
-      "stage": "fdm",
-      "path": "configs/model/fdm_interleaved_autoregressive_d2e_scaffold.yaml"
+      "path": "configs/model/fdm_interleaved_autoregressive_d2e_scaffold.yaml",
+      "stage": "fdm"
+    },
+    {
+      "path": "configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_joint_prefix20k.yaml",
+      "stage": "idm"
     }
-  ]
+  ],
+  "output_path": "artifacts/reproducibility/fdm1_recipe_alignment_audit.json",
+  "recipe_manifest": "artifacts/reproducibility/fdm1_public_recipe_manifest.json",
+  "schema": "fdm1_recipe_alignment_config.v1"
 }

@@ -162,3 +162,9 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_dynamic_prefix20k_h200_*`, including run, GPU monitor, W&B status, resolved config, paper metrics, summary, reservation context, and diagnosis.
 - Result is negative/non-terminal: dynamic calibration chose button-event threshold `0.42894818050956723`, with calibration recall `0.1724` at FPR `0.0917`, but target strict no-button FPR rose to `0.5482`, strict mouse-button F1 remained `0.0`, and exact true-positive button examples stayed `0`.
 - Diagnosis: threshold quantiles overfit prefix calibration and do not transfer to target rows. Next recipe-faithful G005 branch needs split-robust calibration/abstention or target-invariant button ranking diagnostics before any larger/full 4×H200 promotion.
+
+## 2026-05-28 KST — Next G005 branch: joint button-event/token-confidence gate
+
+- Implemented a recipe-faithful follow-up branch for the typed masked-diffusion IDM: button-event calibration can now jointly require an event-head threshold and a calibrated minimum button-token probability before forcing a mouse-button token.
+- Motivation from `fd65d03`/`923d3cc`: event probability alone transferred badly from calibration to target; the new joint gate preserves the FDM-1-shaped masked action-token objective while adding split-safe abstention against button false positives.
+- Candidate config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_joint_prefix20k.yaml`. It remains a prefix candidate, not completion evidence, until H200 metrics show target FPR/recall transfer.

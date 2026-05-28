@@ -81,6 +81,35 @@ def test_button_event_calibration_uses_dynamic_probability_thresholds():
     assert dynamic["candidate_count"] > len([0.45, 0.5])
 
 
+def test_button_event_calibration_can_jointly_gate_token_confidence():
+    rows = [
+        {"button_event_prob": 0.60, "button_probs": [0.91, 0.10], "button_event_label": 1},
+        {"button_event_prob": 0.59, "button_probs": [0.86, 0.20], "button_event_label": 1},
+        {"button_event_prob": 0.61, "button_probs": [0.40, 0.30], "button_event_label": 0},
+        {"button_event_prob": 0.58, "button_probs": [0.35, 0.20], "button_event_label": 0},
+        {"button_event_prob": 0.57, "button_probs": [0.25, 0.10], "button_event_label": 0},
+        {"button_event_prob": 0.56, "button_probs": [0.15, 0.12], "button_event_label": 0},
+    ]
+    event_only = _calibrate_button_event_threshold(
+        rows,
+        candidates=[0.50],
+        max_false_positive_rate=0.10,
+        beta=2.0,
+    )
+    joint = _calibrate_button_event_threshold(
+        rows,
+        candidates=[0.50],
+        max_false_positive_rate=0.10,
+        beta=2.0,
+        min_token_candidates=[0.0, 0.50, 0.80],
+        calibrate_min_token_probability=True,
+    )
+    assert event_only["selected_row"]["false_positive_rate"] == 1.0
+    assert joint["selected_min_token_probability"] == 0.80
+    assert joint["selected_row"]["recall"] == 1.0
+    assert joint["selected_row"]["false_positive_rate"] == 0.0
+
+
 def test_train_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     if not torch_available():
         return
@@ -256,5 +285,6 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
     assert summary["threshold_calibration"]["status"] == "pass"
     assert summary["threshold_calibration"]["per_token"]["button_event_threshold"]["status"] == "pass"
     assert summary["factorization"]["button_event_auxiliary"] is True
+    assert "button_event_min_token_probability" in summary["factorization"]
     assert Path(summary["checkpoint_path"]).exists()
     assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 3

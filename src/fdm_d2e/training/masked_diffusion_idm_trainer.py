@@ -707,6 +707,11 @@ def _calibrate_button_event_threshold(
     beta: float = 2.0,
     dynamic_thresholds: bool = False,
     dynamic_max_candidates: int = 64,
+    min_token_probability: float = 0.0,
+    min_token_candidates: Sequence[float] | None = None,
+    calibrate_min_token_probability: bool = False,
+    dynamic_min_token_thresholds: bool = False,
+    dynamic_min_token_max_candidates: int = 32,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     beta_sq = max(0.01, float(beta) ** 2)
@@ -716,57 +721,84 @@ def _calibrate_button_event_threshold(
         enabled=dynamic_thresholds,
         max_dynamic=dynamic_max_candidates,
     )
-    for threshold in event_candidates:
-        tp = fp = fn = tn = 0
-        for row in probability_rows:
-            prob = row.get("button_event_prob")
-            if prob is None:
-                continue
-            truth = bool(row.get("button_event_label"))
-            pred = float(prob) >= float(threshold)
-            if pred and truth:
-                tp += 1
-            elif pred and not truth:
-                fp += 1
-            elif (not pred) and truth:
-                fn += 1
-            else:
-                tn += 1
-        precision = tp / (tp + fp) if (tp + fp) else None
-        recall = tp / (tp + fn) if (tp + fn) else None
-        f1 = (2 * tp) / ((2 * tp) + fp + fn) if ((2 * tp) + fp + fn) else 0.0
-        fbeta = ((1.0 + beta_sq) * tp) / (((1.0 + beta_sq) * tp) + beta_sq * fn + fp) if (((1.0 + beta_sq) * tp) + beta_sq * fn + fp) else 0.0
-        fpr = fp / (fp + tn) if (fp + tn) else 0.0
-        fpr_penalty = max(0.0, fpr - float(max_false_positive_rate))
-        rows.append(
-            {
-                "threshold": float(threshold),
-                "score": float(fbeta) - fpr_penalty,
-                "tp": tp,
-                "fp": fp,
-                "fn": fn,
-                "tn": tn,
-                "precision": precision,
-                "recall": recall,
-                "f1": f1,
-                "fbeta": fbeta,
-                "false_positive_rate": fpr,
-            }
+    if calibrate_min_token_probability:
+        token_base = min_token_candidates if min_token_candidates is not None else candidates
+        token_candidates = _with_dynamic_threshold_candidates(
+            token_base,
+            [max([float(value) for value in row.get("button_probs", [])] or [0.0]) for row in probability_rows],
+            enabled=dynamic_min_token_thresholds,
+            max_dynamic=dynamic_min_token_max_candidates,
         )
+    else:
+        token_candidates = [max(0.0, min(1.0, float(min_token_probability)))]
+    for threshold in event_candidates:
+        for token_probability in token_candidates:
+            tp = fp = fn = tn = 0
+            for row in probability_rows:
+                prob = row.get("button_event_prob")
+                if prob is None:
+                    continue
+                truth = bool(row.get("button_event_label"))
+                max_button_prob = max([float(value) for value in row.get("button_probs", [])] or [0.0])
+                pred = float(prob) >= float(threshold) and max_button_prob >= float(token_probability)
+                if pred and truth:
+                    tp += 1
+                elif pred and not truth:
+                    fp += 1
+                elif (not pred) and truth:
+                    fn += 1
+                else:
+                    tn += 1
+            precision = tp / (tp + fp) if (tp + fp) else None
+            recall = tp / (tp + fn) if (tp + fn) else None
+            f1 = (2 * tp) / ((2 * tp) + fp + fn) if ((2 * tp) + fp + fn) else 0.0
+            fbeta = ((1.0 + beta_sq) * tp) / (((1.0 + beta_sq) * tp) + beta_sq * fn + fp) if (((1.0 + beta_sq) * tp) + beta_sq * fn + fp) else 0.0
+            fpr = fp / (fp + tn) if (fp + tn) else 0.0
+            fpr_penalty = max(0.0, fpr - float(max_false_positive_rate))
+            rows.append(
+                {
+                    "threshold": float(threshold),
+                    "min_token_probability": float(token_probability),
+                    "score": float(fbeta) - fpr_penalty,
+                    "tp": tp,
+                    "fp": fp,
+                    "fn": fn,
+                    "tn": tn,
+                    "precision": precision,
+                    "recall": recall,
+                    "f1": f1,
+                    "fbeta": fbeta,
+                    "false_positive_rate": fpr,
+                }
+            )
     if not rows:
         return {"status": "skipped", "reason": "no_button_event_probs", "selected": None, "rows": []}
     feasible = [row for row in rows if float(row["false_positive_rate"]) <= float(max_false_positive_rate)]
     pool = feasible or rows
     # Recall is the target failure mode, but FPR must stay bounded for downstream
-    # no-button gates.  Use F-beta first, then recall, then lower threshold.
-    best = max(pool, key=lambda row: (row["score"], row.get("recall") or 0.0, -row["threshold"]))
+    # no-button gates.  Use F-beta first, then recall and FPR, then prefer a
+    # stricter token-probability guard before lowering the event threshold.
+    best = max(
+        pool,
+        key=lambda row: (
+            row["score"],
+            row.get("recall") or 0.0,
+            -float(row.get("false_positive_rate") or 0.0),
+            float(row.get("min_token_probability") or 0.0),
+            -row["threshold"],
+        ),
+    )
     return {
         "status": "pass",
         "selected": float(best["threshold"]),
+        "selected_min_token_probability": float(best.get("min_token_probability") or 0.0),
         "max_false_positive_rate": float(max_false_positive_rate),
         "beta": float(beta),
         "dynamic_thresholds": bool(dynamic_thresholds),
+        "calibrate_min_token_probability": bool(calibrate_min_token_probability),
+        "dynamic_min_token_thresholds": bool(dynamic_min_token_thresholds),
         "candidate_count": len(event_candidates),
+        "min_token_candidate_count": len(token_candidates),
         "selected_row": best,
         "rows": rows,
     }
@@ -915,9 +947,16 @@ def _calibrate_factorized_thresholds(
                 beta=float(config.get("button_event_calibration_beta", 2.0)),
                 dynamic_thresholds=dynamic_thresholds,
                 dynamic_max_candidates=dynamic_max_candidates,
+                min_token_probability=float(config.get("button_event_min_token_probability", 0.0)),
+                min_token_candidates=config.get("button_event_min_token_probability_candidates"),
+                calibrate_min_token_probability=bool(config.get("button_event_calibrate_min_token_probability", False)),
+                dynamic_min_token_thresholds=bool(config.get("button_event_min_token_dynamic_thresholds", dynamic_thresholds)),
+                dynamic_min_token_max_candidates=int(config.get("button_event_min_token_dynamic_threshold_max_candidates", 32)),
             )
             if button_event_payload.get("selected") is not None:
                 config["button_event_threshold"] = float(button_event_payload["selected"])
+            if button_event_payload.get("selected_min_token_probability") is not None:
+                config["button_event_min_token_probability"] = float(button_event_payload["selected_min_token_probability"])
         per_token_payload = {
             "status": "pass",
             "key_token_thresholds": key_token_payload,
@@ -1117,6 +1156,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             "button_event_auxiliary": bool(config.get("button_event_auxiliary", False)),
             "button_event_threshold": float(config.get("button_event_threshold", 1.1)),
             "button_event_force_topk": int(config.get("button_event_force_topk", 1)),
+            "button_event_min_token_probability": float(config.get("button_event_min_token_probability", 0.0)),
             "key_token_threshold_count": len(config.get("key_token_thresholds", {}) if isinstance(config.get("key_token_thresholds"), dict) else {}),
             "button_token_threshold_count": len(config.get("button_token_thresholds", {}) if isinstance(config.get("button_token_thresholds"), dict) else {}),
         },
