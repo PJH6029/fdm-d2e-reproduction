@@ -1,0 +1,23 @@
+{
+  "assessment": [
+    "Masked luma-token pretraining ran successfully (loss 0.015299568372561871) and the bounded 320k/5k run finished in 671.2s.",
+    "The pretraining branch did not improve the G005 metric bottleneck: keyboard key accuracy, mouse-button accuracy/F1, and semantic button overlap are still zero.",
+    "No-button FPR remains low (0.014000411776816966), but that is only a calibration property and not a useful action model."
+  ],
+  "evidence": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_video_pretrain_prefix320k_h200_compact_summary.json",
+  "metrics": {
+    "keyboard_key_accuracy": 0.0,
+    "mouse_button_accuracy": 0.0,
+    "mouse_button_f1_strict": 0.0,
+    "no_button_false_positive_rate": 0.014000411776816966,
+    "semantic_overlap_examples": 0,
+    "semantic_overlap_rate_on_gt": 0.0
+  },
+  "next_recipe_faithful_actions": [
+    "The bottleneck is not only unsupervised luma compression; implement action-token sequence/span diffusion for press/release timing instead of single-frame button-class ranking.",
+    "Use contiguous temporal action windows and train the IDM to denoise full action spans conditioned on all frames, closer to FDM-1 iterative masked action-token unmasking.",
+    "Keep compact video pretraining as optional initialization but do not spend a full-corpus launch on this exact head without a positive prefix signal."
+  ],
+  "schema": "g005_recipe_idm_video_pretrain_prefix320k_h200_diagnosis.v1",
+  "status": "non_terminal_negative"
+}
