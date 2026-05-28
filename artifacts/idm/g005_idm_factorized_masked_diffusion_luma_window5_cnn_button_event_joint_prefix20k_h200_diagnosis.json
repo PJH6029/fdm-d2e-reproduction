@@ -1,0 +1,65 @@
+{
+  "calibration_rows": 2000,
+  "calibration_selected_button_event_threshold": {
+    "f1": 0.024793388429752067,
+    "false_positive_rate": 0.09320288362512873,
+    "fbeta": 0.042492917847025496,
+    "fn": 55,
+    "fp": 181,
+    "min_token_probability": 0.5808834896812439,
+    "precision": 0.016304347826086956,
+    "recall": 0.05172413793103448,
+    "score": 0.042492917847025496,
+    "threshold": 0.496727854013443,
+    "tn": 1761,
+    "tp": 3
+  },
+  "candidate": "idm_factorized_masked_diffusion_luma_window5_cnn_button_event_joint_prefix20k_h200",
+  "claim_boundary": "Prefix-probe partial improvement only; it does not beat D2E paper/repo G-IDM targets and does not complete G005.",
+  "commit": "04f03e5",
+  "comparison_to_dynamic_event_only": {
+    "absolute_fpr_delta": -0.2861538461538462,
+    "current_no_button_fpr": 0.26205128205128203,
+    "current_strict_button_f1": 0.0035087719298245615,
+    "previous_candidate": "idm_factorized_masked_diffusion_luma_window5_cnn_button_event_dynamic_prefix20k_h200",
+    "previous_no_button_fpr": 0.5482051282051282,
+    "previous_strict_button_f1": 0.0
+  },
+  "diagnosis": [
+    "Joint event-head plus button-token-confidence calibration reduced target no-button FPR versus event-only dynamic calibration, but the target FPR remains far above the <=0.10 gate.",
+    "The branch recovered one exact button true-positive example and nonzero strict button F1, but precision/recall remain too low for G005 promotion.",
+    "The result supports the abstention-guard direction inside the FDM-1-shaped masked action-token recipe, but still needs stronger split-robust calibration and/or better video/action-token representation before scaling."
+  ],
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "next_branch_requirements": [
+    "Keep the public FDM-1 recipe shape: video-token encoder plus non-causal masked-diffusion IDM over action tokens.",
+    "Tighten target-transfer without using target labels: e.g. fold/recording-robust calibration, event-rate priors from train labels, or confidence-budgeted iterative unmasking.",
+    "Do not launch full-corpus 4xH200 G005 until a bounded prefix probe demonstrates target no-button FPR near <=0.10 with nonzero button recall and stronger keyboard/mouse metrics."
+  ],
+  "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM with typed masked action-token planes for mouse/key/button factors.",
+  "reservation": {
+    "after_status": "cancelled",
+    "before_status": "running",
+    "pod_name": "prod-rsv-jeonghunpark-20260528-6e8e55",
+    "reservation_id": "rsv-jeonghunpark-20260528-6e8e55"
+  },
+  "schema": "g005_recipe_probe_diagnosis.v1",
+  "status": "non_terminal_partial_improvement",
+  "target_metrics": {
+    "paper_keyboard_key_accuracy": 0.017352800382958354,
+    "paper_mouse_button_accuracy": 0.0052173913043478265,
+    "strict_mouse_button_accuracy": 0.02,
+    "strict_mouse_button_exact_true_positive_examples": 1,
+    "strict_mouse_button_f1": 0.0035087719298245615,
+    "strict_mouse_button_false_negative_examples": 49,
+    "strict_mouse_button_false_positive_examples": 519,
+    "strict_mouse_button_no_button_fpr": 0.26205128205128203,
+    "strict_mouse_button_precision": 0.0019230769230769232,
+    "strict_mouse_button_predicted_examples": 520,
+    "strict_mouse_button_recall": 0.02
+  },
+  "target_rows": 2000,
+  "train_rows": 20000,
+  "wall_clock_seconds": 191.8626594543457,
+  "wandb_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/dwu113fm"
+}

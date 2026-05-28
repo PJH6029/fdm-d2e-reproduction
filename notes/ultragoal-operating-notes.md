@@ -168,3 +168,10 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Implemented a recipe-faithful follow-up branch for the typed masked-diffusion IDM: button-event calibration can now jointly require an event-head threshold and a calibrated minimum button-token probability before forcing a mouse-button token.
 - Motivation from `fd65d03`/`923d3cc`: event probability alone transferred badly from calibration to target; the new joint gate preserves the FDM-1-shaped masked action-token objective while adding split-safe abstention against button false positives.
 - Candidate config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_joint_prefix20k.yaml`. It remains a prefix candidate, not completion evidence, until H200 metrics show target FPR/recall transfer.
+
+## 2026-05-28 KST — G005 joint button-event/token-confidence H200 prefix probe
+
+- Ran commit `04f03e5` on 1×H200 reservation `rsv-jeonghunpark-20260528-6e8e55` / pod `prod-rsv-jeonghunpark-20260528-6e8e55`; copied evidence locally and cancelled the reservation after artifact copy.
+- Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_joint_prefix20k_h200_*`, including run, GPU monitor, W&B status, resolved config, paper metrics, summary, reservation context, and diagnosis.
+- Result is partial but non-terminal: calibration selected event threshold `0.496727854013443` plus min button-token probability `0.5808834896812439`; target no-button FPR improved from prior dynamic event-only `0.5482` to `0.2621`, and strict button F1 became nonzero (`0.00351`) with one exact true positive, but this still fails the `<=0.10` FPR gate and is far below paper-target performance.
+- Next branch should remain recipe-faithful and add fold/recording-robust calibration or confidence-budgeted iterative unmasking before any full-corpus 4×H200 promotion.
