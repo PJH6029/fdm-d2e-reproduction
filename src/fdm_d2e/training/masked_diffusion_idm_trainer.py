@@ -400,10 +400,16 @@ def _build_factorized_model(torch: Any, *, video_dim: int, key_count: int, butto
     class FactorizedMaskedDiffusionIDM(nn.Module):
         def __init__(self) -> None:
             super().__init__()
+            self.video_reconstruction_dim = luma_window_dim if video_encoder_arch in {"compact_luma_window_cnn", "luma_window_cnn", "video_luma_cnn"} else 0
             if video_encoder_arch in {"compact_luma_window_cnn", "luma_window_cnn", "video_luma_cnn"}:
                 self.video_proj = CompactLumaWindowEncoder()
             else:
                 self.video_proj = nn.Sequential(nn.Linear(video_dim, hidden_dim), nn.GELU(), nn.LayerNorm(hidden_dim))
+            self.video_reconstruction_head = (
+                nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.GELU(), nn.Linear(hidden_dim, self.video_reconstruction_dim))
+                if self.video_reconstruction_dim > 0
+                else None
+            )
             self.mask_embed = nn.Parameter(torch.randn(plane_count, hidden_dim) * 0.02)
             self.plane_embed = nn.Embedding(plane_count, hidden_dim)
             encoder_layer = nn.TransformerEncoderLayer(
@@ -430,11 +436,19 @@ def _build_factorized_model(torch: Any, *, video_dim: int, key_count: int, butto
                 else None
             )
 
+        def video_embedding(self, video_features: Any) -> Any:
+            return self.video_proj(video_features)
+
+        def reconstruct_video(self, video_features: Any) -> Any:
+            if self.video_reconstruction_head is None:
+                raise RuntimeError("video reconstruction head is unavailable for this encoder architecture")
+            return self.video_reconstruction_head(self.video_embedding(video_features))
+
         def forward(self, video_features: Any) -> dict[str, Any]:
             batch = video_features.shape[0]
             positions = torch.arange(plane_count, device=video_features.device)
             tokens = self.mask_embed.unsqueeze(0).expand(batch, plane_count, -1) + self.plane_embed(positions).unsqueeze(0)
-            tokens[:, 0, :] = self.video_proj(video_features) + self.plane_embed(positions[0]).unsqueeze(0)
+            tokens[:, 0, :] = self.video_embedding(video_features) + self.plane_embed(positions[0]).unsqueeze(0)
             encoded = self.encoder(tokens)
             out: dict[str, Any] = {
                 "mouse_x": self.mouse_x_head(encoded[:, 1, :]),
@@ -447,6 +461,83 @@ def _build_factorized_model(torch: Any, *, video_dim: int, key_count: int, butto
             return out
 
     return FactorizedMaskedDiffusionIDM()
+
+
+def _masked_luma_reconstruction_loss(model: Any, torch: Any, features: Any, *, config: dict[str, Any]) -> Any:
+    """Self-supervised masked screen-video token reconstruction loss.
+
+    FDM-1 publicly describes a video encoder trained with a masked compression
+    objective before IDM/FDM action training.  D2E compact-luma windows are not
+    the closed-source SI tokenizer, but they are the repo's current reusable
+    screen-video tokens.  This loss masks luma-token coordinates, reconstructs
+    them from the remaining window/auxiliary context, and can either pretrain
+    the encoder or remain as a small auxiliary term during masked action-token
+    IDM training.
+    """
+
+    if not hasattr(model, "reconstruct_video"):
+        return torch.tensor(0.0, device=features.device)
+    recon_dim = int(getattr(model, "video_reconstruction_dim", 0) or 0)
+    if recon_dim <= 0:
+        return torch.tensor(0.0, device=features.device)
+    target = features[:, : min(recon_dim, features.shape[1])]
+    if target.shape[1] < recon_dim:
+        pad = torch.zeros((features.shape[0], recon_dim - target.shape[1]), device=features.device, dtype=features.dtype)
+        target = torch.cat([target, pad], dim=1)
+    corrupted = features.clone()
+    luma_source = corrupted[:, : min(recon_dim, corrupted.shape[1])]
+    mask_probability = float(config.get("video_encoder_mask_probability", config.get("video_encoder_pretrain_mask_probability", 0.65)))
+    mask = torch.rand(target.shape, device=features.device) < mask_probability
+    if not bool(mask.any()):
+        mask = torch.ones_like(target, dtype=torch.bool)
+    masked_luma = target[:, : luma_source.shape[1]].clone()
+    mask_slice = mask[:, : luma_source.shape[1]]
+    masked_luma[mask_slice] = 0.0
+    corrupted[:, : luma_source.shape[1]] = masked_luma
+    pred = model.reconstruct_video(corrupted)
+    if bool(config.get("video_encoder_reconstruct_masked_only", True)):
+        return torch.nn.functional.mse_loss(pred[mask], target[mask])
+    return torch.nn.functional.mse_loss(pred, target)
+
+
+def _pretrain_factorized_video_encoder(
+    model: Any,
+    torch: Any,
+    loader: Any,
+    *,
+    config: dict[str, Any],
+    device: Any,
+) -> list[dict[str, Any]]:
+    epochs = int(config.get("video_encoder_pretrain_epochs", 0) or 0)
+    if epochs <= 0 or not hasattr(model, "reconstruct_video") or int(getattr(model, "video_reconstruction_dim", 0) or 0) <= 0:
+        return []
+    lr = float(config.get("video_encoder_pretrain_lr", config.get("lr", 2e-4)))
+    weight_decay = float(config.get("video_encoder_pretrain_weight_decay", config.get("weight_decay", 0.01)))
+    optimizer = torch.optim.AdamW(
+        list(model.video_proj.parameters()) + list(model.video_reconstruction_head.parameters()),
+        lr=lr,
+        weight_decay=weight_decay,
+    )
+    history: list[dict[str, Any]] = []
+    for epoch in range(epochs):
+        model.train()
+        total_loss = 0.0
+        examples = 0
+        for features, *_rest in loader:
+            features = features.to(device)
+            loss = _masked_luma_reconstruction_loss(model, torch, features, config=config)
+            optimizer.zero_grad(set_to_none=True)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(
+                list(model.video_proj.parameters()) + list(model.video_reconstruction_head.parameters()),
+                float(config.get("grad_clip_norm", 1.0)),
+            )
+            optimizer.step()
+            batch = int(features.shape[0])
+            total_loss += float(loss.detach().cpu()) * batch
+            examples += batch
+        history.append({"epoch": epoch + 1, "video_reconstruction_loss": total_loss / max(1, examples), "examples": examples})
+    return history
 
 
 def _positive_weight(torch: Any, rows: Sequence[dict[str, Any]], *, vocab: Sequence[str], prefix: str, cap: float) -> Any:
@@ -1542,6 +1633,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
     if button_class_offsets:
         config["button_class_conditional_logit_offsets"] = button_class_offsets
     feature_dim = int(config.get("video_feature_dim", 64))
+    video_encoder_arch = str(config.get("video_encoder_arch", "flat_mlp")).lower()
     dataset = _FactorizedMaskedDiffusionDataset(fit_rows, config=config, key_vocab=key_vocab, button_vocab=button_vocab)
     loader = torch.utils.data.DataLoader(dataset, batch_size=int(config.get("batch_size", 64)), shuffle=True)
     device = torch.device("cuda" if torch.cuda.is_available() and not config.get("force_cpu") else "cpu")
@@ -1570,10 +1662,12 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
         button_class_weight = button_class_weight.to(device)
     if button_event_pos_weight is not None:
         button_event_pos_weight = button_event_pos_weight.to(device)
+    video_encoder_pretrain_history = _pretrain_factorized_video_encoder(model, torch, loader, config=config, device=device)
+    video_reconstruction_aux_weight = float(config.get("video_reconstruction_aux_weight", 0.0) or 0.0)
     history: list[dict[str, Any]] = []
     for epoch in range(int(config.get("epochs", 1))):
         model.train()
-        totals = {"loss": 0.0, "mouse_x": 0.0, "mouse_y": 0.0, "key": 0.0, "button": 0.0, "button_class": 0.0, "button_event": 0.0, "examples": 0}
+        totals = {"loss": 0.0, "mouse_x": 0.0, "mouse_y": 0.0, "key": 0.0, "button": 0.0, "button_class": 0.0, "button_event": 0.0, "video_reconstruction": 0.0, "examples": 0}
         for features, mouse_x, mouse_y, key_labels, button_labels, button_class in loader:
             features = features.to(device)
             mouse_x = mouse_x.to(device)
@@ -1610,6 +1704,9 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
                     button_event_labels,
                     pos_weight=button_event_pos_weight,
                 )
+            video_reconstruction_loss = torch.tensor(0.0, device=device)
+            if video_reconstruction_aux_weight > 0.0:
+                video_reconstruction_loss = _masked_luma_reconstruction_loss(model, torch, features, config=config)
             loss = (
                 float(config.get("mouse_x_loss_weight", config.get("mouse_loss_weight", 1.0))) * mouse_x_loss
                 + float(config.get("mouse_y_loss_weight", config.get("mouse_loss_weight", 1.0))) * mouse_y_loss
@@ -1617,6 +1714,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
                 + float(config.get("button_loss_weight", 1.0)) * button_loss
                 + float(config.get("button_class_loss_weight", 1.0)) * button_class_loss
                 + float(config.get("button_event_loss_weight", 0.0)) * button_event_loss
+                + video_reconstruction_aux_weight * video_reconstruction_loss
             )
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
@@ -1630,6 +1728,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             totals["button"] += float(button_loss.detach().cpu()) * batch
             totals["button_class"] += float(button_class_loss.detach().cpu()) * batch
             totals["button_event"] += float(button_event_loss.detach().cpu()) * batch
+            totals["video_reconstruction"] += float(video_reconstruction_loss.detach().cpu()) * batch
             totals["examples"] += batch
         denom = max(1, int(totals.pop("examples")))
         history.append({"epoch": epoch + 1, **{key: value / denom for key, value in totals.items()}, "examples": denom})
@@ -1746,6 +1845,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
         "button_vocab_size": len(button_vocab),
         "device": str(device),
         "history": history,
+        "video_encoder_pretrain_history": video_encoder_pretrain_history,
         "checkpoint_path": str(checkpoint_path),
         "predictions_path": str(predictions_path),
         "metrics_path": str(metrics_path),
@@ -1774,6 +1874,10 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             "button_class_conditional_logit_offset_count": len(config.get("button_class_conditional_logit_offsets", []) if isinstance(config.get("button_class_conditional_logit_offsets"), list) else []),
             "prediction_batch_size": prediction_batch_size,
             "calibration_batch_size": max(1, int(config.get("calibration_batch_size", config.get("prediction_batch_size", config.get("batch_size", 64))))),
+            "video_encoder_arch": video_encoder_arch,
+            "video_encoder_pretrain_epochs": int(config.get("video_encoder_pretrain_epochs", 0) or 0),
+            "video_encoder_pretrain_objective": "masked_luma_reconstruction" if video_encoder_pretrain_history else "disabled",
+            "video_reconstruction_aux_weight": video_reconstruction_aux_weight,
             "key_token_threshold_count": len(config.get("key_token_thresholds", {}) if isinstance(config.get("key_token_thresholds"), dict) else {}),
             "button_token_threshold_count": len(config.get("button_token_thresholds", {}) if isinstance(config.get("button_token_thresholds"), dict) else {}),
         },

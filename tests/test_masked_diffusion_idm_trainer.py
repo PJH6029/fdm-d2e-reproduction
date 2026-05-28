@@ -485,6 +485,10 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
             "batch_size": 2,
             "epochs": 1,
             "lr": 0.001,
+            "video_encoder_pretrain_epochs": 1,
+            "video_encoder_pretrain_lr": 0.001,
+            "video_encoder_pretrain_mask_probability": 0.5,
+            "video_reconstruction_aux_weight": 0.05,
             "force_cpu": True,
             "key_threshold": 0.99,
             "button_threshold": 0.99,
@@ -519,6 +523,11 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
     assert summary["factorization"]["button_probability_source"] == "button_class"
     assert summary["factorization"]["button_event_probability_source"] == "button_class"
     assert any("button_class" in row for row in summary["history"])
+    assert any("video_reconstruction" in row for row in summary["history"])
+    assert summary["video_encoder_pretrain_history"]
+    assert summary["video_encoder_pretrain_history"][0]["video_reconstruction_loss"] >= 0.0
+    assert summary["factorization"]["video_encoder_pretrain_objective"] == "masked_luma_reconstruction"
+    assert summary["factorization"]["video_reconstruction_aux_weight"] == 0.05
     assert "button_event_min_token_probability" in summary["factorization"]
     assert "button_event_budget_score_threshold" in summary["factorization"]
     assert summary["factorization"]["button_event_budget_applies_to_all_buttons"] is True
