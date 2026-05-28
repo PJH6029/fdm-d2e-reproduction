@@ -430,14 +430,17 @@ def _temporal_family_token_presence_targets(torch: Any, target_ids: Any, vocab: 
     batch, window, slots = target_ids.shape
     if not family_vocab:
         return torch.zeros((batch, window, 0), dtype=torch.float32, device=target_ids.device)
-    targets = torch.zeros((batch, window, len(family_vocab)), dtype=torch.float32, device=target_ids.device)
+    mapping = torch.zeros((len(vocab),), dtype=torch.long, device=target_ids.device)
     index_by_token = {str(token): idx for idx, token in enumerate(vocab)}
-    for class_idx, token in enumerate(family_vocab):
+    for class_idx, token in enumerate(family_vocab, start=1):
         token_idx = index_by_token.get(str(token))
         if token_idx is None:
             continue
-        targets[:, :, class_idx] = (target_ids == int(token_idx)).any(dim=2).float()
-    return targets
+        mapping[token_idx] = int(class_idx)
+    mapped = mapping[target_ids]
+    # Channel 0 is the sentinel for non-family tokens; max over slots gives a
+    # multi-hot family-token set without looping over every class per batch.
+    return torch.nn.functional.one_hot(mapped, num_classes=len(family_vocab) + 1).amax(dim=2)[:, :, 1:].float()
 
 
 def _event_auxiliary_bce_loss(torch: Any, logits: Any, targets: Any, offset_mask: Any, *, pos_weight: float) -> Any:
