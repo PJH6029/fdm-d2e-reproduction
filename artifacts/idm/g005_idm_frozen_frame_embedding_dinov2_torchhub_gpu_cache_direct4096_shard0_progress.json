@@ -1,0 +1,25 @@
+{
+  "schema": "g005_frozen_frame_embedding_materializer_progress.v1",
+  "status": "pass",
+  "input_path": "/tmp/g005_target_sample4096.jsonl",
+  "output_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-99bfa9b-tensor-cache-debug/outputs/data/g005_debug_dinov2_cache_direct4096/shards/shard_0000.jsonl",
+  "backend": "dinov2-torchhub",
+  "model_id": "facebook/dinov2-small",
+  "frame_offsets": [
+    0,
+    2
+  ],
+  "frame_source": "compact-luma",
+  "path_remaps": [],
+  "skip_rows": 0,
+  "max_rows": 2048,
+  "source_label": "g005_frozen_frame_embedding_materialization_shard0",
+  "feature_cache_out": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-code-99bfa9b-tensor-cache-debug/outputs/data/g005_debug_dinov2_cache_direct4096/feature_cache/shard_0000_features.pt",
+  "thin_output": true,
+  "rows_seen": 2048,
+  "source_rows_scanned": 2048,
+  "source_rows_skipped": 0,
+  "rows_written": 2048,
+  "feature_override_rows": 0,
+  "feature_cache_ref_rows": 2048
+}

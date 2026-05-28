@@ -106,7 +106,14 @@
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard0_progress.json",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard1_progress.json",
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard0.log",
-        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard1.log"
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_shard1.log",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma_gate_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_direct4096_run_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_direct4096_b1024_run_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma4096_b1024_run_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma8192_b2048_run_summary.json",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma4096_b1024_gpu_monitor.csv",
+        "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma8192_b2048_gpu_monitor.csv"
       ],
       "cache_backed_dinov2_4096_gate": {
         "elapsed_seconds": 90.25922107696533,
@@ -133,8 +140,8 @@
         "speedup_vs_vectorized_json_gate": 1.0156437959976037,
         "total_byte_reduction_ratio": 3.9434945406102804
       },
-      "claim_boundary": "Materialization/code-path gates only; no trained-model metric evidence; late sharded monitor is not a strong GPU-utilization claim.",
-      "decision": "cache_backed_output_required_but_do_not_scale_dinov2_without_utilization_fix_or_pivot",
+      "claim_boundary": "Materialization/code-path gates only; no trained-model metric evidence and no G005 success claim.",
+      "decision": "native_luma_tensor_cache_required_for_next_prefix_gate_but_no_metric_success_yet",
       "feature_cache_contract": {
         "feature_cache_bytes": 20718,
         "feature_cache_ref_rows": 128,
@@ -170,7 +177,14 @@
         "streaming_idm_train_predict_accepts_feature_cache_refs",
         "cache_backed_dinov2_gate_passed",
         "feature_cache_reduces_dinov2_output_bytes_3_9x",
-        "cache_backed_dinov2_gate_still_low_mean_gpu_utilization"
+        "cache_backed_dinov2_gate_still_low_mean_gpu_utilization",
+        "tensor_cache_direct_avoids_python_embedding_list_roundtrip",
+        "tensor_cache_direct_alone_does_not_materially_improve_4096_gate",
+        "batch_size_1024_alone_does_not_materially_improve_4096_gate",
+        "native_compact_luma_bytes_remove_python_224_resize_loop",
+        "native_luma_4096_gate_passed_with_large_wallclock_speedup",
+        "native_luma_8192_gate_passed_with_prelaunch_gpu_monitor",
+        "native_luma_dino_materialization_still_no_trained_idm_metric_evidence"
       ],
       "gpu_monitor_artifacts": [
         "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_opt_compact_luma_target_sample1024_gpu_monitor.csv",
@@ -265,6 +279,154 @@
         "shard_count": 2
       },
       "name": "frozen_frame_embedding_materialization_gates",
+      "native_luma_gate": {
+        "active_goal_id": "G005-g014-idm-full-paper-target",
+        "best_result": {
+          "batch_size": 2048,
+          "elapsed_seconds": 20.17364501953125,
+          "gpu_max_by_index": {
+            "0": 100.0,
+            "1": 100.0
+          },
+          "gpu_mean_by_index": {
+            "0": 14.65,
+            "1": 10.15
+          },
+          "gpu_samples": 40,
+          "name": "native_luma8192_b2048",
+          "rows_per_second": 406.07436048710383,
+          "rows_written": 8192,
+          "speedup_vs_cache4096_b256_previous_by_elapsed": 4.474115658800393,
+          "status": "pass",
+          "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma8192_b2048_run_summary.json",
+          "throughput_ratio_vs_cache4096_b256_previous": 8.948231317600786
+        },
+        "claim_boundary": "Materialization throughput gate only. This does not claim G005 success, D2E paper-target metric win, or FDM-1 parity.",
+        "created_at_epoch": 1779933098.7123005,
+        "decision": "native_compact_luma_resize_fix_unblocks_prefix_dino_materialization_gate_but_not_trained_metric_success",
+        "finding_codes": [
+          "tensor_cache_direct_avoids_python_embedding_list_roundtrip",
+          "tensor_cache_direct_alone_does_not_materially_improve_4096_gate",
+          "batch_size_1024_alone_does_not_materially_improve_4096_gate",
+          "native_compact_luma_bytes_remove_python_224_resize_loop",
+          "native_luma_4096_gate_passed_with_large_wallclock_speedup",
+          "native_luma_8192_gate_passed_with_prelaunch_gpu_monitor",
+          "native_luma_dino_materialization_still_no_trained_idm_metric_evidence"
+        ],
+        "input_samples": {
+          "4096_rows": "/tmp/g005_target_sample4096.jsonl",
+          "8192_rows": "/tmp/g005_target_sample8192.jsonl"
+        },
+        "next_action": "Use native-luma tensor-cache mode for a bounded 320k frozen-DINO prefix materialization/training gate before any full-corpus DINO extraction.",
+        "reservation_ids": [
+          "rsv-jeonghunpark-20260528-28ad03",
+          "rsv-jeonghunpark-20260528-d40653"
+        ],
+        "results": [
+          {
+            "batch_size": 256,
+            "elapsed_seconds": 90.25922107696533,
+            "gpu_max_by_index": {
+              "0": 100.0,
+              "1": 100.0
+            },
+            "gpu_mean_by_index": {
+              "0": 2.311111111111111,
+              "1": 1.1111111111111112
+            },
+            "gpu_samples": 180,
+            "name": "cache4096_b256_previous",
+            "rows_per_second": 45.380404917379934,
+            "rows_written": 4096,
+            "speedup_vs_cache4096_b256_previous_by_elapsed": 1.0,
+            "status": "pass",
+            "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_run_summary.json",
+            "throughput_ratio_vs_cache4096_b256_previous": 1.0
+          },
+          {
+            "batch_size": 256,
+            "elapsed_seconds": 89.33947491645813,
+            "gpu_max_by_index": {
+              "0": 88.0,
+              "1": 100.0
+            },
+            "gpu_mean_by_index": {
+              "0": 2.1235955056179776,
+              "1": 1.348314606741573
+            },
+            "gpu_samples": 178,
+            "name": "tensor_cache4096_b256",
+            "rows_per_second": 45.84759428942462,
+            "rows_written": 4096,
+            "speedup_vs_cache4096_b256_previous_by_elapsed": 1.0102949582070777,
+            "status": "pass",
+            "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_direct4096_run_summary.json",
+            "throughput_ratio_vs_cache4096_b256_previous": 1.0102949582070777
+          },
+          {
+            "batch_size": 1024,
+            "elapsed_seconds": 88.49150323867798,
+            "gpu_max_by_index": {
+              "0": 43.0,
+              "1": 10.0
+            },
+            "gpu_mean_by_index": {
+              "0": 0.5909090909090909,
+              "1": 0.19318181818181818
+            },
+            "gpu_samples": 176,
+            "name": "tensor_cache4096_b1024",
+            "rows_per_second": 46.28692981915257,
+            "rows_written": 4096,
+            "speedup_vs_cache4096_b256_previous_by_elapsed": 1.0199761307424,
+            "status": "pass",
+            "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_direct4096_b1024_run_summary.json",
+            "throughput_ratio_vs_cache4096_b256_previous": 1.0199761307424
+          },
+          {
+            "batch_size": 1024,
+            "elapsed_seconds": 13.12475299835205,
+            "gpu_max_by_index": {
+              "0": 100.0,
+              "1": 100.0
+            },
+            "gpu_mean_by_index": {
+              "0": 8.76923076923077,
+              "1": 14.384615384615385
+            },
+            "gpu_samples": 26,
+            "name": "native_luma4096_b1024",
+            "rows_per_second": 312.0820636025909,
+            "rows_written": 4096,
+            "speedup_vs_cache4096_b256_previous_by_elapsed": 6.877022454311964,
+            "status": "pass",
+            "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma4096_b1024_run_summary.json",
+            "throughput_ratio_vs_cache4096_b256_previous": 6.877022454311964
+          },
+          {
+            "batch_size": 2048,
+            "elapsed_seconds": 20.17364501953125,
+            "gpu_max_by_index": {
+              "0": 100.0,
+              "1": 100.0
+            },
+            "gpu_mean_by_index": {
+              "0": 14.65,
+              "1": 10.15
+            },
+            "gpu_samples": 40,
+            "name": "native_luma8192_b2048",
+            "rows_per_second": 406.07436048710383,
+            "rows_written": 8192,
+            "speedup_vs_cache4096_b256_previous_by_elapsed": 4.474115658800393,
+            "status": "pass",
+            "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma8192_b2048_run_summary.json",
+            "throughput_ratio_vs_cache4096_b256_previous": 8.948231317600786
+          }
+        ],
+        "schema": "g005_dinov2_native_luma_gpu_gate_summary.v1",
+        "status": "pass_native_luma_materialization_gate"
+      },
       "rows": {
         "dinov2_small_compact_luma_cpu": 16,
         "dinov2_torchhub_gpu_b128": 1024,
@@ -292,9 +454,10 @@
           512
         ]
       },
-      "status": "pass_cache_backed_dinov2_gate_low_utilization",
+      "status": "pass_native_luma_gate_unblocks_prefix_materialization_only",
       "timing_seconds": {
         "dinov2_small_compact_luma_cpu_16_rows": 280.816091299057,
+        "dinov2_torchhub_cache4096_b256_previous": 90.25922107696533,
         "dinov2_torchhub_gpu_b128_1024_rows": 45.7456533908844,
         "dinov2_torchhub_gpu_b512_1024_rows": 46.3034188747406,
         "dinov2_torchhub_gpu_launcher_wall_clock_1024_rows": 26.183505058288574,
@@ -302,7 +465,11 @@
         "dinov2_torchhub_gpu_launcher_wall_clock_4096_rows_vectorized_preprocess": 91.671217918396,
         "dinov2_torchhub_gpu_sharded_shard0_512_rows": 26.275585412979126,
         "dinov2_torchhub_gpu_sharded_shard1_512_rows": 26.702742338180542,
-        "dinov2_torchhub_gpu_sharded_wall_clock_1024_rows_approx": 26.702742338180542
+        "dinov2_torchhub_gpu_sharded_wall_clock_1024_rows_approx": 26.702742338180542,
+        "dinov2_torchhub_native_luma4096_b1024": 13.12475299835205,
+        "dinov2_torchhub_native_luma8192_b2048": 20.17364501953125,
+        "dinov2_torchhub_tensor_cache4096_b1024": 88.49150323867798,
+        "dinov2_torchhub_tensor_cache4096_b256": 89.33947491645813
       }
     }
   ],
@@ -1248,15 +1415,14 @@
     }
   ],
   "recommended_next_actions": [
-    "Do not launch full frozen-DINO 320k extraction until utilization is fixed; cache-backed output is mandatory but the 4,096-row H200 gate still has low mean utilization.",
+    "Native compact-luma tensor-cache DINO materialization is now prefix-gate ready: 8,192 real rows completed in 20.17s on 2xH200 with prelaunch monitoring, but this is still materialization-only evidence; next run must train/evaluate a bounded 320k frozen-DINO IDM prefix before any full-corpus extraction.",
     "Do not promote threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, or sequence-prior action-history prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Do not reserve H200s for a simple NEP/label-offset branch: target autocorr at +100ms has keyboard=0.1745, mouse-button=0.0215, Pearson X/Y=0.4149/0.3862 and no nonzero shift meets paper targets on the 320k prefix.",
     "Next G005 branch must change the supervision/modeling problem, not just add causal action history: investigate teacher-assisted event decoding or per-recording latent state estimation that is causal at inference and validated on prefix rows before full 4xH200.",
     "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible.",
-    "Use a reserved GPU, with expiration check and utilization monitoring, for any prefix-scale DINO frozen-frame materialization; storage CPU validated only 16 DINO rows and is too slow for 320k.",
-    "Before prefix-scale frozen DINO training, replace monolithic JSONL embedding materialization with sharded/tensor-cache extraction or multi-worker GPU-fed extraction; 1,024-row debug H200 gates took ~46s and showed low nvidia-smi utilization."
+    "Use a reserved GPU, with expiration check and utilization monitoring, for any prefix-scale DINO frozen-frame materialization; storage CPU validated only 16 DINO rows and is too slow for 320k."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779931533.9808679
+  "updated_at_epoch": 1779933124.7694407
 }

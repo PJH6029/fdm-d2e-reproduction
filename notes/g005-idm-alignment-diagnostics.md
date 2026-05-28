@@ -759,3 +759,48 @@ otherwise pivot to a stronger teacher/representation branch.
 
 Claim boundary: materialization and storage-efficiency evidence only; no trained
 IDM metric evidence and no G005 success claim.
+
+### 2026-05-28 KST — tensor-cache direct path and native-luma DINO gate
+
+After the cache-backed DINO gate still averaged low H200 utilization, two follow-up
+materialization changes were tested on short debug reservations and both were
+kept evidence-bound as materialization gates only.
+
+First, commit `99bfa9b` made external feature-cache mode keep DINO embedding
+outputs as tensors instead of converting every embedding vector to Python lists
+and then rebuilding a tensor for `torch.save`. Debug reservation
+`rsv-jeonghunpark-20260528-28ad03` ran the 4,096-row DINO gate twice:
+
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_direct4096_run_summary.json`
+  — batch 256, `status=pass`, elapsed `89.34s`, only `1.01x` faster than the
+  prior cache-backed 4,096-row gate.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_direct4096_b1024_run_summary.json`
+  — batch 1024, `status=pass`, elapsed `88.49s`, still not a material speedup;
+  mean nvidia-smi utilization was lower because the remaining bottleneck was
+  outside the DINO forward.
+
+This rejected the hypothesis that Pythonizing DINO output vectors was the main
+H200-idle cause.
+
+Second, commit `e0d0e86` removed the actual dominant CPU loop: compact-luma rows
+were being expanded from 16×16 to 224×224 with Python nested loops before the
+batched tensor preprocessor. The materializer now keeps native 16×16 luma bytes
+and lets `torch.nn.functional.interpolate` resize the whole batch.
+
+Debug reservation `rsv-jeonghunpark-20260528-d40653` validated the fix:
+
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma4096_b1024_run_summary.json`
+  — 4,096 real D2E rows, batch 1024, elapsed `13.12s`, about `6.88x` faster
+  than the prior cache-backed 4,096-row gate; both GPUs reached `100%` max.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma8192_b2048_run_summary.json`
+  — 8,192 real D2E rows, batch 2048, elapsed `20.17s`, `406` rows/s on 2×H200;
+  both GPUs reached `100%` max with valid pre-launch monitor evidence.
+- Summary artifact:
+  `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma_gate_summary.json`.
+
+Decision: native-luma tensor-cache mode is now good enough for the next bounded
+frozen-DINO prefix materialization/training gate. It is still not trained IDM
+metric evidence and does not satisfy G005. Next step is a 320k prefix DINO IDM
+train/eval gate, then promote only if paper-compatible keyboard, mouse-button,
+and mouse-motion metrics materially beat the current event-context prefix/full
+baselines while preserving no-button FPR.

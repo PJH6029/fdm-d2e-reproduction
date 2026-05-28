@@ -1,0 +1,148 @@
+{
+  "active_goal_id": "G005-g014-idm-full-paper-target",
+  "best_result": {
+    "batch_size": 2048,
+    "elapsed_seconds": 20.17364501953125,
+    "gpu_max_by_index": {
+      "0": 100.0,
+      "1": 100.0
+    },
+    "gpu_mean_by_index": {
+      "0": 14.65,
+      "1": 10.15
+    },
+    "gpu_samples": 40,
+    "name": "native_luma8192_b2048",
+    "rows_per_second": 406.07436048710383,
+    "rows_written": 8192,
+    "speedup_vs_cache4096_b256_previous_by_elapsed": 4.474115658800393,
+    "status": "pass",
+    "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma8192_b2048_run_summary.json",
+    "throughput_ratio_vs_cache4096_b256_previous": 8.948231317600786
+  },
+  "claim_boundary": "Materialization throughput gate only. This does not claim G005 success, D2E paper-target metric win, or FDM-1 parity.",
+  "created_at_epoch": 1779933098.7123005,
+  "decision": "native_compact_luma_resize_fix_unblocks_prefix_dino_materialization_gate_but_not_trained_metric_success",
+  "finding_codes": [
+    "tensor_cache_direct_avoids_python_embedding_list_roundtrip",
+    "tensor_cache_direct_alone_does_not_materially_improve_4096_gate",
+    "batch_size_1024_alone_does_not_materially_improve_4096_gate",
+    "native_compact_luma_bytes_remove_python_224_resize_loop",
+    "native_luma_4096_gate_passed_with_large_wallclock_speedup",
+    "native_luma_8192_gate_passed_with_prelaunch_gpu_monitor",
+    "native_luma_dino_materialization_still_no_trained_idm_metric_evidence"
+  ],
+  "input_samples": {
+    "4096_rows": "/tmp/g005_target_sample4096.jsonl",
+    "8192_rows": "/tmp/g005_target_sample8192.jsonl"
+  },
+  "next_action": "Use native-luma tensor-cache mode for a bounded 320k frozen-DINO prefix materialization/training gate before any full-corpus DINO extraction.",
+  "reservation_ids": [
+    "rsv-jeonghunpark-20260528-28ad03",
+    "rsv-jeonghunpark-20260528-d40653"
+  ],
+  "results": [
+    {
+      "batch_size": 256,
+      "elapsed_seconds": 90.25922107696533,
+      "gpu_max_by_index": {
+        "0": 100.0,
+        "1": 100.0
+      },
+      "gpu_mean_by_index": {
+        "0": 2.311111111111111,
+        "1": 1.1111111111111112
+      },
+      "gpu_samples": 180,
+      "name": "cache4096_b256_previous",
+      "rows_per_second": 45.380404917379934,
+      "rows_written": 4096,
+      "speedup_vs_cache4096_b256_previous_by_elapsed": 1.0,
+      "status": "pass",
+      "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_launcher4096_run_summary.json",
+      "throughput_ratio_vs_cache4096_b256_previous": 1.0
+    },
+    {
+      "batch_size": 256,
+      "elapsed_seconds": 89.33947491645813,
+      "gpu_max_by_index": {
+        "0": 88.0,
+        "1": 100.0
+      },
+      "gpu_mean_by_index": {
+        "0": 2.1235955056179776,
+        "1": 1.348314606741573
+      },
+      "gpu_samples": 178,
+      "name": "tensor_cache4096_b256",
+      "rows_per_second": 45.84759428942462,
+      "rows_written": 4096,
+      "speedup_vs_cache4096_b256_previous_by_elapsed": 1.0102949582070777,
+      "status": "pass",
+      "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_direct4096_run_summary.json",
+      "throughput_ratio_vs_cache4096_b256_previous": 1.0102949582070777
+    },
+    {
+      "batch_size": 1024,
+      "elapsed_seconds": 88.49150323867798,
+      "gpu_max_by_index": {
+        "0": 43.0,
+        "1": 10.0
+      },
+      "gpu_mean_by_index": {
+        "0": 0.5909090909090909,
+        "1": 0.19318181818181818
+      },
+      "gpu_samples": 176,
+      "name": "tensor_cache4096_b1024",
+      "rows_per_second": 46.28692981915257,
+      "rows_written": 4096,
+      "speedup_vs_cache4096_b256_previous_by_elapsed": 1.0199761307424,
+      "status": "pass",
+      "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_cache_direct4096_b1024_run_summary.json",
+      "throughput_ratio_vs_cache4096_b256_previous": 1.0199761307424
+    },
+    {
+      "batch_size": 1024,
+      "elapsed_seconds": 13.12475299835205,
+      "gpu_max_by_index": {
+        "0": 100.0,
+        "1": 100.0
+      },
+      "gpu_mean_by_index": {
+        "0": 8.76923076923077,
+        "1": 14.384615384615385
+      },
+      "gpu_samples": 26,
+      "name": "native_luma4096_b1024",
+      "rows_per_second": 312.0820636025909,
+      "rows_written": 4096,
+      "speedup_vs_cache4096_b256_previous_by_elapsed": 6.877022454311964,
+      "status": "pass",
+      "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma4096_b1024_run_summary.json",
+      "throughput_ratio_vs_cache4096_b256_previous": 6.877022454311964
+    },
+    {
+      "batch_size": 2048,
+      "elapsed_seconds": 20.17364501953125,
+      "gpu_max_by_index": {
+        "0": 100.0,
+        "1": 100.0
+      },
+      "gpu_mean_by_index": {
+        "0": 14.65,
+        "1": 10.15
+      },
+      "gpu_samples": 40,
+      "name": "native_luma8192_b2048",
+      "rows_per_second": 406.07436048710383,
+      "rows_written": 8192,
+      "speedup_vs_cache4096_b256_previous_by_elapsed": 4.474115658800393,
+      "status": "pass",
+      "summary_path": "artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_native_luma8192_b2048_run_summary.json",
+      "throughput_ratio_vs_cache4096_b256_previous": 8.948231317600786
+    }
+  ],
+  "schema": "g005_dinov2_native_luma_gpu_gate_summary.v1",
+  "status": "pass_native_luma_materialization_gate"
+}
