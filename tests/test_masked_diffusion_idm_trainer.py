@@ -4,10 +4,14 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.io_utils import read_json
 from fdm_d2e.training.masked_diffusion_idm_trainer import (
+    _button_class_conditional_prior_offsets,
+    _button_probabilities_from_output,
     _calibrate_button_event_budget,
     _calibrate_button_event_budget_multiplier,
     _calibrate_button_event_threshold,
@@ -214,6 +218,51 @@ def test_button_event_budget_multiplier_selects_calibration_recall_under_fpr_cap
     assert payload["selected_multiplier"] == 2.0
     assert payload["selected_row"]["metrics"]["recall"] == 1.0
     assert payload["selected_row"]["metrics"]["false_positive_rate"] <= 0.34
+
+
+def test_button_class_prior_offsets_boost_rare_transition_tokens_without_target_labels():
+    rows = []
+    for idx in range(9):
+        row = _row(idx, split="train_core")
+        row["ground_truth_tokens"] = ["MOUSE_LEFT_DOWN"]
+        rows.append(row)
+    rare = _row(99, split="train_core")
+    rare["ground_truth_tokens"] = ["MOUSE_RIGHT_DOWN"]
+    rows.append(rare)
+    offsets = _button_class_conditional_prior_offsets(
+        rows,
+        button_vocab=["MOUSE_LEFT_DOWN", "MOUSE_RIGHT_DOWN"],
+        config={"button_class_conditional_prior_correction": True, "button_class_conditional_prior_alpha": 1.0},
+    )
+    assert len(offsets) == 2
+    assert offsets[1] > offsets[0]
+
+
+def test_button_class_prior_correction_keeps_event_probability_and_redistributes_tokens():
+    if not torch_available():
+        return
+    import torch
+
+    logits = torch.tensor([[0.0, 4.0, 3.0]], dtype=torch.float32)
+    raw_probs, raw_event = _button_probabilities_from_output(
+        {"button_class": logits, "button": None, "button_event": None},
+        torch,
+        config={"button_probability_source": "button_class", "button_event_probability_source": "button_class"},
+    )
+    corrected_probs, corrected_event = _button_probabilities_from_output(
+        {"button_class": logits, "button": None, "button_event": None},
+        torch,
+        config={
+            "button_probability_source": "button_class",
+            "button_event_probability_source": "button_class",
+            "button_class_conditional_prior_correction": True,
+            "button_class_conditional_logit_offsets": [-0.8, 0.8],
+        },
+    )
+    assert corrected_event == raw_event
+    assert sum(corrected_probs) == pytest.approx(raw_event)
+    assert raw_probs[0] > raw_probs[1]
+    assert corrected_probs[1] > corrected_probs[0]
 
 
 def test_train_masked_diffusion_idm_tiny_smoke(tmp_path: Path):

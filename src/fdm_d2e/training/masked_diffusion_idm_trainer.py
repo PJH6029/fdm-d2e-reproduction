@@ -494,6 +494,50 @@ def _button_class_weight(torch: Any, rows: Sequence[dict[str, Any]], *, button_v
     return torch.tensor(weights, dtype=torch.float32)
 
 
+def _button_class_conditional_prior_offsets(
+    rows: Sequence[dict[str, Any]],
+    *,
+    button_vocab: Sequence[str],
+    config: dict[str, Any],
+) -> list[float]:
+    """Return train-label prior offsets for button-token conditional logits.
+
+    The relaxed-budget diagnostic showed a recipe-shaped button-class head
+    collapsing to the most frequent mouse-button token.  FDM-1's public IDM
+    still predicts discrete action tokens, so the leakage-safe correction is to
+    keep the event/no-event probability from the model while redistributing the
+    *conditional* button-token mass with train-only token priors.  Target labels
+    are not used here.
+    """
+
+    if not bool(config.get("button_class_conditional_prior_correction", False)):
+        return []
+    if not button_vocab:
+        return []
+    counts = [0 for _ in button_vocab]
+    for row in rows:
+        tokens = set(canonical_fdm1_action_tokens(row, include_noop=False))
+        for idx, token in enumerate(button_vocab):
+            counts[idx] += int(token in tokens)
+    smoothing = max(0.0, float(config.get("button_class_prior_smoothing", 1.0)))
+    total = sum(counts) + smoothing * len(counts)
+    if total <= 0.0:
+        return [0.0 for _ in button_vocab]
+    alpha = float(config.get("button_class_conditional_prior_alpha", 1.0))
+    offsets = [-alpha * math.log(max(1e-12, (count + smoothing) / total)) for count in counts]
+    mean_offset = sum(offsets) / max(1, len(offsets))
+    return [float(value - mean_offset) for value in offsets]
+
+
+def _multiclass_focal_cross_entropy(logits: Any, targets: Any, *, weight: Any = None, gamma: float = 2.0) -> Any:
+    torch = require_torch()
+    ce = torch.nn.functional.cross_entropy(logits, targets, weight=weight, reduction="none")
+    log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
+    pt = torch.exp(log_probs.gather(1, targets.unsqueeze(1)).squeeze(1)).clamp(min=1e-6, max=1.0)
+    focal = (1.0 - pt).pow(float(gamma)) * ce
+    return focal.mean()
+
+
 def _button_probabilities_from_output(out: dict[str, Any], torch: Any, *, config: dict[str, Any]) -> tuple[list[float], float | None]:
     """Return button-token probabilities and an event probability for inference.
 
@@ -506,10 +550,23 @@ def _button_probabilities_from_output(out: dict[str, Any], torch: Any, *, config
     class_event_prob: float | None = None
     class_button_probs: list[float] = []
     if out.get("button_class") is not None:
-        class_probs = torch.softmax(out["button_class"][0], dim=-1).detach().cpu().tolist()
-        if class_probs:
-            class_event_prob = max(0.0, 1.0 - float(class_probs[0]))
-            class_button_probs = [float(value) for value in class_probs[1:]]
+        class_logits = out["button_class"][0]
+        class_probs = torch.softmax(class_logits, dim=-1)
+        class_probs_list = class_probs.detach().cpu().tolist()
+        if class_probs_list:
+            class_event_prob = max(0.0, 1.0 - float(class_probs_list[0]))
+            offsets = config.get("button_class_conditional_logit_offsets")
+            if (
+                bool(config.get("button_class_conditional_prior_correction", False))
+                and isinstance(offsets, list)
+                and len(offsets) == max(0, int(class_logits.numel()) - 1)
+                and class_event_prob > 0.0
+            ):
+                offset_tensor = torch.tensor(offsets, dtype=class_logits.dtype, device=class_logits.device)
+                conditional = torch.softmax(class_logits[1:] + offset_tensor, dim=-1).detach().cpu().tolist()
+                class_button_probs = [float(class_event_prob) * float(value) for value in conditional]
+            else:
+                class_button_probs = [float(value) for value in class_probs_list[1:]]
 
     bce_button_probs: list[float] = []
     if out.get("button") is not None:
@@ -1347,6 +1404,9 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
         max_tokens=int(config.get("max_button_tokens", 8)),
         min_count=int(config.get("button_min_count", 1)),
     )
+    button_class_offsets = _button_class_conditional_prior_offsets(train_rows, button_vocab=button_vocab, config=config)
+    if button_class_offsets:
+        config["button_class_conditional_logit_offsets"] = button_class_offsets
     feature_dim = int(config.get("video_feature_dim", 64))
     dataset = _FactorizedMaskedDiffusionDataset(fit_rows, config=config, key_vocab=key_vocab, button_vocab=button_vocab)
     loader = torch.utils.data.DataLoader(dataset, batch_size=int(config.get("batch_size", 64)), shuffle=True)
@@ -1398,7 +1458,16 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
                 button_loss = torch.nn.functional.binary_cross_entropy_with_logits(out["button"], button_labels, pos_weight=button_pos_weight)
             button_class_loss = torch.tensor(0.0, device=device)
             if out.get("button_class") is not None:
-                button_class_loss = torch.nn.functional.cross_entropy(out["button_class"], button_class, weight=button_class_weight)
+                button_class_loss_type = str(config.get("button_class_loss", "cross_entropy")).lower()
+                if button_class_loss_type in {"focal", "focal_cross_entropy", "weighted_focal"}:
+                    button_class_loss = _multiclass_focal_cross_entropy(
+                        out["button_class"],
+                        button_class,
+                        weight=button_class_weight,
+                        gamma=float(config.get("button_class_focal_gamma", config.get("focal_gamma", 2.0))),
+                    )
+                else:
+                    button_class_loss = torch.nn.functional.cross_entropy(out["button_class"], button_class, weight=button_class_weight)
             button_event_loss = torch.tensor(0.0, device=device)
             if out.get("button_event") is not None and button_labels.numel():
                 button_event_labels = (button_labels.sum(dim=1) > 0).float()
@@ -1554,6 +1623,10 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             "button_event_budget_max_forced_events": None if config.get("button_event_budget_max_forced_events") is None else int(config.get("button_event_budget_max_forced_events")),
             "button_event_budget_applies_to_all_buttons": bool(config.get("button_event_budget_applies_to_all_buttons", False)),
             "button_event_budget_rank_all_scores": bool(config.get("button_event_budget_rank_all_scores", False)),
+            "button_class_loss": str(config.get("button_class_loss", "cross_entropy")),
+            "button_class_conditional_prior_correction": bool(config.get("button_class_conditional_prior_correction", False)),
+            "button_class_conditional_prior_alpha": float(config.get("button_class_conditional_prior_alpha", 1.0)),
+            "button_class_conditional_logit_offset_count": len(config.get("button_class_conditional_logit_offsets", []) if isinstance(config.get("button_class_conditional_logit_offsets"), list) else []),
             "key_token_threshold_count": len(config.get("key_token_thresholds", {}) if isinstance(config.get("key_token_thresholds"), dict) else {}),
             "button_token_threshold_count": len(config.get("button_token_thresholds", {}) if isinstance(config.get("button_token_thresholds"), dict) else {}),
         },
