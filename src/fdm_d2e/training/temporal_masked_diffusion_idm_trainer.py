@@ -126,6 +126,13 @@ def _precompute_raw_video_features(rows: Sequence[dict[str, Any]], *, config: di
     aux_paths = list(config.get("raw_video_aux_feature_paths", []))
     aux_dim = int(config.get("raw_video_aux_feature_dim", 0) or 0)
     feature_dim = _raw_video_feature_dim(config)
+    storage = str(config.get("raw_video_feature_storage", "list")).lower()
+    tensor_storage = storage in {"tensor", "torch", "float16_tensor", "fp16_tensor"}
+    torch = require_torch() if tensor_storage else None
+    tensor_dtype = None
+    if tensor_storage:
+        dtype_name = str(config.get("raw_video_feature_tensor_dtype", "float16")).lower()
+        tensor_dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
     provider = _FramePairProvider(
         root=Path(config.get("root", ".")).resolve(),
         image_size=image_size,
@@ -134,19 +141,34 @@ def _precompute_raw_video_features(rows: Sequence[dict[str, Any]], *, config: di
         missing_frame_policy=str(config.get("raw_video_missing_frame_policy", config.get("missing_frame_policy", "error"))),
     )
     features: list[list[float]] = []
+    tensor_features: list[Any] = []
     try:
         for row in rows:
             frame_bytes = b"".join(provider.frames(row, offsets=offsets))
-            values = [float(value) / 255.0 for value in frame_bytes[:expected_frame_dim]]
-            if len(values) < expected_frame_dim:
-                values.extend([0.0] * (expected_frame_dim - len(values)))
-            if aux_dim > 0 and aux_paths:
-                values.extend(video_feature_vector(row, feature_paths=aux_paths, dim=aux_dim))
-            if len(values) < feature_dim:
-                values.extend([0.0] * (feature_dim - len(values)))
-            features.append(values[:feature_dim])
+            if tensor_storage:
+                raw = torch.frombuffer(bytearray(frame_bytes[:expected_frame_dim]), dtype=torch.uint8).to(dtype=torch.float32).div_(255.0)
+                if int(raw.numel()) < expected_frame_dim:
+                    raw = torch.cat([raw, torch.zeros(expected_frame_dim - int(raw.numel()), dtype=torch.float32)])
+                parts = [raw[:expected_frame_dim]]
+                if aux_dim > 0 and aux_paths:
+                    parts.append(torch.tensor(video_feature_vector(row, feature_paths=aux_paths, dim=aux_dim), dtype=torch.float32))
+                values_tensor = torch.cat(parts) if len(parts) > 1 else parts[0]
+                if int(values_tensor.numel()) < feature_dim:
+                    values_tensor = torch.cat([values_tensor, torch.zeros(feature_dim - int(values_tensor.numel()), dtype=torch.float32)])
+                tensor_features.append(values_tensor[:feature_dim].to(dtype=tensor_dtype).contiguous())
+            else:
+                values = [float(value) / 255.0 for value in frame_bytes[:expected_frame_dim]]
+                if len(values) < expected_frame_dim:
+                    values.extend([0.0] * (expected_frame_dim - len(values)))
+                if aux_dim > 0 and aux_paths:
+                    values.extend(video_feature_vector(row, feature_paths=aux_paths, dim=aux_dim))
+                if len(values) < feature_dim:
+                    values.extend([0.0] * (feature_dim - len(values)))
+                features.append(values[:feature_dim])
     finally:
         provider.close()
+    if tensor_storage:
+        return tensor_features
     return features
 
 
@@ -178,7 +200,7 @@ class _TemporalMaskedDiffusionDataset:
     ) -> None:
         torch = require_torch()
         self.torch = torch
-        self.features = [list(row) for row in features]
+        self.features = list(features)
         self.target_ids = [list(row) for row in target_ids]
         self.vocab = list(vocab)
         self.token_to_index = {token: idx for idx, token in enumerate(self.vocab)}
@@ -195,8 +217,14 @@ class _TemporalMaskedDiffusionDataset:
     def _row_index(self, idx: int, offset: int) -> int:
         return max(0, min(len(self.features) - 1, idx + offset))
 
+    def _feature_tensor(self, row_index: int) -> Any:
+        value = self.features[row_index]
+        if hasattr(value, "detach") and hasattr(value, "to"):
+            return value.to(dtype=self.torch.float32)
+        return self.torch.tensor(list(value), dtype=self.torch.float32)
+
     def __getitem__(self, idx: int) -> tuple[Any, Any, Any, Any]:
-        feature_rows: list[list[float]] = []
+        feature_rows: list[Any] = []
         corrupted_rows: list[list[int]] = []
         target_rows: list[list[int]] = []
         mask_rows: list[list[bool]] = []
@@ -204,7 +232,7 @@ class _TemporalMaskedDiffusionDataset:
         mask_index = self.token_to_index[FDM1_ACTION_MASK]
         for offset_position, offset in enumerate(self.offsets):
             row_index = self._row_index(idx, offset)
-            feature_rows.append(self.features[row_index])
+            feature_rows.append(self._feature_tensor(row_index))
             target = list(self.target_ids[row_index])
             target_tokens = [index_to_token.get(token_id, FDM1_ACTION_NOOP) for token_id in target]
             corrupted_tokens, loss_mask = corrupt_action_slots(
@@ -220,7 +248,7 @@ class _TemporalMaskedDiffusionDataset:
             target_rows.append(target)
             mask_rows.append(loss_mask)
         return (
-            self.torch.tensor(feature_rows, dtype=self.torch.float32),
+            self.torch.stack(feature_rows, dim=0),
             self.torch.tensor(corrupted_rows, dtype=self.torch.long),
             self.torch.tensor(target_rows, dtype=self.torch.long),
             self.torch.tensor(mask_rows, dtype=self.torch.bool),
@@ -477,7 +505,7 @@ def _pretrain_video_encoder(model: Any, torch: Any, loader: Any, *, config: dict
         total = 0.0
         examples = 0
         for features, _corrupted, _targets, _mask in loader:
-            features = features.to(device)
+            features = features.to(device=device, dtype=torch.float32)
             loss = _masked_video_reconstruction_loss(model, torch, features, config=config)
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
@@ -811,11 +839,32 @@ def _temporal_window_features_for_batch(
     all_features: Sequence[Sequence[float]],
     offsets: Sequence[int],
 ) -> list[list[list[float]]]:
-    window_features: list[list[list[float]]] = []
+    window_features: list[list[Any]] = []
     for local_idx, _row in enumerate(rows):
         global_idx = start_index + local_idx
-        window_features.append([list(all_features[max(0, min(len(all_features) - 1, global_idx + offset))]) for offset in offsets])
+        window_features.append([all_features[max(0, min(len(all_features) - 1, global_idx + offset))] for offset in offsets])
     return window_features
+
+
+def _feature_sequence_tensor(torch: Any, feature_rows: Sequence[Any], *, device: Any) -> Any:
+    if not feature_rows:
+        return torch.empty((0, 0), dtype=torch.float32, device=device)
+    first = feature_rows[0]
+    if hasattr(first, "detach") and hasattr(first, "to"):
+        return torch.stack([row.to(dtype=torch.float32) for row in feature_rows], dim=0).to(device=device)
+    return torch.tensor([list(row) for row in feature_rows], dtype=torch.float32, device=device)
+
+
+def _feature_window_tensor(torch: Any, window_features: Sequence[Sequence[Any]], *, device: Any) -> Any:
+    if not window_features:
+        return torch.empty((0, 0, 0), dtype=torch.float32, device=device)
+    first = window_features[0][0] if window_features[0] else None
+    if hasattr(first, "detach") and hasattr(first, "to"):
+        return torch.stack(
+            [torch.stack([feature.to(dtype=torch.float32) for feature in row], dim=0) for row in window_features],
+            dim=0,
+        ).to(device=device)
+    return torch.tensor(window_features, dtype=torch.float32, device=device)
 
 
 def _temporal_final_center_probabilities(
@@ -838,7 +887,7 @@ def _temporal_final_center_probabilities(
     if not window_features:
         return None, None, {}
     model.eval()
-    feature_tensor = torch.tensor(window_features, dtype=torch.float32, device=device)
+    feature_tensor = _feature_window_tensor(torch, window_features, device=device)
     batch = int(feature_tensor.shape[0])
     corrupted = torch.full((batch, len(offsets), max_slots), mask_index, dtype=torch.long, device=device)
     masked = torch.ones((batch, len(offsets), max_slots), dtype=torch.bool, device=device)
@@ -1072,7 +1121,7 @@ def _build_temporal_retrieval_prior_index(
     model.eval()
     with torch.no_grad():
         for start in range(0, limit, batch_size):
-            batch_features = torch.tensor([[list(row)] for row in features[start : start + batch_size]], dtype=torch.float32, device=device)
+            batch_features = _feature_sequence_tensor(torch, features[start : start + batch_size], device=device).unsqueeze(1)
             encoded = model.video_embedding(batch_features)[:, 0, :]
             encoded = torch.nn.functional.normalize(encoded, p=2, dim=-1)
             embeddings.append(encoded.detach())
@@ -1115,7 +1164,7 @@ def _retrieval_priors_for_batch(
         return []
     top_k = max(1, min(int(config.get("retrieval_action_prior_top_k", retrieval_index.get("top_k", 16))), int(embeddings.shape[0])))
     temperature = max(1e-6, float(config.get("retrieval_action_prior_temperature", retrieval_index.get("temperature", 0.07))))
-    batch_features = torch.tensor([[list(row)] for row in features], dtype=torch.float32, device=device)
+    batch_features = _feature_sequence_tensor(torch, features, device=device).unsqueeze(1)
     model.eval()
     with torch.no_grad():
         query = model.video_embedding(batch_features)[:, 0, :]
@@ -1665,7 +1714,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         total_targets = 0
         total_examples = 0
         for features, corrupted_ids, target_ids, loss_mask in loader:
-            features = features.to(device)
+            features = features.to(device=device, dtype=torch.float32)
             corrupted_ids = corrupted_ids.to(device)
             target_ids = target_ids.to(device)
             loss_mask = loss_mask.to(device)
