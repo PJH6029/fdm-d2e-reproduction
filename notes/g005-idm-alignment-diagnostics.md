@@ -812,3 +812,39 @@ baselines while preserving no-button FPR.
 - Evidence copied locally: `artifacts/idm/g005_idm_frozen_frame_embedding_prefix320k_run_summary.json`, `artifacts/idm/g005_idm_frozen_frame_embedding_prefix320k_paper_metrics.json`, `artifacts/idm/g005_idm_frozen_frame_embedding_prefix320k_gpu_monitor.csv`, source/materialization summaries, and small output metadata under `outputs/idm_streaming_d2e_full_frozen_frame_embedding_prefix320k/`.
 - Result: materialization and training completed on 320k train / 320k target rows, but metric screen failed badly: paper-compatible keyboard `0.0206`, mouse-button `0.1046`, Pearson X/Y `0.0199/0.0102`, scale ratios X/Y `3.465/2.076`; strict button F1 `0.1814`; heldout-game no-button FPR `0.1096` exceeds the 0.10 split gate.
 - Decision: reject frozen-DINO compact-luma embeddings as a G005 full-corpus promotion candidate. Treat native-luma DINO as useful infrastructure only; next branch must change supervision/decoding (teacher-assisted event decoding, causal per-recording latent state/state-machine estimation, or released G-IDM distillation if feasible), with a prefix metric gate before expensive full-corpus 4×H200 work.
+
+### 2026-05-28 KST — key-event taxonomy exposes the remaining keyboard bottleneck
+
+Ran a CPU-only taxonomy diagnostic on `production-storage-shell-4` from clean
+worktree `fdm-d2e-reproduction-key-taxonomy-5bb75e4`, using the same 320k
+chronological target prefix as the rejected DINO branch.
+
+Evidence:
+
+- `scripts/build_g005_key_event_taxonomy.py`
+- `src/fdm_d2e/eval/key_event_taxonomy.py`
+- `tests/test_key_event_taxonomy.py`
+- `artifacts/idm/g005_idm_key_event_taxonomy_prefix320k.json`
+
+Findings:
+
+- Rows: `320,000`; key tokens: `80,548`; key rows: `60,313`.
+- Only `36.48%` of key tokens are visible from prior→next held-state differencing.
+- `63.49%` are hidden/repeat tokens; the dominant class is `held_repeat_press`
+  (`50,169` tokens), not rare same-bin taps (`34` press + `34` release).
+- A diagnostic oracle that adds current-row hidden/repeat key tokens to state-delta
+  buttons and previous-motion reaches keyboard `0.74175` and mouse-button
+  `0.97544` on the prefix, crossing the paper keyboard/button targets. This is
+  not claimable because it inspects current-row ground truth, but it proves the
+  paper-target gap is specifically a key-repeat/tap decoder problem rather than
+  impossible state-transition labeling.
+- Motion remains below the paper target under previous-motion continuation alone
+  (Pearson X/Y `0.7687/0.7425`), so a complete G005 candidate still needs a
+  stronger motion source in addition to the repeat-key specialist.
+
+Decision: do not reserve H200s for more frozen visual/global temporal wrappers
+until a non-leaky key-repeat/tap specialist beats the `event_all` prefix keyboard
+baseline and approaches the oracle target. The next branch should explicitly
+model held-repeat keypresses (likely with richer phase/history features or a
+specialized per-key head), pair state-delta-style mouse-button decoding with safe
+FPR, and separately improve motion beyond previous-motion continuation.

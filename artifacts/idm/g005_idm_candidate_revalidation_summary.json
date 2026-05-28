@@ -523,6 +523,42 @@
       "rows": 320000,
       "run_summary": "artifacts/idm/g005_idm_frozen_frame_embedding_prefix320k_run_summary.json",
       "status": "fail_metric_screen"
+    },
+    {
+      "artifact": "artifacts/idm/g005_idm_key_event_taxonomy_prefix320k.json",
+      "category_counts": {
+        "held_repeat_press": 50169,
+        "press_then_release_while_held": 884,
+        "recording_boundary_unclassified": 7,
+        "release_other": 14,
+        "release_then_press_while_held": 22,
+        "same_bin_tap_press": 34,
+        "same_bin_tap_release": 34,
+        "visible_new_press": 14693,
+        "visible_release": 14691
+      },
+      "claim_boundary": "Diagnostic only; same-bin/repeat oracle inspects current-row ground-truth key tokens and is not model evidence.",
+      "decision": "train_repeat_and_same_bin_key_specialist_before_more_visual_gpu_runs",
+      "finding_codes": [
+        "only_36_percent_of_key_tokens_visible_to_state_delta",
+        "held_repeat_press_is_dominant_keyboard_gap",
+        "oracle_same_bin_repeat_key_decoder_beats_keyboard_paper_target",
+        "motion_still_below_paper_target_even_with_previous_motion_oracle"
+      ],
+      "hidden_or_repeat_fraction": 0.6349381735114465,
+      "name": "key_event_taxonomy_prefix320k",
+      "oracle_metrics": {
+        "keyboard_accuracy": 0.7417520619845038,
+        "mouse_button_accuracy": 0.9754424778761062,
+        "pearson_x": 0.7687087053983602,
+        "pearson_y": 0.7424529931783539,
+        "scale_ratio_x": 1.0001756310144025,
+        "scale_ratio_y": 1.000020839820968
+      },
+      "rows": 320000,
+      "state_transition_visible_fraction": 0.36480111238019564,
+      "status": "pass",
+      "total_key_tokens": 80548
     }
   ],
   "paper_targets": {
@@ -1527,11 +1563,11 @@
   "recommended_next_actions": [
     "Do not promote frozen DINO-v2 compact-luma embeddings to full-corpus G005: the 320k 2xH200 prefix trained/evaluated successfully but achieved keyboard=0.0206, mouse-button=0.1046, Pearson X/Y=0.0199/0.0102 and heldout_game no-button FPR=0.1096.",
     "Keep the native-luma tensor-cache materialization path as infrastructure only; it solves throughput/cache issues but not the IDM paper-target metric problem.",
-    "Next G005 branch must change supervision/decoding rather than add frozen visual features alone: prioritize teacher-assisted event decoding, causal per-recording latent state/state-machine estimation, or released G-IDM distillation if available, with a prefix metric gate before any full-corpus/4xH200 launch.",
+    "Key-event taxonomy shows the dominant keyboard blocker is held-repeat/same-bin key decoding: only 36.5% of key tokens are visible to prior->next state differencing, while an oracle repeat/tap key decoder plus state-delta buttons reaches keyboard=0.7418 and button=0.9754 on the 320k prefix. Next candidate should train a non-leaky key-repeat/tap specialist and pair it with state-transition button decoding and improved motion, not another frozen visual embedding alone.",
     "Do not reserve H200s for threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, sequence-prior action history, or frozen-DINO-only prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779936921.7723038
+  "updated_at_epoch": 1779938663.4311109
 }

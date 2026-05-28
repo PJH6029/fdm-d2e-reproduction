@@ -1,0 +1,1240 @@
+{
+  "schema": "g005_key_event_taxonomy.v1",
+  "status": "pass",
+  "rows": 320000,
+  "key_rows": 60313,
+  "rows_with_events": 155831,
+  "rows_with_same_bin_key_pair": 838,
+  "total_key_tokens": 80548,
+  "state_transition_visible_key_tokens": 29384,
+  "hidden_or_repeat_key_tokens": 51143,
+  "state_transition_visible_fraction": 0.36480111238019564,
+  "hidden_or_repeat_fraction": 0.6349381735114465,
+  "category_counts": {
+    "visible_release": 14691,
+    "visible_new_press": 14693,
+    "press_then_release_while_held": 884,
+    "held_repeat_press": 50169,
+    "release_then_press_while_held": 22,
+    "same_bin_tap_press": 34,
+    "same_bin_tap_release": 34,
+    "recording_boundary_unclassified": 7,
+    "release_other": 14
+  },
+  "split_category_counts": {
+    "temporal": {
+      "visible_release": 7239,
+      "visible_new_press": 7235,
+      "press_then_release_while_held": 415,
+      "held_repeat_press": 25674,
+      "same_bin_tap_press": 18,
+      "same_bin_tap_release": 18,
+      "release_then_press_while_held": 13,
+      "recording_boundary_unclassified": 7
+    },
+    "heldout_recording": {
+      "visible_new_press": 4563,
+      "visible_release": 4561,
+      "held_repeat_press": 12945,
+      "press_then_release_while_held": 278,
+      "release_then_press_while_held": 5,
+      "same_bin_tap_press": 10,
+      "same_bin_tap_release": 10,
+      "release_other": 4
+    },
+    "heldout_game": {
+      "visible_new_press": 5902,
+      "held_repeat_press": 22077,
+      "visible_release": 5899,
+      "release_other": 11,
+      "press_then_release_while_held": 389,
+      "release_then_press_while_held": 11,
+      "same_bin_tap_press": 14,
+      "same_bin_tap_release": 14,
+      "recording_boundary_unclassified": 2
+    }
+  },
+  "top_key_codes": [
+    [
+      "87",
+      11764
+    ],
+    [
+      "65",
+      11319
+    ],
+    [
+      "68",
+      10679
+    ],
+    [
+      "38",
+      7587
+    ],
+    [
+      "160",
+      6156
+    ],
+    [
+      "9",
+      5250
+    ],
+    [
+      "70",
+      4507
+    ],
+    [
+      "83",
+      3639
+    ],
+    [
+      "88",
+      2564
+    ],
+    [
+      "69",
+      2533
+    ],
+    [
+      "32",
+      2514
+    ],
+    [
+      "39",
+      2407
+    ],
+    [
+      "37",
+      2120
+    ],
+    [
+      "40",
+      1603
+    ],
+    [
+      "82",
+      1086
+    ],
+    [
+      "162",
+      646
+    ],
+    [
+      "164",
+      563
+    ],
+    [
+      "81",
+      551
+    ],
+    [
+      "89",
+      445
+    ],
+    [
+      "13",
+      318
+    ]
+  ],
+  "policy_metrics": {
+    "previous_motion_only": {
+      "all": {
+        "rows": 320000,
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "mouse_move": {
+            "pearson_x": 0.7687087053983602,
+            "pearson_y": 0.7424529931783539,
+            "scale_ratio_x": 1.0001756310144025,
+            "scale_ratio_y": 1.000020839820968,
+            "sample_count": 135248,
+            "scale_sample_count": 320000
+          },
+          "keyboard": {
+            "key_accuracy": 0.0,
+            "sample_count": 64016
+          },
+          "mouse_button": {
+            "button_accuracy": 0.0,
+            "sample_count": 9040
+          }
+        },
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.0,
+            "num_examples": 60313
+          },
+          "mouse_button": {
+            "accuracy": 0.0,
+            "num_examples": 8734,
+            "predicted_examples": 0,
+            "exact_true_positive_examples": 0,
+            "false_positive_examples": 0,
+            "false_negative_examples": 8734,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "no_button_examples": 311266,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          }
+        }
+      }
+    },
+    "state_delta_only": {
+      "all": {
+        "rows": 320000,
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "mouse_move": {
+            "pearson_x": null,
+            "pearson_y": null,
+            "scale_ratio_x": null,
+            "scale_ratio_y": null,
+            "sample_count": 119023,
+            "scale_sample_count": 320000
+          },
+          "keyboard": {
+            "key_accuracy": 0.45897900524868784,
+            "sample_count": 64016
+          },
+          "mouse_button": {
+            "button_accuracy": 0.9754424778761062,
+            "sample_count": 9040
+          }
+        },
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.4276689934176712,
+            "num_examples": 60313
+          },
+          "mouse_button": {
+            "accuracy": 0.9868330661781544,
+            "num_examples": 8734,
+            "predicted_examples": 8620,
+            "exact_true_positive_examples": 8619,
+            "false_positive_examples": 1,
+            "false_negative_examples": 115,
+            "precision": 0.9998839907192575,
+            "recall": 0.9868330661781544,
+            "f1": 0.9933156620951942,
+            "no_button_examples": 311266,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          }
+        }
+      }
+    },
+    "state_delta_plus_previous_motion": {
+      "all": {
+        "rows": 320000,
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "mouse_move": {
+            "pearson_x": 0.7687087053983602,
+            "pearson_y": 0.7424529931783539,
+            "scale_ratio_x": 1.0001756310144025,
+            "scale_ratio_y": 1.000020839820968,
+            "sample_count": 135248,
+            "scale_sample_count": 320000
+          },
+          "keyboard": {
+            "key_accuracy": 0.45897900524868784,
+            "sample_count": 64016
+          },
+          "mouse_button": {
+            "button_accuracy": 0.9754424778761062,
+            "sample_count": 9040
+          }
+        },
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.4276689934176712,
+            "num_examples": 60313
+          },
+          "mouse_button": {
+            "accuracy": 0.9868330661781544,
+            "num_examples": 8734,
+            "predicted_examples": 8620,
+            "exact_true_positive_examples": 8619,
+            "false_positive_examples": 1,
+            "false_negative_examples": 115,
+            "precision": 0.9998839907192575,
+            "recall": 0.9868330661781544,
+            "f1": 0.9933156620951942,
+            "no_button_examples": 311266,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          }
+        }
+      }
+    },
+    "state_delta_plus_same_bin_key_oracle_plus_previous_motion": {
+      "all": {
+        "rows": 320000,
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "mouse_move": {
+            "pearson_x": 0.7687087053983602,
+            "pearson_y": 0.7424529931783539,
+            "scale_ratio_x": 1.0001756310144025,
+            "scale_ratio_y": 1.000020839820968,
+            "sample_count": 135248,
+            "scale_sample_count": 320000
+          },
+          "keyboard": {
+            "key_accuracy": 0.7417520619845038,
+            "sample_count": 64016
+          },
+          "mouse_button": {
+            "button_accuracy": 0.9754424778761062,
+            "sample_count": 9040
+          }
+        },
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.7262447565201532,
+            "num_examples": 60313
+          },
+          "mouse_button": {
+            "accuracy": 0.9868330661781544,
+            "num_examples": 8734,
+            "predicted_examples": 8620,
+            "exact_true_positive_examples": 8619,
+            "false_positive_examples": 1,
+            "false_negative_examples": 115,
+            "precision": 0.9998839907192575,
+            "recall": 0.9868330661781544,
+            "f1": 0.9933156620951942,
+            "no_button_examples": 311266,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0
+          }
+        }
+      }
+    }
+  },
+  "examples": {
+    "visible_release": [
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023421",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1173467098600,
+        "token": "KEY_RELEASE_160",
+        "ground_truth_tokens": [
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P1",
+          "KEY_RELEASE_160",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_P4",
+          "MOUSE_DY_Z0"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P5",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P5",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P5",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P4",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P4",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P4",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P3"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_160",
+          "KEY_DOWN_32",
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_32",
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023422",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1173517098600,
+        "token": "KEY_RELEASE_32",
+        "ground_truth_tokens": [
+          "MOUSE_DX_P1",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N5",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_N5",
+          "MOUSE_DY_N1",
+          "KEY_RELEASE_32"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P1",
+          "KEY_RELEASE_160",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_P4",
+          "MOUSE_DY_Z0"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_32",
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023434",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1174117098600,
+        "token": "KEY_RELEASE_87",
+        "ground_truth_tokens": [
+          "KEY_RELEASE_87"
+        ],
+        "previous_event_tokens": [
+          "NOOP"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_65",
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_65"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      }
+    ],
+    "visible_new_press": [
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023429",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1173867098600,
+        "token": "KEY_PRESS_65",
+        "ground_truth_tokens": [
+          "KEY_PRESS_65"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_N1"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_65",
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023437",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1174267098600,
+        "token": "KEY_PRESS_87",
+        "ground_truth_tokens": [
+          "KEY_PRESS_87"
+        ],
+        "previous_event_tokens": [
+          "NOOP"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_65"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_65",
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023457",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1175267098600,
+        "token": "KEY_PRESS_32",
+        "ground_truth_tokens": [
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_Z0",
+          "KEY_PRESS_32",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_Z0"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_P1"
+        ],
+        "prior_action_tokens": [
+          "NOOP"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_32"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      }
+    ],
+    "press_then_release_while_held": [
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023449",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1174867098600,
+        "token": "KEY_PRESS_87",
+        "ground_truth_tokens": [
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P2",
+          "KEY_PRESS_87",
+          "MOUSE_DX_P1",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P2",
+          "KEY_RELEASE_87",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P2"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_P1",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_P1",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P2"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "NOOP"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023497",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1177267098600,
+        "token": "KEY_PRESS_65",
+        "ground_truth_tokens": [
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_P4",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_N3",
+          "MOUSE_DY_P3",
+          "KEY_PRESS_65",
+          "KEY_RELEASE_65"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P3",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_P3"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_65"
+        ],
+        "next_prior_action_tokens": [
+          "NOOP"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023518",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1178317098600,
+        "token": "KEY_PRESS_68",
+        "ground_truth_tokens": [
+          "MOUSE_DX_N3",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N3",
+          "MOUSE_DY_Z0",
+          "KEY_PRESS_68",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0",
+          "KEY_RELEASE_68",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N3",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N3",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N3",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N3",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N3",
+          "MOUSE_DY_Z0"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_68"
+        ],
+        "next_prior_action_tokens": [
+          "NOOP"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      }
+    ],
+    "held_repeat_press": [
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023637",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1184267098600,
+        "token": "KEY_PRESS_87",
+        "ground_truth_tokens": [
+          "KEY_PRESS_87",
+          "KEY_PRESS_87"
+        ],
+        "previous_event_tokens": [
+          "NOOP"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023637",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1184267098600,
+        "token": "KEY_PRESS_87",
+        "ground_truth_tokens": [
+          "KEY_PRESS_87",
+          "KEY_PRESS_87"
+        ],
+        "previous_event_tokens": [
+          "NOOP"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_01#023638",
+        "recording_id": "Apex_Legends/0805_01",
+        "timestamp_ns": 1184317098600,
+        "token": "KEY_PRESS_87",
+        "ground_truth_tokens": [
+          "KEY_PRESS_87"
+        ],
+        "previous_event_tokens": [
+          "KEY_PRESS_87",
+          "KEY_PRESS_87"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      }
+    ],
+    "release_then_press_while_held": [
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_02#001213",
+        "recording_id": "Apex_Legends/0805_02",
+        "timestamp_ns": 97318058000,
+        "token": "KEY_RELEASE_87",
+        "ground_truth_tokens": [
+          "KEY_RELEASE_87",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0",
+          "KEY_PRESS_87",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_N3",
+          "MOUSE_DY_P2"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_P1",
+          "MOUSE_DY_N3",
+          "MOUSE_DX_P1",
+          "MOUSE_DY_N3",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_N1",
+          "MOUSE_LEFT_UP",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_N1",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_N3",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_N2",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_Z0",
+          "MOUSE_RIGHT_UP",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_N1"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_160",
+          "KEY_DOWN_51",
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_160",
+          "KEY_DOWN_51",
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "heldout_recording"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Brotato/recording_20250904_132203__7d3a59fe#030544",
+        "recording_id": "Brotato/recording_20250904_132203__7d3a59fe",
+        "timestamp_ns": 1527202990800,
+        "token": "KEY_RELEASE_87",
+        "ground_truth_tokens": [
+          "KEY_RELEASE_87",
+          "KEY_PRESS_65",
+          "KEY_PRESS_87"
+        ],
+        "previous_event_tokens": [
+          "NOOP"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_65",
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Euro_Truck_Simulator_2/recording_20250820_175200_Euro_Truck_Simulator_2_8073a659#220033",
+        "recording_id": "Euro_Truck_Simulator_2/recording_20250820_175200_Euro_Truck_Simulator_2_8073a659",
+        "timestamp_ns": 11001661372500,
+        "token": "KEY_RELEASE_40",
+        "ground_truth_tokens": [
+          "KEY_RELEASE_40",
+          "KEY_PRESS_40"
+        ],
+        "previous_event_tokens": [
+          "NOOP"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_40"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_40"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      }
+    ],
+    "same_bin_tap_press": [
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_02#003815",
+        "recording_id": "Apex_Legends/0805_02",
+        "timestamp_ns": 227418058000,
+        "token": "KEY_PRESS_27",
+        "ground_truth_tokens": [
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N2",
+          "KEY_PRESS_27",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3",
+          "KEY_RELEASE_27",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_P2",
+          "MOUSE_DY_N2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_N1",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_N2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_N2"
+        ],
+        "prior_action_tokens": [
+          "NOOP"
+        ],
+        "next_prior_action_tokens": [
+          "NOOP"
+        ],
+        "eval_split_tags": [
+          "heldout_recording"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_02#009323",
+        "recording_id": "Apex_Legends/0805_02",
+        "timestamp_ns": 502818058000,
+        "token": "KEY_PRESS_32",
+        "ground_truth_tokens": [
+          "KEY_PRESS_32",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0",
+          "KEY_RELEASE_32",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P1",
+          "KEY_RELEASE_65"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "heldout_recording"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_02#013293",
+        "recording_id": "Apex_Legends/0805_02",
+        "timestamp_ns": 701318058000,
+        "token": "KEY_PRESS_9",
+        "ground_truth_tokens": [
+          "KEY_PRESS_9",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_P4",
+          "MOUSE_DY_N1",
+          "MOUSE_DX_P4",
+          "MOUSE_DY_N1",
+          "KEY_RELEASE_9",
+          "MOUSE_DX_P4",
+          "MOUSE_DY_N1",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_N1"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_P1",
+          "MOUSE_DY_Z0"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "heldout_recording"
+        ]
+      }
+    ],
+    "same_bin_tap_release": [
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_02#003815",
+        "recording_id": "Apex_Legends/0805_02",
+        "timestamp_ns": 227418058000,
+        "token": "KEY_RELEASE_27",
+        "ground_truth_tokens": [
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N2",
+          "KEY_PRESS_27",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3",
+          "KEY_RELEASE_27",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_N3"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_P2",
+          "MOUSE_DY_N2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_N1",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_N2",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_P2",
+          "MOUSE_DY_N2"
+        ],
+        "prior_action_tokens": [
+          "NOOP"
+        ],
+        "next_prior_action_tokens": [
+          "NOOP"
+        ],
+        "eval_split_tags": [
+          "heldout_recording"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_02#009323",
+        "recording_id": "Apex_Legends/0805_02",
+        "timestamp_ns": 502818058000,
+        "token": "KEY_RELEASE_32",
+        "ground_truth_tokens": [
+          "KEY_PRESS_32",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_Z0",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0",
+          "KEY_RELEASE_32",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_Z0"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_P2",
+          "MOUSE_DY_P1",
+          "KEY_RELEASE_65"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "heldout_recording"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Apex_Legends/0805_02#013293",
+        "recording_id": "Apex_Legends/0805_02",
+        "timestamp_ns": 701318058000,
+        "token": "KEY_RELEASE_9",
+        "ground_truth_tokens": [
+          "KEY_PRESS_9",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_P3",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_P4",
+          "MOUSE_DY_N1",
+          "MOUSE_DX_P4",
+          "MOUSE_DY_N1",
+          "KEY_RELEASE_9",
+          "MOUSE_DX_P4",
+          "MOUSE_DY_N1",
+          "MOUSE_DX_P5",
+          "MOUSE_DY_N1"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_DX_P1",
+          "MOUSE_DY_Z0"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "heldout_recording"
+        ]
+      }
+    ],
+    "recording_boundary_unclassified": [
+      {
+        "sequence_id": "d2e_480p:Brotato/recording_20250904_132203__7d3a59fe#032340",
+        "recording_id": "Brotato/recording_20250904_132203__7d3a59fe",
+        "timestamp_ns": 1617002990800,
+        "token": "KEY_RELEASE_68",
+        "ground_truth_tokens": [
+          "KEY_RELEASE_68"
+        ],
+        "previous_event_tokens": [
+          "KEY_PRESS_87"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_68",
+          "KEY_DOWN_87"
+        ],
+        "next_prior_action_tokens": [
+          "KEY_DOWN_65",
+          "KEY_DOWN_87"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Euro_Truck_Simulator_2/recording_20250820_175200_Euro_Truck_Simulator_2_8073a659#267848",
+        "recording_id": "Euro_Truck_Simulator_2/recording_20250820_175200_Euro_Truck_Simulator_2_8073a659",
+        "timestamp_ns": 13392411372500,
+        "token": "KEY_PRESS_40",
+        "ground_truth_tokens": [
+          "KEY_PRESS_40",
+          "KEY_PRESS_40"
+        ],
+        "previous_event_tokens": [
+          "KEY_PRESS_40"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_40"
+        ],
+        "next_prior_action_tokens": [
+          "NOOP"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Euro_Truck_Simulator_2/recording_20250820_175200_Euro_Truck_Simulator_2_8073a659#267848",
+        "recording_id": "Euro_Truck_Simulator_2/recording_20250820_175200_Euro_Truck_Simulator_2_8073a659",
+        "timestamp_ns": 13392411372500,
+        "token": "KEY_PRESS_40",
+        "ground_truth_tokens": [
+          "KEY_PRESS_40",
+          "KEY_PRESS_40"
+        ],
+        "previous_event_tokens": [
+          "KEY_PRESS_40"
+        ],
+        "prior_action_tokens": [
+          "KEY_DOWN_40"
+        ],
+        "next_prior_action_tokens": [
+          "NOOP"
+        ],
+        "eval_split_tags": [
+          "temporal"
+        ]
+      }
+    ],
+    "release_other": [
+      {
+        "sequence_id": "d2e_480p:Rainbow_Six/recording_20250815_223000_Rainbow_Six_4c4e6223#001378",
+        "recording_id": "Rainbow_Six/recording_20250815_223000_Rainbow_Six_4c4e6223",
+        "timestamp_ns": 68912248900,
+        "token": "KEY_RELEASE_160",
+        "ground_truth_tokens": [
+          "KEY_RELEASE_160",
+          "KEY_RELEASE_113",
+          "KEY_RELEASE_160",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_N3",
+          "MOUSE_DY_P2"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_LEFT_UP"
+        ],
+        "prior_action_tokens": [
+          "NOOP"
+        ],
+        "next_prior_action_tokens": [
+          "NOOP"
+        ],
+        "eval_split_tags": [
+          "heldout_game"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Rainbow_Six/recording_20250815_223000_Rainbow_Six_4c4e6223#001378",
+        "recording_id": "Rainbow_Six/recording_20250815_223000_Rainbow_Six_4c4e6223",
+        "timestamp_ns": 68912248900,
+        "token": "KEY_RELEASE_113",
+        "ground_truth_tokens": [
+          "KEY_RELEASE_160",
+          "KEY_RELEASE_113",
+          "KEY_RELEASE_160",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_N3",
+          "MOUSE_DY_P2"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_LEFT_UP"
+        ],
+        "prior_action_tokens": [
+          "NOOP"
+        ],
+        "next_prior_action_tokens": [
+          "NOOP"
+        ],
+        "eval_split_tags": [
+          "heldout_game"
+        ]
+      },
+      {
+        "sequence_id": "d2e_480p:Rainbow_Six/recording_20250815_223000_Rainbow_Six_4c4e6223#001378",
+        "recording_id": "Rainbow_Six/recording_20250815_223000_Rainbow_Six_4c4e6223",
+        "timestamp_ns": 68912248900,
+        "token": "KEY_RELEASE_160",
+        "ground_truth_tokens": [
+          "KEY_RELEASE_160",
+          "KEY_RELEASE_113",
+          "KEY_RELEASE_160",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_Z0",
+          "MOUSE_DX_N2",
+          "MOUSE_DY_P1",
+          "MOUSE_DX_N1",
+          "MOUSE_DY_P2",
+          "MOUSE_DX_N3",
+          "MOUSE_DY_P2"
+        ],
+        "previous_event_tokens": [
+          "MOUSE_LEFT_UP"
+        ],
+        "prior_action_tokens": [
+          "NOOP"
+        ],
+        "next_prior_action_tokens": [
+          "NOOP"
+        ],
+        "eval_split_tags": [
+          "heldout_game"
+        ]
+      }
+    ]
+  },
+  "target_paths": [
+    "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/outputs/data/d2e_event_state_duration_hierarchical_prefix320k/target_all_eval.jsonl"
+  ],
+  "max_rows": 320000,
+  "claim_boundary": "Diagnostic only. same_bin_key_oracle policies inspect current-row ground-truth key tokens and are not valid model evidence or G005 completion evidence."
+}
