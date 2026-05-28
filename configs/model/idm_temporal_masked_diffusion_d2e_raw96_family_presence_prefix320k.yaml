@@ -1,0 +1,298 @@
+{
+  "action_loss_weight": 1.0,
+  "batch_size": 64,
+  "calibrate_non_noop_budget": true,
+  "claim_boundary": "G005 bounded scaling candidate for public FDM-1 recipe reproduction on D2E using raw downsampled screen-video tokens plus temporal masked action-token diffusion. Not G005 completion evidence until paper targets are beaten.",
+  "diffusion_steps": 16,
+  "dropout": 0.1,
+  "epochs": 4,
+  "fdm1_recipe": {
+    "action_tokenization": {
+      "keyboard_press_release_tokens": true,
+      "mouse_delta_binning": "exponential_normalized_xy",
+      "mouse_delta_bins_per_axis": 49,
+      "preserve_token_multiplicity": true,
+      "token_sequence_window": true,
+      "pad_slots_excluded_from_loss": true
+    },
+    "fidelity": {
+      "claims_fdm1_parity": false,
+      "inferred_or_novel_components": [
+        "D2E compact luma video-token approximation",
+        "local temporal row window",
+        "weighted open-vocab action-token sequence loss",
+        "center-row emission for D2E paper-compatible metrics",
+        "bounded prefix row budget before full-corpus promotion",
+        "split-safe non-noop confidence-budgeted unmasking over temporal action-token candidates",
+        "focal sparse-token loss for key/button events",
+        "family-specific split-safe confidence-budget calibration for action-token families",
+        "sparse key/button event-presence auxiliary losses inside temporal action-token denoising",
+        "event-probability-biased candidate scoring during iterative unmasking",
+        "fit-train video/action-token retrieval prior for masked-diffusion candidate scoring",
+        "retrieval-prior blend during center-row action-token emission",
+        "PAD-aware sparse action-token slots so empty fixed-width slots are not trained as repeated NOOP labels",
+        "per-family candidate preservation and diagnostics so rare key/button action-token candidates are not truncated by frequent mouse-motion tokens before train-heldout budget calibration",
+        "observed-token-only train-fit candidate token prior correction that never boosts tokens unseen in fit rows",
+        "temporal mouse-button class auxiliary head that re-ranks press/release action-token candidates inside iterative unmasking",
+        "family-scoped sparse key/button token-presence auxiliaries that re-rank exact action-token candidates inside iterative unmasking without target-label calibration",
+        "raw downsampled D2E screen-video tokens replacing compact luma16 diagnostics",
+        "small open 3D-CNN video-token encoder with masked raw-frame reconstruction",
+        "prefix320k scale probe with larger train-heldout calibration while preserving the raw-video temporal masked-diffusion objective"
+      ],
+      "public_components": [
+        "video_encoder",
+        "masked_diffusion_idm",
+        "iterative_unmasking",
+        "key_and_mouse_action_tokens"
+      ],
+      "public_vs_inferred_recorded": true
+    },
+    "idm_objective": {
+      "conditioning": "all_window_frames_plus_masked_action_tokens",
+      "corruption": "mask/random corruption over temporal action-token slots",
+      "loss": "focal weighted cross entropy over PAD-aware temporal masked action-token sequences with sparse key/button event, mouse-button class, and family-scoped key/button token-presence auxiliary losses; candidate preservation, observed-token priors, and auxiliary scores affect only iterative candidate ranking/calibration diagnostics",
+      "noncausal_frame_conditioning": true,
+      "type": "masked_diffusion_action_tokens"
+    },
+    "inference_schedule": {
+      "selection": "iteratively unmask high-confidence temporal action-token slots, preserve bounded candidates per action family, blend observed-token train priors plus family-scoped key/button token-presence and button-class scores, then apply held-out-train family budgets and fit-train video/action retrieval priors",
+      "steps": 16,
+      "type": "iterative_unmasking"
+    },
+    "stage": "idm",
+    "video_encoder": {
+      "approximation": "Open D2E approximation: cached raw 96x96 grayscale screen-video frame stack encoded by a small 3D CNN with masked raw-frame reconstruction; prefix320k scale probe, not the closed-source SI tokenizer.",
+      "enabled": true,
+      "input": "D2E 480p/original frame references decoded to raw 96x96 grayscale video tokens over [0,1,2] frame offsets and a temporal row window",
+      "public_anchor": "FDM-1 trains directly on compressed screen-video representations before inverse-dynamics labeling."
+    }
+  },
+  "fdm1_recipe_alignment": {
+    "non_noop_budgeted_unmasking": {
+      "claim_boundary": "Split-safe calibration only; target labels are evaluation/diagnostic evidence and no FDM-1 parity is claimed.",
+      "d2e_approximation": "Calibrate a confidence threshold over held-out D2E training rows for non-noop temporal action-token candidates, then apply it to unlabeled target rows without target labels.",
+      "public_anchor": "FDM-1 spends baseline effort on high-probability actions first and iteratively unmasks high-confidence action tokens."
+    },
+    "temporal_sequence_masked_diffusion": {
+      "claim_boundary": "Open recipe approximation on D2E; no FDM-1 internal-parity claim.",
+      "d2e_approximation": "Use raw downsampled D2E frame references and a local temporal action-token sequence around each row.",
+      "public_anchor": "FDM-1 IDM predicts masked action-token sequences noncausally from all frames and iteratively unmasks high-confidence positions."
+    },
+    "video_encoder_pretraining": {
+      "claim_boundary": "Not the closed-source FDM-1 tokenizer.",
+      "d2e_approximation": "Masked raw-frame reconstruction pretraining over decoded D2E screen-video frame stacks.",
+      "public_anchor": "FDM-1 reports a video encoder trained with masked compression/self-supervised prediction."
+    },
+    "family_non_noop_budgeted_unmasking": {
+      "public_anchor": "FDM-1 iteratively unmasks high-confidence action-token positions; family budgets preserve that schedule while preventing frequent mouse-motion tokens from consuming all non-noop emissions.",
+      "d2e_approximation": "Calibrate separate keyboard, mouse-button, and mouse-move confidence thresholds on held-out D2E training rows, then apply them to target rows without target-label access.",
+      "claim_boundary": "Split-safe calibration/inference approximation only; not a closed-source FDM-1 internal claim."
+    },
+    "temporal_event_auxiliary": {
+      "public_anchor": "FDM-1 IDM denoises action tokens from noncausal video/action context; sparse event-presence auxiliaries are an unpublished-detail approximation to improve key/button action-token discovery without replacing token prediction.",
+      "d2e_approximation": "Train key/button event-presence heads on held-out D2E training labels from the same temporal action-token targets, and use their probabilities only to bias candidate scores during iterative center-token emission.",
+      "claim_boundary": "Auxiliary heads are open D2E approximations inside the recipe-shaped IDM, not a post-hoc heuristic and not a closed-source FDM-1 parity claim."
+    },
+    "retrieval_action_prior": {
+      "public_anchor": "FDM-1 IDM denoises masked action tokens from video/action context before labeling video data; a train-video/action retrieval prior approximates unpublished denoising priors without changing the action-token objective.",
+      "d2e_approximation": "Encode fit/train D2E video windows, retrieve nearest train rows by video embedding, and blend their action-token votes into candidate scores during iterative center-token emission. Target labels are never indexed or used for calibration.",
+      "claim_boundary": "Open D2E approximation inside the recipe-shaped IDM, not a post-hoc metric heuristic and not closed-source FDM-1 parity."
+    },
+    "pad_aware_action_slots": {
+      "public_anchor": "FDM-1 predicts action-token sequences; absent fixed-width positions should be padding/masked-token structure rather than repeated semantic no-op labels.",
+      "d2e_approximation": "Preserve <FDM1_ACTION_PAD> in padded action slots and exclude those positions from denoising loss, while keeping a single NOOP token for truly empty bins.",
+      "claim_boundary": "Open D2E implementation detail to prevent sparse-action loss collapse; not a closed-source FDM-1 parity claim."
+    },
+    "candidate_family_preservation": {
+      "public_anchor": "FDM-1 iteratively unmasks high-confidence action-token positions; preserving bounded candidates for each action family keeps rare key/button tokens available to that recipe-shaped confidence schedule.",
+      "d2e_approximation": "Before held-out-train family-budget calibration, retain the top N keyboard, mouse-button, and mouse-move action-token candidates per row in addition to global top candidates. Target labels are used only for diagnostic coverage reports.",
+      "claim_boundary": "Inference/candidate-generation approximation inside the public masked-diffusion action-token recipe; not target-label calibration and not closed-source FDM-1 parity."
+    },
+    "candidate_token_prior_correction": {
+      "public_anchor": "FDM-1 iteratively unmasks high-confidence action-token positions; unpublished candidate scoring details must handle sparse key/button action-token priors without target-label calibration.",
+      "d2e_approximation": "Compute bounded inverse-frequency weights from fit/train D2E action-token counts for selected sparse action families and multiply center-token candidate scores before held-out-train budget calibration. Tokens absent from fit rows receive a fixed suppression/neutral weight instead of an inverse-frequency boost. Target/eval labels are never used.",
+      "claim_boundary": "Train-fit candidate-scoring approximation inside the public masked-diffusion action-token recipe; not a post-hoc target heuristic and not closed-source FDM-1 parity."
+    },
+    "temporal_button_class_auxiliary": {
+      "public_anchor": "FDM-1 IDM denoises action-token sequences from noncausal video/action context; unpublished scoring details must recover sparse click transition identity, not only event presence.",
+      "d2e_approximation": "Train a no-button-vs-button-token auxiliary classifier from the same temporal masked action-token representation over fit D2E rows, then blend per-token class probabilities into mouse-button candidate scores before train-heldout family calibration. Target labels are never used for scoring.",
+      "claim_boundary": "Open D2E approximation inside the public masked-diffusion action-token recipe; not a post-hoc target heuristic and not closed-source FDM-1 parity."
+    },
+    "family_token_presence_auxiliary": {
+      "public_anchor": "FDM-1 IDM predicts masked action-token values; unpublished scoring details must preserve sparse key/button token identity during iterative unmasking.",
+      "d2e_approximation": "Train family-scoped multi-hot key and mouse-button token-presence heads from the same temporal masked action-token representation over fit D2E rows, then blend per-token probabilities into candidate scores before held-out-train family calibration. Target labels are never used for scoring.",
+      "claim_boundary": "Open D2E approximation inside the public masked-diffusion action-token recipe; not a post-hoc target heuristic and not closed-source FDM-1 parity."
+    },
+    "raw_video_tokens": {
+      "public_anchor": "FDM-1 trains on compressed screen-video representations rather than handcrafted action-history features.",
+      "d2e_approximation": "Load decoded D2E frame references from split-safe video tensor caches as normalized raw grayscale 96x96 video tokens at offsets [0,1,2], then feed them to the same noncausal masked action-token diffusion IDM.",
+      "claim_boundary": "Open raw-video approximation on D2E; not the closed-source FDM-1 tokenizer and not a parity claim."
+    }
+  },
+  "grad_clip_norm": 1.0,
+  "hidden_dim": 384,
+  "keyboard_loss_weight": 16.0,
+  "lr": 0.0002,
+  "mask_probability": 0.75,
+  "max_action_tokens_per_bin": 16,
+  "max_target_rows": 20000,
+  "max_train_rows": 320000,
+  "model_name": "idm_temporal_masked_diffusion_d2e_raw96_family_presence_prefix320k",
+  "mouse_button_loss_weight": 32.0,
+  "mouse_move_loss_weight": 2.0,
+  "non_noop_budget_beta": 2.0,
+  "non_noop_budget_candidates_per_row": 192,
+  "non_noop_budget_max_no_button_fpr": 0.1,
+  "non_noop_budget_max_threshold_candidates": 192,
+  "non_noop_budget_max_tokens_per_row": 4,
+  "non_noop_budgeted_unmasking": true,
+  "non_noop_candidate_min_probability": 0.0,
+  "noop_loss_weight": 0.05,
+  "output_dir": "outputs/idm_temporal_masked_diffusion_d2e_raw96_family_presence_prefix320k",
+  "pad_loss_weight": 0.0,
+  "prediction_batch_size": 128,
+  "random_token_probability": 0.05,
+  "schema": "temporal_masked_diffusion_idm_config.v1",
+  "seed": 157,
+  "source_namespace": "d2e_full_corpus",
+  "summary_out": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_family_presence_prefix320k_summary.json",
+  "target_records": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/target_all_eval.jsonl",
+  "temporal_calibration_fraction": 0.025,
+  "temporal_calibration_max_rows": 8000,
+  "temporal_loss_offsets": [
+    -2,
+    -1,
+    0,
+    1,
+    2
+  ],
+  "temporal_offsets": [
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3
+  ],
+  "token_focal_gamma": 2.0,
+  "token_loss_type": "focal",
+  "train_records": "outputs/data/d2e_full_corpus_shards_accel64/shard_*/train_core.jsonl",
+  "transformer_heads": 6,
+  "transformer_layers": 4,
+  "video_encoder_arch": "raw_video_cnn",
+  "video_encoder_pretrain_epochs": 1,
+  "video_encoder_pretrain_lr": 0.001,
+  "video_encoder_pretrain_mask_probability": 0.65,
+  "video_encoder_pretrain_weight_decay": 0.01,
+  "video_encoder_reconstruct_masked_only": true,
+  "video_feature_dim": 27648,
+  "video_reconstruction_aux_weight": 0.05,
+  "vocab_min_count": 1,
+  "weight_decay": 0.01,
+  "calibrate_family_non_noop_budget": true,
+  "family_non_noop_budgeted_unmasking": true,
+  "family_non_noop_budget_families": [
+    "keyboard",
+    "mouse_button",
+    "mouse_move"
+  ],
+  "family_non_noop_budget_keyboard_max_tokens_per_row": 2,
+  "family_non_noop_budget_mouse_button_max_tokens_per_row": 1,
+  "family_non_noop_budget_mouse_move_max_tokens_per_row": 2,
+  "family_non_noop_budget_max_threshold_candidates": 192,
+  "family_non_noop_budget_max_no_button_fpr": 0.1,
+  "family_non_noop_budget_beta": 2.0,
+  "temporal_event_auxiliary": true,
+  "event_aux_weight": 0.0,
+  "key_event_aux_weight": 0.5,
+  "button_event_aux_weight": 1.0,
+  "key_event_pos_weight": 8.0,
+  "button_event_pos_weight": 24.0,
+  "event_auxiliary_bias_candidates": true,
+  "event_auxiliary_candidate_score_blend": 0.15,
+  "retrieval_action_prior_enabled": true,
+  "retrieval_action_prior_max_rows": 80000,
+  "retrieval_action_prior_batch_size": 512,
+  "retrieval_action_prior_top_k": 32,
+  "retrieval_action_prior_temperature": 0.08,
+  "retrieval_action_prior_blend": 0.35,
+  "preserve_pad_action_slots": true,
+  "pad_action_slots_as_pad": true,
+  "non_noop_budget_min_candidates_per_family": 16,
+  "non_noop_budget_candidate_families": [
+    "keyboard",
+    "mouse_button",
+    "mouse_move"
+  ],
+  "candidate_diagnostics_target_max_rows": 2000,
+  "candidate_diagnostic_families": [
+    "keyboard",
+    "mouse_button",
+    "mouse_move"
+  ],
+  "candidate_token_prior_correction": true,
+  "candidate_token_prior_strength": 0.35,
+  "candidate_token_prior_smoothing": 4.0,
+  "candidate_token_prior_min_weight": 0.25,
+  "candidate_token_prior_max_weight": 3.0,
+  "candidate_token_prior_families": [
+    "keyboard",
+    "mouse_button"
+  ],
+  "candidate_token_prior_count_once_per_row": true,
+  "candidate_token_prior_summary_limit": 16,
+  "candidate_token_prior_unseen_weight": 0.25,
+  "temporal_button_class_auxiliary": true,
+  "button_class_aux_weight": 0.8,
+  "button_class_no_button_weight": 0.05,
+  "button_class_button_weight": 24.0,
+  "button_class_focal_gamma": 2.0,
+  "button_class_bias_candidates": true,
+  "button_class_candidate_score_blend": 0.25,
+  "temporal_key_token_presence_auxiliary": true,
+  "key_token_presence_aux_weight": 0.7,
+  "key_token_presence_pos_weight": 16.0,
+  "key_token_presence_negative_weight": 0.03,
+  "key_token_presence_bias_candidates": true,
+  "key_token_presence_candidate_score_blend": 0.55,
+  "temporal_button_token_presence_auxiliary": true,
+  "button_token_presence_aux_weight": 0.8,
+  "button_token_presence_pos_weight": 32.0,
+  "button_token_presence_negative_weight": 0.03,
+  "button_token_presence_bias_candidates": true,
+  "button_token_presence_candidate_score_blend": 0.55,
+  "video_feature_source": "video_idm_cache",
+  "raw_video_image_size": 96,
+  "raw_video_frame_offsets": [
+    0,
+    1,
+    2
+  ],
+  "raw_video_frame_fps": 20,
+  "raw_video_missing_frame_policy": "zero",
+  "raw_video_encoder_channels": 32,
+  "raw_video_encoder_pool_hw": 2,
+  "raw_video_aux_hidden_dim": 128,
+  "raw_video_feature_storage": "tensor",
+  "raw_video_feature_tensor_dtype": "float16",
+  "video_cache_dir": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/video_cache",
+  "video_cache_stats_path": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/video_idm_stats.json",
+  "stats_path": "outputs/idm_video_stack_d2e_full_luma96_offsets012_keysoftmax_paper_target/video_idm_stats.json",
+  "video_image_size": 96,
+  "video_frame_fps": 20,
+  "video_frame_offsets": [
+    0,
+    1,
+    2
+  ],
+  "next_frame_offset": 2,
+  "require_precomputed_video_cache": true,
+  "video_cache_shard_assignment": "greedy_rows",
+  "video_cache_shard_by_path": true,
+  "button_head_mode": "softmax",
+  "mouse_head_mode": "regression",
+  "mouse_target_mode": "sum",
+  "keyboard_head_mode": "softmax",
+  "rank_progress_every_batches": 100
+}
