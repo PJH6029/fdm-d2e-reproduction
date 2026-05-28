@@ -1,0 +1,47 @@
+{
+  "any_sweep_passed": false,
+  "checkpoint_source": "outputs/idm_temporal_masked_diffusion_d2e_raw96_family_presence_prefix80k/checkpoint.pt on MLXP pod; training evidence committed in 6c6c812",
+  "claim_boundary": "Prediction-only sweeps from a FDM-1-style temporal masked-diffusion checkpoint; target labels were not used for calibration and this is not G005 completion evidence.",
+  "created_at_epoch": 1780009028.5420208,
+  "diagnosis": "Removing retrieval priors and increasing recall-oriented train-split calibration did not recover target action-token identity; mouse-button exact TP remains zero and keyboard/mouse-motion remain near zero. This points to representation/objective scale or temporal/action-token identity learning, not only inference thresholding.",
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "paper_target_gate_status": "fail",
+  "schema": "g005_temporal_masked_diffusion_prediction_sweeps_compact.v1",
+  "status": "nonterminal_negative_probe",
+  "sweeps": [
+    {
+      "claim_boundary": "Prediction-only sweep from a temporal masked-diffusion IDM checkpoint; no target-label calibration and no G005 completion claim.",
+      "metrics_path": "outputs/idm_temporal_masked_diffusion_d2e_raw96_family_presence_prefix80k_sweep_no_retrieval/paper_metrics.json",
+      "name": "no_retrieval",
+      "observed": {
+        "exact_true_positive_examples": 0,
+        "keyboard_key_accuracy": 0.0014565463667260074,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_move_pearson_x": 0.007011925690695468,
+        "mouse_move_pearson_y": 0.000734874174766229,
+        "no_button_false_positive_rate": 0.003911879761169446,
+        "predicted_button_examples": 19
+      },
+      "summary_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_family_presence_prefix80k_sweep_no_retrieval_summary.json",
+      "wall_clock_seconds": 331.7246470451355
+    },
+    {
+      "claim_boundary": "Prediction-only sweep from a temporal masked-diffusion IDM checkpoint; no target-label calibration and no G005 completion claim.",
+      "metrics_path": "outputs/idm_temporal_masked_diffusion_d2e_raw96_family_presence_prefix80k_sweep_recall_beta20/paper_metrics.json",
+      "name": "recall_beta20",
+      "observed": {
+        "exact_true_positive_examples": 0,
+        "keyboard_key_accuracy": 0.0017619734102194459,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_move_pearson_x": 0.007011480918821608,
+        "mouse_move_pearson_y": 0.000848431647182253,
+        "no_button_false_positive_rate": 0.0041177681696520484,
+        "predicted_button_examples": 20
+      },
+      "summary_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_family_presence_prefix80k_sweep_recall_beta20_summary.json",
+      "wall_clock_seconds": 332.0587992668152
+    }
+  ]
+}
