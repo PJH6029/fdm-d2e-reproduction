@@ -539,6 +539,46 @@ def _threshold_candidates(config: dict[str, Any]) -> list[float]:
     return [round(value / 20.0, 2) for value in range(1, 20)]
 
 
+def _with_dynamic_threshold_candidates(
+    candidates: Sequence[float],
+    probabilities: Sequence[float],
+    *,
+    enabled: bool,
+    max_dynamic: int = 64,
+) -> list[float]:
+    """Augment coarse calibration thresholds with probability quantiles.
+
+    Sparse button heads often place all probabilities in a narrow band such as
+    0.45..0.50.  A fixed 0.05 grid can only choose "all rows" or "no rows",
+    hiding useful ranking evidence.  Quantile thresholds are still calibrated
+    only on held-out calibration rows, preserving the split-safe recipe while
+    letting bounded-FPR calibration select a non-saturated operating point.
+    """
+
+    base = {max(0.0, min(1.0, float(value))) for value in candidates}
+    if not enabled:
+        return sorted(base)
+    clean = sorted(max(0.0, min(1.0, float(value))) for value in probabilities if value is not None)
+    if not clean:
+        return sorted(base)
+    max_dynamic = max(1, int(max_dynamic))
+    if len(clean) <= max_dynamic:
+        dynamic = clean
+    else:
+        dynamic = []
+        for idx in range(max_dynamic):
+            q = idx / float(max_dynamic - 1) if max_dynamic > 1 else 0.5
+            dynamic.append(clean[min(len(clean) - 1, int(round(q * (len(clean) - 1))))])
+    # Include just-above minima to avoid degenerate "predict every row" when
+    # the smallest observed probability is shared by many negatives.
+    expanded = set(base)
+    eps = float(1e-6)
+    for value in dynamic:
+        expanded.add(max(0.0, min(1.0, value)))
+        expanded.add(max(0.0, min(1.0, value + eps)))
+    return sorted(expanded)
+
+
 def _score_key_threshold(
     model: Any,
     torch: Any,
@@ -665,10 +705,18 @@ def _calibrate_button_event_threshold(
     candidates: Sequence[float],
     max_false_positive_rate: float,
     beta: float = 2.0,
+    dynamic_thresholds: bool = False,
+    dynamic_max_candidates: int = 64,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     beta_sq = max(0.01, float(beta) ** 2)
-    for threshold in candidates:
+    event_candidates = _with_dynamic_threshold_candidates(
+        candidates,
+        [float(row["button_event_prob"]) for row in probability_rows if row.get("button_event_prob") is not None],
+        enabled=dynamic_thresholds,
+        max_dynamic=dynamic_max_candidates,
+    )
+    for threshold in event_candidates:
         tp = fp = fn = tn = 0
         for row in probability_rows:
             prob = row.get("button_event_prob")
@@ -717,6 +765,8 @@ def _calibrate_button_event_threshold(
         "selected": float(best["threshold"]),
         "max_false_positive_rate": float(max_false_positive_rate),
         "beta": float(beta),
+        "dynamic_thresholds": bool(dynamic_thresholds),
+        "candidate_count": len(event_candidates),
         "selected_row": best,
         "rows": rows,
     }
@@ -730,14 +780,26 @@ def _calibrate_per_token_thresholds(
     label_key: str,
     candidates: Sequence[float],
     max_false_positive_rate: float | None = None,
+    dynamic_thresholds: bool = False,
+    dynamic_max_candidates: int = 64,
 ) -> dict[str, Any]:
     selected: dict[str, float] = {}
     rows: list[dict[str, Any]] = []
     for idx, token in enumerate(vocab):
         positives = sum(int((row.get(label_key) or [])[idx]) for row in probability_rows if idx < len(row.get(label_key) or []))
         negatives = max(0, len(probability_rows) - positives)
+        token_candidates = _with_dynamic_threshold_candidates(
+            candidates,
+            [
+                float((row.get(prob_key) or [])[idx])
+                for row in probability_rows
+                if idx < len(row.get(prob_key) or [])
+            ],
+            enabled=dynamic_thresholds,
+            max_dynamic=dynamic_max_candidates,
+        )
         best: dict[str, Any] | None = None
-        for threshold in candidates:
+        for threshold in token_candidates:
             tp = fp = fn = tn = 0
             for row in probability_rows:
                 probs = row.get(prob_key) or []
@@ -777,6 +839,7 @@ def _calibrate_per_token_thresholds(
                 "recall": recall,
                 "f1": f1,
                 "false_positive_rate": fpr,
+                "candidate_count": len(token_candidates),
             }
             if best is None or (candidate["score"], -candidate["fp"], -candidate["threshold"]) > (best["score"], -best["fp"], -best["threshold"]):
                 best = candidate
@@ -820,12 +883,16 @@ def _calibrate_factorized_thresholds(
     per_token_payload: dict[str, Any] = {"status": "skipped", "reason": "disabled"}
     if config.get("calibrate_per_token_thresholds", True):
         probability_rows = _collect_factorized_probability_rows(model, torch, rows, config=config, key_vocab=key_vocab, button_vocab=button_vocab, device=device)
+        dynamic_thresholds = bool(config.get("calibration_dynamic_thresholds", False))
+        dynamic_max_candidates = int(config.get("calibration_dynamic_threshold_max_candidates", 64))
         key_token_payload = _calibrate_per_token_thresholds(
             probability_rows,
             vocab=key_vocab,
             prob_key="key_probs",
             label_key="key_labels",
             candidates=candidates,
+            dynamic_thresholds=dynamic_thresholds,
+            dynamic_max_candidates=dynamic_max_candidates,
         )
         button_token_payload = _calibrate_per_token_thresholds(
             probability_rows,
@@ -834,6 +901,8 @@ def _calibrate_factorized_thresholds(
             label_key="button_labels",
             candidates=candidates,
             max_false_positive_rate=float(config.get("calibration_max_no_button_fpr", 0.10)),
+            dynamic_thresholds=dynamic_thresholds,
+            dynamic_max_candidates=dynamic_max_candidates,
         )
         config["key_token_thresholds"] = key_token_payload["selected"]
         config["button_token_thresholds"] = button_token_payload["selected"]
@@ -844,6 +913,8 @@ def _calibrate_factorized_thresholds(
                 candidates=candidates,
                 max_false_positive_rate=float(config.get("button_event_calibration_max_no_button_fpr", config.get("calibration_max_no_button_fpr", 0.10))),
                 beta=float(config.get("button_event_calibration_beta", 2.0)),
+                dynamic_thresholds=dynamic_thresholds,
+                dynamic_max_candidates=dynamic_max_candidates,
             )
             if button_event_payload.get("selected") is not None:
                 config["button_event_threshold"] = float(button_event_payload["selected"])

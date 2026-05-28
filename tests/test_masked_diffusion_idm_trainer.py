@@ -7,7 +7,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.io_utils import read_json
-from fdm_d2e.training.masked_diffusion_idm_trainer import torch_available, train_masked_diffusion_idm, video_feature_vector
+from fdm_d2e.training.masked_diffusion_idm_trainer import (
+    _calibrate_button_event_threshold,
+    torch_available,
+    train_masked_diffusion_idm,
+    video_feature_vector,
+)
 
 
 def _row(idx: int, *, split: str) -> dict:
@@ -44,6 +49,36 @@ def test_video_feature_vector_flattens_luma_window_tokens():
         dim=10,
     )
     assert features == [0.1, 0.2, 0.3, 0.4, 1.0, 0.0, 0.5, 0.6, 0.0, 0.0]
+
+
+def test_button_event_calibration_uses_dynamic_probability_thresholds():
+    rows = [
+        {"button_event_prob": 0.491, "button_event_label": 1},
+        {"button_event_prob": 0.489, "button_event_label": 1},
+        {"button_event_prob": 0.487, "button_event_label": 0},
+        {"button_event_prob": 0.480, "button_event_label": 0},
+        {"button_event_prob": 0.470, "button_event_label": 0},
+        {"button_event_prob": 0.460, "button_event_label": 0},
+    ]
+    coarse = _calibrate_button_event_threshold(
+        rows,
+        candidates=[0.45, 0.5],
+        max_false_positive_rate=0.25,
+        beta=2.0,
+        dynamic_thresholds=False,
+    )
+    dynamic = _calibrate_button_event_threshold(
+        rows,
+        candidates=[0.45, 0.5],
+        max_false_positive_rate=0.25,
+        beta=2.0,
+        dynamic_thresholds=True,
+        dynamic_max_candidates=8,
+    )
+    assert coarse["selected_row"]["recall"] == 0.0
+    assert dynamic["selected_row"]["recall"] == 1.0
+    assert dynamic["selected_row"]["false_positive_rate"] <= 0.25
+    assert dynamic["candidate_count"] > len([0.45, 0.5])
 
 
 def test_train_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
@@ -132,6 +167,8 @@ def test_train_factorized_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "button_event_loss_weight": 1.0,
             "button_event_threshold": 0.5,
             "button_event_force_topk": 1,
+            "calibration_dynamic_thresholds": True,
+            "calibration_dynamic_threshold_max_candidates": 8,
             "calibrate_thresholds": True,
             "factorized_calibration_fraction": 0.25,
             "factorized_calibration_max_rows": 2,
