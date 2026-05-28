@@ -89,5 +89,7 @@ def test_state_delta_oracle_and_repeat_prior_metrics(tmp_path: Path) -> None:
     assert oracle["policies"]["next_state_delta_plus_prev_motion"]["all"]["paper_compatible"]["mouse_button"]["button_accuracy"] == 1.0
     assert repeat["rows"] == 2
     assert repeat["policies"]["global_hold_since_th0.1"]["all"]["paper_compatible"]["keyboard"]["key_accuracy"] == 1.0
+    assert repeat["policies"]["code_hold_mod_th0.1"]["all"]["paper_compatible"]["keyboard"]["key_accuracy"] == 1.0
+    assert "code_hold_mod" in repeat["context_count"]
     assert causal["rows"] == 2
     assert causal["policies"]["global_hold_since_pressrelease_th0.5"]["all"]["paper_compatible"]["keyboard"]["key_accuracy"] == 1.0

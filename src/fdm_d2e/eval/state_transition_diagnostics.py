@@ -224,6 +224,8 @@ def _repeat_context_code_hold_mod(code: str, hold: int, since: int) -> tuple[str
 _REPEAT_CONTEXTS: dict[str, Callable[[str, int, int], tuple[Any, ...]]] = {
     "global_hold_since": _repeat_context_global_hold_since,
     "code_hold_since": _repeat_context_code_hold_since,
+    "global_hold_mod": _repeat_context_global_hold_mod,
+    "code_hold_mod": _repeat_context_code_hold_mod,
 }
 
 _TRANSITION_CONTEXTS: dict[str, Callable[[str, int, int], tuple[Any, ...]]] = {
