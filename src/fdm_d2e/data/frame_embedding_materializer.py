@@ -163,6 +163,7 @@ class FrameEmbeddingMaterializerConfig:
     batch_size: int = 16
     device: str = "auto"
     embedding_pooling: str = "cls"
+    hf_preprocess: str = "manual-imagenet"
     normalize_embeddings: bool = True
     include_embedding_deltas: bool = True
     include_summary_features: bool = True
@@ -200,13 +201,15 @@ class _HfVisionEmbedder:
         model_id: str,
         device: str,
         pooling: str,
+        hf_preprocess: str,
+        image_size: int,
         normalize_embeddings: bool,
         trust_remote_code: bool,
     ) -> None:
         try:
             import torch
             from PIL import Image
-            from transformers import AutoImageProcessor, AutoModel
+            from transformers import AutoModel
         except Exception as exc:  # pragma: no cover - depends on optional train extra.
             raise RuntimeError("hf-vision backend requires `uv sync --extra train` plus Pillow/transformers/torch") from exc
         self.torch = torch
@@ -215,8 +218,18 @@ class _HfVisionEmbedder:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = device
         self.pooling = pooling
+        self.hf_preprocess = hf_preprocess.replace("_", "-").lower()
+        self.image_size = int(image_size)
         self.normalize_embeddings = bool(normalize_embeddings)
-        self.processor = AutoImageProcessor.from_pretrained(model_id, trust_remote_code=trust_remote_code)
+        self.processor = None
+        if self.hf_preprocess == "auto":
+            try:
+                from transformers import AutoImageProcessor
+            except Exception as exc:  # pragma: no cover - depends on optional processor deps.
+                raise RuntimeError("hf_preprocess=auto requires AutoImageProcessor dependencies") from exc
+            self.processor = AutoImageProcessor.from_pretrained(model_id, trust_remote_code=trust_remote_code)
+        elif self.hf_preprocess not in {"manual-imagenet", "manual"}:
+            raise ValueError("hf_preprocess must be one of: manual-imagenet, auto")
         self.model = AutoModel.from_pretrained(model_id, trust_remote_code=trust_remote_code)
         self.model.eval()
         self.model.to(self.device)
@@ -233,6 +246,20 @@ class _HfVisionEmbedder:
         if side <= 0:
             raise ValueError("no frames to embed")
         return images
+
+    def _manual_pixel_values(self, images: Sequence[Any]) -> Any:
+        torch = self.torch
+        resample = getattr(getattr(self.Image, "Resampling", self.Image), "BICUBIC", 3)
+        tensors = []
+        mean = torch.tensor([0.485, 0.456, 0.406], dtype=torch.float32).view(3, 1, 1)
+        std = torch.tensor([0.229, 0.224, 0.225], dtype=torch.float32).view(3, 1, 1)
+        for image in images:
+            resized = image.resize((self.image_size, self.image_size), resample=resample).convert("RGB")
+            pixels = list(resized.getdata())
+            tensor = torch.tensor(pixels, dtype=torch.float32).view(self.image_size, self.image_size, 3)
+            tensor = tensor.permute(2, 0, 1).contiguous() / 255.0
+            tensors.append((tensor - mean) / std)
+        return torch.stack(tensors, dim=0)
 
     def _select_embedding(self, outputs: Any) -> Any:
         torch = self.torch
@@ -261,7 +288,10 @@ class _HfVisionEmbedder:
             return []
         torch = self.torch
         images = self._pil_images(frames)
-        encoded = self.processor(images=images, return_tensors="pt")
+        if self.processor is None:
+            encoded = {"pixel_values": self._manual_pixel_values(images)}
+        else:
+            encoded = self.processor(images=images, return_tensors="pt")
         encoded = {key: value.to(self.device) if hasattr(value, "to") else value for key, value in encoded.items()}
         with torch.no_grad():
             outputs = self.model(**encoded)
@@ -283,6 +313,8 @@ def _build_embedder(config: FrameEmbeddingMaterializerConfig) -> Any:
             model_id=config.model_id,
             device=config.device,
             pooling=config.embedding_pooling,
+            hf_preprocess=config.hf_preprocess,
+            image_size=config.image_size,
             normalize_embeddings=config.normalize_embeddings,
             trust_remote_code=config.trust_remote_code,
         )
@@ -443,6 +475,7 @@ def _flush_batch(
             "model_id": config.model_id if config.backend != "dummy-stat" else "deterministic-frame-statistics",
             "frame_offsets": list(config.frame_offsets),
             "embedding_pooling": config.embedding_pooling if config.backend != "dummy-stat" else "stats",
+            "hf_preprocess": config.hf_preprocess if config.backend != "dummy-stat" else None,
             "embedding_dim_per_frame": embedding_dim,
             "include_embedding_deltas": bool(config.include_embedding_deltas),
             "include_summary_features": bool(config.include_summary_features),
@@ -594,6 +627,7 @@ def materialize_frame_embedding_features(config: FrameEmbeddingMaterializerConfi
         "video_restarts": int(provider.video_restarts),
         "batch_size": int(config.batch_size),
         "embedding_pooling": config.embedding_pooling,
+        "hf_preprocess": config.hf_preprocess if config.backend != "dummy-stat" else None,
         "normalize_embeddings": bool(config.normalize_embeddings),
         "include_embedding_deltas": bool(config.include_embedding_deltas),
         "include_summary_features": bool(config.include_summary_features),

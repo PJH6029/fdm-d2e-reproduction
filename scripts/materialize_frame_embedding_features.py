@@ -49,6 +49,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--embedding-pooling", default="cls", choices=["cls", "mean", "pooler", "image"])
+    parser.add_argument(
+        "--hf-preprocess",
+        default="manual-imagenet",
+        choices=["manual-imagenet", "auto"],
+        help="manual-imagenet avoids torchvision; auto uses AutoImageProcessor when its optional deps are installed.",
+    )
     parser.add_argument("--no-normalize-embeddings", action="store_true")
     parser.add_argument("--no-embedding-deltas", action="store_true")
     parser.add_argument("--no-summary-features", action="store_true")
@@ -87,6 +93,7 @@ def main() -> None:
         batch_size=args.batch_size,
         device=args.device,
         embedding_pooling=args.embedding_pooling,
+        hf_preprocess=args.hf_preprocess,
         normalize_embeddings=not args.no_normalize_embeddings,
         include_embedding_deltas=not args.no_embedding_deltas,
         include_summary_features=not args.no_summary_features,

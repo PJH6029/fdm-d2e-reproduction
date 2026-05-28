@@ -34,6 +34,7 @@ EMBED_IMAGE_SIZE="${EMBED_IMAGE_SIZE:-224}"
 EMBED_BATCH_SIZE="${EMBED_BATCH_SIZE:-16}"
 EMBED_DEVICE="${EMBED_DEVICE:-auto}"
 EMBED_POOLING="${EMBED_POOLING:-cls}"
+EMBED_HF_PREPROCESS="${EMBED_HF_PREPROCESS:-manual-imagenet}"
 EMBED_PROGRESS_ROWS="${EMBED_PROGRESS_ROWS:-25000}"
 EMBED_PATH_MAP="${EMBED_PATH_MAP:-}"
 MATERIALIZE_ONLY="${MATERIALIZE_ONLY:-0}"
@@ -103,6 +104,7 @@ fi
   --batch-size "$EMBED_BATCH_SIZE" \
   --device "$EMBED_DEVICE" \
   --embedding-pooling "$EMBED_POOLING" \
+  --hf-preprocess "$EMBED_HF_PREPROCESS" \
   --max-rows "$MAX_TRAIN_ROWS" \
   --progress-rows "$EMBED_PROGRESS_ROWS" \
   "${PATH_MAP_ARGS[@]}" \
@@ -121,6 +123,7 @@ fi
   --batch-size "$EMBED_BATCH_SIZE" \
   --device "$EMBED_DEVICE" \
   --embedding-pooling "$EMBED_POOLING" \
+  --hf-preprocess "$EMBED_HF_PREPROCESS" \
   --max-rows "$MAX_TARGET_ROWS" \
   --progress-rows "$EMBED_PROGRESS_ROWS" \
   "${PATH_MAP_ARGS[@]}" \
