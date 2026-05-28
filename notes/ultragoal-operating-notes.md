@@ -114,3 +114,10 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
   - no-op-weighted (`noop_loss_weight=0.05`): emitted mouse movement but still key/button recall 0.
   - category/key-heavy: forced key emission (`KEY_PRESS_65`/`KEY_PRESS_68`) and raised paper keyboard only to ~0.008 while overfitting/overfiring; button remained 0.
 - Diagnosis: the current single-vocabulary fixed-slot decoder is recipe-shaped but too crude for sparse D2E key/button events. Continue within the FDM-1 public recipe by improving token factorization/slot design and video-token conditioning, not by reverting to the old supervised per-head or heuristic branches as completion candidates.
+
+## 2026-05-28 G005 factorized masked-diffusion prefix probe
+
+- Commit `bcc8a41` added a typed/factorized masked action-plane IDM path to keep the public FDM-1 masked-diffusion recipe while separating mouse-axis, keyboard, and mouse-button token factors.
+- MLXP reservation `rsv-jeonghunpark-20260528-5d6e98` ran `idm_factorized_masked_diffusion_d2e_prefix20k_h200` on shard_0 with 20k train / 2k target rows. `rsv-jeonghunpark-20260528-333a1d` was only used to recopy persistent PVC artifacts after the first pod was cancelled; both reservations are cancelled.
+- Evidence: `artifacts/idm/g005_idm_factorized_masked_diffusion_prefix20k_h200_*`. The factorized path trains on CUDA and improves paper-compatible keyboard from the key-heavy fixed-slot probe (~0.008) to ~0.0188 on this tiny prefix, but it still overpredicts common keys and gets mouse-button 0.0. It is **not** G005 completion evidence.
+- Next G005 branch should keep this factorized recipe path but add calibration/threshold selection, stronger video-token conditioning, and/or better key/button temporal context before any expensive full-corpus 4xH200 promotion.
