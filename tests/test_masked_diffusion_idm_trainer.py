@@ -21,7 +21,7 @@ from fdm_d2e.training.masked_diffusion_idm_trainer import (
     train_masked_diffusion_idm,
     video_feature_vector,
 )
-from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import train_temporal_masked_diffusion_idm
+from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import _calibrate_temporal_non_noop_budget, train_temporal_masked_diffusion_idm
 
 
 def _row(idx: int, *, split: str) -> dict:
@@ -221,6 +221,38 @@ def test_button_event_budget_multiplier_selects_calibration_recall_under_fpr_cap
     assert payload["selected_multiplier"] == 2.0
     assert payload["selected_row"]["metrics"]["recall"] == 1.0
     assert payload["selected_row"]["metrics"]["false_positive_rate"] <= 0.34
+
+
+def test_temporal_non_noop_budget_selects_threshold_from_train_heldout_rows():
+    rows = [
+        {
+            "row": {"ground_truth_tokens": ["KEY_PRESS_A"], "frame": {"width": 854, "height": 480}},
+            "ground_truth_tokens": ["KEY_PRESS_A"],
+            "candidates": [{"score": 0.91, "token": "KEY_PRESS_A", "slot": 0, "token_index": 2}],
+        },
+        {
+            "row": {"ground_truth_tokens": ["MOUSE_LEFT_DOWN"], "frame": {"width": 854, "height": 480}},
+            "ground_truth_tokens": ["MOUSE_LEFT_DOWN"],
+            "candidates": [{"score": 0.88, "token": "MOUSE_LEFT_DOWN", "slot": 1, "token_index": 3}],
+        },
+        {
+            "row": {"ground_truth_tokens": [], "frame": {"width": 854, "height": 480}},
+            "ground_truth_tokens": [],
+            "candidates": [{"score": 0.10, "token": "MOUSE_LEFT_DOWN", "slot": 0, "token_index": 3}],
+        },
+    ]
+    payload = _calibrate_temporal_non_noop_budget(
+        rows,
+        config={
+            "non_noop_budget_max_tokens_per_row": 2,
+            "non_noop_budget_max_no_button_fpr": 0.0,
+            "non_noop_budget_max_threshold_candidates": 32,
+        },
+    )
+    assert payload["status"] == "pass"
+    assert payload["selected_threshold"] <= 0.88
+    assert payload["selected_row"]["predicted_non_noop_tokens"] >= 2
+    assert payload["selected_row"]["no_button_false_positive_rate"] == 0.0
 
 
 def test_button_class_prior_offsets_boost_rare_transition_tokens_without_target_labels():
@@ -609,6 +641,13 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "mask_probability": 0.75,
             "random_token_probability": 0.0,
             "diffusion_steps": 4,
+            "token_loss_type": "focal",
+            "token_focal_gamma": 1.5,
+            "calibrate_non_noop_budget": True,
+            "temporal_calibration_fraction": 0.2,
+            "temporal_calibration_max_rows": 2,
+            "non_noop_budget_max_tokens_per_row": 3,
+            "non_noop_budget_max_threshold_candidates": 16,
             "video_encoder_pretrain_epochs": 1,
             "video_encoder_pretrain_lr": 0.001,
             "video_encoder_pretrain_mask_probability": 0.5,
@@ -623,10 +662,14 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["status"] == "pass"
     assert summary["temporal_offsets"] == [-1, 0, 1]
     assert summary["temporal_window"] == 3
+    assert summary["fit_rows"] == 8
+    assert summary["calibration_rows"] == 2
     assert summary["vocab_size"] >= 4
     assert summary["video_encoder_pretrain_history"]
     assert summary["loss_weights"]["keyboard_loss_weight"] == 2.0
     assert summary["loss_weights"]["mouse_button_loss_weight"] == 3.0
+    assert summary["loss_weights"]["token_loss_type"] == "focal"
+    assert summary["non_noop_budget"]["status"] in {"pass", "skipped"}
     assert "temporal action-token sequences" in summary["recipe_alignment"]
     assert Path(summary["checkpoint_path"]).exists()
     assert Path(summary["predictions_path"]).exists()

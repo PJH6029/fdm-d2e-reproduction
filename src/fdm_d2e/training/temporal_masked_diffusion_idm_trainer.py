@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from typing import Any, Iterator, Sequence
 
-from fdm_d2e.eval.paper_idm_metrics import write_paper_idm_metrics
+from fdm_d2e.eval.paper_idm_metrics import _PaperMetricAccumulator, write_paper_idm_metrics
 from fdm_d2e.io_utils import ensure_dir, write_json
 from fdm_d2e.training.masked_diffusion_idm import (
     FDM1_ACTION_MASK,
@@ -325,30 +325,43 @@ def _class_weights(torch: Any, vocab: Sequence[str], config: dict[str, Any], *, 
     return weights
 
 
-def _predict_temporal_tokens_batch(
+def _is_predictable_action_token(token: str) -> bool:
+    return token not in {"<FDM1_ACTION_PAD>", FDM1_ACTION_MASK, FDM1_ACTION_NOOP} and not token.startswith("<FDM1_ACTION_PAD")
+
+
+def _temporal_window_features_for_batch(
+    *,
+    rows: Sequence[dict[str, Any]],
+    start_index: int,
+    all_features: Sequence[Sequence[float]],
+    offsets: Sequence[int],
+) -> list[list[list[float]]]:
+    window_features: list[list[list[float]]] = []
+    for local_idx, _row in enumerate(rows):
+        global_idx = start_index + local_idx
+        window_features.append([list(all_features[max(0, min(len(all_features) - 1, global_idx + offset))]) for offset in offsets])
+    return window_features
+
+
+def _temporal_final_center_probabilities(
     model: Any,
     torch: Any,
     rows: Sequence[dict[str, Any]],
-    features: Sequence[Sequence[float]],
     *,
     start_index: int,
     all_features: Sequence[Sequence[float]],
     config: dict[str, Any],
     vocab: Sequence[str],
     device: Any,
-) -> list[list[str]]:
+) -> tuple[Any, Any]:
     offsets = _temporal_offsets(config)
     center = _center_index(offsets)
     max_slots = int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
     mask_index = token_to_index[FDM1_ACTION_MASK]
-    noop_index = token_to_index.get(FDM1_ACTION_NOOP, mask_index)
-    window_features: list[list[list[float]]] = []
-    for local_idx, _row in enumerate(rows):
-        global_idx = start_index + local_idx
-        window_features.append([list(all_features[max(0, min(len(all_features) - 1, global_idx + offset))]) for offset in offsets])
+    window_features = _temporal_window_features_for_batch(rows=rows, start_index=start_index, all_features=all_features, offsets=offsets)
     if not window_features:
-        return []
+        return None, None
     model.eval()
     feature_tensor = torch.tensor(window_features, dtype=torch.float32, device=device)
     batch = int(feature_tensor.shape[0])
@@ -375,13 +388,213 @@ def _predict_temporal_tokens_batch(
             logits = model(feature_tensor, corrupted)
             best_id = torch.argmax(logits, dim=-1)
             corrupted = torch.where(masked, best_id, corrupted)
+        final_logits = model(feature_tensor, corrupted)
+        final_probs = torch.softmax(final_logits[:, center, :, :], dim=-1)
+    return final_probs, corrupted[:, center, :]
+
+
+def _temporal_center_candidates(probabilities: Any, *, vocab: Sequence[str], config: dict[str, Any]) -> list[list[dict[str, Any]]]:
+    if probabilities is None:
+        return []
+    max_slots = int(probabilities.shape[1])
+    max_candidates = int(config.get("non_noop_budget_candidates_per_row", max_slots * 8))
+    min_probability = float(config.get("non_noop_candidate_min_probability", 0.0))
+    batch_candidates: list[list[dict[str, Any]]] = []
+    for batch_idx in range(int(probabilities.shape[0])):
+        candidates: list[dict[str, Any]] = []
+        for slot_idx in range(max_slots):
+            for token_idx, token in enumerate(vocab):
+                token = str(token)
+                if not _is_predictable_action_token(token):
+                    continue
+                score = float(probabilities[batch_idx, slot_idx, token_idx].detach().cpu())
+                if score < min_probability:
+                    continue
+                candidates.append({"score": score, "slot": slot_idx, "token_index": token_idx, "token": token})
+        candidates.sort(key=lambda item: (-float(item["score"]), int(item["slot"]), int(item["token_index"])))
+        batch_candidates.append(candidates[:max_candidates])
+    return batch_candidates
+
+
+def _tokens_from_non_noop_candidates(candidates: Sequence[dict[str, Any]], *, threshold: float, max_tokens: int) -> list[str]:
+    tokens: list[str] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        if float(candidate.get("score", 0.0)) < threshold:
+            continue
+        token = str(candidate.get("token", ""))
+        if not _is_predictable_action_token(token) or token in seen:
+            continue
+        tokens.append(token)
+        seen.add(token)
+        if len(tokens) >= max_tokens:
+            break
+    return tokens
+
+
+def _predict_temporal_tokens_batch(
+    model: Any,
+    torch: Any,
+    rows: Sequence[dict[str, Any]],
+    features: Sequence[Sequence[float]],
+    *,
+    start_index: int,
+    all_features: Sequence[Sequence[float]],
+    config: dict[str, Any],
+    vocab: Sequence[str],
+    device: Any,
+) -> list[list[str]]:
+    del features  # Features are indexed from all_features so temporal offsets can clamp at corpus boundaries.
+    token_to_index = {token: idx for idx, token in enumerate(vocab)}
+    noop_index = token_to_index.get(FDM1_ACTION_NOOP, token_to_index[FDM1_ACTION_MASK])
+    center_probs, predicted_center_ids = _temporal_final_center_probabilities(
+        model,
+        torch,
+        rows,
+        start_index=start_index,
+        all_features=all_features,
+        config=config,
+        vocab=vocab,
+        device=device,
+    )
+    if center_probs is None or predicted_center_ids is None:
+        return []
+    candidate_rows = _temporal_center_candidates(center_probs, vocab=vocab, config=config)
+    budgeted = bool(config.get("non_noop_budgeted_unmasking", False))
+    budget_threshold = float(config.get("non_noop_budget_score_threshold", config.get("non_noop_threshold", 1.1)))
+    budget_max_tokens = max(1, int(config.get("non_noop_budget_max_tokens_per_row", config.get("max_predicted_non_noop_tokens", 4))))
     predictions: list[list[str]] = []
     for batch_idx, row in enumerate(rows):
-        center_ids = [int(value) for value in corrupted[batch_idx, center, :].detach().cpu().tolist()]
-        fdm1_tokens = [str(vocab[idx]) for idx in center_ids if idx != noop_index and str(vocab[idx]) not in {"<FDM1_ACTION_PAD>", FDM1_ACTION_MASK, FDM1_ACTION_NOOP}]
+        center_ids = [int(value) for value in predicted_center_ids[batch_idx, :].detach().cpu().tolist()]
+        if budgeted:
+            fdm1_tokens = _tokens_from_non_noop_candidates(candidate_rows[batch_idx], threshold=budget_threshold, max_tokens=budget_max_tokens)
+        else:
+            fdm1_tokens = [str(vocab[idx]) for idx in center_ids if idx != noop_index and _is_predictable_action_token(str(vocab[idx]))]
         width, height = _screen_size(row)
         predictions.append(d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height) or [FDM1_ACTION_NOOP])
     return predictions
+
+
+def _collect_temporal_probability_rows(
+    model: Any,
+    torch: Any,
+    rows: Sequence[dict[str, Any]],
+    features: Sequence[Sequence[float]],
+    *,
+    config: dict[str, Any],
+    vocab: Sequence[str],
+    device: Any,
+) -> list[dict[str, Any]]:
+    batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
+    collected: list[dict[str, Any]] = []
+    for start_idx in range(0, len(rows), batch_size):
+        batch_rows = list(rows[start_idx : start_idx + batch_size])
+        center_probs, _center_ids = _temporal_final_center_probabilities(
+            model,
+            torch,
+            batch_rows,
+            start_index=start_idx,
+            all_features=features,
+            config=config,
+            vocab=vocab,
+            device=device,
+        )
+        for row, candidates in zip(batch_rows, _temporal_center_candidates(center_probs, vocab=vocab, config=config)):
+            collected.append({"row": row, "candidates": candidates, "ground_truth_tokens": [str(token) for token in row.get("ground_truth_tokens", [])]})
+    return collected
+
+
+def _calibrate_temporal_non_noop_budget(probability_rows: Sequence[dict[str, Any]], *, config: dict[str, Any]) -> dict[str, Any]:
+    if not probability_rows:
+        return {"status": "skipped", "reason": "no_probability_rows"}
+    max_tokens = max(1, int(config.get("non_noop_budget_max_tokens_per_row", config.get("max_predicted_non_noop_tokens", 4))))
+    max_button_fpr = float(config.get("non_noop_budget_max_no_button_fpr", config.get("calibration_max_no_button_fpr", 0.10)))
+    beta = float(config.get("non_noop_budget_beta", 2.0))
+    scores = sorted({float(candidate.get("score", 0.0)) for row in probability_rows for candidate in row.get("candidates", [])})
+    if not scores:
+        return {"status": "skipped", "reason": "no_non_noop_candidates"}
+    raw_candidates = [float(value) for value in config.get("non_noop_budget_threshold_candidates", [])] if isinstance(config.get("non_noop_budget_threshold_candidates"), list) else []
+    raw_candidates.extend(scores)
+    raw_candidates.extend(min(1.0, score + 1e-6) for score in scores)
+    raw_candidates.append(1.1)  # explicit abstention candidate
+    thresholds = sorted({max(0.0, min(1.1, float(value))) for value in raw_candidates})
+    if len(thresholds) > int(config.get("non_noop_budget_max_threshold_candidates", 256)):
+        max_candidates = max(2, int(config.get("non_noop_budget_max_threshold_candidates", 256)))
+        thresholds = [thresholds[min(len(thresholds) - 1, int(round(idx * (len(thresholds) - 1) / (max_candidates - 1))))] for idx in range(max_candidates)]
+        thresholds = sorted(set(thresholds + [1.1]))
+    rows: list[dict[str, Any]] = []
+    for threshold in thresholds:
+        acc = _PaperMetricAccumulator(empty_bins_as_correct=False)
+        predicted_non_noop = 0
+        for item in probability_rows:
+            row = item["row"]
+            fdm1_tokens = _tokens_from_non_noop_candidates(item.get("candidates", []), threshold=threshold, max_tokens=max_tokens)
+            predicted_non_noop += len(fdm1_tokens)
+            width, height = _screen_size(row)
+            pred_tokens = d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height) or [FDM1_ACTION_NOOP]
+            acc.update(pred_tokens, item.get("ground_truth_tokens", []))
+        metrics = acc.metrics()
+        strict_button = metrics["strict_local"]["mouse_button"]
+        paper_button = metrics["paper_compatible"]["mouse_button"]
+        paper_key = metrics["paper_compatible"]["keyboard"]
+        strict_key = metrics["strict_local"]["keyboard"]
+        fpr = strict_button.get("no_button_false_positive_rate")
+        precision = float(strict_button.get("precision") or 0.0)
+        recall = float(strict_button.get("recall") or 0.0)
+        if precision + recall > 0:
+            beta2 = beta * beta
+            button_fbeta = (1.0 + beta2) * precision * recall / max(1e-12, beta2 * precision + recall)
+        else:
+            button_fbeta = 0.0
+        fpr_penalty = 0.0 if fpr is None or fpr <= max_button_fpr else (float(fpr) - max_button_fpr) * 10.0
+        score = (
+            float(paper_key.get("key_accuracy") or 0.0)
+            + 0.25 * float(strict_key.get("accuracy") or 0.0)
+            + button_fbeta
+            + 0.25 * float(paper_button.get("button_accuracy") or 0.0)
+            - fpr_penalty
+        )
+        rows.append(
+            {
+                "threshold": threshold,
+                "score": score,
+                "keyboard_key_accuracy": paper_key.get("key_accuracy"),
+                "keyboard_strict_accuracy": strict_key.get("accuracy"),
+                "mouse_button_accuracy": paper_button.get("button_accuracy"),
+                "mouse_button_f1": strict_button.get("f1"),
+                "mouse_button_fbeta": button_fbeta,
+                "no_button_false_positive_rate": fpr,
+                "predicted_non_noop_tokens": predicted_non_noop,
+            }
+        )
+    selected = max(rows, key=lambda row: (float(row["score"]), int(row["predicted_non_noop_tokens"]), -float(row["threshold"])))
+    return {
+        "schema": "temporal_non_noop_budget_calibration.v1",
+        "status": "pass",
+        "rows": len(probability_rows),
+        "candidate_count": len(rows),
+        "selected_threshold": float(selected["threshold"]),
+        "selected_row": selected,
+        "max_tokens_per_row": max_tokens,
+        "max_no_button_fpr": max_button_fpr,
+        "sweep_preview": rows[:10] + ([] if len(rows) <= 20 else [{"omitted_rows": len(rows) - 20}]) + rows[-10:],
+        "claim_boundary": "Calibration uses held-out training rows only; target labels remain evaluation/diagnostic only.",
+    }
+
+
+def _temporal_action_loss(torch: Any, logits: Any, target_ids: Any, loss_mask: Any, class_weights: Any, config: dict[str, Any]) -> Any:
+    if not bool(loss_mask.any()):
+        return torch.tensor(0.0, device=logits.device)
+    selected_logits = logits[loss_mask]
+    selected_targets = target_ids[loss_mask]
+    loss_type = str(config.get("token_loss_type", "cross_entropy")).lower()
+    if loss_type in {"focal", "focal_cross_entropy", "weighted_focal"}:
+        ce = torch.nn.functional.cross_entropy(selected_logits, selected_targets, weight=class_weights, reduction="none")
+        probs = torch.softmax(selected_logits, dim=-1)
+        pt = probs.gather(1, selected_targets.unsqueeze(1)).squeeze(1).clamp_min(1e-8)
+        gamma = float(config.get("token_focal_gamma", config.get("focal_gamma", 2.0)))
+        return (((1.0 - pt) ** gamma) * ce).mean()
+    return torch.nn.functional.cross_entropy(selected_logits, selected_targets, weight=class_weights)
 
 
 def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any]:
@@ -398,15 +611,25 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         raise ValueError("no train rows found for temporal masked-diffusion IDM")
     if not target_rows:
         raise ValueError("no target rows found for temporal masked-diffusion IDM")
+    calibration_rows: list[dict[str, Any]] = []
+    fit_rows = train_rows
+    if bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False))) and len(train_rows) >= 10:
+        calibration_fraction = float(config.get("temporal_calibration_fraction", config.get("factorized_calibration_fraction", 0.0)) or 0.0)
+        calibration_max_rows = int(config.get("temporal_calibration_max_rows", config.get("factorized_calibration_max_rows", 2000)))
+        if calibration_fraction > 0.0:
+            calibration_count = min(calibration_max_rows, max(1, int(len(train_rows) * calibration_fraction)))
+            calibration_rows = train_rows[-calibration_count:]
+            fit_rows = train_rows[:-calibration_count] or train_rows
     offsets = _temporal_offsets(config)
     max_slots = int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))
     feature_dim = int(config.get("video_feature_dim", 64))
     vocab = _build_vocab(train_rows, max_slots=max_slots, min_count=int(config.get("vocab_min_count", 1)))
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
-    train_features = _precompute_features(train_rows, config=config)
+    fit_features = _precompute_features(fit_rows, config=config)
+    calibration_features = _precompute_features(calibration_rows, config=config) if calibration_rows else []
     target_features = _precompute_features(target_rows, config=config)
-    train_target_ids = _precompute_target_ids(train_rows, max_slots=max_slots, token_to_index=token_to_index)
-    dataset = _TemporalMaskedDiffusionDataset(features=train_features, target_ids=train_target_ids, config={**config, "max_slots": max_slots}, vocab=vocab)
+    fit_target_ids = _precompute_target_ids(fit_rows, max_slots=max_slots, token_to_index=token_to_index)
+    dataset = _TemporalMaskedDiffusionDataset(features=fit_features, target_ids=fit_target_ids, config={**config, "max_slots": max_slots}, vocab=vocab)
     loader = torch.utils.data.DataLoader(dataset, batch_size=int(config.get("batch_size", 64)), shuffle=True)
     device = torch.device("cuda" if torch.cuda.is_available() and not config.get("force_cpu") else "cpu")
     model = _build_temporal_model(torch, video_dim=feature_dim, vocab_size=len(vocab), max_slots=max_slots, offsets=offsets, config=config).to(device)
@@ -427,10 +650,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             target_ids = target_ids.to(device)
             loss_mask = loss_mask.to(device)
             logits = model(features, corrupted_ids)
-            if bool(loss_mask.any()):
-                action_loss = torch.nn.functional.cross_entropy(logits[loss_mask], target_ids[loss_mask], weight=class_weights)
-            else:
-                action_loss = torch.tensor(0.0, device=device)
+            action_loss = _temporal_action_loss(torch, logits, target_ids, loss_mask, class_weights, config)
             video_loss = _masked_video_reconstruction_loss(model, torch, features, config=config) if video_reconstruction_aux_weight > 0.0 else torch.tensor(0.0, device=device)
             loss = action_loss + video_reconstruction_aux_weight * video_loss
             optimizer.zero_grad(set_to_none=True)
@@ -460,6 +680,22 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "feature_dim": feature_dim,
         "temporal_offsets": offsets,
     }, checkpoint_path)
+    non_noop_budget = {"status": "skipped", "reason": "disabled"}
+    if bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False))) and calibration_rows:
+        probability_rows = _collect_temporal_probability_rows(
+            model,
+            torch,
+            calibration_rows,
+            calibration_features,
+            config={**config, "max_slots": max_slots},
+            vocab=vocab,
+            device=device,
+        )
+        non_noop_budget = _calibrate_temporal_non_noop_budget(probability_rows, config=config)
+        if non_noop_budget.get("status") == "pass":
+            config["non_noop_budgeted_unmasking"] = True
+            config["non_noop_budget_score_threshold"] = float(non_noop_budget["selected_threshold"])
+            config["non_noop_budget_max_tokens_per_row"] = int(non_noop_budget["max_tokens_per_row"])
     predictions_path = Path(output_dir) / "predictions.jsonl"
     prediction_batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
     with predictions_path.open("w", encoding="utf-8") as handle:
@@ -492,6 +728,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "model_name":str(config.get("model_name", "temporal_masked_diffusion_idm")),
         "recipe_alignment":"public FDM-1-shaped noncausal masked-diffusion IDM over temporal action-token sequences conditioned on all D2E frame-window tokens in the local window.",
         "train_rows":len(train_rows),
+        "fit_rows":len(fit_rows),
+        "calibration_rows":len(calibration_rows),
         "target_rows":len(target_rows),
         "vocab_size":len(vocab),
         "max_slots":max_slots,
@@ -500,6 +738,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "video_encoder_arch":str(config.get("video_encoder_arch", "flat_mlp")),
         "video_encoder_pretrain_history":video_pretrain_history,
         "history":history,
+        "non_noop_budget":non_noop_budget,
         "loss_weights":{
             "noop_loss_weight":float(config.get("noop_loss_weight", 1.0)),
             "pad_loss_weight":float(config.get("pad_loss_weight", 0.0)),
@@ -508,6 +747,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "mouse_button_loss_weight":float(config.get("mouse_button_loss_weight", config.get("action_loss_weight", 1.0))),
             "mouse_move_loss_weight":float(config.get("mouse_move_loss_weight", config.get("action_loss_weight", 1.0))),
             "video_reconstruction_aux_weight":video_reconstruction_aux_weight,
+            "token_loss_type":str(config.get("token_loss_type", "cross_entropy")),
+            "token_focal_gamma":float(config.get("token_focal_gamma", config.get("focal_gamma", 2.0))),
         },
         "device":str(device),
         "checkpoint_path":str(checkpoint_path),
