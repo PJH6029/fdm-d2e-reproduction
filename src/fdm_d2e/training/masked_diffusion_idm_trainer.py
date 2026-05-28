@@ -986,6 +986,170 @@ def _calibrate_button_event_budget(
     }
 
 
+def _button_event_budget_predicts_row(
+    row: dict[str, Any],
+    *,
+    score_threshold: float,
+    config: dict[str, Any],
+    button_vocab: Sequence[str],
+) -> bool:
+    """Mirror the final mouse-button budget gate for calibration rows.
+
+    The budget multiplier must be selected without target labels.  To make that
+    selection faithful to inference, evaluate held-out train/calibration rows
+    with the same direct-token and event-forced score gates used by
+    ``_predict_factorized_tokens``.
+    """
+
+    event_prob_raw = row.get("button_event_prob")
+    if event_prob_raw is None:
+        return False
+    event_prob = float(event_prob_raw)
+    probs = [float(value) for value in row.get("button_probs", [])]
+    if not probs:
+        return False
+    button_threshold = float(config.get("button_threshold", 0.5))
+    button_token_thresholds = config.get("button_token_thresholds") if isinstance(config.get("button_token_thresholds"), dict) else {}
+    budget_applies_to_all = bool(config.get("button_event_budget_applies_to_all_buttons", False))
+
+    for idx, prob in enumerate(probs[: len(button_vocab)]):
+        token = str(button_vocab[idx])
+        threshold = float(button_token_thresholds.get(token, button_threshold))
+        if prob >= threshold and (
+            not budget_applies_to_all
+            or (event_prob * prob) >= float(score_threshold)
+        ):
+            return True
+
+    max_button_prob = max(probs)
+    return (
+        event_prob >= float(config.get("button_event_threshold", 1.1))
+        and max_button_prob >= float(config.get("button_event_min_token_probability", 0.0))
+        and (event_prob * max_button_prob) >= float(score_threshold)
+    )
+
+
+def _score_button_event_budget(
+    probability_rows: Sequence[dict[str, Any]],
+    *,
+    score_threshold: float,
+    config: dict[str, Any],
+    button_vocab: Sequence[str],
+) -> dict[str, Any]:
+    tp = fp = fn = tn = 0
+    for row in probability_rows:
+        pred = _button_event_budget_predicts_row(
+            row,
+            score_threshold=float(score_threshold),
+            config=config,
+            button_vocab=button_vocab,
+        )
+        truth = bool(row.get("button_event_label"))
+        if pred and truth:
+            tp += 1
+        elif pred and not truth:
+            fp += 1
+        elif (not pred) and truth:
+            fn += 1
+        else:
+            tn += 1
+    precision = tp / (tp + fp) if (tp + fp) else None
+    recall = tp / (tp + fn) if (tp + fn) else None
+    f1 = (2 * tp) / ((2 * tp) + fp + fn) if ((2 * tp) + fp + fn) else 0.0
+    fpr = fp / (fp + tn) if (fp + tn) else 0.0
+    beta = float(config.get("button_event_budget_calibration_beta", config.get("button_event_calibration_beta", 2.0)))
+    beta_sq = max(0.01, beta * beta)
+    fbeta = ((1.0 + beta_sq) * tp) / (((1.0 + beta_sq) * tp) + beta_sq * fn + fp) if (((1.0 + beta_sq) * tp) + beta_sq * fn + fp) else 0.0
+    return {
+        "tp": tp,
+        "fp": fp,
+        "fn": fn,
+        "tn": tn,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "fbeta": fbeta,
+        "false_positive_rate": fpr,
+        "predicted_examples": tp + fp,
+        "positive_examples": tp + fn,
+        "negative_examples": fp + tn,
+    }
+
+
+def _calibrate_button_event_budget_multiplier(
+    probability_rows: Sequence[dict[str, Any]],
+    *,
+    rate_rows: Sequence[dict[str, Any]],
+    button_vocab: Sequence[str],
+    config: dict[str, Any],
+) -> dict[str, Any]:
+    raw_candidates = config.get("button_event_budget_rate_multiplier_candidates")
+    if not isinstance(raw_candidates, list) or not raw_candidates:
+        return {"status": "skipped", "reason": "no_multiplier_candidates"}
+
+    candidates = sorted({max(0.0, float(value)) for value in raw_candidates})
+    max_fpr = float(config.get("button_event_budget_calibration_max_no_button_fpr", config.get("calibration_max_no_button_fpr", 0.10)))
+    rows: list[dict[str, Any]] = []
+    for multiplier in candidates:
+        candidate_config = {**config, "button_event_budget_rate_multiplier": multiplier}
+        budget = _calibrate_button_event_budget(
+            probability_rows,
+            rate_rows=rate_rows,
+            button_vocab=button_vocab,
+            config=candidate_config,
+        )
+        metrics = _score_button_event_budget(
+            probability_rows,
+            score_threshold=float(budget["score_threshold"]),
+            config=candidate_config,
+            button_vocab=button_vocab,
+        )
+        fpr_penalty = max(0.0, float(metrics["false_positive_rate"]) - max_fpr)
+        score = float(metrics["fbeta"]) - fpr_penalty
+        rows.append(
+            {
+                "multiplier": float(multiplier),
+                "score": score,
+                "max_false_positive_rate": max_fpr,
+                "budget": {
+                    key: budget.get(key)
+                    for key in [
+                        "rate_source_rows",
+                        "rate_source_positives",
+                        "rate_source_positive_rate",
+                        "budget_rate",
+                        "max_forced_events",
+                        "score_threshold",
+                        "threshold_candidate_count",
+                    ]
+                },
+                "metrics": metrics,
+            }
+        )
+    feasible = [row for row in rows if float(row["metrics"]["false_positive_rate"]) <= max_fpr]
+    pool = feasible or rows
+    selected = max(
+        pool,
+        key=lambda row: (
+            row["score"],
+            float(row["metrics"].get("recall") or 0.0),
+            float(row["metrics"].get("precision") or 0.0),
+            -float(row["metrics"].get("false_positive_rate") or 0.0),
+            float(row["multiplier"]),
+        ),
+    )
+    return {
+        "schema": "button_event_budget_multiplier_calibration.v1",
+        "status": "pass",
+        "selected_multiplier": float(selected["multiplier"]),
+        "max_false_positive_rate": max_fpr,
+        "candidate_count": len(rows),
+        "selected_row": selected,
+        "rows": rows,
+        "claim_boundary": "Selects the mouse-button confidence-budget multiplier from held-out train/calibration labels only; target labels are not used.",
+    }
+
+
 def _calibrate_factorized_thresholds(
     model: Any,
     torch: Any,
@@ -1221,6 +1385,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
     if config.get("button_event_budgeted_unmasking") and config.get("button_event_auxiliary") and button_vocab:
         budget_max_rows = config.get("button_event_budget_max_target_rows")
         budget_rows = target_rows[: int(budget_max_rows)] if budget_max_rows is not None else target_rows
+        budget_calibration = {"status": "skipped", "reason": "no_multiplier_candidates"}
         target_probability_rows = _collect_factorized_probability_rows(
             model,
             torch,
@@ -1237,12 +1402,32 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             rate_rows = train_rows
         else:
             rate_rows = calibration_rows or fit_rows[-min(len(fit_rows), int(config.get("factorized_calibration_max_rows", 2000))) :]
+        if isinstance(config.get("button_event_budget_rate_multiplier_candidates"), list) and config.get("button_event_budget_rate_multiplier_candidates"):
+            budget_calibration_rows = calibration_rows or fit_rows[-min(len(fit_rows), int(config.get("factorized_calibration_max_rows", 2000))) :]
+            calibration_probability_rows = _collect_factorized_probability_rows(
+                model,
+                torch,
+                budget_calibration_rows,
+                config=config,
+                key_vocab=key_vocab,
+                button_vocab=button_vocab,
+                device=device,
+            )
+            budget_calibration = _calibrate_button_event_budget_multiplier(
+                calibration_probability_rows,
+                rate_rows=rate_rows,
+                button_vocab=button_vocab,
+                config=config,
+            )
+            if budget_calibration.get("status") == "pass":
+                config["button_event_budget_rate_multiplier"] = float(budget_calibration["selected_multiplier"])
         button_event_budget = _calibrate_button_event_budget(
             target_probability_rows,
             rate_rows=rate_rows,
             button_vocab=button_vocab,
             config=config,
         )
+        button_event_budget["multiplier_calibration"] = budget_calibration
         config["button_event_budget_score_threshold"] = float(button_event_budget["score_threshold"])
         config["button_event_budget_max_forced_events"] = int(button_event_budget["max_forced_events"])
 

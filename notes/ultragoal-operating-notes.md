@@ -201,3 +201,9 @@ Persistent user preferences and non-negotiable research constraints for the D2E/
 - Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_event_allbudget_prefix20k_h200_*`, including run, GPU monitor, W&B status, resolved config, paper metrics, compacted summary, reservation context, and diagnosis.
 - Result is useful but non-terminal: all-button confidence budgeting reduced target no-button FPR to `0.02923` (passes the local FPR gate), but exact mouse-button true positives fell to `0`, strict button F1 stayed `0.0`, and paper-compatible mouse-button accuracy was `0.0`.
 - Next branch should keep the all-button budget for FPR control but recover recall via train-only budget multiplier/score sweep or better button-token ranking. Do not promote to full 4×H200 until prefix has both `<=0.10` FPR and nonzero useful recall.
+
+## 2026-05-28 KST — Next G005 branch: calibration-selected button budget multiplier
+
+- Implemented a recipe-faithful continuation after the all-button confidence-budget probe: the typed masked-diffusion IDM can now sweep mouse-button confidence-budget multipliers on held-out train/calibration rows and select the multiplier under a calibration no-button FPR cap, then apply the selected budget to unlabeled target confidence rankings without target labels.
+- Candidate config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_event_multibudget_prefix20k.yaml`. It preserves compact luma-window CNN video tokens, noncausal masked action-token denoising, iterative unmasking gates, and all-button budgeted mouse-button emissions.
+- Intended bounded H200 probe criterion before scaling: keep target no-button FPR near `<=0.10` while recovering nonzero/useful mouse-button recall. This remains prefix exploration, not G005 completion evidence.

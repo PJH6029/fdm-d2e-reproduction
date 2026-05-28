@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from fdm_d2e.io_utils import read_json
 from fdm_d2e.training.masked_diffusion_idm_trainer import (
     _calibrate_button_event_budget,
+    _calibrate_button_event_budget_multiplier,
     _calibrate_button_event_threshold,
     torch_available,
     train_masked_diffusion_idm,
@@ -140,6 +141,41 @@ def test_button_event_budget_uses_train_event_rate_without_target_labels():
     assert budget["max_forced_events"] == 1
     assert budget["score_threshold"] == 0.81
     assert budget["selected_preview"][0]["index"] == 0
+
+
+def test_button_event_budget_multiplier_selects_calibration_recall_under_fpr_cap():
+    probability_rows = [
+        {"button_event_prob": 0.90, "button_probs": [0.90], "button_event_label": 1},
+        {"button_event_prob": 0.80, "button_probs": [0.80], "button_event_label": 1},
+        {"button_event_prob": 0.70, "button_probs": [0.70], "button_event_label": 0},
+        {"button_event_prob": 0.60, "button_probs": [0.60], "button_event_label": 0},
+        {"button_event_prob": 0.50, "button_probs": [0.50], "button_event_label": 0},
+    ]
+    rate_rows = [
+        {"ground_truth_tokens": ["MOUSE_LEFT_DOWN"]},
+        {"ground_truth_tokens": []},
+        {"ground_truth_tokens": []},
+        {"ground_truth_tokens": []},
+        {"ground_truth_tokens": []},
+    ]
+    payload = _calibrate_button_event_budget_multiplier(
+        probability_rows,
+        rate_rows=rate_rows,
+        button_vocab=["MOUSE_LEFT_DOWN"],
+        config={
+            "button_event_threshold": 0.0,
+            "button_event_min_token_probability": 0.0,
+            "button_event_budget_rate_multiplier_candidates": [1.0, 2.0, 3.0],
+            "button_event_budget_cap_rate": 1.0,
+            "button_event_budget_applies_to_all_buttons": True,
+            "button_threshold": 0.0,
+            "button_event_budget_calibration_max_no_button_fpr": 0.34,
+        },
+    )
+    assert payload["status"] == "pass"
+    assert payload["selected_multiplier"] == 2.0
+    assert payload["selected_row"]["metrics"]["recall"] == 1.0
+    assert payload["selected_row"]["metrics"]["false_positive_rate"] <= 0.34
 
 
 def test_train_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
@@ -308,6 +344,7 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
             "button_event_force_topk": 1,
             "button_event_budgeted_unmasking": True,
             "button_event_budget_rate_multiplier": 1.0,
+            "button_event_budget_rate_multiplier_candidates": [1.0, 2.0],
             "button_event_budget_applies_to_all_buttons": True,
             "calibrate_thresholds": True,
             "factorized_calibration_fraction": 0.25,
@@ -320,6 +357,7 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
     assert summary["threshold_calibration"]["status"] == "pass"
     assert summary["threshold_calibration"]["per_token"]["button_event_threshold"]["status"] == "pass"
     assert summary["button_event_budget"]["status"] == "pass"
+    assert summary["button_event_budget"]["multiplier_calibration"]["status"] == "pass"
     assert summary["factorization"]["button_event_auxiliary"] is True
     assert "button_event_min_token_probability" in summary["factorization"]
     assert "button_event_budget_score_threshold" in summary["factorization"]
