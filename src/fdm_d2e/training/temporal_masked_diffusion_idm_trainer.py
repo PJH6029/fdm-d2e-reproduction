@@ -778,6 +778,11 @@ def _temporal_center_candidates(
 ) -> list[list[dict[str, Any]]]:
     if probabilities is None:
         return []
+    probabilities_cpu = probabilities.detach().cpu()
+    event_probabilities_cpu: dict[str, Any] = {}
+    if event_probabilities:
+        for key, value in event_probabilities.items():
+            event_probabilities_cpu[key] = value.detach().cpu() if value is not None and hasattr(value, "detach") else value
     max_slots = int(probabilities.shape[1])
     max_candidates = int(config.get("non_noop_budget_candidates_per_row", max_slots * 8))
     min_candidates_per_family = max(
@@ -804,46 +809,46 @@ def _temporal_center_candidates(
     button_class_index = {token: idx + 1 for idx, token in enumerate(button_vocab)}
     button_presence_index = {token: idx for idx, token in enumerate(button_vocab)}
     batch_candidates: list[list[dict[str, Any]]] = []
-    for batch_idx in range(int(probabilities.shape[0])):
+    for batch_idx in range(int(probabilities_cpu.shape[0])):
         candidates: list[dict[str, Any]] = []
         for slot_idx in range(max_slots):
             for token_idx, token in enumerate(vocab):
                 token = str(token)
                 if not _is_predictable_action_token(token):
                     continue
-                token_score = float(probabilities[batch_idx, slot_idx, token_idx].detach().cpu())
+                token_score = float(probabilities_cpu[batch_idx, slot_idx, token_idx])
                 score = token_score
                 family = _action_family(token)
-                if event_probabilities and family in {"keyboard", "mouse_button"} and event_probabilities.get(family) is not None:
-                    event_score = float(event_probabilities[family][batch_idx].detach().cpu())
+                if event_probabilities_cpu and family in {"keyboard", "mouse_button"} and event_probabilities_cpu.get(family) is not None:
+                    event_score = float(event_probabilities_cpu[family][batch_idx])
                     blend = max(0.0, min(1.0, float(config.get("event_auxiliary_candidate_score_blend", 0.5))))
                     score = (1.0 - blend) * token_score + blend * event_score
-                if event_probabilities and event_probabilities.get("token_presence") is not None:
-                    presence_score = float(event_probabilities["token_presence"][batch_idx, token_idx].detach().cpu())
+                if event_probabilities_cpu and event_probabilities_cpu.get("token_presence") is not None:
+                    presence_score = float(event_probabilities_cpu["token_presence"][batch_idx, token_idx])
                     blend = max(0.0, min(1.0, float(config.get("token_presence_candidate_score_blend", 0.0))))
                     if blend > 0.0:
                         score = (1.0 - blend) * score + blend * presence_score
                 key_presence_score = 0.0
-                if family == "keyboard" and event_probabilities and event_probabilities.get("key_token_presence") is not None:
+                if family == "keyboard" and event_probabilities_cpu and event_probabilities_cpu.get("key_token_presence") is not None:
                     class_idx = key_presence_index.get(token)
-                    if class_idx is not None and class_idx < int(event_probabilities["key_token_presence"].shape[1]):
-                        key_presence_score = float(event_probabilities["key_token_presence"][batch_idx, class_idx].detach().cpu())
+                    if class_idx is not None and class_idx < int(event_probabilities_cpu["key_token_presence"].shape[1]):
+                        key_presence_score = float(event_probabilities_cpu["key_token_presence"][batch_idx, class_idx])
                         blend = max(0.0, min(1.0, float(config.get("key_token_presence_candidate_score_blend", 0.0))))
                         if blend > 0.0:
                             score = (1.0 - blend) * score + blend * key_presence_score
                 button_class_score = 0.0
-                if family == "mouse_button" and event_probabilities and event_probabilities.get("button_class") is not None:
+                if family == "mouse_button" and event_probabilities_cpu and event_probabilities_cpu.get("button_class") is not None:
                     class_idx = button_class_index.get(token)
-                    if class_idx is not None and class_idx < int(event_probabilities["button_class"].shape[1]):
-                        button_class_score = float(event_probabilities["button_class"][batch_idx, class_idx].detach().cpu())
+                    if class_idx is not None and class_idx < int(event_probabilities_cpu["button_class"].shape[1]):
+                        button_class_score = float(event_probabilities_cpu["button_class"][batch_idx, class_idx])
                         blend = max(0.0, min(1.0, float(config.get("button_class_candidate_score_blend", 0.0))))
                         if blend > 0.0:
                             score = (1.0 - blend) * score + blend * button_class_score
                 button_presence_score = 0.0
-                if family == "mouse_button" and event_probabilities and event_probabilities.get("button_token_presence") is not None:
+                if family == "mouse_button" and event_probabilities_cpu and event_probabilities_cpu.get("button_token_presence") is not None:
                     class_idx = button_presence_index.get(token)
-                    if class_idx is not None and class_idx < int(event_probabilities["button_token_presence"].shape[1]):
-                        button_presence_score = float(event_probabilities["button_token_presence"][batch_idx, class_idx].detach().cpu())
+                    if class_idx is not None and class_idx < int(event_probabilities_cpu["button_token_presence"].shape[1]):
+                        button_presence_score = float(event_probabilities_cpu["button_token_presence"][batch_idx, class_idx])
                         blend = max(0.0, min(1.0, float(config.get("button_token_presence_candidate_score_blend", 0.0))))
                         if blend > 0.0:
                             score = (1.0 - blend) * score + blend * button_presence_score
