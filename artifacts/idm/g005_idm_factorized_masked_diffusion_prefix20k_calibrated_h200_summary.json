@@ -1,0 +1,466 @@
+{
+  "schema": "factorized_masked_diffusion_idm_train_summary.v1",
+  "status": "pass",
+  "model_name": "idm_factorized_masked_diffusion_d2e_prefix20k_calibrated_h200",
+  "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM with typed masked action-token planes for mouse/key/button factors.",
+  "train_rows": 20000,
+  "target_rows": 2000,
+  "fit_rows": 18000,
+  "calibration_rows": 2000,
+  "key_vocab_size": 46,
+  "button_vocab_size": 6,
+  "device": "cuda",
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 6.125140091790093,
+      "mouse_x": 2.505648929595947,
+      "mouse_y": 2.181331963327196,
+      "key": 0.7502113030221728,
+      "button": 0.6879479149447547,
+      "examples": 18000
+    },
+    {
+      "epoch": 2,
+      "loss": 5.310568342844645,
+      "mouse_x": 2.1971855063968233,
+      "mouse_y": 1.8854646773868138,
+      "key": 0.6156656048562792,
+      "button": 0.6122526118490431,
+      "examples": 18000
+    },
+    {
+      "epoch": 3,
+      "loss": 5.280072780185276,
+      "mouse_x": 2.191000154495239,
+      "mouse_y": 1.8735328791936239,
+      "key": 0.603308048831092,
+      "button": 0.6122317392031352,
+      "examples": 18000
+    }
+  ],
+  "checkpoint_path": "outputs/idm_factorized_masked_diffusion_d2e_prefix20k_calibrated_h200/checkpoint.pt",
+  "predictions_path": "outputs/idm_factorized_masked_diffusion_d2e_prefix20k_calibrated_h200/predictions.jsonl",
+  "metrics_path": "outputs/idm_factorized_masked_diffusion_d2e_prefix20k_calibrated_h200/paper_metrics.json",
+  "threshold_calibration": {
+    "schema": "factorized_threshold_calibration.v1",
+    "status": "pass",
+    "rows": 2000,
+    "candidates": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95
+    ],
+    "selected": {
+      "key_threshold": 0.5,
+      "button_threshold": 0.95
+    },
+    "key_sweep": [
+      {
+        "threshold": 0.05,
+        "score": 0.010364504483521603,
+        "key_accuracy": 0.010364504483521603,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 8000
+      },
+      {
+        "threshold": 0.1,
+        "score": 0.010364504483521603,
+        "key_accuracy": 0.010364504483521603,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 8000
+      },
+      {
+        "threshold": 0.15,
+        "score": 0.010364504483521603,
+        "key_accuracy": 0.010364504483521603,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 8000
+      },
+      {
+        "threshold": 0.2,
+        "score": 0.010364504483521603,
+        "key_accuracy": 0.010364504483521603,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 8000
+      },
+      {
+        "threshold": 0.25,
+        "score": 0.010364504483521603,
+        "key_accuracy": 0.010364504483521603,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 8000
+      },
+      {
+        "threshold": 0.3,
+        "score": 0.010364504483521603,
+        "key_accuracy": 0.010364504483521603,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 8000
+      },
+      {
+        "threshold": 0.35,
+        "score": 0.010364504483521603,
+        "key_accuracy": 0.010364504483521603,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 8000
+      },
+      {
+        "threshold": 0.4,
+        "score": 0.010364504483521603,
+        "key_accuracy": 0.010364504483521603,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 8000
+      },
+      {
+        "threshold": 0.45,
+        "score": 0.010364504483521603,
+        "key_accuracy": 0.010364504483521603,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 8000
+      },
+      {
+        "threshold": 0.5,
+        "score": 0.01678445229681979,
+        "key_accuracy": 0.01678445229681979,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 3928
+      },
+      {
+        "threshold": 0.55,
+        "score": 0.0,
+        "key_accuracy": 0.0,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 0
+      },
+      {
+        "threshold": 0.6,
+        "score": 0.0,
+        "key_accuracy": 0.0,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 0
+      },
+      {
+        "threshold": 0.65,
+        "score": 0.0,
+        "key_accuracy": 0.0,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 0
+      },
+      {
+        "threshold": 0.7,
+        "score": 0.0,
+        "key_accuracy": 0.0,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 0
+      },
+      {
+        "threshold": 0.75,
+        "score": 0.0,
+        "key_accuracy": 0.0,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 0
+      },
+      {
+        "threshold": 0.8,
+        "score": 0.0,
+        "key_accuracy": 0.0,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 0
+      },
+      {
+        "threshold": 0.85,
+        "score": 0.0,
+        "key_accuracy": 0.0,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 0
+      },
+      {
+        "threshold": 0.9,
+        "score": 0.0,
+        "key_accuracy": 0.0,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 0
+      },
+      {
+        "threshold": 0.95,
+        "score": 0.0,
+        "key_accuracy": 0.0,
+        "strict_accuracy": 0.0,
+        "predicted_key_tokens": 0
+      }
+    ],
+    "button_sweep": [
+      {
+        "threshold": 0.05,
+        "score": -0.8982018849206349,
+        "button_accuracy": 0.007192460317460317,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 1.0,
+        "predicted_button_tokens": 4000
+      },
+      {
+        "threshold": 0.1,
+        "score": -0.8982018849206349,
+        "button_accuracy": 0.007192460317460317,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 1.0,
+        "predicted_button_tokens": 4000
+      },
+      {
+        "threshold": 0.15,
+        "score": -0.8982018849206349,
+        "button_accuracy": 0.007192460317460317,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 1.0,
+        "predicted_button_tokens": 4000
+      },
+      {
+        "threshold": 0.2,
+        "score": -0.8982018849206349,
+        "button_accuracy": 0.007192460317460317,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 1.0,
+        "predicted_button_tokens": 4000
+      },
+      {
+        "threshold": 0.25,
+        "score": -0.8982018849206349,
+        "button_accuracy": 0.007192460317460317,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 1.0,
+        "predicted_button_tokens": 4000
+      },
+      {
+        "threshold": 0.3,
+        "score": -0.8357562433636472,
+        "button_accuracy": 0.0015511892450879006,
+        "f1": 0.001034126163391934,
+        "precision": 0.0005330490405117271,
+        "recall": 0.017241379310344827,
+        "no_button_false_positive_rate": 0.937178166838311,
+        "predicted_button_tokens": 1876
+      },
+      {
+        "threshold": 0.35,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.4,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.45,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.5,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.55,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.6,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.65,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.7,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.75,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.8,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.85,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.9,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      },
+      {
+        "threshold": 0.95,
+        "score": 0.0,
+        "button_accuracy": 0.0,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_button_tokens": 0
+      }
+    ],
+    "claim_boundary": "Calibration over prefix/held-out training rows only; final G005 requires split-safe calibration evidence."
+  },
+  "factorization": {
+    "mouse_axis_bins": 49,
+    "key_vocab": [
+      "KEY_PRESS_65",
+      "KEY_PRESS_68",
+      "KEY_PRESS_87",
+      "KEY_PRESS_160",
+      "KEY_PRESS_32",
+      "KEY_RELEASE_68",
+      "KEY_PRESS_162",
+      "KEY_RELEASE_65",
+      "KEY_RELEASE_87",
+      "KEY_RELEASE_160",
+      "KEY_PRESS_83",
+      "KEY_PRESS_70",
+      "KEY_RELEASE_70",
+      "KEY_RELEASE_32",
+      "KEY_RELEASE_83",
+      "KEY_PRESS_51",
+      "KEY_RELEASE_51",
+      "KEY_PRESS_9",
+      "KEY_RELEASE_9",
+      "KEY_RELEASE_162",
+      "KEY_PRESS_52",
+      "KEY_RELEASE_49",
+      "KEY_PRESS_49",
+      "KEY_PRESS_82",
+      "KEY_RELEASE_82",
+      "KEY_RELEASE_52",
+      "KEY_PRESS_50",
+      "KEY_RELEASE_50",
+      "KEY_PRESS_81",
+      "KEY_RELEASE_81",
+      "KEY_PRESS_77",
+      "KEY_RELEASE_77",
+      "KEY_PRESS_67",
+      "KEY_PRESS_66",
+      "KEY_RELEASE_66",
+      "KEY_RELEASE_67",
+      "KEY_PRESS_164",
+      "KEY_PRESS_69",
+      "KEY_RELEASE_69",
+      "KEY_RELEASE_164",
+      "KEY_PRESS_112",
+      "KEY_PRESS_86",
+      "KEY_RELEASE_112",
+      "KEY_RELEASE_86",
+      "KEY_PRESS_90",
+      "KEY_RELEASE_90"
+    ],
+    "button_vocab": [
+      "MOUSE_RIGHT_DOWN",
+      "MOUSE_RIGHT_UP",
+      "MOUSE_LEFT_DOWN",
+      "MOUSE_LEFT_UP",
+      "MOUSE_MIDDLE_DOWN",
+      "MOUSE_MIDDLE_UP"
+    ],
+    "key_threshold": 0.5,
+    "button_threshold": 0.95
+  },
+  "wall_clock_seconds": 67.35932970046997,
+  "claim_boundary": "Factorized prefix trainer scaffold; not G005 completion evidence without full-corpus 4xH200 run, recipe-alignment audit, paper-target win, and split statistics."
+}

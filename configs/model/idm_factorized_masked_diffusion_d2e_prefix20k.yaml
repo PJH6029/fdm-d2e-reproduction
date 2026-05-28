@@ -83,7 +83,8 @@
         "compact frame/window bootstrap features",
         "key/button decision thresholds",
         "split-safe threshold calibration over held-out training rows",
-        "no-button false-positive calibration target"
+        "no-button false-positive calibration target",
+        "per-token key/button threshold calibration to reduce common-token overfire"
       ]
     }
   },
@@ -111,5 +112,6 @@
     0.9,
     0.95
   ],
-  "calibration_max_no_button_fpr": 0.1
+  "calibration_max_no_button_fpr": 0.1,
+  "calibrate_per_token_thresholds": true
 }

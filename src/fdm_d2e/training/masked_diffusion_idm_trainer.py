@@ -397,6 +397,8 @@ def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, c
     features = torch.tensor([video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim)], dtype=torch.float32, device=device)
     key_threshold = float(config.get("key_threshold", 0.5))
     button_threshold = float(config.get("button_threshold", 0.5))
+    key_token_thresholds = config.get("key_token_thresholds") if isinstance(config.get("key_token_thresholds"), dict) else {}
+    button_token_thresholds = config.get("button_token_thresholds") if isinstance(config.get("button_token_thresholds"), dict) else {}
     max_keys = int(config.get("max_predicted_keys", 4))
     max_buttons = int(config.get("max_predicted_buttons", 2))
     width, height = _screen_size(row)
@@ -412,11 +414,25 @@ def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, c
             fdm1_tokens.append(fdm1_mouse_axis_token_from_class("y", y_class))
         if out.get("key") is not None and key_vocab:
             probs = torch.sigmoid(out["key"][0]).detach().cpu().tolist()
-            selected = sorted(((float(prob), idx) for idx, prob in enumerate(probs) if prob >= key_threshold), key=lambda item: (-item[0], item[1]))[:max_keys]
+            selected = sorted(
+                (
+                    (float(prob), idx)
+                    for idx, prob in enumerate(probs)
+                    if prob >= float(key_token_thresholds.get(str(key_vocab[idx]), key_threshold))
+                ),
+                key=lambda item: (-item[0], item[1]),
+            )[:max_keys]
             fdm1_tokens.extend(str(key_vocab[idx]) for _, idx in selected)
         if out.get("button") is not None and button_vocab:
             probs = torch.sigmoid(out["button"][0]).detach().cpu().tolist()
-            selected = sorted(((float(prob), idx) for idx, prob in enumerate(probs) if prob >= button_threshold), key=lambda item: (-item[0], item[1]))[:max_buttons]
+            selected = sorted(
+                (
+                    (float(prob), idx)
+                    for idx, prob in enumerate(probs)
+                    if prob >= float(button_token_thresholds.get(str(button_vocab[idx]), button_threshold))
+                ),
+                key=lambda item: (-item[0], item[1]),
+            )[:max_buttons]
             fdm1_tokens.extend(str(button_vocab[idx]) for _, idx in selected)
     return d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height)
 
@@ -509,6 +525,106 @@ def _score_button_threshold(
     }
 
 
+def _collect_factorized_probability_rows(
+    model: Any,
+    torch: Any,
+    rows: Sequence[dict[str, Any]],
+    *,
+    config: dict[str, Any],
+    key_vocab: Sequence[str],
+    button_vocab: Sequence[str],
+    device: Any,
+) -> list[dict[str, Any]]:
+    feature_paths = list(config.get("video_feature_paths", ["frame.features", "next_frame_features", "frame_delta_features"]))
+    feature_dim = int(config.get("video_feature_dim", 64))
+    collected: list[dict[str, Any]] = []
+    model.eval()
+    with torch.no_grad():
+        for row in rows:
+            features = torch.tensor([video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim)], dtype=torch.float32, device=device)
+            out = model(features)
+            target = _factorized_targets(row, key_vocab=key_vocab, button_vocab=button_vocab)
+            key_probs = torch.sigmoid(out["key"][0]).detach().cpu().tolist() if out.get("key") is not None and key_vocab else []
+            button_probs = torch.sigmoid(out["button"][0]).detach().cpu().tolist() if out.get("button") is not None and button_vocab else []
+            collected.append(
+                {
+                    "key_probs": [float(value) for value in key_probs],
+                    "button_probs": [float(value) for value in button_probs],
+                    "key_labels": [int(value) for value in target["key_labels"]],
+                    "button_labels": [int(value) for value in target["button_labels"]],
+                }
+            )
+    return collected
+
+
+def _calibrate_per_token_thresholds(
+    probability_rows: Sequence[dict[str, Any]],
+    *,
+    vocab: Sequence[str],
+    prob_key: str,
+    label_key: str,
+    candidates: Sequence[float],
+    max_false_positive_rate: float | None = None,
+) -> dict[str, Any]:
+    selected: dict[str, float] = {}
+    rows: list[dict[str, Any]] = []
+    for idx, token in enumerate(vocab):
+        positives = sum(int((row.get(label_key) or [])[idx]) for row in probability_rows if idx < len(row.get(label_key) or []))
+        negatives = max(0, len(probability_rows) - positives)
+        best: dict[str, Any] | None = None
+        for threshold in candidates:
+            tp = fp = fn = tn = 0
+            for row in probability_rows:
+                probs = row.get(prob_key) or []
+                labels = row.get(label_key) or []
+                if idx >= len(probs) or idx >= len(labels):
+                    continue
+                pred = float(probs[idx]) >= float(threshold)
+                truth = bool(labels[idx])
+                if pred and truth:
+                    tp += 1
+                elif pred and not truth:
+                    fp += 1
+                elif (not pred) and truth:
+                    fn += 1
+                else:
+                    tn += 1
+            precision = tp / (tp + fp) if (tp + fp) else None
+            recall = tp / (tp + fn) if (tp + fn) else None
+            f1 = (2 * tp) / ((2 * tp) + fp + fn) if ((2 * tp) + fp + fn) else 0.0
+            fpr = fp / (fp + tn) if (fp + tn) else 0.0
+            penalty = 0.0
+            if max_false_positive_rate is not None and fpr > max_false_positive_rate:
+                penalty = fpr - max_false_positive_rate
+            # Prefer high F1, then fewer false positives, then lower threshold for recall.
+            score = float(f1) - penalty
+            candidate = {
+                "token": str(token),
+                "threshold": float(threshold),
+                "score": score,
+                "tp": tp,
+                "fp": fp,
+                "fn": fn,
+                "tn": tn,
+                "positives": positives,
+                "negatives": negatives,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1,
+                "false_positive_rate": fpr,
+            }
+            if best is None or (candidate["score"], -candidate["fp"], -candidate["threshold"]) > (best["score"], -best["fp"], -best["threshold"]):
+                best = candidate
+        if best is None:
+            best = {"token": str(token), "threshold": 1.1, "score": 0.0, "tp": 0, "fp": 0, "fn": positives, "tn": negatives, "positives": positives, "negatives": negatives, "precision": None, "recall": None, "f1": 0.0, "false_positive_rate": 0.0}
+        # If the model has no positive evidence for this token, disable it instead of allowing common-token overfire.
+        if positives <= 0 or best.get("tp", 0) <= 0:
+            best = {**best, "threshold": 1.1, "disabled_no_true_positive": True}
+        selected[str(token)] = float(best["threshold"])
+        rows.append(best)
+    return {"selected": selected, "rows": rows}
+
+
 def _calibrate_factorized_thresholds(
     model: Any,
     torch: Any,
@@ -536,6 +652,31 @@ def _calibrate_factorized_thresholds(
         config["key_threshold"] = float(best_key["threshold"])
     if best_button is not None:
         config["button_threshold"] = float(best_button["threshold"])
+    per_token_payload: dict[str, Any] = {"status": "skipped", "reason": "disabled"}
+    if config.get("calibrate_per_token_thresholds", True):
+        probability_rows = _collect_factorized_probability_rows(model, torch, rows, config=config, key_vocab=key_vocab, button_vocab=button_vocab, device=device)
+        key_token_payload = _calibrate_per_token_thresholds(
+            probability_rows,
+            vocab=key_vocab,
+            prob_key="key_probs",
+            label_key="key_labels",
+            candidates=candidates,
+        )
+        button_token_payload = _calibrate_per_token_thresholds(
+            probability_rows,
+            vocab=button_vocab,
+            prob_key="button_probs",
+            label_key="button_labels",
+            candidates=candidates,
+            max_false_positive_rate=float(config.get("calibration_max_no_button_fpr", 0.10)),
+        )
+        config["key_token_thresholds"] = key_token_payload["selected"]
+        config["button_token_thresholds"] = button_token_payload["selected"]
+        per_token_payload = {
+            "status": "pass",
+            "key_token_thresholds": key_token_payload,
+            "button_token_thresholds": button_token_payload,
+        }
     return {
         "schema": "factorized_threshold_calibration.v1",
         "status": "pass",
@@ -545,6 +686,7 @@ def _calibrate_factorized_thresholds(
             "key_threshold": None if best_key is None else best_key["threshold"],
             "button_threshold": None if best_button is None else best_button["threshold"],
         },
+        "per_token": per_token_payload,
         "key_sweep": key_rows,
         "button_sweep": button_rows,
         "claim_boundary": "Calibration over prefix/held-out training rows only; final G005 requires split-safe calibration evidence.",
@@ -701,6 +843,8 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             "button_vocab": button_vocab,
             "key_threshold": float(config.get("key_threshold", 0.5)),
             "button_threshold": float(config.get("button_threshold", 0.5)),
+            "key_token_threshold_count": len(config.get("key_token_thresholds", {}) if isinstance(config.get("key_token_thresholds"), dict) else {}),
+            "button_token_threshold_count": len(config.get("button_token_thresholds", {}) if isinstance(config.get("button_token_thresholds"), dict) else {}),
         },
         "wall_clock_seconds": time.time() - start,
         "claim_boundary": "Factorized prefix trainer scaffold; not G005 completion evidence without full-corpus 4xH200 run, recipe-alignment audit, paper-target win, and split statistics.",
