@@ -1,0 +1,171 @@
+{
+  "claim_boundary": "Diagnostic interpretation of bounded prefix evidence; no FDM-1 parity, paper-target win, or final G005 claim.",
+  "decision": "Do not checkpoint G005. Keep train-only candidate scoring as recipe-aligned, but revise prior correction so unseen-in-fit tokens are not boosted and apply stronger family/rank diagnostics before another H200 probe.",
+  "evidence": {
+    "calibration_top_button_tokens": [
+      {
+        "rows_as_top_family_candidate": 1167,
+        "token": "MOUSE_MIDDLE_DOWN"
+      },
+      {
+        "rows_as_top_family_candidate": 445,
+        "token": "MOUSE_MIDDLE_UP"
+      },
+      {
+        "rows_as_top_family_candidate": 307,
+        "token": "MOUSE_LEFT_DOWN"
+      },
+      {
+        "rows_as_top_family_candidate": 72,
+        "token": "MOUSE_LEFT_UP"
+      },
+      {
+        "rows_as_top_family_candidate": 6,
+        "token": "MOUSE_RIGHT_UP"
+      }
+    ],
+    "calibration_top_keyboard_tokens": [
+      {
+        "rows_as_top_family_candidate": 1967,
+        "token": "KEY_PRESS_54"
+      },
+      {
+        "rows_as_top_family_candidate": 24,
+        "token": "KEY_RELEASE_54"
+      },
+      {
+        "rows_as_top_family_candidate": 9,
+        "token": "KEY_PRESS_52"
+      }
+    ],
+    "candidate_prior_top_boosted": [
+      {
+        "count": 2,
+        "token": "MOUSE_MIDDLE_DOWN",
+        "weight": 6.0
+      },
+      {
+        "count": 2,
+        "token": "MOUSE_MIDDLE_UP",
+        "weight": 6.0
+      },
+      {
+        "count": 0,
+        "token": "KEY_PRESS_54",
+        "weight": 3.2980245386277485
+      },
+      {
+        "count": 0,
+        "token": "KEY_RELEASE_54",
+        "weight": 3.2980245386277485
+      },
+      {
+        "count": 1,
+        "token": "KEY_PRESS_20",
+        "weight": 2.8210895586566105
+      },
+      {
+        "count": 1,
+        "token": "KEY_PRESS_34",
+        "weight": 2.8210895586566105
+      },
+      {
+        "count": 1,
+        "token": "KEY_PRESS_56",
+        "weight": 2.8210895586566105
+      },
+      {
+        "count": 1,
+        "token": "KEY_PRESS_96",
+        "weight": 2.8210895586566105
+      }
+    ],
+    "candidate_prior_top_suppressed": [
+      {
+        "count": 1661,
+        "token": "KEY_PRESS_160",
+        "weight": 0.25
+      },
+      {
+        "count": 205,
+        "token": "KEY_PRESS_162",
+        "weight": 0.25
+      },
+      {
+        "count": 426,
+        "token": "KEY_PRESS_32",
+        "weight": 0.25
+      },
+      {
+        "count": 2343,
+        "token": "KEY_PRESS_65",
+        "weight": 0.25
+      },
+      {
+        "count": 2303,
+        "token": "KEY_PRESS_68",
+        "weight": 0.25
+      },
+      {
+        "count": 267,
+        "token": "KEY_PRESS_70",
+        "weight": 0.25
+      },
+      {
+        "count": 282,
+        "token": "KEY_PRESS_82",
+        "weight": 0.25
+      },
+      {
+        "count": 1157,
+        "token": "KEY_PRESS_83",
+        "weight": 0.25
+      }
+    ],
+    "no_button_fpr": 0.10582664196005764,
+    "observed_metrics": {
+      "keyboard_accuracy": 0.0,
+      "mouse_button_accuracy": 0.009655172413793104,
+      "mouse_button_f1": 0.017569546120058566,
+      "mouse_move_pearson_x": -0.020508166087411902,
+      "mouse_move_pearson_y": 0.027789736684099717,
+      "mouse_scale_ratio_x": 74.30577223088923,
+      "mouse_scale_ratio_y": 403.65333333333336,
+      "no_button_false_positive_rate": 0.10582664196005764
+    },
+    "paper_target_results": {
+      "keyboard_accuracy": {
+        "observed": 0.0,
+        "pass": false,
+        "target": 0.73
+      },
+      "mouse_button_accuracy": {
+        "observed": 0.009655172413793104,
+        "pass": false,
+        "target": 0.957
+      },
+      "mouse_move_pearson_x": {
+        "observed": -0.020508166087411902,
+        "pass": false,
+        "target": 0.796
+      },
+      "mouse_move_pearson_y": {
+        "observed": 0.027789736684099717,
+        "pass": false,
+        "target": 0.783
+      },
+      "no_button_false_positive_rate": {
+        "observed": 0.10582664196005764,
+        "pass": false,
+        "target_max": 0.1
+      }
+    },
+    "target_button_exact_candidate_rate": 0.16666666666666666,
+    "target_keyboard_exact_candidate_rate": 0.02032520325203252
+  },
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "next_action": "Implement an observed-token-only prior branch with configurable unseen-token weight/suppression, then rerun the bounded H200 prefix probe before any full-corpus promotion.",
+  "root_cause_hypothesis": "Inverse-frequency token-prior correction over-boosted tokens with zero/near-zero fit-counts that were present only through the train-heldout/calibration-built vocabulary, shifting top candidates toward KEY_PRESS_54 and MOUSE_MIDDLE_* while reducing exact key/button candidate coverage and exceeding the no-button FPR cap.",
+  "schema": "g005_family_prior_probe_diagnosis.v1",
+  "status": "nonterminal_negative_probe"
+}
