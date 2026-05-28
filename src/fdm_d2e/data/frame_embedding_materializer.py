@@ -305,6 +305,37 @@ class _HfVisionEmbedder:
         return [[float(value) for value in row] for row in embedding.tolist()]
 
 
+def _gray_byte_frames_to_imagenet_tensor(torch: Any, frames: Sequence[bytes], image_size: int) -> Any:
+    if not frames:
+        raise ValueError("no frames to embed")
+    lengths = [len(frame) for frame in frames]
+    first_side = int(math.sqrt(lengths[0]))
+    if first_side * first_side == lengths[0] and all(length == lengths[0] for length in lengths):
+        # Compact-luma materialization feeds many same-sized grayscale byte frames.
+        # Build one contiguous writable buffer and one tensor view instead of one
+        # Python/Torch tensor per frame; this avoids the torch.frombuffer warning
+        # and reduces CPU overhead before the DINO forward pass.
+        buffer = bytearray().join(frames)
+        batch = torch.frombuffer(buffer, dtype=torch.uint8).view(len(frames), 1, first_side, first_side).float() / 255.0
+        side = first_side
+    else:
+        tensors = []
+        side = None
+        for frame in frames:
+            frame_side = int(math.sqrt(len(frame)))
+            if frame_side * frame_side != len(frame):
+                raise ValueError(f"expected square grayscale frame bytes, got {len(frame)} bytes")
+            side = frame_side
+            tensors.append(torch.tensor(list(frame), dtype=torch.float32).view(1, frame_side, frame_side) / 255.0)
+        batch = torch.stack(tensors, dim=0)
+    if side != int(image_size):
+        batch = torch.nn.functional.interpolate(batch, size=(int(image_size), int(image_size)), mode="bilinear", align_corners=False)
+    batch = batch.repeat(1, 3, 1, 1)
+    mean = torch.tensor([0.485, 0.456, 0.406], dtype=torch.float32).view(1, 3, 1, 1)
+    std = torch.tensor([0.229, 0.224, 0.225], dtype=torch.float32).view(1, 3, 1, 1)
+    return (batch - mean) / std
+
+
 class _TorchHubDinov2Embedder:
     backend = "dinov2-torchhub"
 
@@ -364,28 +395,7 @@ class _TorchHubDinov2Embedder:
         return torch.stack(tensors, dim=0)
 
     def _pixel_values_from_gray_bytes(self, frames: Sequence[bytes]) -> Any:
-        torch = self.torch
-        tensors = []
-        side: int | None = None
-        for frame in frames:
-            frame_side = int(math.sqrt(len(frame)))
-            if frame_side * frame_side != len(frame):
-                raise ValueError(f"expected square grayscale frame bytes, got {len(frame)} bytes")
-            side = frame_side
-            try:
-                tensor = torch.frombuffer(frame, dtype=torch.uint8)
-            except Exception:  # pragma: no cover - older torch fallback.
-                tensor = torch.tensor(list(frame), dtype=torch.uint8)
-            tensors.append(tensor.float().view(1, frame_side, frame_side) / 255.0)
-        if not tensors:
-            raise ValueError("no frames to embed")
-        batch = torch.stack(tensors, dim=0)
-        if side != self.image_size:
-            batch = torch.nn.functional.interpolate(batch, size=(self.image_size, self.image_size), mode="bilinear", align_corners=False)
-        batch = batch.repeat(1, 3, 1, 1)
-        mean = torch.tensor([0.485, 0.456, 0.406], dtype=torch.float32).view(1, 3, 1, 1)
-        std = torch.tensor([0.229, 0.224, 0.225], dtype=torch.float32).view(1, 3, 1, 1)
-        return (batch - mean) / std
+        return _gray_byte_frames_to_imagenet_tensor(self.torch, frames, self.image_size)
 
     def embed_frames(self, frames: Sequence[bytes]) -> list[list[float]]:
         if not frames:

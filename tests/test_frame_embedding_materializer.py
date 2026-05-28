@@ -7,6 +7,7 @@ import pytest
 
 from fdm_d2e.data.frame_embedding_materializer import (
     FrameEmbeddingMaterializerConfig,
+    _gray_byte_frames_to_imagenet_tensor,
     materialize_frame_embedding_features,
     parse_offsets,
     parse_path_remaps,
@@ -240,3 +241,20 @@ def test_materializer_can_skip_source_rows_for_contiguous_shards(tmp_path: Path)
     assert [row["sequence_id"] for row in out_rows] == ["seq-2"]
     progress = json.loads(progress_path.read_text())
     assert progress["source_rows_skipped"] == 2
+
+
+def test_gray_byte_frames_to_imagenet_tensor_vectorizes_same_sized_frames() -> None:
+    torch = pytest.importorskip("torch")
+    frames = [bytes([0, 64, 128, 255]), bytes([255, 128, 64, 0])]
+    tensor = _gray_byte_frames_to_imagenet_tensor(torch, frames, image_size=2)
+    assert tuple(tensor.shape) == (2, 3, 2, 2)
+    expected_first_pixel = (0.0 - 0.485) / 0.229
+    expected_second_frame_first_pixel = (1.0 - 0.485) / 0.229
+    assert float(tensor[0, 0, 0, 0]) == pytest.approx(expected_first_pixel)
+    assert float(tensor[1, 0, 0, 0]) == pytest.approx(expected_second_frame_first_pixel)
+
+
+def test_gray_byte_frames_to_imagenet_tensor_rejects_non_square_frames() -> None:
+    torch = pytest.importorskip("torch")
+    with pytest.raises(ValueError, match="square grayscale"):
+        _gray_byte_frames_to_imagenet_tensor(torch, [bytes([1, 2, 3])], image_size=2)
