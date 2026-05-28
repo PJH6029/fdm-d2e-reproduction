@@ -1,0 +1,24 @@
+{
+  "assessment": [
+    "Batched calibration/prediction removed the previous one-row post-checkpoint hang: 320k/5k bounded run finished with exit_code=0 in about 566.8 seconds.",
+    "No-button FPR is within the user gate on the 5k temporal prefix, but this is not sufficient because keyboard accuracy and mouse-button F1 are both zero.",
+    "Mouse-button semantic diagnostic still has zero exact and semantic overlap, so button timing/type semantics remain unresolved.",
+    "This branch remains FDM-1-recipe-shaped infrastructure/negative evidence, not a paper-target win."
+  ],
+  "evidence": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_batched_h200_compact_summary.json",
+  "metrics": {
+    "keyboard_key_accuracy": 0.0,
+    "mouse_button_accuracy": 0.0,
+    "mouse_button_f1_strict": 0.0,
+    "no_button_false_positive_rate": 0.014000411776816966,
+    "semantic_overlap_examples": 0,
+    "semantic_overlap_rate_on_gt": 0.0
+  },
+  "next_recipe_faithful_actions": [
+    "Replace compact hand-crafted luma summaries with a stronger video encoder/tokenizer pretraining path aligned with FDM-1 screen-video token compression.",
+    "Add explicit masked action-token diffusion over press/release transition spans instead of independent button-class collapse.",
+    "Keep batched inference/calibration as the default for all future prefix/full H200 probes."
+  ],
+  "schema": "g005_recipe_idm_batched_prefix320k_h200_diagnosis.v1",
+  "status": "non_terminal_negative"
+}

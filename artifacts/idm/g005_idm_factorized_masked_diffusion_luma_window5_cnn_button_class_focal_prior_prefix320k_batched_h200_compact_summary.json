@@ -1,0 +1,298 @@
+{
+  "calibration_rows": 2000,
+  "claim_boundary": "Non-terminal bounded G005 probe. It shows batched post-checkpoint inference works but metrics remain far below G005 targets; not a G005 completion checkpoint.",
+  "commit": "35f3881",
+  "config": "configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_class_focal_prior_prefix320k.yaml",
+  "evidence_files": {
+    "button_semantic_diagnostic": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_batched_h200_button_semantic_diagnostic.json",
+    "compact_summary": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_batched_h200_compact_summary.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_batched_h200_gpu_monitor.csv",
+    "paper_metrics": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_batched_h200_paper_metrics.json",
+    "resolved_config": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_batched_h200_resolved_config.json",
+    "train_log": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_batched_h200_train.log",
+    "wandb_status": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_batched_h200_wandb_status.json",
+    "wrapper_log": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_batched_h200_wrapper.log"
+  },
+  "exit_code": 0,
+  "factorization": {
+    "button_class_conditional_logit_offset_count": 6,
+    "button_class_conditional_prior_alpha": 1.0,
+    "button_class_conditional_prior_correction": true,
+    "button_class_loss": "focal",
+    "button_event_auxiliary": true,
+    "button_event_budget_applies_to_all_buttons": true,
+    "button_event_budget_max_forced_events": 68,
+    "button_event_budget_rank_all_scores": true,
+    "button_event_budget_score_threshold": 0.22147220500638554,
+    "button_event_force_topk": 1,
+    "button_event_min_token_probability": 0.3287001715431213,
+    "button_event_probability_source": "button_class",
+    "button_event_threshold": 0.05,
+    "button_probability_source": "button_class",
+    "button_threshold": 0.95,
+    "button_token_threshold_count": 6,
+    "button_transition_softmax": true,
+    "button_vocab": [
+      "MOUSE_LEFT_DOWN",
+      "MOUSE_LEFT_UP",
+      "MOUSE_RIGHT_DOWN",
+      "MOUSE_RIGHT_UP",
+      "MOUSE_MIDDLE_DOWN",
+      "MOUSE_MIDDLE_UP"
+    ],
+    "calibration_batch_size": 512,
+    "key_threshold": 0.4,
+    "key_token_threshold_count": 110,
+    "key_vocab": [
+      "KEY_PRESS_87",
+      "KEY_PRESS_68",
+      "KEY_PRESS_65",
+      "KEY_PRESS_38",
+      "KEY_PRESS_83",
+      "KEY_PRESS_160",
+      "KEY_RELEASE_87",
+      "KEY_RELEASE_65",
+      "KEY_PRESS_39",
+      "KEY_RELEASE_68",
+      "KEY_PRESS_32",
+      "KEY_PRESS_37",
+      "KEY_PRESS_40",
+      "KEY_RELEASE_83",
+      "KEY_RELEASE_39",
+      "KEY_RELEASE_37",
+      "KEY_RELEASE_38",
+      "KEY_PRESS_69",
+      "KEY_PRESS_82",
+      "KEY_RELEASE_32",
+      "KEY_RELEASE_69",
+      "KEY_PRESS_9",
+      "KEY_RELEASE_160",
+      "KEY_PRESS_70",
+      "KEY_PRESS_89",
+      "KEY_RELEASE_89",
+      "KEY_RELEASE_82",
+      "KEY_RELEASE_70",
+      "KEY_PRESS_162",
+      "KEY_RELEASE_9",
+      "KEY_RELEASE_27",
+      "KEY_PRESS_27",
+      "KEY_PRESS_50",
+      "KEY_RELEASE_50",
+      "KEY_PRESS_51",
+      "KEY_RELEASE_51",
+      "KEY_RELEASE_40",
+      "KEY_RELEASE_49",
+      "KEY_PRESS_49",
+      "KEY_RELEASE_162",
+      "KEY_PRESS_52",
+      "KEY_PRESS_88",
+      "KEY_PRESS_67",
+      "KEY_RELEASE_67",
+      "KEY_RELEASE_52",
+      "KEY_PRESS_84",
+      "KEY_PRESS_81",
+      "KEY_RELEASE_81",
+      "KEY_PRESS_13",
+      "KEY_PRESS_86",
+      "KEY_RELEASE_13",
+      "KEY_PRESS_77",
+      "KEY_RELEASE_77",
+      "KEY_RELEASE_84",
+      "KEY_PRESS_66",
+      "KEY_RELEASE_66",
+      "KEY_PRESS_76",
+      "KEY_PRESS_90",
+      "KEY_RELEASE_76",
+      "KEY_RELEASE_88",
+      "KEY_RELEASE_90",
+      "KEY_PRESS_73",
+      "KEY_RELEASE_73",
+      "KEY_PRESS_164",
+      "KEY_PRESS_96",
+      "KEY_RELEASE_86",
+      "KEY_RELEASE_96",
+      "KEY_PRESS_161",
+      "KEY_PRESS_97",
+      "KEY_RELEASE_161",
+      "KEY_RELEASE_164",
+      "KEY_RELEASE_97",
+      "KEY_PRESS_53",
+      "KEY_PRESS_54",
+      "KEY_PRESS_78",
+      "KEY_RELEASE_53",
+      "KEY_RELEASE_54",
+      "KEY_RELEASE_78",
+      "KEY_PRESS_112",
+      "KEY_PRESS_56",
+      "KEY_PRESS_72",
+      "KEY_PRESS_98",
+      "KEY_RELEASE_112",
+      "KEY_RELEASE_56",
+      "KEY_RELEASE_72",
+      "KEY_RELEASE_98",
+      "KEY_PRESS_118",
+      "KEY_PRESS_188",
+      "KEY_PRESS_189",
+      "KEY_PRESS_192",
+      "KEY_PRESS_20",
+      "KEY_PRESS_220",
+      "KEY_PRESS_34",
+      "KEY_PRESS_48",
+      "KEY_PRESS_71",
+      "KEY_PRESS_74",
+      "KEY_PRESS_75",
+      "KEY_PRESS_80",
+      "KEY_RELEASE_118",
+      "KEY_RELEASE_188",
+      "KEY_RELEASE_189",
+      "KEY_RELEASE_192",
+      "KEY_RELEASE_20",
+      "KEY_RELEASE_220",
+      "KEY_RELEASE_34",
+      "KEY_RELEASE_48",
+      "KEY_RELEASE_71",
+      "KEY_RELEASE_74",
+      "KEY_RELEASE_75",
+      "KEY_RELEASE_80"
+    ],
+    "mouse_axis_bins": 49,
+    "prediction_batch_size": 512
+  },
+  "finished_at": "2026-05-28T14:56:48+00:00",
+  "fit_rows": 318000,
+  "large_local_artifacts_not_committed": {
+    "full_run_json": {
+      "bytes": 43149582,
+      "path": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_batched_h200_run.json",
+      "sha256": "50d2ac5dcf4d226cdb4912228be608f06ea3b72bf39353b7b6e6f95b663c2936"
+    },
+    "full_summary_json": {
+      "bytes": 40705885,
+      "path": "artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_summary.json",
+      "sha256": "8052c4e71bdb246f9ca52fc79fcbbace49c5d2f9c92efd719f5585619d1ea64b"
+    }
+  },
+  "output_dir": "outputs/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_button_class_focal_prior_prefix320k",
+  "paper_compatible_all": {
+    "empty_bins_as_correct": false,
+    "keyboard": {
+      "key_accuracy": 0.0,
+      "sample_count": 18720
+    },
+    "mouse_button": {
+      "button_accuracy": 0.0,
+      "sample_count": 226
+    },
+    "mouse_move": {
+      "pearson_x": null,
+      "pearson_y": null,
+      "sample_count": 3311,
+      "scale_ratio_x": null,
+      "scale_ratio_y": null,
+      "scale_sample_count": 5000
+    }
+  },
+  "pod": "prod-rsv-jeonghunpark-20260528-222734",
+  "remote_worktree": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction-g005-batched-35f3881",
+  "reservation_id": "rsv-jeonghunpark-20260528-222734",
+  "schema": "g005_recipe_idm_batched_prefix320k_h200_compact_summary.v1",
+  "semantic_diagnostic_base": {
+    "exact_true_positive_examples": 0,
+    "f1": 0.0,
+    "false_negative_examples": 50,
+    "false_positive_examples": 54,
+    "ground_truth_examples": 50,
+    "no_button_false_positive_rate": 0.027692307692307693,
+    "precision": 0.0,
+    "predicted_examples": 54,
+    "recall": 0.0,
+    "rows": 2000,
+    "semantic_any_button_overlap_examples": 0,
+    "semantic_any_button_overlap_rate_on_gt": 0.0,
+    "top_ground_truth_button_tokens": [
+      [
+        "MOUSE_RIGHT_DOWN",
+        16
+      ],
+      [
+        "MOUSE_RIGHT_UP",
+        16
+      ],
+      [
+        "MOUSE_LEFT_DOWN",
+        8
+      ],
+      [
+        "MOUSE_LEFT_UP",
+        8
+      ],
+      [
+        "MOUSE_MIDDLE_DOWN",
+        5
+      ],
+      [
+        "MOUSE_MIDDLE_UP",
+        5
+      ]
+    ],
+    "top_predicted_button_tokens": [
+      [
+        "MOUSE_LEFT_UP",
+        39
+      ],
+      [
+        "MOUSE_MIDDLE_DOWN",
+        9
+      ],
+      [
+        "MOUSE_RIGHT_DOWN",
+        6
+      ]
+    ]
+  },
+  "started_at": "2026-05-28T14:47:07+00:00",
+  "status": "pass",
+  "strict_local_all": {
+    "keyboard": {
+      "accuracy": 0.0,
+      "num_examples": 1094
+    },
+    "mouse_button": {
+      "accuracy": 0.0,
+      "exact_true_positive_examples": 0,
+      "f1": 0.0,
+      "false_negative_examples": 143,
+      "false_positive_examples": 68,
+      "no_button_examples": 4857,
+      "no_button_false_positive_examples": 68,
+      "no_button_false_positive_rate": 0.014000411776816966,
+      "num_examples": 143,
+      "precision": 0.0,
+      "predicted_examples": 68,
+      "recall": 0.0
+    }
+  },
+  "target_rows": 5000,
+  "topline": {
+    "keyboard_key_accuracy": 0.0,
+    "mouse_button_accuracy": 0.0,
+    "mouse_button_f1_strict": 0.0,
+    "no_button_fpr": 0.014000411776816966,
+    "semantic_overlap": 0,
+    "semantic_overlap_rate_on_gt": 0.0,
+    "target_rows": 5000,
+    "train_rows": 320000,
+    "wall_clock_seconds": 566.7913587093353,
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/1zgsn8ei"
+  },
+  "train_rows": 320000,
+  "wall_clock_seconds": 566.7913587093353,
+  "wandb": {
+    "loop_index": 30,
+    "project": "fdm-d2e-reproduction",
+    "run_name": "g005_idm_factorized_masked_diffusion_luma_window5_cnn_button_class_focal_prior_prefix320k_batched_h200",
+    "status": "complete",
+    "wandb_run_id": "1zgsn8ei",
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/1zgsn8ei"
+  }
+}
