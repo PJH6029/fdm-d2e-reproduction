@@ -1,0 +1,41 @@
+{
+  "artifact_sha256": {
+    "gpu_monitor": "4fe63003d0a8b8e0799fa20a93eb11e94e3043e7599c3a7bb7a50f6a23197a79",
+    "metrics": "bcf47e7ad60049a9f4a70226f2d48fdbd94b48f7b679d35bef385d717f3aa815",
+    "run": "8e4dc54eae7080ed4d9ef8fc4b37444a5262f0f74a302af94922882eedf6144b",
+    "summary": "82fa5449b759a975700e8d667dec1b63f0d7232dac028edb907c6e93c6ac2839",
+    "wandb_status": "00f6c53b1b69558f110bad4a9b44165b45e1dc9dc858c800870f9613695b5f63"
+  },
+  "calibration_rows": 2000,
+  "claim_boundary": "Bounded 1xH200 prefix probe only; not G005 completion evidence and not FDM-1 parity.",
+  "config": "configs/model/idm_temporal_masked_diffusion_d2e_luma_window5_family_presence_prefix80k.yaml",
+  "diagnosis": "Family-scoped key/button token-presence improved keyboard slightly and reduced no-button FPR, but still fails all D2E paper-target accuracy/Pearson gates by large margins. Do not checkpoint G005.",
+  "fit_rows": 78000,
+  "git_commit": "44aeceb",
+  "model": "g005_idm_temporal_masked_diffusion_luma_window5_family_presence_prefix80k",
+  "observed": {
+    "keyboard_key_accuracy": 0.005309734513274336,
+    "mouse_button_accuracy": 0.008888888888888889,
+    "mouse_button_f1": 0.01366742596810934,
+    "mouse_move_pearson_x": -0.03636286748261065,
+    "mouse_move_pearson_y": null,
+    "mouse_no_button_false_positive_rate": 0.05744286596664608,
+    "rows": 5000
+  },
+  "pod": "prod-rsv-jeonghunpark-20260529-e470e0",
+  "reservation_id": "rsv-jeonghunpark-20260529-e470e0",
+  "run_exit_code": 0,
+  "schema": "g005_idm_probe_compact_summary.v1",
+  "status": "nonterminal_negative_probe",
+  "target_rows": 5000,
+  "targets": {
+    "keyboard_key_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "mouse_move_pearson_x": 0.796,
+    "mouse_move_pearson_y": 0.783,
+    "mouse_no_button_false_positive_rate_max": 0.1
+  },
+  "train_rows": 80000,
+  "wall_clock_seconds": 806,
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/fk6wucuc"
+}

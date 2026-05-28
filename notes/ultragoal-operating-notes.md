@@ -469,3 +469,11 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Result remains far below the G005 paper target: keyboard key accuracy `0.0008446738620366026`, mouse-button accuracy `0.009345794392523364`, mouse-button F1 `0.011428571428571429`, mouse-move Pearson X/Y `-0.021663538467187975` / `-0.022473224404370724`. The only gate met is no-button FPR `0.07411982705373688 <= 0.10`.
 - Diagnosis: temporal button-class ranking produced a few button true positives while preserving the no-button FPR cap, but key ranking collapsed and mouse-move candidate coverage remains broken. Do **not** checkpoint G005.
 - Operational hardening after the run: commit `44aeceb` removes per-token GPU-to-CPU syncs from temporal candidate ranking. The next active probe is the family-scoped key/button token-presence branch on the same reservation, commit `44aeceb`, W&B run `fk6wucuc`.
+
+## 2026-05-29T06:45 KST — G005 family-presence temporal probe is negative
+
+- Ran commit/config `44aeceb` / `configs/model/idm_temporal_masked_diffusion_d2e_luma_window5_family_presence_prefix80k.yaml` on reservation `rsv-jeonghunpark-20260529-e470e0` (`prod-rsv-jeonghunpark-20260529-e470e0`); W&B run `fk6wucuc`.
+- Evidence prefix: `artifacts/idm/g005_idm_temporal_masked_diffusion_luma_window5_family_presence_prefix80k_h200_*`; compact summary status `nonterminal_negative_probe`.
+- Observed prefix metrics over 5,000 target rows: keyboard key accuracy `0.005309734513274336`, mouse-button accuracy `0.008888888888888889`, mouse-button F1 `0.01366742596810934`, no-button FPR `0.05744286596664608`, mouse Pearson X/Y `-0.03636286748261065` / `null`.
+- Do not checkpoint `G005-g014-idm-full-paper-target`; this fails the D2E paper-target gates by large margins despite staying under the no-button FPR cap.
+- Course-correction implication: compact luma16 temporal masked-diffusion probes are diagnostic only. Next G005 work should move to a raw 480p/video-token recipe-faithful IDM or stronger video encoder/cache adaptation while preserving the FDM-1-public recipe anchor: noncausal masked action-token diffusion over video/compressed-screen tokens.
