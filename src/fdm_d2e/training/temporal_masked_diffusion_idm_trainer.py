@@ -541,6 +541,23 @@ def _masked_video_reconstruction_loss(model: Any, torch: Any, features: Any, *, 
     return torch.nn.functional.mse_loss(pred, target)
 
 
+def _rank_progress_path(config: dict[str, Any], *, output_dir: Path) -> Path:
+    progress_dir = Path(config.get("rank_progress_dir", output_dir / "rank_progress"))
+    return progress_dir / "train_rank0.json"
+
+
+def _write_rank_progress(config: dict[str, Any], *, output_dir: Path, payload: dict[str, Any]) -> None:
+    write_json(
+        _rank_progress_path(config, output_dir=output_dir),
+        {
+            "schema": "temporal_masked_diffusion_rank_progress.v1",
+            "rank": 0,
+            "updated_at_epoch": time.time(),
+            **payload,
+        },
+    )
+
+
 def _pretrain_video_encoder(model: Any, torch: Any, loader: Any, *, config: dict[str, Any], device: Any) -> list[dict[str, Any]]:
     epochs = int(config.get("video_encoder_pretrain_epochs", 0) or 0)
     if epochs <= 0 or not hasattr(model, "reconstruct_video") or int(getattr(model, "video_reconstruction_dim", 0) or 0) <= 0:
@@ -551,11 +568,14 @@ def _pretrain_video_encoder(model: Any, torch: Any, loader: Any, *, config: dict
         weight_decay=float(config.get("video_encoder_pretrain_weight_decay", config.get("weight_decay", 0.01))),
     )
     history: list[dict[str, Any]] = []
+    output_dir = ensure_dir(config.get("output_dir", "outputs/idm_temporal_masked_diffusion_d2e"))
+    progress_every = max(1, int(config.get("rank_progress_every_batches", 50)))
+    total_batches = len(loader) if hasattr(loader, "__len__") else None
     for epoch in range(epochs):
         model.train()
         total = 0.0
         examples = 0
-        for features, _corrupted, _targets, _mask in loader:
+        for batch_index, (features, _corrupted, _targets, _mask) in enumerate(loader, 1):
             features = features.to(device=device, dtype=torch.float32)
             loss = _masked_video_reconstruction_loss(model, torch, features, config=config)
             optimizer.zero_grad(set_to_none=True)
@@ -565,6 +585,20 @@ def _pretrain_video_encoder(model: Any, torch: Any, loader: Any, *, config: dict
             batch = int(features.shape[0])
             total += float(loss.detach().cpu()) * batch
             examples += batch
+            if batch_index == 1 or batch_index % progress_every == 0 or (total_batches and batch_index == total_batches):
+                _write_rank_progress(
+                    config,
+                    output_dir=output_dir,
+                    payload={
+                        "phase": "video_pretrain",
+                        "epoch": epoch + 1,
+                        "epochs": epochs,
+                        "batch": batch_index,
+                        "batches": total_batches,
+                        "examples": examples,
+                        "loss": total / max(1, examples),
+                    },
+                )
         history.append({"epoch": epoch + 1, "video_reconstruction_loss": total / max(1, examples), "examples": examples})
     return history
 
@@ -1768,6 +1802,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     token_presence_pos_weights = _token_presence_pos_weights(torch, vocab, config, device=device)
     event_offset_mask = _temporal_loss_offset_mask(torch, offsets, config, device=device)
     history: list[dict[str, Any]] = []
+    progress_every = max(1, int(config.get("rank_progress_every_batches", 50)))
+    total_batches = len(loader) if hasattr(loader, "__len__") else None
     for epoch in range(int(config.get("epochs", 1))):
         model.train()
         total_loss = 0.0
@@ -1781,7 +1817,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         total_token_presence = 0.0
         total_targets = 0
         total_examples = 0
-        for features, corrupted_ids, target_ids, loss_mask in loader:
+        for batch_index, (features, corrupted_ids, target_ids, loss_mask) in enumerate(loader, 1):
             features = features.to(device=device, dtype=torch.float32)
             corrupted_ids = corrupted_ids.to(device)
             target_ids = target_ids.to(device)
@@ -1893,6 +1929,29 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             total_token_presence += float(token_presence_loss.detach().cpu()) * batch
             total_targets += count
             total_examples += batch
+            if batch_index == 1 or batch_index % progress_every == 0 or (total_batches and batch_index == total_batches):
+                _write_rank_progress(
+                    config,
+                    output_dir=output_dir,
+                    payload={
+                        "phase": "action_denoising",
+                        "epoch": epoch + 1,
+                        "epochs": int(config.get("epochs", 1)),
+                        "batch": batch_index,
+                        "batches": total_batches,
+                        "examples": total_examples,
+                        "masked_targets": total_targets,
+                        "loss": total_loss / max(1, total_targets),
+                        "action_loss": total_action / max(1, total_targets),
+                        "video_reconstruction_loss": total_video / max(1, total_examples),
+                        "key_event_loss": total_key_event / max(1, total_examples),
+                        "button_event_loss": total_button_event / max(1, total_examples),
+                        "button_class_loss": total_button_class / max(1, total_examples),
+                        "key_token_presence_loss": total_key_token_presence / max(1, total_examples),
+                        "button_token_presence_loss": total_button_token_presence / max(1, total_examples),
+                        "token_presence_loss": total_token_presence / max(1, total_examples),
+                    },
+                )
         history.append({
             "epoch": epoch + 1,
             "loss": total_loss / max(1, total_targets),
