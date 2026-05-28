@@ -531,3 +531,36 @@ for prefix/full scale. Batch 512 did not improve wall-clock versus batch 128.
 Do not launch full 320k train+target materialization with this monolithic path.
 Next implementation should shard/parallelize extraction and/or write tensor-cache
 features directly before any larger H200 reservation.
+
+### 2026-05-28 KST — sharded debug GPU DINO materialization
+
+Added contiguous `--skip-rows` support and ran two 512-row `dinov2-torchhub`
+compact-luma shards concurrently over the same 1,024-row real D2E sample on the
+active debug reservation `rsv-jeonghunpark-20260527-1ea75c` (`p-debug`, pod
+`debug-rsv-jeonghunpark-20260527-1ea75c`).
+
+Evidence:
+
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_final_run_summary.json`
+  — `status=pass`, `rows_written=1024`, `shard_count=2`, shard elapsed seconds
+  `26.28` and `26.70`.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_shard0_summary.json`
+  — `rows_written=512`, `source_rows_scanned=512`, `source_rows_skipped=0`.
+- `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_shard1_summary.json`
+  — `rows_written=512`, `source_rows_scanned=1024`, `source_rows_skipped=512`.
+- Per-shard progress/log artifacts and
+  `artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_late_gpu_monitor.csv`
+  were copied locally for auditability.
+
+Finding: contiguous sharding works and improves 1,024-row wall-clock throughput
+versus the prior monolithic ~45.7s run, but the monitor evidence is late/weak
+because the ad-hoc shell launcher used command substitution for background PIDs
+and did not wait/monitor correctly from before launch. Treat this as sharded
+materialization correctness/throughput evidence, not as strong H200 utilization
+proof.
+
+Next: add a proper shard launcher that starts `nvidia-smi` before launching
+shards, stores child PIDs without command substitution, waits fail-closed, and
+summarizes shard plus monitor evidence before any larger prefix/full extraction.
+Claim boundary: materialization throughput diagnostic only; no trained IDM metric
+evidence and no G005 success claim.

@@ -1,0 +1,40 @@
+{
+  "claim_boundary": "Sharded DINO materialization throughput diagnostic only; no trained IDM metric evidence.",
+  "elapsed_seconds_by_shard": [
+    26.275585412979126,
+    26.702742338180542
+  ],
+  "finished_at": "2026-05-28T00:43:39+0000",
+  "gpu_monitor": "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction-code-e1e1474-frameembed-debug/artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_late_gpu_monitor.csv",
+  "gpu_utilization_by_index": {
+    "0": {
+      "max": 0.0,
+      "mean": 0.0,
+      "samples": 121
+    },
+    "1": {
+      "max": 0.0,
+      "mean": 0.0,
+      "samples": 121
+    }
+  },
+  "namespace": "p-debug",
+  "pod": "debug-rsv-jeonghunpark-20260527-1ea75c",
+  "reservation_id": "rsv-jeonghunpark-20260527-1ea75c",
+  "rows_written": 1024,
+  "schema": "g005_dinov2_torchhub_sharded_materialization_run.v1",
+  "shard_count": 2,
+  "shard_summaries": [
+    "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction-code-e1e1474-frameembed-debug/artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_shard0_summary.json",
+    "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction-code-e1e1474-frameembed-debug/artifacts/idm/g005_idm_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_shard1_summary.json"
+  ],
+  "source_rows_scanned_by_shard": [
+    512,
+    1024
+  ],
+  "source_rows_skipped_by_shard": [
+    0,
+    512
+  ],
+  "status": "pass"
+}

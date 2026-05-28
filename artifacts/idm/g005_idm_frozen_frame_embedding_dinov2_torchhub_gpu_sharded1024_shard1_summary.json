@@ -1,0 +1,57 @@
+{
+  "schema": "g005_frozen_frame_embedding_materializer.v1",
+  "status": "pass",
+  "error_count": 0,
+  "errors": [],
+  "source_label": "g005_frozen_frame_embedding_dinov2_torchhub_gpu_sharded1024_shard1",
+  "input": {
+    "path": "/tmp/g005_target_sample1024.jsonl",
+    "bytes": 20960300,
+    "mtime_ns": 1779928174128495843,
+    "sha256": "2caed2a3510bb130dc22e836ab874058d00686bb59b3c8d3e8f7ff6f53815cc5"
+  },
+  "output": {
+    "path": "outputs/data/d2e_frozen_frame_embedding_prefix320k_dinov2_torchhub_gpu_sharded1024/shard_1.jsonl",
+    "bytes": 19838161,
+    "mtime_ns": 1779928880000000000,
+    "sha256": "2ea818ca62e87bdbb6a63d9c3fe1b125a1cb4c92d14b5634216d0872deb2704f"
+  },
+  "rows_seen": 512,
+  "source_rows_scanned": 1024,
+  "source_rows_skipped": 512,
+  "rows_written": 512,
+  "feature_override_rows": 512,
+  "feature_dim": 2120,
+  "unique_feature_lengths": [
+    2120
+  ],
+  "embedding_dim_per_frame": 384,
+  "backend": "dinov2-torchhub",
+  "model_id": "dinov2_vits14",
+  "frame_offsets": [
+    0,
+    2
+  ],
+  "frame_source": "compact-luma",
+  "image_size": 224,
+  "frame_fps": 20,
+  "missing_frame_policy": "zero",
+  "path_remaps": [],
+  "missing_frames": 0,
+  "video_restarts": 0,
+  "batch_size": 128,
+  "embedding_pooling": "cls",
+  "hf_preprocess": null,
+  "normalize_embeddings": true,
+  "include_embedding_deltas": true,
+  "include_summary_features": true,
+  "summary_feature_mode": "summary_compact_luma16_pair_shift_time_state_duration_prior_action",
+  "max_rows": 512,
+  "skip_rows": 512,
+  "round_digits": 6,
+  "dataset_fingerprint": "da0b043729e15fc56c8cbcfdf4e1105ff9b63508309ef05cf393f6f367c62d83",
+  "started_at_unix": 1779928853.347956,
+  "finished_at_unix": 1779928880.050698,
+  "elapsed_seconds": 26.702742338180542,
+  "claim_boundary": "Frozen frame-embedding materialization is a prefix-gated G005 diagnostic/preparation artifact. It is not trained-model evidence until a downstream IDM run beats the paper-target metrics."
+}
