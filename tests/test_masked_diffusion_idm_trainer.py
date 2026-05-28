@@ -15,6 +15,8 @@ from fdm_d2e.training.masked_diffusion_idm_trainer import (
     _calibrate_button_event_budget,
     _calibrate_button_event_budget_multiplier,
     _calibrate_button_event_threshold,
+    _predict_factorized_tokens,
+    _predict_factorized_tokens_batch,
     torch_available,
     train_masked_diffusion_idm,
     video_feature_vector,
@@ -263,6 +265,67 @@ def test_button_class_prior_correction_keeps_event_probability_and_redistributes
     assert sum(corrected_probs) == pytest.approx(raw_event)
     assert raw_probs[0] > raw_probs[1]
     assert corrected_probs[1] > corrected_probs[0]
+
+
+def test_batched_factorized_prediction_matches_single_row_path():
+    if not torch_available():
+        return
+    import torch
+
+    class DummyFactorizedModel:
+        def eval(self):
+            return self
+
+        def __call__(self, features):
+            batch = features.shape[0]
+            mouse_x = torch.zeros((batch, 49), dtype=torch.float32)
+            mouse_y = torch.zeros((batch, 49), dtype=torch.float32)
+            mouse_x[:, 24] = 5.0
+            mouse_y[:, 24] = 5.0
+            key = torch.stack([features[:, 0] * 4.0, 1.0 - features[:, 0]], dim=1)
+            button_class = torch.stack(
+                [
+                    torch.full((batch,), -1.0),
+                    features[:, 0] * 3.0,
+                    (1.0 - features[:, 0]) * 3.0,
+                ],
+                dim=1,
+            )
+            return {
+                "mouse_x": mouse_x,
+                "mouse_y": mouse_y,
+                "key": key,
+                "button": None,
+                "button_class": button_class,
+                "button_event": None,
+            }
+
+    rows = [
+        {"sequence_id": "a", "frame": {"features": [0.9], "width": 854, "height": 480}, "ground_truth_tokens": []},
+        {"sequence_id": "b", "frame": {"features": [0.1], "width": 854, "height": 480}, "ground_truth_tokens": []},
+    ]
+    config = {
+        "video_feature_paths": ["frame.features"],
+        "video_feature_dim": 1,
+        "key_threshold": 0.65,
+        "button_threshold": 0.2,
+        "button_probability_source": "button_class",
+        "button_event_probability_source": "button_class",
+        "max_predicted_keys": 2,
+        "max_predicted_buttons": 1,
+    }
+    key_vocab = ["KEY_PRESS_W", "KEY_PRESS_A"]
+    button_vocab = ["MOUSE_LEFT_DOWN", "MOUSE_RIGHT_DOWN"]
+    device = torch.device("cpu")
+    model = DummyFactorizedModel()
+    single = [
+        _predict_factorized_tokens(model, torch, row, config=config, key_vocab=key_vocab, button_vocab=button_vocab, device=device)
+        for row in rows
+    ]
+    batched = _predict_factorized_tokens_batch(model, torch, rows, config=config, key_vocab=key_vocab, button_vocab=button_vocab, device=device)
+    assert batched == single
+    assert batched[0] == ["KEY_PRESS_W", "MOUSE_LEFT_DOWN"]
+    assert batched[1] == ["KEY_PRESS_A", "MOUSE_RIGHT_DOWN"]
 
 
 def test_train_masked_diffusion_idm_tiny_smoke(tmp_path: Path):

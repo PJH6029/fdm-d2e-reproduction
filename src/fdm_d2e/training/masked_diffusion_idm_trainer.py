@@ -593,10 +593,106 @@ def _button_probabilities_from_output(out: dict[str, Any], torch: Any, *, config
     return button_probs, event_prob
 
 
+def _button_probabilities_from_output_batch(out: dict[str, Any], torch: Any, *, config: dict[str, Any]) -> tuple[list[list[float]], list[float | None]]:
+    """Batched equivalent of ``_button_probabilities_from_output``.
+
+    Calibration and prediction for G005 prefix/full runs previously executed a
+    model forward pass per row, which made larger recipe-faithful probes spend
+    most reserved H200 time in CPU-bound Python loops after checkpointing.  This
+    helper preserves the same public FDM-1-shaped button-token semantics while
+    letting calibration, budget scoring, and prediction reuse batched GPU
+    forwards.
+    """
+
+    batch_size = 0
+    for value in out.values():
+        if value is not None:
+            batch_size = int(value.shape[0])
+            break
+    if batch_size <= 0:
+        return [], []
+
+    class_event_probs: list[float | None] = [None for _ in range(batch_size)]
+    class_button_probs: list[list[float]] = [[] for _ in range(batch_size)]
+    if out.get("button_class") is not None:
+        class_logits = out["button_class"]
+        class_probs = torch.softmax(class_logits, dim=-1)
+        if class_probs.shape[-1] > 0:
+            event_tensor = (1.0 - class_probs[:, 0]).clamp(min=0.0, max=1.0)
+            class_event_probs = [float(value) for value in event_tensor.detach().cpu().tolist()]
+            offsets = config.get("button_class_conditional_logit_offsets")
+            if (
+                bool(config.get("button_class_conditional_prior_correction", False))
+                and isinstance(offsets, list)
+                and len(offsets) == max(0, int(class_logits.shape[-1]) - 1)
+                and class_logits.shape[-1] > 1
+            ):
+                offset_tensor = torch.tensor(offsets, dtype=class_logits.dtype, device=class_logits.device).unsqueeze(0)
+                conditional = torch.softmax(class_logits[:, 1:] + offset_tensor, dim=-1)
+                corrected = conditional * event_tensor.unsqueeze(1)
+                class_button_probs = [[float(v) for v in row] for row in corrected.detach().cpu().tolist()]
+            else:
+                class_button_probs = [[float(v) for v in row] for row in class_probs[:, 1:].detach().cpu().tolist()]
+
+    bce_button_probs: list[list[float]] = [[] for _ in range(batch_size)]
+    if out.get("button") is not None:
+        bce_button_probs = [[float(v) for v in row] for row in torch.sigmoid(out["button"]).detach().cpu().tolist()]
+
+    prob_source = str(config.get("button_probability_source", "button_class" if any(class_button_probs) else "bce")).lower()
+    if prob_source == "button_class" and any(class_button_probs):
+        button_probs = class_button_probs
+    elif prob_source == "max" and any(class_button_probs) and any(bce_button_probs):
+        button_probs = [
+            [max(float(a), float(b)) for a, b in zip(class_row, bce_row)]
+            for class_row, bce_row in zip(class_button_probs, bce_button_probs)
+        ]
+    else:
+        button_probs = bce_button_probs if any(bce_button_probs) else class_button_probs
+
+    aux_event_probs: list[float | None] = [None for _ in range(batch_size)]
+    if out.get("button_event") is not None:
+        aux_event_probs = [float(value) for value in torch.sigmoid(out["button_event"]).detach().cpu().tolist()]
+    event_source = str(config.get("button_event_probability_source", "button_class" if any(value is not None for value in class_event_probs) else "auxiliary")).lower()
+    event_probs: list[float | None] = []
+    for class_prob, aux_prob in zip(class_event_probs, aux_event_probs):
+        if event_source == "button_class" and class_prob is not None:
+            event_probs.append(float(class_prob))
+        elif event_source == "max" and class_prob is not None and aux_prob is not None:
+            event_probs.append(max(float(class_prob), float(aux_prob)))
+        elif event_source == "auxiliary" and aux_prob is not None:
+            event_probs.append(float(aux_prob))
+        else:
+            event_probs.append(float(aux_prob) if aux_prob is not None else (float(class_prob) if class_prob is not None else None))
+    return button_probs, event_probs
+
+
 def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, config: dict[str, Any], key_vocab: Sequence[str], button_vocab: Sequence[str], device: Any) -> list[str]:
+    return _predict_factorized_tokens_batch(
+        model,
+        torch,
+        [row],
+        config=config,
+        key_vocab=key_vocab,
+        button_vocab=button_vocab,
+        device=device,
+    )[0]
+
+
+def _predict_factorized_tokens_batch(
+    model: Any,
+    torch: Any,
+    rows: Sequence[dict[str, Any]],
+    *,
+    config: dict[str, Any],
+    key_vocab: Sequence[str],
+    button_vocab: Sequence[str],
+    device: Any,
+) -> list[list[str]]:
     feature_paths = list(config.get("video_feature_paths", ["frame.features", "next_frame_features", "frame_delta_features"]))
     feature_dim = int(config.get("video_feature_dim", 64))
-    features = torch.tensor([video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim)], dtype=torch.float32, device=device)
+    if not rows:
+        return []
+    features = torch.tensor([video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim) for row in rows], dtype=torch.float32, device=device)
     key_threshold = float(config.get("key_threshold", 0.5))
     button_threshold = float(config.get("button_threshold", 0.5))
     button_event_threshold = float(config.get("button_event_threshold", 1.1))
@@ -610,68 +706,82 @@ def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, c
     button_event_budget_score_threshold = None if button_event_budget_score_threshold is None else float(button_event_budget_score_threshold)
     button_event_budget_applies_to_all_buttons = bool(config.get("button_event_budget_applies_to_all_buttons", False))
     button_event_budget_rank_all_scores = bool(config.get("button_event_budget_rank_all_scores", False))
-    width, height = _screen_size(row)
+    predictions: list[list[str]] = []
     model.eval()
     with torch.no_grad():
         out = model(features)
-        x_class = int(torch.argmax(out["mouse_x"], dim=-1).detach().cpu()[0])
-        y_class = int(torch.argmax(out["mouse_y"], dim=-1).detach().cpu()[0])
-        fdm1_tokens: list[str] = []
-        if x_class != FDM1_MOUSE_AXIS_ZERO_INDEX:
-            fdm1_tokens.append(fdm1_mouse_axis_token_from_class("x", x_class))
-        if y_class != FDM1_MOUSE_AXIS_ZERO_INDEX:
-            fdm1_tokens.append(fdm1_mouse_axis_token_from_class("y", y_class))
-        if out.get("key") is not None and key_vocab:
-            probs = torch.sigmoid(out["key"][0]).detach().cpu().tolist()
-            selected = sorted(
-                (
-                    (float(prob), idx)
-                    for idx, prob in enumerate(probs)
-                    if prob >= float(key_token_thresholds.get(str(key_vocab[idx]), key_threshold))
-                ),
-                key=lambda item: (-item[0], item[1]),
-            )[:max_keys]
-            fdm1_tokens.extend(str(key_vocab[idx]) for _, idx in selected)
+        x_classes = [int(value) for value in torch.argmax(out["mouse_x"], dim=-1).detach().cpu().tolist()]
+        y_classes = [int(value) for value in torch.argmax(out["mouse_y"], dim=-1).detach().cpu().tolist()]
+        key_probs_batch = (
+            [[float(value) for value in row] for row in torch.sigmoid(out["key"]).detach().cpu().tolist()]
+            if out.get("key") is not None and key_vocab
+            else [[] for _ in rows]
+        )
+        button_probs_batch: list[list[float]] = [[] for _ in rows]
+        button_event_probs: list[float | None] = [None for _ in rows]
         if button_vocab and (out.get("button") is not None or out.get("button_class") is not None):
-            probs, event_prob = _button_probabilities_from_output(out, torch, config=config)
-            max_button_prob = max([float(prob) for prob in probs] or [0.0])
-            event_budget_pass = (
-                True
-                if button_event_budget_score_threshold is None or event_prob is None
-                else (float(event_prob) * max_button_prob) >= button_event_budget_score_threshold
-            )
-            selected = sorted(
-                (
-                    (float(prob), idx)
-                    for idx, prob in enumerate(probs)
-                    if prob >= float(button_token_thresholds.get(str(button_vocab[idx]), button_threshold))
-                    and (
-                        not button_event_budget_applies_to_all_buttons
-                        or button_event_budget_score_threshold is None
-                        or event_prob is None
-                        or (float(event_prob) * float(prob)) >= button_event_budget_score_threshold
-                    )
-                ),
-                key=lambda item: (-item[0], item[1]),
-            )[:max_buttons]
-            if (
-                not selected
-                and out.get("button_event") is not None
-                and button_event_force_topk > 0
-                and event_prob is not None
-                and (button_event_budget_rank_all_scores or float(event_prob) >= button_event_threshold)
-                and event_budget_pass
-            ):
-                selected = sorted(
+            button_probs_batch, button_event_probs = _button_probabilities_from_output_batch(out, torch, config=config)
+        for row_index, row in enumerate(rows):
+            width, height = _screen_size(row)
+            x_class = x_classes[row_index]
+            y_class = y_classes[row_index]
+            key_probs = key_probs_batch[row_index]
+            button_probs = button_probs_batch[row_index] if row_index < len(button_probs_batch) else []
+            event_prob = button_event_probs[row_index] if row_index < len(button_event_probs) else None
+            fdm1_tokens: list[str] = []
+            if x_class != FDM1_MOUSE_AXIS_ZERO_INDEX:
+                fdm1_tokens.append(fdm1_mouse_axis_token_from_class("x", x_class))
+            if y_class != FDM1_MOUSE_AXIS_ZERO_INDEX:
+                fdm1_tokens.append(fdm1_mouse_axis_token_from_class("y", y_class))
+            if key_probs and key_vocab:
+                selected_keys = sorted(
                     (
                         (float(prob), idx)
-                        for idx, prob in enumerate(probs)
-                        if button_event_budget_rank_all_scores or float(prob) >= button_event_min_token_probability
+                        for idx, prob in enumerate(key_probs)
+                        if prob >= float(key_token_thresholds.get(str(key_vocab[idx]), key_threshold))
                     ),
                     key=lambda item: (-item[0], item[1]),
-                )[: min(max_buttons, button_event_force_topk)]
-            fdm1_tokens.extend(str(button_vocab[idx]) for _, idx in selected)
-    return d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height)
+                )[:max_keys]
+                fdm1_tokens.extend(str(key_vocab[idx]) for _, idx in selected_keys)
+            if button_vocab and button_probs:
+                max_button_prob = max([float(prob) for prob in button_probs] or [0.0])
+                event_budget_pass = (
+                    True
+                    if button_event_budget_score_threshold is None or event_prob is None
+                    else (float(event_prob) * max_button_prob) >= button_event_budget_score_threshold
+                )
+                selected_buttons = sorted(
+                    (
+                        (float(prob), idx)
+                        for idx, prob in enumerate(button_probs[: len(button_vocab)])
+                        if prob >= float(button_token_thresholds.get(str(button_vocab[idx]), button_threshold))
+                        and (
+                            not button_event_budget_applies_to_all_buttons
+                            or button_event_budget_score_threshold is None
+                            or event_prob is None
+                            or (float(event_prob) * float(prob)) >= button_event_budget_score_threshold
+                        )
+                    ),
+                    key=lambda item: (-item[0], item[1]),
+                )[:max_buttons]
+                if (
+                    not selected_buttons
+                    and button_event_force_topk > 0
+                    and event_prob is not None
+                    and (button_event_budget_rank_all_scores or float(event_prob) >= button_event_threshold)
+                    and event_budget_pass
+                ):
+                    selected_buttons = sorted(
+                        (
+                            (float(prob), idx)
+                            for idx, prob in enumerate(button_probs[: len(button_vocab)])
+                            if button_event_budget_rank_all_scores or float(prob) >= button_event_min_token_probability
+                        ),
+                        key=lambda item: (-item[0], item[1]),
+                    )[: min(max_buttons, button_event_force_topk)]
+                fdm1_tokens.extend(str(button_vocab[idx]) for _, idx in selected_buttons)
+            predictions.append(d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height))
+    return predictions
 
 
 def _threshold_candidates(config: dict[str, Any]) -> list[float]:
@@ -734,18 +844,22 @@ def _score_key_threshold(
 ) -> dict[str, Any]:
     acc = _PaperMetricAccumulator(empty_bins_as_correct=False)
     pred_key_total = 0
-    for row in rows:
-        pred = _predict_factorized_tokens(
+    batch_size = max(1, int(config.get("prediction_batch_size", config.get("calibration_batch_size", config.get("batch_size", 64)))))
+    threshold_config = {**config, "key_threshold": threshold, "button_threshold": 1.1}
+    for start in range(0, len(rows), batch_size):
+        batch_rows = list(rows[start : start + batch_size])
+        predictions = _predict_factorized_tokens_batch(
             model,
             torch,
-            row,
-            config={**config, "key_threshold": threshold, "button_threshold": 1.1},
+            batch_rows,
+            config=threshold_config,
             key_vocab=key_vocab,
             button_vocab=button_vocab,
             device=device,
         )
-        pred_key_total += sum(1 for token in pred if token.startswith("KEY_"))
-        acc.update(pred, [str(token) for token in row.get("ground_truth_tokens", [])])
+        for row, pred in zip(batch_rows, predictions):
+            pred_key_total += sum(1 for token in pred if token.startswith("KEY_"))
+            acc.update(pred, [str(token) for token in row.get("ground_truth_tokens", [])])
     metrics = acc.metrics()
     key_accuracy = metrics["paper_compatible"]["keyboard"]["key_accuracy"]
     strict = metrics["strict_local"]["keyboard"]["accuracy"]
@@ -771,18 +885,22 @@ def _score_button_threshold(
 ) -> dict[str, Any]:
     acc = _PaperMetricAccumulator(empty_bins_as_correct=False)
     pred_button_total = 0
-    for row in rows:
-        pred = _predict_factorized_tokens(
+    batch_size = max(1, int(config.get("prediction_batch_size", config.get("calibration_batch_size", config.get("batch_size", 64)))))
+    threshold_config = {**config, "key_threshold": 1.1, "button_threshold": threshold, "button_event_threshold": 1.1, "button_event_force_topk": 0}
+    for start in range(0, len(rows), batch_size):
+        batch_rows = list(rows[start : start + batch_size])
+        predictions = _predict_factorized_tokens_batch(
             model,
             torch,
-            row,
-            config={**config, "key_threshold": 1.1, "button_threshold": threshold, "button_event_threshold": 1.1, "button_event_force_topk": 0},
+            batch_rows,
+            config=threshold_config,
             key_vocab=key_vocab,
             button_vocab=button_vocab,
             device=device,
         )
-        pred_button_total += sum(1 for token in pred if token.startswith(_FACTOR_BUTTON_PREFIXES))
-        acc.update(pred, [str(token) for token in row.get("ground_truth_tokens", [])])
+        for row, pred in zip(batch_rows, predictions):
+            pred_button_total += sum(1 for token in pred if token.startswith(_FACTOR_BUTTON_PREFIXES))
+            acc.update(pred, [str(token) for token in row.get("ground_truth_tokens", [])])
     metrics = acc.metrics()
     paper = metrics["paper_compatible"]["mouse_button"]
     strict = metrics["strict_local"]["mouse_button"]
@@ -814,26 +932,42 @@ def _collect_factorized_probability_rows(
 ) -> list[dict[str, Any]]:
     feature_paths = list(config.get("video_feature_paths", ["frame.features", "next_frame_features", "frame_delta_features"]))
     feature_dim = int(config.get("video_feature_dim", 64))
+    batch_size = max(1, int(config.get("prediction_batch_size", config.get("calibration_batch_size", config.get("batch_size", 64)))))
     collected: list[dict[str, Any]] = []
     model.eval()
     with torch.no_grad():
-        for row in rows:
-            features = torch.tensor([video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim)], dtype=torch.float32, device=device)
-            out = model(features)
-            target = _factorized_targets(row, key_vocab=key_vocab, button_vocab=button_vocab)
-            key_probs = torch.sigmoid(out["key"][0]).detach().cpu().tolist() if out.get("key") is not None and key_vocab else []
-            button_probs, button_event_prob = _button_probabilities_from_output(out, torch, config=config) if button_vocab else ([], None)
-            collected.append(
-                {
-                    "key_probs": [float(value) for value in key_probs],
-                    "button_probs": [float(value) for value in button_probs],
-                    "button_event_prob": button_event_prob,
-                    "key_labels": [int(value) for value in target["key_labels"]],
-                    "button_labels": [int(value) for value in target["button_labels"]],
-                    "button_event_label": int(any(target["button_labels"])),
-                    "button_class_label": int(target["button_class"]),
-                }
+        for start in range(0, len(rows), batch_size):
+            batch_rows = list(rows[start : start + batch_size])
+            features = torch.tensor(
+                [video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim) for row in batch_rows],
+                dtype=torch.float32,
+                device=device,
             )
+            out = model(features)
+            key_probs_batch = (
+                [[float(value) for value in row] for row in torch.sigmoid(out["key"]).detach().cpu().tolist()]
+                if out.get("key") is not None and key_vocab
+                else [[] for _ in batch_rows]
+            )
+            if button_vocab:
+                button_probs_batch, button_event_probs = _button_probabilities_from_output_batch(out, torch, config=config)
+            else:
+                button_probs_batch, button_event_probs = ([[] for _ in batch_rows], [None for _ in batch_rows])
+            for idx, row in enumerate(batch_rows):
+                target = _factorized_targets(row, key_vocab=key_vocab, button_vocab=button_vocab)
+                button_probs = button_probs_batch[idx] if idx < len(button_probs_batch) else []
+                button_event_prob = button_event_probs[idx] if idx < len(button_event_probs) else None
+                collected.append(
+                    {
+                        "key_probs": [float(value) for value in (key_probs_batch[idx] if idx < len(key_probs_batch) else [])],
+                        "button_probs": [float(value) for value in button_probs],
+                        "button_event_prob": button_event_prob,
+                        "key_labels": [int(value) for value in target["key_labels"]],
+                        "button_labels": [int(value) for value in target["button_labels"]],
+                        "button_event_label": int(any(target["button_labels"])),
+                        "button_class_label": int(target["button_class"]),
+                    }
+                )
     return collected
 
 
@@ -1575,10 +1709,21 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
         config["button_event_budget_max_forced_events"] = int(button_event_budget["max_forced_events"])
 
     predictions_path = Path(output_dir) / "predictions.jsonl"
+    prediction_batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
     with predictions_path.open("w", encoding="utf-8") as handle:
-        for row in target_rows:
-            predicted_tokens = _predict_factorized_tokens(model, torch, row, config=config, key_vocab=key_vocab, button_vocab=button_vocab, device=device)
-            handle.write(json.dumps({"sequence_id": row.get("sequence_id"), "predicted_tokens": predicted_tokens or [FDM1_ACTION_NOOP]}, sort_keys=True) + "\n")
+        for start_idx in range(0, len(target_rows), prediction_batch_size):
+            batch_rows = target_rows[start_idx : start_idx + prediction_batch_size]
+            batch_predictions = _predict_factorized_tokens_batch(
+                model,
+                torch,
+                batch_rows,
+                config=config,
+                key_vocab=key_vocab,
+                button_vocab=button_vocab,
+                device=device,
+            )
+            for row, predicted_tokens in zip(batch_rows, batch_predictions):
+                handle.write(json.dumps({"sequence_id": row.get("sequence_id"), "predicted_tokens": predicted_tokens or [FDM1_ACTION_NOOP]}, sort_keys=True) + "\n")
 
     metrics_path = Path(output_dir) / "paper_metrics.json"
     write_paper_idm_metrics(
@@ -1627,6 +1772,8 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             "button_class_conditional_prior_correction": bool(config.get("button_class_conditional_prior_correction", False)),
             "button_class_conditional_prior_alpha": float(config.get("button_class_conditional_prior_alpha", 1.0)),
             "button_class_conditional_logit_offset_count": len(config.get("button_class_conditional_logit_offsets", []) if isinstance(config.get("button_class_conditional_logit_offsets"), list) else []),
+            "prediction_batch_size": prediction_batch_size,
+            "calibration_batch_size": max(1, int(config.get("calibration_batch_size", config.get("prediction_batch_size", config.get("batch_size", 64))))),
             "key_token_threshold_count": len(config.get("key_token_thresholds", {}) if isinstance(config.get("key_token_thresholds"), dict) else {}),
             "button_token_threshold_count": len(config.get("button_token_thresholds", {}) if isinstance(config.get("button_token_thresholds"), dict) else {}),
         },
