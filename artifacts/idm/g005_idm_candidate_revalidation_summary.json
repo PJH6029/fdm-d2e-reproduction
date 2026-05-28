@@ -588,6 +588,33 @@
       "name": "key_repeat_specialist_aligned_prefix50k",
       "rows": 50000,
       "status": "pass"
+    },
+    {
+      "alignment": {
+        "examples": [],
+        "sequence_id_mismatches": 0
+      },
+      "artifact": "artifacts/idm/g005_idm_key_phase_repeat_diagnostic_prefix50k.json",
+      "base_keyboard_accuracy": 0.15504749637739496,
+      "best_delta_vs_base": 0.00025583668950618366,
+      "best_policy": {
+        "context": "code_holdbucket_phase",
+        "keyboard_accuracy": 0.15530333306690114,
+        "period": 6,
+        "policy": "code_holdbucket_phase_period6_threshold0.65",
+        "sample_count": 12511,
+        "threshold": 0.65
+      },
+      "claim_boundary": "CPU prefix diagnostic only; not G005 completion evidence.",
+      "decision": "reject_phase_aware_repeat_heuristics",
+      "finding_codes": [
+        "phase_features_do_not_materially_improve_key_repeat_decoding",
+        "aligned_prefix_zero_mismatches",
+        "best_delta_only_0p00026_keyboard_accuracy"
+      ],
+      "name": "key_phase_repeat_diagnostic_prefix50k",
+      "rows": 50000,
+      "status": "pass"
     }
   ],
   "paper_targets": {
@@ -1594,10 +1621,11 @@
     "Keep the native-luma tensor-cache materialization path as infrastructure only; it solves throughput/cache issues but not the IDM paper-target metric problem.",
     "Key-event taxonomy shows the dominant keyboard blocker is held-repeat/same-bin key decoding: only 36.5% of key tokens are visible to prior->next state differencing, while an oracle repeat/tap key decoder plus state-delta buttons reaches keyboard=0.7418 and button=0.9754 on the 320k prefix. Next candidate should train a non-leaky key-repeat/tap specialist and pair it with state-transition button decoding and improved motion, not another frozen visual embedding alone.",
     "A simple train-prefix repeat/release lookup specialist is now rejected: on a 50k aligned prefix it reports zero base/target sequence mismatches, but base_all remains best (keyboard=0.1550, button=0.1614, Pearson X/Y=0.7598/0.6794) and every repeat-table replacement/union policy reduces keyboard. Next key branch needs a learned sequence model or teacher/distillation signal, not tabular hold-age thresholds.",
+    "Phase-aware held-key repeat heuristics are also rejected: on the aligned 50k prefix the best phase policy improves keyboard by only +0.00026 over base_all (0.15505 -> 0.15530), far below paper target. Do not spend GPU on handcrafted repeat phase features; next branch needs learned sequence/teacher-assisted supervision or released-GIDM distillation.",
     "Do not reserve H200s for threshold-only global decoding, context-dropout, chronological closed-loop, endpoint mixtures, naive luma windows, hierarchical exact-set heads, causal repeat priors, sequence-prior action history, or frozen-DINO-only prefix runs; all miss paper targets under empty_bins_as_correct=false.",
     "Avoid repeated JSON prediction sweeps on GPUs; export logits once or run diagnostics in memory-rich CPU contexts before reserving H200s. Precompute action-history stats/cache outside GPU reservations when possible."
   ],
   "schema": "g005_idm_candidate_revalidation_summary.v1",
   "status": "fail_no_candidate_meets_paper_targets",
-  "updated_at_epoch": 1779940052.9021351
+  "updated_at_epoch": 1779940663.1426759
 }

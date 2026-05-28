@@ -1,0 +1,3238 @@
+{
+  "schema": "g005_key_phase_repeat_diagnostic.v1",
+  "status": "pass",
+  "rows": 50000,
+  "train_rows": 320000,
+  "max_train_rows": 320000,
+  "max_target_rows": 50000,
+  "periods": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    10,
+    12,
+    16,
+    20,
+    24,
+    32,
+    40
+  ],
+  "thresholds": [
+    0.05,
+    0.1,
+    0.2,
+    0.35,
+    0.5,
+    0.65
+  ],
+  "min_support": 5,
+  "alignment": {
+    "sequence_id_mismatches": 0,
+    "examples": []
+  },
+  "base": {
+    "keyboard_accuracy": 0.15504749637739496,
+    "sample_count": 12422
+  },
+  "best_policy": {
+    "policy": "code_holdbucket_phase_period6_threshold0.65",
+    "context": "code_holdbucket_phase",
+    "period": 6,
+    "threshold": 0.65,
+    "keyboard_accuracy": 0.15530333306690114,
+    "sample_count": 12511
+  },
+  "ranked_policies": [
+    {
+      "policy": "code_holdbucket_phase_period6_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 6,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15530333306690114,
+      "sample_count": 12511
+    },
+    {
+      "policy": "code_phase_period16_threshold0.5",
+      "context": "code_phase",
+      "period": 16,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15515024907600836,
+      "sample_count": 12446
+    },
+    {
+      "policy": "code_phase_period2_threshold0.5",
+      "context": "code_phase",
+      "period": 2,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period2_threshold0.65",
+      "context": "code_phase",
+      "period": 2,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period3_threshold0.5",
+      "context": "code_phase",
+      "period": 3,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period3_threshold0.65",
+      "context": "code_phase",
+      "period": 3,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period4_threshold0.5",
+      "context": "code_phase",
+      "period": 4,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period4_threshold0.65",
+      "context": "code_phase",
+      "period": 4,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period5_threshold0.65",
+      "context": "code_phase",
+      "period": 5,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period6_threshold0.65",
+      "context": "code_phase",
+      "period": 6,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period8_threshold0.65",
+      "context": "code_phase",
+      "period": 8,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period10_threshold0.65",
+      "context": "code_phase",
+      "period": 10,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period12_threshold0.65",
+      "context": "code_phase",
+      "period": 12,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period16_threshold0.65",
+      "context": "code_phase",
+      "period": 16,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period20_threshold0.65",
+      "context": "code_phase",
+      "period": 20,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period24_threshold0.65",
+      "context": "code_phase",
+      "period": 24,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period32_threshold0.65",
+      "context": "code_phase",
+      "period": 32,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_phase_period40_threshold0.65",
+      "context": "code_phase",
+      "period": 40,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period2_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 2,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period2_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 2,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period3_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 3,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period3_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 3,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period4_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 4,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period4_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 4,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period5_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 5,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period5_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 5,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period6_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 6,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period6_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 6,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period8_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 8,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period8_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 8,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period10_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 10,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period10_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 10,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period12_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 12,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period12_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 12,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period16_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 16,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period16_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 16,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period20_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 20,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period20_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 20,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period24_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 24,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period24_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 24,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period32_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 32,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period32_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 32,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period40_threshold0.5",
+      "context": "global_hold_phase",
+      "period": 40,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "global_hold_phase_period40_threshold0.65",
+      "context": "global_hold_phase",
+      "period": 40,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15504749637739496,
+      "sample_count": 12422
+    },
+    {
+      "policy": "code_holdbucket_phase_period12_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 12,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15503565419437546,
+      "sample_count": 12481
+    },
+    {
+      "policy": "code_phase_period32_threshold0.5",
+      "context": "code_phase",
+      "period": 32,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15497029066966436,
+      "sample_count": 12454
+    },
+    {
+      "policy": "code_phase_period24_threshold0.5",
+      "context": "code_phase",
+      "period": 24,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1548956661316212,
+      "sample_count": 12460
+    },
+    {
+      "policy": "code_hold_phase_period2_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 2,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15476760900814565,
+      "sample_count": 12522
+    },
+    {
+      "policy": "code_holdmod_phase_period2_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 2,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15476760900814565,
+      "sample_count": 12522
+    },
+    {
+      "policy": "code_phase_period20_threshold0.5",
+      "context": "code_phase",
+      "period": 20,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15471698113207547,
+      "sample_count": 12455
+    },
+    {
+      "policy": "code_hold_phase_period5_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 5,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15468461970024847,
+      "sample_count": 12477
+    },
+    {
+      "policy": "code_holdmod_phase_period5_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 5,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15468461970024847,
+      "sample_count": 12477
+    },
+    {
+      "policy": "code_phase_period40_threshold0.5",
+      "context": "code_phase",
+      "period": 40,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15461847389558234,
+      "sample_count": 12450
+    },
+    {
+      "policy": "code_holdbucket_phase_period3_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 3,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15457740853171434,
+      "sample_count": 12518
+    },
+    {
+      "policy": "code_holdbucket_phase_period5_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 5,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15457740853171434,
+      "sample_count": 12518
+    },
+    {
+      "policy": "code_phase_period5_threshold0.5",
+      "context": "code_phase",
+      "period": 5,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15448253917747196,
+      "sample_count": 12571
+    },
+    {
+      "policy": "code_holdbucket_phase_period24_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 24,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15446306840965596,
+      "sample_count": 12469
+    },
+    {
+      "policy": "code_holdbucket_phase_period2_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 2,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15445402298850575,
+      "sample_count": 12528
+    },
+    {
+      "policy": "code_phase_period12_threshold0.5",
+      "context": "code_phase",
+      "period": 12,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1543811960345379,
+      "sample_count": 12508
+    },
+    {
+      "policy": "code_holdbucket_phase_period10_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 10,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15436402981485933,
+      "sample_count": 12477
+    },
+    {
+      "policy": "code_phase_period20_threshold0.35",
+      "context": "code_phase",
+      "period": 20,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.15433826469412235,
+      "sample_count": 12505
+    },
+    {
+      "policy": "code_phase_period24_threshold0.35",
+      "context": "code_phase",
+      "period": 24,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.15427568602425015,
+      "sample_count": 12536
+    },
+    {
+      "policy": "code_hold_phase_period3_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 3,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15427107517412536,
+      "sample_count": 12491
+    },
+    {
+      "policy": "code_holdmod_phase_period3_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 3,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15427107517412536,
+      "sample_count": 12491
+    },
+    {
+      "policy": "code_hold_phase_period8_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 8,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15425065731814197,
+      "sample_count": 12551
+    },
+    {
+      "policy": "code_holdmod_phase_period8_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 8,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15425065731814197,
+      "sample_count": 12551
+    },
+    {
+      "policy": "code_phase_period6_threshold0.5",
+      "context": "code_phase",
+      "period": 6,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15423242467718795,
+      "sample_count": 12546
+    },
+    {
+      "policy": "code_phase_period8_threshold0.5",
+      "context": "code_phase",
+      "period": 8,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15421494206951658,
+      "sample_count": 12515
+    },
+    {
+      "policy": "code_phase_period32_threshold0.35",
+      "context": "code_phase",
+      "period": 32,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.15415335463258786,
+      "sample_count": 12520
+    },
+    {
+      "policy": "code_phase_period40_threshold0.35",
+      "context": "code_phase",
+      "period": 40,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.15415335463258786,
+      "sample_count": 12520
+    },
+    {
+      "policy": "code_holdbucket_phase_period8_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 8,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.1541410430476799,
+      "sample_count": 12521
+    },
+    {
+      "policy": "code_phase_period16_threshold0.35",
+      "context": "code_phase",
+      "period": 16,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1540913074655406,
+      "sample_count": 12551
+    },
+    {
+      "policy": "code_hold_phase_period4_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 4,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15408,
+      "sample_count": 12500
+    },
+    {
+      "policy": "code_holdmod_phase_period4_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 4,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15408,
+      "sample_count": 12500
+    },
+    {
+      "policy": "code_holdbucket_phase_period40_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 40,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.154017679382018,
+      "sample_count": 12557
+    },
+    {
+      "policy": "code_hold_phase_period40_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 40,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15396256471525288,
+      "sample_count": 12555
+    },
+    {
+      "policy": "code_holdbucket_phase_period32_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 32,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.153926115464577,
+      "sample_count": 12506
+    },
+    {
+      "policy": "code_holdbucket_phase_period4_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 4,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15386458000638772,
+      "sample_count": 12524
+    },
+    {
+      "policy": "code_hold_phase_period12_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 12,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15385227634511303,
+      "sample_count": 12564
+    },
+    {
+      "policy": "code_holdmod_phase_period12_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 12,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15385227634511303,
+      "sample_count": 12564
+    },
+    {
+      "policy": "code_holdbucket_phase_period20_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 20,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15384615384615385,
+      "sample_count": 12493
+    },
+    {
+      "policy": "code_hold_phase_period32_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 32,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15381551696670384,
+      "sample_count": 12554
+    },
+    {
+      "policy": "code_holdmod_phase_period32_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 32,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15381551696670384,
+      "sample_count": 12554
+    },
+    {
+      "policy": "code_hold_phase_period24_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 24,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15376652333174073,
+      "sample_count": 12558
+    },
+    {
+      "policy": "code_holdmod_phase_period24_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 24,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15376652333174073,
+      "sample_count": 12558
+    },
+    {
+      "policy": "code_phase_period10_threshold0.5",
+      "context": "code_phase",
+      "period": 10,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15372991888022905,
+      "sample_count": 12574
+    },
+    {
+      "policy": "code_hold_phase_period16_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 16,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15372399555343816,
+      "sample_count": 12594
+    },
+    {
+      "policy": "code_holdmod_phase_period16_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 16,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15372399555343816,
+      "sample_count": 12594
+    },
+    {
+      "policy": "code_hold_phase_period10_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 10,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15366807695377985,
+      "sample_count": 12527
+    },
+    {
+      "policy": "code_holdbucket_phase_period16_threshold0.65",
+      "context": "code_holdbucket_phase",
+      "period": 16,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15358198226978675,
+      "sample_count": 12521
+    },
+    {
+      "policy": "code_hold_phase_period6_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 6,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15343663090981327,
+      "sample_count": 12585
+    },
+    {
+      "policy": "code_holdmod_phase_period6_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 6,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15343663090981327,
+      "sample_count": 12585
+    },
+    {
+      "policy": "code_hold_phase_period20_threshold0.65",
+      "context": "code_hold_phase",
+      "period": 20,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.15343245808288516,
+      "sample_count": 12644
+    },
+    {
+      "policy": "code_hold_phase_period3_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 3,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15339209822131278,
+      "sample_count": 12706
+    },
+    {
+      "policy": "code_holdmod_phase_period3_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 3,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15339209822131278,
+      "sample_count": 12706
+    },
+    {
+      "policy": "code_phase_period10_threshold0.35",
+      "context": "code_phase",
+      "period": 10,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1533411488862837,
+      "sample_count": 12795
+    },
+    {
+      "policy": "code_holdbucket_phase_period2_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 2,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15304829770387965,
+      "sample_count": 12630
+    },
+    {
+      "policy": "code_phase_period12_threshold0.35",
+      "context": "code_phase",
+      "period": 12,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.15297805642633228,
+      "sample_count": 12760
+    },
+    {
+      "policy": "code_phase_period5_threshold0.35",
+      "context": "code_phase",
+      "period": 5,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1528309254197579,
+      "sample_count": 12805
+    },
+    {
+      "policy": "code_hold_phase_period5_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 5,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15275268986099114,
+      "sample_count": 12733
+    },
+    {
+      "policy": "code_holdmod_phase_period5_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 5,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15275268986099114,
+      "sample_count": 12733
+    },
+    {
+      "policy": "code_phase_period6_threshold0.35",
+      "context": "code_phase",
+      "period": 6,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.15255553829423646,
+      "sample_count": 12874
+    },
+    {
+      "policy": "code_holdbucket_phase_period6_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 6,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1525437076704993,
+      "sample_count": 12698
+    },
+    {
+      "policy": "code_holdbucket_phase_period3_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 3,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15250510444479345,
+      "sample_count": 12734
+    },
+    {
+      "policy": "code_holdbucket_phase_period5_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 5,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1523591604860344,
+      "sample_count": 12674
+    },
+    {
+      "policy": "code_holdbucket_phase_period4_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 4,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15205414764678105,
+      "sample_count": 12706
+    },
+    {
+      "policy": "code_phase_period4_threshold0.35",
+      "context": "code_phase",
+      "period": 4,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.152054049856333,
+      "sample_count": 12877
+    },
+    {
+      "policy": "code_phase_period2_threshold0.35",
+      "context": "code_phase",
+      "period": 2,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.15204224258425222,
+      "sample_count": 12878
+    },
+    {
+      "policy": "code_holdbucket_phase_period10_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 10,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15200885795634292,
+      "sample_count": 12644
+    },
+    {
+      "policy": "code_holdbucket_phase_period24_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 24,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15200877124285378,
+      "sample_count": 12769
+    },
+    {
+      "policy": "code_hold_phase_period24_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 24,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15182515694024645,
+      "sample_count": 12903
+    },
+    {
+      "policy": "code_holdmod_phase_period24_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 24,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15182515694024645,
+      "sample_count": 12903
+    },
+    {
+      "policy": "code_holdbucket_phase_period12_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 12,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15172413793103448,
+      "sample_count": 12760
+    },
+    {
+      "policy": "code_holdbucket_phase_period8_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 8,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1516237053189004,
+      "sample_count": 12841
+    },
+    {
+      "policy": "code_holdbucket_phase_period20_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 20,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15130244891592576,
+      "sample_count": 12822
+    },
+    {
+      "policy": "code_phase_period8_threshold0.35",
+      "context": "code_phase",
+      "period": 8,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1511672407194795,
+      "sample_count": 13065
+    },
+    {
+      "policy": "code_holdbucket_phase_period40_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 40,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15107409713574096,
+      "sample_count": 12848
+    },
+    {
+      "policy": "code_hold_phase_period40_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 40,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15071126489811612,
+      "sample_count": 13005
+    },
+    {
+      "policy": "code_holdbucket_phase_period32_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 32,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15067215789882663,
+      "sample_count": 12869
+    },
+    {
+      "policy": "code_holdbucket_phase_period16_threshold0.5",
+      "context": "code_holdbucket_phase",
+      "period": 16,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1506645817044566,
+      "sample_count": 12790
+    },
+    {
+      "policy": "code_hold_phase_period12_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 12,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1505468083456139,
+      "sample_count": 12893
+    },
+    {
+      "policy": "code_holdmod_phase_period12_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 12,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1505468083456139,
+      "sample_count": 12893
+    },
+    {
+      "policy": "code_hold_phase_period2_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 2,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1504315659679408,
+      "sample_count": 12976
+    },
+    {
+      "policy": "code_holdmod_phase_period2_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 2,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1504315659679408,
+      "sample_count": 12976
+    },
+    {
+      "policy": "code_phase_period3_threshold0.35",
+      "context": "code_phase",
+      "period": 3,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.15028291210863826,
+      "sample_count": 13255
+    },
+    {
+      "policy": "code_hold_phase_period10_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 10,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.15027259464025186,
+      "sample_count": 13023
+    },
+    {
+      "policy": "code_hold_phase_period16_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 16,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1501427359000077,
+      "sample_count": 12961
+    },
+    {
+      "policy": "code_holdmod_phase_period16_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 16,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1501427359000077,
+      "sample_count": 12961
+    },
+    {
+      "policy": "code_hold_phase_period32_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 32,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1500498887098012,
+      "sample_count": 13029
+    },
+    {
+      "policy": "code_holdmod_phase_period32_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 32,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1500498887098012,
+      "sample_count": 13029
+    },
+    {
+      "policy": "code_hold_phase_period8_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 8,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1498069498069498,
+      "sample_count": 12950
+    },
+    {
+      "policy": "code_holdmod_phase_period8_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 8,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1498069498069498,
+      "sample_count": 12950
+    },
+    {
+      "policy": "code_hold_phase_period6_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 6,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1496640667232991,
+      "sample_count": 12949
+    },
+    {
+      "policy": "code_holdmod_phase_period6_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 6,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1496640667232991,
+      "sample_count": 12949
+    },
+    {
+      "policy": "code_hold_phase_period20_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 20,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.14881088934770972,
+      "sample_count": 13077
+    },
+    {
+      "policy": "code_holdmod_phase_period20_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 20,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.14842016678142453,
+      "sample_count": 13071
+    },
+    {
+      "policy": "code_hold_phase_period4_threshold0.5",
+      "context": "code_hold_phase",
+      "period": 4,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1482995295750752,
+      "sample_count": 12967
+    },
+    {
+      "policy": "code_holdmod_phase_period4_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 4,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.1482995295750752,
+      "sample_count": 12967
+    },
+    {
+      "policy": "code_holdmod_phase_period10_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 10,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.14816810344827586,
+      "sample_count": 12992
+    },
+    {
+      "policy": "code_holdmod_phase_period40_threshold0.65",
+      "context": "code_holdmod_phase",
+      "period": 40,
+      "threshold": 0.65,
+      "keyboard_accuracy": 0.14757978317300352,
+      "sample_count": 13098
+    },
+    {
+      "policy": "code_holdmod_phase_period40_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 40,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.14220416455053325,
+      "sample_count": 13783
+    },
+    {
+      "policy": "code_holdmod_phase_period10_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 10,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.14180131874501847,
+      "sample_count": 13801
+    },
+    {
+      "policy": "code_holdmod_phase_period20_threshold0.5",
+      "context": "code_holdmod_phase",
+      "period": 20,
+      "threshold": 0.5,
+      "keyboard_accuracy": 0.14045470949115843,
+      "sample_count": 13855
+    },
+    {
+      "policy": "code_hold_phase_period8_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 8,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.140199888950583,
+      "sample_count": 14408
+    },
+    {
+      "policy": "code_holdmod_phase_period8_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 8,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.140199888950583,
+      "sample_count": 14408
+    },
+    {
+      "policy": "code_hold_phase_period5_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 5,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1396174863387978,
+      "sample_count": 14640
+    },
+    {
+      "policy": "code_hold_phase_period40_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 40,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13946139049189338,
+      "sample_count": 14556
+    },
+    {
+      "policy": "code_hold_phase_period24_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 24,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13945066958185295,
+      "sample_count": 14636
+    },
+    {
+      "policy": "code_holdmod_phase_period24_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 24,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13945066958185295,
+      "sample_count": 14636
+    },
+    {
+      "policy": "code_holdbucket_phase_period5_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 5,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13919672478294629,
+      "sample_count": 14167
+    },
+    {
+      "policy": "code_hold_phase_period2_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 2,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13886216847602034,
+      "sample_count": 14554
+    },
+    {
+      "policy": "code_holdmod_phase_period2_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 2,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13886216847602034,
+      "sample_count": 14554
+    },
+    {
+      "policy": "code_holdbucket_phase_period8_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 8,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13880701754385966,
+      "sample_count": 14250
+    },
+    {
+      "policy": "code_holdbucket_phase_period10_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 10,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1381648654375927,
+      "sample_count": 14157
+    },
+    {
+      "policy": "code_holdbucket_phase_period2_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 2,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13810688089416695,
+      "sample_count": 14315
+    },
+    {
+      "policy": "code_holdbucket_phase_period24_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 24,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13799345540625219,
+      "sample_count": 14363
+    },
+    {
+      "policy": "code_holdbucket_phase_period12_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 12,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13797689884494224,
+      "sample_count": 14285
+    },
+    {
+      "policy": "code_hold_phase_period10_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 10,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1378062930857962,
+      "sample_count": 14651
+    },
+    {
+      "policy": "code_hold_phase_period16_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 16,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.137548229878833,
+      "sample_count": 14773
+    },
+    {
+      "policy": "code_holdmod_phase_period16_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 16,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.137548229878833,
+      "sample_count": 14773
+    },
+    {
+      "policy": "code_holdbucket_phase_period4_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 4,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1374642383643849,
+      "sample_count": 14331
+    },
+    {
+      "policy": "code_hold_phase_period12_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 12,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13735445437313837,
+      "sample_count": 14772
+    },
+    {
+      "policy": "code_holdmod_phase_period12_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 12,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13735445437313837,
+      "sample_count": 14772
+    },
+    {
+      "policy": "code_holdbucket_phase_period40_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 40,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13728505522158535,
+      "sample_count": 14306
+    },
+    {
+      "policy": "code_hold_phase_period3_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 3,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13721328312221842,
+      "sample_count": 14605
+    },
+    {
+      "policy": "code_holdmod_phase_period3_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 3,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13721328312221842,
+      "sample_count": 14605
+    },
+    {
+      "policy": "code_holdbucket_phase_period6_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 6,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1371181475798577,
+      "sample_count": 14338
+    },
+    {
+      "policy": "code_holdbucket_phase_period16_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 16,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13708724365658673,
+      "sample_count": 14385
+    },
+    {
+      "policy": "code_holdbucket_phase_period32_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 32,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13705972434915772,
+      "sample_count": 14366
+    },
+    {
+      "policy": "code_hold_phase_period32_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 32,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13705549568965517,
+      "sample_count": 14848
+    },
+    {
+      "policy": "code_holdmod_phase_period32_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 32,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13705549568965517,
+      "sample_count": 14848
+    },
+    {
+      "policy": "code_hold_phase_period20_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 20,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13691731881592378,
+      "sample_count": 14695
+    },
+    {
+      "policy": "code_hold_phase_period4_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 4,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13669842556929523,
+      "sample_count": 14799
+    },
+    {
+      "policy": "code_holdmod_phase_period4_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 4,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13669842556929523,
+      "sample_count": 14799
+    },
+    {
+      "policy": "code_holdbucket_phase_period3_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 3,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1362750556792873,
+      "sample_count": 14368
+    },
+    {
+      "policy": "code_hold_phase_period6_threshold0.35",
+      "context": "code_hold_phase",
+      "period": 6,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13606179699146226,
+      "sample_count": 14758
+    },
+    {
+      "policy": "code_holdmod_phase_period6_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 6,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13606179699146226,
+      "sample_count": 14758
+    },
+    {
+      "policy": "code_holdbucket_phase_period20_threshold0.35",
+      "context": "code_holdbucket_phase",
+      "period": 20,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13522272789960005,
+      "sample_count": 14502
+    },
+    {
+      "policy": "code_holdmod_phase_period5_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 5,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13257231806978856,
+      "sample_count": 15418
+    },
+    {
+      "policy": "code_holdmod_phase_period40_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 40,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13238554845441503,
+      "sample_count": 15334
+    },
+    {
+      "policy": "code_holdmod_phase_period10_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 10,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13085747618121718,
+      "sample_count": 15429
+    },
+    {
+      "policy": "code_holdmod_phase_period20_threshold0.35",
+      "context": "code_holdmod_phase",
+      "period": 20,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.13003296064111677,
+      "sample_count": 15473
+    },
+    {
+      "policy": "global_hold_phase_period6_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 6,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1277016178831666,
+      "sample_count": 16194
+    },
+    {
+      "policy": "global_hold_phase_period24_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 24,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.12676915568570035,
+      "sample_count": 16392
+    },
+    {
+      "policy": "global_hold_phase_period12_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 12,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.12673134419427665,
+      "sample_count": 16389
+    },
+    {
+      "policy": "global_hold_phase_period10_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 10,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1259236641221374,
+      "sample_count": 16375
+    },
+    {
+      "policy": "global_hold_phase_period32_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 32,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1258898691816246,
+      "sample_count": 16435
+    },
+    {
+      "policy": "global_hold_phase_period16_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 16,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.12571637605170102,
+      "sample_count": 16402
+    },
+    {
+      "policy": "global_hold_phase_period20_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 20,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.12521191571809154,
+      "sample_count": 16516
+    },
+    {
+      "policy": "global_hold_phase_period40_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 40,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.1250076112768678,
+      "sample_count": 16423
+    },
+    {
+      "policy": "global_hold_phase_period5_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 5,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.12483415752020263,
+      "sample_count": 16582
+    },
+    {
+      "policy": "global_hold_phase_period8_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 8,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.12464417660953304,
+      "sample_count": 16511
+    },
+    {
+      "policy": "global_hold_phase_period4_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 4,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.12454589488980383,
+      "sample_count": 16516
+    },
+    {
+      "policy": "global_hold_phase_period2_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 2,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.12292497173796632,
+      "sample_count": 16807
+    },
+    {
+      "policy": "global_hold_phase_period3_threshold0.35",
+      "context": "global_hold_phase",
+      "period": 3,
+      "threshold": 0.35,
+      "keyboard_accuracy": 0.12292497173796632,
+      "sample_count": 16807
+    },
+    {
+      "policy": "code_phase_period24_threshold0.2",
+      "context": "code_phase",
+      "period": 24,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.1226839027393044,
+      "sample_count": 16245
+    },
+    {
+      "policy": "code_phase_period16_threshold0.2",
+      "context": "code_phase",
+      "period": 16,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12262117386216666,
+      "sample_count": 16237
+    },
+    {
+      "policy": "code_phase_period20_threshold0.2",
+      "context": "code_phase",
+      "period": 20,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12251553750538428,
+      "sample_count": 16251
+    },
+    {
+      "policy": "code_phase_period5_threshold0.2",
+      "context": "code_phase",
+      "period": 5,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12243563061188084,
+      "sample_count": 16817
+    },
+    {
+      "policy": "code_phase_period32_threshold0.2",
+      "context": "code_phase",
+      "period": 32,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12239985186099624,
+      "sample_count": 16201
+    },
+    {
+      "policy": "code_phase_period12_threshold0.2",
+      "context": "code_phase",
+      "period": 12,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12227573750752559,
+      "sample_count": 16610
+    },
+    {
+      "policy": "code_phase_period10_threshold0.2",
+      "context": "code_phase",
+      "period": 10,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12221423436376708,
+      "sample_count": 16692
+    },
+    {
+      "policy": "code_phase_period40_threshold0.2",
+      "context": "code_phase",
+      "period": 40,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12193326790971541,
+      "sample_count": 16304
+    },
+    {
+      "policy": "code_phase_period4_threshold0.2",
+      "context": "code_phase",
+      "period": 4,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12176769184831293,
+      "sample_count": 16745
+    },
+    {
+      "policy": "code_phase_period2_threshold0.2",
+      "context": "code_phase",
+      "period": 2,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12174588010508718,
+      "sample_count": 16748
+    },
+    {
+      "policy": "code_phase_period3_threshold0.2",
+      "context": "code_phase",
+      "period": 3,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12174588010508718,
+      "sample_count": 16748
+    },
+    {
+      "policy": "code_phase_period8_threshold0.2",
+      "context": "code_phase",
+      "period": 8,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12104825291181365,
+      "sample_count": 16828
+    },
+    {
+      "policy": "code_phase_period6_threshold0.2",
+      "context": "code_phase",
+      "period": 6,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12098926516813949,
+      "sample_count": 16861
+    },
+    {
+      "policy": "code_hold_phase_period40_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 40,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.12035155177149134,
+      "sample_count": 18205
+    },
+    {
+      "policy": "code_hold_phase_period32_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 32,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11964653583432723,
+      "sample_count": 18446
+    },
+    {
+      "policy": "code_hold_phase_period24_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 24,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11789507391791643,
+      "sample_count": 18737
+    },
+    {
+      "policy": "code_holdmod_phase_period24_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 24,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.1176689927022852,
+      "sample_count": 18773
+    },
+    {
+      "policy": "code_hold_phase_period20_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 20,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11741340959644106,
+      "sample_count": 18882
+    },
+    {
+      "policy": "code_holdmod_phase_period32_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 32,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11696433303301712,
+      "sample_count": 18869
+    },
+    {
+      "policy": "code_hold_phase_period12_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 12,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11646607179912845,
+      "sample_count": 19276
+    },
+    {
+      "policy": "code_holdmod_phase_period12_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 12,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11646607179912845,
+      "sample_count": 19276
+    },
+    {
+      "policy": "code_holdmod_phase_period40_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 40,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11541905915819417,
+      "sample_count": 18983
+    },
+    {
+      "policy": "code_hold_phase_period16_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 16,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11493240793494587,
+      "sample_count": 19307
+    },
+    {
+      "policy": "code_holdmod_phase_period16_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 16,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11471850281755674,
+      "sample_count": 19343
+    },
+    {
+      "policy": "code_hold_phase_period10_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 10,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11439301664636622,
+      "sample_count": 19704
+    },
+    {
+      "policy": "code_hold_phase_period5_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 5,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11288551751671823,
+      "sample_count": 20038
+    },
+    {
+      "policy": "code_holdmod_phase_period20_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 20,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11276703967446593,
+      "sample_count": 19660
+    },
+    {
+      "policy": "code_hold_phase_period6_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 6,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11251694532309083,
+      "sample_count": 19917
+    },
+    {
+      "policy": "code_hold_phase_period8_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 8,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11249119983908278,
+      "sample_count": 19886
+    },
+    {
+      "policy": "code_holdmod_phase_period8_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 8,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11244596360711773,
+      "sample_count": 19894
+    },
+    {
+      "policy": "code_holdmod_phase_period6_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 6,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11225205369665398,
+      "sample_count": 19964
+    },
+    {
+      "policy": "code_hold_phase_period40_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 40,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.11223974125732768,
+      "sample_count": 19788
+    },
+    {
+      "policy": "code_hold_phase_period4_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 4,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11196296111913177,
+      "sample_count": 20087
+    },
+    {
+      "policy": "code_holdmod_phase_period4_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 4,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11196296111913177,
+      "sample_count": 20087
+    },
+    {
+      "policy": "code_hold_phase_period32_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 32,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.11139404833233472,
+      "sample_count": 20028
+    },
+    {
+      "policy": "code_hold_phase_period3_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 3,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.1105532585154558,
+      "sample_count": 20316
+    },
+    {
+      "policy": "code_holdmod_phase_period3_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 3,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.11044996311777723,
+      "sample_count": 20335
+    },
+    {
+      "policy": "code_hold_phase_period24_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 24,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10988903073750368,
+      "sample_count": 20366
+    },
+    {
+      "policy": "code_hold_phase_period2_threshold0.2",
+      "context": "code_hold_phase",
+      "period": 2,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10985086152806603,
+      "sample_count": 20719
+    },
+    {
+      "policy": "code_holdmod_phase_period2_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 2,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10985086152806603,
+      "sample_count": 20719
+    },
+    {
+      "policy": "code_holdmod_phase_period10_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 10,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10945466906230272,
+      "sample_count": 20593
+    },
+    {
+      "policy": "code_holdbucket_phase_period40_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 40,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10893869273568717,
+      "sample_count": 19231
+    },
+    {
+      "policy": "code_holdmod_phase_period5_threshold0.2",
+      "context": "code_holdmod_phase",
+      "period": 5,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10858294930875576,
+      "sample_count": 20832
+    },
+    {
+      "policy": "code_holdbucket_phase_period32_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 32,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10849618993312944,
+      "sample_count": 19291
+    },
+    {
+      "policy": "code_holdmod_phase_period40_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 40,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10799377613536905,
+      "sample_count": 20566
+    },
+    {
+      "policy": "code_hold_phase_period16_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 16,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10757771092966624,
+      "sample_count": 20943
+    },
+    {
+      "policy": "code_holdbucket_phase_period20_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 20,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10747227691988807,
+      "sample_count": 19298
+    },
+    {
+      "policy": "code_hold_phase_period20_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 20,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10746698679471789,
+      "sample_count": 20825
+    },
+    {
+      "policy": "code_holdbucket_phase_period24_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 24,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10735309304967469,
+      "sample_count": 19366
+    },
+    {
+      "policy": "code_hold_phase_period12_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 12,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.1071022188507491,
+      "sample_count": 21092
+    },
+    {
+      "policy": "code_holdbucket_phase_period10_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 10,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10690184049079754,
+      "sample_count": 19560
+    },
+    {
+      "policy": "code_holdmod_phase_period32_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 32,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10666985417164715,
+      "sample_count": 20915
+    },
+    {
+      "policy": "code_holdbucket_phase_period12_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 12,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10615581098339719,
+      "sample_count": 19575
+    },
+    {
+      "policy": "code_holdbucket_phase_period16_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 16,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.1058306505186775,
+      "sample_count": 19569
+    },
+    {
+      "policy": "code_holdbucket_phase_period5_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 5,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10574109575219454,
+      "sample_count": 19822
+    },
+    {
+      "policy": "code_holdbucket_phase_period2_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 2,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10547443424155753,
+      "sample_count": 19929
+    },
+    {
+      "policy": "code_holdmod_phase_period40_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 40,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.10537552782654078,
+      "sample_count": 21077
+    },
+    {
+      "policy": "global_hold_phase_period24_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 24,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.1051523165834068,
+      "sample_count": 20418
+    },
+    {
+      "policy": "code_holdmod_phase_period24_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 24,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10510496407269995,
+      "sample_count": 21293
+    },
+    {
+      "policy": "global_hold_phase_period16_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 16,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.1050009863878477,
+      "sample_count": 20276
+    },
+    {
+      "policy": "global_hold_phase_period12_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 12,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.1047923322683706,
+      "sample_count": 20345
+    },
+    {
+      "policy": "code_holdbucket_phase_period8_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 8,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10464240903387705,
+      "sample_count": 19925
+    },
+    {
+      "policy": "code_hold_phase_period10_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 10,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10457969407089052,
+      "sample_count": 21639
+    },
+    {
+      "policy": "global_hold_phase_period32_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 32,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10452876376988984,
+      "sample_count": 20425
+    },
+    {
+      "policy": "global_hold_phase_period10_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 10,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10452019084157198,
+      "sample_count": 20331
+    },
+    {
+      "policy": "global_hold_phase_period6_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 6,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10451574861186183,
+      "sample_count": 20351
+    },
+    {
+      "policy": "global_hold_phase_period5_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 5,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10449963117777232,
+      "sample_count": 20335
+    },
+    {
+      "policy": "code_holdbucket_phase_period3_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 3,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10449024293110315,
+      "sample_count": 20088
+    },
+    {
+      "policy": "global_hold_phase_period20_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 20,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10447688326905238,
+      "sample_count": 20483
+    },
+    {
+      "policy": "code_hold_phase_period6_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 6,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10445546849645325,
+      "sample_count": 21569
+    },
+    {
+      "policy": "code_holdbucket_phase_period4_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 4,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10442469037155414,
+      "sample_count": 20024
+    },
+    {
+      "policy": "code_hold_phase_period4_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 4,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10433179723502305,
+      "sample_count": 21700
+    },
+    {
+      "policy": "global_hold_phase_period8_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 8,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10423212882953653,
+      "sample_count": 20368
+    },
+    {
+      "policy": "code_holdbucket_phase_period6_threshold0.2",
+      "context": "code_holdbucket_phase",
+      "period": 6,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10419071518193225,
+      "sample_count": 19925
+    },
+    {
+      "policy": "global_hold_phase_period2_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 2,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10410958904109589,
+      "sample_count": 20440
+    },
+    {
+      "policy": "global_hold_phase_period3_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 3,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10410958904109589,
+      "sample_count": 20440
+    },
+    {
+      "policy": "global_hold_phase_period4_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 4,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10410958904109589,
+      "sample_count": 20440
+    },
+    {
+      "policy": "code_hold_phase_period8_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 8,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10407385293712396,
+      "sample_count": 21773
+    },
+    {
+      "policy": "code_hold_phase_period2_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 2,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10377358490566038,
+      "sample_count": 22048
+    },
+    {
+      "policy": "code_hold_phase_period5_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 5,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10369929493636114,
+      "sample_count": 21842
+    },
+    {
+      "policy": "code_holdmod_phase_period20_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 20,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10359672267740591,
+      "sample_count": 21603
+    },
+    {
+      "policy": "code_hold_phase_period3_threshold0.1",
+      "context": "code_hold_phase",
+      "period": 3,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10336516598453843,
+      "sample_count": 21990
+    },
+    {
+      "policy": "code_hold_phase_period40_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 40,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.10322550659973972,
+      "sample_count": 21516
+    },
+    {
+      "policy": "global_hold_phase_period40_threshold0.2",
+      "context": "global_hold_phase",
+      "period": 40,
+      "threshold": 0.2,
+      "keyboard_accuracy": 0.10302021403091557,
+      "sample_count": 21025
+    },
+    {
+      "policy": "code_holdmod_phase_period3_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 3,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10275304009764477,
+      "sample_count": 22121
+    },
+    {
+      "policy": "code_holdmod_phase_period32_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 32,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.10265828015242642,
+      "sample_count": 21781
+    },
+    {
+      "policy": "code_holdmod_phase_period16_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 16,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10264236902050114,
+      "sample_count": 21950
+    },
+    {
+      "policy": "code_holdmod_phase_period12_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 12,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10222181999185484,
+      "sample_count": 22099
+    },
+    {
+      "policy": "code_hold_phase_period32_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 32,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.101677959165113,
+      "sample_count": 21991
+    },
+    {
+      "policy": "code_holdmod_phase_period10_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 10,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.10045276988636363,
+      "sample_count": 22528
+    },
+    {
+      "policy": "code_holdmod_phase_period24_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 24,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.10000889758875345,
+      "sample_count": 22478
+    },
+    {
+      "policy": "code_holdmod_phase_period6_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 6,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09958891393714361,
+      "sample_count": 22623
+    },
+    {
+      "policy": "code_holdmod_phase_period5_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 5,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.0995735701411175,
+      "sample_count": 22747
+    },
+    {
+      "policy": "code_holdmod_phase_period8_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 8,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.0993641745231309,
+      "sample_count": 22805
+    },
+    {
+      "policy": "code_hold_phase_period24_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 24,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09908321579689704,
+      "sample_count": 22688
+    },
+    {
+      "policy": "code_holdmod_phase_period4_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 4,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09888190076869321,
+      "sample_count": 22896
+    },
+    {
+      "policy": "code_holdmod_phase_period2_threshold0.1",
+      "context": "code_holdmod_phase",
+      "period": 2,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09842553557601308,
+      "sample_count": 23246
+    },
+    {
+      "policy": "code_holdmod_phase_period20_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 20,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09801699716713881,
+      "sample_count": 22945
+    },
+    {
+      "policy": "code_holdmod_phase_period16_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 16,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09784116525056355,
+      "sample_count": 23068
+    },
+    {
+      "policy": "code_hold_phase_period16_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 16,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09695850158948363,
+      "sample_count": 23278
+    },
+    {
+      "policy": "code_holdbucket_phase_period40_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 40,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09680211173136008,
+      "sample_count": 23109
+    },
+    {
+      "policy": "code_holdbucket_phase_period12_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 12,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.0963000506842372,
+      "sample_count": 23676
+    },
+    {
+      "policy": "code_holdbucket_phase_period10_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 10,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09618217788441301,
+      "sample_count": 23757
+    },
+    {
+      "policy": "code_hold_phase_period20_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 20,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09617687307560725,
+      "sample_count": 23384
+    },
+    {
+      "policy": "code_holdbucket_phase_period2_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 2,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09607515657620042,
+      "sample_count": 23950
+    },
+    {
+      "policy": "code_holdbucket_phase_period20_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 20,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09595616345255288,
+      "sample_count": 23542
+    },
+    {
+      "policy": "code_holdbucket_phase_period3_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 3,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09584918279479998,
+      "sample_count": 23923
+    },
+    {
+      "policy": "code_holdbucket_phase_period5_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 5,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09569896958825247,
+      "sample_count": 23971
+    },
+    {
+      "policy": "code_holdbucket_phase_period24_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 24,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09565772669220945,
+      "sample_count": 23490
+    },
+    {
+      "policy": "code_holdbucket_phase_period16_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 16,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09560164567162913,
+      "sample_count": 23577
+    },
+    {
+      "policy": "code_holdmod_phase_period12_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 12,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09559631476629195,
+      "sample_count": 23662
+    },
+    {
+      "policy": "code_holdbucket_phase_period4_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 4,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09550210513151862,
+      "sample_count": 23989
+    },
+    {
+      "policy": "code_holdbucket_phase_period8_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 8,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09549812421842434,
+      "sample_count": 23990
+    },
+    {
+      "policy": "code_holdbucket_phase_period32_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 32,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09537486800422386,
+      "sample_count": 23675
+    },
+    {
+      "policy": "code_holdbucket_phase_period6_threshold0.1",
+      "context": "code_holdbucket_phase",
+      "period": 6,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.09522219904026706,
+      "sample_count": 23965
+    },
+    {
+      "policy": "code_hold_phase_period12_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 12,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.0947553619302949,
+      "sample_count": 23872
+    },
+    {
+      "policy": "code_holdmod_phase_period10_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 10,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09450978762312456,
+      "sample_count": 24061
+    },
+    {
+      "policy": "code_hold_phase_period10_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 10,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.093238755176514,
+      "sample_count": 24389
+    },
+    {
+      "policy": "code_holdmod_phase_period8_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 8,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09285948247625286,
+      "sample_count": 24424
+    },
+    {
+      "policy": "code_holdmod_phase_period5_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 5,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09281216779785754,
+      "sample_count": 24458
+    },
+    {
+      "policy": "code_holdmod_phase_period2_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 2,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09256792216705018,
+      "sample_count": 24771
+    },
+    {
+      "policy": "code_hold_phase_period2_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 2,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09249697458652682,
+      "sample_count": 24790
+    },
+    {
+      "policy": "code_holdmod_phase_period6_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 6,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09219829337667615,
+      "sample_count": 24610
+    },
+    {
+      "policy": "code_hold_phase_period8_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 8,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09216140436425697,
+      "sample_count": 24609
+    },
+    {
+      "policy": "code_hold_phase_period5_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 5,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09164311667339524,
+      "sample_count": 24770
+    },
+    {
+      "policy": "code_hold_phase_period6_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 6,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09159165220199411,
+      "sample_count": 24773
+    },
+    {
+      "policy": "code_holdmod_phase_period3_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 3,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09157228648583289,
+      "sample_count": 24811
+    },
+    {
+      "policy": "code_hold_phase_period3_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 3,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09133668341708542,
+      "sample_count": 24875
+    },
+    {
+      "policy": "code_holdmod_phase_period4_threshold0.05",
+      "context": "code_holdmod_phase",
+      "period": 4,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09131905298759865,
+      "sample_count": 24836
+    },
+    {
+      "policy": "code_hold_phase_period4_threshold0.05",
+      "context": "code_hold_phase",
+      "period": 4,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.09124924562462282,
+      "sample_count": 24855
+    },
+    {
+      "policy": "global_hold_phase_period6_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 6,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.08954998489882211,
+      "sample_count": 26488
+    },
+    {
+      "policy": "global_hold_phase_period5_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 5,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.08951725702188788,
+      "sample_count": 26453
+    },
+    {
+      "policy": "global_hold_phase_period24_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 24,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.08941585167843523,
+      "sample_count": 26483
+    },
+    {
+      "policy": "global_hold_phase_period3_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 3,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.08940759455484747,
+      "sample_count": 26519
+    },
+    {
+      "policy": "global_hold_phase_period12_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 12,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.08937809160593588,
+      "sample_count": 26483
+    },
+    {
+      "policy": "global_hold_phase_period16_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 16,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.08921989016775747,
+      "sample_count": 26586
+    },
+    {
+      "policy": "global_hold_phase_period8_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 8,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.0891969263221335,
+      "sample_count": 26548
+    },
+    {
+      "policy": "global_hold_phase_period2_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 2,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.08917221407348903,
+      "sample_count": 26589
+    },
+    {
+      "policy": "global_hold_phase_period4_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 4,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.08917221407348903,
+      "sample_count": 26589
+    },
+    {
+      "policy": "global_hold_phase_period10_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 10,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.08915617365156925,
+      "sample_count": 26605
+    },
+    {
+      "policy": "code_holdbucket_phase_period40_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 40,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08823643636646084,
+      "sample_count": 25749
+    },
+    {
+      "policy": "global_hold_phase_period40_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 40,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.08801965089880531,
+      "sample_count": 26869
+    },
+    {
+      "policy": "global_hold_phase_period20_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 20,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.0876426137205512,
+      "sample_count": 26996
+    },
+    {
+      "policy": "global_hold_phase_period32_threshold0.1",
+      "context": "global_hold_phase",
+      "period": 32,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.0868770338952064,
+      "sample_count": 27349
+    },
+    {
+      "policy": "code_holdbucket_phase_period2_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 2,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08653015216982904,
+      "sample_count": 26615
+    },
+    {
+      "policy": "code_holdbucket_phase_period3_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 3,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08640999586014828,
+      "sample_count": 26571
+    },
+    {
+      "policy": "code_holdbucket_phase_period4_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 4,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08636860145391541,
+      "sample_count": 26549
+    },
+    {
+      "policy": "code_holdbucket_phase_period20_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 20,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08587634713556438,
+      "sample_count": 26445
+    },
+    {
+      "policy": "code_holdbucket_phase_period5_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 5,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08575689783743475,
+      "sample_count": 26820
+    },
+    {
+      "policy": "code_holdbucket_phase_period24_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 24,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08548234849915046,
+      "sample_count": 26485
+    },
+    {
+      "policy": "code_holdbucket_phase_period10_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 10,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08546403279910549,
+      "sample_count": 26830
+    },
+    {
+      "policy": "code_holdbucket_phase_period8_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 8,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08542937937193035,
+      "sample_count": 26876
+    },
+    {
+      "policy": "code_holdbucket_phase_period6_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 6,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08536357870387642,
+      "sample_count": 26803
+    },
+    {
+      "policy": "code_holdbucket_phase_period32_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 32,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08499887716146418,
+      "sample_count": 26718
+    },
+    {
+      "policy": "code_holdbucket_phase_period12_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 12,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08491196790728772,
+      "sample_count": 26922
+    },
+    {
+      "policy": "code_holdbucket_phase_period16_threshold0.05",
+      "context": "code_holdbucket_phase",
+      "period": 16,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.08488666865493588,
+      "sample_count": 26824
+    },
+    {
+      "policy": "global_hold_phase_period40_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 40,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.07833448627993543,
+      "sample_count": 30357
+    },
+    {
+      "policy": "global_hold_phase_period10_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 10,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.07748270912175388,
+      "sample_count": 30652
+    },
+    {
+      "policy": "global_hold_phase_period12_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 12,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.07730868135802871,
+      "sample_count": 30721
+    },
+    {
+      "policy": "global_hold_phase_period20_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 20,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.07715326567785584,
+      "sample_count": 30744
+    },
+    {
+      "policy": "global_hold_phase_period24_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 24,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.07696296056255873,
+      "sample_count": 30859
+    },
+    {
+      "policy": "global_hold_phase_period16_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 16,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.07627826310380267,
+      "sample_count": 31136
+    },
+    {
+      "policy": "global_hold_phase_period32_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 32,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.07624039358178719,
+      "sample_count": 31099
+    },
+    {
+      "policy": "global_hold_phase_period8_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 8,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.07605110634346281,
+      "sample_count": 31229
+    },
+    {
+      "policy": "global_hold_phase_period3_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 3,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.0758301404853129,
+      "sample_count": 31320
+    },
+    {
+      "policy": "global_hold_phase_period6_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 6,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.0757450067002744,
+      "sample_count": 31342
+    },
+    {
+      "policy": "global_hold_phase_period5_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 5,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.07573534103234862,
+      "sample_count": 31346
+    },
+    {
+      "policy": "global_hold_phase_period4_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 4,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.07554311523903431,
+      "sample_count": 31439
+    },
+    {
+      "policy": "global_hold_phase_period2_threshold0.05",
+      "context": "global_hold_phase",
+      "period": 2,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.07546870034953924,
+      "sample_count": 31470
+    },
+    {
+      "policy": "code_phase_period8_threshold0.1",
+      "context": "code_phase",
+      "period": 8,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.05589392803598201,
+      "sample_count": 42688
+    },
+    {
+      "policy": "code_phase_period2_threshold0.1",
+      "context": "code_phase",
+      "period": 2,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.055889253871421865,
+      "sample_count": 42620
+    },
+    {
+      "policy": "code_phase_period3_threshold0.1",
+      "context": "code_phase",
+      "period": 3,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.05588808299884985,
+      "sample_count": 42603
+    },
+    {
+      "policy": "code_phase_period4_threshold0.1",
+      "context": "code_phase",
+      "period": 4,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.055873656544797486,
+      "sample_count": 42614
+    },
+    {
+      "policy": "code_phase_period10_threshold0.1",
+      "context": "code_phase",
+      "period": 10,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.05584412532023409,
+      "sample_count": 42547
+    },
+    {
+      "policy": "code_phase_period40_threshold0.1",
+      "context": "code_phase",
+      "period": 40,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.055761459553812676,
+      "sample_count": 41821
+    },
+    {
+      "policy": "code_phase_period6_threshold0.1",
+      "context": "code_phase",
+      "period": 6,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.05575990441159244,
+      "sample_count": 42683
+    },
+    {
+      "policy": "code_phase_period5_threshold0.1",
+      "context": "code_phase",
+      "period": 5,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.055736552209070665,
+      "sample_count": 42665
+    },
+    {
+      "policy": "code_phase_period12_threshold0.1",
+      "context": "code_phase",
+      "period": 12,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.05573259684158346,
+      "sample_count": 42363
+    },
+    {
+      "policy": "code_phase_period6_threshold0.05",
+      "context": "code_phase",
+      "period": 6,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.05560738943832805,
+      "sample_count": 42872
+    },
+    {
+      "policy": "code_phase_period5_threshold0.05",
+      "context": "code_phase",
+      "period": 5,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.05558923658070233,
+      "sample_count": 42886
+    },
+    {
+      "policy": "code_phase_period12_threshold0.05",
+      "context": "code_phase",
+      "period": 12,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.05558689418511729,
+      "sample_count": 42546
+    },
+    {
+      "policy": "code_phase_period3_threshold0.05",
+      "context": "code_phase",
+      "period": 3,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.055580164595621664,
+      "sample_count": 42893
+    },
+    {
+      "policy": "code_phase_period8_threshold0.05",
+      "context": "code_phase",
+      "period": 8,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.05557758238682744,
+      "sample_count": 42877
+    },
+    {
+      "policy": "code_phase_period4_threshold0.05",
+      "context": "code_phase",
+      "period": 4,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.055567209752231776,
+      "sample_count": 42903
+    },
+    {
+      "policy": "code_phase_period2_threshold0.05",
+      "context": "code_phase",
+      "period": 2,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.055563324476763154,
+      "sample_count": 42906
+    },
+    {
+      "policy": "code_phase_period10_threshold0.05",
+      "context": "code_phase",
+      "period": 10,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.05551272166538165,
+      "sample_count": 42801
+    },
+    {
+      "policy": "code_phase_period24_threshold0.1",
+      "context": "code_phase",
+      "period": 24,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.055417838585117035,
+      "sample_count": 41954
+    },
+    {
+      "policy": "code_phase_period20_threshold0.1",
+      "context": "code_phase",
+      "period": 20,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.05541387611125676,
+      "sample_count": 41957
+    },
+    {
+      "policy": "code_phase_period16_threshold0.1",
+      "context": "code_phase",
+      "period": 16,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.055393100824953044,
+      "sample_count": 42063
+    },
+    {
+      "policy": "code_phase_period40_threshold0.05",
+      "context": "code_phase",
+      "period": 40,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.055355739227782676,
+      "sample_count": 41983
+    },
+    {
+      "policy": "code_phase_period16_threshold0.05",
+      "context": "code_phase",
+      "period": 16,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.055306640115686416,
+      "sample_count": 42183
+    },
+    {
+      "policy": "code_phase_period24_threshold0.05",
+      "context": "code_phase",
+      "period": 24,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.05520583414495095,
+      "sample_count": 42097
+    },
+    {
+      "policy": "code_phase_period32_threshold0.1",
+      "context": "code_phase",
+      "period": 32,
+      "threshold": 0.1,
+      "keyboard_accuracy": 0.05520185039463958,
+      "sample_count": 41937
+    },
+    {
+      "policy": "code_phase_period32_threshold0.05",
+      "context": "code_phase",
+      "period": 32,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.055164542514742246,
+      "sample_count": 42056
+    },
+    {
+      "policy": "code_phase_period20_threshold0.05",
+      "context": "code_phase",
+      "period": 20,
+      "threshold": 0.05,
+      "keyboard_accuracy": 0.05506330617383662,
+      "sample_count": 42097
+    }
+  ],
+  "context_counts": {
+    "code_phase_period2": 72,
+    "code_phase_period3": 100,
+    "code_phase_period4": 125,
+    "code_phase_period5": 149,
+    "code_phase_period6": 169,
+    "code_phase_period8": 211,
+    "code_phase_period10": 251,
+    "code_phase_period12": 288,
+    "code_phase_period16": 367,
+    "code_phase_period20": 445,
+    "code_phase_period24": 525,
+    "code_phase_period32": 676,
+    "code_phase_period40": 808,
+    "code_hold_phase_period2": 2842,
+    "code_hold_phase_period3": 3647,
+    "code_hold_phase_period4": 4433,
+    "code_hold_phase_period5": 5072,
+    "code_hold_phase_period6": 5497,
+    "code_hold_phase_period8": 6284,
+    "code_hold_phase_period10": 6806,
+    "code_hold_phase_period12": 7377,
+    "code_hold_phase_period16": 8270,
+    "code_hold_phase_period20": 8848,
+    "code_hold_phase_period24": 9477,
+    "code_hold_phase_period32": 10467,
+    "code_hold_phase_period40": 11297,
+    "code_holdbucket_phase_period2": 997,
+    "code_holdbucket_phase_period3": 1401,
+    "code_holdbucket_phase_period4": 1743,
+    "code_holdbucket_phase_period5": 2052,
+    "code_holdbucket_phase_period6": 2354,
+    "code_holdbucket_phase_period8": 2903,
+    "code_holdbucket_phase_period10": 3357,
+    "code_holdbucket_phase_period12": 3779,
+    "code_holdbucket_phase_period16": 4559,
+    "code_holdbucket_phase_period20": 5245,
+    "code_holdbucket_phase_period24": 5733,
+    "code_holdbucket_phase_period32": 6571,
+    "code_holdbucket_phase_period40": 7171,
+    "code_holdmod_phase_period2": 3160,
+    "code_holdmod_phase_period3": 4017,
+    "code_holdmod_phase_period4": 4813,
+    "code_holdmod_phase_period5": 5412,
+    "code_holdmod_phase_period6": 5918,
+    "code_holdmod_phase_period8": 6675,
+    "code_holdmod_phase_period10": 7037,
+    "code_holdmod_phase_period12": 7706,
+    "code_holdmod_phase_period16": 8693,
+    "code_holdmod_phase_period20": 9108,
+    "code_holdmod_phase_period24": 9961,
+    "code_holdmod_phase_period32": 10993,
+    "code_holdmod_phase_period40": 11680,
+    "global_hold_phase_period2": 130,
+    "global_hold_phase_period3": 195,
+    "global_hold_phase_period4": 260,
+    "global_hold_phase_period5": 325,
+    "global_hold_phase_period6": 390,
+    "global_hold_phase_period8": 520,
+    "global_hold_phase_period10": 650,
+    "global_hold_phase_period12": 780,
+    "global_hold_phase_period16": 1040,
+    "global_hold_phase_period20": 1300,
+    "global_hold_phase_period24": 1560,
+    "global_hold_phase_period32": 2014,
+    "global_hold_phase_period40": 2438
+  },
+  "claim_boundary": "CPU prefix diagnostic only. It adds phase-aware held-key press heuristics to an existing aligned base stream; it is not trained-model or G005 completion evidence."
+}

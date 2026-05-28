@@ -877,3 +877,27 @@ Decision: do not promote this repeat-key table path to a GPU run. The next G005
 candidate must use a learned sequence/teacher signal for key repeats/taps (or a
 released-GIDM distillation target) while retaining strict alignment checks for
 any base-stream composition.
+
+### 2026-05-28 KST — phase-aware repeat-key heuristic rejected
+
+Tested whether keyboard-repeat failures are recoverable from causal bin phase
+features before launching a learned repeat-key GPU run. The diagnostic trains
+press probabilities from train-prefix held-key code, hold duration, and
+`sequence_id`/timestamp phase, then adds predicted held-key press tokens to the
+aligned `event_state_duration_context` base stream.
+
+Evidence:
+
+- `src/fdm_d2e/eval/key_phase_repeat_diagnostic.py`
+- `scripts/build_g005_key_phase_repeat_diagnostic.py`
+- `tests/test_key_phase_repeat_diagnostic.py`
+- `artifacts/idm/g005_idm_key_phase_repeat_diagnostic_prefix50k.json`
+
+Result: reject handcrafted phase features. On a 50k aligned prefix, alignment has
+zero sequence mismatches. Base keyboard is `0.155047`; the best phase policy
+(`code_holdbucket_phase_period6_threshold0.65`) reaches only `0.155303`, a
++`0.000256` absolute improvement and nowhere near the paper target. This is too
+small to justify an H200 run.
+
+Decision: learned/teacher-assisted key-repeat supervision remains the next
+viable direction; handcrafted hold-age/phase tables are exhausted.
