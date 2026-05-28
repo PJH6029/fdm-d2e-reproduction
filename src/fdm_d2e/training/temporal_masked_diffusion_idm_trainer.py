@@ -49,15 +49,17 @@ def _iter_jsonl(paths: Sequence[Path], *, max_rows: int | None = None) -> Iterat
                 yield row
 
 
-def _target_slots(row: dict[str, Any], *, max_slots: int) -> list[str]:
+def _target_slots(row: dict[str, Any], *, max_slots: int, preserve_pad_slots: bool = False) -> list[str]:
     record = canonical_action_slot_record(row, max_slots=max_slots)
+    if preserve_pad_slots:
+        return list(record.padded_tokens)
     return [FDM1_ACTION_NOOP if token.startswith("<FDM1_ACTION_PAD") else token for token in record.padded_tokens]
 
 
-def _build_vocab(rows: Sequence[dict[str, Any]], *, max_slots: int, min_count: int = 1) -> list[str]:
+def _build_vocab(rows: Sequence[dict[str, Any]], *, max_slots: int, min_count: int = 1, preserve_pad_slots: bool = False) -> list[str]:
     counts: dict[str, int] = {}
     for row in rows:
-        for token in _target_slots(row, max_slots=max_slots):
+        for token in _target_slots(row, max_slots=max_slots, preserve_pad_slots=preserve_pad_slots):
             counts[token] = counts.get(token, 0) + 1
     counts.setdefault(FDM1_ACTION_NOOP, 1)
     vocab = ["<FDM1_ACTION_PAD>", FDM1_ACTION_MASK]
@@ -83,9 +85,12 @@ def _precompute_features(rows: Sequence[dict[str, Any]], *, config: dict[str, An
     return [video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim) for row in rows]
 
 
-def _precompute_target_ids(rows: Sequence[dict[str, Any]], *, max_slots: int, token_to_index: dict[str, int]) -> list[list[int]]:
+def _precompute_target_ids(rows: Sequence[dict[str, Any]], *, max_slots: int, token_to_index: dict[str, int], preserve_pad_slots: bool = False) -> list[list[int]]:
     noop = token_to_index[FDM1_ACTION_NOOP]
-    return [[token_to_index.get(token, noop) for token in _target_slots(row, max_slots=max_slots)] for row in rows]
+    return [
+        [token_to_index.get(token, noop) for token in _target_slots(row, max_slots=max_slots, preserve_pad_slots=preserve_pad_slots)]
+        for row in rows
+    ]
 
 
 class _TemporalMaskedDiffusionDataset:
@@ -501,7 +506,7 @@ def _temporal_center_candidates(
 def _retrieval_tokens(row: dict[str, Any], *, max_slots: int) -> list[str]:
     tokens: list[str] = []
     seen: set[str] = set()
-    for token in _target_slots(row, max_slots=max_slots):
+    for token in _target_slots(row, max_slots=max_slots, preserve_pad_slots=True):
         token = str(token)
         if not _is_predictable_action_token(token) or token in seen:
             continue
@@ -958,12 +963,13 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     offsets = _temporal_offsets(config)
     max_slots = int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))
     feature_dim = int(config.get("video_feature_dim", 64))
-    vocab = _build_vocab(train_rows, max_slots=max_slots, min_count=int(config.get("vocab_min_count", 1)))
+    preserve_pad_slots = bool(config.get("preserve_pad_action_slots", config.get("pad_action_slots_as_pad", False)))
+    vocab = _build_vocab(train_rows, max_slots=max_slots, min_count=int(config.get("vocab_min_count", 1)), preserve_pad_slots=preserve_pad_slots)
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
     fit_features = _precompute_features(fit_rows, config=config)
     calibration_features = _precompute_features(calibration_rows, config=config) if calibration_rows else []
     target_features = _precompute_features(target_rows, config=config)
-    fit_target_ids = _precompute_target_ids(fit_rows, max_slots=max_slots, token_to_index=token_to_index)
+    fit_target_ids = _precompute_target_ids(fit_rows, max_slots=max_slots, token_to_index=token_to_index, preserve_pad_slots=preserve_pad_slots)
     dataset = _TemporalMaskedDiffusionDataset(features=fit_features, target_ids=fit_target_ids, config={**config, "max_slots": max_slots}, vocab=vocab)
     loader = torch.utils.data.DataLoader(dataset, batch_size=int(config.get("batch_size", 64)), shuffle=True)
     device = torch.device("cuda" if torch.cuda.is_available() and not config.get("force_cpu") else "cpu")
@@ -1128,6 +1134,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "target_rows":len(target_rows),
         "vocab_size":len(vocab),
         "max_slots":max_slots,
+        "preserve_pad_action_slots":preserve_pad_slots,
         "temporal_offsets":offsets,
         "temporal_window":len(offsets),
         "video_encoder_arch":str(config.get("video_encoder_arch", "flat_mlp")),
@@ -1139,6 +1146,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "loss_weights":{
             "noop_loss_weight":float(config.get("noop_loss_weight", 1.0)),
             "pad_loss_weight":float(config.get("pad_loss_weight", 0.0)),
+            "preserve_pad_action_slots":preserve_pad_slots,
             "action_loss_weight":float(config.get("action_loss_weight", 1.0)),
             "keyboard_loss_weight":float(config.get("keyboard_loss_weight", config.get("action_loss_weight", 1.0))),
             "mouse_button_loss_weight":float(config.get("mouse_button_loss_weight", config.get("action_loss_weight", 1.0))),

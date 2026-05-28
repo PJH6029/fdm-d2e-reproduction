@@ -25,6 +25,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _calibrate_temporal_family_non_noop_budget,
     _calibrate_temporal_non_noop_budget,
     _temporal_center_candidates,
+    _target_slots,
     _tokens_from_family_budget_candidates,
     train_temporal_masked_diffusion_idm,
 )
@@ -331,6 +332,16 @@ def test_temporal_retrieval_prior_biases_action_token_candidates():
     )
     assert candidates[0][0]["token"] == "MOUSE_LEFT_DOWN"
     assert candidates[0][0]["retrieval_score"] == 0.95
+
+
+def test_temporal_target_slots_can_preserve_padding_for_sparse_action_sequences():
+    row = {"ground_truth_tokens": ["KEY_PRESS_A"], "frame": {"width": 854, "height": 480}}
+
+    legacy_slots = _target_slots(row, max_slots=4)
+    pad_aware_slots = _target_slots(row, max_slots=4, preserve_pad_slots=True)
+
+    assert legacy_slots == ["KEY_PRESS_A", "NOOP", "NOOP", "NOOP"]
+    assert pad_aware_slots == ["KEY_PRESS_A", "<FDM1_ACTION_PAD>", "<FDM1_ACTION_PAD>", "<FDM1_ACTION_PAD>"]
 
 
 def test_button_class_prior_offsets_boost_rare_transition_tokens_without_target_labels():
