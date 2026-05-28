@@ -21,6 +21,7 @@ from fdm_d2e.training.masked_diffusion_idm_trainer import (
     train_masked_diffusion_idm,
     video_feature_vector,
 )
+from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import train_temporal_masked_diffusion_idm
 
 
 def _row(idx: int, *, split: str) -> dict:
@@ -554,3 +555,79 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
     assert summary["factorization"]["button_event_budget_rank_all_scores"] is True
     assert Path(summary["checkpoint_path"]).exists()
     assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 3
+
+
+def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
+    if not torch_available():
+        return
+    train_path = tmp_path / "train_temporal.jsonl"
+    target_path = tmp_path / "target_temporal.jsonl"
+    train_rows = []
+    for i in range(10):
+        row = _row(i, split="train_core")
+        row["compact_luma_window"] = [[float(i + frame + pix) / 20.0 for pix in range(4)] for frame in range(2)]
+        row["compact_luma_window_mask"] = [1.0, 1.0]
+        if i in {2, 4, 6}:
+            row["ground_truth_tokens"] = ["KEY_PRESS_A", "MOUSE_LEFT_DOWN", "MOUSE_DX_P1", "MOUSE_DY_Z0"]
+        train_rows.append(row)
+    target_rows = []
+    for i in range(10, 14):
+        row = _row(i, split="eval")
+        row["compact_luma_window"] = [[float(i + frame + pix) / 20.0 for pix in range(4)] for frame in range(2)]
+        row["compact_luma_window_mask"] = [1.0, 1.0]
+        target_rows.append(row)
+    _write_jsonl(train_path, train_rows)
+    _write_jsonl(target_path, target_rows)
+    summary = train_temporal_masked_diffusion_idm(
+        {
+            "model_name": "unit_temporal_masked_diffusion_idm",
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(tmp_path / "out_temporal"),
+            "summary_out": str(tmp_path / "summary_temporal.json"),
+            "max_train_rows": 10,
+            "max_target_rows": 4,
+            "max_action_tokens_per_bin": 4,
+            "temporal_offsets": [-1, 0, 1],
+            "temporal_loss_offsets": [-1, 0, 1],
+            "video_feature_paths": ["compact_luma_window", "compact_luma_window_mask", "frame.features"],
+            "video_feature_dim": 12,
+            "video_encoder_arch": "compact_luma_window_cnn",
+            "luma_window_frames": 2,
+            "luma_window_size": 2,
+            "luma_encoder_channels": 4,
+            "luma_encoder_pool_hw": 1,
+            "luma_aux_hidden_dim": 4,
+            "hidden_dim": 24,
+            "transformer_layers": 1,
+            "transformer_heads": 4,
+            "dropout": 0.0,
+            "batch_size": 2,
+            "prediction_batch_size": 2,
+            "epochs": 1,
+            "lr": 0.001,
+            "mask_probability": 0.75,
+            "random_token_probability": 0.0,
+            "diffusion_steps": 4,
+            "video_encoder_pretrain_epochs": 1,
+            "video_encoder_pretrain_lr": 0.001,
+            "video_encoder_pretrain_mask_probability": 0.5,
+            "video_reconstruction_aux_weight": 0.05,
+            "force_cpu": True,
+            "noop_loss_weight": 0.1,
+            "keyboard_loss_weight": 2.0,
+            "mouse_button_loss_weight": 3.0,
+        }
+    )
+    assert summary["schema"] == "temporal_masked_diffusion_idm_train_summary.v1"
+    assert summary["status"] == "pass"
+    assert summary["temporal_offsets"] == [-1, 0, 1]
+    assert summary["temporal_window"] == 3
+    assert summary["vocab_size"] >= 4
+    assert summary["video_encoder_pretrain_history"]
+    assert summary["loss_weights"]["keyboard_loss_weight"] == 2.0
+    assert summary["loss_weights"]["mouse_button_loss_weight"] == 3.0
+    assert "temporal action-token sequences" in summary["recipe_alignment"]
+    assert Path(summary["checkpoint_path"]).exists()
+    assert Path(summary["predictions_path"]).exists()
+    assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 4
