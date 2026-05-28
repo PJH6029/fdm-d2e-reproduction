@@ -518,13 +518,13 @@ def _compact_luma_frame(
         if missing_frame_policy == "zero":
             return bytes(int(image_size) * int(image_size)), True
         raise ValueError(f"expected square compact luma field, got {len(values)} values")
-    image_size = int(image_size)
-    out = bytearray(image_size * image_size)
-    for y in range(image_size):
-        src_y = min(side - 1, y * side // image_size)
-        for x in range(image_size):
-            src_x = min(side - 1, x * side // image_size)
-            out[y * image_size + x] = _float_to_byte(values[src_y * side + src_x])
+    # Keep the native compact-luma side here and let the tensor preprocessor do
+    # the resize in one vectorized interpolate call.  Expanding 16x16 luma to
+    # 224x224 with Python loops costs ~50k iterations per frame and dominated
+    # the DINO materialization gates.
+    out = bytearray(side * side)
+    for idx, value in enumerate(values):
+        out[idx] = _float_to_byte(value)
     return bytes(out), False
 
 

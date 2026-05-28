@@ -261,6 +261,48 @@ def test_gray_byte_frames_to_imagenet_tensor_rejects_non_square_frames() -> None
         _gray_byte_frames_to_imagenet_tensor(torch, [bytes([1, 2, 3])], image_size=2)
 
 
+def test_compact_luma_materializer_keeps_native_luma_size_before_tensor_resize(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    torch = pytest.importorskip("torch")
+    observed_lengths: list[int] = []
+
+    class RecordingTensorEmbedder:
+        backend = "recording-tensor"
+        embedding_dim = 2
+
+        def embed_frames_tensor(self, frames):
+            observed_lengths.extend(len(frame) for frame in frames)
+            return torch.ones((len(frames), 2), dtype=torch.float32)
+
+        def embed_frames(self, frames):  # pragma: no cover - cache path should use tensor API.
+            raise AssertionError("unexpected list embedding path")
+
+    monkeypatch.setattr(fem, "_build_embedder", lambda _config: RecordingTensorEmbedder())
+    row = _row(Path("/root/work/data/missing.mkv#frame=0"), 0.2, idx=0)
+    input_path = tmp_path / "input.jsonl"
+    input_path.write_text(json.dumps(row, sort_keys=True) + "\n")
+
+    summary = materialize_frame_embedding_features(
+        FrameEmbeddingMaterializerConfig(
+            input_path=input_path,
+            output_path=tmp_path / "thin.jsonl",
+            summary_out=tmp_path / "summary.json",
+            backend="recording-tensor",
+            frame_source="compact-luma",
+            frame_offsets=(0, 2),
+            image_size=224,
+            include_summary_features=False,
+            feature_cache_out=tmp_path / "features.pt",
+            thin_output=True,
+        )
+    )
+
+    assert summary["status"] == "pass"
+    assert observed_lengths == [16 * 16, 16 * 16]
+
+
 def test_materializer_can_write_external_feature_cache_refs_with_thin_rows(tmp_path: Path) -> None:
     pytest.importorskip("torch")
     rows = [_row(Path(f"/root/work/data/missing_{idx}.mkv#frame={idx}"), 0.2 + idx, idx=idx) for idx in range(3)]
