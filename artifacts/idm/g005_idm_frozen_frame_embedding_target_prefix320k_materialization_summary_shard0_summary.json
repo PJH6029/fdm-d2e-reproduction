@@ -1,0 +1,66 @@
+{
+  "schema": "g005_frozen_frame_embedding_materializer.v1",
+  "status": "pass",
+  "error_count": 0,
+  "errors": [],
+  "source_label": "g005_frozen_frame_embedding_target_prefix320k_shard0",
+  "input": {
+    "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/outputs/data/d2e_event_state_duration_hierarchical_prefix320k/target_all_eval.jsonl",
+    "bytes": 6746586673,
+    "mtime_ns": 1779934259000000000,
+    "sha256": "1134e4ffbaf1bdb1c0dd40e5120d510082f667ee911e77857c18f4361796feba"
+  },
+  "output": {
+    "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/outputs/data/d2e_frozen_frame_embedding_prefix320k/target_all_eval_shards/shard_0000.jsonl",
+    "bytes": 235464977,
+    "mtime_ns": 1779935527000000000,
+    "sha256": "b3522129a544b28b70d626a7e099f81698ad59637fabbdebaa792f7910d16ef6"
+  },
+  "rows_seen": 160000,
+  "source_rows_scanned": 160000,
+  "source_rows_skipped": 0,
+  "rows_written": 160000,
+  "feature_override_rows": 0,
+  "feature_cache_ref_rows": 160000,
+  "feature_output_mode": "external_feature_cache",
+  "feature_cache": {
+    "path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/outputs/data/d2e_frozen_frame_embedding_prefix320k/feature_cache/target_all_eval/shard_0000_features.pt",
+    "bytes": 1356802578,
+    "mtime_ns": 1779935529000000000,
+    "sha256": "ad0f23f8ad451adf05d225bdd033cfa4746b7db80868fa42d63ee54403ef8a27"
+  },
+  "thin_output": true,
+  "feature_dim": 2120,
+  "unique_feature_lengths": [
+    2120
+  ],
+  "embedding_dim_per_frame": 384,
+  "backend": "dinov2-torchhub",
+  "model_id": "facebook/dinov2-small",
+  "frame_offsets": [
+    0,
+    2
+  ],
+  "frame_source": "compact-luma",
+  "image_size": 224,
+  "frame_fps": 20,
+  "missing_frame_policy": "zero",
+  "path_remaps": [],
+  "missing_frames": 0,
+  "video_restarts": 0,
+  "batch_size": 2048,
+  "embedding_pooling": "cls",
+  "hf_preprocess": null,
+  "normalize_embeddings": true,
+  "include_embedding_deltas": true,
+  "include_summary_features": true,
+  "summary_feature_mode": "summary_compact_luma16_pair_shift_time_state_duration_prior_action",
+  "max_rows": 160000,
+  "skip_rows": 0,
+  "round_digits": 6,
+  "dataset_fingerprint": "7589d846cc31bcdbfa5cee48cac3d94875974e375ee4bc4a8eb8cfc1201b60dd",
+  "started_at_unix": 1779934994.5533159,
+  "finished_at_unix": 1779935535.5548592,
+  "elapsed_seconds": 541.0015439987183,
+  "claim_boundary": "Frozen frame-embedding materialization is a prefix-gated G005 diagnostic/preparation artifact. It is not trained-model evidence until a downstream IDM run beats the paper-target metrics."
+}

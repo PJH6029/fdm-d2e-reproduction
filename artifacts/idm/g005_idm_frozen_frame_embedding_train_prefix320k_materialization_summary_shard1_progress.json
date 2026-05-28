@@ -1,0 +1,25 @@
+{
+  "schema": "g005_frozen_frame_embedding_materializer_progress.v1",
+  "status": "pass",
+  "input_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/outputs/data/d2e_event_state_duration_hierarchical_prefix320k/train_core.jsonl",
+  "output_path": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/outputs/data/d2e_frozen_frame_embedding_prefix320k/train_core_shards/shard_0001.jsonl",
+  "backend": "dinov2-torchhub",
+  "model_id": "facebook/dinov2-small",
+  "frame_offsets": [
+    0,
+    2
+  ],
+  "frame_source": "compact-luma",
+  "path_remaps": [],
+  "skip_rows": 160000,
+  "max_rows": 160000,
+  "source_label": "g005_frozen_frame_embedding_train_prefix320k_shard1",
+  "feature_cache_out": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/outputs/data/d2e_frozen_frame_embedding_prefix320k/feature_cache/train_core/shard_0001_features.pt",
+  "thin_output": true,
+  "rows_seen": 160000,
+  "source_rows_scanned": 320000,
+  "source_rows_skipped": 160000,
+  "rows_written": 160000,
+  "feature_override_rows": 0,
+  "feature_cache_ref_rows": 160000
+}

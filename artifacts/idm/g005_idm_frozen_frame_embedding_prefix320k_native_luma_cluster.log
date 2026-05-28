@@ -1,0 +1,149 @@
+started_at=2026-05-28T02:03:41+00:00
+head=2728ec2
+source_root="/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64"
+reservation_id=rsv-jeonghunpark-20260528-ed08d8 reservation_end_kst=2026-05-28T13:00:00+09:00
+Traceback (most recent call last):
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/scripts/materialize_chronological_prefix.py", line 146, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/scripts/materialize_chronological_prefix.py", line 97, in main
+    raise FileNotFoundError(args.input)
+FileNotFoundError: "/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64"/shard_*/train_core.jsonl
+started_at=2026-05-28T02:04:21+00:00
+head=2728ec2
+source_root=/root/work/code/continuous-gui-poc/fdm-d2e-reproduction/outputs/data/d2e_event_state_duration_context_shards_accel64
+reservation_id=rsv-jeonghunpark-20260528-ed08d8 reservation_end_kst=2026-05-28T13:00:00+09:00
+{
+  "status": "pass",
+  "rows": 320000,
+  "output": "outputs/data/d2e_event_state_duration_hierarchical_prefix320k/train_core.jsonl",
+  "output_order": {
+    "rows": 320000,
+    "recordings": 14,
+    "per_recording_timestamp_violations": 0,
+    "violation_examples": [],
+    "top_recordings": [
+      [
+        "d2e_480p:Euro_Truck_Simulator_2/recording_20250820_175200_Euro_Truck_Simulator_2_8073a659",
+        79175
+      ],
+      [
+        "d2e_480p:Stardew_Valley/recording_20250906_030419__1581832a_split_01",
+        38594
+      ],
+      [
+        "d2e_original:Raft/recording_20250908_182315__502c6112_split_00",
+        31657
+      ],
+      [
+        "d2e_480p:Brotato/recording_20250905_170110__ae176151",
+        28021
+      ],
+      [
+        "d2e_480p:Brotato/recording_20250904_132203__7d3a59fe",
+        25873
+      ],
+      [
+        "d2e_480p:Dinkum/recording_20250914_125445__248fe9a9",
+        23746
+      ],
+      [
+        "d2e_480p:Apex_Legends/0805_01",
+        23420
+      ],
+      [
+        "d2e_original:Cyberpunk_2077/recording_20250904_030624__aba299b7_split_01",
+        20199
+      ],
+      [
+        "d2e_original:Grounded/recording_20250911_093608__b2bb0680_split_00",
+        11115
+      ],
+      [
+        "d2e_original:Stardew_Valley/recording_20250829_021459__767e344b",
+        10302
+      ]
+    ],
+    "split_tag_counts": {}
+  }
+}
+{
+  "status": "pass",
+  "rows": 320000,
+  "output": "outputs/data/d2e_event_state_duration_hierarchical_prefix320k/target_all_eval.jsonl",
+  "output_order": {
+    "rows": 320000,
+    "recordings": 22,
+    "per_recording_timestamp_violations": 0,
+    "violation_examples": [],
+    "top_recordings": [
+      [
+        "d2e_480p:Rainbow_Six/recording_20250815_223000_Rainbow_Six_4c4e6223",
+        115168
+      ],
+      [
+        "d2e_480p:Euro_Truck_Simulator_2/recording_20250820_175200_Euro_Truck_Simulator_2_8073a659",
+        53570
+      ],
+      [
+        "d2e_480p:Apex_Legends/0805_02",
+        25942
+      ],
+      [
+        "d2e_original:Battlefield_6_Open_Beta/battlefield6beta_20250817_2236_7",
+        20592
+      ],
+      [
+        "d2e_480p:Rainbow_Six/recording_20250815_223547_Rainbow_Six_d7e2f885",
+        15738
+      ],
+      [
+        "d2e_original:Eternal_Return/0826_01",
+        13789
+      ],
+      [
+        "d2e_480p:Stardew_Valley/recording_20250906_030419__1581832a_split_01",
+        9649
+      ],
+      [
+        "d2e_original:Monster_Hunter_Wilds/recording_20250831_142517__e47dac8b_split_10",
+        8701
+      ],
+      [
+        "d2e_original:Raft/recording_20250908_182315__502c6112_split_00",
+        7914
+      ],
+      [
+        "d2e_480p:Brotato/recording_20250905_170110__ae176151",
+        7005
+      ]
+    ],
+    "split_tag_counts": {
+      "heldout_game": 144695,
+      "heldout_recording": 85542,
+      "temporal": 156284
+    }
+  }
+}
+{"rows_written": 0, "status": "fail", "summary_out": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/artifacts/idm/g005_idm_frozen_frame_embedding_train_prefix320k_materialization_summary.json"}
+restarted_after_torchhub_prewarm_at=2026-05-28T02:13:04+00:00
+head=2728ec2
+{"rows_written": 0, "status": "fail", "summary_out": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/artifacts/idm/g005_idm_frozen_frame_embedding_train_prefix320k_materialization_summary.json"}
+restarted_with_compact_luma_at=2026-05-28T02:14:11+00:00
+head=2728ec2
+frame_source=compact-luma
+{"rows_written": 320000, "status": "pass", "summary_out": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/artifacts/idm/g005_idm_frozen_frame_embedding_train_prefix320k_materialization_summary.json"}
+{"rows_written": 320000, "status": "pass", "summary_out": "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-native-2728ec2/artifacts/idm/g005_idm_frozen_frame_embedding_target_prefix320k_materialization_summary.json"}
+W0528 02:32:29.061000 2022 torch/distributed/run.py:862]
+W0528 02:32:29.061000 2022 torch/distributed/run.py:862] *****************************************
+W0528 02:32:29.061000 2022 torch/distributed/run.py:862] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+W0528 02:32:29.061000 2022 torch/distributed/run.py:862] *****************************************
+[W528 02:32:29.343612696 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [localhost]:41021 (errno: 97 - Address family not supported by protocol).
+[W528 02:32:29.347884417 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:41021 (errno: 97 - Address family not supported by protocol).
+[W528 02:32:29.349434989 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:41021 (errno: 97 - Address family not supported by protocol).
+[W528 02:32:30.530396458 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.238]:38497 (errno: 97 - Address family not supported by protocol).
+[W528 02:32:32.231241791 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.238]:38497 (errno: 97 - Address family not supported by protocol).
+[W528 02:32:32.253606552 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.238]:38497 (errno: 97 - Address family not supported by protocol).
+streaming IDM worker complete: rank=1 world_size=2 status=worker_complete
+trained streaming IDM: model=streaming_idm_d2e_full_frozen_frame_embedding_prefix320k device=cuda:0 train=320000 target=320000 metrics=outputs/idm_streaming_d2e_full_frozen_frame_embedding_prefix320k/metrics.json
+g005 paper metrics: status=pass rows=320000 output=artifacts/idm/g005_idm_frozen_frame_embedding_prefix320k_paper_metrics.json

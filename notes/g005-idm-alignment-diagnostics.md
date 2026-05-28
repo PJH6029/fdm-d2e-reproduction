@@ -804,3 +804,11 @@ metric evidence and does not satisfy G005. Next step is a 320k prefix DINO IDM
 train/eval gate, then promote only if paper-compatible keyboard, mouse-button,
 and mouse-motion metrics materially beat the current event-context prefix/full
 baselines while preserving no-button FPR.
+
+### 2026-05-28 KST — 320k frozen-DINO compact-luma prefix rejected
+
+- Launched production 2×H200 run `rsv-jeonghunpark-20260528-ed08d8` on Node 6 GPUs 0–1 for `G005` frozen-DINO prefix; a 4×H200 reservation was rejected by quota (`requested 4 GPUs exceeds quota 2`). A back-to-back extension `rsv-jeonghunpark-20260528-719318` was scheduled and then cancelled after evidence collection; an idle debug reservation was also cancelled. Current reservation list was empty after cleanup.
+- The first launch failed from an env quoting bug, the second from concurrent `torch.hub` DINO cache extraction, and the third from `ffmpeg` absence in the production base image. The terminal run used manual torchhub prewarm plus `EMBED_FRAME_SOURCE=compact-luma`, matching the native-luma tensor path. Follow-up hardening `895ae53` adds launcher-side torchhub cache prewarm for future shard launches.
+- Evidence copied locally: `artifacts/idm/g005_idm_frozen_frame_embedding_prefix320k_run_summary.json`, `artifacts/idm/g005_idm_frozen_frame_embedding_prefix320k_paper_metrics.json`, `artifacts/idm/g005_idm_frozen_frame_embedding_prefix320k_gpu_monitor.csv`, source/materialization summaries, and small output metadata under `outputs/idm_streaming_d2e_full_frozen_frame_embedding_prefix320k/`.
+- Result: materialization and training completed on 320k train / 320k target rows, but metric screen failed badly: paper-compatible keyboard `0.0206`, mouse-button `0.1046`, Pearson X/Y `0.0199/0.0102`, scale ratios X/Y `3.465/2.076`; strict button F1 `0.1814`; heldout-game no-button FPR `0.1096` exceeds the 0.10 split gate.
+- Decision: reject frozen-DINO compact-luma embeddings as a G005 full-corpus promotion candidate. Treat native-luma DINO as useful infrastructure only; next branch must change supervision/decoding (teacher-assisted event decoding, causal per-recording latent state/state-machine estimation, or released G-IDM distillation if feasible), with a prefix metric gate before expensive full-corpus 4×H200 work.
