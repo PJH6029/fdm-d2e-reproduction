@@ -285,6 +285,7 @@ def _iter_target_base_pairs(
     base_prediction_paths: Sequence[str | Path] | None,
     *,
     max_rows: int | None,
+    alignment: dict[str, Any] | None = None,
 ) -> Iterable[tuple[dict[str, Any], list[str]]]:
     base_iter = iter(_iter_rows(base_prediction_paths, max_rows=max_rows)) if base_prediction_paths else None
     for row in _iter_rows(target_paths, max_rows=max_rows):
@@ -294,6 +295,16 @@ def _iter_target_base_pairs(
                 pred = next(base_iter)
             except StopIteration:
                 pred = {}
+                if alignment is not None:
+                    alignment["missing_base_prediction_rows"] = int(alignment.get("missing_base_prediction_rows", 0)) + 1
+            if alignment is not None and pred:
+                pred_id = pred.get("sequence_id")
+                target_id = row.get("sequence_id")
+                if pred_id is not None and target_id is not None and pred_id != target_id:
+                    alignment["sequence_id_mismatches"] = int(alignment.get("sequence_id_mismatches", 0)) + 1
+                    examples = alignment.setdefault("examples", [])
+                    if isinstance(examples, list) and len(examples) < 20:
+                        examples.append({"prediction_sequence_id": pred_id, "target_sequence_id": target_id})
             base_tokens = _tokens(pred, "predicted_tokens")
         yield row, base_tokens
 
@@ -350,8 +361,9 @@ def build_key_repeat_specialist_matrix(
                     policy_specs.append((label, state_mode, float(press_th), float(release_th)))
     accs = {label: _new_accs(split_tags) for label, _mode, _p, _r in policy_specs}
     trackers = {label: _KeyStateTracker() for label, _mode, _p, _r in policy_specs if _mode != "base_all"}
+    alignment = {"sequence_id_mismatches": 0, "missing_base_prediction_rows": 0, "examples": []}
     rows = 0
-    for row, base_tokens in _iter_target_base_pairs(target_paths, base_prediction_paths, max_rows=max_target_rows):
+    for row, base_tokens in _iter_target_base_pairs(target_paths, base_prediction_paths, max_rows=max_target_rows, alignment=alignment):
         rows += 1
         gt = _tokens(row, "ground_truth_tokens")
         tags = set(_split_tags(row))
@@ -405,6 +417,7 @@ def build_key_repeat_specialist_matrix(
         "press_thresholds": [float(v) for v in press_thresholds],
         "release_thresholds": [float(v) for v in release_thresholds],
         "context_counts": model.context_count_summary(),
+        "alignment": alignment,
         "train_rows": model.train_rows,
         "target_paths": [str(p) for p in target_paths],
         "base_prediction_paths": [str(p) for p in (base_prediction_paths or [])],

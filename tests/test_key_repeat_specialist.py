@@ -75,3 +75,25 @@ def test_key_repeat_specialist_base_policy_is_preserved(tmp_path: Path) -> None:
     )
 
     assert payload["policies"]["base_all"]["summary"]["keyboard_accuracy"] == 1.0
+
+
+def test_key_repeat_specialist_reports_base_sequence_mismatch(tmp_path: Path) -> None:
+    train = tmp_path / "train.jsonl"
+    target = tmp_path / "target.jsonl"
+    base = tmp_path / "base.jsonl"
+    write_jsonl(train, [{"sequence_id": "train#0", "recording_id": "train", "ground_truth_tokens": ["NOOP"]}])
+    write_jsonl(target, [{"sequence_id": "target#0", "recording_id": "target", "ground_truth_tokens": ["NOOP"]}])
+    write_jsonl(base, [{"sequence_id": "other#0", "predicted_tokens": ["NOOP"]}])
+
+    payload = build_key_repeat_specialist_matrix(
+        train_paths=[train],
+        target_paths=[target],
+        base_prediction_paths=[base],
+        max_train_rows=1,
+        max_target_rows=1,
+        press_thresholds=[0.5],
+        release_thresholds=[0.5],
+    )
+
+    assert payload["alignment"]["sequence_id_mismatches"] == 1
+    assert payload["alignment"]["examples"][0]["prediction_sequence_id"] == "other#0"
