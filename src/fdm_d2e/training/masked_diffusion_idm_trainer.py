@@ -329,6 +329,18 @@ def _button_span_offsets(config: dict[str, Any]) -> list[int]:
     return sorted(set(values))
 
 
+def _key_span_offsets(config: dict[str, Any]) -> list[int]:
+    raw = config.get("key_span_offsets", config.get("button_span_offsets", [-2, -1, 0, 1, 2]))
+    values = [int(value) for value in (raw if isinstance(raw, list) else [raw])]
+    if 0 not in values:
+        values.append(0)
+    return sorted(set(values))
+
+
+def _key_labels_from_tokens(tokens: set[str], *, key_vocab: Sequence[str]) -> list[float]:
+    return [1.0 if token in tokens else 0.0 for token in key_vocab]
+
+
 def _sequence_record_and_index(row: dict[str, Any]) -> tuple[str | None, int | None]:
     sequence_id = str(row.get("sequence_id", ""))
     if "#" not in sequence_id:
@@ -340,10 +352,20 @@ def _sequence_record_and_index(row: dict[str, Any]) -> tuple[str | None, int | N
         return record, None
 
 
-def _with_button_span_labels(rows: Sequence[dict[str, Any]], *, button_vocab: Sequence[str], config: dict[str, Any]) -> list[dict[str, Any]]:
-    if not (bool(config.get("button_span_diffusion", False)) and button_vocab):
+def _with_action_span_labels(
+    rows: Sequence[dict[str, Any]],
+    *,
+    key_vocab: Sequence[str],
+    button_vocab: Sequence[str],
+    config: dict[str, Any],
+) -> list[dict[str, Any]]:
+    button_enabled = bool(config.get("button_span_diffusion", False)) and bool(button_vocab)
+    key_enabled = bool(config.get("key_span_diffusion", False)) and bool(key_vocab)
+    if not (button_enabled or key_enabled):
         return list(rows)
-    offsets = _button_span_offsets(config)
+    button_offsets = _button_span_offsets(config)
+    key_offsets = _key_span_offsets(config)
+    all_offsets = sorted(set((button_offsets if button_enabled else []) + (key_offsets if key_enabled else [])))
     keyed: dict[tuple[str, int], dict[str, Any]] = {}
     record_by_position: list[str | None] = []
     for row in rows:
@@ -351,11 +373,12 @@ def _with_button_span_labels(rows: Sequence[dict[str, Any]], *, button_vocab: Se
         record_by_position.append(record)
         if record is not None and index is not None:
             keyed[(record, index)] = row
+
     enriched: list[dict[str, Any]] = []
     for pos, row in enumerate(rows):
         record, index = _sequence_record_and_index(row)
-        labels: list[int] = []
-        for offset in offsets:
+        neighbor_tokens: dict[int, set[str]] = {}
+        for offset in all_offsets:
             neighbor: dict[str, Any] | None = None
             if record is not None and index is not None:
                 neighbor = keyed.get((record, index + offset))
@@ -363,12 +386,24 @@ def _with_button_span_labels(rows: Sequence[dict[str, Any]], *, button_vocab: Se
                 neighbor_pos = pos + offset
                 if 0 <= neighbor_pos < len(rows) and record_by_position[neighbor_pos] == record:
                     neighbor = rows[neighbor_pos]
-            tokens = set(canonical_fdm1_action_tokens(neighbor or {}, include_noop=False))
-            labels.append(_button_class_from_tokens(tokens, button_vocab=button_vocab))
+            neighbor_tokens[offset] = set(canonical_fdm1_action_tokens(neighbor or {}, include_noop=False))
         copied = dict(row)
-        copied["_button_span_labels"] = labels
+        if button_enabled:
+            copied["_button_span_labels"] = [
+                _button_class_from_tokens(neighbor_tokens.get(offset, set()), button_vocab=button_vocab)
+                for offset in button_offsets
+            ]
+        if key_enabled:
+            copied["_key_span_labels"] = [
+                _key_labels_from_tokens(neighbor_tokens.get(offset, set()), key_vocab=key_vocab)
+                for offset in key_offsets
+            ]
         enriched.append(copied)
     return enriched
+
+
+def _with_button_span_labels(rows: Sequence[dict[str, Any]], *, button_vocab: Sequence[str], config: dict[str, Any]) -> list[dict[str, Any]]:
+    return _with_action_span_labels(rows, key_vocab=[], button_vocab=button_vocab, config=config)
 
 
 class _FactorizedMaskedDiffusionDataset:
@@ -384,17 +419,21 @@ class _FactorizedMaskedDiffusionDataset:
         self.feature_paths = list(config.get("video_feature_paths", ["frame.features", "next_frame_features", "frame_delta_features"]))
         self.feature_dim = int(config.get("video_feature_dim", 64))
         self.button_span_offsets = _button_span_offsets(config) if bool(config.get("button_span_diffusion", False)) else [0]
+        self.key_span_offsets = _key_span_offsets(config) if bool(config.get("key_span_diffusion", False)) else [0]
 
     def __len__(self) -> int:
         return len(self.rows)
 
-    def __getitem__(self, idx: int) -> tuple[Any, Any, Any, Any, Any, Any, Any]:
+    def __getitem__(self, idx: int) -> tuple[Any, Any, Any, Any, Any, Any, Any, Any]:
         row = self.rows[idx]
         target = _factorized_targets(row, key_vocab=self.key_vocab, button_vocab=self.button_vocab)
         features = video_feature_vector(row, feature_paths=self.feature_paths, dim=self.feature_dim)
-        span_labels = row.get("_button_span_labels")
-        if not isinstance(span_labels, list) or len(span_labels) != len(self.button_span_offsets):
-            span_labels = [int(target["button_class"]) for _ in self.button_span_offsets]
+        button_span_labels = row.get("_button_span_labels")
+        if not isinstance(button_span_labels, list) or len(button_span_labels) != len(self.button_span_offsets):
+            button_span_labels = [int(target["button_class"]) for _ in self.button_span_offsets]
+        key_span_labels = row.get("_key_span_labels")
+        if not isinstance(key_span_labels, list) or len(key_span_labels) != len(self.key_span_offsets):
+            key_span_labels = [list(target["key_labels"]) for _ in self.key_span_offsets]
         return (
             self.torch.tensor(features, dtype=self.torch.float32),
             self.torch.tensor(int(target["mouse_x_class"]), dtype=self.torch.long),
@@ -402,7 +441,8 @@ class _FactorizedMaskedDiffusionDataset:
             self.torch.tensor(target["key_labels"], dtype=self.torch.float32),
             self.torch.tensor(target["button_labels"], dtype=self.torch.float32),
             self.torch.tensor(int(target["button_class"]), dtype=self.torch.long),
-            self.torch.tensor([int(value) for value in span_labels], dtype=self.torch.long),
+            self.torch.tensor([int(value) for value in button_span_labels], dtype=self.torch.long),
+            self.torch.tensor([[float(v) for v in row_values] for row_values in key_span_labels], dtype=self.torch.float32),
         )
 
 
@@ -418,7 +458,9 @@ def _build_factorized_model(torch: Any, *, video_dim: int, key_count: int, butto
     luma_window_size = int(config.get("luma_window_size", 16))
     luma_window_dim = max(0, luma_window_frames * luma_window_size * luma_window_size)
     button_span_offsets = _button_span_offsets(config)
+    key_span_offsets = _key_span_offsets(config)
     button_span_enabled = bool(config.get("button_span_diffusion", False)) and button_count > 0 and bool(config.get("button_transition_softmax", False))
+    key_span_enabled = bool(config.get("key_span_diffusion", False)) and key_count > 0
 
     class CompactLumaWindowEncoder(nn.Module):
         """Small video encoder for compact D2E luma-window bootstrap tokens."""
@@ -485,6 +527,8 @@ def _build_factorized_model(torch: Any, *, video_dim: int, key_count: int, butto
             self.mouse_x_head = nn.Linear(hidden_dim, FDM1_MOUSE_AXIS_BINS)
             self.mouse_y_head = nn.Linear(hidden_dim, FDM1_MOUSE_AXIS_BINS)
             self.key_head = nn.Linear(hidden_dim, key_count) if key_count else None
+            self.key_span_embed = nn.Embedding(len(key_span_offsets), hidden_dim) if key_span_enabled else None
+            self.key_span_head = nn.Linear(hidden_dim, key_count) if key_span_enabled else None
             self.button_head = nn.Linear(hidden_dim, button_count) if button_count else None
             self.button_class_head = (
                 nn.Linear(hidden_dim, button_count + 1)
@@ -513,6 +557,12 @@ def _build_factorized_model(torch: Any, *, video_dim: int, key_count: int, butto
             tokens = self.mask_embed.unsqueeze(0).expand(batch, plane_count, -1) + self.plane_embed(positions).unsqueeze(0)
             tokens[:, 0, :] = self.video_embedding(video_features) + self.plane_embed(positions[0]).unsqueeze(0)
             encoded = self.encoder(tokens)
+            key_state = encoded[:, 3, :]
+            key_span = None
+            if self.key_span_embed is not None and self.key_span_head is not None:
+                key_span_positions = torch.arange(len(key_span_offsets), device=video_features.device)
+                key_span_tokens = key_state.unsqueeze(1) + self.key_span_embed(key_span_positions).unsqueeze(0)
+                key_span = self.key_span_head(key_span_tokens)
             button_state = encoded[:, 4, :]
             button_span_class = None
             if self.button_span_embed is not None and self.button_span_head is not None:
@@ -522,7 +572,8 @@ def _build_factorized_model(torch: Any, *, video_dim: int, key_count: int, butto
             out: dict[str, Any] = {
                 "mouse_x": self.mouse_x_head(encoded[:, 1, :]),
                 "mouse_y": self.mouse_y_head(encoded[:, 2, :]),
-                "key": None if self.key_head is None else self.key_head(encoded[:, 3, :]),
+                "key": None if self.key_head is None else self.key_head(key_state),
+                "key_span": key_span,
                 "button": None if self.button_head is None else self.button_head(button_state),
                 "button_class": None if self.button_class_head is None else self.button_class_head(button_state),
                 "button_span_class": button_span_class,
@@ -715,60 +766,50 @@ def _button_class_logits_for_probability(out: dict[str, Any], *, config: dict[st
     return out.get("button_class")
 
 
+def _button_span_probabilities_from_output_batch(out: dict[str, Any], torch: Any, *, config: dict[str, Any]) -> tuple[list[list[float]], list[float | None]]:
+    span_logits = out.get("button_span_class")
+    if span_logits is None:
+        return [], []
+    aggregation = str(config.get("button_span_probability_aggregation", "offset")).lower()
+    offsets = _button_span_offsets(config)
+    probs = torch.softmax(span_logits, dim=-1)
+    event_tensor = (1.0 - probs[:, :, 0]).clamp(min=0.0, max=1.0)
+    prior_offsets = config.get("button_class_conditional_logit_offsets")
+    if (
+        bool(config.get("button_class_conditional_prior_correction", False))
+        and isinstance(prior_offsets, list)
+        and len(prior_offsets) == max(0, int(span_logits.shape[-1]) - 1)
+        and span_logits.shape[-1] > 1
+    ):
+        offset_tensor = torch.tensor(prior_offsets, dtype=span_logits.dtype, device=span_logits.device).view(1, 1, -1)
+        button_tensor = torch.softmax(span_logits[:, :, 1:] + offset_tensor, dim=-1) * event_tensor.unsqueeze(-1)
+    else:
+        button_tensor = probs[:, :, 1:]
+    if aggregation == "max":
+        aggregated_buttons = button_tensor.max(dim=1).values
+        aggregated_events = event_tensor.max(dim=1).values
+    elif aggregation == "mean":
+        aggregated_buttons = button_tensor.mean(dim=1)
+        aggregated_events = event_tensor.mean(dim=1)
+    else:
+        prediction_offset = int(config.get("button_span_prediction_offset", 0))
+        try:
+            offset_index = offsets.index(prediction_offset)
+        except ValueError:
+            offset_index = offsets.index(0) if 0 in offsets else 0
+        aggregated_buttons = button_tensor[:, offset_index, :]
+        aggregated_events = event_tensor[:, offset_index]
+    return (
+        [[float(v) for v in row] for row in aggregated_buttons.detach().cpu().tolist()],
+        [float(value) for value in aggregated_events.detach().cpu().tolist()],
+    )
+
+
 def _button_probabilities_from_output(out: dict[str, Any], torch: Any, *, config: dict[str, Any]) -> tuple[list[float], float | None]:
-    """Return button-token probabilities and an event probability for inference.
+    """Return button-token probabilities and an event probability for inference."""
 
-    The optional transition-softmax head represents the mouse-button plane as a
-    single discrete action token plus a no-button class.  That is closer to the
-    public FDM-1 action-token view than independent BCE over rare down/up
-    events, while still preserving the typed masked-diffusion IDM scaffold.
-    """
-
-    class_event_prob: float | None = None
-    class_button_probs: list[float] = []
-    class_logits_batch = _button_class_logits_for_probability(out, config=config)
-    if class_logits_batch is not None:
-        class_logits = class_logits_batch[0]
-        class_probs = torch.softmax(class_logits, dim=-1)
-        class_probs_list = class_probs.detach().cpu().tolist()
-        if class_probs_list:
-            class_event_prob = max(0.0, 1.0 - float(class_probs_list[0]))
-            offsets = config.get("button_class_conditional_logit_offsets")
-            if (
-                bool(config.get("button_class_conditional_prior_correction", False))
-                and isinstance(offsets, list)
-                and len(offsets) == max(0, int(class_logits.numel()) - 1)
-                and class_event_prob > 0.0
-            ):
-                offset_tensor = torch.tensor(offsets, dtype=class_logits.dtype, device=class_logits.device)
-                conditional = torch.softmax(class_logits[1:] + offset_tensor, dim=-1).detach().cpu().tolist()
-                class_button_probs = [float(class_event_prob) * float(value) for value in conditional]
-            else:
-                class_button_probs = [float(value) for value in class_probs_list[1:]]
-
-    bce_button_probs: list[float] = []
-    if out.get("button") is not None:
-        bce_button_probs = [float(value) for value in torch.sigmoid(out["button"][0]).detach().cpu().tolist()]
-
-    prob_source = str(config.get("button_probability_source", "button_class" if class_button_probs else "bce")).lower()
-    if prob_source in {"button_class", "button_span_class"} and class_button_probs:
-        button_probs = class_button_probs
-    elif prob_source == "max" and class_button_probs and bce_button_probs:
-        button_probs = [max(float(a), float(b)) for a, b in zip(class_button_probs, bce_button_probs)]
-    else:
-        button_probs = bce_button_probs or class_button_probs
-
-    aux_event_prob = float(torch.sigmoid(out["button_event"][0]).detach().cpu()) if out.get("button_event") is not None else None
-    event_source = str(config.get("button_event_probability_source", "button_class" if class_event_prob is not None else "auxiliary")).lower()
-    if event_source in {"button_class", "button_span_class"} and class_event_prob is not None:
-        event_prob = class_event_prob
-    elif event_source == "max" and class_event_prob is not None and aux_event_prob is not None:
-        event_prob = max(class_event_prob, aux_event_prob)
-    elif event_source == "auxiliary" and aux_event_prob is not None:
-        event_prob = aux_event_prob
-    else:
-        event_prob = aux_event_prob if aux_event_prob is not None else class_event_prob
-    return button_probs, event_prob
+    button_probs, event_probs = _button_probabilities_from_output_batch(out, torch, config=config)
+    return (button_probs[0] if button_probs else [], event_probs[0] if event_probs else None)
 
 
 def _button_probabilities_from_output_batch(out: dict[str, Any], torch: Any, *, config: dict[str, Any]) -> tuple[list[list[float]], list[float | None]]:
@@ -789,6 +830,13 @@ def _button_probabilities_from_output_batch(out: dict[str, Any], torch: Any, *, 
             break
     if batch_size <= 0:
         return [], []
+
+    source = str(config.get("button_probability_source", "button_class")).lower()
+    event_source = str(config.get("button_event_probability_source", source)).lower()
+    if (source == "button_span_class" or event_source == "button_span_class") and out.get("button_span_class") is not None:
+        span_buttons, span_events = _button_span_probabilities_from_output_batch(out, torch, config=config)
+        if span_buttons:
+            return span_buttons, span_events
 
     class_event_probs: list[float | None] = [None for _ in range(batch_size)]
     class_button_probs: list[list[float]] = [[] for _ in range(batch_size)]
@@ -844,6 +892,39 @@ def _button_probabilities_from_output_batch(out: dict[str, Any], torch: Any, *, 
     return button_probs, event_probs
 
 
+
+def _key_probabilities_from_output_batch(out: dict[str, Any], torch: Any, *, config: dict[str, Any]) -> list[list[float]]:
+    base_probs = torch.sigmoid(out["key"]) if out.get("key") is not None else None
+    source = str(config.get("key_probability_source", "key")).lower()
+    if source == "key_span" and out.get("key_span") is not None:
+        span_probs = torch.sigmoid(out["key_span"])
+        aggregation = str(config.get("key_span_probability_aggregation", "offset")).lower()
+        if aggregation == "max":
+            probs = span_probs.max(dim=1).values
+        elif aggregation == "mean":
+            probs = span_probs.mean(dim=1)
+        else:
+            offsets = _key_span_offsets(config)
+            prediction_offset = int(config.get("key_span_prediction_offset", 0))
+            try:
+                offset_index = offsets.index(prediction_offset)
+            except ValueError:
+                offset_index = offsets.index(0) if 0 in offsets else 0
+            probs = span_probs[:, offset_index, :]
+    elif source == "max" and base_probs is not None and out.get("key_span") is not None:
+        span_probs = torch.sigmoid(out["key_span"]).max(dim=1).values
+        probs = torch.maximum(base_probs, span_probs)
+    elif base_probs is not None:
+        probs = base_probs
+    else:
+        batch_size = 0
+        for value in out.values():
+            if value is not None:
+                batch_size = int(value.shape[0])
+                break
+        return [[] for _ in range(batch_size)]
+    return [[float(value) for value in row] for row in probs.detach().cpu().tolist()]
+
 def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, config: dict[str, Any], key_vocab: Sequence[str], button_vocab: Sequence[str], device: Any) -> list[str]:
     return _predict_factorized_tokens_batch(
         model,
@@ -890,11 +971,7 @@ def _predict_factorized_tokens_batch(
         out = model(features)
         x_classes = [int(value) for value in torch.argmax(out["mouse_x"], dim=-1).detach().cpu().tolist()]
         y_classes = [int(value) for value in torch.argmax(out["mouse_y"], dim=-1).detach().cpu().tolist()]
-        key_probs_batch = (
-            [[float(value) for value in row] for row in torch.sigmoid(out["key"]).detach().cpu().tolist()]
-            if out.get("key") is not None and key_vocab
-            else [[] for _ in rows]
-        )
+        key_probs_batch = _key_probabilities_from_output_batch(out, torch, config=config) if key_vocab else [[] for _ in rows]
         button_probs_batch: list[list[float]] = [[] for _ in rows]
         button_event_probs: list[float | None] = [None for _ in rows]
         if button_vocab and (out.get("button") is not None or out.get("button_class") is not None):
@@ -1122,11 +1199,7 @@ def _collect_factorized_probability_rows(
                 device=device,
             )
             out = model(features)
-            key_probs_batch = (
-                [[float(value) for value in row] for row in torch.sigmoid(out["key"]).detach().cpu().tolist()]
-                if out.get("key") is not None and key_vocab
-                else [[] for _ in batch_rows]
-            )
+            key_probs_batch = _key_probabilities_from_output_batch(out, torch, config=config) if key_vocab else [[] for _ in batch_rows]
             if button_vocab:
                 button_probs_batch, button_event_probs = _button_probabilities_from_output_batch(out, torch, config=config)
             else:
@@ -1719,10 +1792,10 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
     button_class_offsets = _button_class_conditional_prior_offsets(train_rows, button_vocab=button_vocab, config=config)
     if button_class_offsets:
         config["button_class_conditional_logit_offsets"] = button_class_offsets
-    if bool(config.get("button_span_diffusion", False)) and button_vocab:
-        train_rows = _with_button_span_labels(train_rows, button_vocab=button_vocab, config=config)
-        fit_rows = _with_button_span_labels(fit_rows, button_vocab=button_vocab, config=config)
-        calibration_rows = _with_button_span_labels(calibration_rows, button_vocab=button_vocab, config=config) if calibration_rows else calibration_rows
+    if (bool(config.get("button_span_diffusion", False)) and button_vocab) or (bool(config.get("key_span_diffusion", False)) and key_vocab):
+        train_rows = _with_action_span_labels(train_rows, key_vocab=key_vocab, button_vocab=button_vocab, config=config)
+        fit_rows = _with_action_span_labels(fit_rows, key_vocab=key_vocab, button_vocab=button_vocab, config=config)
+        calibration_rows = _with_action_span_labels(calibration_rows, key_vocab=key_vocab, button_vocab=button_vocab, config=config) if calibration_rows else calibration_rows
     feature_dim = int(config.get("video_feature_dim", 64))
     video_encoder_arch = str(config.get("video_encoder_arch", "flat_mlp")).lower()
     dataset = _FactorizedMaskedDiffusionDataset(fit_rows, config=config, key_vocab=key_vocab, button_vocab=button_vocab)
@@ -1758,12 +1831,13 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
     history: list[dict[str, Any]] = []
     for epoch in range(int(config.get("epochs", 1))):
         model.train()
-        totals = {"loss": 0.0, "mouse_x": 0.0, "mouse_y": 0.0, "key": 0.0, "button": 0.0, "button_class": 0.0, "button_span_class": 0.0, "button_event": 0.0, "video_reconstruction": 0.0, "examples": 0}
-        for features, mouse_x, mouse_y, key_labels, button_labels, button_class, button_span_labels in loader:
+        totals = {"loss": 0.0, "mouse_x": 0.0, "mouse_y": 0.0, "key": 0.0, "key_span": 0.0, "button": 0.0, "button_class": 0.0, "button_span_class": 0.0, "button_event": 0.0, "video_reconstruction": 0.0, "examples": 0}
+        for features, mouse_x, mouse_y, key_labels, button_labels, button_class, button_span_labels, key_span_labels in loader:
             features = features.to(device)
             mouse_x = mouse_x.to(device)
             mouse_y = mouse_y.to(device)
             key_labels = key_labels.to(device)
+            key_span_labels = key_span_labels.to(device)
             button_labels = button_labels.to(device)
             button_class = button_class.to(device)
             button_span_labels = button_span_labels.to(device)
@@ -1773,6 +1847,9 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             key_loss = torch.tensor(0.0, device=device)
             if out.get("key") is not None and key_labels.numel():
                 key_loss = torch.nn.functional.binary_cross_entropy_with_logits(out["key"], key_labels, pos_weight=key_pos_weight)
+            key_span_loss = torch.tensor(0.0, device=device)
+            if out.get("key_span") is not None and key_span_labels.numel():
+                key_span_loss = torch.nn.functional.binary_cross_entropy_with_logits(out["key_span"], key_span_labels, pos_weight=key_pos_weight)
             button_loss = torch.tensor(0.0, device=device)
             if out.get("button") is not None and button_labels.numel():
                 button_loss = torch.nn.functional.binary_cross_entropy_with_logits(out["button"], button_labels, pos_weight=button_pos_weight)
@@ -1817,6 +1894,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
                 float(config.get("mouse_x_loss_weight", config.get("mouse_loss_weight", 1.0))) * mouse_x_loss
                 + float(config.get("mouse_y_loss_weight", config.get("mouse_loss_weight", 1.0))) * mouse_y_loss
                 + float(config.get("key_loss_weight", 1.0)) * key_loss
+                + float(config.get("key_span_loss_weight", 0.0)) * key_span_loss
                 + float(config.get("button_loss_weight", 1.0)) * button_loss
                 + float(config.get("button_class_loss_weight", 1.0)) * button_class_loss
                 + float(config.get("button_span_loss_weight", 0.0)) * button_span_class_loss
@@ -1832,6 +1910,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             totals["mouse_x"] += float(mouse_x_loss.detach().cpu()) * batch
             totals["mouse_y"] += float(mouse_y_loss.detach().cpu()) * batch
             totals["key"] += float(key_loss.detach().cpu()) * batch
+            totals["key_span"] += float(key_span_loss.detach().cpu()) * batch
             totals["button"] += float(button_loss.detach().cpu()) * batch
             totals["button_class"] += float(button_class_loss.detach().cpu()) * batch
             totals["button_span_class"] += float(button_span_class_loss.detach().cpu()) * batch
@@ -1964,6 +2043,12 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             "key_vocab": key_vocab,
             "button_vocab": button_vocab,
             "key_threshold": float(config.get("key_threshold", 0.5)),
+            "key_probability_source": str(config.get("key_probability_source", "key")),
+            "key_span_diffusion": bool(config.get("key_span_diffusion", False)),
+            "key_span_offsets": _key_span_offsets(config) if bool(config.get("key_span_diffusion", False)) else [],
+            "key_span_loss_weight": float(config.get("key_span_loss_weight", 0.0)),
+            "key_span_prediction_offset": int(config.get("key_span_prediction_offset", 0)),
+            "key_span_probability_aggregation": str(config.get("key_span_probability_aggregation", "offset")),
             "button_threshold": float(config.get("button_threshold", 0.5)),
             "button_transition_softmax": bool(config.get("button_transition_softmax", False)),
             "button_probability_source": str(config.get("button_probability_source", "button_class" if config.get("button_transition_softmax") else "bce")),
@@ -1981,6 +2066,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
             "button_span_offsets": _button_span_offsets(config) if bool(config.get("button_span_diffusion", False)) else [],
             "button_span_loss_weight": float(config.get("button_span_loss_weight", 0.0)),
             "button_span_prediction_offset": int(config.get("button_span_prediction_offset", 0)),
+            "button_span_probability_aggregation": str(config.get("button_span_probability_aggregation", "offset")),
             "button_class_conditional_prior_correction": bool(config.get("button_class_conditional_prior_correction", False)),
             "button_class_conditional_prior_alpha": float(config.get("button_class_conditional_prior_alpha", 1.0)),
             "button_class_conditional_logit_offset_count": len(config.get("button_class_conditional_logit_offsets", []) if isinstance(config.get("button_class_conditional_logit_offsets"), list) else []),

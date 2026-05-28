@@ -335,3 +335,10 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Evidence files: `artifacts/idm/g005_idm_factorized_masked_diffusion_luma_window5_cnn_video_pretrain_span_prefix320k_h200_*` plus `artifacts/idm/g005_span_prefix320k_reservation_context.json`.
 - Result is still non-terminal but is the first positive mouse-button signal in this renewed branch: exact TP `1`, strict button F1 `0.005263157894736842`, no-button FPR `0.047971999176446366` under 0.10. However keyboard key accuracy remains `0.0` and 2k semantic diagnostic overlap remains `0`.
 - Next action: keep span diffusion but add held-out span-aware calibration/recovery (optimize F-beta under no-button FPR <= 0.10) and add analogous key press/release span head before another full training launch.
+
+
+## 2026-05-29T00:52:09+09:00 KST — Next G005 branch: key span + span-aware aggregation/calibration
+
+- Implemented the follow-up to the weak temporal-button-span signal: factorized masked-diffusion IDM now supports a temporal key press/release span head and max/mean/offset span aggregation for key and button probabilities before held-out threshold/budget calibration.
+- New config: `configs/model/idm_factorized_masked_diffusion_d2e_luma_window5_cnn_keyspan_calibrated_prefix320k.yaml`. It keeps masked luma video-token pretraining and button span diffusion, adds `key_span_diffusion=true`, offsets `[-2,-1,0,1,2]`, `key_probability_source=key_span`, and max span aggregation for both key and button probabilities.
+- Rationale: previous span probe produced the first nonzero mouse-button TP while keyboard remained zero; this branch brings key press/release into the same FDM-1-shaped noncausal action-token span recipe and lets calibration rank high-confidence tokens across local temporal offsets.

@@ -495,11 +495,17 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
             "button_event_auxiliary": True,
             "button_event_loss_weight": 1.0,
             "button_transition_softmax": True,
+            "key_span_diffusion": True,
+            "key_span_offsets": [-1, 0, 1],
+            "key_span_loss_weight": 0.5,
+            "key_probability_source": "key_span",
+            "key_span_probability_aggregation": "max",
             "button_span_diffusion": True,
             "button_span_offsets": [-1, 0, 1],
             "button_span_loss_weight": 0.5,
             "button_probability_source": "button_span_class",
             "button_event_probability_source": "button_span_class",
+            "button_span_probability_aggregation": "max",
             "button_class_loss_weight": 1.0,
             "button_class_no_button_weight": 0.2,
             "button_event_threshold": 0.5,
@@ -523,12 +529,19 @@ def test_train_factorized_masked_diffusion_idm_luma_cnn_tiny_smoke(tmp_path: Pat
     assert summary["button_event_budget"]["multiplier_calibration"]["status"] == "pass"
     assert summary["factorization"]["button_event_auxiliary"] is True
     assert summary["factorization"]["button_transition_softmax"] is True
+    assert summary["factorization"]["key_probability_source"] == "key_span"
+    assert summary["factorization"]["key_span_diffusion"] is True
+    assert summary["factorization"]["key_span_offsets"] == [-1, 0, 1]
+    assert summary["factorization"]["key_span_loss_weight"] == 0.5
+    assert summary["factorization"]["key_span_probability_aggregation"] == "max"
     assert summary["factorization"]["button_probability_source"] == "button_span_class"
     assert summary["factorization"]["button_event_probability_source"] == "button_span_class"
+    assert summary["factorization"]["button_span_probability_aggregation"] == "max"
     assert summary["factorization"]["button_span_diffusion"] is True
     assert summary["factorization"]["button_span_offsets"] == [-1, 0, 1]
     assert summary["factorization"]["button_span_loss_weight"] == 0.5
     assert any("button_class" in row for row in summary["history"])
+    assert any("key_span" in row for row in summary["history"])
     assert any("button_span_class" in row for row in summary["history"])
     assert any("video_reconstruction" in row for row in summary["history"])
     assert summary["video_encoder_pretrain_history"]
