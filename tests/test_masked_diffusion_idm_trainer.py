@@ -115,6 +115,10 @@ def test_train_factorized_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "force_cpu": True,
             "key_threshold": 0.99,
             "button_threshold": 0.99,
+            "calibrate_thresholds": True,
+            "factorized_calibration_fraction": 0.25,
+            "factorized_calibration_max_rows": 2,
+            "threshold_candidates": [0.25, 0.5, 0.75],
         }
     )
     assert summary["schema"] == "factorized_masked_diffusion_idm_train_summary.v1"
@@ -122,6 +126,8 @@ def test_train_factorized_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["key_vocab_size"] >= 2
     assert summary["button_vocab_size"] >= 2
     assert summary["factorization"]["mouse_axis_bins"] == 49
+    assert summary["threshold_calibration"]["status"] == "pass"
+    assert summary["threshold_calibration"]["selected"]["key_threshold"] in {0.25, 0.5, 0.75}
     assert Path(summary["checkpoint_path"]).exists()
     metrics = read_json(summary["metrics_path"])
     assert metrics["status"] == "pass"

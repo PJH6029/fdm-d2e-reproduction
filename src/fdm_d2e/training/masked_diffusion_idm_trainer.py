@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 from typing import Any, Iterable, Iterator, Sequence
 
-from fdm_d2e.eval.paper_idm_metrics import write_paper_idm_metrics
+from fdm_d2e.eval.paper_idm_metrics import _PaperMetricAccumulator, write_paper_idm_metrics
 from fdm_d2e.io_utils import ensure_dir, write_json
 from fdm_d2e.training.masked_diffusion_idm import (
     FDM1_ACTION_MASK,
@@ -421,6 +421,136 @@ def _predict_factorized_tokens(model: Any, torch: Any, row: dict[str, Any], *, c
     return d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height)
 
 
+def _threshold_candidates(config: dict[str, Any]) -> list[float]:
+    raw = config.get("threshold_candidates")
+    if isinstance(raw, list) and raw:
+        return sorted({max(0.0, min(1.0, float(value))) for value in raw})
+    return [round(value / 20.0, 2) for value in range(1, 20)]
+
+
+def _score_key_threshold(
+    model: Any,
+    torch: Any,
+    rows: Sequence[dict[str, Any]],
+    *,
+    config: dict[str, Any],
+    key_vocab: Sequence[str],
+    button_vocab: Sequence[str],
+    device: Any,
+    threshold: float,
+) -> dict[str, Any]:
+    acc = _PaperMetricAccumulator(empty_bins_as_correct=False)
+    pred_key_total = 0
+    for row in rows:
+        pred = _predict_factorized_tokens(
+            model,
+            torch,
+            row,
+            config={**config, "key_threshold": threshold, "button_threshold": 1.1},
+            key_vocab=key_vocab,
+            button_vocab=button_vocab,
+            device=device,
+        )
+        pred_key_total += sum(1 for token in pred if token.startswith("KEY_"))
+        acc.update(pred, [str(token) for token in row.get("ground_truth_tokens", [])])
+    metrics = acc.metrics()
+    key_accuracy = metrics["paper_compatible"]["keyboard"]["key_accuracy"]
+    strict = metrics["strict_local"]["keyboard"]["accuracy"]
+    return {
+        "threshold": threshold,
+        "score": float(key_accuracy or 0.0) + 0.1 * float(strict or 0.0),
+        "key_accuracy": key_accuracy,
+        "strict_accuracy": strict,
+        "predicted_key_tokens": pred_key_total,
+    }
+
+
+def _score_button_threshold(
+    model: Any,
+    torch: Any,
+    rows: Sequence[dict[str, Any]],
+    *,
+    config: dict[str, Any],
+    key_vocab: Sequence[str],
+    button_vocab: Sequence[str],
+    device: Any,
+    threshold: float,
+) -> dict[str, Any]:
+    acc = _PaperMetricAccumulator(empty_bins_as_correct=False)
+    pred_button_total = 0
+    for row in rows:
+        pred = _predict_factorized_tokens(
+            model,
+            torch,
+            row,
+            config={**config, "key_threshold": 1.1, "button_threshold": threshold},
+            key_vocab=key_vocab,
+            button_vocab=button_vocab,
+            device=device,
+        )
+        pred_button_total += sum(1 for token in pred if token.startswith(_FACTOR_BUTTON_PREFIXES))
+        acc.update(pred, [str(token) for token in row.get("ground_truth_tokens", [])])
+    metrics = acc.metrics()
+    paper = metrics["paper_compatible"]["mouse_button"]
+    strict = metrics["strict_local"]["mouse_button"]
+    f1 = strict.get("f1") or 0.0
+    fpr = strict.get("no_button_false_positive_rate")
+    max_fpr = float(config.get("calibration_max_no_button_fpr", 0.10))
+    fpr_penalty = 0.0 if fpr is None or fpr <= max_fpr else (fpr - max_fpr)
+    return {
+        "threshold": threshold,
+        "score": float(f1) + 0.25 * float(paper.get("button_accuracy") or 0.0) - fpr_penalty,
+        "button_accuracy": paper.get("button_accuracy"),
+        "f1": strict.get("f1"),
+        "precision": strict.get("precision"),
+        "recall": strict.get("recall"),
+        "no_button_false_positive_rate": fpr,
+        "predicted_button_tokens": pred_button_total,
+    }
+
+
+def _calibrate_factorized_thresholds(
+    model: Any,
+    torch: Any,
+    rows: Sequence[dict[str, Any]],
+    *,
+    config: dict[str, Any],
+    key_vocab: Sequence[str],
+    button_vocab: Sequence[str],
+    device: Any,
+) -> dict[str, Any]:
+    if not rows:
+        return {"status": "skipped", "reason": "no_calibration_rows"}
+    candidates = _threshold_candidates(config)
+    key_rows = [
+        _score_key_threshold(model, torch, rows, config=config, key_vocab=key_vocab, button_vocab=button_vocab, device=device, threshold=threshold)
+        for threshold in candidates
+    ]
+    button_rows = [
+        _score_button_threshold(model, torch, rows, config=config, key_vocab=key_vocab, button_vocab=button_vocab, device=device, threshold=threshold)
+        for threshold in candidates
+    ]
+    best_key = max(key_rows, key=lambda row: (row["score"], row["threshold"])) if key_rows else None
+    best_button = max(button_rows, key=lambda row: (row["score"], row["threshold"])) if button_rows else None
+    if best_key is not None:
+        config["key_threshold"] = float(best_key["threshold"])
+    if best_button is not None:
+        config["button_threshold"] = float(best_button["threshold"])
+    return {
+        "schema": "factorized_threshold_calibration.v1",
+        "status": "pass",
+        "rows": len(rows),
+        "candidates": candidates,
+        "selected": {
+            "key_threshold": None if best_key is None else best_key["threshold"],
+            "button_threshold": None if best_button is None else best_button["threshold"],
+        },
+        "key_sweep": key_rows,
+        "button_sweep": button_rows,
+        "claim_boundary": "Calibration over prefix/held-out training rows only; final G005 requires split-safe calibration evidence.",
+    }
+
+
 def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any]:
     if not torch_available():
         raise RuntimeError("torch unavailable; run `uv sync --extra train` or use the MLXP training image")
@@ -438,6 +568,15 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
     if not target_rows:
         raise ValueError("no target rows found for factorized masked-diffusion IDM")
 
+    calibration_rows: list[dict[str, Any]] = []
+    fit_rows = train_rows
+    calibration_fraction = float(config.get("factorized_calibration_fraction", 0.0) or 0.0)
+    calibration_max_rows = int(config.get("factorized_calibration_max_rows", 2000))
+    if config.get("calibrate_thresholds") and calibration_fraction > 0.0 and len(train_rows) >= 10:
+        calibration_count = min(calibration_max_rows, max(1, int(len(train_rows) * calibration_fraction)))
+        calibration_rows = train_rows[-calibration_count:]
+        fit_rows = train_rows[:-calibration_count] or train_rows
+
     key_vocab = _factorized_token_vocab(
         train_rows,
         prefixes=("KEY_",),
@@ -451,7 +590,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
         min_count=int(config.get("button_min_count", 1)),
     )
     feature_dim = int(config.get("video_feature_dim", 64))
-    dataset = _FactorizedMaskedDiffusionDataset(train_rows, config=config, key_vocab=key_vocab, button_vocab=button_vocab)
+    dataset = _FactorizedMaskedDiffusionDataset(fit_rows, config=config, key_vocab=key_vocab, button_vocab=button_vocab)
     loader = torch.utils.data.DataLoader(dataset, batch_size=int(config.get("batch_size", 64)), shuffle=True)
     device = torch.device("cuda" if torch.cuda.is_available() and not config.get("force_cpu") else "cpu")
     model = _build_factorized_model(torch, video_dim=feature_dim, key_count=len(key_vocab), button_count=len(button_vocab), config=config).to(device)
@@ -513,6 +652,18 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
         },
         checkpoint_path,
     )
+    threshold_calibration = {"status": "skipped", "reason": "disabled"}
+    if config.get("calibrate_thresholds"):
+        threshold_calibration = _calibrate_factorized_thresholds(
+            model,
+            torch,
+            calibration_rows or fit_rows[-min(len(fit_rows), int(config.get("factorized_calibration_max_rows", 2000))) :],
+            config=config,
+            key_vocab=key_vocab,
+            button_vocab=button_vocab,
+            device=device,
+        )
+
     predictions_path = Path(output_dir) / "predictions.jsonl"
     with predictions_path.open("w", encoding="utf-8") as handle:
         for row in target_rows:
@@ -534,6 +685,8 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
         "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM with typed masked action-token planes for mouse/key/button factors.",
         "train_rows": len(train_rows),
         "target_rows": len(target_rows),
+        "fit_rows": len(fit_rows),
+        "calibration_rows": len(calibration_rows),
         "key_vocab_size": len(key_vocab),
         "button_vocab_size": len(button_vocab),
         "device": str(device),
@@ -541,6 +694,7 @@ def train_factorized_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, A
         "checkpoint_path": str(checkpoint_path),
         "predictions_path": str(predictions_path),
         "metrics_path": str(metrics_path),
+        "threshold_calibration": threshold_calibration,
         "factorization": {
             "mouse_axis_bins": FDM1_MOUSE_AXIS_BINS,
             "key_vocab": key_vocab,
@@ -640,6 +794,18 @@ def train_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any]:
         },
         checkpoint_path,
     )
+    threshold_calibration = {"status": "skipped", "reason": "disabled"}
+    if config.get("calibrate_thresholds"):
+        threshold_calibration = _calibrate_factorized_thresholds(
+            model,
+            torch,
+            calibration_rows or fit_rows[-min(len(fit_rows), int(config.get("factorized_calibration_max_rows", 2000))) :],
+            config=config,
+            key_vocab=key_vocab,
+            button_vocab=button_vocab,
+            device=device,
+        )
+
     predictions_path = Path(output_dir) / "predictions.jsonl"
     with predictions_path.open("w", encoding="utf-8") as handle:
         for row in target_rows:
