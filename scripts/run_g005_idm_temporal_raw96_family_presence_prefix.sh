@@ -16,6 +16,7 @@ WANDB_SIDECAR_STATUS="${WANDB_SIDECAR_STATUS:-artifacts/idm/${MODEL_SLUG}_h200_w
 WANDB_SIDECAR_LOG="${WANDB_SIDECAR_LOG:-artifacts/idm/${MODEL_SLUG}_h200_wandb.log}"
 WANDB_SIDECAR_PID_FILE="${WANDB_SIDECAR_PID_FILE:-outputs/cluster/${MODEL_SLUG}_wandb.pid}"
 ENABLE_WANDB_SIDECAR="${ENABLE_WANDB_SIDECAR:-1}"
+NPROC_PER_NODE="${NPROC_PER_NODE:-1}"
 PROCESS_PATTERN="${PROCESS_PATTERN:-train_idm_temporal_masked_diffusion|run_g005_idm_temporal_raw96_family_presence_prefix}"
 
 mkdir -p artifacts/idm outputs/cluster "$OUTPUT_DIR" "$(dirname "$GPU_MONITOR_LOG")"
@@ -63,7 +64,11 @@ if [[ "$ENABLE_WANDB_SIDECAR" != "0" && -n "${WANDB_PROJECT:-}" ]]; then
 fi
 
 set +e
-uv run --extra train python scripts/train_idm_temporal_masked_diffusion.py --config "$CONFIG" --require-torch
+if [[ "${NPROC_PER_NODE:-1}" -gt 1 ]]; then
+  uv run --extra train torchrun --standalone --nproc-per-node="$NPROC_PER_NODE" scripts/train_idm_temporal_masked_diffusion.py --config "$CONFIG" --require-torch
+else
+  uv run --extra train python scripts/train_idm_temporal_masked_diffusion.py --config "$CONFIG" --require-torch
+fi
 EXIT_CODE="$?"
 set -e
 FINISHED_AT="$(date -Iseconds)"
@@ -125,7 +130,7 @@ payload={
   'gpu_monitor_status':gpu_status(gpu_monitor),
   'wandb_sidecar_status_path':str(wandb_status),
   'wandb_sidecar_status':load(wandb_status),
-  'claim_boundary':'Bounded 1xH200/prefix temporal-video FDM-1-recipe IDM probe; config-specific video source is recorded in the resolved config and summary. Not G005 completion evidence unless paper targets are beaten and audited.'
+  'claim_boundary':'Bounded H200/prefix temporal-video FDM-1-recipe IDM probe; config-specific video source and GPU count are recorded in the resolved config, monitor, and summary. Not G005 completion evidence unless paper targets are beaten and audited.'
 }
 run_summary.parent.mkdir(parents=True, exist_ok=True)
 run_summary.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\n')

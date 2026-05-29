@@ -420,6 +420,21 @@
         }
       ],
       "sha256": "83c7ade5c2f65282a7543827e1382592860294288625010217e8076534ec7e01"
+    },
+    {
+      "path": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_actual_prefix320k_epoch3.yaml",
+      "stage": "idm",
+      "status": "pass",
+      "error_count": 0,
+      "findings": [
+        {
+          "severity": "warning",
+          "code": "mouse_delta_bins_not_public_49",
+          "actual": 11,
+          "public_target": 49
+        }
+      ],
+      "sha256": "d3f49ff03498bc6a3eb2fbf5d4125459100e8a0700c0745fdabd599d441a40ea"
     }
   ],
   "findings": [
@@ -471,6 +486,13 @@
       "actual": 11,
       "public_target": 49,
       "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k_epoch3.yaml"
+    },
+    {
+      "severity": "warning",
+      "code": "mouse_delta_bins_not_public_49",
+      "actual": 11,
+      "public_target": 49,
+      "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_actual_prefix320k_epoch3.yaml"
     }
   ],
   "claim_boundary": "Recipe-alignment audit only; metric success and full D2E training evidence remain separate G005/G009 gates."
