@@ -404,6 +404,26 @@ def _mouse_move_class_vocab(vocab: Sequence[str]) -> list[str]:
     return [str(token) for token in vocab if _action_family(str(token)) == "mouse_move"]
 
 
+def _mouse_axis_class_vocab(vocab: Sequence[str], axis: str) -> list[str]:
+    normalized = str(axis).lower()
+    if normalized in {"x", "dx"}:
+        prefixes = ("FDM1_MOUSE_DX_", "MOUSE_DX_")
+    elif normalized in {"y", "dy"}:
+        prefixes = ("FDM1_MOUSE_DY_", "MOUSE_DY_")
+    else:
+        raise ValueError(f"unsupported mouse axis: {axis}")
+    return [str(token) for token in vocab if str(token).startswith(prefixes)]
+
+
+def _mouse_axis_for_token(token: str) -> str | None:
+    token = str(token)
+    if token.startswith(("FDM1_MOUSE_DX_", "MOUSE_DX_")):
+        return "x"
+    if token.startswith(("FDM1_MOUSE_DY_", "MOUSE_DY_")):
+        return "y"
+    return None
+
+
 def _build_temporal_model(
     torch: Any,
     *,
@@ -429,6 +449,8 @@ def _build_temporal_model(
     button_vocab = _button_class_vocab(vocab or [])
     key_vocab = _key_class_vocab(vocab or [])
     mouse_move_vocab = _mouse_move_class_vocab(vocab or [])
+    mouse_dx_vocab = _mouse_axis_class_vocab(vocab or [], "x")
+    mouse_dy_vocab = _mouse_axis_class_vocab(vocab or [], "y")
 
     class CompactLumaWindowEncoder(nn.Module):
         def __init__(self) -> None:
@@ -584,9 +606,18 @@ def _build_temporal_model(
             self.event_auxiliary = bool(config.get("temporal_event_auxiliary", config.get("event_auxiliary", False)))
             self.button_class_auxiliary = bool(config.get("temporal_button_class_auxiliary", False)) and bool(button_vocab)
             self.button_class_count = len(button_vocab)
+            self.key_class_auxiliary = bool(config.get("temporal_key_class_auxiliary", False)) and bool(key_vocab)
+            self.key_class_count = len(key_vocab)
             self.key_token_presence_auxiliary = bool(config.get("temporal_key_token_presence_auxiliary", False)) and bool(key_vocab)
             self.button_token_presence_auxiliary = bool(config.get("temporal_button_token_presence_auxiliary", False)) and bool(button_vocab)
             self.mouse_move_token_presence_auxiliary = bool(config.get("temporal_mouse_move_token_presence_auxiliary", False)) and bool(mouse_move_vocab)
+            self.mouse_axis_class_auxiliary = (
+                bool(config.get("temporal_mouse_axis_class_auxiliary", False))
+                and bool(mouse_dx_vocab)
+                and bool(mouse_dy_vocab)
+            )
+            self.mouse_dx_class_count = len(mouse_dx_vocab)
+            self.mouse_dy_class_count = len(mouse_dy_vocab)
             encoder_layer = nn.TransformerEncoderLayer(
                 d_model=hidden_dim,
                 nhead=heads,
@@ -600,12 +631,19 @@ def _build_temporal_model(
             self.key_event_head = nn.Linear(hidden_dim, 1) if self.event_auxiliary else None
             self.button_event_head = nn.Linear(hidden_dim, 1) if self.event_auxiliary else None
             self.button_class_head = nn.Linear(hidden_dim, self.button_class_count + 1) if self.button_class_auxiliary else None
+            self.key_class_head = nn.Linear(hidden_dim, self.key_class_count + 1) if self.key_class_auxiliary else None
             self.key_token_presence_head = nn.Linear(hidden_dim, len(key_vocab)) if self.key_token_presence_auxiliary else None
             self.button_token_presence_head = (
                 nn.Linear(hidden_dim, len(button_vocab)) if self.button_token_presence_auxiliary else None
             )
             self.mouse_move_token_presence_head = (
                 nn.Linear(hidden_dim, len(mouse_move_vocab)) if self.mouse_move_token_presence_auxiliary else None
+            )
+            self.mouse_dx_class_head = (
+                nn.Linear(hidden_dim, self.mouse_dx_class_count + 1) if self.mouse_axis_class_auxiliary else None
+            )
+            self.mouse_dy_class_head = (
+                nn.Linear(hidden_dim, self.mouse_dy_class_count + 1) if self.mouse_axis_class_auxiliary else None
             )
             self.token_presence_auxiliary = bool(config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False)))
             self.token_presence_head = nn.Linear(hidden_dim, vocab_size) if self.token_presence_auxiliary else None
@@ -670,6 +708,9 @@ def _build_temporal_model(
             if self.button_class_auxiliary and self.button_class_head is not None:
                 pooled = action_encoded.mean(dim=2)
                 payload["button_class_logits"] = self.button_class_head(pooled)
+            if self.key_class_auxiliary and self.key_class_head is not None:
+                pooled = action_encoded.mean(dim=2)
+                payload["key_class_logits"] = self.key_class_head(pooled)
             if self.key_token_presence_auxiliary and self.key_token_presence_head is not None:
                 pooled = action_encoded.mean(dim=2)
                 payload["key_token_presence_logits"] = self.key_token_presence_head(pooled)
@@ -679,6 +720,10 @@ def _build_temporal_model(
             if self.mouse_move_token_presence_auxiliary and self.mouse_move_token_presence_head is not None:
                 pooled = action_encoded.mean(dim=2)
                 payload["mouse_move_token_presence_logits"] = self.mouse_move_token_presence_head(pooled)
+            if self.mouse_axis_class_auxiliary and self.mouse_dx_class_head is not None and self.mouse_dy_class_head is not None:
+                pooled = action_encoded.mean(dim=2)
+                payload["mouse_dx_class_logits"] = self.mouse_dx_class_head(pooled)
+                payload["mouse_dy_class_logits"] = self.mouse_dy_class_head(pooled)
             if self.token_presence_auxiliary and self.token_presence_head is not None:
                 pooled = action_encoded.mean(dim=2)
                 payload["token_presence_logits"] = self.token_presence_head(pooled)
@@ -817,17 +862,23 @@ def _temporal_event_targets(torch: Any, target_ids: Any, vocab: Sequence[str], p
 def _temporal_button_class_targets(torch: Any, target_ids: Any, vocab: Sequence[str], button_vocab: Sequence[str]) -> Any:
     """Return 0=no-button, 1..N=button action-token class per temporal row."""
 
-    if not button_vocab:
+    return _temporal_family_class_targets(torch, target_ids, vocab, button_vocab)
+
+
+def _temporal_family_class_targets(torch: Any, target_ids: Any, vocab: Sequence[str], family_vocab: Sequence[str]) -> Any:
+    """Return 0=no-family-token, 1..N=family action-token class per temporal row."""
+
+    if not family_vocab:
         return torch.zeros(target_ids.shape[:2], dtype=torch.long, device=target_ids.device)
-    class_by_token = {str(token): idx + 1 for idx, token in enumerate(button_vocab)}
+    class_by_token = {str(token): idx + 1 for idx, token in enumerate(family_vocab)}
     mapping = torch.zeros(len(vocab), dtype=torch.long, device=target_ids.device)
     for token_idx, token in enumerate(vocab):
         class_idx = class_by_token.get(str(token))
         if class_idx is not None:
             mapping[token_idx] = int(class_idx)
     mapped = mapping[target_ids]
-    # D2E bins normally have at most one click transition token; max keeps the
-    # target deterministic if a rare multi-button bin appears.
+    # D2E bins normally have at most one token per auxiliary class family; max
+    # keeps the target deterministic if a rare multi-token bin appears.
     return mapped.max(dim=2).values
 
 
@@ -867,18 +918,37 @@ def _event_auxiliary_bce_loss(torch: Any, logits: Any, targets: Any, offset_mask
 
 
 def _button_class_auxiliary_loss(torch: Any, logits: Any, targets: Any, offset_mask: Any, config: dict[str, Any]) -> Any:
+    return _family_class_auxiliary_loss(
+        torch,
+        logits,
+        targets,
+        offset_mask,
+        no_family_weight=float(config.get("button_class_no_button_weight", 0.05)),
+        family_weight=float(config.get("button_class_button_weight", config.get("button_event_pos_weight", 16.0))),
+        focal_gamma=float(config.get("button_class_focal_gamma", 0.0) or 0.0),
+    )
+
+
+def _family_class_auxiliary_loss(
+    torch: Any,
+    logits: Any,
+    targets: Any,
+    offset_mask: Any,
+    *,
+    no_family_weight: float,
+    family_weight: float,
+    focal_gamma: float = 0.0,
+) -> Any:
     if logits is None or logits.shape[-1] <= 1:
         return torch.tensor(0.0, device=targets.device)
     selected_logits = logits[:, offset_mask, :].reshape(-1, logits.shape[-1])
     selected_targets = targets[:, offset_mask].reshape(-1)
     if selected_targets.numel() == 0:
         return torch.tensor(0.0, device=targets.device)
-    no_button_weight = float(config.get("button_class_no_button_weight", 0.05))
-    button_weight = float(config.get("button_class_button_weight", config.get("button_event_pos_weight", 16.0)))
-    weights = torch.ones(logits.shape[-1], dtype=selected_logits.dtype, device=selected_logits.device) * button_weight
-    weights[0] = no_button_weight
+    weights = torch.ones(logits.shape[-1], dtype=selected_logits.dtype, device=selected_logits.device) * float(family_weight)
+    weights[0] = float(no_family_weight)
     loss = torch.nn.functional.cross_entropy(selected_logits, selected_targets, weight=weights, reduction="none")
-    gamma = float(config.get("button_class_focal_gamma", 0.0) or 0.0)
+    gamma = float(focal_gamma or 0.0)
     if gamma > 0.0:
         probs = torch.softmax(selected_logits, dim=-1)
         pt = probs.gather(1, selected_targets.unsqueeze(1)).squeeze(1).clamp_min(1e-8)
@@ -1228,9 +1298,11 @@ def _temporal_final_center_probabilities(
         wants_aux_payload = (
             bool(config.get("event_auxiliary_bias_candidates", config.get("temporal_event_auxiliary", config.get("event_auxiliary", False))))
             or bool(config.get("button_class_bias_candidates", config.get("temporal_button_class_auxiliary", False)))
+            or bool(config.get("key_class_bias_candidates", config.get("temporal_key_class_auxiliary", False)))
             or bool(config.get("key_token_presence_bias_candidates", config.get("temporal_key_token_presence_auxiliary", False)))
             or bool(config.get("button_token_presence_bias_candidates", config.get("temporal_button_token_presence_auxiliary", False)))
             or bool(config.get("mouse_move_token_presence_bias_candidates", config.get("temporal_mouse_move_token_presence_auxiliary", False)))
+            or bool(config.get("mouse_axis_class_bias_candidates", config.get("temporal_mouse_axis_class_auxiliary", False)))
             or bool(config.get("token_presence_bias_candidates", config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False))))
         )
         if wants_aux_payload and hasattr(model, "forward_with_aux"):
@@ -1244,12 +1316,18 @@ def _temporal_final_center_probabilities(
                 event_probabilities["token_presence"] = torch.sigmoid(payload["token_presence_logits"][:, center, :])
             if "button_class_logits" in payload:
                 event_probabilities["button_class"] = torch.softmax(payload["button_class_logits"][:, center, :], dim=-1)
+            if "key_class_logits" in payload:
+                event_probabilities["key_class"] = torch.softmax(payload["key_class_logits"][:, center, :], dim=-1)
             if "key_token_presence_logits" in payload:
                 event_probabilities["key_token_presence"] = torch.sigmoid(payload["key_token_presence_logits"][:, center, :])
             if "button_token_presence_logits" in payload:
                 event_probabilities["button_token_presence"] = torch.sigmoid(payload["button_token_presence_logits"][:, center, :])
             if "mouse_move_token_presence_logits" in payload:
                 event_probabilities["mouse_move_token_presence"] = torch.sigmoid(payload["mouse_move_token_presence_logits"][:, center, :])
+            if "mouse_dx_class_logits" in payload:
+                event_probabilities["mouse_dx_class"] = torch.softmax(payload["mouse_dx_class_logits"][:, center, :], dim=-1)
+            if "mouse_dy_class_logits" in payload:
+                event_probabilities["mouse_dy_class"] = torch.softmax(payload["mouse_dy_class_logits"][:, center, :], dim=-1)
         else:
             final_logits = model(feature_tensor, corrupted)
             event_probabilities = {}
@@ -1295,11 +1373,16 @@ def _temporal_center_candidates(
     min_probability = float(config.get("non_noop_candidate_min_probability", 0.0))
     key_vocab = _key_class_vocab(vocab)
     key_presence_index = {token: idx for idx, token in enumerate(key_vocab)}
+    key_class_index = {token: idx + 1 for idx, token in enumerate(key_vocab)}
     button_vocab = _button_class_vocab(vocab)
     button_class_index = {token: idx + 1 for idx, token in enumerate(button_vocab)}
     button_presence_index = {token: idx for idx, token in enumerate(button_vocab)}
     mouse_move_vocab = _mouse_move_class_vocab(vocab)
     mouse_move_presence_index = {token: idx for idx, token in enumerate(mouse_move_vocab)}
+    mouse_dx_vocab = _mouse_axis_class_vocab(vocab, "x")
+    mouse_dy_vocab = _mouse_axis_class_vocab(vocab, "y")
+    mouse_dx_class_index = {token: idx + 1 for idx, token in enumerate(mouse_dx_vocab)}
+    mouse_dy_class_index = {token: idx + 1 for idx, token in enumerate(mouse_dy_vocab)}
     direct_aux_families = config.get("direct_auxiliary_candidate_families", [])
     if not isinstance(direct_aux_families, list):
         direct_aux_families = []
@@ -1333,6 +1416,14 @@ def _temporal_center_candidates(
                         blend = max(0.0, min(1.0, float(config.get("key_token_presence_candidate_score_blend", 0.0))))
                         if blend > 0.0:
                             score = (1.0 - blend) * score + blend * key_presence_score
+                key_class_score = 0.0
+                if family == "keyboard" and event_probabilities_cpu and event_probabilities_cpu.get("key_class") is not None:
+                    class_idx = key_class_index.get(token)
+                    if class_idx is not None and class_idx < int(event_probabilities_cpu["key_class"].shape[1]):
+                        key_class_score = float(event_probabilities_cpu["key_class"][batch_idx, class_idx])
+                        blend = max(0.0, min(1.0, float(config.get("key_class_candidate_score_blend", 0.0))))
+                        if blend > 0.0:
+                            score = (1.0 - blend) * score + blend * key_class_score
                 button_class_score = 0.0
                 if family == "mouse_button" and event_probabilities_cpu and event_probabilities_cpu.get("button_class") is not None:
                     class_idx = button_class_index.get(token)
@@ -1357,6 +1448,18 @@ def _temporal_center_candidates(
                         blend = max(0.0, min(1.0, float(config.get("mouse_move_token_presence_candidate_score_blend", 0.0))))
                         if blend > 0.0:
                             score = (1.0 - blend) * score + blend * mouse_move_presence_score
+                mouse_axis_class_score = 0.0
+                axis = _mouse_axis_for_token(token)
+                if family == "mouse_move" and axis is not None and event_probabilities_cpu:
+                    class_key = "mouse_dx_class" if axis == "x" else "mouse_dy_class"
+                    class_index = mouse_dx_class_index if axis == "x" else mouse_dy_class_index
+                    if event_probabilities_cpu.get(class_key) is not None:
+                        class_idx = class_index.get(token)
+                        if class_idx is not None and class_idx < int(event_probabilities_cpu[class_key].shape[1]):
+                            mouse_axis_class_score = float(event_probabilities_cpu[class_key][batch_idx, class_idx])
+                            blend = max(0.0, min(1.0, float(config.get("mouse_axis_class_candidate_score_blend", 0.0))))
+                            if blend > 0.0:
+                                score = (1.0 - blend) * score + blend * mouse_axis_class_score
                 retrieval_score = 0.0
                 if retrieval_priors and batch_idx < len(retrieval_priors):
                     retrieval_score = float(retrieval_priors[batch_idx].get(token, 0.0))
@@ -1424,10 +1527,12 @@ def _temporal_center_candidates(
                         "prior_weight": prior_weight,
                         "event_gate_multiplier": event_gate_multiplier,
                         "key_presence_score": key_presence_score,
+                        "key_class_score": key_class_score,
                         "button_class_score": button_class_score,
                         "button_class_no_button_gate_score": button_class_no_button_gate_score,
                         "button_presence_score": button_presence_score,
                         "mouse_move_presence_score": mouse_move_presence_score,
+                        "mouse_axis_class_score": mouse_axis_class_score,
                         "slot": slot_idx,
                         "token_index": token_idx,
                         "token": token,
@@ -1437,10 +1542,22 @@ def _temporal_center_candidates(
         if direct_aux_families and event_probabilities_cpu:
             if "keyboard" in direct_aux_families and event_probabilities_cpu.get("key_token_presence") is not None:
                 key_presence = event_probabilities_cpu["key_token_presence"]
+                key_class_probs = event_probabilities_cpu.get("key_class")
                 for token, class_idx in key_presence_index.items():
                     if class_idx >= int(key_presence.shape[1]):
                         continue
-                    score = float(key_presence[batch_idx, class_idx])
+                    presence_score = float(key_presence[batch_idx, class_idx])
+                    class_prob_idx = key_class_index.get(token)
+                    class_score = (
+                        float(key_class_probs[batch_idx, class_prob_idx])
+                        if key_class_probs is not None and class_prob_idx is not None and class_prob_idx < int(key_class_probs.shape[1])
+                        else 0.0
+                    )
+                    blend = max(
+                        0.0,
+                        min(1.0, float(config.get("direct_auxiliary_key_class_blend", 0.0) or 0.0)),
+                    )
+                    score = (1.0 - blend) * presence_score + blend * class_score
                     prior_weight = float(token_prior_weights.get(token, 1.0)) if token_prior_weights else 1.0
                     if bool(config.get("direct_auxiliary_candidate_apply_token_prior", False)):
                         score = max(0.0, min(1.0, score * prior_weight))
@@ -1453,10 +1570,13 @@ def _temporal_center_candidates(
                             "retrieval_score": 0.0,
                             "prior_weight": prior_weight,
                             "event_gate_multiplier": 1.0,
-                            "key_presence_score": score,
+                            "key_presence_score": presence_score,
+                            "key_class_score": class_score,
                             "button_class_score": 0.0,
                             "button_class_no_button_gate_score": 1.0,
                             "button_presence_score": 0.0,
+                            "mouse_move_presence_score": 0.0,
+                            "mouse_axis_class_score": 0.0,
                             "slot": -1,
                             "token_index": key_presence_index[token],
                             "token": token,
@@ -1512,9 +1632,12 @@ def _temporal_center_candidates(
                             "prior_weight": prior_weight,
                             "event_gate_multiplier": 1.0,
                             "key_presence_score": 0.0,
+                            "key_class_score": 0.0,
                             "button_class_score": class_score,
                             "button_class_no_button_gate_score": no_button_gate,
                             "button_presence_score": presence_score,
+                            "mouse_move_presence_score": 0.0,
+                            "mouse_axis_class_score": 0.0,
                             "slot": -1,
                             "token_index": token_index,
                             "token": token,
@@ -1525,27 +1648,44 @@ def _temporal_center_candidates(
             if "mouse_move" in direct_aux_families and (
                 event_probabilities_cpu.get("mouse_move_token_presence") is not None
                 or event_probabilities_cpu.get("token_presence") is not None
+                or event_probabilities_cpu.get("mouse_dx_class") is not None
+                or event_probabilities_cpu.get("mouse_dy_class") is not None
             ):
                 token_presence = event_probabilities_cpu.get("mouse_move_token_presence")
                 direct_source = "mouse_move_token_presence"
                 if token_presence is None:
-                    token_presence = event_probabilities_cpu["token_presence"]
+                    token_presence = event_probabilities_cpu.get("token_presence")
                     direct_source = "token_presence_mouse_move"
                 for token_idx, token in enumerate(vocab):
                     token = str(token)
                     if _action_family(token) != "mouse_move":
                         continue
+                    presence_score = 0.0
                     if direct_source == "mouse_move_token_presence":
                         class_idx = mouse_move_presence_index.get(token)
-                        if class_idx is None or class_idx >= int(token_presence.shape[1]):
-                            continue
-                        score = float(token_presence[batch_idx, class_idx])
-                    else:
-                        if token_idx >= int(token_presence.shape[1]):
-                            continue
-                        score = float(token_presence[batch_idx, token_idx])
+                        if token_presence is not None and class_idx is not None and class_idx < int(token_presence.shape[1]):
+                            presence_score = float(token_presence[batch_idx, class_idx])
+                    elif token_presence is not None and token_idx < int(token_presence.shape[1]):
+                        presence_score = float(token_presence[batch_idx, token_idx])
+                    axis = _mouse_axis_for_token(token)
+                    axis_score = 0.0
+                    if axis is not None:
+                        class_key = "mouse_dx_class" if axis == "x" else "mouse_dy_class"
+                        class_index = mouse_dx_class_index if axis == "x" else mouse_dy_class_index
+                        axis_probs = event_probabilities_cpu.get(class_key)
+                        class_prob_idx = class_index.get(token)
+                        if axis_probs is not None and class_prob_idx is not None and class_prob_idx < int(axis_probs.shape[1]):
+                            axis_score = float(axis_probs[batch_idx, class_prob_idx])
+                    blend = max(
+                        0.0,
+                        min(1.0, float(config.get("direct_auxiliary_mouse_axis_class_blend", 0.0) or 0.0)),
+                    )
+                    score = (1.0 - blend) * presence_score + blend * axis_score
                     if score < direct_aux_min_score:
                         continue
+                    direct_label = direct_source
+                    if blend > 0.0 and axis_score > 0.0:
+                        direct_label = f"{direct_source}_axis_class"
                     candidates.append(
                         {
                             "score": score,
@@ -1554,15 +1694,17 @@ def _temporal_center_candidates(
                             "prior_weight": 1.0,
                             "event_gate_multiplier": 1.0,
                             "key_presence_score": 0.0,
+                            "key_class_score": 0.0,
                             "button_class_score": 0.0,
                             "button_class_no_button_gate_score": 1.0,
                             "button_presence_score": 0.0,
-                            "mouse_move_presence_score": score,
+                            "mouse_move_presence_score": presence_score,
+                            "mouse_axis_class_score": axis_score,
                             "slot": -1,
                             "token_index": token_idx,
                             "token": token,
                             "family": "mouse_move",
-                            "direct_auxiliary_candidate": direct_source,
+                            "direct_auxiliary_candidate": direct_label,
                         }
                     )
         candidates.sort(key=lambda item: (-float(item["score"]), int(item["slot"]), int(item["token_index"])))
@@ -1736,9 +1878,12 @@ def _tokens_from_family_budget_candidates(
     candidates: Sequence[dict[str, Any]],
     *,
     family_budgets: dict[str, Any],
+    config: dict[str, Any] | None = None,
 ) -> list[str]:
     tokens: list[str] = []
     seen: set[str] = set()
+    config = config or {}
+    mouse_axis_constrained = bool(config.get("mouse_move_axis_constrained_budget", False))
     families = family_budgets.get("families", family_budgets) if isinstance(family_budgets, dict) else {}
     if not isinstance(families, dict):
         return tokens
@@ -1750,6 +1895,7 @@ def _tokens_from_family_budget_candidates(
         if max_tokens <= 0:
             continue
         emitted = 0
+        emitted_mouse_axes: set[str] = set()
         for candidate in candidates:
             token = str(candidate.get("token", ""))
             if _action_family(token) != str(family):
@@ -1758,6 +1904,12 @@ def _tokens_from_family_budget_candidates(
                 continue
             if not _is_predictable_action_token(token) or token in seen:
                 continue
+            if str(family) == "mouse_move" and mouse_axis_constrained:
+                axis = _mouse_axis_for_token(token)
+                if axis is not None and axis in emitted_mouse_axes:
+                    continue
+                if axis is not None:
+                    emitted_mouse_axes.add(axis)
             tokens.append(token)
             seen.add(token)
             emitted += 1
@@ -1812,7 +1964,11 @@ def _predict_temporal_tokens_batch(
     for batch_idx, row in enumerate(rows):
         center_ids = [int(value) for value in predicted_center_ids[batch_idx, :].detach().cpu().tolist()]
         if family_budgeted:
-            fdm1_tokens = _tokens_from_family_budget_candidates(candidate_rows[batch_idx], family_budgets=family_budgets)
+            fdm1_tokens = _tokens_from_family_budget_candidates(
+                candidate_rows[batch_idx],
+                family_budgets=family_budgets,
+                config=config,
+            )
         elif budgeted:
             fdm1_tokens = _tokens_from_non_noop_candidates(candidate_rows[batch_idx], threshold=budget_threshold, max_tokens=budget_max_tokens)
         else:
@@ -2396,6 +2552,12 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     button_vocab = _button_class_vocab(vocab)
     key_vocab = _key_class_vocab(vocab)
     mouse_move_vocab = _mouse_move_class_vocab(vocab)
+    mouse_dx_vocab = _mouse_axis_class_vocab(vocab, "x")
+    mouse_dy_vocab = _mouse_axis_class_vocab(vocab, "y")
+    key_class_auxiliary = bool(config.get("temporal_key_class_auxiliary", False))
+    key_class_aux_weight = float(config.get("key_class_aux_weight", 0.0) or 0.0)
+    mouse_axis_class_auxiliary = bool(config.get("temporal_mouse_axis_class_auxiliary", False))
+    mouse_axis_class_aux_weight = float(config.get("mouse_axis_class_aux_weight", 0.0) or 0.0)
     key_token_presence_auxiliary = bool(config.get("temporal_key_token_presence_auxiliary", False))
     key_token_presence_aux_weight = float(config.get("key_token_presence_aux_weight", 0.0) or 0.0)
     key_token_presence_rank_weight = float(config.get("key_token_presence_rank_weight", 0.0) or 0.0)
@@ -2420,6 +2582,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         total_key_event = 0.0
         total_button_event = 0.0
         total_button_class = 0.0
+        total_key_class = 0.0
+        total_mouse_axis_class = 0.0
         total_key_token_presence = 0.0
         total_key_token_presence_rank = 0.0
         total_button_token_presence = 0.0
@@ -2437,6 +2601,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             if (
                 event_auxiliary
                 or button_class_auxiliary
+                or key_class_auxiliary
+                or mouse_axis_class_auxiliary
                 or key_token_presence_auxiliary
                 or button_token_presence_auxiliary
                 or mouse_move_token_presence_auxiliary
@@ -2452,6 +2618,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             key_event_loss = torch.tensor(0.0, device=device)
             button_event_loss = torch.tensor(0.0, device=device)
             button_class_loss = torch.tensor(0.0, device=device)
+            key_class_loss = torch.tensor(0.0, device=device)
+            mouse_axis_class_loss = torch.tensor(0.0, device=device)
             key_token_presence_loss = torch.tensor(0.0, device=device)
             key_token_presence_rank_loss = torch.tensor(0.0, device=device)
             button_token_presence_loss = torch.tensor(0.0, device=device)
@@ -2485,6 +2653,39 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                     event_offset_mask,
                     config,
                 )
+            if key_class_auxiliary and key_class_aux_weight > 0.0 and key_vocab:
+                key_class_targets = _temporal_family_class_targets(torch, target_ids, vocab, key_vocab)
+                key_class_loss = _family_class_auxiliary_loss(
+                    torch,
+                    payload.get("key_class_logits"),
+                    key_class_targets,
+                    event_offset_mask,
+                    no_family_weight=float(config.get("key_class_no_key_weight", 0.05)),
+                    family_weight=float(config.get("key_class_key_weight", config.get("key_event_pos_weight", 8.0))),
+                    focal_gamma=float(config.get("key_class_focal_gamma", 0.0) or 0.0),
+                )
+            if mouse_axis_class_auxiliary and mouse_axis_class_aux_weight > 0.0 and mouse_dx_vocab and mouse_dy_vocab:
+                mouse_dx_targets = _temporal_family_class_targets(torch, target_ids, vocab, mouse_dx_vocab)
+                mouse_dy_targets = _temporal_family_class_targets(torch, target_ids, vocab, mouse_dy_vocab)
+                mouse_dx_loss = _family_class_auxiliary_loss(
+                    torch,
+                    payload.get("mouse_dx_class_logits"),
+                    mouse_dx_targets,
+                    event_offset_mask,
+                    no_family_weight=float(config.get("mouse_axis_class_no_axis_weight", 0.05)),
+                    family_weight=float(config.get("mouse_axis_class_axis_weight", config.get("token_presence_mouse_move_pos_weight", 2.0))),
+                    focal_gamma=float(config.get("mouse_axis_class_focal_gamma", 0.0) or 0.0),
+                )
+                mouse_dy_loss = _family_class_auxiliary_loss(
+                    torch,
+                    payload.get("mouse_dy_class_logits"),
+                    mouse_dy_targets,
+                    event_offset_mask,
+                    no_family_weight=float(config.get("mouse_axis_class_no_axis_weight", 0.05)),
+                    family_weight=float(config.get("mouse_axis_class_axis_weight", config.get("token_presence_mouse_move_pos_weight", 2.0))),
+                    focal_gamma=float(config.get("mouse_axis_class_focal_gamma", 0.0) or 0.0),
+                )
+                mouse_axis_class_loss = 0.5 * (mouse_dx_loss + mouse_dy_loss)
             if key_token_presence_auxiliary and key_token_presence_aux_weight > 0.0 and key_vocab:
                 key_presence_targets = _temporal_family_token_presence_targets(torch, target_ids, vocab, key_vocab)
                 key_token_presence_loss = _family_token_presence_bce_loss(
@@ -2562,6 +2763,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 + key_event_aux_weight * key_event_loss
                 + button_event_aux_weight * button_event_loss
                 + button_class_aux_weight * button_class_loss
+                + key_class_aux_weight * key_class_loss
+                + mouse_axis_class_aux_weight * mouse_axis_class_loss
                 + key_token_presence_aux_weight * key_token_presence_loss
                 + key_token_presence_rank_weight * key_token_presence_rank_loss
                 + button_token_presence_aux_weight * button_token_presence_loss
@@ -2582,6 +2785,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             total_key_event += float(key_event_loss.detach().cpu()) * batch
             total_button_event += float(button_event_loss.detach().cpu()) * batch
             total_button_class += float(button_class_loss.detach().cpu()) * batch
+            total_key_class += float(key_class_loss.detach().cpu()) * batch
+            total_mouse_axis_class += float(mouse_axis_class_loss.detach().cpu()) * batch
             total_key_token_presence += float(key_token_presence_loss.detach().cpu()) * batch
             total_key_token_presence_rank += float(key_token_presence_rank_loss.detach().cpu()) * batch
             total_button_token_presence += float(button_token_presence_loss.detach().cpu()) * batch
@@ -2609,6 +2814,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                         "key_event_loss": total_key_event / max(1, total_examples),
                         "button_event_loss": total_button_event / max(1, total_examples),
                         "button_class_loss": total_button_class / max(1, total_examples),
+                        "key_class_loss": total_key_class / max(1, total_examples),
+                        "mouse_axis_class_loss": total_mouse_axis_class / max(1, total_examples),
                         "key_token_presence_loss": total_key_token_presence / max(1, total_examples),
                         "key_token_presence_rank_loss": total_key_token_presence_rank / max(1, total_examples),
                         "button_token_presence_loss": total_button_token_presence / max(1, total_examples),
@@ -2626,6 +2833,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "key_event_loss": total_key_event / max(1, total_examples),
             "button_event_loss": total_button_event / max(1, total_examples),
             "button_class_loss": total_button_class / max(1, total_examples),
+            "key_class_loss": total_key_class / max(1, total_examples),
+            "mouse_axis_class_loss": total_mouse_axis_class / max(1, total_examples),
             "key_token_presence_loss": total_key_token_presence / max(1, total_examples),
             "key_token_presence_rank_loss": total_key_token_presence_rank / max(1, total_examples),
             "button_token_presence_loss": total_button_token_presence / max(1, total_examples),
@@ -2821,6 +3030,14 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "button_class_candidate_score_blend":float(config.get("button_class_candidate_score_blend", 0.0)),
             "button_class_no_button_gate_power":float(config.get("button_class_no_button_gate_power", 0.0) or 0.0),
             "button_class_no_button_gate_floor":float(config.get("button_class_no_button_gate_floor", 0.0) or 0.0),
+            "temporal_key_class_auxiliary":key_class_auxiliary,
+            "key_class_aux_weight":key_class_aux_weight,
+            "key_class_vocab_size":len(key_vocab),
+            "key_class_no_key_weight":float(config.get("key_class_no_key_weight", 0.05)),
+            "key_class_key_weight":float(config.get("key_class_key_weight", config.get("key_event_pos_weight", 8.0))),
+            "key_class_focal_gamma":float(config.get("key_class_focal_gamma", 0.0) or 0.0),
+            "key_class_candidate_score_blend":float(config.get("key_class_candidate_score_blend", 0.0)),
+            "direct_auxiliary_key_class_blend":float(config.get("direct_auxiliary_key_class_blend", 0.0) or 0.0),
             "temporal_key_token_presence_auxiliary":key_token_presence_auxiliary,
             "key_token_presence_aux_weight":key_token_presence_aux_weight,
             "key_token_presence_rank_weight":key_token_presence_rank_weight,
@@ -2848,6 +3065,16 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "mouse_move_token_presence_pos_weight":float(config.get("mouse_move_token_presence_pos_weight", config.get("token_presence_mouse_move_pos_weight", 2.0))),
             "mouse_move_token_presence_negative_weight":float(config.get("mouse_move_token_presence_negative_weight", 0.05)),
             "mouse_move_token_presence_candidate_score_blend":float(config.get("mouse_move_token_presence_candidate_score_blend", 0.0)),
+            "temporal_mouse_axis_class_auxiliary":mouse_axis_class_auxiliary,
+            "mouse_axis_class_aux_weight":mouse_axis_class_aux_weight,
+            "mouse_dx_class_vocab_size":len(mouse_dx_vocab),
+            "mouse_dy_class_vocab_size":len(mouse_dy_vocab),
+            "mouse_axis_class_no_axis_weight":float(config.get("mouse_axis_class_no_axis_weight", 0.05)),
+            "mouse_axis_class_axis_weight":float(config.get("mouse_axis_class_axis_weight", config.get("token_presence_mouse_move_pos_weight", 2.0))),
+            "mouse_axis_class_focal_gamma":float(config.get("mouse_axis_class_focal_gamma", 0.0) or 0.0),
+            "mouse_axis_class_candidate_score_blend":float(config.get("mouse_axis_class_candidate_score_blend", 0.0)),
+            "direct_auxiliary_mouse_axis_class_blend":float(config.get("direct_auxiliary_mouse_axis_class_blend", 0.0) or 0.0),
+            "mouse_move_axis_constrained_budget":bool(config.get("mouse_move_axis_constrained_budget", False)),
             "key_event_pos_weight":float(config.get("key_event_pos_weight", 8.0)),
             "button_event_pos_weight":float(config.get("button_event_pos_weight", 16.0)),
             "event_auxiliary_candidate_score_blend":float(config.get("event_auxiliary_candidate_score_blend", 0.5)),

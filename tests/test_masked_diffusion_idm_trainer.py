@@ -30,9 +30,11 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _candidate_family_diagnostics,
     _candidate_token_prior_weights,
     _family_token_presence_rank_loss,
+    _mouse_axis_class_vocab,
     _precompute_features,
     _temporal_button_class_targets,
     _temporal_center_candidates,
+    _temporal_family_class_targets,
     _temporal_family_token_presence_targets,
     _target_slots,
     _target_slots_for_config,
@@ -840,6 +842,43 @@ def test_temporal_config_vocab_uses_d2e_metric_mouse_bins():
     assert not any(token.startswith("FDM1_MOUSE_") for token in vocab)
 
 
+def test_temporal_family_class_targets_and_mouse_axis_vocab():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "KEY_PRESS_A", "MOUSE_DX_N1", "MOUSE_DY_P1"]
+    target_ids = torch.tensor([[[3, 4, 5, 0], [2, 0, 0, 0]]], dtype=torch.long)
+
+    assert _mouse_axis_class_vocab(vocab, "x") == ["MOUSE_DX_N1"]
+    assert _mouse_axis_class_vocab(vocab, "y") == ["MOUSE_DY_P1"]
+    key_targets = _temporal_family_class_targets(torch, target_ids, vocab, ["KEY_PRESS_A"])
+    dx_targets = _temporal_family_class_targets(torch, target_ids, vocab, ["MOUSE_DX_N1"])
+
+    assert key_targets.tolist() == [[1, 0]]
+    assert dx_targets.tolist() == [[1, 0]]
+
+
+def test_mouse_move_family_budget_can_constrain_one_token_per_axis():
+    candidates = [
+        {"score": 0.90, "token": "MOUSE_DY_Z0"},
+        {"score": 0.80, "token": "MOUSE_DY_P1"},
+        {"score": 0.70, "token": "MOUSE_DX_N1"},
+        {"score": 0.60, "token": "MOUSE_DX_P1"},
+    ]
+    budgets = {"families": {"mouse_move": {"status": "pass", "selected_threshold": 0.0, "max_tokens_per_row": 2}}}
+
+    unconstrained = _tokens_from_family_budget_candidates(candidates, family_budgets=budgets, config={})
+    constrained = _tokens_from_family_budget_candidates(
+        candidates,
+        family_budgets=budgets,
+        config={"mouse_move_axis_constrained_budget": True},
+    )
+
+    assert unconstrained == ["MOUSE_DY_Z0", "MOUSE_DY_P1"]
+    assert constrained == ["MOUSE_DY_Z0", "MOUSE_DX_N1"]
+
+
 def test_temporal_target_slots_can_preserve_padding_for_sparse_action_sequences():
     row = {"ground_truth_tokens": ["KEY_PRESS_A"], "frame": {"width": 854, "height": 480}}
 
@@ -1264,6 +1303,17 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "button_class_no_button_weight": 0.1,
             "button_class_button_weight": 4.0,
             "button_class_candidate_score_blend": 0.4,
+            "temporal_key_class_auxiliary": True,
+            "key_class_aux_weight": 0.2,
+            "key_class_key_weight": 3.0,
+            "key_class_no_key_weight": 0.1,
+            "key_class_candidate_score_blend": 0.25,
+            "temporal_mouse_axis_class_auxiliary": True,
+            "mouse_axis_class_aux_weight": 0.2,
+            "mouse_axis_class_axis_weight": 2.0,
+            "mouse_axis_class_no_axis_weight": 0.1,
+            "mouse_axis_class_candidate_score_blend": 0.3,
+            "mouse_move_axis_constrained_budget": True,
             "temporal_key_token_presence_auxiliary": True,
             "key_token_presence_aux_weight": 0.2,
             "key_token_presence_rank_weight": 0.1,
@@ -1323,6 +1373,13 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["loss_weights"]["temporal_button_class_auxiliary"] is True
     assert summary["loss_weights"]["button_class_aux_weight"] == 0.3
     assert summary["loss_weights"]["button_class_candidate_score_blend"] == 0.4
+    assert summary["loss_weights"]["temporal_key_class_auxiliary"] is True
+    assert summary["loss_weights"]["key_class_aux_weight"] == 0.2
+    assert summary["loss_weights"]["key_class_candidate_score_blend"] == 0.25
+    assert summary["loss_weights"]["temporal_mouse_axis_class_auxiliary"] is True
+    assert summary["loss_weights"]["mouse_axis_class_aux_weight"] == 0.2
+    assert summary["loss_weights"]["mouse_axis_class_candidate_score_blend"] == 0.3
+    assert summary["loss_weights"]["mouse_move_axis_constrained_budget"] is True
     assert summary["loss_weights"]["temporal_key_token_presence_auxiliary"] is True
     assert summary["loss_weights"]["key_token_presence_aux_weight"] == 0.2
     assert summary["loss_weights"]["key_token_presence_rank_weight"] == 0.1
@@ -1342,6 +1399,7 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["retrieval_action_prior"]["rows"] == 8
     assert any("key_event_loss" in row and "button_event_loss" in row for row in summary["history"])
     assert any("button_class_loss" in row for row in summary["history"])
+    assert any("key_class_loss" in row and "mouse_axis_class_loss" in row for row in summary["history"])
     assert any("key_token_presence_loss" in row and "button_token_presence_loss" in row for row in summary["history"])
     assert any("mouse_move_token_presence_loss" in row and "mouse_move_token_presence_rank_loss" in row for row in summary["history"])
     assert summary["non_noop_budget"]["status"] in {"pass", "skipped"}
