@@ -25,6 +25,12 @@ def main() -> int:
     config = load_config(args.config)
     config.setdefault("config_path", args.config)
     summary = train_temporal_masked_diffusion_idm(config)
+    if summary.get("distributed_non_main_rank"):
+        print(
+            "trained temporal masked-diffusion IDM: "
+            f"rank={summary.get('rank')} world_size={summary.get('world_size')} non_main_rank_complete"
+        )
+        return 0
     print(
         "trained temporal masked-diffusion IDM: "
         f"model={summary['model_name']} train={summary['train_rows']} target={summary['target_rows']} "

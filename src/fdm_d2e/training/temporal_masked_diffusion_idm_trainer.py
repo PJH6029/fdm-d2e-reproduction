@@ -2556,22 +2556,28 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     dist = None
     rank = 0
     world_size = 1
-    local_rank = 0
+    local_rank = int(os.environ.get("LOCAL_RANK", "0") or "0")
+    local_world_size = int(os.environ.get("LOCAL_WORLD_SIZE", str(requested_world_size)) or str(requested_world_size))
+    use_cuda_for_distributed = (
+        torch.cuda.is_available()
+        and torch.cuda.device_count() > local_rank
+        and torch.cuda.device_count() >= local_world_size
+    )
     if distributed:
         dist = torch.distributed
         if not dist.is_available():
             raise RuntimeError("torch.distributed is unavailable but WORLD_SIZE>1")
         if not dist.is_initialized():
-            backend = "nccl" if torch.cuda.is_available() else "gloo"
+            backend = "nccl" if use_cuda_for_distributed else "gloo"
             dist.init_process_group(backend=backend)
         rank = int(dist.get_rank())
         world_size = int(dist.get_world_size())
         local_rank = int(os.environ.get("LOCAL_RANK", rank) or rank)
-        if torch.cuda.is_available():
+        if use_cuda_for_distributed:
             torch.cuda.set_device(local_rank)
     device = torch.device(
         f"cuda:{local_rank}"
-        if torch.cuda.is_available() and not config.get("force_cpu")
+        if (use_cuda_for_distributed if distributed else torch.cuda.is_available()) and not config.get("force_cpu")
         else "cpu"
     )
     config = {
