@@ -604,3 +604,14 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Added/pushed stratified train-only calibration and raw-video cache reuse for prediction sweeps (`32b5f40`, `3e1f9d3`).
 - Ran a post-checkpoint 2k-calibration / 5k-target sweep from the train320k checkpoint. Metrics remain non-terminal: keyboard `0.01486`, mouse-button accuracy/F1 `0.0/0.0`, mouse Pearson X/Y `0.02470/-0.00157`, no-button FPR `0.0`.
 - Diagnosis: calibration sparsity was a real bug, but not the main blocker; candidate scoring/ranking from the raw96 masked-diffusion model is still far too weak.
+
+## 2026-05-30T02:26 KST — approved quota retained, idle G005 continuation cancelled
+- User confirmed the quota increase approval; API check shows production effective quota `8` and active approved GPU-hour grant.
+- The current train320k raw96 masked-diffusion IDM and stratified prediction sweep are negative, and no train/predict process was active on the pod. Cancelled continuation reservation `rsv-jeonghunpark-20260530-d58f2b` to avoid idle 4×H200 usage.
+- Evidence: `artifacts/cluster/g005_realvideo_raw96_train320k_continuation_cancel_20260530.json`; current reservations after cancellation: `0`.
+- Next work should stay local until a nontrivial candidate-scoring/model redesign plus distributed prediction path is ready; do not checkpoint `G005-g014-idm-full-paper-target`.
+
+## 2026-05-30T02:40 KST — G005 candidate-score reranker implemented locally
+- Added a public-FDM-1-shaped confidence-reranker approximation: fit family-specific logistic candidate scorers on held-out train candidate rows only, then apply to masked-diffusion action-token candidates before train-heldout family-budget calibration and target prediction.
+- New 5k prediction-only probe config/wrapper: `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k.yaml` and `scripts/run_g005_idm_temporal_raw96_train320k_candidate_reranker_predict5k.sh`.
+- Validation passed: py_compile, wrapper `bash -n`, and `76` targeted pytest cases. This is not completion evidence; it needs a bounded checkpoint/cache prediction run before any further GPU scale-up.

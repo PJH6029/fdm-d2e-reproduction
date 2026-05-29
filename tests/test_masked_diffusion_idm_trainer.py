@@ -24,12 +24,14 @@ from fdm_d2e.training.masked_diffusion_idm_trainer import (
 from fdm_d2e.training.masked_diffusion_idm import canonical_fdm1_action_tokens
 from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _adapt_temporal_family_budget_to_unlabeled_distribution,
+    _apply_candidate_score_reranker_to_probability_rows,
     _build_vocab_for_config,
     _calibrate_temporal_family_non_noop_budget,
     _calibrate_temporal_non_noop_budget,
     _candidate_family_diagnostics,
     _candidate_token_prior_weights,
     _family_token_presence_rank_loss,
+    _fit_candidate_score_reranker,
     _mouse_axis_class_vocab,
     _maybe_tensorize_features,
     _precompute_features,
@@ -692,6 +694,98 @@ def test_temporal_candidate_token_prior_adjusts_recipe_candidate_ranking():
     assert candidates[0][0]["token"] == "MOUSE_RIGHT_DOWN"
     assert candidates[0][0]["prior_weight"] == 2.0
     assert candidates[0][1]["token"] == "MOUSE_LEFT_DOWN"
+
+
+def test_candidate_score_reranker_uses_train_heldout_labels_to_rerank_candidates():
+    if not torch_available():
+        return
+    import torch
+
+    rows = []
+    for idx in range(16):
+        rows.append(
+            {
+                "row": {"ground_truth_tokens": ["KEY_PRESS_A"] if idx % 2 == 0 else ["KEY_PRESS_D"]},
+                "ground_truth_fdm1_tokens": ["KEY_PRESS_A"] if idx % 2 == 0 else ["KEY_PRESS_D"],
+                "candidates": [
+                    {
+                        "score": 0.90,
+                        "token_probability": 0.90,
+                        "key_presence_score": 0.10,
+                        "token": "KEY_PRESS_D" if idx % 2 == 0 else "KEY_PRESS_A",
+                        "family": "keyboard",
+                        "slot": 0,
+                        "token_index": 4,
+                    },
+                    {
+                        "score": 0.10,
+                        "token_probability": 0.10,
+                        "key_presence_score": 0.95,
+                        "token": "KEY_PRESS_A" if idx % 2 == 0 else "KEY_PRESS_D",
+                        "family": "keyboard",
+                        "slot": 1,
+                        "token_index": 3,
+                    },
+                ],
+            }
+        )
+
+    reranker = _fit_candidate_score_reranker(
+        rows,
+        torch=torch,
+        config={
+            "candidate_score_reranker_enabled": True,
+            "candidate_score_reranker_families": ["keyboard"],
+            "candidate_score_reranker_features": ["score", "key_presence_score"],
+            "candidate_score_reranker_epochs": 80,
+            "candidate_score_reranker_lr": 0.1,
+            "candidate_score_reranker_blend": 1.0,
+        },
+    )
+    assert reranker["status"] == "pass"
+    assert reranker["families"]["keyboard"]["train_pairwise_auc"] >= 0.99
+
+    applied = _apply_candidate_score_reranker_to_probability_rows(
+        [rows[0]],
+        config={"candidate_score_reranker": reranker},
+    )
+    assert applied[0]["candidates"][0]["token"] == "KEY_PRESS_A"
+    assert applied[0]["candidates"][0]["reranker_score"] > applied[0]["candidates"][1]["reranker_score"]
+    assert applied[0]["candidates"][0]["pre_reranker_score"] == pytest.approx(0.10)
+
+
+def test_temporal_center_candidates_applies_candidate_score_reranker_before_cutoff():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "KEY_PRESS_A", "KEY_PRESS_D"]
+    probabilities = torch.zeros((1, 1, len(vocab)), dtype=torch.float32)
+    probabilities[:, :, 3] = 0.10
+    probabilities[:, :, 4] = 0.90
+    reranker = {
+        "status": "pass",
+        "feature_names": ["score"],
+        "score_blend": 1.0,
+        "families": {
+            "keyboard": {
+                "status": "pass",
+                "mean": [0.5],
+                "scale": [1.0],
+                "weights": [-10.0],
+                "bias": 0.0,
+            }
+        },
+    }
+
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={"non_noop_budget_candidates_per_row": 1, "candidate_score_reranker": reranker},
+    )
+
+    assert candidates[0][0]["token"] == "KEY_PRESS_A"
+    assert candidates[0][0]["pre_reranker_score"] == pytest.approx(0.10)
 
 
 def test_temporal_button_class_targets_map_click_tokens_to_row_classes():

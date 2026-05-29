@@ -3,6 +3,7 @@ from __future__ import annotations
 import glob
 import hashlib
 import json
+import math
 import os
 import random
 import time
@@ -1567,6 +1568,246 @@ def _action_family(token: str) -> str:
     return "other"
 
 
+_CANDIDATE_SCORE_RERANKER_DEFAULT_FEATURES = [
+    "score",
+    "token_probability",
+    "retrieval_score",
+    "prior_weight",
+    "event_gate_multiplier",
+    "key_presence_score",
+    "video_key_presence_score",
+    "key_class_score",
+    "button_class_score",
+    "button_class_no_button_gate_score",
+    "button_presence_score",
+    "video_button_presence_score",
+    "mouse_move_presence_score",
+    "video_mouse_move_presence_score",
+    "mouse_axis_class_score",
+    "slot_is_direct_aux",
+]
+
+
+def _candidate_score_reranker_features(candidate: dict[str, Any], feature_names: Sequence[str]) -> list[float]:
+    values: list[float] = []
+    for name in feature_names:
+        if name == "slot_is_direct_aux":
+            values.append(1.0 if int(candidate.get("slot", 0) or 0) < 0 else 0.0)
+        elif name == "score_squared":
+            score = float(candidate.get("score", 0.0) or 0.0)
+            values.append(score * score)
+        elif name == "score_logit":
+            score = max(1e-6, min(1.0 - 1e-6, float(candidate.get("score", 0.0) or 0.0)))
+            values.append(float(math.log(score / (1.0 - score))))
+        else:
+            values.append(float(candidate.get(name, 0.0) or 0.0))
+    return values
+
+
+def _candidate_score_reranker_label(row: dict[str, Any], candidate: dict[str, Any]) -> float:
+    token = str(candidate.get("token", ""))
+    ground_truth = row.get("ground_truth_fdm1_tokens") or row.get("ground_truth_tokens", [])
+    return 1.0 if token in {str(value) for value in ground_truth} else 0.0
+
+
+def _fit_candidate_score_reranker(
+    probability_rows: Sequence[dict[str, Any]],
+    *,
+    torch: Any,
+    config: dict[str, Any],
+) -> dict[str, Any]:
+    """Fit a train-heldout candidate-confidence reranker.
+
+    FDM-1 exposes a masked action-token diffusion IDM and iterative confidence
+    unmasking, but not the internal confidence calibration recipe.  This helper
+    keeps the public recipe boundary: it trains a tiny family-specific logistic
+    ranker over candidate confidence features produced by the IDM on held-out
+    *training* rows only, then applies the learned confidence to eval/target
+    candidates without reading target labels.
+    """
+
+    if not bool(config.get("candidate_score_reranker_enabled", False)):
+        return {"status": "skipped", "reason": "disabled"}
+    if not probability_rows:
+        return {"status": "skipped", "reason": "no_probability_rows"}
+    families_raw = config.get("candidate_score_reranker_families", ["keyboard", "mouse_button", "mouse_move"])
+    families = [str(item) for item in families_raw] if isinstance(families_raw, list) else ["keyboard", "mouse_button", "mouse_move"]
+    feature_names_raw = config.get("candidate_score_reranker_features", _CANDIDATE_SCORE_RERANKER_DEFAULT_FEATURES)
+    feature_names = (
+        [str(item) for item in feature_names_raw]
+        if isinstance(feature_names_raw, list) and feature_names_raw
+        else list(_CANDIDATE_SCORE_RERANKER_DEFAULT_FEATURES)
+    )
+    min_positives = max(1, int(config.get("candidate_score_reranker_min_positives", 2) or 2))
+    min_negatives = max(1, int(config.get("candidate_score_reranker_min_negatives", 2) or 2))
+    max_examples = max(0, int(config.get("candidate_score_reranker_max_examples_per_family", 200000) or 0))
+    seed = int(config.get("candidate_score_reranker_seed", 17) or 17)
+    epochs = max(1, int(config.get("candidate_score_reranker_epochs", 200) or 200))
+    lr = max(1e-8, float(config.get("candidate_score_reranker_lr", 0.05) or 0.05))
+    l2 = max(0.0, float(config.get("candidate_score_reranker_l2", 1e-4) or 0.0))
+    max_pos_weight = max(1.0, float(config.get("candidate_score_reranker_max_pos_weight", 64.0) or 64.0))
+    device = torch.device("cpu")
+    payload: dict[str, Any] = {
+        "schema": "temporal_candidate_score_reranker.v1",
+        "status": "skipped",
+        "feature_names": feature_names,
+        "families": {},
+        "rows": len(probability_rows),
+        "claim_boundary": "Train-heldout candidate confidence reranker only. It may use train-heldout labels to fit candidate confidence, but never target/eval labels.",
+    }
+    for family in families:
+        examples: list[tuple[list[float], float]] = []
+        for row in probability_rows:
+            for candidate in row.get("candidates", []):
+                if str(candidate.get("family", _action_family(str(candidate.get("token", ""))))) != family:
+                    continue
+                examples.append((_candidate_score_reranker_features(candidate, feature_names), _candidate_score_reranker_label(row, candidate)))
+        positives = sum(1 for _features, label in examples if label > 0.5)
+        negatives = len(examples) - positives
+        if positives < min_positives or negatives < min_negatives:
+            payload["families"][family] = {
+                "status": "skipped",
+                "reason": "insufficient_positive_or_negative_candidates",
+                "examples": len(examples),
+                "positives": positives,
+                "negatives": negatives,
+            }
+            continue
+        if max_examples and len(examples) > max_examples:
+            rng = random.Random(seed + len(family))
+            positives_examples = [item for item in examples if item[1] > 0.5]
+            negatives_examples = [item for item in examples if item[1] <= 0.5]
+            pos_keep = min(len(positives_examples), max(1, max_examples // 2))
+            neg_keep = min(len(negatives_examples), max_examples - pos_keep)
+            examples = rng.sample(positives_examples, pos_keep) + rng.sample(negatives_examples, neg_keep)
+            rng.shuffle(examples)
+            positives = sum(1 for _features, label in examples if label > 0.5)
+            negatives = len(examples) - positives
+        x = torch.tensor([features for features, _label in examples], dtype=torch.float32, device=device)
+        y = torch.tensor([label for _features, label in examples], dtype=torch.float32, device=device)
+        mean = x.mean(dim=0)
+        std = x.std(dim=0, unbiased=False).clamp_min(1e-6)
+        x_norm = (x - mean) / std
+        weights = torch.zeros((x_norm.shape[1],), dtype=torch.float32, device=device, requires_grad=True)
+        bias = torch.zeros((), dtype=torch.float32, device=device, requires_grad=True)
+        optimizer = torch.optim.AdamW([weights, bias], lr=lr, weight_decay=l2)
+        pos_weight_value = min(max_pos_weight, max(1.0, float(negatives) / max(1.0, float(positives))))
+        pos_weight = torch.tensor(pos_weight_value, dtype=torch.float32, device=device)
+        for _epoch in range(epochs):
+            logits = x_norm.matmul(weights) + bias
+            loss = torch.nn.functional.binary_cross_entropy_with_logits(logits, y, pos_weight=pos_weight)
+            optimizer.zero_grad(set_to_none=True)
+            loss.backward()
+            optimizer.step()
+        with torch.no_grad():
+            logits = x_norm.matmul(weights) + bias
+            probs = torch.sigmoid(logits)
+            pos_scores = probs[y > 0.5]
+            neg_scores = probs[y <= 0.5]
+            # Pairwise AUC is useful for deciding whether a candidate is worth a
+            # GPU rerun; keep it bounded for large calibration sets.
+            auc = None
+            if int(pos_scores.numel()) > 0 and int(neg_scores.numel()) > 0:
+                pos_eval = pos_scores[: min(4096, int(pos_scores.numel()))].view(-1, 1)
+                neg_eval = neg_scores[: min(4096, int(neg_scores.numel()))].view(1, -1)
+                auc = float(((pos_eval > neg_eval).float() + 0.5 * (pos_eval == neg_eval).float()).mean().cpu())
+        payload["families"][family] = {
+            "status": "pass",
+            "examples": len(examples),
+            "positives": positives,
+            "negatives": negatives,
+            "pos_weight": pos_weight_value,
+            "epochs": epochs,
+            "lr": lr,
+            "l2": l2,
+            "mean": [float(value) for value in mean.detach().cpu().tolist()],
+            "scale": [float(value) for value in std.detach().cpu().tolist()],
+            "weights": [float(value) for value in weights.detach().cpu().tolist()],
+            "bias": float(bias.detach().cpu()),
+            "train_positive_score_mean": float(pos_scores.mean().cpu()) if int(pos_scores.numel()) else None,
+            "train_negative_score_mean": float(neg_scores.mean().cpu()) if int(neg_scores.numel()) else None,
+            "train_pairwise_auc": auc,
+        }
+    if any(item.get("status") == "pass" for item in payload["families"].values()):
+        payload["status"] = "pass"
+        payload["score_blend"] = max(0.0, min(1.0, float(config.get("candidate_score_reranker_blend", 1.0) or 0.0)))
+    else:
+        payload["reason"] = "no_family_fit_passed"
+    return payload
+
+
+def _candidate_score_reranker_score(candidate: dict[str, Any], reranker: dict[str, Any]) -> float | None:
+    family = str(candidate.get("family", _action_family(str(candidate.get("token", "")))))
+    family_payload = (reranker.get("families") or {}).get(family)
+    if not isinstance(family_payload, dict) or family_payload.get("status") != "pass":
+        return None
+    feature_names = [str(item) for item in reranker.get("feature_names", [])]
+    if not feature_names:
+        return None
+    features = _candidate_score_reranker_features(candidate, feature_names)
+    mean = [float(value) for value in family_payload.get("mean", [])]
+    scale = [float(value) for value in family_payload.get("scale", [])]
+    weights = [float(value) for value in family_payload.get("weights", [])]
+    if not (len(features) == len(mean) == len(scale) == len(weights)):
+        return None
+    logit = float(family_payload.get("bias", 0.0) or 0.0)
+    for value, mu, sigma, weight in zip(features, mean, scale, weights):
+        logit += ((float(value) - mu) / max(1e-6, sigma)) * weight
+    if logit >= 0.0:
+        z = math.exp(-logit)
+        return 1.0 / (1.0 + z)
+    z = math.exp(logit)
+    return z / (1.0 + z)
+
+
+def _apply_candidate_score_reranker_to_candidate_rows(
+    candidate_rows: Sequence[Sequence[dict[str, Any]]],
+    *,
+    config: dict[str, Any],
+) -> list[list[dict[str, Any]]]:
+    reranker = config.get("candidate_score_reranker")
+    if not isinstance(reranker, dict) or reranker.get("status") != "pass":
+        return [list(row) for row in candidate_rows]
+    default_blend = max(0.0, min(1.0, float(reranker.get("score_blend", config.get("candidate_score_reranker_blend", 1.0)) or 0.0)))
+    out: list[list[dict[str, Any]]] = []
+    for candidates in candidate_rows:
+        updated: list[dict[str, Any]] = []
+        for candidate in candidates:
+            score = _candidate_score_reranker_score(candidate, reranker)
+            if score is None:
+                updated.append(dict(candidate))
+                continue
+            family = str(candidate.get("family", _action_family(str(candidate.get("token", "")))))
+            family_payload = (reranker.get("families") or {}).get(family, {})
+            blend = max(0.0, min(1.0, float(family_payload.get("score_blend", default_blend) or 0.0)))
+            old_score = float(candidate.get("score", 0.0) or 0.0)
+            new_candidate = dict(candidate)
+            new_candidate["pre_reranker_score"] = old_score
+            new_candidate["reranker_score"] = float(score)
+            new_candidate["score"] = (1.0 - blend) * old_score + blend * float(score)
+            updated.append(new_candidate)
+        updated.sort(key=lambda item: (-float(item.get("score", 0.0)), int(item.get("slot", 0)), int(item.get("token_index", 0))))
+        out.append(updated)
+    return out
+
+
+def _apply_candidate_score_reranker_to_probability_rows(
+    probability_rows: Sequence[dict[str, Any]],
+    *,
+    config: dict[str, Any],
+) -> list[dict[str, Any]]:
+    candidate_rows = _apply_candidate_score_reranker_to_candidate_rows(
+        [row.get("candidates", []) for row in probability_rows],
+        config=config,
+    )
+    out: list[dict[str, Any]] = []
+    for row, candidates in zip(probability_rows, candidate_rows):
+        item = dict(row)
+        item["candidates"] = candidates
+        out.append(item)
+    return out
+
+
 def _temporal_window_features_for_batch(
     *,
     rows: Sequence[dict[str, Any]],
@@ -2174,6 +2415,8 @@ def _temporal_center_candidates(
                         }
                     )
         candidates.sort(key=lambda item: (-float(item["score"]), int(item["slot"]), int(item["token_index"])))
+        if isinstance(config.get("candidate_score_reranker"), dict):
+            candidates = _apply_candidate_score_reranker_to_candidate_rows([candidates], config=config)[0]
         if min_candidates_per_family > 0:
             selected: list[dict[str, Any]] = []
             seen: set[tuple[int, int]] = set()
@@ -3687,10 +3930,12 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     )
     non_noop_budget = {"status": "skipped", "reason": "disabled"}
     family_non_noop_budget = {"status": "skipped", "reason": "disabled"}
+    candidate_score_reranker: dict[str, Any] = {"status": "skipped", "reason": "disabled"}
     probability_rows: list[dict[str, Any]] | None = None
     needs_probability_rows = (
         bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False)))
         or bool(config.get("calibrate_family_non_noop_budget", config.get("family_non_noop_budgeted_unmasking", False)))
+        or bool(config.get("candidate_score_reranker_enabled", False))
     )
     if needs_probability_rows and calibration_rows:
         _write_rank_progress(
@@ -3718,6 +3963,11 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             retrieval_index=retrieval_index,
             token_prior_weights=candidate_token_prior_weights,
         )
+    if bool(config.get("candidate_score_reranker_enabled", False)) and probability_rows:
+        candidate_score_reranker = _fit_candidate_score_reranker(probability_rows, torch=torch, config=config)
+        if candidate_score_reranker.get("status") == "pass":
+            config["candidate_score_reranker"] = candidate_score_reranker
+            probability_rows = _apply_candidate_score_reranker_to_probability_rows(probability_rows, config=config)
     if bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False))) and probability_rows:
         non_noop_budget = _calibrate_temporal_non_noop_budget(probability_rows, config=config)
         if non_noop_budget.get("status") == "pass":
@@ -3862,6 +4112,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "history":history,
         "non_noop_budget":non_noop_budget,
         "family_non_noop_budget":family_non_noop_budget,
+        "candidate_score_reranker":candidate_score_reranker,
         "candidate_family_diagnostics":candidate_family_diagnostics,
         "retrieval_action_prior":retrieval_summary,
         "candidate_token_prior":candidate_token_prior_summary,

@@ -1357,3 +1357,51 @@ Operational diagnosis: distributed feature-cache hardening worked and reduced du
 After the train320k failure, added train-only `temporal_calibration_strategy=stratified_action` so budget calibration no longer samples a near-noop train tail. A prediction-only sweep from the train320k checkpoint over a 5k temporal target prefix used 2k stratified calibration rows, disabled retrieval to avoid recomputing full fit features, and reused raw-video cache support where possible.
 
 Result remains negative: keyboard key accuracy improved only to `0.01486`, mouse-button accuracy/F1 stayed `0.0/0.0`, mouse Pearson X/Y `0.02470/-0.00157`, and no-button FPR `0.0`. The calibration now sees dense positives, but candidate scoring still ranks keyboard/button/mouse movement too poorly for paper targets. Do not promote this sweep to full 24k/full-corpus evaluation.
+
+### 2026-05-30 KST — quota grant remains active; idle continuation cancelled
+
+After the user confirmed the quota increase approval, MLXP API inspection showed
+`production_effective_gpu_quota=8` with active grant
+`grant-req-1-gpu-quota-increase-20260529-94abef` and no current GPU workload on
+the continuation pod. The train320k and stratified prediction sweeps were already
+terminal negative, so the 4×H200 continuation reservation was cancelled to avoid
+burning approved GPU-hours while the next candidate-scoring redesign is still
+local/research work.
+
+Evidence:
+
+- `artifacts/cluster/g005_realvideo_raw96_train320k_continuation_cancel_20260530.json`
+  — `rsv-jeonghunpark-20260530-d58f2b` cancellation audit.
+- Post-cancel API check: current production reservations `0`; quota remains
+  effective at 8 GPUs with approved hours remaining.
+
+G005 remains incomplete. Do not checkpoint `G005-g014-idm-full-paper-target`; the
+next GPU reservation should wait for a materially different FDM-1-shaped IDM
+candidate and a distributed/vectorized prediction path.
+
+### 2026-05-30 KST — next local pivot: train-heldout candidate-score reranker
+
+Implemented a split-safe confidence-reranker path for the failed train320k raw96
+masked-diffusion checkpoint. This keeps the public FDM-1 recipe boundary: the
+IDM still produces masked action-token candidates and iterative unmasking, while
+a small family-specific logistic confidence scorer is fit only on held-out D2E
+train candidate rows to approximate the unpublished FDM-1 confidence ranking
+stage. Target labels are never used for fitting or threshold calibration.
+
+New artifacts/code paths:
+
+- `_fit_candidate_score_reranker` and application helpers in
+  `src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py`.
+- Prediction script integration in `scripts/predict_idm_temporal_masked_diffusion.py`.
+- Decision-probe config:
+  `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k.yaml`.
+- Wrapper:
+  `scripts/run_g005_idm_temporal_raw96_train320k_candidate_reranker_predict5k.sh`.
+
+Validation: `python3 -m py_compile` for the trainer/prediction script,
+`bash -n` for the wrapper, and `uv run pytest -q tests/test_masked_diffusion_idm_trainer.py tests/test_training_run_scripts.py tests/test_fdm1_recipe_alignment.py`
+passed (`76 passed`). Do not reserve 4×H200 for this yet; first run the 5k
+prediction-only probe from the existing train320k checkpoint/cache when a small
+reservation or reusable pod is available. If the reranker cannot move keyboard,
+button, and mouse metrics materially on 5k, reject it without a full 24k/4×H200
+promotion.

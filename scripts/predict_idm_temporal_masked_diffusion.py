@@ -15,6 +15,7 @@ from fdm_d2e.io_utils import ensure_dir, write_json
 from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _build_temporal_model,
     _adapt_temporal_family_budget_to_unlabeled_distribution,
+    _apply_candidate_score_reranker_to_probability_rows,
     _build_temporal_retrieval_prior_index,
     _calibrate_temporal_family_non_noop_budget,
     _calibrate_temporal_non_noop_budget,
@@ -23,6 +24,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _collect_temporal_probability_rows,
     _configured_video_feature_dim,
     _expand_paths,
+    _fit_candidate_score_reranker,
     _iter_jsonl,
     _precompute_features_with_distributed_cache,
     _precompute_video_cache_features,
@@ -171,6 +173,7 @@ def predict_temporal_masked_diffusion_idm(
     needs_probability_rows = (
         bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False)))
         or bool(config.get("calibrate_family_non_noop_budget", config.get("family_non_noop_budgeted_unmasking", False)))
+        or bool(config.get("candidate_score_reranker_enabled", False))
     )
     if needs_probability_rows and calibration_rows:
         probability_rows = _collect_temporal_probability_rows(
@@ -184,6 +187,12 @@ def predict_temporal_masked_diffusion_idm(
             retrieval_index=retrieval_index,
             token_prior_weights=candidate_token_prior_weights,
         )
+    candidate_score_reranker: dict[str, Any] = {"status": "skipped", "reason": "disabled"}
+    if bool(config.get("candidate_score_reranker_enabled", False)) and probability_rows:
+        candidate_score_reranker = _fit_candidate_score_reranker(probability_rows, torch=torch, config=config)
+        if candidate_score_reranker.get("status") == "pass":
+            config["candidate_score_reranker"] = candidate_score_reranker
+            probability_rows = _apply_candidate_score_reranker_to_probability_rows(probability_rows, config=config)
     non_noop_budget: dict[str, Any] = {"status": "skipped", "reason": "disabled"}
     family_non_noop_budget: dict[str, Any] = {"status": "skipped", "reason": "disabled"}
     if bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False))) and probability_rows:
@@ -284,6 +293,7 @@ def predict_temporal_masked_diffusion_idm(
         else None,
         "non_noop_budget": non_noop_budget,
         "family_non_noop_budget": family_non_noop_budget,
+        "candidate_score_reranker": candidate_score_reranker,
         "candidate_family_diagnostics": candidate_family_diagnostics,
         "retrieval_action_prior": retrieval_summary,
         "candidate_token_prior": candidate_token_prior_summary,
