@@ -1,0 +1,74 @@
+{
+  "claim_boundary": "Partial throughput diagnostic only; not G005 completion evidence and not a paper-target result.",
+  "created_at_epoch": 1780039266.5705993,
+  "gpu_monitor_status": {
+    "max_gpu_utilization": 35.0,
+    "rows": 27,
+    "status": "pass",
+    "unique_gpu_indices": [
+      0
+    ]
+  },
+  "rank_progress": {
+    "batch": 200,
+    "batches": 2438,
+    "epoch": 1,
+    "epochs": 2,
+    "examples": 6400,
+    "loss": 0.0004655803995774477,
+    "phase": "video_pretrain",
+    "rank": 0,
+    "schema": "temporal_masked_diffusion_rank_progress.v1",
+    "updated_at_epoch": 1780039079.7169044
+  },
+  "reason": "Long-context compact-luma branch was recipe-aligned but too CPU/input-pipeline bound for the active reservation; pivoting to committed tensorized feature storage and bounded video pretraining in bd89897.",
+  "schema": "g005_h200_probe_stall_diagnosis.v1",
+  "status": "stopped_for_tensorfast_pivot",
+  "wandb_status": {
+    "checkpoint_exists": false,
+    "claim_boundary": "W&B sidecar status contains no secrets and is logging-only evidence.",
+    "entity_configured": true,
+    "gpu_latest": [
+      {
+        "index": "0",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 6167.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 126.66,
+        "timestamp": "2026/05/29 07:20:44.342",
+        "utilization_gpu_pct": 0.0,
+        "utilization_memory_pct": 0.0
+      }
+    ],
+    "last_epoch": null,
+    "logged_epochs_this_loop": 0,
+    "logged_epochs_total": [],
+    "loop_index": 27,
+    "metadata_exists": false,
+    "process_running": true,
+    "project": "fdm-d2e-reproduction",
+    "rank_progress": [
+      {
+        "batch": 200,
+        "batches": 2438,
+        "epoch": 1,
+        "epochs": 2,
+        "examples": 6400,
+        "heartbeat_age_sec": 169.18295860290527,
+        "loss": 0.0004655803995774477,
+        "path": "outputs/idm_temporal_masked_diffusion_d2e_luma_longctx_axisclass_metricbins_prefix80k/rank_progress/train_rank0.json",
+        "phase": "video_pretrain",
+        "rank": 0,
+        "schema": "temporal_masked_diffusion_rank_progress.v1",
+        "updated_at_epoch": 1780039079.7169044
+      }
+    ],
+    "run_name": "g005_idm_temporal_masked_diffusion_luma_longctx_axisclass_metricbins_prefix80k",
+    "run_summary_exists": false,
+    "schema": "wandb_training_sidecar_status.v1",
+    "status": "running",
+    "updated_at_epoch": 1780039248.9085288,
+    "wandb_run_id": "qqkv0lri",
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/qqkv0lri"
+  }
+}
