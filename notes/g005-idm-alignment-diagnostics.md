@@ -1351,3 +1351,9 @@ Ran `g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320
 Observed all-split paper-compatible metrics: keyboard key accuracy `0.0086006`, mouse-button accuracy `0.0`, strict mouse-button F1 `0.0`, mouse Pearson X/Y `0.0055316/null`, and no-button FPR `0.012024`. Only the no-button FPR gate passed; all paper-target quality gates failed. The model mostly emitted common key press/release tokens plus `MOUSE_DY_Z0`, indicating a candidate ranking/budget failure rather than an operational training failure.
 
 Operational diagnosis: distributed feature-cache hardening worked and reduced duplicated raw-frame decode across ranks. Training used all four H200s, but post-training probability/prediction remained rank0-only, leaving GPUs 1–3 idle during final prediction. Future H200 branches should vectorize/distribute post-checkpoint calibration/prediction before another large run.
+
+### 2026-05-30 KST — stratified calibration prediction sweep remains negative
+
+After the train320k failure, added train-only `temporal_calibration_strategy=stratified_action` so budget calibration no longer samples a near-noop train tail. A prediction-only sweep from the train320k checkpoint over a 5k temporal target prefix used 2k stratified calibration rows, disabled retrieval to avoid recomputing full fit features, and reused raw-video cache support where possible.
+
+Result remains negative: keyboard key accuracy improved only to `0.01486`, mouse-button accuracy/F1 stayed `0.0/0.0`, mouse Pearson X/Y `0.02470/-0.00157`, and no-button FPR `0.0`. The calibration now sees dense positives, but candidate scoring still ranks keyboard/button/mouse movement too poorly for paper targets. Do not promote this sweep to full 24k/full-corpus evaluation.

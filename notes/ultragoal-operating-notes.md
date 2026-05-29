@@ -599,3 +599,8 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - `g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_target24k` completed on `prod-rsv-jeonghunpark-20260529-b8d1e3` with `exit_code=0`; terminal compact status is `nonterminal_negative_probe`.
 - Metrics: keyboard key accuracy `0.0086006`, mouse-button accuracy/F1 `0.0/0.0`, mouse Pearson X/Y `0.0055316/null`, no-button FPR `0.012024`. Only the no-button FPR gate passed; do not checkpoint `G005-g014-idm-full-paper-target`.
 - The distributed raw-frame cache worked and all four H200s trained, but final target probability/prediction is still rank0-only; fix/avoid this before the next large H200 attempt.
+
+## 2026-05-30T02:24 KST — stratified prediction sweep negative
+- Added/pushed stratified train-only calibration and raw-video cache reuse for prediction sweeps (`32b5f40`, `3e1f9d3`).
+- Ran a post-checkpoint 2k-calibration / 5k-target sweep from the train320k checkpoint. Metrics remain non-terminal: keyboard `0.01486`, mouse-button accuracy/F1 `0.0/0.0`, mouse Pearson X/Y `0.02470/-0.00157`, no-button FPR `0.0`.
+- Diagnosis: calibration sparsity was a real bug, but not the main blocker; candidate scoring/ranking from the raw96 masked-diffusion model is still far too weak.
