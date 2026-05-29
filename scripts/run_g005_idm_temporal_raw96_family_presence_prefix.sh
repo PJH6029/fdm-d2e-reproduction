@@ -104,7 +104,7 @@ def gpu_status(path):
             rows += 1
             try: indices.add(int(str(row[1]).strip()))
             except Exception: pass
-            try: util.append(float(str(row[3]).strip()))
+            try: util.append(float(str(row[3]).strip().replace('%', '').strip()))
             except Exception: pass
     return {'status':'pass' if rows else 'empty','rows':rows,'unique_gpu_indices':sorted(indices),'max_gpu_utilization':max(util) if util else None}
 
