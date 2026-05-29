@@ -10,6 +10,7 @@ from typing import Any, Iterator, Sequence
 from fdm_d2e.eval.paper_idm_metrics import _PaperMetricAccumulator, write_paper_idm_metrics
 from fdm_d2e.io_utils import ensure_dir, write_json
 from fdm_d2e.training.masked_diffusion_idm import (
+    FDM1_ACTION_PAD,
     FDM1_ACTION_MASK,
     FDM1_ACTION_NOOP,
     canonical_action_slot_record,
@@ -258,6 +259,19 @@ class _TemporalMaskedDiffusionDataset:
         self.max_slots = int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))
         self.mask_probability = float(config.get("mask_probability", 0.65))
         self.random_token_probability = float(config.get("random_token_probability", 0.10))
+        self.full_action_mask_probability = max(
+            0.0,
+            min(
+                1.0,
+                float(
+                    config.get(
+                        "full_action_mask_probability",
+                        config.get("all_action_mask_probability", config.get("all_mask_probability", 0.0)),
+                    )
+                    or 0.0
+                ),
+            ),
+        )
         self.seed = int(config.get("seed", 7))
         self.offsets = _temporal_offsets(config)
         self.loss_offsets = set(int(value) for value in config.get("temporal_loss_offsets", self.offsets))
@@ -281,18 +295,31 @@ class _TemporalMaskedDiffusionDataset:
         mask_rows: list[list[bool]] = []
         index_to_token = {idx_: token for token, idx_ in self.token_to_index.items()}
         mask_index = self.token_to_index[FDM1_ACTION_MASK]
+        force_full_mask = random.Random(self.seed + idx * 104729).random() < self.full_action_mask_probability
         for offset_position, offset in enumerate(self.offsets):
             row_index = self._row_index(idx, offset)
             feature_rows.append(self._feature_tensor(row_index))
             target = list(self.target_ids[row_index])
             target_tokens = [index_to_token.get(token_id, FDM1_ACTION_NOOP) for token_id in target]
-            corrupted_tokens, loss_mask = corrupt_action_slots(
-                target_tokens,
-                vocab=self.vocab,
-                mask_probability=self.mask_probability,
-                random_token_probability=self.random_token_probability,
-                rng=random.Random(self.seed + idx * 1009 + offset_position),
-            )
+            if force_full_mask:
+                # Public FDM-1 inference starts from interleaved frame tokens
+                # plus masked action-token positions.  Mixing full-mask rows
+                # into training reduces the teacher-forcing mismatch from
+                # ordinary BERT-style partial corruption while staying within
+                # the same masked-diffusion action-token objective.
+                corrupted_tokens = [
+                    FDM1_ACTION_MASK if token != FDM1_ACTION_PAD else token
+                    for token in target_tokens
+                ]
+                loss_mask = [token != FDM1_ACTION_PAD for token in target_tokens]
+            else:
+                corrupted_tokens, loss_mask = corrupt_action_slots(
+                    target_tokens,
+                    vocab=self.vocab,
+                    mask_probability=self.mask_probability,
+                    random_token_probability=self.random_token_probability,
+                    rng=random.Random(self.seed + idx * 1009 + offset_position),
+                )
             if offset not in self.loss_offsets:
                 loss_mask = [False for _ in loss_mask]
             corrupted_rows.append([self.token_to_index.get(token, mask_index) for token in corrupted_tokens])
@@ -413,11 +440,55 @@ def _build_temporal_model(
                 parts.append(self.aux_proj(video_features[:, self.raw_dim :]))
             return self.out(torch.cat(parts, dim=1))
 
+    class RawVideoPatchTokenEncoder(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            channels = int(config.get("raw_video_encoder_channels", config.get("luma_encoder_channels", 32)))
+            pooled_hw = int(config.get("raw_video_encoder_token_hw", config.get("raw_video_encoder_pool_hw", 2)))
+            pooled_frames = int(config.get("raw_video_encoder_token_frames", 1))
+            self.raw_dim = min(video_dim, raw_video_dim)
+            self.aux_dim = max(0, video_dim - self.raw_dim)
+            self.frames = max(1, raw_video_frames)
+            self.size = max(1, raw_video_size)
+            self.token_frames = max(1, pooled_frames)
+            self.token_hw = max(1, pooled_hw)
+            self.tokens_per_offset = self.token_frames * self.token_hw * self.token_hw
+            self.conv = nn.Sequential(
+                nn.Conv3d(1, channels, kernel_size=(3, 5, 5), padding=(1, 2, 2), stride=(1, 2, 2)),
+                nn.GELU(),
+                nn.Conv3d(channels, channels * 2, kernel_size=(3, 3, 3), padding=(1, 1, 1), stride=(1, 2, 2)),
+                nn.GELU(),
+                nn.Conv3d(channels * 2, channels * 2, kernel_size=(3, 3, 3), padding=(1, 1, 1)),
+                nn.GELU(),
+            )
+            self.pool = nn.AdaptiveAvgPool3d((self.token_frames, self.token_hw, self.token_hw))
+            self.token_proj = nn.Linear(channels * 2, hidden_dim)
+            aux_hidden = int(config.get("raw_video_aux_hidden_dim", config.get("luma_aux_hidden_dim", min(hidden_dim, 128))))
+            self.aux_proj = nn.Sequential(nn.Linear(self.aux_dim, aux_hidden), nn.GELU(), nn.Linear(aux_hidden, hidden_dim)) if self.aux_dim else None
+            self.out_norm = nn.LayerNorm(hidden_dim)
+
+        def forward(self, video_features: Any) -> Any:
+            batch = int(video_features.shape[0])
+            expected = self.frames * self.size * self.size
+            raw = video_features[:, : self.raw_dim]
+            if self.raw_dim < expected:
+                pad = torch.zeros((batch, expected - self.raw_dim), device=video_features.device, dtype=video_features.dtype)
+                raw = torch.cat([raw, pad], dim=1)
+            raw = raw[:, :expected].reshape(batch, 1, self.frames, self.size, self.size)
+            encoded = self.pool(self.conv(raw))
+            tokens = encoded.permute(0, 2, 3, 4, 1).reshape(batch, self.tokens_per_offset, -1)
+            projected = self.token_proj(tokens)
+            if self.aux_proj is not None:
+                projected = projected + self.aux_proj(video_features[:, self.raw_dim :]).unsqueeze(1)
+            return self.out_norm(torch.nn.functional.gelu(projected))
+
     class TemporalMaskedDiffusionIDM(nn.Module):
         def __init__(self) -> None:
             super().__init__()
             self.offsets = list(offsets)
             if video_encoder_arch in {"raw_video_cnn", "raw_frame_cnn", "raw_video_frame_cnn"}:
+                self.video_reconstruction_dim = raw_video_dim
+            elif video_encoder_arch in {"raw_video_patch_cnn", "raw_video_token_cnn", "raw_video_patch_tokens"}:
                 self.video_reconstruction_dim = raw_video_dim
             elif video_encoder_arch in {"compact_luma_window_cnn", "luma_window_cnn", "video_luma_cnn"}:
                 self.video_reconstruction_dim = luma_window_dim
@@ -425,10 +496,18 @@ def _build_temporal_model(
                 self.video_reconstruction_dim = 0
             if video_encoder_arch in {"raw_video_cnn", "raw_frame_cnn", "raw_video_frame_cnn"}:
                 self.video_proj = RawVideoFrameEncoder()
+            elif video_encoder_arch in {"raw_video_patch_cnn", "raw_video_token_cnn", "raw_video_patch_tokens"}:
+                self.video_proj = RawVideoPatchTokenEncoder()
             elif self.video_reconstruction_dim > 0:
                 self.video_proj = CompactLumaWindowEncoder()
             else:
                 self.video_proj = nn.Sequential(nn.Linear(video_dim, hidden_dim), nn.GELU(), nn.LayerNorm(hidden_dim))
+            self.video_tokens_per_offset = int(getattr(self.video_proj, "tokens_per_offset", 1))
+            self.video_token_embed = (
+                nn.Embedding(self.video_tokens_per_offset, hidden_dim)
+                if self.video_tokens_per_offset > 1
+                else None
+            )
             self.video_reconstruction_head = (
                 nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.GELU(), nn.Linear(hidden_dim, self.video_reconstruction_dim))
                 if self.video_reconstruction_dim > 0
@@ -466,13 +545,23 @@ def _build_temporal_model(
         def video_embedding(self, video_features: Any) -> Any:
             flat = video_features.reshape(-1, video_features.shape[-1])
             encoded = self.video_proj(flat)
+            if encoded.dim() == 3:
+                return encoded.reshape(video_features.shape[0], video_features.shape[1], encoded.shape[1], encoded.shape[2])
             return encoded.reshape(video_features.shape[0], video_features.shape[1], -1)
+
+        def video_summary_embedding(self, video_features: Any) -> Any:
+            encoded = self.video_embedding(video_features)
+            if encoded.dim() == 4:
+                return encoded.mean(dim=2)
+            return encoded
 
         def reconstruct_video(self, video_features: Any) -> Any:
             if self.video_reconstruction_head is None:
                 raise RuntimeError("video reconstruction head unavailable")
             flat = video_features.reshape(-1, video_features.shape[-1])
             encoded = self.video_proj(flat)
+            if encoded.dim() == 3:
+                encoded = encoded.mean(dim=1)
             pred = self.video_reconstruction_head(encoded)
             return pred.reshape(video_features.shape[0], video_features.shape[1], -1)
 
@@ -481,13 +570,30 @@ def _build_temporal_model(
             slots = corrupted_ids.shape[-1]
             device = video_features.device
             offset_positions = torch.arange(window, device=device)
-            video_tokens = self.video_embedding(video_features) + self.offset_embed(offset_positions).unsqueeze(0) + self.type_embed(torch.zeros(window, dtype=torch.long, device=device)).unsqueeze(0)
+            video_embeddings = self.video_embedding(video_features)
+            if video_embeddings.dim() == 4:
+                video_token_count = int(video_embeddings.shape[2])
+                video_token_positions = torch.arange(video_token_count, device=device)
+                video_position_embeddings = (
+                    self.video_token_embed(video_token_positions).view(1, 1, video_token_count, -1)
+                    if self.video_token_embed is not None
+                    else torch.zeros((1, 1, video_token_count, video_embeddings.shape[-1]), device=device)
+                )
+                video_tokens = (
+                    video_embeddings
+                    + self.offset_embed(offset_positions).view(1, window, 1, -1)
+                    + video_position_embeddings
+                    + self.type_embed(torch.zeros((), dtype=torch.long, device=device)).view(1, 1, 1, -1)
+                ).reshape(batch, window * video_token_count, -1)
+            else:
+                video_tokens = video_embeddings + self.offset_embed(offset_positions).unsqueeze(0) + self.type_embed(torch.zeros(window, dtype=torch.long, device=device)).unsqueeze(0)
             action = self.action_embed(corrupted_ids)
             slot_positions = torch.arange(slots, device=device)
             action = action + self.offset_embed(offset_positions).view(1, window, 1, -1) + self.slot_embed(slot_positions).view(1, 1, slots, -1) + self.type_embed(torch.ones((), dtype=torch.long, device=device)).view(1, 1, 1, -1)
             sequence = torch.cat([video_tokens, action.reshape(batch, window * slots, -1)], dim=1)
             encoded = self.encoder(sequence)
-            action_encoded = encoded[:, window:, :].reshape(batch, window, slots, -1)
+            action_start = int(video_tokens.shape[1])
+            action_encoded = encoded[:, action_start:, :].reshape(batch, window, slots, -1)
             payload: dict[str, Any] = {"action_logits": self.head(action_encoded)}
             if self.event_auxiliary and self.key_event_head is not None and self.button_event_head is not None:
                 pooled = action_encoded.mean(dim=2)
@@ -1207,7 +1313,13 @@ def _build_temporal_retrieval_prior_index(
     with torch.no_grad():
         for start in range(0, limit, batch_size):
             batch_features = _feature_sequence_tensor(torch, features[start : start + batch_size], device=device).unsqueeze(1)
-            encoded = model.video_embedding(batch_features)[:, 0, :]
+            if hasattr(model, "video_summary_embedding"):
+                encoded = model.video_summary_embedding(batch_features)[:, 0, :]
+            else:
+                encoded = model.video_embedding(batch_features)
+                if encoded.dim() == 4:
+                    encoded = encoded.mean(dim=2)
+                encoded = encoded[:, 0, :]
             encoded = torch.nn.functional.normalize(encoded, p=2, dim=-1)
             embeddings.append(encoded.detach())
             for row in rows[start : start + batch_size]:
@@ -1252,7 +1364,13 @@ def _retrieval_priors_for_batch(
     batch_features = _feature_sequence_tensor(torch, features, device=device).unsqueeze(1)
     model.eval()
     with torch.no_grad():
-        query = model.video_embedding(batch_features)[:, 0, :]
+        if hasattr(model, "video_summary_embedding"):
+            query = model.video_summary_embedding(batch_features)[:, 0, :]
+        else:
+            query = model.video_embedding(batch_features)
+            if query.dim() == 4:
+                query = query.mean(dim=2)
+            query = query[:, 0, :]
         query = torch.nn.functional.normalize(query, p=2, dim=-1)
         scores = query @ embeddings.T
         values, indices = torch.topk(scores, k=top_k, dim=1)
@@ -2095,6 +2213,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "video_feature_source":feature_source,
         "video_feature_dim":feature_dim,
         "video_encoder_arch":str(config.get("video_encoder_arch", "flat_mlp")),
+        "video_tokens_per_offset":int(getattr(model, "video_tokens_per_offset", 1) or 1),
         "raw_video_frame_offsets":_raw_video_frame_offsets(config)
         if feature_source in {"raw_frames", "raw_video_frames", "frame_provider", "video_idm_cache", "raw_video_cache"}
         else None,
@@ -2168,6 +2287,13 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "candidate_diagnostics_target_max_rows":int(config.get("candidate_diagnostics_target_max_rows", 0) or 0),
             "token_loss_type":str(config.get("token_loss_type", "cross_entropy")),
             "token_focal_gamma":float(config.get("token_focal_gamma", config.get("focal_gamma", 2.0))),
+            "full_action_mask_probability":float(
+                config.get(
+                    "full_action_mask_probability",
+                    config.get("all_action_mask_probability", config.get("all_mask_probability", 0.0)),
+                )
+                or 0.0
+            ),
         },
         "device":str(device),
         "checkpoint_path":str(checkpoint_path),

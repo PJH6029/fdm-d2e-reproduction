@@ -1157,12 +1157,13 @@ def test_train_temporal_masked_diffusion_idm_raw_video_cnn_tiny_smoke(tmp_path: 
             "temporal_loss_offsets": [0],
             "video_feature_source": "raw_frames",
             "raw_video_image_size": 2,
-            "raw_video_frame_offsets": [0],
-            "raw_video_missing_frame_policy": "error",
-            "video_feature_dim": 4,
-            "video_encoder_arch": "raw_video_cnn",
+            "raw_video_frame_offsets": [0, 1],
+            "raw_video_missing_frame_policy": "zero",
+            "video_feature_dim": 8,
+            "video_encoder_arch": "raw_video_patch_cnn",
             "raw_video_encoder_channels": 2,
-            "raw_video_encoder_pool_hw": 1,
+            "raw_video_encoder_token_frames": 2,
+            "raw_video_encoder_token_hw": 1,
             "hidden_dim": 16,
             "transformer_layers": 1,
             "transformer_heads": 4,
@@ -1172,6 +1173,7 @@ def test_train_temporal_masked_diffusion_idm_raw_video_cnn_tiny_smoke(tmp_path: 
             "epochs": 1,
             "lr": 0.001,
             "mask_probability": 0.75,
+            "full_action_mask_probability": 1.0,
             "random_token_probability": 0.0,
             "diffusion_steps": 2,
             "video_encoder_pretrain_epochs": 1,
@@ -1186,9 +1188,11 @@ def test_train_temporal_masked_diffusion_idm_raw_video_cnn_tiny_smoke(tmp_path: 
     assert summary["schema"] == "temporal_masked_diffusion_idm_train_summary.v1"
     assert summary["status"] == "pass"
     assert summary["video_feature_source"] == "raw_frames"
-    assert summary["video_encoder_arch"] == "raw_video_cnn"
-    assert summary["raw_video_frame_offsets"] == [0]
+    assert summary["video_encoder_arch"] == "raw_video_patch_cnn"
+    assert summary["raw_video_frame_offsets"] == [0, 1]
     assert summary["raw_video_image_size"] == 2
+    assert summary["video_tokens_per_offset"] == 2
+    assert summary["loss_weights"]["full_action_mask_probability"] == 1.0
     assert summary["video_encoder_pretrain_history"]
     assert Path(summary["checkpoint_path"]).exists()
     assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 3
