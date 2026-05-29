@@ -341,6 +341,10 @@ def _key_class_vocab(vocab: Sequence[str]) -> list[str]:
     return [str(token) for token in vocab if _action_family(str(token)) == "keyboard"]
 
 
+def _mouse_move_class_vocab(vocab: Sequence[str]) -> list[str]:
+    return [str(token) for token in vocab if _action_family(str(token)) == "mouse_move"]
+
+
 def _build_temporal_model(
     torch: Any,
     *,
@@ -365,6 +369,7 @@ def _build_temporal_model(
     raw_video_dim = max(0, raw_video_frames * raw_video_size * raw_video_size)
     button_vocab = _button_class_vocab(vocab or [])
     key_vocab = _key_class_vocab(vocab or [])
+    mouse_move_vocab = _mouse_move_class_vocab(vocab or [])
 
     class CompactLumaWindowEncoder(nn.Module):
         def __init__(self) -> None:
@@ -522,6 +527,7 @@ def _build_temporal_model(
             self.button_class_count = len(button_vocab)
             self.key_token_presence_auxiliary = bool(config.get("temporal_key_token_presence_auxiliary", False)) and bool(key_vocab)
             self.button_token_presence_auxiliary = bool(config.get("temporal_button_token_presence_auxiliary", False)) and bool(button_vocab)
+            self.mouse_move_token_presence_auxiliary = bool(config.get("temporal_mouse_move_token_presence_auxiliary", False)) and bool(mouse_move_vocab)
             encoder_layer = nn.TransformerEncoderLayer(
                 d_model=hidden_dim,
                 nhead=heads,
@@ -538,6 +544,9 @@ def _build_temporal_model(
             self.key_token_presence_head = nn.Linear(hidden_dim, len(key_vocab)) if self.key_token_presence_auxiliary else None
             self.button_token_presence_head = (
                 nn.Linear(hidden_dim, len(button_vocab)) if self.button_token_presence_auxiliary else None
+            )
+            self.mouse_move_token_presence_head = (
+                nn.Linear(hidden_dim, len(mouse_move_vocab)) if self.mouse_move_token_presence_auxiliary else None
             )
             self.token_presence_auxiliary = bool(config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False)))
             self.token_presence_head = nn.Linear(hidden_dim, vocab_size) if self.token_presence_auxiliary else None
@@ -608,6 +617,9 @@ def _build_temporal_model(
             if self.button_token_presence_auxiliary and self.button_token_presence_head is not None:
                 pooled = action_encoded.mean(dim=2)
                 payload["button_token_presence_logits"] = self.button_token_presence_head(pooled)
+            if self.mouse_move_token_presence_auxiliary and self.mouse_move_token_presence_head is not None:
+                pooled = action_encoded.mean(dim=2)
+                payload["mouse_move_token_presence_logits"] = self.mouse_move_token_presence_head(pooled)
             if self.token_presence_auxiliary and self.token_presence_head is not None:
                 pooled = action_encoded.mean(dim=2)
                 payload["token_presence_logits"] = self.token_presence_head(pooled)
@@ -840,6 +852,52 @@ def _family_token_presence_bce_loss(
     neg_weight = float(negative_weight)
     weights = torch.where(selected_targets > 0.0, torch.ones_like(selected_targets), torch.full_like(selected_targets, neg_weight))
     return (loss * weights).mean()
+
+
+def _family_token_presence_rank_loss(
+    torch: Any,
+    logits: Any,
+    targets: Any,
+    offset_mask: Any,
+    *,
+    margin: float,
+    top_negatives: int = 1,
+) -> Any:
+    """Pairwise confidence-ranking loss for sparse action-token presence heads.
+
+    Public FDM-1 describes iterative unmasking of the highest-confidence action
+    tokens but not the internal confidence objective.  This loss remains within
+    the masked action-token recipe: it trains auxiliary confidence heads, from
+    fit/train labels only, to rank true sparse action tokens above same-family
+    negatives.  It does not replace the masked token CE objective and is not
+    calibrated on target labels.
+    """
+
+    if logits is None or logits.shape[-1] <= 1:
+        return torch.tensor(0.0, device=targets.device)
+    selected_logits = logits[:, offset_mask, :].reshape(-1, logits.shape[-1])
+    selected_targets = targets[:, offset_mask, :].reshape(-1, logits.shape[-1])
+    if selected_targets.numel() == 0:
+        return torch.tensor(0.0, device=targets.device)
+    pos_mask = selected_targets > 0.0
+    neg_mask = ~pos_mask
+    valid_rows = pos_mask.any(dim=1) & neg_mask.any(dim=1)
+    if not bool(valid_rows.any()):
+        return torch.tensor(0.0, device=targets.device)
+    row_logits = selected_logits[valid_rows]
+    row_pos = pos_mask[valid_rows]
+    row_neg = neg_mask[valid_rows]
+    neg_logits = row_logits.masked_fill(~row_neg, float("-inf"))
+    k = max(1, min(int(top_negatives), int(row_logits.shape[1]) - 1))
+    top_neg = torch.topk(neg_logits, k=k, dim=1).values
+    if k > 1:
+        top_neg = top_neg.mean(dim=1)
+    else:
+        top_neg = top_neg.squeeze(1)
+    pos_logits = row_logits[row_pos]
+    pos_row_idx = row_pos.nonzero(as_tuple=False)[:, 0]
+    paired_neg = top_neg[pos_row_idx]
+    return torch.nn.functional.softplus(paired_neg - pos_logits + float(margin)).mean()
 
 
 def _token_presence_targets(torch: Any, target_ids: Any, vocab: Sequence[str], *, include_noop: bool = False) -> Any:
@@ -1108,6 +1166,7 @@ def _temporal_final_center_probabilities(
             or bool(config.get("button_class_bias_candidates", config.get("temporal_button_class_auxiliary", False)))
             or bool(config.get("key_token_presence_bias_candidates", config.get("temporal_key_token_presence_auxiliary", False)))
             or bool(config.get("button_token_presence_bias_candidates", config.get("temporal_button_token_presence_auxiliary", False)))
+            or bool(config.get("mouse_move_token_presence_bias_candidates", config.get("temporal_mouse_move_token_presence_auxiliary", False)))
             or bool(config.get("token_presence_bias_candidates", config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False))))
         )
         if wants_aux_payload and hasattr(model, "forward_with_aux"):
@@ -1125,6 +1184,8 @@ def _temporal_final_center_probabilities(
                 event_probabilities["key_token_presence"] = torch.sigmoid(payload["key_token_presence_logits"][:, center, :])
             if "button_token_presence_logits" in payload:
                 event_probabilities["button_token_presence"] = torch.sigmoid(payload["button_token_presence_logits"][:, center, :])
+            if "mouse_move_token_presence_logits" in payload:
+                event_probabilities["mouse_move_token_presence"] = torch.sigmoid(payload["mouse_move_token_presence_logits"][:, center, :])
         else:
             final_logits = model(feature_tensor, corrupted)
             event_probabilities = {}
@@ -1173,6 +1234,8 @@ def _temporal_center_candidates(
     button_vocab = _button_class_vocab(vocab)
     button_class_index = {token: idx + 1 for idx, token in enumerate(button_vocab)}
     button_presence_index = {token: idx for idx, token in enumerate(button_vocab)}
+    mouse_move_vocab = _mouse_move_class_vocab(vocab)
+    mouse_move_presence_index = {token: idx for idx, token in enumerate(mouse_move_vocab)}
     direct_aux_families = config.get("direct_auxiliary_candidate_families", [])
     if not isinstance(direct_aux_families, list):
         direct_aux_families = []
@@ -1222,6 +1285,14 @@ def _temporal_center_candidates(
                         blend = max(0.0, min(1.0, float(config.get("button_token_presence_candidate_score_blend", 0.0))))
                         if blend > 0.0:
                             score = (1.0 - blend) * score + blend * button_presence_score
+                mouse_move_presence_score = 0.0
+                if family == "mouse_move" and event_probabilities_cpu and event_probabilities_cpu.get("mouse_move_token_presence") is not None:
+                    class_idx = mouse_move_presence_index.get(token)
+                    if class_idx is not None and class_idx < int(event_probabilities_cpu["mouse_move_token_presence"].shape[1]):
+                        mouse_move_presence_score = float(event_probabilities_cpu["mouse_move_token_presence"][batch_idx, class_idx])
+                        blend = max(0.0, min(1.0, float(config.get("mouse_move_token_presence_candidate_score_blend", 0.0))))
+                        if blend > 0.0:
+                            score = (1.0 - blend) * score + blend * mouse_move_presence_score
                 retrieval_score = 0.0
                 if retrieval_priors and batch_idx < len(retrieval_priors):
                     retrieval_score = float(retrieval_priors[batch_idx].get(token, 0.0))
@@ -1292,6 +1363,7 @@ def _temporal_center_candidates(
                         "button_class_score": button_class_score,
                         "button_class_no_button_gate_score": button_class_no_button_gate_score,
                         "button_presence_score": button_presence_score,
+                        "mouse_move_presence_score": mouse_move_presence_score,
                         "slot": slot_idx,
                         "token_index": token_idx,
                         "token": token,
@@ -1386,13 +1458,28 @@ def _temporal_center_candidates(
                             "direct_auxiliary_candidate": "button_presence_class",
                         }
                     )
-            if "mouse_move" in direct_aux_families and event_probabilities_cpu.get("token_presence") is not None:
-                token_presence = event_probabilities_cpu["token_presence"]
+            if "mouse_move" in direct_aux_families and (
+                event_probabilities_cpu.get("mouse_move_token_presence") is not None
+                or event_probabilities_cpu.get("token_presence") is not None
+            ):
+                token_presence = event_probabilities_cpu.get("mouse_move_token_presence")
+                direct_source = "mouse_move_token_presence"
+                if token_presence is None:
+                    token_presence = event_probabilities_cpu["token_presence"]
+                    direct_source = "token_presence_mouse_move"
                 for token_idx, token in enumerate(vocab):
                     token = str(token)
-                    if _action_family(token) != "mouse_move" or token_idx >= int(token_presence.shape[1]):
+                    if _action_family(token) != "mouse_move":
                         continue
-                    score = float(token_presence[batch_idx, token_idx])
+                    if direct_source == "mouse_move_token_presence":
+                        class_idx = mouse_move_presence_index.get(token)
+                        if class_idx is None or class_idx >= int(token_presence.shape[1]):
+                            continue
+                        score = float(token_presence[batch_idx, class_idx])
+                    else:
+                        if token_idx >= int(token_presence.shape[1]):
+                            continue
+                        score = float(token_presence[batch_idx, token_idx])
                     if score < direct_aux_min_score:
                         continue
                     candidates.append(
@@ -1406,11 +1493,12 @@ def _temporal_center_candidates(
                             "button_class_score": 0.0,
                             "button_class_no_button_gate_score": 1.0,
                             "button_presence_score": 0.0,
+                            "mouse_move_presence_score": score,
                             "slot": -1,
                             "token_index": token_idx,
                             "token": token,
                             "family": "mouse_move",
-                            "direct_auxiliary_candidate": "token_presence_mouse_move",
+                            "direct_auxiliary_candidate": direct_source,
                         }
                     )
         candidates.sort(key=lambda item: (-float(item["score"]), int(item["slot"]), int(item["token_index"])))
@@ -2199,10 +2287,16 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     button_class_aux_weight = float(config.get("button_class_aux_weight", 0.0) or 0.0)
     button_vocab = _button_class_vocab(vocab)
     key_vocab = _key_class_vocab(vocab)
+    mouse_move_vocab = _mouse_move_class_vocab(vocab)
     key_token_presence_auxiliary = bool(config.get("temporal_key_token_presence_auxiliary", False))
     key_token_presence_aux_weight = float(config.get("key_token_presence_aux_weight", 0.0) or 0.0)
+    key_token_presence_rank_weight = float(config.get("key_token_presence_rank_weight", 0.0) or 0.0)
     button_token_presence_auxiliary = bool(config.get("temporal_button_token_presence_auxiliary", False))
     button_token_presence_aux_weight = float(config.get("button_token_presence_aux_weight", 0.0) or 0.0)
+    button_token_presence_rank_weight = float(config.get("button_token_presence_rank_weight", 0.0) or 0.0)
+    mouse_move_token_presence_auxiliary = bool(config.get("temporal_mouse_move_token_presence_auxiliary", False))
+    mouse_move_token_presence_aux_weight = float(config.get("mouse_move_token_presence_aux_weight", 0.0) or 0.0)
+    mouse_move_token_presence_rank_weight = float(config.get("mouse_move_token_presence_rank_weight", 0.0) or 0.0)
     token_presence_auxiliary = bool(config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False)))
     token_presence_aux_weight = float(config.get("token_presence_aux_weight", 0.0) or 0.0)
     token_presence_pos_weights = _token_presence_pos_weights(torch, vocab, config, device=device)
@@ -2219,7 +2313,11 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         total_button_event = 0.0
         total_button_class = 0.0
         total_key_token_presence = 0.0
+        total_key_token_presence_rank = 0.0
         total_button_token_presence = 0.0
+        total_button_token_presence_rank = 0.0
+        total_mouse_move_token_presence = 0.0
+        total_mouse_move_token_presence_rank = 0.0
         total_token_presence = 0.0
         total_targets = 0
         total_examples = 0
@@ -2233,6 +2331,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 or button_class_auxiliary
                 or key_token_presence_auxiliary
                 or button_token_presence_auxiliary
+                or mouse_move_token_presence_auxiliary
                 or token_presence_auxiliary
             ) and hasattr(model, "forward_with_aux"):
                 payload = model.forward_with_aux(features, corrupted_ids)
@@ -2246,7 +2345,11 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             button_event_loss = torch.tensor(0.0, device=device)
             button_class_loss = torch.tensor(0.0, device=device)
             key_token_presence_loss = torch.tensor(0.0, device=device)
+            key_token_presence_rank_loss = torch.tensor(0.0, device=device)
             button_token_presence_loss = torch.tensor(0.0, device=device)
+            button_token_presence_rank_loss = torch.tensor(0.0, device=device)
+            mouse_move_token_presence_loss = torch.tensor(0.0, device=device)
+            mouse_move_token_presence_rank_loss = torch.tensor(0.0, device=device)
             token_presence_loss = torch.tensor(0.0, device=device)
             if event_auxiliary and (key_event_aux_weight > 0.0 or button_event_aux_weight > 0.0):
                 key_targets = _temporal_event_targets(torch, target_ids, vocab, ("KEY_",))
@@ -2284,6 +2387,15 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                     pos_weight=float(config.get("key_token_presence_pos_weight", config.get("key_event_pos_weight", 8.0))),
                     negative_weight=float(config.get("key_token_presence_negative_weight", 0.05)),
                 )
+                if key_token_presence_rank_weight > 0.0:
+                    key_token_presence_rank_loss = _family_token_presence_rank_loss(
+                        torch,
+                        payload.get("key_token_presence_logits"),
+                        key_presence_targets,
+                        event_offset_mask,
+                        margin=float(config.get("key_token_presence_rank_margin", config.get("token_presence_rank_margin", 1.0))),
+                        top_negatives=int(config.get("key_token_presence_rank_top_negatives", config.get("token_presence_rank_top_negatives", 1))),
+                    )
             if button_token_presence_auxiliary and button_token_presence_aux_weight > 0.0 and button_vocab:
                 button_presence_targets = _temporal_family_token_presence_targets(torch, target_ids, vocab, button_vocab)
                 button_token_presence_loss = _family_token_presence_bce_loss(
@@ -2294,6 +2406,34 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                     pos_weight=float(config.get("button_token_presence_pos_weight", config.get("button_event_pos_weight", 16.0))),
                     negative_weight=float(config.get("button_token_presence_negative_weight", 0.05)),
                 )
+                if button_token_presence_rank_weight > 0.0:
+                    button_token_presence_rank_loss = _family_token_presence_rank_loss(
+                        torch,
+                        payload.get("button_token_presence_logits"),
+                        button_presence_targets,
+                        event_offset_mask,
+                        margin=float(config.get("button_token_presence_rank_margin", config.get("token_presence_rank_margin", 1.0))),
+                        top_negatives=int(config.get("button_token_presence_rank_top_negatives", config.get("token_presence_rank_top_negatives", 1))),
+                    )
+            if mouse_move_token_presence_auxiliary and mouse_move_token_presence_aux_weight > 0.0 and mouse_move_vocab:
+                mouse_move_presence_targets = _temporal_family_token_presence_targets(torch, target_ids, vocab, mouse_move_vocab)
+                mouse_move_token_presence_loss = _family_token_presence_bce_loss(
+                    torch,
+                    payload.get("mouse_move_token_presence_logits"),
+                    mouse_move_presence_targets,
+                    event_offset_mask,
+                    pos_weight=float(config.get("mouse_move_token_presence_pos_weight", config.get("token_presence_mouse_move_pos_weight", 2.0))),
+                    negative_weight=float(config.get("mouse_move_token_presence_negative_weight", 0.05)),
+                )
+                if mouse_move_token_presence_rank_weight > 0.0:
+                    mouse_move_token_presence_rank_loss = _family_token_presence_rank_loss(
+                        torch,
+                        payload.get("mouse_move_token_presence_logits"),
+                        mouse_move_presence_targets,
+                        event_offset_mask,
+                        margin=float(config.get("mouse_move_token_presence_rank_margin", config.get("token_presence_rank_margin", 1.0))),
+                        top_negatives=int(config.get("mouse_move_token_presence_rank_top_negatives", config.get("token_presence_rank_top_negatives", 1))),
+                    )
             if token_presence_auxiliary and token_presence_aux_weight > 0.0:
                 token_presence_targets = _token_presence_targets(
                     torch,
@@ -2315,7 +2455,11 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 + button_event_aux_weight * button_event_loss
                 + button_class_aux_weight * button_class_loss
                 + key_token_presence_aux_weight * key_token_presence_loss
+                + key_token_presence_rank_weight * key_token_presence_rank_loss
                 + button_token_presence_aux_weight * button_token_presence_loss
+                + button_token_presence_rank_weight * button_token_presence_rank_loss
+                + mouse_move_token_presence_aux_weight * mouse_move_token_presence_loss
+                + mouse_move_token_presence_rank_weight * mouse_move_token_presence_rank_loss
                 + token_presence_aux_weight * token_presence_loss
             )
             optimizer.zero_grad(set_to_none=True)
@@ -2331,7 +2475,11 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             total_button_event += float(button_event_loss.detach().cpu()) * batch
             total_button_class += float(button_class_loss.detach().cpu()) * batch
             total_key_token_presence += float(key_token_presence_loss.detach().cpu()) * batch
+            total_key_token_presence_rank += float(key_token_presence_rank_loss.detach().cpu()) * batch
             total_button_token_presence += float(button_token_presence_loss.detach().cpu()) * batch
+            total_button_token_presence_rank += float(button_token_presence_rank_loss.detach().cpu()) * batch
+            total_mouse_move_token_presence += float(mouse_move_token_presence_loss.detach().cpu()) * batch
+            total_mouse_move_token_presence_rank += float(mouse_move_token_presence_rank_loss.detach().cpu()) * batch
             total_token_presence += float(token_presence_loss.detach().cpu()) * batch
             total_targets += count
             total_examples += batch
@@ -2354,7 +2502,11 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                         "button_event_loss": total_button_event / max(1, total_examples),
                         "button_class_loss": total_button_class / max(1, total_examples),
                         "key_token_presence_loss": total_key_token_presence / max(1, total_examples),
+                        "key_token_presence_rank_loss": total_key_token_presence_rank / max(1, total_examples),
                         "button_token_presence_loss": total_button_token_presence / max(1, total_examples),
+                        "button_token_presence_rank_loss": total_button_token_presence_rank / max(1, total_examples),
+                        "mouse_move_token_presence_loss": total_mouse_move_token_presence / max(1, total_examples),
+                        "mouse_move_token_presence_rank_loss": total_mouse_move_token_presence_rank / max(1, total_examples),
                         "token_presence_loss": total_token_presence / max(1, total_examples),
                     },
                 )
@@ -2367,7 +2519,11 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "button_event_loss": total_button_event / max(1, total_examples),
             "button_class_loss": total_button_class / max(1, total_examples),
             "key_token_presence_loss": total_key_token_presence / max(1, total_examples),
+            "key_token_presence_rank_loss": total_key_token_presence_rank / max(1, total_examples),
             "button_token_presence_loss": total_button_token_presence / max(1, total_examples),
+            "button_token_presence_rank_loss": total_button_token_presence_rank / max(1, total_examples),
+            "mouse_move_token_presence_loss": total_mouse_move_token_presence / max(1, total_examples),
+            "mouse_move_token_presence_rank_loss": total_mouse_move_token_presence_rank / max(1, total_examples),
             "token_presence_loss": total_token_presence / max(1, total_examples),
             "masked_targets": total_targets,
         })
@@ -2557,16 +2713,31 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "button_class_no_button_gate_floor":float(config.get("button_class_no_button_gate_floor", 0.0) or 0.0),
             "temporal_key_token_presence_auxiliary":key_token_presence_auxiliary,
             "key_token_presence_aux_weight":key_token_presence_aux_weight,
+            "key_token_presence_rank_weight":key_token_presence_rank_weight,
+            "key_token_presence_rank_margin":float(config.get("key_token_presence_rank_margin", config.get("token_presence_rank_margin", 1.0))),
+            "key_token_presence_rank_top_negatives":int(config.get("key_token_presence_rank_top_negatives", config.get("token_presence_rank_top_negatives", 1))),
             "key_token_presence_vocab_size":len(key_vocab),
             "key_token_presence_pos_weight":float(config.get("key_token_presence_pos_weight", config.get("key_event_pos_weight", 8.0))),
             "key_token_presence_negative_weight":float(config.get("key_token_presence_negative_weight", 0.05)),
             "key_token_presence_candidate_score_blend":float(config.get("key_token_presence_candidate_score_blend", 0.0)),
             "temporal_button_token_presence_auxiliary":button_token_presence_auxiliary,
             "button_token_presence_aux_weight":button_token_presence_aux_weight,
+            "button_token_presence_rank_weight":button_token_presence_rank_weight,
+            "button_token_presence_rank_margin":float(config.get("button_token_presence_rank_margin", config.get("token_presence_rank_margin", 1.0))),
+            "button_token_presence_rank_top_negatives":int(config.get("button_token_presence_rank_top_negatives", config.get("token_presence_rank_top_negatives", 1))),
             "button_token_presence_vocab_size":len(button_vocab),
             "button_token_presence_pos_weight":float(config.get("button_token_presence_pos_weight", config.get("button_event_pos_weight", 16.0))),
             "button_token_presence_negative_weight":float(config.get("button_token_presence_negative_weight", 0.05)),
             "button_token_presence_candidate_score_blend":float(config.get("button_token_presence_candidate_score_blend", 0.0)),
+            "temporal_mouse_move_token_presence_auxiliary":mouse_move_token_presence_auxiliary,
+            "mouse_move_token_presence_aux_weight":mouse_move_token_presence_aux_weight,
+            "mouse_move_token_presence_rank_weight":mouse_move_token_presence_rank_weight,
+            "mouse_move_token_presence_rank_margin":float(config.get("mouse_move_token_presence_rank_margin", config.get("token_presence_rank_margin", 1.0))),
+            "mouse_move_token_presence_rank_top_negatives":int(config.get("mouse_move_token_presence_rank_top_negatives", config.get("token_presence_rank_top_negatives", 1))),
+            "mouse_move_token_presence_vocab_size":len(mouse_move_vocab),
+            "mouse_move_token_presence_pos_weight":float(config.get("mouse_move_token_presence_pos_weight", config.get("token_presence_mouse_move_pos_weight", 2.0))),
+            "mouse_move_token_presence_negative_weight":float(config.get("mouse_move_token_presence_negative_weight", 0.05)),
+            "mouse_move_token_presence_candidate_score_blend":float(config.get("mouse_move_token_presence_candidate_score_blend", 0.0)),
             "key_event_pos_weight":float(config.get("key_event_pos_weight", 8.0)),
             "button_event_pos_weight":float(config.get("button_event_pos_weight", 16.0)),
             "event_auxiliary_candidate_score_blend":float(config.get("event_auxiliary_candidate_score_blend", 0.5)),

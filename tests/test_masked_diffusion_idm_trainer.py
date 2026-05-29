@@ -27,6 +27,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _calibrate_temporal_non_noop_budget,
     _candidate_family_diagnostics,
     _candidate_token_prior_weights,
+    _family_token_presence_rank_loss,
     _precompute_features,
     _temporal_button_class_targets,
     _temporal_center_candidates,
@@ -650,6 +651,63 @@ def test_temporal_direct_auxiliary_candidates_can_add_mouse_move_presence_tokens
     assert candidates[0][0]["score"] == pytest.approx(0.88)
 
 
+def test_temporal_direct_auxiliary_candidates_prefer_dedicated_mouse_move_head():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "FDM1_MOUSE_DX_N01", "FDM1_MOUSE_DY_P02"]
+    probabilities = torch.zeros((1, 1, len(vocab)), dtype=torch.float32)
+    # Dedicated mouse-move head is family-scoped: columns map only to mouse-move
+    # vocab order, not global action vocab indices.
+    mouse_move_presence = torch.tensor([[0.13, 0.91]], dtype=torch.float32)
+
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={
+            "non_noop_budget_candidates_per_row": 4,
+            "direct_auxiliary_candidate_families": ["mouse_move"],
+            "mouse_move_token_presence_candidate_score_blend": 1.0,
+        },
+        event_probabilities={"mouse_move_token_presence": mouse_move_presence},
+    )
+
+    assert candidates[0][0]["token"] == "FDM1_MOUSE_DY_P02"
+    assert candidates[0][0]["direct_auxiliary_candidate"] == "mouse_move_token_presence"
+    assert candidates[0][0]["mouse_move_presence_score"] == pytest.approx(0.91)
+
+
+def test_family_token_presence_rank_loss_rewards_positive_over_hard_negative():
+    if not torch_available():
+        return
+    import torch
+
+    targets = torch.tensor([[[1.0, 0.0, 0.0]]], dtype=torch.float32)
+    offset_mask = torch.tensor([True])
+    bad_logits = torch.tensor([[[0.0, 2.0, 1.0]]], dtype=torch.float32)
+    good_logits = torch.tensor([[[3.0, 1.0, 0.0]]], dtype=torch.float32)
+
+    bad_loss = _family_token_presence_rank_loss(
+        torch,
+        bad_logits,
+        targets,
+        offset_mask,
+        margin=1.0,
+        top_negatives=1,
+    )
+    good_loss = _family_token_presence_rank_loss(
+        torch,
+        good_logits,
+        targets,
+        offset_mask,
+        margin=1.0,
+        top_negatives=1,
+    )
+
+    assert float(good_loss) < float(bad_loss)
+
+
 def test_temporal_family_token_presence_targets_are_family_scoped_multihot():
     if not torch_available():
         return
@@ -1155,14 +1213,22 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "button_class_candidate_score_blend": 0.4,
             "temporal_key_token_presence_auxiliary": True,
             "key_token_presence_aux_weight": 0.2,
+            "key_token_presence_rank_weight": 0.1,
             "key_token_presence_pos_weight": 3.0,
             "key_token_presence_negative_weight": 0.1,
             "key_token_presence_candidate_score_blend": 0.35,
             "temporal_button_token_presence_auxiliary": True,
             "button_token_presence_aux_weight": 0.25,
+            "button_token_presence_rank_weight": 0.1,
             "button_token_presence_pos_weight": 5.0,
             "button_token_presence_negative_weight": 0.1,
             "button_token_presence_candidate_score_blend": 0.45,
+            "temporal_mouse_move_token_presence_auxiliary": True,
+            "mouse_move_token_presence_aux_weight": 0.15,
+            "mouse_move_token_presence_rank_weight": 0.1,
+            "mouse_move_token_presence_pos_weight": 2.0,
+            "mouse_move_token_presence_negative_weight": 0.1,
+            "mouse_move_token_presence_candidate_score_blend": 0.5,
             "retrieval_action_prior_enabled": True,
             "retrieval_action_prior_top_k": 2,
             "retrieval_action_prior_temperature": 0.1,
@@ -1206,10 +1272,16 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["loss_weights"]["button_class_candidate_score_blend"] == 0.4
     assert summary["loss_weights"]["temporal_key_token_presence_auxiliary"] is True
     assert summary["loss_weights"]["key_token_presence_aux_weight"] == 0.2
+    assert summary["loss_weights"]["key_token_presence_rank_weight"] == 0.1
     assert summary["loss_weights"]["key_token_presence_candidate_score_blend"] == 0.35
     assert summary["loss_weights"]["temporal_button_token_presence_auxiliary"] is True
     assert summary["loss_weights"]["button_token_presence_aux_weight"] == 0.25
+    assert summary["loss_weights"]["button_token_presence_rank_weight"] == 0.1
     assert summary["loss_weights"]["button_token_presence_candidate_score_blend"] == 0.45
+    assert summary["loss_weights"]["temporal_mouse_move_token_presence_auxiliary"] is True
+    assert summary["loss_weights"]["mouse_move_token_presence_aux_weight"] == 0.15
+    assert summary["loss_weights"]["mouse_move_token_presence_rank_weight"] == 0.1
+    assert summary["loss_weights"]["mouse_move_token_presence_candidate_score_blend"] == 0.5
     assert summary["loss_weights"]["retrieval_action_prior_blend"] == 0.2
     assert summary["loss_weights"]["candidate_token_prior_correction"] is True
     assert summary["candidate_token_prior"]["status"] == "pass"
@@ -1218,6 +1290,7 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert any("key_event_loss" in row and "button_event_loss" in row for row in summary["history"])
     assert any("button_class_loss" in row for row in summary["history"])
     assert any("key_token_presence_loss" in row and "button_token_presence_loss" in row for row in summary["history"])
+    assert any("mouse_move_token_presence_loss" in row and "mouse_move_token_presence_rank_loss" in row for row in summary["history"])
     assert summary["non_noop_budget"]["status"] in {"pass", "skipped"}
     assert "temporal action-token sequences" in summary["recipe_alignment"]
     assert Path(summary["checkpoint_path"]).exists()
