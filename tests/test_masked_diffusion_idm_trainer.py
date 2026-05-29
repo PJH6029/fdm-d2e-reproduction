@@ -38,6 +38,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _precompute_features_with_distributed_cache,
     _temporal_calibration_split_indices,
     _temporal_button_class_targets,
+    _temporal_candidate_rows_from_probabilities,
     _temporal_center_candidates,
     _temporal_family_class_targets,
     _temporal_family_token_presence_targets,
@@ -706,6 +707,43 @@ def test_temporal_candidate_token_prior_adjusts_recipe_candidate_ranking():
     assert candidates[0][0]["token"] == "MOUSE_RIGHT_DOWN"
     assert candidates[0][0]["prior_weight"] == 2.0
     assert candidates[0][1]["token"] == "MOUSE_LEFT_DOWN"
+
+
+def test_temporal_candidate_rows_can_merge_neighbor_source_offsets():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "KEY_PRESS_A", "MOUSE_LEFT_DOWN"]
+    probabilities = torch.zeros((1, 3, 1, len(vocab)), dtype=torch.float32)
+    probabilities[:, 0, :, 3] = 0.90  # offset -1
+    probabilities[:, 1, :, 4] = 0.80  # center offset 0
+    probabilities[:, 2, :, 3] = 0.10  # offset +1
+
+    candidates = _temporal_candidate_rows_from_probabilities(
+        probabilities,
+        offsets=[-1, 0, 1],
+        vocab=vocab,
+        config={
+            "temporal_candidate_source_offsets": [-1, 0],
+            "candidate_source_offset_weights": {"-1": 0.5},
+            "non_noop_budget_candidates_per_row": 8,
+        },
+    )
+
+    key_from_neighbor = next(
+        candidate
+        for candidate in candidates[0]
+        if candidate["token"] == "KEY_PRESS_A" and candidate["source_offset"] == -1
+    )
+    button_from_center = next(
+        candidate
+        for candidate in candidates[0]
+        if candidate["token"] == "MOUSE_LEFT_DOWN" and candidate["source_offset"] == 0
+    )
+    assert key_from_neighbor["pre_source_offset_score"] == pytest.approx(0.90)
+    assert key_from_neighbor["score"] == pytest.approx(0.45)
+    assert button_from_center["score"] == pytest.approx(0.80)
 
 
 def test_candidate_score_reranker_uses_train_heldout_labels_to_rerank_candidates():

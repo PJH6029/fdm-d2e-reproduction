@@ -1417,3 +1417,24 @@ prefix feature-cache reuse for prediction diagnostics and reduces the reranker
 candidate diagnostic cap. This preserves the split-safe train-heldout-only
 calibration boundary and should be used before any rerun if the old process does
 not reach inference promptly.
+
+### 2026-05-30 KST — candidate reranker rejected; temporal source-offset ensemble prepared
+
+The 1×H200 prediction-only reranker probe from the `train320k` raw96 masked-diffusion checkpoint completed on reservation `rsv-jeonghunpark-20260530-0396ce` and was copied locally before cancellation. It is negative evidence, not G005 completion evidence: 5k target-prefix paper-compatible metrics were keyboard `0.01775568181818182`, mouse-button `0.004032258064516129`, mouse Pearson X/Y `null/null`, strict button F1 `0.0`, and no-button FPR `0.017912291537986413`. The reservation was cancelled at 2026-05-30 03:04 KST to preserve approved GPU-hours.
+
+Evidence:
+
+- `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k_rejection.json`
+- `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k_compact_summary.json`
+- `outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k/paper_metrics.json`
+- `artifacts/cluster/g005_candidate_reranker_predict5k_cancel_20260530.json`
+
+The next local branch stays within the public FDM-1 masked action-token recipe but targets the alignment failure noted by earlier diagnostics: D2E uses temporal-offset next-event prediction, while the exact FDM-1 IDM action-token timing convention is unpublished. The new temporal source-offset ensemble merges candidate tokens predicted at neighboring masked action-token offsets (`[-2,-1,0,1,2]`) for center-bin emission, then uses train-heldout family-budget calibration only. This is not target-label calibration and not an FDM-1 parity claim.
+
+New code/config paths:
+
+- `_temporal_final_probabilities`, `_temporal_candidate_rows_from_probabilities`, and offset-weight helpers in `src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py`.
+- `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_offsetensemble_predict5k.yaml`.
+- `scripts/run_g005_idm_temporal_raw96_train320k_offsetensemble_predict5k.sh`.
+
+Validation: `python3 -m py_compile src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py scripts/train_idm_temporal_masked_diffusion.py scripts/predict_idm_temporal_masked_diffusion.py`, `uv run pytest -q tests/test_masked_diffusion_idm_trainer.py tests/test_training_run_scripts.py tests/test_fdm1_recipe_alignment.py` (`77 passed`), and `uv run python scripts/validate_fdm1_recipe_alignment.py` (`status=pass`). Do not checkpoint `G005-g014-idm-full-paper-target`; run the offset-ensemble as a bounded prediction probe only, and reject it without a full 4×H200 promotion unless it materially improves all paper-target endpoints.

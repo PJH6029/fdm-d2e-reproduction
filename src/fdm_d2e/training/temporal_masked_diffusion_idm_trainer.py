@@ -1950,7 +1950,80 @@ def _feature_window_tensor(torch: Any, window_features: Sequence[Sequence[Any]],
     return torch.tensor(window_features, dtype=torch.float32, device=device)
 
 
-def _temporal_final_center_probabilities(
+def _wants_temporal_aux_payload(config: dict[str, Any]) -> bool:
+    return (
+        bool(config.get("event_auxiliary_bias_candidates", config.get("temporal_event_auxiliary", config.get("event_auxiliary", False))))
+        or bool(config.get("button_class_bias_candidates", config.get("temporal_button_class_auxiliary", False)))
+        or bool(config.get("key_class_bias_candidates", config.get("temporal_key_class_auxiliary", False)))
+        or bool(config.get("key_token_presence_bias_candidates", config.get("temporal_key_token_presence_auxiliary", False)))
+        or bool(config.get("button_token_presence_bias_candidates", config.get("temporal_button_token_presence_auxiliary", False)))
+        or bool(config.get("mouse_move_token_presence_bias_candidates", config.get("temporal_mouse_move_token_presence_auxiliary", False)))
+        or bool(config.get("video_key_token_presence_bias_candidates", config.get("temporal_video_key_token_presence_auxiliary", False)))
+        or bool(config.get("video_button_token_presence_bias_candidates", config.get("temporal_video_button_token_presence_auxiliary", False)))
+        or bool(config.get("video_mouse_move_token_presence_bias_candidates", config.get("temporal_video_mouse_move_token_presence_auxiliary", False)))
+        or bool(config.get("mouse_axis_class_bias_candidates", config.get("temporal_mouse_axis_class_auxiliary", False)))
+        or bool(config.get("token_presence_bias_candidates", config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False))))
+    )
+
+
+def _slice_temporal_event_probabilities(event_probabilities: dict[str, Any], source_index: int) -> dict[str, Any]:
+    """Slice full-window auxiliary probabilities to one temporal source offset."""
+    sliced: dict[str, Any] = {}
+    for key, value in event_probabilities.items():
+        if value is None:
+            sliced[key] = None
+            continue
+        if hasattr(value, "dim") and value.dim() >= 2:
+            sliced[key] = value[:, source_index, ...]
+        else:
+            sliced[key] = value
+    return sliced
+
+
+def _candidate_source_offset_indices(config: dict[str, Any], offsets: Sequence[int]) -> list[int]:
+    """Return temporal source-offset indices used for center-row candidates.
+
+    D2E's released G-IDM is a next-event-prediction model with a temporal
+    offset, while the public FDM-1 IDM recipe is non-causal masked action-token
+    diffusion over interleaved frames/actions.  The exact closed-source timing
+    convention is unknown, so this opt-in path lets train-heldout calibration
+    evaluate candidate tokens predicted at neighboring masked-action offsets and
+    reuse them as center-row candidates.  It never reads target/eval labels and
+    remains inside the masked-token candidate ranking surface.
+    """
+
+    center = _center_index(offsets)
+    raw = config.get("temporal_candidate_source_offsets", config.get("candidate_source_offsets"))
+    if raw is None:
+        return [center]
+    values = [raw] if isinstance(raw, (int, float, str)) else list(raw)
+    by_offset = {int(offset): idx for idx, offset in enumerate(offsets)}
+    indices: list[int] = []
+    for value in values:
+        try:
+            offset = int(value)
+        except (TypeError, ValueError):
+            continue
+        if offset in by_offset:
+            indices.append(by_offset[offset])
+    if center not in indices:
+        indices.append(center)
+    return sorted(dict.fromkeys(indices))
+
+
+def _candidate_source_offset_weight(config: dict[str, Any], offset: int) -> float:
+    raw = config.get("temporal_candidate_source_offset_weights", config.get("candidate_source_offset_weights", {}))
+    if isinstance(raw, dict):
+        for key in (str(offset), offset):
+            if key in raw:
+                try:
+                    return max(0.0, float(raw[key]))
+                except (TypeError, ValueError):
+                    return 1.0
+    return 1.0
+
+
+def _temporal_final_probabilities(
     model: Any,
     torch: Any,
     rows: Sequence[dict[str, Any]],
@@ -1962,7 +2035,6 @@ def _temporal_final_center_probabilities(
     device: Any,
 ) -> tuple[Any, Any, dict[str, Any]]:
     offsets = _temporal_offsets(config)
-    center = _center_index(offsets)
     max_slots = int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
     mask_index = token_to_index[FDM1_ACTION_MASK]
@@ -1995,54 +2067,126 @@ def _temporal_final_center_probabilities(
             logits = model(feature_tensor, corrupted)
             best_id = torch.argmax(logits, dim=-1)
             corrupted = torch.where(masked, best_id, corrupted)
-        wants_aux_payload = (
-            bool(config.get("event_auxiliary_bias_candidates", config.get("temporal_event_auxiliary", config.get("event_auxiliary", False))))
-            or bool(config.get("button_class_bias_candidates", config.get("temporal_button_class_auxiliary", False)))
-            or bool(config.get("key_class_bias_candidates", config.get("temporal_key_class_auxiliary", False)))
-            or bool(config.get("key_token_presence_bias_candidates", config.get("temporal_key_token_presence_auxiliary", False)))
-            or bool(config.get("button_token_presence_bias_candidates", config.get("temporal_button_token_presence_auxiliary", False)))
-            or bool(config.get("mouse_move_token_presence_bias_candidates", config.get("temporal_mouse_move_token_presence_auxiliary", False)))
-            or bool(config.get("video_key_token_presence_bias_candidates", config.get("temporal_video_key_token_presence_auxiliary", False)))
-            or bool(config.get("video_button_token_presence_bias_candidates", config.get("temporal_video_button_token_presence_auxiliary", False)))
-            or bool(config.get("video_mouse_move_token_presence_bias_candidates", config.get("temporal_video_mouse_move_token_presence_auxiliary", False)))
-            or bool(config.get("mouse_axis_class_bias_candidates", config.get("temporal_mouse_axis_class_auxiliary", False)))
-            or bool(config.get("token_presence_bias_candidates", config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False))))
-        )
-        if wants_aux_payload and hasattr(model, "forward_with_aux"):
+        if _wants_temporal_aux_payload(config) and hasattr(model, "forward_with_aux"):
             payload = model.forward_with_aux(feature_tensor, corrupted)
             final_logits = payload["action_logits"]
             event_probabilities = {
-                "keyboard": torch.sigmoid(payload["key_event_logits"][:, center]) if "key_event_logits" in payload else None,
-                "mouse_button": torch.sigmoid(payload["button_event_logits"][:, center]) if "button_event_logits" in payload else None,
+                "keyboard": torch.sigmoid(payload["key_event_logits"]) if "key_event_logits" in payload else None,
+                "mouse_button": torch.sigmoid(payload["button_event_logits"]) if "button_event_logits" in payload else None,
             }
             if "token_presence_logits" in payload:
-                event_probabilities["token_presence"] = torch.sigmoid(payload["token_presence_logits"][:, center, :])
+                event_probabilities["token_presence"] = torch.sigmoid(payload["token_presence_logits"])
             if "button_class_logits" in payload:
-                event_probabilities["button_class"] = torch.softmax(payload["button_class_logits"][:, center, :], dim=-1)
+                event_probabilities["button_class"] = torch.softmax(payload["button_class_logits"], dim=-1)
             if "key_class_logits" in payload:
-                event_probabilities["key_class"] = torch.softmax(payload["key_class_logits"][:, center, :], dim=-1)
+                event_probabilities["key_class"] = torch.softmax(payload["key_class_logits"], dim=-1)
             if "key_token_presence_logits" in payload:
-                event_probabilities["key_token_presence"] = torch.sigmoid(payload["key_token_presence_logits"][:, center, :])
+                event_probabilities["key_token_presence"] = torch.sigmoid(payload["key_token_presence_logits"])
             if "button_token_presence_logits" in payload:
-                event_probabilities["button_token_presence"] = torch.sigmoid(payload["button_token_presence_logits"][:, center, :])
+                event_probabilities["button_token_presence"] = torch.sigmoid(payload["button_token_presence_logits"])
             if "mouse_move_token_presence_logits" in payload:
-                event_probabilities["mouse_move_token_presence"] = torch.sigmoid(payload["mouse_move_token_presence_logits"][:, center, :])
+                event_probabilities["mouse_move_token_presence"] = torch.sigmoid(payload["mouse_move_token_presence_logits"])
             if "video_key_token_presence_logits" in payload:
-                event_probabilities["video_key_token_presence"] = torch.sigmoid(payload["video_key_token_presence_logits"][:, center, :])
+                event_probabilities["video_key_token_presence"] = torch.sigmoid(payload["video_key_token_presence_logits"])
             if "video_button_token_presence_logits" in payload:
-                event_probabilities["video_button_token_presence"] = torch.sigmoid(payload["video_button_token_presence_logits"][:, center, :])
+                event_probabilities["video_button_token_presence"] = torch.sigmoid(payload["video_button_token_presence_logits"])
             if "video_mouse_move_token_presence_logits" in payload:
-                event_probabilities["video_mouse_move_token_presence"] = torch.sigmoid(payload["video_mouse_move_token_presence_logits"][:, center, :])
+                event_probabilities["video_mouse_move_token_presence"] = torch.sigmoid(payload["video_mouse_move_token_presence_logits"])
             if "mouse_dx_class_logits" in payload:
-                event_probabilities["mouse_dx_class"] = torch.softmax(payload["mouse_dx_class_logits"][:, center, :], dim=-1)
+                event_probabilities["mouse_dx_class"] = torch.softmax(payload["mouse_dx_class_logits"], dim=-1)
             if "mouse_dy_class_logits" in payload:
-                event_probabilities["mouse_dy_class"] = torch.softmax(payload["mouse_dy_class_logits"][:, center, :], dim=-1)
+                event_probabilities["mouse_dy_class"] = torch.softmax(payload["mouse_dy_class_logits"], dim=-1)
         else:
             final_logits = model(feature_tensor, corrupted)
             event_probabilities = {}
-        final_probs = torch.softmax(final_logits[:, center, :, :], dim=-1)
-    return final_probs, corrupted[:, center, :], event_probabilities
+        final_probs = torch.softmax(final_logits, dim=-1)
+    return final_probs, corrupted, event_probabilities
 
+
+def _temporal_final_center_probabilities(
+    model: Any,
+    torch: Any,
+    rows: Sequence[dict[str, Any]],
+    *,
+    start_index: int,
+    all_features: Sequence[Sequence[float]],
+    config: dict[str, Any],
+    vocab: Sequence[str],
+    device: Any,
+) -> tuple[Any, Any, dict[str, Any]]:
+    final_probs, corrupted, event_probabilities = _temporal_final_probabilities(
+        model,
+        torch,
+        rows,
+        start_index=start_index,
+        all_features=all_features,
+        config=config,
+        vocab=vocab,
+        device=device,
+    )
+    if final_probs is None or corrupted is None:
+        return None, None, {}
+    offsets = _temporal_offsets(config)
+    center = _center_index(offsets)
+    return (
+        final_probs[:, center, :, :],
+        corrupted[:, center, :],
+        _slice_temporal_event_probabilities(event_probabilities, center),
+    )
+
+
+def _temporal_candidate_rows_from_probabilities(
+    final_probs: Any,
+    *,
+    offsets: Sequence[int],
+    vocab: Sequence[str],
+    config: dict[str, Any],
+    event_probabilities: dict[str, Any] | None = None,
+    retrieval_priors: Sequence[dict[str, float]] | None = None,
+    token_prior_weights: dict[str, float] | None = None,
+) -> list[list[dict[str, Any]]]:
+    if final_probs is None:
+        return []
+    source_indices = _candidate_source_offset_indices(config, offsets)
+    merged: list[list[dict[str, Any]]] = [[] for _ in range(int(final_probs.shape[0]))]
+    for source_index in source_indices:
+        source_offset = int(offsets[source_index])
+        sliced_events = _slice_temporal_event_probabilities(event_probabilities or {}, source_index)
+        source_rows = _temporal_center_candidates(
+            final_probs[:, source_index, :, :],
+            vocab=vocab,
+            config=config,
+            event_probabilities=sliced_events,
+            retrieval_priors=retrieval_priors,
+            token_prior_weights=token_prior_weights,
+        )
+        weight = _candidate_source_offset_weight(config, source_offset)
+        for row_index, candidates in enumerate(source_rows):
+            for candidate in candidates:
+                item = dict(candidate)
+                item["source_offset"] = source_offset
+                item["source_offset_weight"] = weight
+                if weight != 1.0:
+                    item["pre_source_offset_score"] = float(item.get("score", 0.0) or 0.0)
+                    item["score"] = item["pre_source_offset_score"] * weight
+                merged[row_index].append(item)
+    max_candidates = int(config.get("non_noop_budget_candidates_per_row", final_probs.shape[2] * 8))
+    min_candidates_per_family = max(
+        0,
+        int(config.get("non_noop_budget_min_candidates_per_family", config.get("candidate_min_candidates_per_family", 0)) or 0),
+    )
+    effective_max = max(max_candidates, min_candidates_per_family * 3) * max(1, len(source_indices))
+    for row_index, candidates in enumerate(merged):
+        candidates.sort(
+            key=lambda item: (
+                -float(item.get("score", 0.0) or 0.0),
+                abs(int(item.get("source_offset", 0) or 0)),
+                int(item.get("slot", -1) or -1),
+                int(item.get("token_index", -1) or -1),
+            )
+        )
+        merged[row_index] = candidates[:effective_max]
+    return merged
 
 def _temporal_center_candidates(
     probabilities: Any,
@@ -2742,7 +2886,9 @@ def _predict_temporal_tokens_batch(
 ) -> list[list[str]]:
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
     noop_index = token_to_index.get(FDM1_ACTION_NOOP, token_to_index[FDM1_ACTION_MASK])
-    center_probs, predicted_center_ids, event_probabilities = _temporal_final_center_probabilities(
+    offsets = _temporal_offsets(config)
+    center = _center_index(offsets)
+    final_probs, predicted_ids, event_probabilities = _temporal_final_probabilities(
         model,
         torch,
         rows,
@@ -2752,11 +2898,12 @@ def _predict_temporal_tokens_batch(
         vocab=vocab,
         device=device,
     )
-    if center_probs is None or predicted_center_ids is None:
+    if final_probs is None or predicted_ids is None:
         return []
     retrieval_priors = _retrieval_priors_for_batch(model, torch, rows, features, retrieval_index=retrieval_index, config=config, device=device)
-    candidate_rows = _temporal_center_candidates(
-        center_probs,
+    candidate_rows = _temporal_candidate_rows_from_probabilities(
+        final_probs,
+        offsets=offsets,
         vocab=vocab,
         config=config,
         event_probabilities=event_probabilities,
@@ -2770,7 +2917,7 @@ def _predict_temporal_tokens_batch(
     budget_max_tokens = max(1, int(config.get("non_noop_budget_max_tokens_per_row", config.get("max_predicted_non_noop_tokens", 4))))
     predictions: list[list[str]] = []
     for batch_idx, row in enumerate(rows):
-        center_ids = [int(value) for value in predicted_center_ids[batch_idx, :].detach().cpu().tolist()]
+        center_ids = [int(value) for value in predicted_ids[batch_idx, center, :].detach().cpu().tolist()]
         if family_budgeted:
             fdm1_tokens = _tokens_from_family_budget_candidates(
                 candidate_rows[batch_idx],
@@ -2804,9 +2951,10 @@ def _collect_temporal_probability_rows(
     progress_phase = str(config.get("_probability_progress_phase", "probability_rows"))
     progress_every = max(1, int(config.get("probability_progress_every_batches", 10)))
     collected: list[dict[str, Any]] = []
+    offsets = _temporal_offsets(config)
     for batch_index, start_idx in enumerate(range(0, len(rows), batch_size), 1):
         batch_rows = list(rows[start_idx : start_idx + batch_size])
-        center_probs, _center_ids, event_probabilities = _temporal_final_center_probabilities(
+        final_probs, _predicted_ids, event_probabilities = _temporal_final_probabilities(
             model,
             torch,
             batch_rows,
@@ -2819,8 +2967,9 @@ def _collect_temporal_probability_rows(
         retrieval_priors = _retrieval_priors_for_batch(model, torch, batch_rows, features[start_idx : start_idx + batch_size], retrieval_index=retrieval_index, config=config, device=device)
         for row, candidates in zip(
             batch_rows,
-            _temporal_center_candidates(
-                center_probs,
+            _temporal_candidate_rows_from_probabilities(
+                final_probs,
+                offsets=offsets,
                 vocab=vocab,
                 config=config,
                 event_probabilities=event_probabilities,

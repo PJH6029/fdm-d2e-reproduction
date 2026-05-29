@@ -619,3 +619,10 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 ## 2026-05-30T02:50 KST — reranker prediction precompute hardening
 - Live 1×H200 reranker probe initially stayed CPU-bound in raw-video precompute with GPU allocated but idle.
 - Added opt-in prefix feature-cache reuse for target prefixes and tightened the reranker 5k decision probe to 1,024 stratified calibration rows / 500 target diagnostic rows before rerun or promotion.
+
+## 2026-05-30T03:20 KST — G005 reranker rejected; source-offset ensemble prepared
+- Candidate-score reranker probe completed negative on 5k target prefix: keyboard `0.01775568181818182`, mouse-button `0.004032258064516129`, mouse Pearson X/Y `null/null`, strict button F1 `0.0`, no-button FPR `0.017912291537986413`.
+- Cancelled reservation `rsv-jeonghunpark-20260530-0396ce` after evidence copy because the GPU was idle and the probe missed paper targets by large margins.
+- Added a new split-safe temporal source-offset candidate ensemble path that merges candidates from neighboring masked action-token offsets for train-heldout calibration/prediction. This tests D2E NEP-style timing mismatch while preserving the FDM-1 public recipe boundary and avoiding target-label calibration.
+- New config/script: `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_offsetensemble_predict5k.yaml`, `scripts/run_g005_idm_temporal_raw96_train320k_offsetensemble_predict5k.sh`.
+- Validation passed: py_compile, targeted pytest (`77 passed`), and FDM-1 recipe-alignment audit. G005 remains incomplete; next step is a small prediction-only run, not a full 4×H200 promotion.

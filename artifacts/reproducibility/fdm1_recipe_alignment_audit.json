@@ -450,6 +450,36 @@
         }
       ],
       "sha256": "e78c15a06cf8b530542391b92480517b2806de72b76ea2bb16ae0ad12efc4c36"
+    },
+    {
+      "path": "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k.yaml",
+      "stage": "idm",
+      "status": "pass",
+      "error_count": 0,
+      "findings": [
+        {
+          "severity": "warning",
+          "code": "mouse_delta_bins_not_public_49",
+          "actual": 11,
+          "public_target": 49
+        }
+      ],
+      "sha256": "bb903308544db0ee14b10789a98f91e4eff94420943a9ae8bbd6b243c727abc2"
+    },
+    {
+      "path": "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_offsetensemble_predict5k.yaml",
+      "stage": "idm",
+      "status": "pass",
+      "error_count": 0,
+      "findings": [
+        {
+          "severity": "warning",
+          "code": "mouse_delta_bins_not_public_49",
+          "actual": 11,
+          "public_target": 49
+        }
+      ],
+      "sha256": "671240c8356f7d582dd0e51d6e8c74848096132735b64636e8bc7ab1f92fa0dd"
     }
   ],
   "findings": [
@@ -515,6 +545,20 @@
       "actual": 11,
       "public_target": 49,
       "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_videohead_prefix80k_epoch3.yaml"
+    },
+    {
+      "severity": "warning",
+      "code": "mouse_delta_bins_not_public_49",
+      "actual": 11,
+      "public_target": 49,
+      "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k.yaml"
+    },
+    {
+      "severity": "warning",
+      "code": "mouse_delta_bins_not_public_49",
+      "actual": 11,
+      "public_target": 49,
+      "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_offsetensemble_predict5k.yaml"
     }
   ],
   "claim_boundary": "Recipe-alignment audit only; metric success and full D2E training evidence remain separate G005/G009 gates."
