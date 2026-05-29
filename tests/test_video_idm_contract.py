@@ -98,6 +98,8 @@ def test_video_frame_stream_falls_back_to_cv2_without_ffmpeg(monkeypatch):
         def __init__(self, source: str) -> None:
             self.source = source
             self.pos_msec = 0.0
+            self.read_index = 0
+            self.set_calls: list[float] = []
             self.released = False
             captures.append(self)
 
@@ -106,9 +108,13 @@ def test_video_frame_stream_falls_back_to_cv2_without_ffmpeg(monkeypatch):
 
         def set(self, prop: int, value: float) -> None:
             self.pos_msec = float(value)
+            self.read_index = round(float(value) / 50.0)
+            self.set_calls.append(float(value))
 
         def read(self):
-            return True, {"pos_msec": self.pos_msec}
+            frame = {"index": self.read_index}
+            self.read_index += 1
+            return True, frame
 
         def release(self) -> None:
             self.released = True
@@ -118,7 +124,7 @@ def test_video_frame_stream_falls_back_to_cv2_without_ffmpeg(monkeypatch):
         CAP_PROP_POS_MSEC=0,
         COLOR_BGR2GRAY=1,
         INTER_AREA=2,
-        cvtColor=lambda frame, code: FakeGray(round(float(frame["pos_msec"]) / 50.0)),
+        cvtColor=lambda frame, code: FakeGray(frame["index"]),
         resize=lambda gray, shape, interpolation=None: gray,
     )
 
@@ -129,7 +135,9 @@ def test_video_frame_stream_falls_back_to_cv2_without_ffmpeg(monkeypatch):
     assert stream.get(0) == b"\x00" * 4
     assert stream.get(2) == b"\x02" * 4
     assert stream.backend == "cv2"
-    assert [capture.pos_msec for capture in captures] == [100.0]
+    assert captures[0].set_calls == []
+    assert stream.get(40) == b"\x28" * 4
+    assert captures[0].set_calls == [2000.0]
     stream.close()
     assert captures[0].released is True
 

@@ -250,6 +250,7 @@ class _VideoFrameStream:
         self.current_index = 0
         self.last_frame: bytes | None = None
         self.cache: dict[int, bytes] = {}
+        self.cv2_seek_gap = 8
 
     def _open(self) -> None:
         ffmpeg = shutil.which("ffmpeg")
@@ -315,8 +316,6 @@ class _VideoFrameStream:
         assert self.cap is not None
         import cv2  # type: ignore
 
-        target_msec = 1000.0 * float(self.current_index) / max(1.0, float(self.fps))
-        self.cap.set(cv2.CAP_PROP_POS_MSEC, target_msec)
         ok, frame = self.cap.read()
         if not ok or frame is None:
             return None
@@ -332,6 +331,18 @@ class _VideoFrameStream:
         for old_index in [idx for idx in self.cache if idx < min_keep]:
             self.cache.pop(old_index, None)
         return payload
+
+    def _seek_cv2(self, index: int) -> None:
+        if self.cap is None:
+            self._open_cv2()
+        assert self.cap is not None
+        import cv2  # type: ignore
+
+        target_msec = 1000.0 * float(index) / max(1.0, float(self.fps))
+        self.cap.set(cv2.CAP_PROP_POS_MSEC, target_msec)
+        self.current_index = int(index)
+        self.last_frame = None
+        self.cache = {}
 
     def _read_next(self) -> bytes | None:
         if self.proc is None and self.cap is None:
@@ -369,6 +380,10 @@ class _VideoFrameStream:
             return self.cache[index]
         if index < self.current_index:
             self.close()
+        if self.proc is None and self.cap is None:
+            self._open()
+        if self.backend == "cv2" and index > self.current_index + self.cv2_seek_gap:
+            self._seek_cv2(index)
         while self.current_index <= index:
             frame = self._read_next()
             if frame is None:
