@@ -221,6 +221,30 @@ def test_g005_realvideo_frozen_embedding_prefix_uses_video_decode_and_cache() ->
     assert 'g005_idm_frozen_frame_embedding_prefix320k_paper_metrics.json' not in base
 
 
+def test_g005_realvideo_raw96_axisclass_prefix_uses_balanced_real_video() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_patch_axisclass_realvideo_prefix32k.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_prefix32k.yaml"
+        ).read_text()
+    )
+
+    assert "scripts/materialize_balanced_prefix.py" in text
+    assert "--balance-key recording_id" in text
+    assert "--balance-key eval_split_tags" in text
+    assert "--group-value heldout_recording" in text
+    assert "scripts/run_g005_idm_temporal_raw96_family_presence_prefix.sh" in text
+    assert config["video_feature_source"] == "raw_frames"
+    assert config["require_precomputed_video_cache"] is False
+    assert config["train_records"] == "outputs/data/d2e_event_state_duration_realvideo_balanced_prefix32k/train_core.jsonl"
+    assert config["target_records"] == "outputs/data/d2e_event_state_duration_realvideo_balanced_prefix32k/target_all_eval.jsonl"
+    assert config["max_train_rows"] == 32000
+    assert config["max_target_rows"] == 24000
+    assert config["raw_video_frame_offsets"] == [0, 1, 2]
+    assert "actual D2E video" in config["claim_boundary"]
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())
