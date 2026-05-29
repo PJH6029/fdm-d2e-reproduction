@@ -626,3 +626,8 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Added a new split-safe temporal source-offset candidate ensemble path that merges candidates from neighboring masked action-token offsets for train-heldout calibration/prediction. This tests D2E NEP-style timing mismatch while preserving the FDM-1 public recipe boundary and avoiding target-label calibration.
 - New config/script: `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_offsetensemble_predict5k.yaml`, `scripts/run_g005_idm_temporal_raw96_train320k_offsetensemble_predict5k.sh`.
 - Validation passed: py_compile, targeted pytest (`77 passed`), and FDM-1 recipe-alignment audit. G005 remains incomplete; next step is a small prediction-only run, not a full 4×H200 promotion.
+
+## 2026-05-30T03:50 KST — offsetensemble 5k throughput abort; fast1k retry
+- Aborted the first 5k/five-offset source-offset ensemble probe because it was CPU-bound for >25 minutes and wrote zero predictions while holding GPU memory. This is not metric evidence.
+- Prepared a narrower fast1k probe with source offsets `[-1,0,1]`, 256 stratified calibration rows, and 1k target rows so the current 1×H200 reservation can still produce a bounded decision signal.
+- Do not widen this path unless fast1k materially improves paper metrics; otherwise reject offset ensembling and pivot.

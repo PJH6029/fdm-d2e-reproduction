@@ -1438,3 +1438,14 @@ New code/config paths:
 - `scripts/run_g005_idm_temporal_raw96_train320k_offsetensemble_predict5k.sh`.
 
 Validation: `python3 -m py_compile src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py scripts/train_idm_temporal_masked_diffusion.py scripts/predict_idm_temporal_masked_diffusion.py`, `uv run pytest -q tests/test_masked_diffusion_idm_trainer.py tests/test_training_run_scripts.py tests/test_fdm1_recipe_alignment.py` (`77 passed`), and `uv run python scripts/validate_fdm1_recipe_alignment.py` (`status=pass`). Do not checkpoint `G005-g014-idm-full-paper-target`; run the offset-ensemble as a bounded prediction probe only, and reject it without a full 4×H200 promotion unless it materially improves all paper-target endpoints.
+
+### 2026-05-30 KST — offsetensemble 5k aborted for throughput; fast1k probe prepared
+
+The first offsetensemble launch (`predict5k`, five source offsets) was aborted after more than 25 minutes because it stayed CPU-bound and wrote zero prediction rows while holding GPU memory. This was a throughput failure, not metric evidence. The live reservation is still useful for a smaller decision probe, so the next branch narrows to three source offsets `[-1,0,1]`, 256 stratified train-heldout calibration rows, 1k target rows, and smaller candidate diagnostics.
+
+New fast probe paths:
+
+- `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_offsetensemble_fast1k.yaml`
+- `scripts/run_g005_idm_temporal_raw96_train320k_offsetensemble_fast1k.sh`
+
+Validation remains passing (`77` targeted tests and FDM-1 recipe-alignment audit). If fast1k is also negative or too slow, reject temporal offset ensembling and pivot to a more fundamental training/representation change rather than widening the same candidate path.
