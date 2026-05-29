@@ -55,7 +55,7 @@ if [[ "$ENABLE_WANDB_SIDECAR" != "0" && -n "${WANDB_PROJECT:-}" ]]; then
     --run-name "$MODEL_SLUG" \
     --group "g005-idm-paper-target" \
     --job-type "train-sidecar" \
-    --tags "g005,idm,d2e,fdm1-recipe,raw-video,masked-diffusion,prefix" \
+    --tags "${WANDB_TAGS:-g005,idm,d2e,fdm1-recipe,temporal-video,masked-diffusion,prefix}" \
     --poll-seconds 30 \
     --process-pattern "$PROCESS_PATTERN" \
     --finish-on-run-summary >"$WANDB_SIDECAR_LOG" 2>&1 &
@@ -125,7 +125,7 @@ payload={
   'gpu_monitor_status':gpu_status(gpu_monitor),
   'wandb_sidecar_status_path':str(wandb_status),
   'wandb_sidecar_status':load(wandb_status),
-  'claim_boundary':'Bounded 1xH200/prefix raw-video FDM-1-recipe IDM probe; not G005 completion evidence unless paper targets are beaten and audited.'
+  'claim_boundary':'Bounded 1xH200/prefix temporal-video FDM-1-recipe IDM probe; config-specific video source is recorded in the resolved config and summary. Not G005 completion evidence unless paper targets are beaten and audited.'
 }
 run_summary.parent.mkdir(parents=True, exist_ok=True)
 run_summary.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\n')
