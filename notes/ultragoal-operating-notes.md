@@ -594,3 +594,8 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Launched `g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_target24k` from commit `d642668` on active pod `prod-rsv-jeonghunpark-20260529-b8d1e3` (Node 4, GPUs 1-4).
 - Reserved adjacent continuation `rsv-jeonghunpark-20260530-d58f2b` on Node 4, GPUs 1-4 from 2026-05-30 02:00 to 12:00 KST so the H200 run can continue/resume beyond the original 02:00 expiration if needed.
 - Continue to monitor utilization: materialization is expected CPU/IO-heavy; sustained GPU-idle after torchrun starts is a blocker.
+
+## 2026-05-30T00:57 KST — G005 train320k terminal negative
+- `g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_target24k` completed on `prod-rsv-jeonghunpark-20260529-b8d1e3` with `exit_code=0`; terminal compact status is `nonterminal_negative_probe`.
+- Metrics: keyboard key accuracy `0.0086006`, mouse-button accuracy/F1 `0.0/0.0`, mouse Pearson X/Y `0.0055316/null`, no-button FPR `0.012024`. Only the no-button FPR gate passed; do not checkpoint `G005-g014-idm-full-paper-target`.
+- The distributed raw-frame cache worked and all four H200s trained, but final target probability/prediction is still rank0-only; fix/avoid this before the next large H200 attempt.

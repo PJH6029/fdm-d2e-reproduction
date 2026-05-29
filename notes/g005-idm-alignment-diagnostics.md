@@ -1343,3 +1343,11 @@ Materialization is now operational (`16k` train `26.17s`, `16k` target `25.28s`,
 - Evidence copied locally: `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_prefix32k_h200_{run,compact_summary,gpu_monitor}.json/csv`, `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_prefix32k_summary.json`, source balanced summaries, and small output metadata under `outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_prefix32k/`.
 - Do not checkpoint `G005-g014-idm-full-paper-target` from this run. It proves the actual-D2E-video/FDM-1-shaped trainer is operational but not useful yet.
 - Follow-up prepared: a larger real-video `train320k/target24k` branch with a 512-dim/6-layer patch-token masked-diffusion IDM and a distributed raw-frame feature cache so future 4×H200 launches do not duplicate raw-frame decode on every rank.
+
+### 2026-05-30 KST — balanced real-video raw96 train320k terminal negative
+
+Ran `g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_target24k` on the active 4×H200 MLXP pod from commit `d642668`. The run completed with `exit_code=0`, 320k balanced D2E train rows, 24k balanced target rows (temporal/heldout-recording/heldout-game), W&B sidecar logging, and distributed raw-frame feature-cache evidence. It is **not** G005 completion evidence.
+
+Observed all-split paper-compatible metrics: keyboard key accuracy `0.0086006`, mouse-button accuracy `0.0`, strict mouse-button F1 `0.0`, mouse Pearson X/Y `0.0055316/null`, and no-button FPR `0.012024`. Only the no-button FPR gate passed; all paper-target quality gates failed. The model mostly emitted common key press/release tokens plus `MOUSE_DY_Z0`, indicating a candidate ranking/budget failure rather than an operational training failure.
+
+Operational diagnosis: distributed feature-cache hardening worked and reduced duplicated raw-frame decode across ranks. Training used all four H200s, but post-training probability/prediction remained rank0-only, leaving GPUs 1–3 idle during final prediction. Future H200 branches should vectorize/distribute post-checkpoint calibration/prediction before another large run.
