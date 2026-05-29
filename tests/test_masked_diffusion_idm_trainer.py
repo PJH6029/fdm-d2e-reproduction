@@ -208,6 +208,18 @@ def test_distributed_raw_video_feature_cache_loads_ordered_chunks(tmp_path: Path
     )
     assert tuple(cached_single_rank.shape) == (4, 4)
     assert cached_single_rank.tolist() == [pytest.approx(row) for row in expected]
+    cached_prefix = _precompute_features_with_distributed_cache(
+        rows[:2],
+        config={**config, "allow_prefix_feature_cache_reuse": True, "prefix_feature_cache_reuse_splits": ["fit"]},
+        split_name=split_name,
+        torch=torch,
+        distributed=False,
+        rank=0,
+        world_size=1,
+        dist=None,
+    )
+    assert tuple(cached_prefix.shape) == (2, 4)
+    assert cached_prefix.tolist() == [pytest.approx(row) for row in expected[:2]]
 
 
 def test_button_event_calibration_uses_dynamic_probability_thresholds():

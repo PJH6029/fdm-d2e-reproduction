@@ -4,11 +4,12 @@
   "adaptive_family_budget_families": [
     "mouse_button"
   ],
-  "adaptive_family_budget_max_rows": 2000,
+  "adaptive_family_budget_max_rows": 1000,
   "adaptive_family_budget_only_raise_threshold": true,
   "adaptive_family_budget_rate_multiplier": 0.85,
   "adaptive_family_budget_threshold_epsilon": 1e-12,
   "adaptive_family_budget_to_unlabeled_target": true,
+  "allow_prefix_feature_cache_reuse": true,
   "batch_size": 32,
   "button_class_aux_weight": 0.8,
   "button_class_bias_candidates": true,
@@ -36,7 +37,7 @@
     "mouse_button",
     "mouse_move"
   ],
-  "candidate_diagnostics_target_max_rows": 1000,
+  "candidate_diagnostics_target_max_rows": 500,
   "candidate_score_reranker_blend": 1.0,
   "candidate_score_reranker_enabled": true,
   "candidate_score_reranker_epochs": 160,
@@ -66,7 +67,7 @@
   ],
   "candidate_score_reranker_l2": 0.0001,
   "candidate_score_reranker_lr": 0.05,
-  "candidate_score_reranker_max_examples_per_family": 300000,
+  "candidate_score_reranker_max_examples_per_family": 120000,
   "candidate_score_reranker_min_negatives": 2,
   "candidate_score_reranker_min_positives": 2,
   "candidate_token_prior_correction": false,
@@ -80,7 +81,7 @@
   "candidate_token_prior_strength": 0.35,
   "candidate_token_prior_summary_limit": 16,
   "candidate_token_prior_unseen_weight": 0.25,
-  "claim_boundary": "Prediction-only candidate-score reranker diagnostic from the G005 train320k raw96 masked-diffusion IDM checkpoint. Fits a tiny confidence reranker on held-out train rows only, applies it to target candidates without target-label calibration, and is not G005 completion evidence unless paper gates pass.",
+  "claim_boundary": "Prediction-only candidate-score reranker diagnostic from the G005 train320k raw96 masked-diffusion IDM checkpoint. Fits a tiny confidence reranker on held-out train rows only, applies it to target candidates without target-label calibration, and is not G005 completion evidence unless paper gates pass. This bounded probe intentionally caps stratified calibration rows at 1024 and reuses prefix feature cache where possible to avoid GPU-idle random video decode before larger promotion.",
   "diffusion_steps": 16,
   "direct_auxiliary_button_class_blend": 0.7,
   "direct_auxiliary_button_no_button_gate_floor": 0.0,
@@ -260,6 +261,11 @@
       "d2e_approximation": "Add fit-train pairwise ranking losses to family token-presence heads so true sparse key/click/mouse-delta action tokens score above hard same-family negatives before held-out-train calibration. This is trained only from D2E train rows and never from target labels.",
       "public_anchor": "FDM-1 iteratively unmasks high-confidence action-token positions; the public report does not disclose how confidence ranking is trained."
     },
+    "prefix_feature_cache_reuse": {
+      "claim_boundary": "Throughput optimization only; does not alter labels, action-token objective, calibration, or metric claims.",
+      "d2e_approximation": "When a prediction-only diagnostic limits target rows to a prefix, load that prefix from the prior full-target raw-video feature cache if feature config/dtype/split match.",
+      "public_anchor": "Operational cache reuse does not change the FDM-1 IDM recipe; it only avoids re-decoding an already-cached prefix of the same target split."
+    },
     "raw_video_patch_tokens": {
       "claim_boundary": "Open D2E video-token approximation; not the closed-source FDM-1 tokenizer and not a parity claim.",
       "d2e_approximation": "Encode each D2E raw 96x96 frame stack into multiple learned patch/video tokens per temporal row before the noncausal masked action-token transformer, instead of collapsing the row into one global vector.",
@@ -375,6 +381,9 @@
   "precompute_features_as_tensor": true,
   "prediction_batch_size": 64,
   "prediction_progress_every_batches": 25,
+  "prefix_feature_cache_reuse_splits": [
+    "target"
+  ],
   "preserve_pad_action_slots": true,
   "probability_progress_every_batches": 10,
   "random_token_probability": 0.05,
@@ -410,7 +419,7 @@
   "temporal_button_class_auxiliary": true,
   "temporal_button_token_presence_auxiliary": true,
   "temporal_calibration_fraction": 0.025,
-  "temporal_calibration_max_rows": 4096,
+  "temporal_calibration_max_rows": 1024,
   "temporal_calibration_strategy": "stratified_action",
   "temporal_event_auxiliary": true,
   "temporal_key_class_auxiliary": true,

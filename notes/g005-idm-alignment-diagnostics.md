@@ -1405,3 +1405,15 @@ prediction-only probe from the existing train320k checkpoint/cache when a small
 reservation or reusable pod is available. If the reranker cannot move keyboard,
 button, and mouse metrics materially on 5k, reject it without a full 24k/4×H200
 promotion.
+
+### 2026-05-30 KST — reranker probe throughput hardening
+
+The first live 1×H200 reranker prediction process spent its initial minutes in
+CPU/raw-video precompute with the GPU allocated but idle, because stratified
+calibration rows cause random MKV frame access and the target 5k prefix did not
+reuse the existing 24k raw-video feature cache. Local hardening now adds opt-in
+prefix feature-cache reuse for prediction diagnostics and reduces the reranker
+5k decision probe to 1,024 stratified calibration rows plus a 500-row target
+candidate diagnostic cap. This preserves the split-safe train-heldout-only
+calibration boundary and should be used before any rerun if the old process does
+not reach inference promptly.

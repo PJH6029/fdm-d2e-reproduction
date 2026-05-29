@@ -615,3 +615,7 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Added a public-FDM-1-shaped confidence-reranker approximation: fit family-specific logistic candidate scorers on held-out train candidate rows only, then apply to masked-diffusion action-token candidates before train-heldout family-budget calibration and target prediction.
 - New 5k prediction-only probe config/wrapper: `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k.yaml` and `scripts/run_g005_idm_temporal_raw96_train320k_candidate_reranker_predict5k.sh`.
 - Validation passed: py_compile, wrapper `bash -n`, and `76` targeted pytest cases. This is not completion evidence; it needs a bounded checkpoint/cache prediction run before any further GPU scale-up.
+
+## 2026-05-30T02:50 KST — reranker prediction precompute hardening
+- Live 1×H200 reranker probe initially stayed CPU-bound in raw-video precompute with GPU allocated but idle.
+- Added opt-in prefix feature-cache reuse for target prefixes and tightened the reranker 5k decision probe to 1,024 stratified calibration rows / 500 target diagnostic rows before rerun or promotion.

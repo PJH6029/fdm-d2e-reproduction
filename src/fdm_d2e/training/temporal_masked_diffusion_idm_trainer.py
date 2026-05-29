@@ -252,6 +252,61 @@ def _feature_cache_fingerprint(rows: Sequence[dict[str, Any]], *, split_name: st
     return h.hexdigest()[:20]
 
 
+def _load_ordered_feature_cache_chunks(
+    chunk_paths: Sequence[Path],
+    *,
+    torch: Any,
+    expected_fingerprint: str | None,
+    requested_rows: int,
+    config: dict[str, Any],
+    allow_prefix: bool = False,
+) -> Any | None:
+    if not chunk_paths:
+        return None
+    payloads = [torch.load(path, map_location="cpu", weights_only=False) for path in chunk_paths]
+    if expected_fingerprint is not None and any(payload.get("fingerprint") != expected_fingerprint for payload in payloads):
+        return None
+    expected_world_size = int(payloads[0].get("world_size", len(payloads)))
+    if len(payloads) != expected_world_size:
+        return None
+    dtype_name = str(
+        payloads[0].get(
+            "dtype",
+            config.get("raw_video_feature_tensor_dtype", config.get("precompute_feature_tensor_dtype", "float16")),
+        )
+    ).lower()
+    tensor_dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
+    feature_dim = int(payloads[0].get("feature_dim", _raw_video_feature_dim(config)))
+    ordered = sorted(payloads, key=lambda item: int(item["start"]))
+    if not allow_prefix:
+        if any(int(payload["end"]) > requested_rows for payload in ordered):
+            return None
+        features = torch.empty((requested_rows, feature_dim), dtype=tensor_dtype)
+        for payload in ordered:
+            chunk = payload["features"].to(dtype=tensor_dtype)
+            features[int(payload["start"]) : int(payload["end"])] = chunk
+        return features.contiguous()
+    features = torch.empty((requested_rows, feature_dim), dtype=tensor_dtype)
+    cursor = 0
+    for payload in ordered:
+        start = int(payload["start"])
+        end = int(payload["end"])
+        if end <= cursor:
+            continue
+        if start > cursor:
+            return None
+        if cursor >= requested_rows:
+            break
+        copy_start = max(cursor, start)
+        copy_end = min(end, requested_rows)
+        chunk = payload["features"].to(dtype=tensor_dtype)
+        features[copy_start:copy_end] = chunk[copy_start - start : copy_end - start]
+        cursor = copy_end
+        if cursor >= requested_rows:
+            return features.contiguous()
+    return features.contiguous() if cursor >= requested_rows else None
+
+
 def _row_action_families(row: dict[str, Any]) -> set[str]:
     families: set[str] = set()
     tokens = row.get("ground_truth_tokens") or []
@@ -391,17 +446,61 @@ def _precompute_features_with_distributed_cache(
         split_dir = cache_root / f"{split_name}-{fingerprint}"
         chunk_paths = sorted(split_dir.glob("chunk_rank*_of_*.pt"))
         if chunk_paths and (not distributed or world_size <= 1):
-            payloads = [torch.load(path, map_location="cpu", weights_only=False) for path in chunk_paths]
-            expected_world_size = int(payloads[0].get("world_size", len(payloads)))
-            if len(payloads) == expected_world_size and all(payload.get("fingerprint") == fingerprint for payload in payloads):
-                dtype_name = str(payloads[0].get("dtype", config.get("raw_video_feature_tensor_dtype", config.get("precompute_feature_tensor_dtype", "float16")))).lower()
-                tensor_dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
-                feature_dim = int(payloads[0].get("feature_dim", _raw_video_feature_dim(config)))
-                features = torch.empty((len(rows), feature_dim), dtype=tensor_dtype)
-                for payload in sorted(payloads, key=lambda item: int(item["start"])):
-                    chunk = payload["features"].to(dtype=tensor_dtype)
-                    features[int(payload["start"]) : int(payload["end"])] = chunk
-                return features.contiguous()
+            cached = _load_ordered_feature_cache_chunks(
+                chunk_paths,
+                torch=torch,
+                expected_fingerprint=fingerprint,
+                requested_rows=len(rows),
+                config=config,
+            )
+            if cached is not None:
+                return cached
+        prefix_reuse_splits_raw = config.get("prefix_feature_cache_reuse_splits", ["target"])
+        prefix_reuse_splits = (
+            {str(item) for item in prefix_reuse_splits_raw}
+            if isinstance(prefix_reuse_splits_raw, list)
+            else {"target"}
+        )
+        if (
+            bool(config.get("allow_prefix_feature_cache_reuse", False))
+            and split_name in prefix_reuse_splits
+            and (not distributed or world_size <= 1)
+        ):
+            feature_dim = _raw_video_feature_dim(config)
+            dtype_name = str(config.get("raw_video_feature_tensor_dtype", config.get("precompute_feature_tensor_dtype", "float16"))).lower()
+            for summary_path in sorted(cache_root.glob(f"{split_name}-*/summary.json")):
+                try:
+                    summary = json.loads(summary_path.read_text())
+                except (OSError, json.JSONDecodeError):
+                    continue
+                if str(summary.get("split_name")) != split_name:
+                    continue
+                if int(summary.get("rows", 0) or 0) < len(rows):
+                    continue
+                if int(summary.get("feature_dim", feature_dim) or 0) != feature_dim:
+                    continue
+                if str(summary.get("dtype", dtype_name)).lower() != dtype_name:
+                    continue
+                candidate_paths: list[Path] = []
+                for chunk in summary.get("chunks", []):
+                    raw_path = Path(str(chunk.get("path", "")))
+                    if not raw_path.is_absolute():
+                        raw_path = Path(raw_path)
+                    candidate_paths.append(raw_path)
+                if not candidate_paths:
+                    candidate_paths = sorted(summary_path.parent.glob("chunk_rank*_of_*.pt"))
+                if not all(path.exists() for path in candidate_paths):
+                    continue
+                cached = _load_ordered_feature_cache_chunks(
+                    sorted(candidate_paths),
+                    torch=torch,
+                    expected_fingerprint=None,
+                    requested_rows=len(rows),
+                    config=config,
+                    allow_prefix=True,
+                )
+                if cached is not None:
+                    return cached
     if (
         not cache_root_raw
         or feature_source not in {"raw_frames", "raw_video_frames", "frame_provider"}
