@@ -1,0 +1,35 @@
+{
+  "candidate": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k",
+  "claim_boundary": "Negative bounded prediction-only probe; this is not G005 completion evidence and does not use target-label calibration.",
+  "decision": "Reject candidate-score reranker as a promotion path: it did not rescue train320k raw96 masked-diffusion checkpoint metrics and still misses paper targets by large margins.",
+  "evidence": {
+    "cancel_evidence": "artifacts/cluster/g005_candidate_reranker_predict5k_cancel_20260530.json",
+    "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k_compact_summary.json",
+    "paper_metrics": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k/paper_metrics.json",
+    "summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_candidate_reranker_predict5k_summary.json"
+  },
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "next_pivot": "Do not spend more 4xH200 quota on this checkpoint family unless a new architecture/training-objective fix changes train-heldout diagnostics first.",
+  "observed": {
+    "keyboard_key_accuracy": 0.01775568181818182,
+    "keyboard_sample_count": 9856,
+    "mouse_button_accuracy": 0.004032258064516129,
+    "mouse_button_f1": 0.0,
+    "mouse_button_sample_count": 248,
+    "mouse_move_pearson_x": null,
+    "mouse_move_pearson_y": null,
+    "mouse_move_sample_count": 3311,
+    "no_button_false_positive_rate": 0.017912291537986413,
+    "rows": 5000
+  },
+  "observed_at": "2026-05-30T03:06:10.034818+09:00",
+  "schema": "g005_candidate_reranker_rejection.v1",
+  "status": "rejected",
+  "targets": {
+    "keyboard_key_accuracy_min": 0.73,
+    "mouse_button_accuracy_min": 0.957,
+    "mouse_move_pearson_x_min": 0.796,
+    "mouse_move_pearson_y_min": 0.783,
+    "no_button_false_positive_rate_max": 0.1
+  }
+}

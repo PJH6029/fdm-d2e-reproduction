@@ -50,8 +50,9 @@ def sha(path):
     return h.hexdigest()
 summary=load(summary_path) or {}
 metrics=load(metrics_path) or {}
-paper=metrics.get('paper_compatible', {})
-strict=metrics.get('strict_local', {})
+all_metrics=(metrics.get('groups') or {}).get('all') or metrics
+paper=all_metrics.get('paper_compatible', {})
+strict=all_metrics.get('strict_local', {})
 keyboard=(paper.get('keyboard') or {}).get('key_accuracy')
 button=(paper.get('mouse_button') or {}).get('button_accuracy')
 move=paper.get('mouse_move') or {}
