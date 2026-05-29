@@ -2044,8 +2044,12 @@ def _collect_temporal_probability_rows(
     token_prior_weights: dict[str, float] | None = None,
 ) -> list[dict[str, Any]]:
     batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
+    total_batches = (len(rows) + batch_size - 1) // batch_size
+    progress_output_dir = config.get("_probability_progress_output_dir")
+    progress_phase = str(config.get("_probability_progress_phase", "probability_rows"))
+    progress_every = max(1, int(config.get("probability_progress_every_batches", 10)))
     collected: list[dict[str, Any]] = []
-    for start_idx in range(0, len(rows), batch_size):
+    for batch_index, start_idx in enumerate(range(0, len(rows), batch_size), 1):
         batch_rows = list(rows[start_idx : start_idx + batch_size])
         center_probs, _center_ids, event_probabilities = _temporal_final_center_probabilities(
             model,
@@ -2085,6 +2089,22 @@ def _collect_temporal_probability_rows(
                         )
                     ],
                 }
+            )
+        if progress_output_dir and (
+            batch_index == 1
+            or batch_index % progress_every == 0
+            or batch_index == total_batches
+        ):
+            _write_rank_progress(
+                config,
+                output_dir=Path(progress_output_dir),
+                payload={
+                    "phase": progress_phase,
+                    "batch": batch_index,
+                    "batches": total_batches,
+                    "examples": min(len(rows), start_idx + len(batch_rows)),
+                    "rows": len(rows),
+                },
             )
     return collected
 
@@ -3130,7 +3150,12 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             torch,
             calibration_rows,
             calibration_features,
-            config={**config, "max_slots": max_slots},
+            config={
+                **config,
+                "max_slots": max_slots,
+                "_probability_progress_output_dir": str(output_dir),
+                "_probability_progress_phase": "calibration_probability_rows",
+            },
             vocab=vocab,
             device=device,
             retrieval_index=retrieval_index,
@@ -3175,7 +3200,12 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             torch,
             target_rows[:limit],
             target_features[:limit],
-            config={**config, "max_slots": max_slots},
+            config={
+                **config,
+                "max_slots": max_slots,
+                "_probability_progress_output_dir": str(output_dir),
+                "_probability_progress_phase": "target_probability_rows",
+            },
             vocab=vocab,
             device=device,
             retrieval_index=retrieval_index,
