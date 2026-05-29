@@ -140,3 +140,9 @@ New bounded candidate artifacts:
 - `scripts/run_g005_idm_temporal_luma2_videohead_prefix80k_epoch3.sh`
 
 Do not reserve GPUs merely because quota is available. Launch this only after local config/test gates pass and use it as a prefix80k decision probe before any 320k/full-corpus promotion.
+
+## 2026-05-29 video-head prefix80k reservation
+
+After local validation of the video-token confidence-head candidate, a new 4×H200 reservation was created for the bounded prefix80k probe: `rsv-jeonghunpark-20260529-579a85`, node 4, GPUs `[1,2,3,4]`, `2026-05-29T22:00:00+09:00` to `2026-05-30T01:00:00+09:00`. Redacted reservation evidence is `artifacts/cluster/g005_videohead_prefix80k_reservation_20260529_22_01.json`.
+
+A local auto-launch watcher was started with `MODEL_SLUG=g005_idm_temporal_masked_diffusion_luma2_videohead_prefix80k_epoch3` and launch script `scripts/run_g005_idm_temporal_luma2_videohead_prefix80k_epoch3.sh`; its launch summary target is `artifacts/cluster/g005_videohead_prefix80k_auto_launch_20260529.json`.
