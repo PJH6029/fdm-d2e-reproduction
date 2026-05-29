@@ -125,8 +125,11 @@ PY
 fi
 
 # Wait for any old single-GPU actual-luma run in a reused pod/path before reset.
+# Use ps+grep filtering rather than bare pgrep: with `bash -lc "pgrep -af
+# '<pattern>'"`, pgrep can match the remote shell command that contains the
+# pattern literal and falsely block a fresh reservation.
 for j in $(seq 1 40); do
-  if KUBECONFIG="$KUBECONFIG_PATH" kubectl --request-timeout=60s -n "$NAMESPACE" exec -i "$POD" -- bash -lc "pgrep -af 'g005_idm_temporal_masked_diffusion_luma2_actual_fast80k|run_g005_idm_temporal_luma2_actual_fast80k|train_idm_temporal_masked_diffusion.py --config configs/model/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k' >/dev/null"; then
+  if KUBECONFIG="$KUBECONFIG_PATH" kubectl --request-timeout=60s -n "$NAMESPACE" exec -i "$POD" -- bash -lc "ps -eo pid=,args= | grep -E 'g005_idm_temporal_masked_diffusion_luma2_actual_fast80k|run_g005_idm_temporal_luma2_actual_fast80k|train_idm_temporal_masked_diffusion.py --config configs/model/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k' | grep -v -E 'grep -E|bash -lc|kubectl|watch_g005_4xh200_prefix320k_launch' | grep -q ."; then
     printf '%s old_fast80k_still_running wait=%s\n' "$(date -Iseconds)" "$j"
     sleep 60
   else

@@ -101,3 +101,9 @@ G005 is ready for an OMX checkpoint with a fresh active aggregate `get_goal` sna
 - User confirmed quota-increase approval. API inspection records production effective/current quota as 8 GPUs with an active approved grant and 400 approved GPU-hours remaining. Redacted evidence: `artifacts/cluster/g005_quota_grant_status_20260529.json`.
 - Existing 4×H200 reservation remains scheduled: `rsv-jeonghunpark-20260529-4f61cb`, node 4, GPUs `[3,4,5,6]`, 2026-05-29 20:00–2026-05-30 00:00 KST. Auto-launch watcher remains responsible for starting `scripts/run_g005_idm_temporal_luma2_actual_prefix320k_epoch3.sh` on the reservation pod and writing `artifacts/cluster/g005_4xh200_auto_launch_20260529.json`.
 - Do not checkpoint `G005-g014-idm-full-paper-target` until the prefix320k run produces terminal metrics that pass the paper-target gate and `get_goal` JSON is passed into `omx ultragoal checkpoint`.
+
+## 2026-05-29 20:03 KST G005 prefix320k 4xH200 launch
+
+- Reservation `rsv-jeonghunpark-20260529-4f61cb` became running as pod `prod-rsv-jeonghunpark-20260529-4f61cb`. The initial local auto-launch watcher hit a false `old_fast80k_still_running` guard caused by remote `pgrep -af` matching the `bash -lc` command string itself.
+- To avoid idle 4×H200 time, the stale watcher was stopped and the same launch was performed manually: repo `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`, head `2b382d4`, `NPROC_PER_NODE=4`, script `scripts/run_g005_idm_temporal_luma2_actual_prefix320k_epoch3.sh`, remote PID `177`. Local launch summary: `artifacts/cluster/g005_4xh200_auto_launch_20260529.json`.
+- Early health check showed 4 DDP rank workers and W&B sidecar running. By 2026-05-29 20:11 KST, all ranks reached epoch 1/3 batch 500/616 and GPU monitor showed 4×H200 active utilization up to 100% with about 24–26GiB per GPU. This is probe evidence only; `G005-g014-idm-full-paper-target` remains incomplete until paper-target and full-scope gates pass.
