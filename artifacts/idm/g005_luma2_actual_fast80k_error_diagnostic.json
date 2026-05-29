@@ -1,0 +1,490 @@
+{
+  "claim_boundary": "Diagnostic over completed 80k actual-luma negative probe; target labels used only for failure analysis, not calibration or completion.",
+  "diagnosis": "The actual-luma masked-diffusion probe over-emits a small set of train-prior keys (R/W) and MOUSE_RIGHT_UP while under-covering motion bins and exact sparse tokens; scaling alone is unlikely to fix paper-target gaps without stronger recipe-faithful representation/ranking.",
+  "exact_rows": 0,
+  "ground_truth_family_counts": {
+    "button": 158,
+    "key": 1198,
+    "move": 13324,
+    "noop": 1185,
+    "other": 0,
+    "scroll": 27
+  },
+  "next_candidate_hint": "For the scheduled prefix320k run, require terminal evidence; if it repeats this collapse, pivot to stronger video-token/action-alignment training instead of threshold-only sweeps.",
+  "predicted_family_counts": {
+    "button": 1678,
+    "key": 9999,
+    "move": 9985,
+    "noop": 0,
+    "other": 0,
+    "scroll": 0
+  },
+  "rows": 5000,
+  "schema": "g005_actual_luma_negative_probe_error_diagnostic.v1",
+  "semantic_row_overlap_rate": {
+    "button": 0.006795016987542469,
+    "key": 0.0298,
+    "move": 0.4894,
+    "noop": 0.0,
+    "other": null,
+    "scroll": 0.0
+  },
+  "top_false_negative_tokens": [
+    {
+      "count": 1538,
+      "family": "move",
+      "token": "MOUSE_DX_Z0"
+    },
+    {
+      "count": 1189,
+      "family": "move",
+      "token": "MOUSE_DY_P1"
+    },
+    {
+      "count": 1185,
+      "family": "noop",
+      "token": "NOOP"
+    },
+    {
+      "count": 946,
+      "family": "move",
+      "token": "MOUSE_DY_N1"
+    },
+    {
+      "count": 748,
+      "family": "move",
+      "token": "MOUSE_DY_P2"
+    },
+    {
+      "count": 657,
+      "family": "move",
+      "token": "MOUSE_DX_N2"
+    },
+    {
+      "count": 639,
+      "family": "move",
+      "token": "MOUSE_DX_P2"
+    },
+    {
+      "count": 627,
+      "family": "move",
+      "token": "MOUSE_DX_P1"
+    },
+    {
+      "count": 571,
+      "family": "move",
+      "token": "MOUSE_DY_N2"
+    },
+    {
+      "count": 530,
+      "family": "move",
+      "token": "MOUSE_DX_N3"
+    },
+    {
+      "count": 517,
+      "family": "move",
+      "token": "MOUSE_DX_P3"
+    },
+    {
+      "count": 340,
+      "family": "move",
+      "token": "MOUSE_DX_P4"
+    },
+    {
+      "count": 319,
+      "family": "move",
+      "token": "MOUSE_DX_N1"
+    },
+    {
+      "count": 308,
+      "family": "move",
+      "token": "MOUSE_DY_P3"
+    },
+    {
+      "count": 289,
+      "family": "move",
+      "token": "MOUSE_DX_N4"
+    },
+    {
+      "count": 276,
+      "family": "move",
+      "token": "MOUSE_DY_N3"
+    },
+    {
+      "count": 256,
+      "family": "move",
+      "token": "MOUSE_DX_P5"
+    },
+    {
+      "count": 222,
+      "family": "move",
+      "token": "MOUSE_DX_N5"
+    },
+    {
+      "count": 116,
+      "family": "key",
+      "token": "KEY_PRESS_87"
+    },
+    {
+      "count": 115,
+      "family": "key",
+      "token": "KEY_PRESS_160"
+    },
+    {
+      "count": 113,
+      "family": "key",
+      "token": "KEY_PRESS_68"
+    },
+    {
+      "count": 98,
+      "family": "key",
+      "token": "KEY_RELEASE_87"
+    },
+    {
+      "count": 94,
+      "family": "key",
+      "token": "KEY_PRESS_65"
+    },
+    {
+      "count": 78,
+      "family": "key",
+      "token": "KEY_RELEASE_68"
+    },
+    {
+      "count": 75,
+      "family": "move",
+      "token": "MOUSE_DY_P4"
+    },
+    {
+      "count": 72,
+      "family": "move",
+      "token": "MOUSE_DY_N4"
+    },
+    {
+      "count": 58,
+      "family": "key",
+      "token": "KEY_RELEASE_65"
+    },
+    {
+      "count": 48,
+      "family": "key",
+      "token": "KEY_RELEASE_160"
+    },
+    {
+      "count": 45,
+      "family": "key",
+      "token": "KEY_RELEASE_32"
+    },
+    {
+      "count": 44,
+      "family": "key",
+      "token": "KEY_PRESS_32"
+    }
+  ],
+  "top_false_positive_tokens": [
+    {
+      "count": 4011,
+      "family": "key",
+      "token": "KEY_PRESS_82"
+    },
+    {
+      "count": 3027,
+      "family": "key",
+      "token": "KEY_PRESS_87"
+    },
+    {
+      "count": 2716,
+      "family": "move",
+      "token": "MOUSE_DX_N1"
+    },
+    {
+      "count": 2708,
+      "family": "move",
+      "token": "MOUSE_DY_Z0"
+    },
+    {
+      "count": 1677,
+      "family": "key",
+      "token": "KEY_RELEASE_82"
+    },
+    {
+      "count": 1647,
+      "family": "button",
+      "token": "MOUSE_RIGHT_UP"
+    },
+    {
+      "count": 1394,
+      "family": "move",
+      "token": "MOUSE_DX_P1"
+    },
+    {
+      "count": 487,
+      "family": "key",
+      "token": "KEY_PRESS_68"
+    },
+    {
+      "count": 366,
+      "family": "key",
+      "token": "KEY_RELEASE_68"
+    },
+    {
+      "count": 274,
+      "family": "key",
+      "token": "KEY_PRESS_65"
+    },
+    {
+      "count": 12,
+      "family": "button",
+      "token": "MOUSE_LEFT_DOWN"
+    },
+    {
+      "count": 7,
+      "family": "move",
+      "token": "MOUSE_DY_N1"
+    },
+    {
+      "count": 7,
+      "family": "button",
+      "token": "MOUSE_RIGHT_DOWN"
+    },
+    {
+      "count": 7,
+      "family": "key",
+      "token": "KEY_RELEASE_87"
+    },
+    {
+      "count": 3,
+      "family": "move",
+      "token": "MOUSE_DX_Z0"
+    }
+  ],
+  "top_gt_tokens": [
+    {
+      "count": 2288,
+      "family": "move",
+      "token": "MOUSE_DY_Z0"
+    },
+    {
+      "count": 1542,
+      "family": "move",
+      "token": "MOUSE_DX_Z0"
+    },
+    {
+      "count": 1189,
+      "family": "move",
+      "token": "MOUSE_DY_P1"
+    },
+    {
+      "count": 1185,
+      "family": "noop",
+      "token": "NOOP"
+    },
+    {
+      "count": 946,
+      "family": "move",
+      "token": "MOUSE_DY_N1"
+    },
+    {
+      "count": 918,
+      "family": "move",
+      "token": "MOUSE_DX_N1"
+    },
+    {
+      "count": 896,
+      "family": "move",
+      "token": "MOUSE_DX_P1"
+    },
+    {
+      "count": 748,
+      "family": "move",
+      "token": "MOUSE_DY_P2"
+    },
+    {
+      "count": 657,
+      "family": "move",
+      "token": "MOUSE_DX_N2"
+    },
+    {
+      "count": 639,
+      "family": "move",
+      "token": "MOUSE_DX_P2"
+    },
+    {
+      "count": 571,
+      "family": "move",
+      "token": "MOUSE_DY_N2"
+    },
+    {
+      "count": 530,
+      "family": "move",
+      "token": "MOUSE_DX_N3"
+    },
+    {
+      "count": 517,
+      "family": "move",
+      "token": "MOUSE_DX_P3"
+    },
+    {
+      "count": 340,
+      "family": "move",
+      "token": "MOUSE_DX_P4"
+    },
+    {
+      "count": 308,
+      "family": "move",
+      "token": "MOUSE_DY_P3"
+    },
+    {
+      "count": 289,
+      "family": "move",
+      "token": "MOUSE_DX_N4"
+    },
+    {
+      "count": 276,
+      "family": "move",
+      "token": "MOUSE_DY_N3"
+    },
+    {
+      "count": 256,
+      "family": "move",
+      "token": "MOUSE_DX_P5"
+    },
+    {
+      "count": 222,
+      "family": "move",
+      "token": "MOUSE_DX_N5"
+    },
+    {
+      "count": 216,
+      "family": "key",
+      "token": "KEY_PRESS_87"
+    },
+    {
+      "count": 123,
+      "family": "key",
+      "token": "KEY_PRESS_68"
+    },
+    {
+      "count": 115,
+      "family": "key",
+      "token": "KEY_PRESS_160"
+    },
+    {
+      "count": 101,
+      "family": "key",
+      "token": "KEY_PRESS_65"
+    },
+    {
+      "count": 98,
+      "family": "key",
+      "token": "KEY_RELEASE_87"
+    },
+    {
+      "count": 81,
+      "family": "key",
+      "token": "KEY_RELEASE_68"
+    },
+    {
+      "count": 75,
+      "family": "move",
+      "token": "MOUSE_DY_P4"
+    },
+    {
+      "count": 72,
+      "family": "move",
+      "token": "MOUSE_DY_N4"
+    },
+    {
+      "count": 58,
+      "family": "key",
+      "token": "KEY_RELEASE_65"
+    },
+    {
+      "count": 48,
+      "family": "key",
+      "token": "KEY_RELEASE_160"
+    },
+    {
+      "count": 45,
+      "family": "key",
+      "token": "KEY_RELEASE_32"
+    }
+  ],
+  "top_pred_tokens": [
+    {
+      "count": 4993,
+      "family": "move",
+      "token": "MOUSE_DY_Z0"
+    },
+    {
+      "count": 4030,
+      "family": "key",
+      "token": "KEY_PRESS_82"
+    },
+    {
+      "count": 3315,
+      "family": "move",
+      "token": "MOUSE_DX_N1"
+    },
+    {
+      "count": 3127,
+      "family": "key",
+      "token": "KEY_PRESS_87"
+    },
+    {
+      "count": 1688,
+      "family": "key",
+      "token": "KEY_RELEASE_82"
+    },
+    {
+      "count": 1663,
+      "family": "move",
+      "token": "MOUSE_DX_P1"
+    },
+    {
+      "count": 1659,
+      "family": "button",
+      "token": "MOUSE_RIGHT_UP"
+    },
+    {
+      "count": 497,
+      "family": "key",
+      "token": "KEY_PRESS_68"
+    },
+    {
+      "count": 369,
+      "family": "key",
+      "token": "KEY_RELEASE_68"
+    },
+    {
+      "count": 281,
+      "family": "key",
+      "token": "KEY_PRESS_65"
+    },
+    {
+      "count": 12,
+      "family": "button",
+      "token": "MOUSE_LEFT_DOWN"
+    },
+    {
+      "count": 7,
+      "family": "move",
+      "token": "MOUSE_DY_N1"
+    },
+    {
+      "count": 7,
+      "family": "button",
+      "token": "MOUSE_RIGHT_DOWN"
+    },
+    {
+      "count": 7,
+      "family": "move",
+      "token": "MOUSE_DX_Z0"
+    },
+    {
+      "count": 7,
+      "family": "key",
+      "token": "KEY_RELEASE_87"
+    }
+  ]
+}
