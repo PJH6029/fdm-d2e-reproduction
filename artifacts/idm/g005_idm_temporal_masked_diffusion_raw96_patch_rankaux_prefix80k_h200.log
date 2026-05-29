@@ -1,0 +1,19 @@
+Using CPython 3.11.11 interpreter at: /opt/conda/bin/python3
+Creating virtual environment at: .venv
+   Building fdm-d2e @ file:///mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-rankaux-9271f07
+      Built fdm-d2e @ file:///mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-rankaux-9271f07
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 78 packages in 1m 14s
+Traceback (most recent call last):
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-rankaux-9271f07/scripts/train_idm_temporal_masked_diffusion.py", line 37, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-rankaux-9271f07/scripts/train_idm_temporal_masked_diffusion.py", line 27, in main
+    summary = train_temporal_masked_diffusion_idm(config)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction-g005-rankaux-9271f07/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 2235, in train_temporal_masked_diffusion_idm
+    raise ValueError("no train rows found for temporal masked-diffusion IDM")
+ValueError: no train rows found for temporal masked-diffusion IDM
+trained temporal masked-diffusion IDM: model=g005_idm_temporal_masked_diffusion_raw96_patch_rankaux_prefix80k train=80000 target=5000 device=cuda metrics=outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_rankaux_prefix80k/paper_metrics.json
