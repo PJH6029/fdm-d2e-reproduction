@@ -2928,6 +2928,26 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "feature_dim": feature_dim,
         "temporal_offsets": offsets,
     }, checkpoint_path)
+    _write_rank_progress(
+        config,
+        output_dir=output_dir,
+        payload={
+            "phase": "post_train_checkpoint",
+            "epochs": int(config.get("epochs", 1)),
+            "train_examples": len(fit_rows),
+            "target_examples": len(target_rows),
+            "checkpoint_path": str(checkpoint_path),
+        },
+    )
+    _write_rank_progress(
+        config,
+        output_dir=output_dir,
+        payload={
+            "phase": "retrieval_prior",
+            "rows": len(fit_rows),
+            "enabled": bool(config.get("retrieval_action_prior_enabled", False)),
+        },
+    )
     retrieval_index = _build_temporal_retrieval_prior_index(
         model,
         torch,
@@ -2936,6 +2956,15 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         config={**config, "max_slots": max_slots},
         vocab=vocab,
         device=device,
+    )
+    _write_rank_progress(
+        config,
+        output_dir=output_dir,
+        payload={
+            "phase": "retrieval_prior_done",
+            "rows": int(retrieval_index.get("rows", 0) or 0),
+            "status": str(retrieval_index.get("status", "unknown")),
+        },
     )
     retrieval_summary = {key: value for key, value in retrieval_index.items() if key not in {"embeddings", "tokens"}}
     candidate_token_prior_weights, candidate_token_prior_summary = _candidate_token_prior_weights(
@@ -2953,6 +2982,15 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         or bool(config.get("calibrate_family_non_noop_budget", config.get("family_non_noop_budgeted_unmasking", False)))
     )
     if needs_probability_rows and calibration_rows:
+        _write_rank_progress(
+            config,
+            output_dir=output_dir,
+            payload={
+                "phase": "calibration_probability_rows",
+                "rows": len(calibration_rows),
+                "target_rows": 0,
+            },
+        )
         probability_rows = _collect_temporal_probability_rows(
             model,
             torch,
@@ -2988,6 +3026,16 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             len(target_rows),
             max(target_diagnostic_rows, adaptive_limit if adapt_family_budget else 0),
         )
+        _write_rank_progress(
+            config,
+            output_dir=output_dir,
+            payload={
+                "phase": "target_probability_rows",
+                "rows": limit,
+                "target_diagnostic_rows": target_diagnostic_rows,
+                "adaptive_family_budget": adapt_family_budget,
+            },
+        )
         target_probability_rows = _collect_temporal_probability_rows(
             model,
             torch,
@@ -3013,8 +3061,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         config["family_non_noop_budget"] = family_non_noop_budget
     predictions_path = Path(output_dir) / "predictions.jsonl"
     prediction_batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
+    prediction_batches = (len(target_rows) + prediction_batch_size - 1) // prediction_batch_size
     with predictions_path.open("w", encoding="utf-8") as handle:
-        for start_idx in range(0, len(target_rows), prediction_batch_size):
+        for prediction_batch_index, start_idx in enumerate(range(0, len(target_rows), prediction_batch_size), 1):
             batch_rows = target_rows[start_idx : start_idx + prediction_batch_size]
             batch_predictions = _predict_temporal_tokens_batch(
                 model,
@@ -3031,6 +3080,21 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             )
             for row, predicted_tokens in zip(batch_rows, batch_predictions):
                 handle.write(json.dumps({"sequence_id": row.get("sequence_id"), "predicted_tokens": predicted_tokens}, sort_keys=True) + "\n")
+            if (
+                prediction_batch_index == 1
+                or prediction_batch_index % max(1, int(config.get("prediction_progress_every_batches", 10))) == 0
+                or prediction_batch_index == prediction_batches
+            ):
+                _write_rank_progress(
+                    config,
+                    output_dir=output_dir,
+                    payload={
+                        "phase": "prediction",
+                        "batch": prediction_batch_index,
+                        "batches": prediction_batches,
+                        "examples": min(len(target_rows), start_idx + len(batch_rows)),
+                    },
+                )
     metrics_path = Path(output_dir) / "paper_metrics.json"
     write_paper_idm_metrics(
         prediction_paths=[predictions_path],

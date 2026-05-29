@@ -8,7 +8,7 @@
   "adaptive_family_budget_only_raise_threshold": true,
   "adaptive_family_budget_rate_multiplier": 0.85,
   "adaptive_family_budget_threshold_epsilon": 1e-12,
-  "adaptive_family_budget_to_unlabeled_target": true,
+  "adaptive_family_budget_to_unlabeled_target": false,
   "batch_size": 128,
   "button_class_aux_weight": 0.8,
   "button_class_bias_candidates": true,
@@ -36,7 +36,7 @@
     "mouse_button",
     "mouse_move"
   ],
-  "candidate_diagnostics_target_max_rows": 1000,
+  "candidate_diagnostics_target_max_rows": 0,
   "candidate_token_prior_correction": false,
   "candidate_token_prior_count_once_per_row": true,
   "candidate_token_prior_families": [
@@ -48,7 +48,7 @@
   "candidate_token_prior_strength": 0.35,
   "candidate_token_prior_summary_limit": 16,
   "candidate_token_prior_unseen_weight": 0.25,
-  "claim_boundary": "G005 bounded slim long-context compressed-luma candidate for public FDM-1 recipe reproduction on D2E: compact screen-video tokens plus noncausal temporal masked action-token diffusion over a 65-row bidirectional context, with video_feature_dim matched to compact luma + small row features rather than raw96-sized zero padding. Not FDM-1 parity, not target-label calibration, not a regression shortcut.",
+  "claim_boundary": "G005 bounded slim long-context compressed-luma candidate for public FDM-1 recipe reproduction on D2E: compact screen-video tokens plus noncausal temporal masked action-token diffusion over a 65-row bidirectional context, with video_feature_dim matched to compact luma + small row features and no retrieval-prior postpass. Not FDM-1 parity, not target-label calibration, not a regression shortcut.",
   "dataloader_num_workers": 0,
   "dataloader_pin_memory": false,
   "diffusion_steps": 16,
@@ -133,7 +133,8 @@
         "long bidirectional compact video-token context for IDM labeling, approximating FDM-1 long-context inverse dynamics within D2E/H200 probe limits",
         "compressed luma-window video tokens replacing raw patch tokens to test whether FDM-1-style compression plus context improves action-token identity",
         "CPU tensorized compact-luma feature storage plus bounded masked-video pretraining to keep H200 utilization productive without changing the public FDM-1 recipe-shaped objective",
-        "compact-luma feature dimension trimmed to actual compressed video-token plus small D2E row-feature payload instead of raw96-sized zero padding, preserving recipe shape while improving H200 throughput"
+        "compact-luma feature dimension trimmed to actual compressed video-token plus small D2E row-feature payload instead of raw96-sized zero padding, preserving recipe shape while improving H200 throughput",
+        "retrieval-prior-free postpass for the slim candidate so inference evidence measures the masked-diffusion action-token denoiser directly and avoids CPU-heavy non-public retrieval scoring"
       ],
       "public_components": [
         "video_encoder",
@@ -146,12 +147,12 @@
     "idm_objective": {
       "conditioning": "all_window_frames_plus_masked_action_tokens",
       "corruption": "mixed full-mask and partial mask/random corruption over temporal action-token slots to match the all-mask iterative IDM inference schedule while retaining masked-diffusion denoising",
-      "loss": "focal weighted cross entropy over PAD-aware long-window temporal masked action-token sequences with sparse family/full token-presence, key/button/mouse-axis token-class, action-occupancy, and pairwise confidence-ranking auxiliary losses; the objective remains masked-diffusion action-token denoising with D2E metric-bin mouse tokens for paper-target evaluation",
+      "loss": "focal weighted cross entropy over PAD-aware long-window temporal masked action-token sequences with sparse family/full token-presence, key/button/mouse-axis token-class, action-occupancy, and pairwise confidence-ranking auxiliary losses; the slim candidate disables the non-public retrieval prior so the objective remains direct masked-diffusion action-token denoising with D2E metric-bin mouse tokens for paper-target evaluation",
       "noncausal_frame_conditioning": true,
       "type": "masked_diffusion_action_tokens"
     },
     "inference_schedule": {
-      "selection": "iteratively unmask high-confidence action-token slots across a 65-row noncausal frame/action window, then apply train-fit action-token presence/class confidence heads, action-occupancy/event gates, held-out-train family budgets, axis-constrained mouse X/Y emission, and fit-train video/action retrieval priors without target-label calibration",
+      "selection": "iteratively unmask high-confidence action-token slots across a 65-row noncausal frame/action window, then apply train-fit action-token presence/class confidence heads, action-occupancy/event gates, held-out-train family budgets, and axis-constrained mouse X/Y emission without target-label calibration or retrieval-prior scoring",
       "steps": 16,
       "type": "iterative_unmasking"
     },
@@ -354,6 +355,7 @@
   "precompute_feature_tensor_dtype": "float16",
   "precompute_features_as_tensor": true,
   "prediction_batch_size": 64,
+  "prediction_progress_every_batches": 5,
   "preserve_pad_action_slots": true,
   "random_token_probability": 0.05,
   "rank_progress_every_batches": 25,
@@ -367,8 +369,8 @@
   "raw_video_missing_frame_policy": "zero",
   "require_precomputed_video_cache": true,
   "retrieval_action_prior_batch_size": 512,
-  "retrieval_action_prior_blend": 0.35,
-  "retrieval_action_prior_enabled": true,
+  "retrieval_action_prior_blend": 0.0,
+  "retrieval_action_prior_enabled": false,
   "retrieval_action_prior_max_rows": 80000,
   "retrieval_action_prior_temperature": 0.08,
   "retrieval_action_prior_top_k": 32,
