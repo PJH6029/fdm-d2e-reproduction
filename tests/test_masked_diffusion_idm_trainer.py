@@ -787,6 +787,25 @@ def test_candidate_family_diagnostics_reports_exact_coverage_and_ranks():
     assert button["exact_candidate_rank"]["p50"] == 2.0
 
 
+def test_candidate_family_diagnostics_compares_recipe_mouse_tokens():
+    rows = [
+        {
+            "ground_truth_tokens": ["MOUSE_DX_P1"],
+            "ground_truth_fdm1_tokens": ["FDM1_MOUSE_DX_P03"],
+            "candidates": [
+                {"score": 0.70, "token": "FDM1_MOUSE_DX_P03", "slot": 0, "token_index": 4, "family": "mouse_move"}
+            ],
+        }
+    ]
+
+    diagnostics = _candidate_family_diagnostics(rows, config={"candidate_diagnostic_families": ["mouse_move"]})
+    move = diagnostics["families"]["mouse_move"]
+
+    assert move["positive_rows"] == 1
+    assert move["positive_rows_with_exact_candidate"] == 1
+    assert move["positive_rows_with_exact_candidate_rate"] == 1.0
+
+
 def test_temporal_target_slots_can_preserve_padding_for_sparse_action_sequences():
     row = {"ground_truth_tokens": ["KEY_PRESS_A"], "frame": {"width": 854, "height": 480}}
 

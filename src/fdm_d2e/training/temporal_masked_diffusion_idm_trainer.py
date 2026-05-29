@@ -14,6 +14,7 @@ from fdm_d2e.training.masked_diffusion_idm import (
     FDM1_ACTION_MASK,
     FDM1_ACTION_NOOP,
     canonical_action_slot_record,
+    canonical_fdm1_action_tokens,
     corrupt_action_slots,
     d2e_metric_tokens_from_fdm1_tokens,
     iterative_unmask_counts,
@@ -1786,7 +1787,22 @@ def _collect_temporal_probability_rows(
                 token_prior_weights=token_prior_weights,
             ),
         ):
-            collected.append({"row": row, "candidates": candidates, "ground_truth_tokens": [str(token) for token in row.get("ground_truth_tokens", [])]})
+            collected.append(
+                {
+                    "row": row,
+                    "candidates": candidates,
+                    "ground_truth_tokens": [str(token) for token in row.get("ground_truth_tokens", [])],
+                    "ground_truth_fdm1_tokens": [
+                        str(token)
+                        for token in canonical_fdm1_action_tokens(
+                            row,
+                            default_width=_screen_size(row)[0],
+                            default_height=_screen_size(row)[1],
+                            include_noop=False,
+                        )
+                    ],
+                }
+            )
     return collected
 
 
@@ -1856,7 +1872,11 @@ def _candidate_family_diagnostics(probability_rows: Sequence[dict[str, Any]], *,
                 top_token = str(candidates[0].get("token", ""))
                 top_token_counts[top_token] = top_token_counts.get(top_token, 0) + 1
                 all_family_scores.extend(float(candidate.get("score", 0.0)) for candidate in candidates)
-            gt_tokens = [str(token) for token in row.get("ground_truth_tokens", []) if _action_family(str(token)) == family]
+            # Diagnostics rank recipe-shaped FDM-1 action-token candidates, so
+            # compare them against canonical FDM-1 target tokens when available.
+            # D2E paper metrics still use raw/coarse metric tokens elsewhere.
+            diagnostic_gt = row.get("ground_truth_fdm1_tokens") or row.get("ground_truth_tokens", [])
+            gt_tokens = [str(token) for token in diagnostic_gt if _action_family(str(token)) == family]
             if not gt_tokens:
                 continue
             positive_rows += 1
