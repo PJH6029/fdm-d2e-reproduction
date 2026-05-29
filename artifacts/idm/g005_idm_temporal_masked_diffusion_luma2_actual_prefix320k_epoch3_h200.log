@@ -1,0 +1,24 @@
+Uninstalled 1 package in 7ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 1 package in 47ms
+W0529 11:03:48.575000 248 torch/distributed/run.py:862] 
+W0529 11:03:48.575000 248 torch/distributed/run.py:862] *****************************************
+W0529 11:03:48.575000 248 torch/distributed/run.py:862] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0529 11:03:48.575000 248 torch/distributed/run.py:862] *****************************************
+[W529 11:03:50.525684268 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [localhost]:33367 (errno: 97 - Address family not supported by protocol).
+[W529 11:03:50.532949327 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:33367 (errno: 97 - Address family not supported by protocol).
+[W529 11:03:50.537122898 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:33367 (errno: 97 - Address family not supported by protocol).
+[W529 11:03:50.840220431 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.179]:35437 (errno: 97 - Address family not supported by protocol).
+[W529 11:05:19.299600482 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.179]:35437 (errno: 97 - Address family not supported by protocol).
+[W529 11:05:20.487147014 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.179]:35437 (errno: 97 - Address family not supported by protocol).
+[W529 11:05:20.827244791 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.179]:35437 (errno: 97 - Address family not supported by protocol).
+[W529 11:05:20.838782701 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.179]:35437 (errno: 97 - Address family not supported by protocol).
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W529 11:06:55.729221614 ProcessGroupNCCL.cpp:5324] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+trained temporal masked-diffusion IDM: rank=2 world_size=4 non_main_rank_complete
+trained temporal masked-diffusion IDM: rank=3 world_size=4 non_main_rank_complete
+trained temporal masked-diffusion IDM: rank=1 world_size=4 non_main_rank_complete
+trained temporal masked-diffusion IDM: model=g005_idm_temporal_masked_diffusion_luma2_actual_prefix320k_epoch3 train=320000 target=20000 device=cuda:0 metrics=outputs/idm_temporal_masked_diffusion_d2e_luma2_actual_prefix320k_epoch3/paper_metrics.json

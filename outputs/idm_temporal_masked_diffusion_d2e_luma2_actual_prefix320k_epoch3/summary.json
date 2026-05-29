@@ -1,0 +1,1351 @@
+{
+  "schema": "temporal_masked_diffusion_idm_train_summary.v1",
+  "status": "pass",
+  "model_name": "g005_idm_temporal_masked_diffusion_luma2_actual_prefix320k_epoch3",
+  "recipe_alignment": "public FDM-1-shaped noncausal masked-diffusion IDM over temporal action-token sequences conditioned on all D2E frame-window tokens in the local window.",
+  "train_rows": 320000,
+  "fit_rows": 315000,
+  "calibration_rows": 5000,
+  "target_rows": 20000,
+  "vocab_size": 145,
+  "max_slots": 16,
+  "action_mouse_tokenization": "d2e_metric_bins",
+  "preserve_pad_action_slots": true,
+  "temporal_offsets": [
+    -32,
+    -31,
+    -30,
+    -29,
+    -28,
+    -27,
+    -26,
+    -25,
+    -24,
+    -23,
+    -22,
+    -21,
+    -20,
+    -19,
+    -18,
+    -17,
+    -16,
+    -15,
+    -14,
+    -13,
+    -12,
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32
+  ],
+  "temporal_window": 65,
+  "video_feature_source": "none",
+  "video_feature_dim": 911,
+  "precompute_features_as_tensor": true,
+  "precompute_feature_tensor_dtype": "float16",
+  "dataloader_num_workers": 0,
+  "distributed": true,
+  "distributed_world_size": 4,
+  "video_encoder_arch": "compact_luma_window_cnn",
+  "video_tokens_per_offset": 1,
+  "raw_video_frame_offsets": null,
+  "raw_video_image_size": null,
+  "video_cache_dir": null,
+  "video_cache_stats_path": null,
+  "video_encoder_pretrain_history": [
+    {
+      "epoch": 1,
+      "video_reconstruction_loss": 0.021630431050046656,
+      "examples": 12288,
+      "batches": 96,
+      "max_batches": 96,
+      "truncated": true
+    }
+  ],
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 18.315392159877593,
+      "action_loss": 7.4709445795820715,
+      "video_reconstruction_loss": 0.0,
+      "key_event_loss": 1.2272829899367832,
+      "button_event_loss": 0.6801676307784187,
+      "button_class_loss": 0.4210567467877316,
+      "key_class_loss": 4.954334239342099,
+      "mouse_axis_class_loss": 2.5440581249184078,
+      "key_token_presence_loss": 0.023623357150798278,
+      "key_token_presence_rank_loss": 1.1950609519103217,
+      "button_token_presence_loss": 0.05021899890186531,
+      "button_token_presence_rank_loss": 0.1518941527350909,
+      "mouse_move_token_presence_loss": 0.054768129737060224,
+      "mouse_move_token_presence_rank_loss": 1.0980991672296372,
+      "token_presence_loss": 0.15506046635078058,
+      "masked_targets": 7347379,
+      "distributed_world_size": 4
+    },
+    {
+      "epoch": 2,
+      "loss": 13.466996719295686,
+      "action_loss": 5.542829985782058,
+      "video_reconstruction_loss": 0.0,
+      "key_event_loss": 0.9919356765777345,
+      "button_event_loss": 0.513123673488318,
+      "button_class_loss": 0.280564496765676,
+      "key_class_loss": 3.519349328449794,
+      "mouse_axis_class_loss": 1.915345359547176,
+      "key_token_presence_loss": 0.017062641615538842,
+      "key_token_presence_rank_loss": 0.9313100820287825,
+      "button_token_presence_loss": 0.03177699069881013,
+      "button_token_presence_rank_loss": 0.03861345939078028,
+      "mouse_move_token_presence_loss": 0.030712833592141903,
+      "mouse_move_token_presence_rank_loss": 0.8804373390542136,
+      "token_presence_loss": 0.08464296427373848,
+      "masked_targets": 7347379,
+      "distributed_world_size": 4
+    },
+    {
+      "epoch": 3,
+      "loss": 12.008568174841555,
+      "action_loss": 5.001417414326879,
+      "video_reconstruction_loss": 0.0,
+      "key_event_loss": 0.8936908986091614,
+      "button_event_loss": 0.4038041540718268,
+      "button_class_loss": 0.22601390107269326,
+      "key_class_loss": 3.050632513927278,
+      "mouse_axis_class_loss": 1.7942095088784658,
+      "key_token_presence_loss": 0.014020912428424945,
+      "key_token_presence_rank_loss": 0.837947400417782,
+      "button_token_presence_loss": 0.022719289223116543,
+      "button_token_presence_rank_loss": 0.023472841509996307,
+      "mouse_move_token_presence_loss": 0.02468781224129692,
+      "mouse_move_token_presence_rank_loss": 0.8178331670477277,
+      "token_presence_loss": 0.07309381399722327,
+      "masked_targets": 7347379,
+      "distributed_world_size": 4
+    }
+  ],
+  "non_noop_budget": {
+    "schema": "temporal_non_noop_budget_calibration.v1",
+    "status": "pass",
+    "rows": 5000,
+    "candidate_count": 192,
+    "selected_threshold": 0.28959135029464955,
+    "selected_row": {
+      "threshold": 0.28959135029464955,
+      "score": 0.0,
+      "keyboard_key_accuracy": 0.0,
+      "keyboard_strict_accuracy": 0.0,
+      "mouse_button_accuracy": 0.0,
+      "mouse_button_f1": 0.0,
+      "mouse_button_fbeta": 0.0,
+      "no_button_false_positive_rate": 0.015081439774783833,
+      "predicted_non_noop_tokens": 13739
+    },
+    "max_tokens_per_row": 4,
+    "max_no_button_fpr": 0.02,
+    "sweep_preview": [
+      {
+        "threshold": 4.183754972724632e-05,
+        "score": -2.5827691201372045,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.005513439007580979,
+        "mouse_button_f1": 0.009722222222222222,
+        "mouse_button_fbeta": 0.023011176857330704,
+        "no_button_false_positive_rate": 0.2807158656746431,
+        "predicted_non_noop_tokens": 20000
+      },
+      {
+        "threshold": 0.00030222982313129717,
+        "score": -2.5827691201372045,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.005513439007580979,
+        "mouse_button_f1": 0.009722222222222222,
+        "mouse_button_fbeta": 0.023011176857330704,
+        "no_button_false_positive_rate": 0.2807158656746431,
+        "predicted_non_noop_tokens": 20000
+      },
+      {
+        "threshold": 0.0019873363401357825,
+        "score": -2.5827691201372045,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.005513439007580979,
+        "mouse_button_f1": 0.009722222222222222,
+        "mouse_button_fbeta": 0.023011176857330704,
+        "no_button_false_positive_rate": 0.2807158656746431,
+        "predicted_non_noop_tokens": 20000
+      },
+      {
+        "threshold": 0.0036283739849418124,
+        "score": -2.5827691201372045,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.005513439007580979,
+        "mouse_button_f1": 0.009722222222222222,
+        "mouse_button_fbeta": 0.023011176857330704,
+        "no_button_false_positive_rate": 0.2807158656746431,
+        "predicted_non_noop_tokens": 20000
+      },
+      {
+        "threshold": 0.007355538365078822,
+        "score": -2.5827691201372045,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.005513439007580979,
+        "mouse_button_f1": 0.009722222222222222,
+        "mouse_button_fbeta": 0.023011176857330704,
+        "no_button_false_positive_rate": 0.2807158656746431,
+        "predicted_non_noop_tokens": 20000
+      },
+      {
+        "threshold": 0.008068594721864289,
+        "score": -2.5827691201372045,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.005513439007580979,
+        "mouse_button_f1": 0.009722222222222222,
+        "mouse_button_fbeta": 0.023011176857330704,
+        "no_button_false_positive_rate": 0.2807158656746431,
+        "predicted_non_noop_tokens": 20000
+      },
+      {
+        "threshold": 0.008493822984724753,
+        "score": -2.5827691201372045,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.005513439007580979,
+        "mouse_button_f1": 0.009722222222222222,
+        "mouse_button_fbeta": 0.023011176857330704,
+        "no_button_false_positive_rate": 0.2807158656746431,
+        "predicted_non_noop_tokens": 20000
+      },
+      {
+        "threshold": 0.008796649896549503,
+        "score": -2.5827691201372045,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.005513439007580979,
+        "mouse_button_f1": 0.009722222222222222,
+        "mouse_button_fbeta": 0.023011176857330704,
+        "no_button_false_positive_rate": 0.2807158656746431,
+        "predicted_non_noop_tokens": 20000
+      },
+      {
+        "threshold": 0.009349021530589835,
+        "score": -2.5827691201372045,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.005513439007580979,
+        "mouse_button_f1": 0.009722222222222222,
+        "mouse_button_fbeta": 0.023011176857330704,
+        "no_button_false_positive_rate": 0.2807158656746431,
+        "predicted_non_noop_tokens": 20000
+      },
+      {
+        "threshold": 0.010329621340934406,
+        "score": -2.5827691201372045,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.005513439007580979,
+        "mouse_button_f1": 0.009722222222222222,
+        "mouse_button_fbeta": 0.023011176857330704,
+        "no_button_false_positive_rate": 0.2807158656746431,
+        "predicted_non_noop_tokens": 20000
+      },
+      {
+        "omitted_rows": 172
+      },
+      {
+        "threshold": 0.9708970378076882,
+        "score": 0.0,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_fbeta": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_non_noop_tokens": 3794
+      },
+      {
+        "threshold": 0.9721016699232384,
+        "score": 0.0,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_fbeta": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_non_noop_tokens": 3669
+      },
+      {
+        "threshold": 0.9746129329333305,
+        "score": 0.0,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_fbeta": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_non_noop_tokens": 3420
+      },
+      {
+        "threshold": 0.9749553778598309,
+        "score": 0.0,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_fbeta": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_non_noop_tokens": 3420
+      },
+      {
+        "threshold": 0.9754783354699611,
+        "score": 0.0,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_fbeta": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_non_noop_tokens": 3414
+      },
+      {
+        "threshold": 0.9764674129167795,
+        "score": 0.0,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_fbeta": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_non_noop_tokens": 3385
+      },
+      {
+        "threshold": 0.978294776512146,
+        "score": 0.0,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_fbeta": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_non_noop_tokens": 1554
+      },
+      {
+        "threshold": 0.9822643856843933,
+        "score": 0.0,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_fbeta": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_non_noop_tokens": 835
+      },
+      {
+        "threshold": 0.9853500261157752,
+        "score": 0.0,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_fbeta": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_non_noop_tokens": 815
+      },
+      {
+        "threshold": 1.1,
+        "score": 0.0,
+        "keyboard_key_accuracy": 0.0,
+        "keyboard_strict_accuracy": 0.0,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_fbeta": 0.0,
+        "no_button_false_positive_rate": 0.0,
+        "predicted_non_noop_tokens": 0
+      }
+    ],
+    "claim_boundary": "Calibration uses held-out training rows only; target labels remain evaluation/diagnostic only."
+  },
+  "family_non_noop_budget": {
+    "schema": "temporal_family_non_noop_budget_calibration.v1",
+    "status": "pass",
+    "rows": 5000,
+    "families": {
+      "keyboard": {
+        "status": "pass",
+        "family": "keyboard",
+        "selected_threshold": 0.1955921427736282,
+        "selected_row": {
+          "threshold": 0.012736262578982858,
+          "score": 0.0,
+          "predicted_non_noop_tokens": 10000,
+          "keyboard_key_accuracy": 0.0,
+          "mouse_button_accuracy": 0.0,
+          "mouse_button_f1": 0.0,
+          "no_button_false_positive_rate": 0.0,
+          "mouse_move_pearson_x": null,
+          "mouse_move_pearson_y": null
+        },
+        "candidate_count": 192,
+        "max_tokens_per_row": 2,
+        "calibration_predicted_tokens_per_row": 2.0,
+        "calibration_positive_row_rate": 0.258,
+        "sweep_preview": [
+          {
+            "threshold": 0.012736262578982858,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 10000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.018950816042247985,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 10000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.02124875882984977,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 10000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.021572942969338624,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 10000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.022232178389833313,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 10000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "omitted_rows": 182
+          },
+          {
+            "threshold": 0.17169080302119255,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 5098,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.18241927921772003,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 3824,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.19121610535478592,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 2549,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.20173934413290023,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 1274,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 1.1,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 0,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          }
+        ],
+        "unlabeled_adapted_threshold": 0.1955921427736282,
+        "unlabeled_pre_adaptation_threshold": 0.012736262578982858
+      },
+      "mouse_button": {
+        "status": "pass",
+        "family": "mouse_button",
+        "selected_threshold": 0.26719437092406473,
+        "selected_row": {
+          "threshold": 0.26719437092406473,
+          "score": 0.0,
+          "predicted_non_noop_tokens": 412,
+          "keyboard_key_accuracy": 0.0,
+          "mouse_button_accuracy": 0.0,
+          "mouse_button_f1": 0.0,
+          "no_button_false_positive_rate": 0.08244520410215161,
+          "mouse_move_pearson_x": null,
+          "mouse_move_pearson_y": null
+        },
+        "candidate_count": 192,
+        "max_tokens_per_row": 1,
+        "calibration_predicted_tokens_per_row": 0.0824,
+        "calibration_positive_row_rate": 0.0054,
+        "sweep_preview": [
+          {
+            "threshold": 4.183754972724632e-05,
+            "score": -8.995025546260718,
+            "predicted_non_noop_tokens": 5000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0023923444976076554,
+            "mouse_button_f1": 0.00437636761487965,
+            "no_button_false_positive_rate": 1.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 6.877754623431964e-05,
+            "score": -8.995025546260718,
+            "predicted_non_noop_tokens": 5000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0023923444976076554,
+            "mouse_button_f1": 0.00437636761487965,
+            "no_button_false_positive_rate": 1.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 7.756479098682232e-05,
+            "score": -8.995025546260718,
+            "predicted_non_noop_tokens": 5000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0023923444976076554,
+            "mouse_button_f1": 0.00437636761487965,
+            "no_button_false_positive_rate": 1.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 8.884113833981978e-05,
+            "score": -8.995025546260718,
+            "predicted_non_noop_tokens": 5000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0023923444976076554,
+            "mouse_button_f1": 0.00437636761487965,
+            "no_button_false_positive_rate": 1.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 9.47888296371877e-05,
+            "score": -8.995025546260718,
+            "predicted_non_noop_tokens": 5000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0023923444976076554,
+            "mouse_button_f1": 0.00437636761487965,
+            "no_button_false_positive_rate": 1.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "omitted_rows": 182
+          },
+          {
+            "threshold": 0.20132201996048454,
+            "score": -1.2179239317417965,
+            "predicted_non_noop_tokens": 1116,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.004389815627743635,
+            "mouse_button_f1": 0.00699912510936133,
+            "no_button_false_positive_rate": 0.22260205107580938,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.21998810371223707,
+            "score": -0.7199777336182038,
+            "predicted_non_noop_tokens": 863,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0033783783783783786,
+            "mouse_button_f1": 0.0044943820224719105,
+            "no_button_false_positive_rate": 0.17253167102352704,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.24028796565123828,
+            "score": -0.6278365270801312,
+            "predicted_non_noop_tokens": 815,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0023781212841854932,
+            "mouse_button_f1": 0.0023752969121140144,
+            "no_button_false_positive_rate": 0.16308063543132917,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.26719437092406473,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 412,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.08244520410215161,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 1.1,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 0,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          }
+        ],
+        "unlabeled_adapted_threshold": 0.26719437092406473,
+        "unlabeled_pre_adaptation_threshold": 0.26719437092406473
+      },
+      "mouse_move": {
+        "status": "pass",
+        "family": "mouse_move",
+        "selected_threshold": 0.9767117085883618,
+        "selected_row": {
+          "threshold": 0.6191837619075776,
+          "score": 0.009068191356645492,
+          "predicted_non_noop_tokens": 8429,
+          "keyboard_key_accuracy": 0.0,
+          "mouse_button_accuracy": 0.0,
+          "mouse_button_f1": 0.0,
+          "no_button_false_positive_rate": 0.0,
+          "mouse_move_pearson_x": 0.015654264783240165,
+          "mouse_move_pearson_y": 0.0024821179300508213
+        },
+        "candidate_count": 192,
+        "max_tokens_per_row": 2,
+        "calibration_predicted_tokens_per_row": 1.6858,
+        "calibration_positive_row_rate": 0.064,
+        "sweep_preview": [
+          {
+            "threshold": 0.014526599808887111,
+            "score": 0.0020972567511704752,
+            "predicted_non_noop_tokens": 10000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.0015230227289084284,
+            "mouse_move_pearson_y": 0.002671490773432522
+          },
+          {
+            "threshold": 0.024283575760444157,
+            "score": 0.0020972567511704752,
+            "predicted_non_noop_tokens": 10000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.0015230227289084284,
+            "mouse_move_pearson_y": 0.002671490773432522
+          },
+          {
+            "threshold": 0.03938588028308004,
+            "score": 0.0020972567511704752,
+            "predicted_non_noop_tokens": 10000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.0015230227289084284,
+            "mouse_move_pearson_y": 0.002671490773432522
+          },
+          {
+            "threshold": 0.043033719205923256,
+            "score": 0.0020972567511704752,
+            "predicted_non_noop_tokens": 10000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.0015230227289084284,
+            "mouse_move_pearson_y": 0.002671490773432522
+          },
+          {
+            "threshold": 0.04579785277654789,
+            "score": 0.0020972567511704752,
+            "predicted_non_noop_tokens": 10000,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": 0.0015230227289084284,
+            "mouse_move_pearson_y": 0.002671490773432522
+          },
+          {
+            "omitted_rows": 182
+          },
+          {
+            "threshold": 0.9805470592545569,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 900,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.9822985192574561,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 832,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.9851541281491518,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 815,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 0.987109759433031,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 815,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          },
+          {
+            "threshold": 1.1,
+            "score": 0.0,
+            "predicted_non_noop_tokens": 0,
+            "keyboard_key_accuracy": 0.0,
+            "mouse_button_accuracy": 0.0,
+            "mouse_button_f1": 0.0,
+            "no_button_false_positive_rate": 0.0,
+            "mouse_move_pearson_x": null,
+            "mouse_move_pearson_y": null
+          }
+        ],
+        "unlabeled_adapted_threshold": 0.9767117085883618,
+        "unlabeled_pre_adaptation_threshold": 0.6191837619075776
+      }
+    },
+    "max_no_button_fpr": 0.1,
+    "claim_boundary": "Family budgets are calibrated on held-out training rows only; target labels remain evaluation/diagnostic only. Unlabeled distribution adaptation uses target candidate scores only, not target labels.",
+    "unlabeled_distribution_adaptation": {
+      "schema": "temporal_unlabeled_family_budget_adaptation.v1",
+      "status": "pass",
+      "rows": 20000,
+      "families": {
+        "keyboard": {
+          "status": "pass",
+          "family": "keyboard",
+          "old_threshold": 0.012736262578982858,
+          "adapted_threshold": 0.1955921427736282,
+          "target_candidate_scores": 1221130,
+          "target_token_budget": 6000,
+          "desired_tokens_per_row": 0.3,
+          "max_tokens_per_row": 2,
+          "budget_source": "explicit_config"
+        },
+        "mouse_button": {
+          "status": "pass",
+          "family": "mouse_button",
+          "old_threshold": 0.26719437092406473,
+          "adapted_threshold": 0.26719437092406473,
+          "target_candidate_scores": 320319,
+          "target_token_budget": 700,
+          "desired_tokens_per_row": 0.035,
+          "max_tokens_per_row": 1,
+          "budget_source": "explicit_config"
+        },
+        "mouse_move": {
+          "status": "pass",
+          "family": "mouse_move",
+          "old_threshold": 0.6191837619075776,
+          "adapted_threshold": 0.9767117085883618,
+          "target_candidate_scores": 2298542,
+          "target_token_budget": 40000,
+          "desired_tokens_per_row": 2.0,
+          "max_tokens_per_row": 2,
+          "budget_source": "explicit_config"
+        }
+      },
+      "claim_boundary": "Uses only unlabeled target candidate scores and train-heldout emission budgets; target ground-truth labels are not inspected."
+    }
+  },
+  "candidate_family_diagnostics": {
+    "calibration": {
+      "schema": "temporal_candidate_family_diagnostics.v1",
+      "status": "pass",
+      "rows": 5000,
+      "families": {
+        "keyboard": {
+          "rows": 5000,
+          "total_candidates": 243390,
+          "rows_with_candidates": 5000,
+          "candidate_row_rate": 1.0,
+          "positive_rows": 1290,
+          "positive_rows_with_family_candidate": 1290,
+          "positive_rows_with_family_candidate_rate": 1.0,
+          "positive_rows_with_exact_candidate": 585,
+          "positive_rows_with_exact_candidate_rate": 0.45348837209302323,
+          "exact_candidate_rank": {
+            "count": 615,
+            "min": 119.0,
+            "max": 191.0,
+            "mean": 158.90569105691057,
+            "p50": 165.0,
+            "p90": 172.0,
+            "p99": 175.0
+          },
+          "top_family_candidate_score": {
+            "count": 5000,
+            "min": 0.10497497022151947,
+            "max": 0.30203005075454714,
+            "mean": 0.18762700999021426,
+            "p50": 0.18421287983655926,
+            "p90": 0.20876323282718656,
+            "p99": 0.29862281382083894
+          },
+          "all_family_candidate_score": {
+            "count": 243390,
+            "min": 0.012736262578982858,
+            "max": 0.30203005075454714,
+            "mean": 0.051869429936791465,
+            "p50": 0.03827201139065436,
+            "p90": 0.08930458351969718,
+            "p99": 0.19202023595571516
+          },
+          "top_tokens": [
+            {
+              "token": "KEY_RELEASE_70",
+              "rows_as_top_family_candidate": 2968
+            },
+            {
+              "token": "KEY_PRESS_87",
+              "rows_as_top_family_candidate": 915
+            },
+            {
+              "token": "KEY_PRESS_70",
+              "rows_as_top_family_candidate": 663
+            },
+            {
+              "token": "KEY_PRESS_65",
+              "rows_as_top_family_candidate": 385
+            },
+            {
+              "token": "KEY_PRESS_68",
+              "rows_as_top_family_candidate": 41
+            },
+            {
+              "token": "KEY_RELEASE_68",
+              "rows_as_top_family_candidate": 24
+            },
+            {
+              "token": "KEY_RELEASE_87",
+              "rows_as_top_family_candidate": 3
+            },
+            {
+              "token": "KEY_PRESS_69",
+              "rows_as_top_family_candidate": 1
+            }
+          ]
+        },
+        "mouse_button": {
+          "rows": 5000,
+          "total_candidates": 81659,
+          "rows_with_candidates": 5000,
+          "candidate_row_rate": 1.0,
+          "positive_rows": 27,
+          "positive_rows_with_family_candidate": 27,
+          "positive_rows_with_family_candidate_rate": 1.0,
+          "positive_rows_with_exact_candidate": 27,
+          "positive_rows_with_exact_candidate_rate": 1.0,
+          "exact_candidate_rank": {
+            "count": 28,
+            "min": 51.0,
+            "max": 178.0,
+            "mean": 84.64285714285714,
+            "p50": 53.0,
+            "p90": 178.0,
+            "p99": 178.0
+          },
+          "top_family_candidate_score": {
+            "count": 5000,
+            "min": 0.006155394536282533,
+            "max": 0.3387166871792565,
+            "mean": 0.1631058288554599,
+            "p50": 0.1757508625368946,
+            "p90": 0.25778713190518837,
+            "p99": 0.2897924553821918
+          },
+          "all_family_candidate_score": {
+            "count": 81659,
+            "min": 4.183754972724632e-05,
+            "max": 0.3387166871792565,
+            "mean": 0.03745554105596329,
+            "p50": 0.009462645686260394,
+            "p90": 0.11211746517538758,
+            "p99": 0.24172954359329868
+          },
+          "top_tokens": [
+            {
+              "token": "MOUSE_LEFT_DOWN",
+              "rows_as_top_family_candidate": 4503
+            },
+            {
+              "token": "MOUSE_LEFT_UP",
+              "rows_as_top_family_candidate": 497
+            }
+          ]
+        },
+        "mouse_move": {
+          "rows": 5000,
+          "total_candidates": 634951,
+          "rows_with_candidates": 5000,
+          "candidate_row_rate": 1.0,
+          "positive_rows": 320,
+          "positive_rows_with_family_candidate": 320,
+          "positive_rows_with_family_candidate_rate": 1.0,
+          "positive_rows_with_exact_candidate": 295,
+          "positive_rows_with_exact_candidate_rate": 0.921875,
+          "exact_candidate_rank": {
+            "count": 736,
+            "min": 1.0,
+            "max": 179.0,
+            "mean": 58.92934782608695,
+            "p50": 54.0,
+            "p90": 117.0,
+            "p99": 176.0
+          },
+          "top_family_candidate_score": {
+            "count": 5000,
+            "min": 0.560074890255928,
+            "max": 0.9917315810918808,
+            "mean": 0.9688739758380501,
+            "p50": 0.9773113012313843,
+            "p90": 0.9882869899272919,
+            "p99": 0.9903345555067062
+          },
+          "all_family_candidate_score": {
+            "count": 634951,
+            "min": 0.014526599808887111,
+            "max": 0.9917315810918808,
+            "mean": 0.3115915629476677,
+            "p50": 0.13286792424973098,
+            "p90": 0.9655564181506633,
+            "p99": 0.9851854408532381
+          },
+          "top_tokens": [
+            {
+              "token": "MOUSE_DX_Z0",
+              "rows_as_top_family_candidate": 4506
+            },
+            {
+              "token": "MOUSE_DY_Z0",
+              "rows_as_top_family_candidate": 494
+            }
+          ]
+        }
+      },
+      "claim_boundary": "Diagnostic-only summary. Ground-truth labels may be used to audit candidate coverage, but candidate diagnostics do not calibrate or mutate predictions."
+    },
+    "target_prefix": {
+      "schema": "temporal_candidate_family_diagnostics.v1",
+      "status": "pass",
+      "rows": 1000,
+      "families": {
+        "keyboard": {
+          "rows": 1000,
+          "total_candidates": 66985,
+          "rows_with_candidates": 1000,
+          "candidate_row_rate": 1.0,
+          "positive_rows": 246,
+          "positive_rows_with_family_candidate": 246,
+          "positive_rows_with_family_candidate_rate": 1.0,
+          "positive_rows_with_exact_candidate": 232,
+          "positive_rows_with_exact_candidate_rate": 0.943089430894309,
+          "exact_candidate_rank": {
+            "count": 253,
+            "min": 52.0,
+            "max": 174.0,
+            "mean": 86.80237154150197,
+            "p50": 72.0,
+            "p90": 143.0,
+            "p99": 162.0
+          },
+          "top_family_candidate_score": {
+            "count": 1000,
+            "min": 0.10390286333858967,
+            "max": 0.2346268057823181,
+            "mean": 0.18802294317744664,
+            "p50": 0.18946208804845807,
+            "p90": 0.20954542160034179,
+            "p99": 0.2251006856560707
+          },
+          "all_family_candidate_score": {
+            "count": 66985,
+            "min": 0.016551417298614975,
+            "max": 0.2346268057823181,
+            "mean": 0.04676280173441649,
+            "p50": 0.03495336794610778,
+            "p90": 0.0766910247504711,
+            "p99": 0.18348132371902465
+          },
+          "top_tokens": [
+            {
+              "token": "KEY_PRESS_65",
+              "rows_as_top_family_candidate": 567
+            },
+            {
+              "token": "KEY_PRESS_87",
+              "rows_as_top_family_candidate": 154
+            },
+            {
+              "token": "KEY_PRESS_68",
+              "rows_as_top_family_candidate": 149
+            },
+            {
+              "token": "KEY_RELEASE_70",
+              "rows_as_top_family_candidate": 72
+            },
+            {
+              "token": "KEY_PRESS_82",
+              "rows_as_top_family_candidate": 37
+            },
+            {
+              "token": "KEY_RELEASE_68",
+              "rows_as_top_family_candidate": 16
+            },
+            {
+              "token": "KEY_PRESS_70",
+              "rows_as_top_family_candidate": 3
+            },
+            {
+              "token": "KEY_RELEASE_87",
+              "rows_as_top_family_candidate": 2
+            }
+          ]
+        },
+        "mouse_button": {
+          "rows": 1000,
+          "total_candidates": 16025,
+          "rows_with_candidates": 1000,
+          "candidate_row_rate": 1.0,
+          "positive_rows": 12,
+          "positive_rows_with_family_candidate": 12,
+          "positive_rows_with_family_candidate_rate": 1.0,
+          "positive_rows_with_exact_candidate": 10,
+          "positive_rows_with_exact_candidate_rate": 0.8333333333333334,
+          "exact_candidate_rank": {
+            "count": 10,
+            "min": 177.0,
+            "max": 180.0,
+            "mean": 179.1,
+            "p50": 179.0,
+            "p90": 180.0,
+            "p99": 180.0
+          },
+          "top_family_candidate_score": {
+            "count": 1000,
+            "min": 0.005625807113514903,
+            "max": 0.32942417565484466,
+            "mean": 0.04358269914242654,
+            "p50": 0.021003146377003647,
+            "p90": 0.19045167149685727,
+            "p99": 0.24906168738162204
+          },
+          "all_family_candidate_score": {
+            "count": 16025,
+            "min": 3.355124684204353e-05,
+            "max": 0.32942417565484466,
+            "mean": 0.008730818064044509,
+            "p50": 0.0002512254336201932,
+            "p90": 0.017048250090509,
+            "p99": 0.18513906008049336
+          },
+          "top_tokens": [
+            {
+              "token": "MOUSE_LEFT_UP",
+              "rows_as_top_family_candidate": 738
+            },
+            {
+              "token": "MOUSE_LEFT_DOWN",
+              "rows_as_top_family_candidate": 262
+            }
+          ]
+        },
+        "mouse_move": {
+          "rows": 1000,
+          "total_candidates": 108990,
+          "rows_with_candidates": 1000,
+          "candidate_row_rate": 1.0,
+          "positive_rows": 678,
+          "positive_rows_with_family_candidate": 678,
+          "positive_rows_with_family_candidate_rate": 1.0,
+          "positive_rows_with_exact_candidate": 597,
+          "positive_rows_with_exact_candidate_rate": 0.8805309734513275,
+          "exact_candidate_rank": {
+            "count": 1375,
+            "min": 1.0,
+            "max": 172.0,
+            "mean": 43.059636363636365,
+            "p50": 35.0,
+            "p90": 92.0,
+            "p99": 137.0
+          },
+          "top_family_candidate_score": {
+            "count": 1000,
+            "min": 0.9321197986602784,
+            "max": 0.9874653369188309,
+            "mean": 0.9699668733030572,
+            "p50": 0.9716425716876984,
+            "p90": 0.9801064193248749,
+            "p99": 0.9820016443729401
+          },
+          "all_family_candidate_score": {
+            "count": 108990,
+            "min": 0.01985801020622602,
+            "max": 0.9874653369188309,
+            "mean": 0.35345639588321487,
+            "p50": 0.16512273027561603,
+            "p90": 0.9650052669271827,
+            "p99": 0.9770319418609142
+          },
+          "top_tokens": [
+            {
+              "token": "MOUSE_DY_Z0",
+              "rows_as_top_family_candidate": 887
+            },
+            {
+              "token": "MOUSE_DX_Z0",
+              "rows_as_top_family_candidate": 113
+            }
+          ]
+        }
+      },
+      "claim_boundary": "Diagnostic-only summary. Ground-truth labels may be used to audit candidate coverage, but candidate diagnostics do not calibrate or mutate predictions."
+    }
+  },
+  "retrieval_action_prior": {
+    "status": "skipped",
+    "reason": "disabled"
+  },
+  "candidate_token_prior": {
+    "status": "skipped",
+    "reason": "disabled"
+  },
+  "loss_weights": {
+    "noop_loss_weight": 0.05,
+    "pad_loss_weight": 0.0,
+    "preserve_pad_action_slots": true,
+    "action_mouse_tokenization": "d2e_metric_bins",
+    "action_loss_weight": 1.0,
+    "keyboard_loss_weight": 16.0,
+    "mouse_button_loss_weight": 32.0,
+    "mouse_move_loss_weight": 4.0,
+    "video_reconstruction_aux_weight": 0.08,
+    "temporal_event_auxiliary": true,
+    "key_event_aux_weight": 0.5,
+    "button_event_aux_weight": 1.0,
+    "temporal_button_class_auxiliary": true,
+    "button_class_aux_weight": 0.8,
+    "button_class_vocab_size": 6,
+    "button_class_no_button_weight": 0.05,
+    "button_class_button_weight": 24.0,
+    "button_class_focal_gamma": 2.0,
+    "button_class_candidate_score_blend": 0.25,
+    "button_class_no_button_gate_power": 2.0,
+    "button_class_no_button_gate_floor": 0.02,
+    "temporal_key_class_auxiliary": true,
+    "key_class_aux_weight": 1.0,
+    "key_class_vocab_size": 110,
+    "key_class_no_key_weight": 0.05,
+    "key_class_key_weight": 16.0,
+    "key_class_focal_gamma": 2.0,
+    "key_class_candidate_score_blend": 0.85,
+    "direct_auxiliary_key_class_blend": 0.9,
+    "temporal_key_token_presence_auxiliary": true,
+    "key_token_presence_aux_weight": 0.7,
+    "key_token_presence_rank_weight": 0.5,
+    "key_token_presence_rank_margin": 1.0,
+    "key_token_presence_rank_top_negatives": 4,
+    "key_token_presence_vocab_size": 110,
+    "key_token_presence_pos_weight": 16.0,
+    "key_token_presence_negative_weight": 0.03,
+    "key_token_presence_candidate_score_blend": 0.55,
+    "temporal_button_token_presence_auxiliary": true,
+    "button_token_presence_aux_weight": 0.8,
+    "button_token_presence_rank_weight": 0.6,
+    "button_token_presence_rank_margin": 1.0,
+    "button_token_presence_rank_top_negatives": 4,
+    "button_token_presence_vocab_size": 6,
+    "button_token_presence_pos_weight": 32.0,
+    "button_token_presence_negative_weight": 0.03,
+    "button_token_presence_candidate_score_blend": 0.55,
+    "temporal_mouse_move_token_presence_auxiliary": true,
+    "mouse_move_token_presence_aux_weight": 0.9,
+    "mouse_move_token_presence_rank_weight": 0.7,
+    "mouse_move_token_presence_rank_margin": 1.0,
+    "mouse_move_token_presence_rank_top_negatives": 4,
+    "mouse_move_token_presence_vocab_size": 22,
+    "mouse_move_token_presence_pos_weight": 4.0,
+    "mouse_move_token_presence_negative_weight": 0.02,
+    "mouse_move_token_presence_candidate_score_blend": 0.65,
+    "temporal_mouse_axis_class_auxiliary": true,
+    "mouse_axis_class_aux_weight": 1.0,
+    "mouse_dx_class_vocab_size": 11,
+    "mouse_dy_class_vocab_size": 11,
+    "mouse_axis_class_no_axis_weight": 0.05,
+    "mouse_axis_class_axis_weight": 8.0,
+    "mouse_axis_class_focal_gamma": 2.0,
+    "mouse_axis_class_candidate_score_blend": 0.9,
+    "direct_auxiliary_mouse_axis_class_blend": 0.95,
+    "mouse_move_axis_constrained_budget": true,
+    "key_event_pos_weight": 8.0,
+    "button_event_pos_weight": 24.0,
+    "event_auxiliary_candidate_score_blend": 0.15,
+    "event_auxiliary_candidate_gate_power": 1.0,
+    "event_auxiliary_candidate_gate_floor": 0.02,
+    "event_auxiliary_candidate_gate_families": [
+      "keyboard",
+      "mouse_button"
+    ],
+    "temporal_token_presence_auxiliary": true,
+    "token_presence_aux_weight": 0.8,
+    "token_presence_include_noop": false,
+    "token_presence_candidate_score_blend": 0.75,
+    "token_presence_keyboard_pos_weight": 16.0,
+    "token_presence_mouse_button_pos_weight": 32.0,
+    "token_presence_mouse_move_pos_weight": 6.0,
+    "retrieval_action_prior_blend": 0.0,
+    "candidate_token_prior_correction": false,
+    "candidate_token_prior_strength": 0.35,
+    "candidate_token_prior_smoothing": 4.0,
+    "candidate_token_prior_min_weight": 0.25,
+    "candidate_token_prior_max_weight": 3.0,
+    "candidate_token_prior_unseen_weight": 0.25,
+    "candidate_token_prior_families": [
+      "mouse_button"
+    ],
+    "non_noop_budget_candidates_per_row": 192,
+    "non_noop_budget_min_candidates_per_family": 16,
+    "candidate_diagnostics_target_max_rows": 1000,
+    "direct_auxiliary_candidate_families": [
+      "keyboard",
+      "mouse_button",
+      "mouse_move"
+    ],
+    "direct_auxiliary_candidate_min_score": 0.0,
+    "direct_auxiliary_button_class_blend": 0.7,
+    "direct_auxiliary_button_no_button_gate_power": 1.0,
+    "token_loss_type": "focal",
+    "token_focal_gamma": 2.0,
+    "full_action_mask_probability": 0.5
+  },
+  "device": "cuda:0",
+  "checkpoint_path": "outputs/idm_temporal_masked_diffusion_d2e_luma2_actual_prefix320k_epoch3/checkpoint.pt",
+  "train_history_path": "outputs/idm_temporal_masked_diffusion_d2e_luma2_actual_prefix320k_epoch3/train_history.json",
+  "predictions_path": "outputs/idm_temporal_masked_diffusion_d2e_luma2_actual_prefix320k_epoch3/predictions.jsonl",
+  "metrics_path": "outputs/idm_temporal_masked_diffusion_d2e_luma2_actual_prefix320k_epoch3/paper_metrics.json",
+  "wall_clock_seconds": 4832.677400827408,
+  "claim_boundary": "Temporal prefix trainer scaffold; not G005 completion evidence without full-corpus 4xH200 run, recipe-alignment audit, paper/G-IDM target win, and split statistics."
+}

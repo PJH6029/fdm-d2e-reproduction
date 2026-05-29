@@ -107,3 +107,25 @@ G005 is ready for an OMX checkpoint with a fresh active aggregate `get_goal` sna
 - Reservation `rsv-jeonghunpark-20260529-4f61cb` became running as pod `prod-rsv-jeonghunpark-20260529-4f61cb`. The initial local auto-launch watcher hit a false `old_fast80k_still_running` guard caused by remote `pgrep -af` matching the `bash -lc` command string itself.
 - To avoid idle 4×H200 time, the stale watcher was stopped and the same launch was performed manually: repo `/root/work/code/continuous-gui-poc/fdm-d2e-reproduction`, head `2b382d4`, `NPROC_PER_NODE=4`, script `scripts/run_g005_idm_temporal_luma2_actual_prefix320k_epoch3.sh`, remote PID `177`. Local launch summary: `artifacts/cluster/g005_4xh200_auto_launch_20260529.json`.
 - Early health check showed 4 DDP rank workers and W&B sidecar running. By 2026-05-29 20:11 KST, all ranks reached epoch 1/3 batch 500/616 and GPU monitor showed 4×H200 active utilization up to 100% with about 24–26GiB per GPU. This is probe evidence only; `G005-g014-idm-full-paper-target` remains incomplete until paper-target and full-scope gates pass.
+
+## 2026-05-29 prefix320k actual-luma 4×H200 negative probe
+
+Quota increase was approved before the run: production quota evidence is preserved in `artifacts/cluster/g005_quota_grant_status_20260529.json` (redacted). A 4×H200 reservation on node 4 (`rsv-jeonghunpark-20260529-4f61cb`, GPUs 3–6, 20:00–24:00 KST) was used for the bounded G005 IDM probe.
+
+Manual launch was required because the auto-launch watcher falsely matched its own shell command while checking stale fast80k processes. The actual run used:
+
+```bash
+NPROC_PER_NODE=4 bash scripts/run_g005_idm_temporal_luma2_actual_prefix320k_epoch3.sh
+```
+
+Terminal evidence:
+
+- `artifacts/idm/g005_idm_temporal_masked_diffusion_luma2_actual_prefix320k_epoch3_h200_run.json` — `exit_code=0`.
+- `artifacts/idm/g005_idm_temporal_masked_diffusion_luma2_actual_prefix320k_epoch3_h200_compact_summary.json` — `status=nonterminal_negative_probe`; paper-target gates failed except no-button FPR and nonzero mouse-button F1.
+- `artifacts/idm/g005_luma2_actual_prefix320k_alignment_shift_diagnostic.json` — shift sweep -10..10 did not rescue keyboard/button/mouse metrics, rejecting simple alignment offset as the explanation.
+- `outputs/idm_temporal_masked_diffusion_d2e_luma2_actual_prefix320k_epoch3/{summary.json,paper_metrics.json,train_history.json,resolved_config.json}` — bounded reusable run evidence; raw predictions/checkpoints remain on PVC and are not committed.
+- `artifacts/cluster/g005_4xh200_prefix320k_cancel_20260529.json` — reservation cancellation audit after terminal negative metrics to avoid idle GPU time.
+
+Observed all-split paper-compatible metrics over the bounded target prefix: keyboard key accuracy `0.0110`, mouse-button accuracy `0.00310`, mouse-button F1 `0.00643`, mouse-move Pearson `null/null`, no-button FPR `0.0112`. This is useful negative evidence only: G005 remains in progress and must not be checkpointed complete.
+
+Next G005 pivot: keep the public FDM-1-shaped noncausal masked-diffusion IDM frame/action-token recipe, but change the model/training target so it learns action identity and mouse-motion emission instead of sparse no-button suppression only. Do not spend the increased quota again until the next candidate is locally validated and GPU-active.
