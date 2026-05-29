@@ -7,7 +7,7 @@ if [[ -f .env ]]; then set -a; . ./.env; set +a; fi
 CONFIG="${CONFIG:-configs/model/idm_temporal_masked_diffusion_d2e_raw96_family_presence_prefix80k.yaml}"
 MODEL_SLUG="${MODEL_SLUG:-g005_idm_temporal_masked_diffusion_raw96_family_presence_prefix80k}"
 OUTPUT_DIR="${OUTPUT_DIR:-outputs/idm_temporal_masked_diffusion_d2e_raw96_family_presence_prefix80k}"
-SUMMARY_PATH="${SUMMARY_PATH:-artifacts/idm/${MODEL_SLUG}_summary.json}"
+SUMMARY_PATH="${SUMMARY_PATH:-${OUTPUT_DIR}/summary.json}"
 RUN_SUMMARY="${RUN_SUMMARY:-artifacts/idm/${MODEL_SLUG}_h200_run.json}"
 COMPACT_SUMMARY="${COMPACT_SUMMARY:-artifacts/idm/${MODEL_SLUG}_h200_compact_summary.json}"
 GPU_MONITOR_LOG="${GPU_MONITOR_LOG:-artifacts/idm/${MODEL_SLUG}_h200_gpu_monitor.csv}"
