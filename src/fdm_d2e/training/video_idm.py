@@ -7,6 +7,7 @@ import math
 import multiprocessing as mp
 import os
 import re
+import shutil
 import subprocess
 import time
 from collections import Counter
@@ -244,13 +245,19 @@ class _VideoFrameStream:
         self.fps = int(fps)
         self.frame_size = self.image_size * self.image_size
         self.proc: subprocess.Popen[bytes] | None = None
+        self.cap: Any | None = None
+        self.backend = ""
         self.current_index = 0
         self.last_frame: bytes | None = None
         self.cache: dict[int, bytes] = {}
 
     def _open(self) -> None:
+        ffmpeg = shutil.which("ffmpeg")
+        if ffmpeg is None:
+            self._open_cv2()
+            return
         cmd = [
-            "ffmpeg",
+            ffmpeg,
             "-v",
             "error",
             "-i",
@@ -264,6 +271,26 @@ class _VideoFrameStream:
             "-",
         ]
         self.proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.cap = None
+        self.backend = "ffmpeg"
+        self.current_index = 0
+        self.last_frame = None
+        self.cache = {}
+
+    def _open_cv2(self) -> None:
+        try:
+            import cv2  # type: ignore
+        except Exception as exc:  # pragma: no cover - optional cluster dependency.
+            raise FileNotFoundError(
+                "ffmpeg is not installed and cv2 is unavailable for video frame decoding"
+            ) from exc
+        cap = cv2.VideoCapture(self.source)
+        if not cap.isOpened():
+            cap.release()
+            raise FileNotFoundError(f"unable to open video source without ffmpeg: {self.source}")
+        self.proc = None
+        self.cap = cap
+        self.backend = "cv2"
         self.current_index = 0
         self.last_frame = None
         self.cache = {}
@@ -274,13 +301,43 @@ class _VideoFrameStream:
                 self.proc.kill()
             self.proc.wait()
             self.proc = None
+        if self.cap is not None:
+            self.cap.release()
+            self.cap = None
+        self.backend = ""
         self.current_index = 0
         self.last_frame = None
         self.cache = {}
 
+    def _read_next_cv2(self) -> bytes | None:
+        if self.cap is None:
+            self._open_cv2()
+        assert self.cap is not None
+        import cv2  # type: ignore
+
+        target_msec = 1000.0 * float(self.current_index) / max(1.0, float(self.fps))
+        self.cap.set(cv2.CAP_PROP_POS_MSEC, target_msec)
+        ok, frame = self.cap.read()
+        if not ok or frame is None:
+            return None
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        if gray.shape[0] != self.image_size or gray.shape[1] != self.image_size:
+            gray = cv2.resize(gray, (self.image_size, self.image_size), interpolation=cv2.INTER_AREA)
+        payload = gray.tobytes()
+        frame_index = self.current_index
+        self.current_index += 1
+        self.last_frame = payload
+        self.cache[frame_index] = payload
+        min_keep = self.current_index - 8
+        for old_index in [idx for idx in self.cache if idx < min_keep]:
+            self.cache.pop(old_index, None)
+        return payload
+
     def _read_next(self) -> bytes | None:
-        if self.proc is None:
+        if self.proc is None and self.cap is None:
             self._open()
+        if self.backend == "cv2":
+            return self._read_next_cv2()
         assert self.proc is not None
         assert self.proc.stdout is not None
         chunks: list[bytes] = []

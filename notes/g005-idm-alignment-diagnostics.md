@@ -1268,3 +1268,47 @@ paper-target route. Keep the implementation because it fixes a real label
 fidelity bug, but the next branch should combine count-preserving key labels
 with a stronger causal visual/motion/sequence teacher or specialist ensemble;
 do not launch a full-corpus counted-only 4×H200 run.
+
+### 2026-05-29 KST — video-head masked-diffusion probe rejected; real-video DINO pivot prepared
+
+After quota approval, reserved production 4×H200 reservation
+`rsv-jeonghunpark-20260529-579a85` (node 4 GPUs `[1,2,3,4]`, 22:00–01:00 KST)
+and ran `g005_idm_temporal_masked_diffusion_luma2_videohead_prefix80k_epoch3`
+from commit `7c650aa` with W&B sidecar logging. The run completed successfully
+and was then cancelled to avoid idle H200 time.
+
+Evidence:
+
+- `artifacts/cluster/g005_quota_request_status_20260529_after_user_approval.json`
+  — approved production quota grant observed (`effective_gpu_quota=8`, 400
+  approved GPU-hours).
+- `artifacts/cluster/g005_videohead_prefix80k_auto_launch_20260529.json` — pod
+  launch summary for `prod-rsv-jeonghunpark-20260529-579a85`.
+- `artifacts/idm/g005_idm_temporal_masked_diffusion_luma2_videohead_prefix80k_epoch3_h200_run.json`
+  and compact summary — terminal run evidence, `exit_code=0`, GPU monitor pass.
+- `outputs/idm_temporal_masked_diffusion_d2e_luma2_videohead_prefix80k_epoch3/paper_metrics.json`
+  — paper-compatible metric artifact.
+- `artifacts/cluster/g005_videohead_prefix80k_cancel_20260529.json` — reservation
+  cancelled after the negative run.
+
+Result: reject this candidate. Paper-compatible metrics were keyboard
+`0.010206`, mouse-button `0.005871`, mouse Pearson X/Y `null/null`; strict
+no-button FPR was `0.024505`, so only the FPR constraint passed. Candidate
+family diagnostics still show the video-token confidence heads collapse toward a
+small set of high-frequency tokens instead of ranking exact sparse key/button
+identity.
+
+Decision: do not add more calibration-only candidate scorers to this temporal
+masked-diffusion branch. The next representation pivot is actual D2E video-frame
+conditioning rather than compact `luma16` proxies: `video_idm._VideoFrameStream`
+now falls back to OpenCV `VideoCapture` when the production image lacks an
+`ffmpeg` binary, and a bounded real-video DINO prefix wrapper has been prepared:
+
+- `configs/model/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k.yaml`
+- `configs/eval/g005_idm_frozen_frame_embedding_realvideo_prefix16k_paper_metrics.yaml`
+- `scripts/run_g005_idm_frozen_frame_embedding_realvideo_prefix16k.sh`
+
+This remains FDM-1-recipe-aligned only as a representation probe (screen-video
+encoder + action-token IDM metrics); it is not completion evidence until a
+real-video prefix gate beats the D2E paper targets and then scales under the
+full hard gates.

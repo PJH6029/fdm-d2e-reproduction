@@ -194,6 +194,29 @@ def test_g005_raw112_offset2_candidate_uses_nonleaky_nep100_video_paths() -> Non
     )
 
 
+def test_g005_realvideo_frozen_embedding_prefix_uses_video_decode_and_cache() -> None:
+    text = _script("scripts/run_g005_idm_frozen_frame_embedding_realvideo_prefix16k.sh")
+    config = json.loads(
+        (ROOT / "configs/model/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k.yaml").read_text()
+    )
+    paper = json.loads(
+        (ROOT / "configs/eval/g005_idm_frozen_frame_embedding_realvideo_prefix16k_paper_metrics.yaml").read_text()
+    )
+
+    assert "scripts/run_g005_idm_frozen_frame_embedding_prefix.sh" in text
+    assert 'EMBED_FRAME_SOURCE="${EMBED_FRAME_SOURCE:-video}"' in text
+    assert 'EMBED_BACKEND="${EMBED_BACKEND:-dinov2-torchhub}"' in text
+    assert 'EMBED_FEATURE_CACHE="${EMBED_FEATURE_CACHE:-1}"' in text
+    assert 'EMBED_THIN_OUTPUT="${EMBED_THIN_OUTPUT:-1}"' in text
+    assert 'MAX_TRAIN_ROWS="${MAX_TRAIN_ROWS:-16000}"' in text
+    assert config["source_namespace"] == "d2e_frozen_frame_embedding_realvideo_prefix16k"
+    assert config["train_records"] == "outputs/data/d2e_frozen_frame_embedding_realvideo_prefix16k/train_core.jsonl"
+    assert config["target_records"] == "outputs/data/d2e_frozen_frame_embedding_realvideo_prefix16k/target_all_eval.jsonl"
+    assert "cv2/ffmpeg" in config["claim_boundary"]
+    assert paper["max_rows"] == 16000
+    assert paper["target_paths"] == ["outputs/data/d2e_frozen_frame_embedding_realvideo_prefix16k/target_all_eval.jsonl"]
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())

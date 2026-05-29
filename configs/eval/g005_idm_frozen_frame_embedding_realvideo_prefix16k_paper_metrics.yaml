@@ -1,0 +1,21 @@
+{
+  "schema": "paper_idm_metrics_config.v1",
+  "model_name": "streaming_idm_d2e_full_frozen_frame_embedding_realvideo_prefix16k",
+  "prediction_paths": [
+    "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/predictions.jsonl"
+  ],
+  "target_paths": [
+    "outputs/data/d2e_frozen_frame_embedding_realvideo_prefix16k/target_all_eval.jsonl"
+  ],
+  "output_path": "artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_paper_metrics.json",
+  "progress_output_path": "artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_paper_metrics_progress.json",
+  "max_rows": 16000,
+  "progress_rows": 5000,
+  "empty_bins_as_correct": false,
+  "split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
+  "claim_boundary": "Real-video frozen DINO prefix diagnostic only; not G005 completion evidence."
+}

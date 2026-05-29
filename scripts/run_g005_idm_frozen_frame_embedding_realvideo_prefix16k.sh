@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Prefix-gated real-video DINO IDM candidate. Uses frame_source=video so the
+# provider decodes actual D2E video frames via ffmpeg when present or cv2 fallback
+# when production images lack the ffmpeg binary.
+export CONFIG="${CONFIG:-configs/model/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k.yaml}"
+export PAPER_CONFIG="${PAPER_CONFIG:-configs/eval/g005_idm_frozen_frame_embedding_realvideo_prefix16k_paper_metrics.yaml}"
+export SOURCE_PREFIX_ROOT="${SOURCE_PREFIX_ROOT:-outputs/data/d2e_event_state_duration_realvideo_prefix16k}"
+export EMBED_PREFIX_ROOT="${EMBED_PREFIX_ROOT:-outputs/data/d2e_frozen_frame_embedding_realvideo_prefix16k}"
+export SOURCE_TRAIN_PREFIX_SUMMARY="${SOURCE_TRAIN_PREFIX_SUMMARY:-artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_source_train_prefix16k_summary.json}"
+export SOURCE_TARGET_PREFIX_SUMMARY="${SOURCE_TARGET_PREFIX_SUMMARY:-artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_source_target_prefix16k_summary.json}"
+export TRAIN_EMBED_SUMMARY="${TRAIN_EMBED_SUMMARY:-artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_train_prefix16k_materialization_summary.json}"
+export TARGET_EMBED_SUMMARY="${TARGET_EMBED_SUMMARY:-artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_target_prefix16k_materialization_summary.json}"
+export TRAIN_EMBED_PROGRESS="${TRAIN_EMBED_PROGRESS:-artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_train_prefix16k_materialization_progress.json}"
+export TARGET_EMBED_PROGRESS="${TARGET_EMBED_PROGRESS:-artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_target_prefix16k_materialization_progress.json}"
+export OUTPUT_DIR="${OUTPUT_DIR:-outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k}"
+export RUN_SUMMARY="${RUN_SUMMARY:-artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_run_summary.json}"
+export GPU_MONITOR_LOG="${GPU_MONITOR_LOG:-artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_gpu_monitor.csv}"
+export GPU_MONITOR_PID_FILE="${GPU_MONITOR_PID_FILE:-outputs/cluster/g005_frozen_frame_embedding_realvideo_prefix16k_gpu_monitor.pid}"
+export WANDB_SIDECAR_STATUS="${WANDB_SIDECAR_STATUS:-artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_wandb_sidecar_status.json}"
+export WANDB_SIDECAR_LOG="${WANDB_SIDECAR_LOG:-artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_wandb_sidecar.log}"
+export WANDB_SIDECAR_PID_FILE="${WANDB_SIDECAR_PID_FILE:-outputs/cluster/g005_frozen_frame_embedding_realvideo_prefix16k_wandb_sidecar.pid}"
+export MAX_TRAIN_ROWS="${MAX_TRAIN_ROWS:-16000}"
+export MAX_TARGET_ROWS="${MAX_TARGET_ROWS:-16000}"
+export NPROC="${NPROC:-4}"
+export EMBED_BACKEND="${EMBED_BACKEND:-dinov2-torchhub}"
+export EMBED_MODEL_ID="${EMBED_MODEL_ID:-facebook/dinov2-small}"
+export EMBED_FRAME_SOURCE="${EMBED_FRAME_SOURCE:-video}"
+export EMBED_FRAME_OFFSETS="${EMBED_FRAME_OFFSETS:-0,2}"
+export EMBED_IMAGE_SIZE="${EMBED_IMAGE_SIZE:-224}"
+export EMBED_BATCH_SIZE="${EMBED_BATCH_SIZE:-512}"
+export EMBED_SHARD_COUNT="${EMBED_SHARD_COUNT:-4}"
+export EMBED_SHARD_DEVICES="${EMBED_SHARD_DEVICES:-0,1,2,3}"
+export EMBED_FEATURE_CACHE="${EMBED_FEATURE_CACHE:-1}"
+export EMBED_THIN_OUTPUT="${EMBED_THIN_OUTPUT:-1}"
+export EMBED_PROGRESS_ROWS="${EMBED_PROGRESS_ROWS:-4000}"
+exec bash scripts/run_g005_idm_frozen_frame_embedding_prefix.sh

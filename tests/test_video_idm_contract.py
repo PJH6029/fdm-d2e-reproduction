@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import sys
+import types
 from pathlib import Path
 
 from scripts.migrate_video_idm_cache_keysoftmax import migrate_cache
@@ -14,6 +16,7 @@ from fdm_d2e.training.video_idm import (
     predict_video_idm_checkpoint,
     train_video_idm,
 )
+from fdm_d2e.training import video_idm as video_idm_module
 from fdm_d2e.training.torch_idm import require_torch, torch_available
 
 
@@ -78,6 +81,57 @@ def test_video_frame_stream_reuses_next_frame_without_restart():
     assert stream.get(1) == b"\x01"
     assert stream.get(1) == b"\x01"
     assert calls == [0, 1]
+
+
+def test_video_frame_stream_falls_back_to_cv2_without_ffmpeg(monkeypatch):
+    captures = []
+
+    class FakeGray:
+        def __init__(self, value: int) -> None:
+            self.value = int(value)
+            self.shape = (2, 2)
+
+        def tobytes(self) -> bytes:
+            return bytes([self.value] * 4)
+
+    class FakeCapture:
+        def __init__(self, source: str) -> None:
+            self.source = source
+            self.pos_msec = 0.0
+            self.released = False
+            captures.append(self)
+
+        def isOpened(self) -> bool:
+            return True
+
+        def set(self, prop: int, value: float) -> None:
+            self.pos_msec = float(value)
+
+        def read(self):
+            return True, {"pos_msec": self.pos_msec}
+
+        def release(self) -> None:
+            self.released = True
+
+    fake_cv2 = types.SimpleNamespace(
+        VideoCapture=FakeCapture,
+        CAP_PROP_POS_MSEC=0,
+        COLOR_BGR2GRAY=1,
+        INTER_AREA=2,
+        cvtColor=lambda frame, code: FakeGray(round(float(frame["pos_msec"]) / 50.0)),
+        resize=lambda gray, shape, interpolation=None: gray,
+    )
+
+    monkeypatch.setattr(video_idm_module.shutil, "which", lambda name: None)
+    monkeypatch.setitem(sys.modules, "cv2", fake_cv2)
+
+    stream = _VideoFrameStream("unit.mkv", image_size=2, fps=20)
+    assert stream.get(0) == b"\x00" * 4
+    assert stream.get(2) == b"\x02" * 4
+    assert stream.backend == "cv2"
+    assert [capture.pos_msec for capture in captures] == [100.0]
+    stream.close()
+    assert captures[0].released is True
 
 
 def test_button_softmax_calibration_can_enforce_no_button_fpr_cap():
