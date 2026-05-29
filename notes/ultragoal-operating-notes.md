@@ -588,3 +588,9 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - `g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_prefix32k` finished on `rsv-jeonghunpark-20260529-b8d1e3` after tensor-stack repair. Terminal compact status is `nonterminal_negative_probe`; paper-compatible metrics are keyboard `0.009311`, mouse-button `0.006849`, mouse Pearson X/Y `0.000154/-0.000441`, strict button F1 `0.013917`, no-button FPR `0.018676`.
 - G005 remains in progress. This run is not a paper-target win and must not be checkpointed complete.
 - Added a next G005 branch: `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_target24k.yaml` and `scripts/run_g005_idm_temporal_raw96_patch_axisclass_realvideo_train320k_target24k.sh`. It keeps the public FDM-1 shape (raw screen-video patch tokens + noncausal masked action-token diffusion) but scales fit rows to `320k`, increases model capacity, and uses `distributed_feature_cache_dir` to shard raw-frame decode across DDP ranks.
+
+## 2026-05-30T00:03 KST — G005 quota increase applied to train320k continuation
+- Confirmed approved production quota increase through MLXP API (`production_effective_gpu_quota=8`, active grant available) without recording any API token in repo artifacts.
+- Launched `g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_target24k` from commit `d642668` on active pod `prod-rsv-jeonghunpark-20260529-b8d1e3` (Node 4, GPUs 1-4).
+- Reserved adjacent continuation `rsv-jeonghunpark-20260530-d58f2b` on Node 4, GPUs 1-4 from 2026-05-30 02:00 to 12:00 KST so the H200 run can continue/resume beyond the original 02:00 expiration if needed.
+- Continue to monitor utilization: materialization is expected CPU/IO-heavy; sustained GPU-idle after torchrun starts is a blocker.
