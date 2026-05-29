@@ -1227,6 +1227,53 @@ def _temporal_center_candidates(
                 if token_prior_weights:
                     prior_weight = float(token_prior_weights.get(token, 1.0))
                     score = max(0.0, min(1.0, score * prior_weight))
+                event_gate_multiplier = 1.0
+                gate_families = config.get("event_auxiliary_candidate_gate_families", ["keyboard", "mouse_button"])
+                if not isinstance(gate_families, list):
+                    gate_families = ["keyboard", "mouse_button"]
+                if (
+                    event_probabilities_cpu
+                    and family in {str(item) for item in gate_families}
+                    and event_probabilities_cpu.get(family) is not None
+                ):
+                    event_score = float(event_probabilities_cpu[family][batch_idx])
+                    gate_power = max(
+                        0.0,
+                        float(
+                            config.get(
+                                f"{family}_event_candidate_gate_power",
+                                config.get("event_auxiliary_candidate_gate_power", 0.0),
+                            )
+                            or 0.0
+                        ),
+                    )
+                    if gate_power > 0.0:
+                        gate_floor = max(
+                            0.0,
+                            min(
+                                1.0,
+                                float(
+                                    config.get(
+                                        f"{family}_event_candidate_gate_floor",
+                                        config.get("event_auxiliary_candidate_gate_floor", 0.0),
+                                    )
+                                    or 0.0
+                                ),
+                            ),
+                        )
+                        event_gate_multiplier *= gate_floor + (1.0 - gate_floor) * (max(0.0, min(1.0, event_score)) ** gate_power)
+                button_class_no_button_gate_score = 1.0
+                if family == "mouse_button" and event_probabilities_cpu and event_probabilities_cpu.get("button_class") is not None:
+                    button_class_probs = event_probabilities_cpu["button_class"]
+                    if int(button_class_probs.shape[1]) > 0:
+                        no_button_prob = float(button_class_probs[batch_idx, 0])
+                        button_class_no_button_gate_score = max(0.0, min(1.0, 1.0 - no_button_prob))
+                        gate_power = max(0.0, float(config.get("button_class_no_button_gate_power", 0.0) or 0.0))
+                        if gate_power > 0.0:
+                            gate_floor = max(0.0, min(1.0, float(config.get("button_class_no_button_gate_floor", 0.0) or 0.0)))
+                            event_gate_multiplier *= gate_floor + (1.0 - gate_floor) * (button_class_no_button_gate_score ** gate_power)
+                if event_gate_multiplier < 1.0:
+                    score = max(0.0, min(1.0, score * event_gate_multiplier))
                 if score < min_probability:
                     continue
                 candidates.append(
@@ -1235,8 +1282,10 @@ def _temporal_center_candidates(
                         "token_probability": token_score,
                         "retrieval_score": retrieval_score,
                         "prior_weight": prior_weight,
+                        "event_gate_multiplier": event_gate_multiplier,
                         "key_presence_score": key_presence_score,
                         "button_class_score": button_class_score,
+                        "button_class_no_button_gate_score": button_class_no_button_gate_score,
                         "button_presence_score": button_presence_score,
                         "slot": slot_idx,
                         "token_index": token_idx,
@@ -2248,6 +2297,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "button_class_button_weight":float(config.get("button_class_button_weight", config.get("button_event_pos_weight", 16.0))),
             "button_class_focal_gamma":float(config.get("button_class_focal_gamma", 0.0) or 0.0),
             "button_class_candidate_score_blend":float(config.get("button_class_candidate_score_blend", 0.0)),
+            "button_class_no_button_gate_power":float(config.get("button_class_no_button_gate_power", 0.0) or 0.0),
+            "button_class_no_button_gate_floor":float(config.get("button_class_no_button_gate_floor", 0.0) or 0.0),
             "temporal_key_token_presence_auxiliary":key_token_presence_auxiliary,
             "key_token_presence_aux_weight":key_token_presence_aux_weight,
             "key_token_presence_vocab_size":len(key_vocab),
@@ -2263,6 +2314,11 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "key_event_pos_weight":float(config.get("key_event_pos_weight", 8.0)),
             "button_event_pos_weight":float(config.get("button_event_pos_weight", 16.0)),
             "event_auxiliary_candidate_score_blend":float(config.get("event_auxiliary_candidate_score_blend", 0.5)),
+            "event_auxiliary_candidate_gate_power":float(config.get("event_auxiliary_candidate_gate_power", 0.0) or 0.0),
+            "event_auxiliary_candidate_gate_floor":float(config.get("event_auxiliary_candidate_gate_floor", 0.0) or 0.0),
+            "event_auxiliary_candidate_gate_families":list(config.get("event_auxiliary_candidate_gate_families", ["keyboard", "mouse_button"]))
+            if isinstance(config.get("event_auxiliary_candidate_gate_families", ["keyboard", "mouse_button"]), list)
+            else ["keyboard", "mouse_button"],
             "temporal_token_presence_auxiliary":token_presence_auxiliary,
             "token_presence_aux_weight":token_presence_aux_weight,
             "token_presence_include_noop":bool(config.get("token_presence_include_noop", False)),

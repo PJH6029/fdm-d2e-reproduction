@@ -1196,3 +1196,34 @@ def test_train_temporal_masked_diffusion_idm_raw_video_cnn_tiny_smoke(tmp_path: 
     assert summary["video_encoder_pretrain_history"]
     assert Path(summary["checkpoint_path"]).exists()
     assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 3
+
+
+def test_temporal_center_candidates_can_gate_buttons_by_no_button_class():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "MOUSE_LEFT_DOWN"]
+    probabilities = torch.tensor([[[0.01, 0.01, 0.18, 0.80]]], dtype=torch.float32)
+    ungated = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={"non_noop_budget_candidates_per_row": 4},
+        event_probabilities={"button_class": torch.tensor([[0.95, 0.05]], dtype=torch.float32)},
+    )
+    gated = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={
+            "non_noop_budget_candidates_per_row": 4,
+            "button_class_no_button_gate_power": 2.0,
+            "button_class_no_button_gate_floor": 0.0,
+        },
+        event_probabilities={"button_class": torch.tensor([[0.95, 0.05]], dtype=torch.float32)},
+    )
+    ungated_button = next(item for item in ungated[0] if item["token"] == "MOUSE_LEFT_DOWN")
+    gated_button = next(item for item in gated[0] if item["token"] == "MOUSE_LEFT_DOWN")
+    assert ungated_button["score"] == pytest.approx(0.8)
+    assert gated_button["button_class_no_button_gate_score"] == pytest.approx(0.05)
+    assert gated_button["event_gate_multiplier"] == pytest.approx(0.05**2)
+    assert gated_button["score"] < ungated_button["score"] * 0.01
