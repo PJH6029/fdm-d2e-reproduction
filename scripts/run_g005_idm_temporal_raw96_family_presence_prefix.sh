@@ -7,6 +7,7 @@ if [[ -f .env ]]; then set -a; . ./.env; set +a; fi
 CONFIG="${CONFIG:-configs/model/idm_temporal_masked_diffusion_d2e_raw96_family_presence_prefix80k.yaml}"
 MODEL_SLUG="${MODEL_SLUG:-g005_idm_temporal_masked_diffusion_raw96_family_presence_prefix80k}"
 OUTPUT_DIR="${OUTPUT_DIR:-outputs/idm_temporal_masked_diffusion_d2e_raw96_family_presence_prefix80k}"
+SUMMARY_PATH="${SUMMARY_PATH:-artifacts/idm/${MODEL_SLUG}_summary.json}"
 RUN_SUMMARY="${RUN_SUMMARY:-artifacts/idm/${MODEL_SLUG}_h200_run.json}"
 GPU_MONITOR_LOG="${GPU_MONITOR_LOG:-artifacts/idm/${MODEL_SLUG}_h200_gpu_monitor.csv}"
 GPU_MONITOR_PID_FILE="${GPU_MONITOR_PID_FILE:-outputs/cluster/${MODEL_SLUG}_gpu_monitor.pid}"
@@ -69,7 +70,7 @@ FINISHED_AT="$(date -Iseconds)"
 python3 - <<PY
 import csv, hashlib, json, pathlib, time
 run_summary = pathlib.Path("$RUN_SUMMARY")
-summary_path = pathlib.Path("artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_family_presence_prefix80k_summary.json")
+summary_path = pathlib.Path("$SUMMARY_PATH")
 metrics_path = pathlib.Path("$OUTPUT_DIR/paper_metrics.json")
 gpu_monitor = pathlib.Path("$GPU_MONITOR_LOG")
 wandb_status = pathlib.Path("$WANDB_SIDECAR_STATUS")
