@@ -95,3 +95,9 @@ G005 is ready for an OMX checkpoint with a fresh active aggregate `get_goal` sna
 ## 2026-05-23 14:14 KST G005 OMX checkpoint complete
 
 `G005-aux-data-best-model` was checkpointed complete in OMX with fresh active aggregate `get_goal` snapshot. Evidence string referenced commit `2b97079`, passing finalization/audit artifacts, 16,698,646 prediction/target counts, 16-worker parallel prediction summary, split-stat summary, and ablation summary. The aggregate Codex goal remains active; do not call `update_goal complete` until G009/final quality gates complete.
+
+## 2026-05-29 quota grant / 4xH200 launch status
+
+- User confirmed quota-increase approval. API inspection records production effective/current quota as 8 GPUs with an active approved grant and 400 approved GPU-hours remaining. Redacted evidence: `artifacts/cluster/g005_quota_grant_status_20260529.json`.
+- Existing 4×H200 reservation remains scheduled: `rsv-jeonghunpark-20260529-4f61cb`, node 4, GPUs `[3,4,5,6]`, 2026-05-29 20:00–2026-05-30 00:00 KST. Auto-launch watcher remains responsible for starting `scripts/run_g005_idm_temporal_luma2_actual_prefix320k_epoch3.sh` on the reservation pod and writing `artifacts/cluster/g005_4xh200_auto_launch_20260529.json`.
+- Do not checkpoint `G005-g014-idm-full-paper-target` until the prefix320k run produces terminal metrics that pass the paper-target gate and `get_goal` JSON is passed into `omx ultragoal checkpoint`.
