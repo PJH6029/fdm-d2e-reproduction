@@ -1,0 +1,33 @@
+{
+  "claim_boundary": "Train-label-only action-token rate measurement for split-safe unlabeled target threshold adaptation; target/eval labels are not inspected.",
+  "config_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_actual_prefix320k_epoch3.yaml",
+  "max_train_rows": 320000,
+  "measured_at": "2026-05-29T10:08:17.393846+00:00",
+  "rows": 320000,
+  "schema": "g005_train_action_token_rate_measurement.v1",
+  "status": "pass",
+  "tokens": {
+    "keyboard": 86556,
+    "mouse_button": 8832,
+    "mouse_move": 3908236,
+    "noop": 160515,
+    "other": 21,
+    "scroll": 1434
+  },
+  "tokens_per_row": {
+    "keyboard": 0.2704875,
+    "mouse_button": 0.0276,
+    "mouse_move": 12.2132375,
+    "noop": 0.501609375,
+    "other": 6.5625e-05,
+    "scroll": 0.00448125
+  },
+  "train_records": [
+    "outputs/data/d2e_full_corpus_shards_accel64/shard_*/train_core.jsonl"
+  ],
+  "used_for_config": {
+    "adaptive_family_budget_keyboard_tokens_per_row": 0.3,
+    "adaptive_family_budget_mouse_button_tokens_per_row": 0.035,
+    "adaptive_family_budget_mouse_move_tokens_per_row": 2.0
+  }
+}
