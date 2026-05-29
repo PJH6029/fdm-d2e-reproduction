@@ -1286,6 +1286,8 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "dropout": 0.0,
             "batch_size": 2,
             "prediction_batch_size": 2,
+            "precompute_features_as_tensor": True,
+            "precompute_feature_tensor_dtype": "float32",
             "epochs": 1,
             "lr": 0.001,
             "mask_probability": 0.75,
@@ -1346,6 +1348,7 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "non_noop_budget_max_tokens_per_row": 3,
             "non_noop_budget_max_threshold_candidates": 16,
             "video_encoder_pretrain_epochs": 1,
+            "video_encoder_pretrain_max_batches": 1,
             "video_encoder_pretrain_lr": 0.001,
             "video_encoder_pretrain_mask_probability": 0.5,
             "video_reconstruction_aux_weight": 0.05,
@@ -1363,6 +1366,10 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["calibration_rows"] == 2
     assert summary["vocab_size"] >= 4
     assert summary["video_encoder_pretrain_history"]
+    assert summary["video_encoder_pretrain_history"][0]["truncated"] is True
+    assert summary["video_encoder_pretrain_history"][0]["max_batches"] == 1
+    assert summary["precompute_features_as_tensor"] is True
+    assert summary["precompute_feature_tensor_dtype"] == "float32"
     assert summary["loss_weights"]["keyboard_loss_weight"] == 2.0
     assert summary["loss_weights"]["mouse_button_loss_weight"] == 3.0
     assert summary["loss_weights"]["token_loss_type"] == "focal"

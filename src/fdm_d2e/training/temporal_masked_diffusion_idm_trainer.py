@@ -218,6 +218,30 @@ def _precompute_features(rows: Sequence[dict[str, Any]], *, config: dict[str, An
     return [video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim) for row in rows]
 
 
+def _maybe_tensorize_features(torch: Any, features: Any, *, config: dict[str, Any], split_name: str) -> Any:
+    """Optionally store precomputed JSON features as one CPU tensor.
+
+    Long-context FDM-1-style probes repeatedly gather dozens of neighboring
+    screen-video rows per training example.  Keeping compact-luma features as
+    Python lists forces every ``__getitem__`` call to re-box thousands of floats
+    before a GPU step.  Tensorizing once preserves the same recipe/objective
+    while avoiding sustained H200 idle caused by Python data marshaling.
+    """
+
+    del split_name  # reserved for future per-split diagnostics without API churn
+    if not bool(config.get("precompute_features_as_tensor", config.get("tensorize_precomputed_features", False))):
+        return features
+    if hasattr(features, "detach") and hasattr(features, "to"):
+        dtype_name = str(config.get("precompute_feature_tensor_dtype", "float16")).lower()
+        dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
+        return features.to(dtype=dtype).contiguous()
+    if not features:
+        return features
+    dtype_name = str(config.get("precompute_feature_tensor_dtype", "float16")).lower()
+    dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
+    return torch.tensor(features, dtype=dtype).contiguous()
+
+
 def _precompute_video_cache_features(
     record_paths: Sequence[Path],
     *,
@@ -311,7 +335,8 @@ class _TemporalMaskedDiffusionDataset:
     ) -> None:
         torch = require_torch()
         self.torch = torch
-        self.features = list(features)
+        self.features = features if hasattr(features, "detach") and hasattr(features, "to") else list(features)
+        self.features_are_tensor = hasattr(self.features, "detach") and hasattr(self.features, "to")
         self.target_ids = [list(row) for row in target_ids]
         self.vocab = list(vocab)
         self.token_to_index = {token: idx for idx, token in enumerate(self.vocab)}
@@ -348,16 +373,16 @@ class _TemporalMaskedDiffusionDataset:
         return self.torch.tensor(list(value), dtype=self.torch.float32)
 
     def __getitem__(self, idx: int) -> tuple[Any, Any, Any, Any]:
-        feature_rows: list[Any] = []
         corrupted_rows: list[list[int]] = []
         target_rows: list[list[int]] = []
         mask_rows: list[list[bool]] = []
         index_to_token = {idx_: token for token, idx_ in self.token_to_index.items()}
         mask_index = self.token_to_index[FDM1_ACTION_MASK]
         force_full_mask = random.Random(self.seed + idx * 104729).random() < self.full_action_mask_probability
+        row_indices: list[int] = []
         for offset_position, offset in enumerate(self.offsets):
             row_index = self._row_index(idx, offset)
-            feature_rows.append(self._feature_tensor(row_index))
+            row_indices.append(row_index)
             target = list(self.target_ids[row_index])
             target_tokens = [index_to_token.get(token_id, FDM1_ACTION_NOOP) for token_id in target]
             if force_full_mask:
@@ -384,8 +409,13 @@ class _TemporalMaskedDiffusionDataset:
             corrupted_rows.append([self.token_to_index.get(token, mask_index) for token in corrupted_tokens])
             target_rows.append(target)
             mask_rows.append(loss_mask)
+        if self.features_are_tensor:
+            index_tensor = self.torch.tensor(row_indices, dtype=self.torch.long, device=self.features.device)
+            feature_tensor = self.features.index_select(0, index_tensor).to(dtype=self.torch.float32)
+        else:
+            feature_tensor = self.torch.stack([self._feature_tensor(row_index) for row_index in row_indices], dim=0)
         return (
-            self.torch.stack(feature_rows, dim=0),
+            feature_tensor,
             self.torch.tensor(corrupted_rows, dtype=self.torch.long),
             self.torch.tensor(target_rows, dtype=self.torch.long),
             self.torch.tensor(mask_rows, dtype=self.torch.bool),
@@ -793,6 +823,7 @@ def _pretrain_video_encoder(model: Any, torch: Any, loader: Any, *, config: dict
     output_dir = ensure_dir(config.get("output_dir", "outputs/idm_temporal_masked_diffusion_d2e"))
     progress_every = max(1, int(config.get("rank_progress_every_batches", 50)))
     total_batches = len(loader) if hasattr(loader, "__len__") else None
+    max_batches = int(config.get("video_encoder_pretrain_max_batches", 0) or 0)
     for epoch in range(epochs):
         model.train()
         total = 0.0
@@ -821,7 +852,18 @@ def _pretrain_video_encoder(model: Any, torch: Any, loader: Any, *, config: dict
                         "loss": total / max(1, examples),
                     },
                 )
-        history.append({"epoch": epoch + 1, "video_reconstruction_loss": total / max(1, examples), "examples": examples})
+            if max_batches > 0 and batch_index >= max_batches:
+                break
+        history.append(
+            {
+                "epoch": epoch + 1,
+                "video_reconstruction_loss": total / max(1, examples),
+                "examples": examples,
+                "batches": batch_index if "batch_index" in locals() else 0,
+                "max_batches": max_batches or None,
+                "truncated": bool(max_batches > 0 and (total_batches is None or max_batches < total_batches)),
+            }
+        )
     return history
 
 
@@ -1230,6 +1272,10 @@ def _temporal_window_features_for_batch(
 
 
 def _feature_sequence_tensor(torch: Any, feature_rows: Sequence[Any], *, device: Any) -> Any:
+    if hasattr(feature_rows, "detach") and hasattr(feature_rows, "to"):
+        if int(feature_rows.shape[0]) == 0:
+            return torch.empty((0, 0), dtype=torch.float32, device=device)
+        return feature_rows.to(device=device, dtype=torch.float32)
     if not feature_rows:
         return torch.empty((0, 0), dtype=torch.float32, device=device)
     first = feature_rows[0]
@@ -1239,6 +1285,10 @@ def _feature_sequence_tensor(torch: Any, feature_rows: Sequence[Any], *, device:
 
 
 def _feature_window_tensor(torch: Any, window_features: Sequence[Sequence[Any]], *, device: Any) -> Any:
+    if hasattr(window_features, "detach") and hasattr(window_features, "to"):
+        if int(window_features.shape[0]) == 0:
+            return torch.empty((0, 0, 0), dtype=torch.float32, device=device)
+        return window_features.to(device=device, dtype=torch.float32)
     if not window_features:
         return torch.empty((0, 0, 0), dtype=torch.float32, device=device)
     first = window_features[0][0] if window_features[0] else None
@@ -1830,7 +1880,7 @@ def _retrieval_priors_for_batch(
     token_rows = retrieval_index.get("tokens")
     if embeddings is None or not token_rows:
         return None
-    if not features:
+    if (hasattr(features, "shape") and int(features.shape[0]) == 0) or (not hasattr(features, "shape") and not features):
         return []
     top_k = max(1, min(int(config.get("retrieval_action_prior_top_k", retrieval_index.get("top_k", 16))), int(embeddings.shape[0])))
     temperature = max(1e-6, float(config.get("retrieval_action_prior_temperature", retrieval_index.get("temperature", 0.07))))
@@ -2529,6 +2579,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         fit_features = _precompute_features(fit_rows, config=config)
         calibration_features = _precompute_features(calibration_rows, config=config) if calibration_rows else []
         target_features = _precompute_features(target_rows, config=config)
+    fit_features = _maybe_tensorize_features(torch, fit_features, config=config, split_name="fit")
+    calibration_features = _maybe_tensorize_features(torch, calibration_features, config=config, split_name="calibration")
+    target_features = _maybe_tensorize_features(torch, target_features, config=config, split_name="target")
     fit_target_ids = _precompute_target_ids_for_config(
         fit_rows,
         max_slots=max_slots,
@@ -2537,7 +2590,19 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         preserve_pad_slots=preserve_pad_slots,
     )
     dataset = _TemporalMaskedDiffusionDataset(features=fit_features, target_ids=fit_target_ids, config={**config, "max_slots": max_slots}, vocab=vocab)
-    loader = torch.utils.data.DataLoader(dataset, batch_size=int(config.get("batch_size", 64)), shuffle=True)
+    dataloader_workers = max(0, int(config.get("dataloader_num_workers", config.get("num_workers", 0)) or 0))
+    loader_kwargs: dict[str, Any] = {
+        "batch_size": int(config.get("batch_size", 64)),
+        "shuffle": True,
+        "num_workers": dataloader_workers,
+        "pin_memory": bool(config.get("dataloader_pin_memory", dataloader_workers > 0 and torch.cuda.is_available())),
+    }
+    if dataloader_workers > 0:
+        loader_kwargs["persistent_workers"] = bool(config.get("dataloader_persistent_workers", True))
+        prefetch_factor = config.get("dataloader_prefetch_factor")
+        if prefetch_factor is not None:
+            loader_kwargs["prefetch_factor"] = max(1, int(prefetch_factor))
+    loader = torch.utils.data.DataLoader(dataset, **loader_kwargs)
     device = torch.device("cuda" if torch.cuda.is_available() and not config.get("force_cpu") else "cpu")
     model = _build_temporal_model(torch, video_dim=feature_dim, vocab_size=len(vocab), max_slots=max_slots, offsets=offsets, config=config, vocab=vocab).to(device)
     video_pretrain_history = _pretrain_video_encoder(model, torch, loader, config=config, device=device)
@@ -2991,6 +3056,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "temporal_window":len(offsets),
         "video_feature_source":feature_source,
         "video_feature_dim":feature_dim,
+        "precompute_features_as_tensor":bool(config.get("precompute_features_as_tensor", config.get("tensorize_precomputed_features", False))),
+        "precompute_feature_tensor_dtype":str(config.get("precompute_feature_tensor_dtype", "float16")),
+        "dataloader_num_workers":dataloader_workers,
         "video_encoder_arch":str(config.get("video_encoder_arch", "flat_mlp")),
         "video_tokens_per_offset":int(getattr(model, "video_tokens_per_offset", 1) or 1),
         "raw_video_frame_offsets":_raw_video_frame_offsets(config)
