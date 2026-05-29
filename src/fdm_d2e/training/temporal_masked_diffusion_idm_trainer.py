@@ -58,10 +58,45 @@ def _target_slots(row: dict[str, Any], *, max_slots: int, preserve_pad_slots: bo
     return [FDM1_ACTION_NOOP if token.startswith("<FDM1_ACTION_PAD") else token for token in record.padded_tokens]
 
 
+def _action_mouse_token_mode(config: dict[str, Any]) -> str:
+    return str(config.get("action_mouse_tokenization", config.get("mouse_token_mode", "fdm1_49")))
+
+
+def _target_slots_for_config(
+    row: dict[str, Any],
+    *,
+    max_slots: int,
+    config: dict[str, Any],
+    preserve_pad_slots: bool = False,
+) -> list[str]:
+    record = canonical_action_slot_record(row, max_slots=max_slots, mouse_token_mode=_action_mouse_token_mode(config))
+    if preserve_pad_slots:
+        return list(record.padded_tokens)
+    return [FDM1_ACTION_NOOP if token.startswith("<FDM1_ACTION_PAD") else token for token in record.padded_tokens]
+
+
 def _build_vocab(rows: Sequence[dict[str, Any]], *, max_slots: int, min_count: int = 1, preserve_pad_slots: bool = False) -> list[str]:
     counts: dict[str, int] = {}
     for row in rows:
         for token in _target_slots(row, max_slots=max_slots, preserve_pad_slots=preserve_pad_slots):
+            counts[token] = counts.get(token, 0) + 1
+    counts.setdefault(FDM1_ACTION_NOOP, 1)
+    vocab = ["<FDM1_ACTION_PAD>", FDM1_ACTION_MASK]
+    vocab.extend(sorted(token for token, count in counts.items() if count >= min_count and token not in vocab))
+    return vocab
+
+
+def _build_vocab_for_config(
+    rows: Sequence[dict[str, Any]],
+    *,
+    max_slots: int,
+    config: dict[str, Any],
+    min_count: int = 1,
+    preserve_pad_slots: bool = False,
+) -> list[str]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        for token in _target_slots_for_config(row, max_slots=max_slots, config=config, preserve_pad_slots=preserve_pad_slots):
             counts[token] = counts.get(token, 0) + 1
     counts.setdefault(FDM1_ACTION_NOOP, 1)
     vocab = ["<FDM1_ACTION_PAD>", FDM1_ACTION_MASK]
@@ -238,6 +273,29 @@ def _precompute_target_ids(rows: Sequence[dict[str, Any]], *, max_slots: int, to
     noop = token_to_index[FDM1_ACTION_NOOP]
     return [
         [token_to_index.get(token, noop) for token in _target_slots(row, max_slots=max_slots, preserve_pad_slots=preserve_pad_slots)]
+        for row in rows
+    ]
+
+
+def _precompute_target_ids_for_config(
+    rows: Sequence[dict[str, Any]],
+    *,
+    max_slots: int,
+    token_to_index: dict[str, int],
+    config: dict[str, Any],
+    preserve_pad_slots: bool = False,
+) -> list[list[int]]:
+    noop = token_to_index[FDM1_ACTION_NOOP]
+    return [
+        [
+            token_to_index.get(token, noop)
+            for token in _target_slots_for_config(
+                row,
+                max_slots=max_slots,
+                config=config,
+                preserve_pad_slots=preserve_pad_slots,
+            )
+        ]
         for row in rows
     ]
 
@@ -733,7 +791,7 @@ def _class_weights(torch: Any, vocab: Sequence[str], config: dict[str, Any], *, 
             weights[idx] = float(config.get("keyboard_loss_weight", config.get("action_loss_weight", 1.0)))
         elif token.startswith(("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_")):
             weights[idx] = float(config.get("mouse_button_loss_weight", config.get("action_loss_weight", 1.0)))
-        elif token.startswith(("FDM1_MOUSE_DX_", "FDM1_MOUSE_DY_")):
+        elif token.startswith(("FDM1_MOUSE_DX_", "FDM1_MOUSE_DY_", "MOUSE_DX_", "MOUSE_DY_")):
             weights[idx] = float(config.get("mouse_move_loss_weight", config.get("action_loss_weight", 1.0)))
         elif token.startswith("SCROLL_"):
             weights[idx] = float(config.get("scroll_loss_weight", config.get("action_loss_weight", 1.0)))
@@ -985,7 +1043,12 @@ def _candidate_token_prior_weights(
     }
     for row in rows:
         seen_in_row: set[str] = set()
-        for token in _target_slots(row, max_slots=max_slots, preserve_pad_slots=preserve_pad_slots):
+        for token in _target_slots_for_config(
+            row,
+            max_slots=max_slots,
+            config=config,
+            preserve_pad_slots=preserve_pad_slots,
+        ):
             token = str(token)
             if token not in token_set or token not in counts:
                 continue
@@ -1535,10 +1598,10 @@ def _temporal_center_candidates(
     return batch_candidates
 
 
-def _retrieval_tokens(row: dict[str, Any], *, max_slots: int) -> list[str]:
+def _retrieval_tokens(row: dict[str, Any], *, max_slots: int, config: dict[str, Any]) -> list[str]:
     tokens: list[str] = []
     seen: set[str] = set()
-    for token in _target_slots(row, max_slots=max_slots, preserve_pad_slots=True):
+    for token in _target_slots_for_config(row, max_slots=max_slots, config=config, preserve_pad_slots=True):
         token = str(token)
         if not _is_predictable_action_token(token) or token in seen:
             continue
@@ -1581,7 +1644,17 @@ def _build_temporal_retrieval_prior_index(
             encoded = torch.nn.functional.normalize(encoded, p=2, dim=-1)
             embeddings.append(encoded.detach())
             for row in rows[start : start + batch_size]:
-                token_rows.append([token for token in _retrieval_tokens(row, max_slots=int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))) if token in token_vocab])
+                token_rows.append(
+                    [
+                        token
+                        for token in _retrieval_tokens(
+                            row,
+                            max_slots=int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16))),
+                            config=config,
+                        )
+                        if token in token_vocab
+                    ]
+                )
     if not embeddings:
         return {"status": "skipped", "reason": "no_embeddings"}
     matrix = torch.cat(embeddings, dim=0).to(device)
@@ -1799,6 +1872,7 @@ def _collect_temporal_probability_rows(
                             default_width=_screen_size(row)[0],
                             default_height=_screen_size(row)[1],
                             include_noop=False,
+                            mouse_token_mode=_action_mouse_token_mode(config),
                         )
                     ],
                 }
@@ -2269,7 +2343,15 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     feature_dim = _configured_video_feature_dim(config)
     config = {**config, "video_feature_dim": feature_dim}
     preserve_pad_slots = bool(config.get("preserve_pad_action_slots", config.get("pad_action_slots_as_pad", False)))
-    vocab = _build_vocab(train_rows, max_slots=max_slots, min_count=int(config.get("vocab_min_count", 1)), preserve_pad_slots=preserve_pad_slots)
+    action_mouse_tokenization = _action_mouse_token_mode(config)
+    config["action_mouse_tokenization"] = action_mouse_tokenization
+    vocab = _build_vocab_for_config(
+        train_rows,
+        max_slots=max_slots,
+        config=config,
+        min_count=int(config.get("vocab_min_count", 1)),
+        preserve_pad_slots=preserve_pad_slots,
+    )
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
     feature_source = str(config.get("video_feature_source", "json")).lower()
     if feature_source in {"video_idm_cache", "raw_video_cache"}:
@@ -2291,7 +2373,13 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         fit_features = _precompute_features(fit_rows, config=config)
         calibration_features = _precompute_features(calibration_rows, config=config) if calibration_rows else []
         target_features = _precompute_features(target_rows, config=config)
-    fit_target_ids = _precompute_target_ids(fit_rows, max_slots=max_slots, token_to_index=token_to_index, preserve_pad_slots=preserve_pad_slots)
+    fit_target_ids = _precompute_target_ids_for_config(
+        fit_rows,
+        max_slots=max_slots,
+        token_to_index=token_to_index,
+        config=config,
+        preserve_pad_slots=preserve_pad_slots,
+    )
     dataset = _TemporalMaskedDiffusionDataset(features=fit_features, target_ids=fit_target_ids, config={**config, "max_slots": max_slots}, vocab=vocab)
     loader = torch.utils.data.DataLoader(dataset, batch_size=int(config.get("batch_size", 64)), shuffle=True)
     device = torch.device("cuda" if torch.cuda.is_available() and not config.get("force_cpu") else "cpu")
@@ -2688,6 +2776,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "target_rows":len(target_rows),
         "vocab_size":len(vocab),
         "max_slots":max_slots,
+        "action_mouse_tokenization":action_mouse_tokenization,
         "preserve_pad_action_slots":preserve_pad_slots,
         "temporal_offsets":offsets,
         "temporal_window":len(offsets),
@@ -2714,6 +2803,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "noop_loss_weight":float(config.get("noop_loss_weight", 1.0)),
             "pad_loss_weight":float(config.get("pad_loss_weight", 0.0)),
             "preserve_pad_action_slots":preserve_pad_slots,
+            "action_mouse_tokenization":action_mouse_tokenization,
             "action_loss_weight":float(config.get("action_loss_weight", 1.0)),
             "keyboard_loss_weight":float(config.get("keyboard_loss_weight", config.get("action_loss_weight", 1.0))),
             "mouse_button_loss_weight":float(config.get("mouse_button_loss_weight", config.get("action_loss_weight", 1.0))),

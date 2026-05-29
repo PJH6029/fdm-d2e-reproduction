@@ -21,8 +21,10 @@ from fdm_d2e.training.masked_diffusion_idm_trainer import (
     train_masked_diffusion_idm,
     video_feature_vector,
 )
+from fdm_d2e.training.masked_diffusion_idm import canonical_fdm1_action_tokens
 from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _adapt_temporal_family_budget_to_unlabeled_distribution,
+    _build_vocab_for_config,
     _calibrate_temporal_family_non_noop_budget,
     _calibrate_temporal_non_noop_budget,
     _candidate_family_diagnostics,
@@ -33,6 +35,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _temporal_center_candidates,
     _temporal_family_token_presence_targets,
     _target_slots,
+    _target_slots_for_config,
     _token_presence_targets,
     _tokens_from_family_budget_candidates,
     train_temporal_masked_diffusion_idm,
@@ -804,6 +807,37 @@ def test_candidate_family_diagnostics_compares_recipe_mouse_tokens():
     assert move["positive_rows"] == 1
     assert move["positive_rows_with_exact_candidate"] == 1
     assert move["positive_rows_with_exact_candidate_rate"] == 1.0
+
+
+def test_d2e_metric_bin_mouse_tokenization_preserves_metric_tokens():
+    row = {
+        "ground_truth_tokens": ["KEY_PRESS_A", "MOUSE_DX_P1", "MOUSE_DY_Z0"],
+        "frame": {"width": 854, "height": 480},
+    }
+
+    recipe_tokens = canonical_fdm1_action_tokens(row)
+    metric_tokens = canonical_fdm1_action_tokens(row, mouse_token_mode="d2e_metric_bins")
+
+    assert "FDM1_MOUSE_DX_P03" in recipe_tokens
+    assert "MOUSE_DX_P1" in metric_tokens
+    assert "MOUSE_DY_Z0" in metric_tokens
+    assert not any(token.startswith("FDM1_MOUSE_") for token in metric_tokens)
+
+
+def test_temporal_config_vocab_uses_d2e_metric_mouse_bins():
+    rows = [
+        {"ground_truth_tokens": ["KEY_PRESS_A", "MOUSE_DX_P1", "MOUSE_DY_Z0"], "frame": {"width": 854, "height": 480}},
+        {"ground_truth_tokens": ["MOUSE_DX_N1", "MOUSE_DY_P1"], "frame": {"width": 854, "height": 480}},
+    ]
+    config = {"action_mouse_tokenization": "d2e_metric_bins"}
+
+    slots = _target_slots_for_config(rows[0], max_slots=4, config=config)
+    vocab = _build_vocab_for_config(rows, max_slots=4, config=config)
+
+    assert slots[:3] == ["KEY_PRESS_A", "MOUSE_DX_P1", "MOUSE_DY_Z0"]
+    assert "MOUSE_DX_P1" in vocab
+    assert "MOUSE_DY_P1" in vocab
+    assert not any(token.startswith("FDM1_MOUSE_") for token in vocab)
 
 
 def test_temporal_target_slots_can_preserve_padding_for_sparse_action_sequences():

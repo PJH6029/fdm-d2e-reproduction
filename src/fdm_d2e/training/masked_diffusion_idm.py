@@ -5,7 +5,7 @@ import random
 from dataclasses import dataclass
 from typing import Any, Iterable, Sequence
 
-from fdm_d2e.tokenization.actions import _clean_key, bin_delta, token_to_delta_class
+from fdm_d2e.tokenization.actions import _clean_key, bin_delta, token_to_delta_class, tokens_from_delta
 
 FDM1_ACTION_PAD = "<FDM1_ACTION_PAD>"
 FDM1_ACTION_MASK = "<FDM1_ACTION_MASK>"
@@ -154,8 +154,18 @@ def _screen_size(row: dict[str, Any], *, default_width: int, default_height: int
     return int(default_width), int(default_height)
 
 
-def _tokens_from_events(row: dict[str, Any], *, screen_width: int, screen_height: int) -> list[str]:
+def _normalize_mouse_token_mode(value: str | None) -> str:
+    normalized = str(value or "fdm1_49").replace("-", "_").lower()
+    if normalized in {"fdm1", "fdm1_49", "public_49", "recipe_49"}:
+        return "fdm1_49"
+    if normalized in {"d2e", "d2e_metric", "d2e_metric_bins", "metric", "metric_bins", "coarse"}:
+        return "d2e_metric_bins"
+    raise ValueError(f"unsupported mouse tokenization mode: {value}")
+
+
+def _tokens_from_events(row: dict[str, Any], *, screen_width: int, screen_height: int, mouse_token_mode: str = "fdm1_49") -> list[str]:
     tokens: list[str] = []
+    mouse_token_mode = _normalize_mouse_token_mode(mouse_token_mode)
     for event in row.get("events", []) or []:
         if not isinstance(event, dict):
             continue
@@ -169,8 +179,11 @@ def _tokens_from_events(row: dict[str, Any], *, screen_width: int, screen_height
             tokens.append(f"MOUSE_{_clean_button(event.get('button', 'UNKNOWN'))}_{action}")
             continue
         if etype == "mouse_move":
-            tokens.append(fdm1_mouse_axis_token("x", event.get("dx", 0), screen_extent=screen_width))
-            tokens.append(fdm1_mouse_axis_token("y", event.get("dy", 0), screen_extent=screen_height))
+            if mouse_token_mode == "d2e_metric_bins":
+                tokens.extend(tokens_from_delta(float(event.get("dx", 0) or 0), float(event.get("dy", 0) or 0), emit_mode="single"))
+            else:
+                tokens.append(fdm1_mouse_axis_token("x", event.get("dx", 0), screen_extent=screen_width))
+                tokens.append(fdm1_mouse_axis_token("y", event.get("dy", 0), screen_extent=screen_height))
             continue
         if etype == "scroll":
             dy = float(event.get("dy", 0) or 0)
@@ -178,12 +191,15 @@ def _tokens_from_events(row: dict[str, Any], *, screen_width: int, screen_height
     return tokens
 
 
-def _tokens_from_existing_tokens(row: dict[str, Any], *, screen_width: int, screen_height: int) -> list[str]:
+def _tokens_from_existing_tokens(row: dict[str, Any], *, screen_width: int, screen_height: int, mouse_token_mode: str = "fdm1_49") -> list[str]:
     converted: list[str] = []
+    mouse_token_mode = _normalize_mouse_token_mode(mouse_token_mode)
     for raw in row.get("ground_truth_tokens", []) or []:
         token = str(raw)
         delta_class = token_to_delta_class(token)
-        if delta_class is not None and token.startswith("MOUSE_DX_"):
+        if mouse_token_mode == "d2e_metric_bins" and delta_class is not None and token.startswith(("MOUSE_DX_", "MOUSE_DY_")):
+            converted.append(token)
+        elif delta_class is not None and token.startswith("MOUSE_DX_"):
             converted.append(fdm1_mouse_axis_token("x", delta_class, screen_extent=screen_width))
         elif delta_class is not None and token.startswith("MOUSE_DY_"):
             converted.append(fdm1_mouse_axis_token("y", delta_class, screen_extent=screen_height))
@@ -198,13 +214,14 @@ def canonical_fdm1_action_tokens(
     default_width: int = 854,
     default_height: int = 480,
     include_noop: bool = True,
+    mouse_token_mode: str = "fdm1_49",
 ) -> list[str]:
     """Return recipe-shaped action tokens for one D2E bin/window row."""
 
     width, height = _screen_size(row, default_width=default_width, default_height=default_height)
-    tokens = _tokens_from_events(row, screen_width=width, screen_height=height)
+    tokens = _tokens_from_events(row, screen_width=width, screen_height=height, mouse_token_mode=mouse_token_mode)
     if not tokens:
-        tokens = _tokens_from_existing_tokens(row, screen_width=width, screen_height=height)
+        tokens = _tokens_from_existing_tokens(row, screen_width=width, screen_height=height, mouse_token_mode=mouse_token_mode)
     tokens = [token for token in tokens if token and token != FDM1_ACTION_PAD]
     if not tokens and include_noop:
         return [FDM1_ACTION_NOOP]
@@ -217,9 +234,15 @@ def canonical_action_slot_record(
     max_slots: int,
     default_width: int = 854,
     default_height: int = 480,
+    mouse_token_mode: str = "fdm1_49",
 ) -> ActionSlotRecord:
     max_slots = max(1, int(max_slots))
-    tokens = canonical_fdm1_action_tokens(row, default_width=default_width, default_height=default_height)
+    tokens = canonical_fdm1_action_tokens(
+        row,
+        default_width=default_width,
+        default_height=default_height,
+        mouse_token_mode=mouse_token_mode,
+    )
     kept = tuple(tokens[:max_slots])
     overflow = tuple(tokens[max_slots:])
     return ActionSlotRecord(tokens=kept, overflow_tokens=overflow, source_token_count=len(tokens), max_slots=max_slots)
@@ -259,10 +282,10 @@ def d2e_metric_tokens_from_fdm1_tokens(
     return converted or ([FDM1_ACTION_NOOP] if not drop_noop else [])
 
 
-def build_action_vocab(rows: Iterable[dict[str, Any]], *, max_slots: int, min_count: int = 1) -> list[str]:
+def build_action_vocab(rows: Iterable[dict[str, Any]], *, max_slots: int, min_count: int = 1, mouse_token_mode: str = "fdm1_49") -> list[str]:
     counts: dict[str, int] = {}
     for row in rows:
-        record = canonical_action_slot_record(row, max_slots=max_slots)
+        record = canonical_action_slot_record(row, max_slots=max_slots, mouse_token_mode=mouse_token_mode)
         for token in record.tokens:
             counts[token] = counts.get(token, 0) + 1
     vocab = [FDM1_ACTION_PAD, FDM1_ACTION_MASK]
