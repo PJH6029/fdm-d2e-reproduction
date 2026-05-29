@@ -1789,6 +1789,13 @@ def _calibrate_temporal_family_non_noop_budget(probability_rows: Sequence[dict[s
             "selected_row": selected,
             "candidate_count": len(rows),
             "max_tokens_per_row": max_tokens,
+            "calibration_predicted_tokens_per_row": float(selected["predicted_non_noop_tokens"]) / max(1, len(probability_rows)),
+            "calibration_positive_row_rate": sum(
+                1
+                for item in probability_rows
+                if any(_action_family(str(token)) == family for token in item.get("ground_truth_tokens", []))
+            )
+            / max(1, len(probability_rows)),
             "sweep_preview": rows[:5] + ([] if len(rows) <= 10 else [{"omitted_rows": len(rows) - 10}]) + rows[-5:],
         }
     return {
@@ -1799,6 +1806,118 @@ def _calibrate_temporal_family_non_noop_budget(probability_rows: Sequence[dict[s
         "max_no_button_fpr": max_button_fpr,
         "claim_boundary": "Family budgets are calibrated on held-out training rows only; target labels remain evaluation/diagnostic only.",
     }
+
+
+def _adapt_temporal_family_budget_to_unlabeled_distribution(
+    family_budget: dict[str, Any],
+    target_probability_rows: Sequence[dict[str, Any]],
+    *,
+    config: dict[str, Any],
+) -> dict[str, Any]:
+    """Adapt fixed family thresholds to an unlabeled target score distribution.
+
+    Public FDM-1 IDM inference iteratively unmasks the highest-confidence action
+    tokens rather than relying on a globally calibrated probability scale.  In
+    practice our raw-video probes showed large score-distribution shift between
+    train-heldout calibration rows and D2E target rows, so a fixed score
+    threshold could over-unmask mouse-button events.  This helper keeps the same
+    recipe shape by using only unlabeled candidate scores on the target split to
+    match a train-heldout action-token emission budget.  It must never inspect
+    target ground-truth tokens.
+    """
+
+    if not target_probability_rows:
+        return family_budget
+    if not isinstance(family_budget, dict) or family_budget.get("status") != "pass":
+        return family_budget
+    families_payload = family_budget.get("families")
+    if not isinstance(families_payload, dict):
+        return family_budget
+    enabled_families = config.get("adaptive_family_budget_families", ["mouse_button"])
+    if not isinstance(enabled_families, list) or not enabled_families:
+        enabled_families = ["mouse_button"]
+    enabled = {str(item) for item in enabled_families}
+    multiplier = max(0.0, float(config.get("adaptive_family_budget_rate_multiplier", 1.0) or 0.0))
+    epsilon = max(0.0, float(config.get("adaptive_family_budget_threshold_epsilon", 1e-12) or 0.0))
+    adapted = json.loads(json.dumps(family_budget))
+    adaptation_payload: dict[str, Any] = {
+        "schema": "temporal_unlabeled_family_budget_adaptation.v1",
+        "status": "pass",
+        "rows": len(target_probability_rows),
+        "families": {},
+        "claim_boundary": "Uses only unlabeled target candidate scores and train-heldout emission budgets; target ground-truth labels are not inspected.",
+    }
+    adapted_families = adapted.get("families", {})
+    for family, budget in list(adapted_families.items()):
+        family = str(family)
+        if family not in enabled or not isinstance(budget, dict) or budget.get("status") not in {None, "pass"}:
+            continue
+        max_tokens = max(0, int(budget.get("max_tokens_per_row", 0) or 0))
+        if max_tokens <= 0:
+            continue
+        explicit_rate = config.get(f"adaptive_family_budget_{family}_tokens_per_row")
+        if explicit_rate is not None:
+            desired_tokens_per_row = max(0.0, float(explicit_rate))
+            budget_source = "explicit_config"
+        else:
+            desired_tokens_per_row = max(
+                0.0,
+                float(
+                    budget.get(
+                        "calibration_predicted_tokens_per_row",
+                        float((budget.get("selected_row") or {}).get("predicted_non_noop_tokens", 0.0))
+                        / max(1, int(family_budget.get("rows", 0) or 0)),
+                    )
+                    or 0.0
+                )
+                * multiplier,
+            )
+            budget_source = "train_heldout_selected_emission_rate"
+        desired_tokens_per_row = min(float(max_tokens), desired_tokens_per_row)
+        target_token_budget = int(round(desired_tokens_per_row * len(target_probability_rows)))
+        scores = sorted(
+            (
+                float(candidate.get("score", 0.0))
+                for item in target_probability_rows
+                for candidate in item.get("candidates", [])
+                if _action_family(str(candidate.get("token", ""))) == family
+            ),
+            reverse=True,
+        )
+        if not scores or target_token_budget <= 0:
+            adapted_threshold = 1.1
+        else:
+            target_token_budget = max(1, min(target_token_budget, len(scores)))
+            adapted_threshold = min(1.1, float(scores[target_token_budget - 1]) + epsilon)
+        old_threshold = float(budget.get("selected_threshold", budget.get("threshold", 1.1)))
+        # Conservative by default: never lower a train-heldout threshold unless
+        # explicitly requested, because the observed failure mode is over-
+        # emission under score-distribution shift.
+        if bool(config.get("adaptive_family_budget_only_raise_threshold", True)):
+            adapted_threshold = max(old_threshold, adapted_threshold)
+        budget["selected_threshold"] = adapted_threshold
+        budget["unlabeled_adapted_threshold"] = adapted_threshold
+        budget["unlabeled_pre_adaptation_threshold"] = old_threshold
+        adaptation_payload["families"][family] = {
+            "status": "pass",
+            "family": family,
+            "old_threshold": old_threshold,
+            "adapted_threshold": adapted_threshold,
+            "target_candidate_scores": len(scores),
+            "target_token_budget": target_token_budget,
+            "desired_tokens_per_row": desired_tokens_per_row,
+            "max_tokens_per_row": max_tokens,
+            "budget_source": budget_source,
+        }
+    if not adaptation_payload["families"]:
+        adaptation_payload["status"] = "skipped"
+        adaptation_payload["reason"] = "no_enabled_family_budget"
+    adapted["unlabeled_distribution_adaptation"] = adaptation_payload
+    adapted["claim_boundary"] = (
+        str(adapted.get("claim_boundary", ""))
+        + " Unlabeled distribution adaptation uses target candidate scores only, not target labels."
+    ).strip()
+    return adapted
 
 
 def _calibrate_temporal_non_noop_budget(probability_rows: Sequence[dict[str, Any]], *, config: dict[str, Any]) -> dict[str, Any]:
@@ -2203,8 +2322,14 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "target_prefix": {"status": "skipped", "reason": "disabled"},
     }
     target_diagnostic_rows = max(0, int(config.get("candidate_diagnostics_target_max_rows", 0) or 0))
-    if target_diagnostic_rows > 0:
-        limit = min(target_diagnostic_rows, len(target_rows))
+    adapt_family_budget = bool(config.get("adaptive_family_budget_to_unlabeled_target", False))
+    target_probability_rows: list[dict[str, Any]] | None = None
+    if target_diagnostic_rows > 0 or adapt_family_budget:
+        adaptive_limit = int(config.get("adaptive_family_budget_max_rows", len(target_rows)) or len(target_rows))
+        limit = min(
+            len(target_rows),
+            max(target_diagnostic_rows, adaptive_limit if adapt_family_budget else 0),
+        )
         target_probability_rows = _collect_temporal_probability_rows(
             model,
             torch,
@@ -2216,7 +2341,18 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             retrieval_index=retrieval_index,
             token_prior_weights=candidate_token_prior_weights,
         )
-        candidate_family_diagnostics["target_prefix"] = _candidate_family_diagnostics(target_probability_rows, config=config)
+        if target_diagnostic_rows > 0:
+            candidate_family_diagnostics["target_prefix"] = _candidate_family_diagnostics(
+                target_probability_rows[: min(target_diagnostic_rows, len(target_probability_rows))],
+                config=config,
+            )
+    if adapt_family_budget and target_probability_rows and family_non_noop_budget.get("status") == "pass":
+        family_non_noop_budget = _adapt_temporal_family_budget_to_unlabeled_distribution(
+            family_non_noop_budget,
+            target_probability_rows,
+            config=config,
+        )
+        config["family_non_noop_budget"] = family_non_noop_budget
     predictions_path = Path(output_dir) / "predictions.jsonl"
     prediction_batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
     with predictions_path.open("w", encoding="utf-8") as handle:

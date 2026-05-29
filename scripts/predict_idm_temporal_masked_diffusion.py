@@ -14,6 +14,7 @@ from fdm_d2e.eval.paper_idm_metrics import write_paper_idm_metrics
 from fdm_d2e.io_utils import ensure_dir, write_json
 from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _build_temporal_model,
+    _adapt_temporal_family_budget_to_unlabeled_distribution,
     _build_temporal_retrieval_prior_index,
     _calibrate_temporal_family_non_noop_budget,
     _calibrate_temporal_non_noop_budget,
@@ -68,6 +69,7 @@ def predict_temporal_masked_diffusion_idm(
     checkpoint_path: Path,
     output_dir: Path,
     summary_out: Path | None,
+    config_path: Path | None = None,
     overrides: list[str],
     force_cpu: bool = False,
 ) -> dict[str, Any]:
@@ -78,7 +80,10 @@ def predict_temporal_masked_diffusion_idm(
     output_dir = ensure_dir(output_dir)
     device = torch.device("cuda" if torch.cuda.is_available() and not force_cpu else "cpu")
     checkpoint = _load_checkpoint(checkpoint_path, torch, device=device)
-    config = _apply_overrides(dict(checkpoint.get("config") or {}), overrides)
+    config = dict(checkpoint.get("config") or {})
+    if config_path is not None:
+        config.update(json.loads(config_path.read_text()))
+    config = _apply_overrides(config, overrides)
     config["output_dir"] = str(output_dir)
     if summary_out is not None:
         config["summary_out"] = str(summary_out)
@@ -188,8 +193,14 @@ def predict_temporal_masked_diffusion_idm(
         "target_prefix": {"status": "skipped", "reason": "disabled"},
     }
     target_diagnostic_rows = max(0, int(config.get("candidate_diagnostics_target_max_rows", 0) or 0))
-    if target_diagnostic_rows > 0:
-        limit = min(target_diagnostic_rows, len(target_rows))
+    adapt_family_budget = bool(config.get("adaptive_family_budget_to_unlabeled_target", False))
+    target_probability_rows: list[dict[str, Any]] | None = None
+    if target_diagnostic_rows > 0 or adapt_family_budget:
+        adaptive_limit = int(config.get("adaptive_family_budget_max_rows", len(target_rows)) or len(target_rows))
+        limit = min(
+            len(target_rows),
+            max(target_diagnostic_rows, adaptive_limit if adapt_family_budget else 0),
+        )
         target_probability_rows = _collect_temporal_probability_rows(
             model,
             torch,
@@ -201,7 +212,18 @@ def predict_temporal_masked_diffusion_idm(
             retrieval_index=retrieval_index,
             token_prior_weights=candidate_token_prior_weights,
         )
-        candidate_family_diagnostics["target_prefix"] = _candidate_family_diagnostics(target_probability_rows, config=config)
+        if target_diagnostic_rows > 0:
+            candidate_family_diagnostics["target_prefix"] = _candidate_family_diagnostics(
+                target_probability_rows[: min(target_diagnostic_rows, len(target_probability_rows))],
+                config=config,
+            )
+    if adapt_family_budget and target_probability_rows and family_non_noop_budget.get("status") == "pass":
+        family_non_noop_budget = _adapt_temporal_family_budget_to_unlabeled_distribution(
+            family_non_noop_budget,
+            target_probability_rows,
+            config=config,
+        )
+        config["family_non_noop_budget"] = family_non_noop_budget
 
     predictions_path = Path(output_dir) / "predictions.jsonl"
     prediction_batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
@@ -270,6 +292,7 @@ def predict_temporal_masked_diffusion_idm(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run prediction/calibration sweeps from a temporal masked-diffusion IDM checkpoint.")
     parser.add_argument("--checkpoint", required=True)
+    parser.add_argument("--config", help="Optional JSON/YAML config whose keys override the checkpoint config before --set overrides.")
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--summary-out")
     parser.add_argument("--set", dest="overrides", action="append", default=[], help="Override config key with JSON-compatible key=value.")
@@ -279,6 +302,7 @@ def main() -> int:
         checkpoint_path=Path(args.checkpoint),
         output_dir=Path(args.output_dir),
         summary_out=Path(args.summary_out) if args.summary_out else None,
+        config_path=Path(args.config) if args.config else None,
         overrides=args.overrides,
         force_cpu=args.force_cpu,
     )

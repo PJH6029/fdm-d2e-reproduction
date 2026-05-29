@@ -22,6 +22,7 @@ from fdm_d2e.training.masked_diffusion_idm_trainer import (
     video_feature_vector,
 )
 from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
+    _adapt_temporal_family_budget_to_unlabeled_distribution,
     _calibrate_temporal_family_non_noop_budget,
     _calibrate_temporal_non_noop_budget,
     _candidate_family_diagnostics,
@@ -346,6 +347,51 @@ def test_temporal_family_non_noop_budget_calibrates_separate_action_families():
     )
     assert "MOUSE_LEFT_DOWN" in tokens
     assert "KEY_PRESS_A" not in tokens
+
+
+def test_unlabeled_family_budget_adaptation_raises_shifted_button_threshold_without_labels():
+    family_budget = {
+        "schema": "temporal_family_non_noop_budget_calibration.v1",
+        "status": "pass",
+        "rows": 100,
+        "families": {
+            "mouse_button": {
+                "status": "pass",
+                "selected_threshold": 0.10,
+                "max_tokens_per_row": 1,
+                "calibration_predicted_tokens_per_row": 0.20,
+            }
+        },
+    }
+    target_rows = [
+        {
+            "row": {"ground_truth_tokens": ["MOUSE_LEFT_DOWN"]},
+            "ground_truth_tokens": ["MOUSE_LEFT_DOWN"],
+            "candidates": [{"score": score, "token": "MOUSE_LEFT_DOWN", "slot": 0, "token_index": 3}],
+        }
+        for score in [0.90, 0.80, 0.70, 0.60, 0.50]
+    ]
+    adapted = _adapt_temporal_family_budget_to_unlabeled_distribution(
+        family_budget,
+        target_rows,
+        config={"adaptive_family_budget_families": ["mouse_button"]},
+    )
+    budget = adapted["families"]["mouse_button"]
+    assert budget["selected_threshold"] == pytest.approx(0.90)
+    assert budget["unlabeled_pre_adaptation_threshold"] == pytest.approx(0.10)
+    assert adapted["unlabeled_distribution_adaptation"]["families"]["mouse_button"]["target_token_budget"] == 1
+    # The helper is allowed to receive diagnostic rows that include labels, but
+    # the selected threshold depends only on candidate scores and train-heldout
+    # emission budget.
+    target_rows[0]["ground_truth_tokens"] = []
+    adapted_without_labels = _adapt_temporal_family_budget_to_unlabeled_distribution(
+        family_budget,
+        target_rows,
+        config={"adaptive_family_budget_families": ["mouse_button"]},
+    )
+    assert adapted_without_labels["families"]["mouse_button"]["selected_threshold"] == pytest.approx(
+        budget["selected_threshold"]
+    )
 
 
 def test_temporal_retrieval_prior_biases_action_token_candidates():
