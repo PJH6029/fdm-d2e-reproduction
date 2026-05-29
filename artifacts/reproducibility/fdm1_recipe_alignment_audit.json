@@ -434,7 +434,22 @@
           "public_target": 49
         }
       ],
-      "sha256": "31a413dc872203c15a439f081f3e28303c7eb2724e5234b182b3d098cd407a03"
+      "sha256": "f5736bc69ad510e2c5c6d6c0918e6962420576ec1c4ccb1f9ae321098eace30d"
+    },
+    {
+      "path": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_videohead_prefix80k_epoch3.yaml",
+      "stage": "idm",
+      "status": "pass",
+      "error_count": 0,
+      "findings": [
+        {
+          "severity": "warning",
+          "code": "mouse_delta_bins_not_public_49",
+          "actual": 11,
+          "public_target": 49
+        }
+      ],
+      "sha256": "e78c15a06cf8b530542391b92480517b2806de72b76ea2bb16ae0ad12efc4c36"
     }
   ],
   "findings": [
@@ -493,6 +508,13 @@
       "actual": 11,
       "public_target": 49,
       "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_actual_prefix320k_epoch3.yaml"
+    },
+    {
+      "severity": "warning",
+      "code": "mouse_delta_bins_not_public_49",
+      "actual": 11,
+      "public_target": 49,
+      "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_videohead_prefix80k_epoch3.yaml"
     }
   ],
   "claim_boundary": "Recipe-alignment audit only; metric success and full D2E training evidence remain separate G005/G009 gates."

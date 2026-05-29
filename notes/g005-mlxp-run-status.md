@@ -129,3 +129,14 @@ Terminal evidence:
 Observed all-split paper-compatible metrics over the bounded target prefix: keyboard key accuracy `0.0110`, mouse-button accuracy `0.00310`, mouse-button F1 `0.00643`, mouse-move Pearson `null/null`, no-button FPR `0.0112`. This is useful negative evidence only: G005 remains in progress and must not be checkpointed complete.
 
 Next G005 pivot: keep the public FDM-1-shaped noncausal masked-diffusion IDM frame/action-token recipe, but change the model/training target so it learns action identity and mouse-motion emission instead of sparse no-button suppression only. Do not spend the increased quota again until the next candidate is locally validated and GPU-active.
+
+## 2026-05-29 next G005 pivot: video-token confidence heads
+
+The prefix320k actual-luma run showed high candidate coverage but poor exact-token ranking: target-prefix diagnostics reported exact candidates present for most positive keyboard/mouse-move rows, but exact ranks stayed far below the emission threshold. The next implementation keeps the public FDM-1-shaped noncausal masked action-token diffusion recipe and adds video-token-only family token-presence heads as confidence signals for iterative unmasking. This is not a replacement objective and not an FDM-1 internal-detail claim; it is an open D2E approximation to improve action-token ranking from compressed video tokens.
+
+New bounded candidate artifacts:
+
+- `configs/model/idm_temporal_masked_diffusion_d2e_luma2_videohead_prefix80k_epoch3.yaml`
+- `scripts/run_g005_idm_temporal_luma2_videohead_prefix80k_epoch3.sh`
+
+Do not reserve GPUs merely because quota is available. Launch this only after local config/test gates pass and use it as a prefix80k decision probe before any 320k/full-corpus promotion.

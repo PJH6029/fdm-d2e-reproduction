@@ -683,6 +683,41 @@ def test_temporal_direct_auxiliary_candidates_prefer_dedicated_mouse_move_head()
     assert candidates[0][0]["mouse_move_presence_score"] == pytest.approx(0.91)
 
 
+def test_temporal_video_presence_heads_can_rank_direct_action_candidates():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "KEY_PRESS_A", "KEY_PRESS_D", "MOUSE_DX_P1"]
+    probabilities = torch.zeros((1, 1, len(vocab)), dtype=torch.float32)
+    probabilities[:, :, 3:] = 0.01
+
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={
+            "non_noop_budget_candidates_per_row": 6,
+            "direct_auxiliary_candidate_families": ["keyboard", "mouse_move"],
+            "video_key_token_presence_candidate_score_blend": 0.9,
+            "video_mouse_move_token_presence_candidate_score_blend": 0.9,
+        },
+        event_probabilities={
+            "video_key_token_presence": torch.tensor([[0.05, 0.97]], dtype=torch.float32),
+            "video_mouse_move_token_presence": torch.tensor([[0.88]], dtype=torch.float32),
+        },
+    )
+
+    assert candidates[0][0]["token"] == "KEY_PRESS_D"
+    assert candidates[0][0]["direct_auxiliary_candidate"] == "video_key_token_presence"
+    assert candidates[0][0]["video_key_presence_score"] == pytest.approx(0.97)
+    assert any(
+        row["token"] == "MOUSE_DX_P1"
+        and row.get("direct_auxiliary_candidate") == "video_mouse_move_token_presence"
+        and row["video_mouse_move_presence_score"] == pytest.approx(0.88)
+        for row in candidates[0]
+    )
+
+
 def test_family_token_presence_rank_loss_rewards_positive_over_hard_negative():
     if not torch_available():
         return
@@ -1334,6 +1369,18 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "mouse_move_token_presence_pos_weight": 2.0,
             "mouse_move_token_presence_negative_weight": 0.1,
             "mouse_move_token_presence_candidate_score_blend": 0.5,
+            "temporal_video_key_token_presence_auxiliary": True,
+            "video_key_token_presence_aux_weight": 0.1,
+            "video_key_token_presence_rank_weight": 0.05,
+            "video_key_token_presence_candidate_score_blend": 0.3,
+            "temporal_video_button_token_presence_auxiliary": True,
+            "video_button_token_presence_aux_weight": 0.1,
+            "video_button_token_presence_rank_weight": 0.05,
+            "video_button_token_presence_candidate_score_blend": 0.3,
+            "temporal_video_mouse_move_token_presence_auxiliary": True,
+            "video_mouse_move_token_presence_aux_weight": 0.1,
+            "video_mouse_move_token_presence_rank_weight": 0.05,
+            "video_mouse_move_token_presence_candidate_score_blend": 0.3,
             "retrieval_action_prior_enabled": True,
             "retrieval_action_prior_top_k": 2,
             "retrieval_action_prior_temperature": 0.1,
@@ -1399,6 +1446,14 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["loss_weights"]["mouse_move_token_presence_aux_weight"] == 0.15
     assert summary["loss_weights"]["mouse_move_token_presence_rank_weight"] == 0.1
     assert summary["loss_weights"]["mouse_move_token_presence_candidate_score_blend"] == 0.5
+    assert summary["loss_weights"]["temporal_video_key_token_presence_auxiliary"] is True
+    assert summary["loss_weights"]["video_key_token_presence_aux_weight"] == 0.1
+    assert summary["loss_weights"]["video_key_token_presence_rank_weight"] == 0.05
+    assert summary["loss_weights"]["video_key_token_presence_candidate_score_blend"] == 0.3
+    assert summary["loss_weights"]["temporal_video_button_token_presence_auxiliary"] is True
+    assert summary["loss_weights"]["video_button_token_presence_aux_weight"] == 0.1
+    assert summary["loss_weights"]["temporal_video_mouse_move_token_presence_auxiliary"] is True
+    assert summary["loss_weights"]["video_mouse_move_token_presence_aux_weight"] == 0.1
     assert summary["loss_weights"]["retrieval_action_prior_blend"] == 0.2
     assert summary["loss_weights"]["candidate_token_prior_correction"] is True
     assert summary["candidate_token_prior"]["status"] == "pass"
@@ -1409,6 +1464,8 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert any("key_class_loss" in row and "mouse_axis_class_loss" in row for row in summary["history"])
     assert any("key_token_presence_loss" in row and "button_token_presence_loss" in row for row in summary["history"])
     assert any("mouse_move_token_presence_loss" in row and "mouse_move_token_presence_rank_loss" in row for row in summary["history"])
+    assert any("video_key_token_presence_loss" in row and "video_button_token_presence_loss" in row for row in summary["history"])
+    assert any("video_mouse_move_token_presence_loss" in row for row in summary["history"])
     assert summary["non_noop_budget"]["status"] in {"pass", "skipped"}
     assert "temporal action-token sequences" in summary["recipe_alignment"]
     assert Path(summary["checkpoint_path"]).exists()
