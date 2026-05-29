@@ -1,0 +1,99 @@
+{
+  "claim_boundary": "Negative 80k-row/1xH200 actual-luma FDM-1-shaped temporal masked-diffusion IDM probe; not G005 completion evidence and not a checkpoint for paper-target gates.",
+  "config": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k_epoch3.yaml",
+  "exit_code": 0,
+  "fit_rows": null,
+  "gpu_monitor_status": {
+    "avg_gpu_utilization": 40.71264367816092,
+    "max_gpu_utilization": 100.0,
+    "rows": 87,
+    "status": "pass",
+    "unique_gpu_indices": [
+      0
+    ]
+  },
+  "loss_weights": null,
+  "metrics_path": "outputs/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k_epoch3/paper_metrics.json",
+  "model_slug": "g005_idm_temporal_masked_diffusion_luma2_actual_fast80k_epoch3",
+  "paper_target_gates": {
+    "keyboard_key_accuracy": false,
+    "mouse_button_accuracy": false,
+    "mouse_button_f1_nonzero": true,
+    "mouse_move_pearson_x": false,
+    "mouse_move_pearson_y": false,
+    "no_button_false_positive_rate": false
+  },
+  "paper_target_observed": {
+    "keyboard_key_accuracy": 0.011224766905042092,
+    "mouse_button_accuracy": 0.006578947368421052,
+    "mouse_button_f1": 0.012081274025260845,
+    "mouse_move_pearson_x": -0.04137047121744611,
+    "mouse_move_pearson_y": -0.012263658600302344,
+    "no_button_false_positive_rate": 0.33415688696726376
+  },
+  "paper_targets": {
+    "keyboard_key_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "mouse_button_f1_min_nonzero": 1e-12,
+    "mouse_move_pearson_x": 0.796,
+    "mouse_move_pearson_y": 0.783,
+    "no_button_false_positive_rate_max": 0.1
+  },
+  "run_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma2_actual_fast80k_epoch3_h200_run.json",
+  "schema": "g005_temporal_raw96_h200_compact_summary.v1",
+  "status": "nonterminal_negative_probe",
+  "summary_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma2_actual_fast80k_epoch3_summary.json",
+  "target_rows": null,
+  "temporal_window": null,
+  "train_rows": null,
+  "video_encoder_arch": null,
+  "video_tokens_per_offset": null,
+  "wandb_sidecar_status": {
+    "checkpoint_exists": true,
+    "claim_boundary": "W&B sidecar status contains no secrets and is logging-only evidence.",
+    "entity_configured": true,
+    "gpu_latest": [
+      {
+        "index": "0",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 28607.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 305.89,
+        "timestamp": "2026/05/29 09:44:19.355",
+        "utilization_gpu_pct": 18.0,
+        "utilization_memory_pct": 1.0
+      }
+    ],
+    "last_epoch": 3,
+    "logged_epochs_this_loop": 0,
+    "logged_epochs_total": [
+      1,
+      2,
+      3
+    ],
+    "loop_index": 87,
+    "metadata_exists": false,
+    "process_running": true,
+    "project": "fdm-d2e-reproduction",
+    "rank_progress": [
+      {
+        "batch": 75,
+        "batches": 79,
+        "examples": 4800,
+        "heartbeat_age_sec": 11.714881658554077,
+        "path": "outputs/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k_epoch3/rank_progress/train_rank0.json",
+        "phase": "prediction",
+        "rank": 0,
+        "schema": "temporal_masked_diffusion_rank_progress.v1",
+        "updated_at_epoch": 1780047857.2189476
+      }
+    ],
+    "run_name": "g005_idm_temporal_masked_diffusion_luma2_actual_fast80k_epoch3",
+    "run_summary_exists": false,
+    "schema": "wandb_training_sidecar_status.v1",
+    "status": "running",
+    "updated_at_epoch": 1780047868.9430137,
+    "wandb_run_id": "4nf4k9ok",
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/4nf4k9ok"
+  }
+}

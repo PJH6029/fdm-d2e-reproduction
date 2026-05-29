@@ -1,0 +1,333 @@
+{
+  "claim_boundary": "Negative 80k-row/1xH200 actual-luma FDM-1-shaped temporal masked-diffusion IDM probe; not G005 completion evidence. GPU utilization normalized locally because this pod ran before the percent-parser fix.",
+  "config": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k_epoch3.yaml",
+  "exit_code": 0,
+  "finished_at": "2026-05-29T09:44:34+00:00",
+  "gpu_monitor_log": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma2_actual_fast80k_epoch3_h200_gpu_monitor.csv",
+  "gpu_monitor_sha256": "9bafc5cb0c1420efa10f51f2a239e72fb92d78a019933715bd606ed6ca87d7dc",
+  "gpu_monitor_status": {
+    "avg_gpu_utilization": 40.71264367816092,
+    "max_gpu_utilization": 100.0,
+    "rows": 87,
+    "status": "pass",
+    "unique_gpu_indices": [
+      0
+    ]
+  },
+  "metrics_path": "outputs/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k_epoch3/paper_metrics.json",
+  "model_slug": "g005_idm_temporal_masked_diffusion_luma2_actual_fast80k_epoch3",
+  "paper_metrics": {
+    "alignment": {
+      "examples": [],
+      "missing_prediction_rows": 0,
+      "missing_target_rows": 0,
+      "rows_seen": 5000,
+      "sequence_id_mismatches": 0
+    },
+    "claim_boundary": "Paper-compatible metrics approximate public D2E evaluate.py semantics over pre-binned JSONL tokens; exact released G-IDM comparison remains G006.",
+    "error_count": 0,
+    "findings": [],
+    "groups": {
+      "all": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.011224766905042092,
+            "sample_count": 11047
+          },
+          "mouse_button": {
+            "button_accuracy": 0.006578947368421052,
+            "sample_count": 1824
+          },
+          "mouse_move": {
+            "pearson_x": -0.04137047121744611,
+            "pearson_y": -0.012263658600302344,
+            "sample_count": 4996,
+            "scale_ratio_x": 19.136199276817997,
+            "scale_ratio_y": 4324.857142857143,
+            "scale_sample_count": 5000
+          }
+        },
+        "rows": 5000,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.0009140767824497258,
+            "num_examples": 1094
+          },
+          "mouse_button": {
+            "accuracy": 0.07692307692307693,
+            "exact_true_positive_examples": 11,
+            "f1": 0.012081274025260845,
+            "false_negative_examples": 132,
+            "false_positive_examples": 1667,
+            "no_button_examples": 4857,
+            "no_button_false_positive_examples": 1623,
+            "no_button_false_positive_rate": 0.33415688696726376,
+            "num_examples": 143,
+            "precision": 0.006555423122765197,
+            "predicted_examples": 1678,
+            "recall": 0.07692307692307693
+          }
+        }
+      },
+      "eval_split:heldout_game": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": null,
+            "sample_count": 0
+          },
+          "mouse_button": {
+            "button_accuracy": null,
+            "sample_count": 0
+          },
+          "mouse_move": {
+            "pearson_x": null,
+            "pearson_y": null,
+            "sample_count": 0,
+            "scale_ratio_x": null,
+            "scale_ratio_y": null,
+            "scale_sample_count": 0
+          }
+        },
+        "rows": 0,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": null,
+            "num_examples": 0
+          },
+          "mouse_button": {
+            "accuracy": null,
+            "exact_true_positive_examples": 0,
+            "f1": null,
+            "false_negative_examples": 0,
+            "false_positive_examples": 0,
+            "no_button_examples": 0,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": null,
+            "num_examples": 0,
+            "precision": null,
+            "predicted_examples": 0,
+            "recall": null
+          }
+        }
+      },
+      "eval_split:heldout_recording": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": null,
+            "sample_count": 0
+          },
+          "mouse_button": {
+            "button_accuracy": null,
+            "sample_count": 0
+          },
+          "mouse_move": {
+            "pearson_x": null,
+            "pearson_y": null,
+            "sample_count": 0,
+            "scale_ratio_x": null,
+            "scale_ratio_y": null,
+            "scale_sample_count": 0
+          }
+        },
+        "rows": 0,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": null,
+            "num_examples": 0
+          },
+          "mouse_button": {
+            "accuracy": null,
+            "exact_true_positive_examples": 0,
+            "f1": null,
+            "false_negative_examples": 0,
+            "false_positive_examples": 0,
+            "no_button_examples": 0,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": null,
+            "num_examples": 0,
+            "precision": null,
+            "predicted_examples": 0,
+            "recall": null
+          }
+        }
+      },
+      "eval_split:temporal": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.011224766905042092,
+            "sample_count": 11047
+          },
+          "mouse_button": {
+            "button_accuracy": 0.006578947368421052,
+            "sample_count": 1824
+          },
+          "mouse_move": {
+            "pearson_x": -0.04137047121744611,
+            "pearson_y": -0.012263658600302344,
+            "sample_count": 4996,
+            "scale_ratio_x": 19.136199276817997,
+            "scale_ratio_y": 4324.857142857143,
+            "scale_sample_count": 5000
+          }
+        },
+        "rows": 5000,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.0009140767824497258,
+            "num_examples": 1094
+          },
+          "mouse_button": {
+            "accuracy": 0.07692307692307693,
+            "exact_true_positive_examples": 11,
+            "f1": 0.012081274025260845,
+            "false_negative_examples": 132,
+            "false_positive_examples": 1667,
+            "no_button_examples": 4857,
+            "no_button_false_positive_examples": 1623,
+            "no_button_false_positive_rate": 0.33415688696726376,
+            "num_examples": 143,
+            "precision": 0.006555423122765197,
+            "predicted_examples": 1678,
+            "recall": 0.07692307692307693
+          }
+        }
+      }
+    },
+    "max_rows": 5000,
+    "model_name": "g005_idm_temporal_masked_diffusion_luma2_actual_fast80k_epoch3",
+    "prediction_paths": [
+      "outputs/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k_epoch3/predictions.jsonl"
+    ],
+    "schema": "paper_idm_metrics.v1",
+    "split_tags": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ],
+    "status": "pass",
+    "target_paths": [
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_0/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_1/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_10/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_11/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_12/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_13/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_14/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_15/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_16/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_17/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_18/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_19/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_2/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_20/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_21/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_22/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_23/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_24/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_25/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_26/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_27/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_28/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_29/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_3/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_30/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_31/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_32/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_33/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_34/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_35/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_36/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_37/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_38/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_39/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_4/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_40/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_41/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_42/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_43/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_44/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_45/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_46/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_47/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_48/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_49/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_5/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_50/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_51/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_52/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_53/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_54/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_55/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_56/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_57/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_58/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_59/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_6/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_60/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_61/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_62/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_63/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_7/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_8/target_all_eval.jsonl",
+      "outputs/data/d2e_full_corpus_shards_accel64/shard_9/target_all_eval.jsonl"
+    ]
+  },
+  "schema": "g005_temporal_raw96_family_presence_prefix_h200_run.v1",
+  "started_at": "2026-05-29T09:01:19+00:00",
+  "status": "pass",
+  "summary": null,
+  "summary_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma2_actual_fast80k_epoch3_summary.json",
+  "wandb_sidecar_status": {
+    "checkpoint_exists": true,
+    "claim_boundary": "W&B sidecar status contains no secrets and is logging-only evidence.",
+    "entity_configured": true,
+    "gpu_latest": [
+      {
+        "index": "0",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 28607.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 305.89,
+        "timestamp": "2026/05/29 09:44:19.355",
+        "utilization_gpu_pct": 18.0,
+        "utilization_memory_pct": 1.0
+      }
+    ],
+    "last_epoch": 3,
+    "logged_epochs_this_loop": 0,
+    "logged_epochs_total": [
+      1,
+      2,
+      3
+    ],
+    "loop_index": 87,
+    "metadata_exists": false,
+    "process_running": true,
+    "project": "fdm-d2e-reproduction",
+    "rank_progress": [
+      {
+        "batch": 75,
+        "batches": 79,
+        "examples": 4800,
+        "heartbeat_age_sec": 11.714881658554077,
+        "path": "outputs/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k_epoch3/rank_progress/train_rank0.json",
+        "phase": "prediction",
+        "rank": 0,
+        "schema": "temporal_masked_diffusion_rank_progress.v1",
+        "updated_at_epoch": 1780047857.2189476
+      }
+    ],
+    "run_name": "g005_idm_temporal_masked_diffusion_luma2_actual_fast80k_epoch3",
+    "run_summary_exists": false,
+    "schema": "wandb_training_sidecar_status.v1",
+    "status": "running",
+    "updated_at_epoch": 1780047868.9430137,
+    "wandb_run_id": "4nf4k9ok",
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/4nf4k9ok"
+  },
+  "wandb_sidecar_status_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_luma2_actual_fast80k_epoch3_h200_wandb_status.json"
+}
