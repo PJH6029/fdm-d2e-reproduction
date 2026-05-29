@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import glob
 import json
+import os
 import random
 import time
 from pathlib import Path
@@ -759,8 +760,9 @@ def _build_temporal_model(
                 payload["token_presence_logits"] = self.token_presence_head(pooled)
             return payload
 
-        def forward(self, video_features: Any, corrupted_ids: Any) -> Any:
-            return self._forward_impl(video_features, corrupted_ids)["action_logits"]
+        def forward(self, video_features: Any, corrupted_ids: Any, *, return_aux: bool = False) -> Any:
+            payload = self._forward_impl(video_features, corrupted_ids)
+            return payload if return_aux else payload["action_logits"]
 
         def forward_with_aux(self, video_features: Any, corrupted_ids: Any) -> dict[str, Any]:
             return self._forward_impl(video_features, corrupted_ids)
@@ -795,7 +797,8 @@ def _masked_video_reconstruction_loss(model: Any, torch: Any, features: Any, *, 
 
 def _rank_progress_path(config: dict[str, Any], *, output_dir: Path) -> Path:
     progress_dir = Path(config.get("rank_progress_dir", output_dir / "rank_progress"))
-    return progress_dir / "train_rank0.json"
+    rank = int(config.get("_distributed_rank", 0) or 0)
+    return progress_dir / f"train_rank{rank}.json"
 
 
 def _write_rank_progress(config: dict[str, Any], *, output_dir: Path, payload: dict[str, Any]) -> None:
@@ -803,7 +806,7 @@ def _write_rank_progress(config: dict[str, Any], *, output_dir: Path, payload: d
         _rank_progress_path(config, output_dir=output_dir),
         {
             "schema": "temporal_masked_diffusion_rank_progress.v1",
-            "rank": 0,
+            "rank": int(config.get("_distributed_rank", 0) or 0),
             "updated_at_epoch": time.time(),
             **payload,
         },
@@ -2548,6 +2551,37 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     max_slots = int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))
     feature_dim = _configured_video_feature_dim(config)
     config = {**config, "video_feature_dim": feature_dim}
+    requested_world_size = int(os.environ.get("WORLD_SIZE", "1") or "1")
+    distributed = requested_world_size > 1 and not bool(config.get("force_cpu", False))
+    dist = None
+    rank = 0
+    world_size = 1
+    local_rank = 0
+    if distributed:
+        dist = torch.distributed
+        if not dist.is_available():
+            raise RuntimeError("torch.distributed is unavailable but WORLD_SIZE>1")
+        if not dist.is_initialized():
+            backend = "nccl" if torch.cuda.is_available() else "gloo"
+            dist.init_process_group(backend=backend)
+        rank = int(dist.get_rank())
+        world_size = int(dist.get_world_size())
+        local_rank = int(os.environ.get("LOCAL_RANK", rank) or rank)
+        if torch.cuda.is_available():
+            torch.cuda.set_device(local_rank)
+    device = torch.device(
+        f"cuda:{local_rank}"
+        if torch.cuda.is_available() and not config.get("force_cpu")
+        else "cpu"
+    )
+    config = {
+        **config,
+        "_distributed": distributed,
+        "_distributed_rank": rank,
+        "_distributed_world_size": world_size,
+        "_distributed_local_rank": local_rank,
+    }
+    is_main_rank = rank == 0
     preserve_pad_slots = bool(config.get("preserve_pad_action_slots", config.get("pad_action_slots_as_pad", False)))
     action_mouse_tokenization = _action_mouse_token_mode(config)
     config["action_mouse_tokenization"] = action_mouse_tokenization
@@ -2591,22 +2625,46 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     )
     dataset = _TemporalMaskedDiffusionDataset(features=fit_features, target_ids=fit_target_ids, config={**config, "max_slots": max_slots}, vocab=vocab)
     dataloader_workers = max(0, int(config.get("dataloader_num_workers", config.get("num_workers", 0)) or 0))
+    sampler = (
+        torch.utils.data.distributed.DistributedSampler(
+            dataset,
+            num_replicas=world_size,
+            rank=rank,
+            shuffle=True,
+            drop_last=False,
+        )
+        if distributed
+        else None
+    )
     loader_kwargs: dict[str, Any] = {
         "batch_size": int(config.get("batch_size", 64)),
-        "shuffle": True,
+        "shuffle": sampler is None,
         "num_workers": dataloader_workers,
         "pin_memory": bool(config.get("dataloader_pin_memory", dataloader_workers > 0 and torch.cuda.is_available())),
     }
+    if sampler is not None:
+        loader_kwargs["sampler"] = sampler
     if dataloader_workers > 0:
         loader_kwargs["persistent_workers"] = bool(config.get("dataloader_persistent_workers", True))
         prefetch_factor = config.get("dataloader_prefetch_factor")
         if prefetch_factor is not None:
             loader_kwargs["prefetch_factor"] = max(1, int(prefetch_factor))
     loader = torch.utils.data.DataLoader(dataset, **loader_kwargs)
-    device = torch.device("cuda" if torch.cuda.is_available() and not config.get("force_cpu") else "cpu")
     model = _build_temporal_model(torch, video_dim=feature_dim, vocab_size=len(vocab), max_slots=max_slots, offsets=offsets, config=config, vocab=vocab).to(device)
-    video_pretrain_history = _pretrain_video_encoder(model, torch, loader, config=config, device=device)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=float(config.get("lr", 2e-4)), weight_decay=float(config.get("weight_decay", 0.01)))
+    video_pretrain_history = _pretrain_video_encoder(model, torch, loader, config=config, device=device) if is_main_rank else []
+    if distributed and dist is not None:
+        dist.barrier()
+    train_model = (
+        torch.nn.parallel.DistributedDataParallel(
+            model,
+            device_ids=[local_rank] if device.type == "cuda" else None,
+            output_device=local_rank if device.type == "cuda" else None,
+            find_unused_parameters=bool(config.get("ddp_find_unused_parameters", True)),
+        )
+        if distributed
+        else model
+    )
+    optimizer = torch.optim.AdamW(train_model.parameters(), lr=float(config.get("lr", 2e-4)), weight_decay=float(config.get("weight_decay", 0.01)))
     class_weights = _class_weights(torch, vocab, config, device=device)
     video_reconstruction_aux_weight = float(config.get("video_reconstruction_aux_weight", 0.0) or 0.0)
     event_auxiliary = bool(config.get("temporal_event_auxiliary", config.get("event_auxiliary", False)))
@@ -2640,7 +2698,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     progress_every = max(1, int(config.get("rank_progress_every_batches", 50)))
     total_batches = len(loader) if hasattr(loader, "__len__") else None
     for epoch in range(int(config.get("epochs", 1))):
-        model.train()
+        if sampler is not None:
+            sampler.set_epoch(epoch)
+        train_model.train()
         total_loss = 0.0
         total_action = 0.0
         total_video = 0.0
@@ -2672,14 +2732,21 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 or button_token_presence_auxiliary
                 or mouse_move_token_presence_auxiliary
                 or token_presence_auxiliary
-            ) and hasattr(model, "forward_with_aux"):
-                payload = model.forward_with_aux(features, corrupted_ids)
+            ) and (hasattr(model, "forward_with_aux") or distributed):
+                if distributed:
+                    payload = train_model(features, corrupted_ids, return_aux=True)
+                else:
+                    payload = model.forward_with_aux(features, corrupted_ids)
                 logits = payload["action_logits"]
             else:
                 payload = {}
-                logits = model(features, corrupted_ids)
+                logits = train_model(features, corrupted_ids)
             action_loss = _temporal_action_loss(torch, logits, target_ids, loss_mask, class_weights, config)
-            video_loss = _masked_video_reconstruction_loss(model, torch, features, config=config) if video_reconstruction_aux_weight > 0.0 else torch.tensor(0.0, device=device)
+            video_loss = (
+                _masked_video_reconstruction_loss(model, torch, features, config=config)
+                if video_reconstruction_aux_weight > 0.0 and not distributed
+                else torch.tensor(0.0, device=device)
+            )
             key_event_loss = torch.tensor(0.0, device=device)
             button_event_loss = torch.tensor(0.0, device=device)
             button_class_loss = torch.tensor(0.0, device=device)
@@ -2840,7 +2907,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             )
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), float(config.get("grad_clip_norm", 1.0)))
+            torch.nn.utils.clip_grad_norm_(train_model.parameters(), float(config.get("grad_clip_norm", 1.0)))
             optimizer.step()
             count = int(loss_mask.sum().detach().cpu())
             batch = int(features.shape[0])
@@ -2890,25 +2957,86 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                         "token_presence_loss": total_token_presence / max(1, total_examples),
                     },
                 )
-        history.append({
-            "epoch": epoch + 1,
-            "loss": total_loss / max(1, total_targets),
-            "action_loss": total_action / max(1, total_targets),
-            "video_reconstruction_loss": total_video / max(1, len(dataset)),
-            "key_event_loss": total_key_event / max(1, total_examples),
-            "button_event_loss": total_button_event / max(1, total_examples),
-            "button_class_loss": total_button_class / max(1, total_examples),
-            "key_class_loss": total_key_class / max(1, total_examples),
-            "mouse_axis_class_loss": total_mouse_axis_class / max(1, total_examples),
-            "key_token_presence_loss": total_key_token_presence / max(1, total_examples),
-            "key_token_presence_rank_loss": total_key_token_presence_rank / max(1, total_examples),
-            "button_token_presence_loss": total_button_token_presence / max(1, total_examples),
-            "button_token_presence_rank_loss": total_button_token_presence_rank / max(1, total_examples),
-            "mouse_move_token_presence_loss": total_mouse_move_token_presence / max(1, total_examples),
-            "mouse_move_token_presence_rank_loss": total_mouse_move_token_presence_rank / max(1, total_examples),
-            "token_presence_loss": total_token_presence / max(1, total_examples),
-            "masked_targets": total_targets,
-        })
+        if distributed and dist is not None:
+            totals = torch.tensor(
+                [
+                    total_loss,
+                    total_action,
+                    total_video,
+                    total_key_event,
+                    total_button_event,
+                    total_button_class,
+                    total_key_class,
+                    total_mouse_axis_class,
+                    total_key_token_presence,
+                    total_key_token_presence_rank,
+                    total_button_token_presence,
+                    total_button_token_presence_rank,
+                    total_mouse_move_token_presence,
+                    total_mouse_move_token_presence_rank,
+                    total_token_presence,
+                    float(total_targets),
+                    float(total_examples),
+                ],
+                dtype=torch.float64,
+                device=device,
+            )
+            dist.all_reduce(totals, op=dist.ReduceOp.SUM)
+            (
+                total_loss,
+                total_action,
+                total_video,
+                total_key_event,
+                total_button_event,
+                total_button_class,
+                total_key_class,
+                total_mouse_axis_class,
+                total_key_token_presence,
+                total_key_token_presence_rank,
+                total_button_token_presence,
+                total_button_token_presence_rank,
+                total_mouse_move_token_presence,
+                total_mouse_move_token_presence_rank,
+                total_token_presence,
+                total_targets_f,
+                total_examples_f,
+            ) = [float(value) for value in totals.detach().cpu().tolist()]
+            total_targets = int(total_targets_f)
+            total_examples = int(total_examples_f)
+        if is_main_rank:
+            history.append({
+                "epoch": epoch + 1,
+                "loss": total_loss / max(1, total_targets),
+                "action_loss": total_action / max(1, total_targets),
+                "video_reconstruction_loss": total_video / max(1, total_examples),
+                "key_event_loss": total_key_event / max(1, total_examples),
+                "button_event_loss": total_button_event / max(1, total_examples),
+                "button_class_loss": total_button_class / max(1, total_examples),
+                "key_class_loss": total_key_class / max(1, total_examples),
+                "mouse_axis_class_loss": total_mouse_axis_class / max(1, total_examples),
+                "key_token_presence_loss": total_key_token_presence / max(1, total_examples),
+                "key_token_presence_rank_loss": total_key_token_presence_rank / max(1, total_examples),
+                "button_token_presence_loss": total_button_token_presence / max(1, total_examples),
+                "button_token_presence_rank_loss": total_button_token_presence_rank / max(1, total_examples),
+                "mouse_move_token_presence_loss": total_mouse_move_token_presence / max(1, total_examples),
+                "mouse_move_token_presence_rank_loss": total_mouse_move_token_presence_rank / max(1, total_examples),
+                "token_presence_loss": total_token_presence / max(1, total_examples),
+                "masked_targets": total_targets,
+                "distributed_world_size": world_size,
+            })
+    if distributed and dist is not None:
+        dist.barrier()
+        if not is_main_rank:
+            dist.destroy_process_group()
+            return {
+                "schema": "temporal_masked_diffusion_idm_train_summary.v1",
+                "status": "pass",
+                "distributed_non_main_rank": True,
+                "rank": rank,
+                "world_size": world_size,
+                "claim_boundary": "Non-main DDP rank completed training and exited before rank0 checkpoint/evaluation.",
+            }
+        dist.destroy_process_group()
     train_history_path = Path(output_dir) / "train_history.json"
     write_json(
         train_history_path,
@@ -3123,6 +3251,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "precompute_features_as_tensor":bool(config.get("precompute_features_as_tensor", config.get("tensorize_precomputed_features", False))),
         "precompute_feature_tensor_dtype":str(config.get("precompute_feature_tensor_dtype", "float16")),
         "dataloader_num_workers":dataloader_workers,
+        "distributed":distributed,
+        "distributed_world_size":world_size,
         "video_encoder_arch":str(config.get("video_encoder_arch", "flat_mlp")),
         "video_tokens_per_offset":int(getattr(model, "video_tokens_per_offset", 1) or 1),
         "raw_video_frame_offsets":_raw_video_frame_offsets(config)
