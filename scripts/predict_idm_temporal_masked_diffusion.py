@@ -24,7 +24,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _configured_video_feature_dim,
     _expand_paths,
     _iter_jsonl,
-    _precompute_features,
+    _precompute_features_with_distributed_cache,
     _precompute_video_cache_features,
     _predict_temporal_tokens_batch,
     _raw_video_frame_offsets,
@@ -115,15 +115,27 @@ def predict_temporal_masked_diffusion_idm(
     config = {**config, "video_feature_dim": feature_dim, "max_slots": max_slots, "temporal_offsets": offsets}
     retrieval_enabled = bool(config.get("retrieval_action_prior_enabled", False))
     feature_source = str(config.get("video_feature_source", "json")).lower()
+    def precompute_rows(rows: list[dict[str, Any]], *, split_name: str) -> Any:
+        return _precompute_features_with_distributed_cache(
+            rows,
+            config=config,
+            split_name=split_name,
+            torch=torch,
+            distributed=False,
+            rank=0,
+            world_size=1,
+            dist=None,
+        )
+
     if feature_source in {"video_idm_cache", "raw_video_cache"}:
         train_features = _precompute_video_cache_features(train_paths, split_name="train", config=config, max_rows=len(train_rows)) if retrieval_enabled else []
         fit_features = train_features[: len(fit_rows)] if retrieval_enabled else []
         calibration_features = _precompute_video_cache_features(train_paths, split_name="calibration", config=config, max_rows=len(calibration_rows)) if (calibration_rows and not retrieval_enabled) else (train_features[len(fit_rows) : len(fit_rows) + len(calibration_rows)] if calibration_rows else [])
         target_features = _precompute_video_cache_features(target_paths, split_name="target", config=config, max_rows=len(target_rows))
     else:
-        fit_features = _precompute_features(fit_rows, config=config) if retrieval_enabled else []
-        calibration_features = _precompute_features(calibration_rows, config=config) if calibration_rows else []
-        target_features = _precompute_features(target_rows, config=config)
+        fit_features = precompute_rows(fit_rows, split_name="fit") if retrieval_enabled else []
+        calibration_features = precompute_rows(calibration_rows, split_name="calibration") if calibration_rows else []
+        target_features = precompute_rows(target_rows, split_name="target")
 
     model = _build_temporal_model(
         torch,

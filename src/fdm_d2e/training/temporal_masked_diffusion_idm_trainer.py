@@ -384,6 +384,23 @@ def _precompute_features_with_distributed_cache(
 
     cache_root_raw = config.get("distributed_feature_cache_dir", config.get("raw_video_distributed_feature_cache_dir"))
     feature_source = str(config.get("video_feature_source", "json")).lower()
+    if cache_root_raw and feature_source in {"raw_frames", "raw_video_frames", "frame_provider"}:
+        cache_root = Path(cache_root_raw)
+        fingerprint = _feature_cache_fingerprint(rows, split_name=split_name, config=config)
+        split_dir = cache_root / f"{split_name}-{fingerprint}"
+        chunk_paths = sorted(split_dir.glob("chunk_rank*_of_*.pt"))
+        if chunk_paths and (not distributed or world_size <= 1):
+            payloads = [torch.load(path, map_location="cpu", weights_only=False) for path in chunk_paths]
+            expected_world_size = int(payloads[0].get("world_size", len(payloads)))
+            if len(payloads) == expected_world_size and all(payload.get("fingerprint") == fingerprint for payload in payloads):
+                dtype_name = str(payloads[0].get("dtype", config.get("raw_video_feature_tensor_dtype", config.get("precompute_feature_tensor_dtype", "float16")))).lower()
+                tensor_dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
+                feature_dim = int(payloads[0].get("feature_dim", _raw_video_feature_dim(config)))
+                features = torch.empty((len(rows), feature_dim), dtype=tensor_dtype)
+                for payload in sorted(payloads, key=lambda item: int(item["start"])):
+                    chunk = payload["features"].to(dtype=tensor_dtype)
+                    features[int(payload["start"]) : int(payload["end"])] = chunk
+                return features.contiguous()
     if (
         not cache_root_raw
         or feature_source not in {"raw_frames", "raw_video_frames", "frame_provider"}

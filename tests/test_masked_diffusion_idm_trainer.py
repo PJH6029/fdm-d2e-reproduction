@@ -194,6 +194,18 @@ def test_distributed_raw_video_feature_cache_loads_ordered_chunks(tmp_path: Path
     assert tuple(features.shape) == (4, 4)
     assert features.tolist() == [pytest.approx(row) for row in expected]
     assert (split_dir / "summary.json").exists()
+    cached_single_rank = _precompute_features_with_distributed_cache(
+        rows,
+        config=config,
+        split_name=split_name,
+        torch=torch,
+        distributed=False,
+        rank=0,
+        world_size=1,
+        dist=None,
+    )
+    assert tuple(cached_single_rank.shape) == (4, 4)
+    assert cached_single_rank.tolist() == [pytest.approx(row) for row in expected]
 
 
 def test_button_event_calibration_uses_dynamic_probability_thresholds():
