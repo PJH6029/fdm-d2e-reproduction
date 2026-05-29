@@ -1,0 +1,40 @@
+{
+  "payload": {
+    "checklist_gpu_count_not_overestimated": true,
+    "checklist_high_utilization_expected": true,
+    "checklist_multi_gpu_ready": true,
+    "reason": "FDM-D2E G005 requires a 4xH200 full-corpus/promotion run for recipe-faithful temporal masked-diffusion IDM evaluation; current production reservation API quota is 2 GPUs but project instructions require up to 4 H200 with utilization monitoring.",
+    "request_type": "gpu_quota_increase",
+    "requested_gpu_quota": 4,
+    "requested_hours": 4
+  },
+  "response": {
+    "admin_note": "",
+    "created_at": "2026-05-29T18:13:19+09:00",
+    "decision_payload": {},
+    "display_name": "<redacted>",
+    "member_id": "<redacted>",
+    "mlxp_username": "<redacted>",
+    "project_id": "production",
+    "reason": "FDM-D2E G005 requires a 4xH200 full-corpus/promotion run for recipe-faithful temporal masked-diffusion IDM evaluation; current production reservation API quota is 2 GPUs but project instructions require up to 4 H200 with utilization monitoring.",
+    "request_id": "req-1-gpu-quota-increase-20260529-d496c4",
+    "request_payload": {
+      "checklist": {
+        "gpu_count_not_overestimated": true,
+        "high_utilization_expected": true,
+        "multi_gpu_ready": true
+      },
+      "requested_gpu_hours": 16.0,
+      "requested_gpu_quota": 4,
+      "requested_hours": 4.0
+    },
+    "request_type": "gpu_quota_increase",
+    "reviewed_at": "",
+    "reviewed_by": "",
+    "status": "pending",
+    "status_detail": "",
+    "status_display": "pending",
+    "status_kind": "pending",
+    "updated_at": "2026-05-29T18:13:19+09:00"
+  }
+}
