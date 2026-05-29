@@ -1327,3 +1327,11 @@ Evidence copied locally:
 - `artifacts/cluster/g005_realvideo_prefix16k_cancel_20260529.json`
 
 Materialization is now operational (`16k` train `26.17s`, `16k` target `25.28s`, real `video` frame source, `dinov2-torchhub`). Metric result is negative: all-target-prefix paper-compatible keyboard key accuracy `0.000368`, mouse-button accuracy `0.0`, mouse Pearson X/Y `0.00946/0.00371`; strict no-button FPR `0.0` from emitting no buttons. This does not beat paper targets, does not cover heldout-recording/game rows in the bounded prefix, and must not checkpoint `G005-g014-idm-full-paper-target`.
+
+### 2026-05-29 KST — balanced real-video raw96 prefix32k launch failed before training
+
+- Reservation/pod: `rsv-jeonghunpark-20260529-b8d1e3` / `prod-rsv-jeonghunpark-20260529-b8d1e3` on 4×H200 node4 GPUs.
+- Launch commit: `68a2236`; source materialization succeeded (`32,000` balanced train rows, `24,000` target rows split evenly across temporal / heldout-recording / heldout-game).
+- Training failed before first optimizer step with `ValueError: only one element tensors can be converted to Python scalars` in `_maybe_tensorize_features` because `raw_video_feature_storage=tensor` returned a list of frame tensors and the shared tensorization path called `torch.tensor(list_of_tensors)` instead of stacking.
+- GPU monitor evidence intentionally records zero utilization for this failed pre-train gate; G005 remains incomplete and no paper-target claim is made.
+- Fix direction: stack list-of-tensor features in `_maybe_tensorize_features`, keep the raw-frame FDM-1-shaped config unchanged, then relaunch on the same reservation while quota is available.

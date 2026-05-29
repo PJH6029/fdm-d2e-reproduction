@@ -1,0 +1,126 @@
+balanced prefix: status=pass rows=32000 output=outputs/data/d2e_event_state_duration_realvideo_balanced_prefix32k/train_core.jsonl
+balanced prefix: status=pass rows=24000 output=outputs/data/d2e_event_state_duration_realvideo_balanced_prefix32k/target_all_eval.jsonl
+W0529 14:28:25.745000 270 torch/distributed/run.py:862] 
+W0529 14:28:25.745000 270 torch/distributed/run.py:862] *****************************************
+W0529 14:28:25.745000 270 torch/distributed/run.py:862] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0529 14:28:25.745000 270 torch/distributed/run.py:862] *****************************************
+[W529 14:28:27.689486012 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [localhost]:46803 (errno: 97 - Address family not supported by protocol).
+[W529 14:28:27.697154125 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:46803 (errno: 97 - Address family not supported by protocol).
+[W529 14:28:27.700576278 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:46803 (errno: 97 - Address family not supported by protocol).
+[W529 14:28:27.975172145 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.86]:41231 (errno: 97 - Address family not supported by protocol).
+[W529 14:28:44.982409816 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.86]:41231 (errno: 97 - Address family not supported by protocol).
+[W529 14:28:44.255101084 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.86]:41231 (errno: 97 - Address family not supported by protocol).
+[W529 14:28:44.280569707 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.86]:41231 (errno: 97 - Address family not supported by protocol).
+[W529 14:28:45.631243825 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.84.86]:41231 (errno: 97 - Address family not supported by protocol).
+[rank3]: Traceback (most recent call last):
+[rank3]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 43, in <module>
+[rank3]:     raise SystemExit(main())
+[rank3]:                      ^^^^^^
+[rank3]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 27, in main
+[rank3]:     summary = train_temporal_masked_diffusion_idm(config)
+[rank3]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 2773, in train_temporal_masked_diffusion_idm
+[rank3]:     fit_features = _maybe_tensorize_features(torch, fit_features, config=config, split_name="fit")
+[rank3]:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 243, in _maybe_tensorize_features
+[rank3]:     return torch.tensor(features, dtype=dtype).contiguous()
+[rank3]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank3]: ValueError: only one element tensors can be converted to Python scalars
+[rank2]: Traceback (most recent call last):
+[rank2]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 43, in <module>
+[rank2]:     raise SystemExit(main())
+[rank2]:                      ^^^^^^
+[rank2]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 27, in main
+[rank2]:     summary = train_temporal_masked_diffusion_idm(config)
+[rank2]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 2773, in train_temporal_masked_diffusion_idm
+[rank2]:     fit_features = _maybe_tensorize_features(torch, fit_features, config=config, split_name="fit")
+[rank2]:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 243, in _maybe_tensorize_features
+[rank2]:     return torch.tensor(features, dtype=dtype).contiguous()
+[rank2]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank2]: ValueError: only one element tensors can be converted to Python scalars
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 43, in <module>
+[rank1]:     raise SystemExit(main())
+[rank1]:                      ^^^^^^
+[rank1]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 27, in main
+[rank1]:     summary = train_temporal_masked_diffusion_idm(config)
+[rank1]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 2773, in train_temporal_masked_diffusion_idm
+[rank1]:     fit_features = _maybe_tensorize_features(torch, fit_features, config=config, split_name="fit")
+[rank1]:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 243, in _maybe_tensorize_features
+[rank1]:     return torch.tensor(features, dtype=dtype).contiguous()
+[rank1]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank1]: ValueError: only one element tensors can be converted to Python scalars
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 43, in <module>
+[rank0]:     raise SystemExit(main())
+[rank0]:                      ^^^^^^
+[rank0]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 27, in main
+[rank0]:     summary = train_temporal_masked_diffusion_idm(config)
+[rank0]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 2773, in train_temporal_masked_diffusion_idm
+[rank0]:     fit_features = _maybe_tensorize_features(torch, fit_features, config=config, split_name="fit")
+[rank0]:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 243, in _maybe_tensorize_features
+[rank0]:     return torch.tensor(features, dtype=dtype).contiguous()
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]: ValueError: only one element tensors can be converted to Python scalars
+W0529 14:31:06.028000 270 torch/distributed/elastic/multiprocessing/api.py:1014] Sending process 525 closing signal SIGTERM
+W0529 14:31:06.029000 270 torch/distributed/elastic/multiprocessing/api.py:1014] Sending process 526 closing signal SIGTERM
+W0529 14:31:06.030000 270 torch/distributed/elastic/multiprocessing/api.py:1014] Sending process 527 closing signal SIGTERM
+E0529 14:31:06.698000 270 torch/distributed/elastic/multiprocessing/api.py:988] failed (exitcode: 1) local_rank: 3 (pid: 528) of binary: /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3
+Traceback (most recent call last):
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/torchrun", line 10, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 367, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/run.py", line 1016, in main
+    run(args)
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/run.py", line 1007, in run
+    elastic_launch(
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 191, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 371, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+scripts/train_idm_temporal_masked_diffusion.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2026-05-29_14:31:06
+  host      : prod-rsv-jeonghunpark-20260529-b8d1e3
+  rank      : 0 (local_rank: 0)
+  exitcode  : -15 (pid: 525)  (SIGTERM)
+  error_file: <N/A>
+  traceback : Signal 15 (SIGTERM) received by PID 525
+[2]:
+  time      : 2026-05-29_14:31:06
+  host      : prod-rsv-jeonghunpark-20260529-b8d1e3
+  rank      : 1 (local_rank: 1)
+  exitcode  : -15 (pid: 526)  (SIGTERM)
+  error_file: <N/A>
+  traceback : Signal 15 (SIGTERM) received by PID 526
+[3]:
+  time      : 2026-05-29_14:31:06
+  host      : prod-rsv-jeonghunpark-20260529-b8d1e3
+  rank      : 2 (local_rank: 2)
+  exitcode  : -15 (pid: 527)  (SIGTERM)
+  error_file: <N/A>
+  traceback : Signal 15 (SIGTERM) received by PID 527
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-29_14:31:06
+  host      : prod-rsv-jeonghunpark-20260529-b8d1e3
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 528) 
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

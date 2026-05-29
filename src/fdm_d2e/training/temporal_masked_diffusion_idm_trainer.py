@@ -143,7 +143,7 @@ def _configured_video_feature_dim(config: dict[str, Any]) -> int:
     return int(config.get("video_feature_dim", 64))
 
 
-def _precompute_raw_video_features(rows: Sequence[dict[str, Any]], *, config: dict[str, Any]) -> list[list[float]]:
+def _precompute_raw_video_features(rows: Sequence[dict[str, Any]], *, config: dict[str, Any]) -> list[Any]:
     """Load downsampled raw screen-video frames for temporal IDM conditioning.
 
     This is the bridge from the compact-luma diagnostic probes back to the
@@ -240,6 +240,9 @@ def _maybe_tensorize_features(torch: Any, features: Any, *, config: dict[str, An
         return features
     dtype_name = str(config.get("precompute_feature_tensor_dtype", "float16")).lower()
     dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
+    first = features[0]
+    if hasattr(first, "detach") and hasattr(first, "to"):
+        return torch.stack([feature.to(dtype=dtype) for feature in features], dim=0).contiguous()
     return torch.tensor(features, dtype=dtype).contiguous()
 
 

@@ -31,6 +31,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _candidate_token_prior_weights,
     _family_token_presence_rank_loss,
     _mouse_axis_class_vocab,
+    _maybe_tensorize_features,
     _precompute_features,
     _temporal_button_class_targets,
     _temporal_center_candidates,
@@ -105,6 +106,23 @@ def test_temporal_raw_video_feature_source_reads_frame_offsets(tmp_path: Path):
     )
     assert len(features) == 1
     assert features[0] == [0.0, 64 / 255.0, 128 / 255.0, 1.0, 1.0, 128 / 255.0, 64 / 255.0, 0.0]
+
+
+def test_tensorize_features_stacks_raw_video_tensor_storage():
+    if not torch_available():
+        return
+    import torch
+
+    features = [torch.tensor([0.0, 1.0], dtype=torch.float32), torch.tensor([0.5, 0.25], dtype=torch.float32)]
+    tensor = _maybe_tensorize_features(
+        torch,
+        features,
+        config={"precompute_features_as_tensor": True, "precompute_feature_tensor_dtype": "float16"},
+        split_name="fit",
+    )
+    assert tuple(tensor.shape) == (2, 2)
+    assert tensor.dtype == torch.float16
+    assert tensor.tolist() == [[0.0, 1.0], [0.5, 0.25]]
 
 
 def test_button_event_calibration_uses_dynamic_probability_thresholds():
@@ -1514,6 +1532,9 @@ def test_train_temporal_masked_diffusion_idm_raw_video_cnn_tiny_smoke(tmp_path: 
             "video_feature_source": "raw_frames",
             "raw_video_image_size": 2,
             "raw_video_frame_offsets": [0, 1],
+            "raw_video_feature_storage": "tensor",
+            "precompute_features_as_tensor": True,
+            "precompute_feature_tensor_dtype": "float16",
             "raw_video_missing_frame_policy": "zero",
             "video_feature_dim": 8,
             "video_encoder_arch": "raw_video_patch_cnn",
