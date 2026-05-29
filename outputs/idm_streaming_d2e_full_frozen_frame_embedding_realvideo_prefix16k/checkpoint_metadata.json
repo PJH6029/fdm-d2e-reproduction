@@ -1,0 +1,888 @@
+{
+  "schema": "idm_checkpoint_metadata.v1",
+  "model": "streaming_idm_d2e_full_frozen_frame_embedding_realvideo_prefix16k",
+  "dataset_fingerprint": "15e7d6986ce8aaf9e843fd65b4c69f7fe8202d2c22c78ea079d072cb025a2959",
+  "config_fingerprint": "6490b8eb467c2c083ccfef327459051515929aa7371f415df7385d7a586afd43",
+  "config_path": "configs/model/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k.yaml",
+  "resolved_config_path": "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/resolved_config.json",
+  "train_records": 16000,
+  "target_records": 16000,
+  "train_records_path": "outputs/data/d2e_frozen_frame_embedding_realvideo_prefix16k/train_core.jsonl",
+  "target_records_path": "outputs/data/d2e_frozen_frame_embedding_realvideo_prefix16k/target_all_eval.jsonl",
+  "data_universe": {
+    "path": "artifacts/sources/d2e_full_data_universe_manifest.json",
+    "exists": true,
+    "sha256": "549cd16aa992bc76c3bea9f571100fe5cc721ca706e7d50f2c9e40fd2d21c8f8",
+    "bytes": 1477181
+  },
+  "data_universe_fingerprint": "a4d96c1b35a770a5ce426a3407af4fbd728ddac9a648cdb4746e2f827f803216",
+  "split_contract": {
+    "path": "artifacts/sources/d2e_full_split_contract.json",
+    "exists": true,
+    "sha256": "e64e90f3745108a2813d4d4f84ee69a08f4cb7e46923371983006c481dadde98",
+    "bytes": 466810
+  },
+  "split_contract_fingerprint": "a4d96c1b35a770a5ce426a3407af4fbd728ddac9a648cdb4746e2f827f803216",
+  "split_id": "a4d96c1b35a770a5ce426a3407af4fbd728ddac9a648cdb4746e2f827f803216",
+  "source_namespace": "d2e_frozen_frame_embedding_realvideo_prefix16k",
+  "source_ids": [
+    "d2e_480p"
+  ],
+  "resolution_tiers": [
+    "480p"
+  ],
+  "target_source_ids": [
+    "d2e_480p"
+  ],
+  "target_resolution_tiers": [
+    "480p"
+  ],
+  "split_names": [
+    "train_core"
+  ],
+  "eval_split_tags": [],
+  "target_eval_split_tags": [
+    "temporal"
+  ],
+  "pseudo_label_path": "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/pseudolabels.jsonl",
+  "filtered_pseudo_label_path": "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/pseudolabels.jsonl",
+  "checkpoint_path": "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/checkpoint.pt",
+  "metrics_path": "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/metrics.json",
+  "label_quality_report_path": "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/label_quality_report.json",
+  "statistical_comparison_path": "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/statistical_comparison.json",
+  "convergence_report_path": "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/convergence_report.json",
+  "convergence_plateau_met": false,
+  "calibration": {
+    "mode": "global_threshold_streaming_cache",
+    "category_threshold": 0.99,
+    "category_thresholds": {},
+    "source": "training_cache",
+    "softmax": {
+      "status": "computed",
+      "source": "training_cache",
+      "observed_examples": 16000,
+      "max_examples": 262144,
+      "beta": 1.0,
+      "heads": {
+        "keyboard": {
+          "threshold": 0.55,
+          "grid": [
+            0.0,
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+            0.975,
+            0.99
+          ],
+          "tp": 28,
+          "fp": 3107,
+          "fn": 3289,
+          "predicted_positive": 3135,
+          "positive_examples": 3317,
+          "no_event_examples": 12683,
+          "no_event_false_positive_examples": 2087,
+          "score": 0.008679479231246125,
+          "precision": 0.008931419457735247,
+          "recall": 0.008441362677117878,
+          "no_event_false_positive_rate": 0.16455097374438224,
+          "max_no_event_false_positive_rate": 0.2,
+          "constraint_satisfied": true,
+          "eligible_thresholds": 11,
+          "no_key_examples": 12683,
+          "no_key_false_positive_examples": 2087,
+          "no_key_false_positive_rate": 0.16455097374438224
+        },
+        "button": {
+          "threshold": 0.99,
+          "grid": [
+            0.0,
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+            0.975,
+            0.99
+          ],
+          "tp": 0,
+          "fp": 0,
+          "fn": 285,
+          "predicted_positive": 0,
+          "positive_examples": 285,
+          "no_event_examples": 15715,
+          "no_event_false_positive_examples": 0,
+          "score": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "no_event_false_positive_rate": 0.0,
+          "max_no_event_false_positive_rate": 0.08,
+          "constraint_satisfied": true,
+          "eligible_thresholds": 13,
+          "no_button_examples": 15715,
+          "no_button_false_positive_examples": 0,
+          "no_button_false_positive_rate": 0.0
+        }
+      }
+    },
+    "keyboard_softmax_threshold": 0.55,
+    "button_softmax_threshold": 0.99,
+    "mouse_output_gain": 32.0,
+    "mouse_output_gain_x": 32.0,
+    "mouse_output_gain_y": 32.0,
+    "mouse_output_gain_info": {
+      "mode": "train_abs_ratio_per_axis",
+      "source": "training_cache",
+      "status": "computed",
+      "configured_gain": 1.0,
+      "raw_ratio": 400.9102566225517,
+      "unclipped_gain": 400.9102566225517,
+      "gain": 32.0,
+      "raw_ratio_x": 671.9759012286413,
+      "raw_ratio_y": 173.36827904201166,
+      "gain_x": 32.0,
+      "gain_y": 32.0,
+      "min_gain": 0.1,
+      "max_gain": 32.0,
+      "predicted_abs_mean": 0.022288264274597167,
+      "target_abs_mean": 8.93559375,
+      "predicted_abs_x_mean": 0.02034271240234375,
+      "predicted_abs_y_mean": 0.024233816146850586,
+      "target_abs_x_mean": 13.6698125,
+      "target_abs_y_mean": 4.201375,
+      "value_count": 32000,
+      "max_examples": 262144
+    },
+    "last_train_loss": 55.124124328613284,
+    "prediction_fingerprint": "90c29bb01bfbb5350a57a7ea83a9cf4a6db24578a663ac964be16a7ad6844bfc"
+  },
+  "feature_mode": "summary",
+  "input_dim": 2120,
+  "action_history_len": 0,
+  "action_history_dim": 0,
+  "action_history_feedback": "none",
+  "categorical_vocab": [],
+  "keyboard_head_mode": "hierarchical_softmax",
+  "keyboard_classes": [
+    [],
+    [
+      "KEY_PRESS_112"
+    ],
+    [
+      "KEY_PRESS_160"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_PRESS_32"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_PRESS_51"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_PRESS_68"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_PRESS_68",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_PRESS_70"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_PRESS_82"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_PRESS_87"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_PRESS_87",
+      "KEY_RELEASE_162"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_PRESS_87",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_RELEASE_160"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_RELEASE_162"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_RELEASE_162",
+      "KEY_RELEASE_32"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_RELEASE_32"
+    ],
+    [
+      "KEY_PRESS_160",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_PRESS_162"
+    ],
+    [
+      "KEY_PRESS_162",
+      "KEY_PRESS_32"
+    ],
+    [
+      "KEY_PRESS_162",
+      "KEY_PRESS_65"
+    ],
+    [
+      "KEY_PRESS_162",
+      "KEY_PRESS_68"
+    ],
+    [
+      "KEY_PRESS_162",
+      "KEY_PRESS_70"
+    ],
+    [
+      "KEY_PRESS_162",
+      "KEY_PRESS_87"
+    ],
+    [
+      "KEY_PRESS_162",
+      "KEY_PRESS_87",
+      "KEY_RELEASE_162"
+    ],
+    [
+      "KEY_PRESS_162",
+      "KEY_RELEASE_162"
+    ],
+    [
+      "KEY_PRESS_162",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_164"
+    ],
+    [
+      "KEY_PRESS_32"
+    ],
+    [
+      "KEY_PRESS_32",
+      "KEY_PRESS_65"
+    ],
+    [
+      "KEY_PRESS_32",
+      "KEY_PRESS_68"
+    ],
+    [
+      "KEY_PRESS_32",
+      "KEY_PRESS_87"
+    ],
+    [
+      "KEY_PRESS_32",
+      "KEY_RELEASE_160"
+    ],
+    [
+      "KEY_PRESS_32",
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_51"
+    ],
+    [
+      "KEY_PRESS_32",
+      "KEY_RELEASE_32"
+    ],
+    [
+      "KEY_PRESS_32",
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_PRESS_32",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_PRESS_32",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_49"
+    ],
+    [
+      "KEY_PRESS_50"
+    ],
+    [
+      "KEY_PRESS_51"
+    ],
+    [
+      "KEY_PRESS_52"
+    ],
+    [
+      "KEY_PRESS_52",
+      "KEY_PRESS_65"
+    ],
+    [
+      "KEY_PRESS_52",
+      "KEY_RELEASE_52"
+    ],
+    [
+      "KEY_PRESS_52",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_65"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_PRESS_68"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_PRESS_68",
+      "KEY_PRESS_83",
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_PRESS_70"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_PRESS_70",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_PRESS_83"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_PRESS_83",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_PRESS_87"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_PRESS_87",
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_RELEASE_32"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_RELEASE_32",
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_RELEASE_52"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_RELEASE_68",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_RELEASE_70"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_RELEASE_77"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_RELEASE_83"
+    ],
+    [
+      "KEY_PRESS_65",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_66"
+    ],
+    [
+      "KEY_PRESS_67"
+    ],
+    [
+      "KEY_PRESS_68"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_PRESS_81"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_PRESS_83"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_PRESS_83",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_PRESS_87"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_PRESS_87",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_RELEASE_160"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_RELEASE_162"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_RELEASE_32"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_RELEASE_49"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_RELEASE_65",
+      "KEY_RELEASE_83"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_RELEASE_83"
+    ],
+    [
+      "KEY_PRESS_68",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_69"
+    ],
+    [
+      "KEY_PRESS_70"
+    ],
+    [
+      "KEY_PRESS_70",
+      "KEY_PRESS_87"
+    ],
+    [
+      "KEY_PRESS_70",
+      "KEY_RELEASE_49"
+    ],
+    [
+      "KEY_PRESS_70",
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_PRESS_70",
+      "KEY_RELEASE_65",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_70",
+      "KEY_RELEASE_70"
+    ],
+    [
+      "KEY_PRESS_70",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_77"
+    ],
+    [
+      "KEY_PRESS_81"
+    ],
+    [
+      "KEY_PRESS_82"
+    ],
+    [
+      "KEY_PRESS_82",
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_83"
+    ],
+    [
+      "KEY_PRESS_83",
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_PRESS_83",
+      "KEY_RELEASE_65",
+      "KEY_RELEASE_83"
+    ],
+    [
+      "KEY_PRESS_83",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_PRESS_83",
+      "KEY_RELEASE_83"
+    ],
+    [
+      "KEY_PRESS_86"
+    ],
+    [
+      "KEY_PRESS_87"
+    ],
+    [
+      "KEY_PRESS_87",
+      "KEY_RELEASE_162"
+    ],
+    [
+      "KEY_PRESS_87",
+      "KEY_RELEASE_32",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_87",
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_PRESS_87",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_PRESS_87",
+      "KEY_RELEASE_70"
+    ],
+    [
+      "KEY_PRESS_87",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_9"
+    ],
+    [
+      "KEY_PRESS_9",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_PRESS_90"
+    ],
+    [
+      "KEY_RELEASE_112"
+    ],
+    [
+      "KEY_RELEASE_160"
+    ],
+    [
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_32"
+    ],
+    [
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_51"
+    ],
+    [
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_70"
+    ],
+    [
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_82"
+    ],
+    [
+      "KEY_RELEASE_160",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_RELEASE_162"
+    ],
+    [
+      "KEY_RELEASE_162",
+      "KEY_RELEASE_32"
+    ],
+    [
+      "KEY_RELEASE_162",
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_RELEASE_164"
+    ],
+    [
+      "KEY_RELEASE_164",
+      "KEY_RELEASE_9"
+    ],
+    [
+      "KEY_RELEASE_32"
+    ],
+    [
+      "KEY_RELEASE_32",
+      "KEY_RELEASE_50"
+    ],
+    [
+      "KEY_RELEASE_32",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_RELEASE_32",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_RELEASE_49"
+    ],
+    [
+      "KEY_RELEASE_49",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_RELEASE_50"
+    ],
+    [
+      "KEY_RELEASE_50",
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_RELEASE_50",
+      "KEY_RELEASE_70"
+    ],
+    [
+      "KEY_RELEASE_51"
+    ],
+    [
+      "KEY_RELEASE_52"
+    ],
+    [
+      "KEY_RELEASE_52",
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_RELEASE_65"
+    ],
+    [
+      "KEY_RELEASE_65",
+      "KEY_RELEASE_70"
+    ],
+    [
+      "KEY_RELEASE_65",
+      "KEY_RELEASE_83"
+    ],
+    [
+      "KEY_RELEASE_65",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_RELEASE_66"
+    ],
+    [
+      "KEY_RELEASE_67"
+    ],
+    [
+      "KEY_RELEASE_67",
+      "KEY_RELEASE_83"
+    ],
+    [
+      "KEY_RELEASE_68"
+    ],
+    [
+      "KEY_RELEASE_68",
+      "KEY_RELEASE_81"
+    ],
+    [
+      "KEY_RELEASE_68",
+      "KEY_RELEASE_83"
+    ],
+    [
+      "KEY_RELEASE_68",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_RELEASE_68",
+      "KEY_RELEASE_9"
+    ],
+    [
+      "KEY_RELEASE_69"
+    ],
+    [
+      "KEY_RELEASE_70"
+    ],
+    [
+      "KEY_RELEASE_70",
+      "KEY_RELEASE_83"
+    ],
+    [
+      "KEY_RELEASE_70",
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_RELEASE_77"
+    ],
+    [
+      "KEY_RELEASE_81"
+    ],
+    [
+      "KEY_RELEASE_82"
+    ],
+    [
+      "KEY_RELEASE_83"
+    ],
+    [
+      "KEY_RELEASE_86"
+    ],
+    [
+      "KEY_RELEASE_87"
+    ],
+    [
+      "KEY_RELEASE_9"
+    ],
+    [
+      "KEY_RELEASE_90"
+    ]
+  ],
+  "button_head_mode": "hierarchical_softmax",
+  "button_classes": [
+    [],
+    [
+      "MOUSE_LEFT_DOWN"
+    ],
+    [
+      "MOUSE_LEFT_DOWN",
+      "MOUSE_LEFT_UP"
+    ],
+    [
+      "MOUSE_LEFT_DOWN",
+      "MOUSE_RIGHT_DOWN"
+    ],
+    [
+      "MOUSE_LEFT_UP"
+    ],
+    [
+      "MOUSE_LEFT_UP",
+      "MOUSE_RIGHT_DOWN"
+    ],
+    [
+      "MOUSE_MIDDLE_DOWN"
+    ],
+    [
+      "MOUSE_MIDDLE_UP"
+    ],
+    [
+      "MOUSE_RIGHT_DOWN"
+    ],
+    [
+      "MOUSE_RIGHT_UP"
+    ]
+  ],
+  "mouse_head_mode": "regression",
+  "mouse_target_mode": "sum",
+  "mouse_emit_mode": "decompose",
+  "mouse_max_tokens_per_axis": 32,
+  "mouse_axis_classes": [],
+  "distributed": {
+    "enabled": true,
+    "world_size": 4,
+    "backend": "nccl",
+    "rank0_device": "cuda:0"
+  },
+  "training_cache": {
+    "enabled": true,
+    "dir": "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/train_cache",
+    "manifest_paths": [
+      "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/train_cache/train_core-3424d3a614b6fe4b9c54.manifest.json"
+    ],
+    "rows": 16000,
+    "chunk_size": 16384,
+    "shard_by_path": false,
+    "progress_interval_batches": 25,
+    "shard_assignment": {
+      "mode": "greedy_rows",
+      "world_size": 4,
+      "ranks": [
+        {
+          "rank": 0,
+          "manifest_indices": [
+            0
+          ],
+          "rows": 16000,
+          "bytes": 136066737
+        },
+        {
+          "rank": 1,
+          "manifest_indices": [],
+          "rows": 0,
+          "bytes": 0
+        },
+        {
+          "rank": 2,
+          "manifest_indices": [],
+          "rows": 0,
+          "bytes": 0
+        },
+        {
+          "rank": 3,
+          "manifest_indices": [],
+          "rows": 0,
+          "bytes": 0
+        }
+      ],
+      "row_load_min": 0,
+      "row_load_max": 16000,
+      "byte_load_min": 0,
+      "byte_load_max": 136066737
+    }
+  }
+}

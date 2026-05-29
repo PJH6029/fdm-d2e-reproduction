@@ -1312,3 +1312,18 @@ This remains FDM-1-recipe-aligned only as a representation probe (screen-video
 encoder + action-token IDM metrics); it is not completion evidence until a
 real-video prefix gate beats the D2E paper targets and then scales under the
 full hard gates.
+
+## 2026-05-29T23:20 KST — Real-video frozen-DINO prefix16k gate negative
+
+After quota increase approval, a 4×H200 bounded real-video gate ran on `rsv-jeonghunpark-20260529-c93357` / `prod-rsv-jeonghunpark-20260529-c93357`. The initial launch exposed a GPU-idle operational bug: cv2 fallback decoded real videos by seeking every frame. Commit `5391069` fixed this with sequential nearby cv2 decoding plus coarse seeks, and the same reservation was relaunched successfully. Commit `248f176` fixes the shared wrapper run-summary path.
+
+Evidence copied locally:
+
+- `artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_compact_summary.json`
+- `artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_paper_metrics.json`
+- `artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_run_summary.json`
+- `artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_*materialization_summary*.json`
+- `artifacts/cluster/g005_realvideo_prefix16k_relaunch_optimized_20260529.json`
+- `artifacts/cluster/g005_realvideo_prefix16k_cancel_20260529.json`
+
+Materialization is now operational (`16k` train `26.17s`, `16k` target `25.28s`, real `video` frame source, `dinov2-torchhub`). Metric result is negative: all-target-prefix paper-compatible keyboard key accuracy `0.000368`, mouse-button accuracy `0.0`, mouse Pearson X/Y `0.00946/0.00371`; strict no-button FPR `0.0` from emitting no buttons. This does not beat paper targets, does not cover heldout-recording/game rows in the bounded prefix, and must not checkpoint `G005-g014-idm-full-paper-target`.

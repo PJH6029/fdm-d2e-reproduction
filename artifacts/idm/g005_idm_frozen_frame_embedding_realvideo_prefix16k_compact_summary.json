@@ -1,0 +1,74 @@
+{
+  "claim_boundary": "Negative bounded real-video DINO/streaming-IDM diagnostic. It uses real D2E video frames, but it does not beat D2E paper IDM metrics and must not checkpoint G005 complete.",
+  "commit_relaunched": "5391069",
+  "commit_started": "503ae94",
+  "diagnosis": "The optimized real-video DINO materialization path is operational and fast, but the downstream streaming IDM collapses key/button identity on the 16k temporal prefix; no heldout-recording/game rows are covered by this bounded prefix.",
+  "evidence_commit_pending": true,
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "paper_compatible_all": {
+    "empty_bins_as_correct": false,
+    "keyboard": {
+      "key_accuracy": 0.0003681885125184094,
+      "sample_count": 5432
+    },
+    "mouse_button": {
+      "button_accuracy": 0.0,
+      "sample_count": 306
+    },
+    "mouse_move": {
+      "pearson_x": 0.009464331976296406,
+      "pearson_y": 0.0037073411182904368,
+      "sample_count": 14804,
+      "scale_ratio_x": 4.257093662287426,
+      "scale_ratio_y": 1.0591430378702456,
+      "scale_sample_count": 16000
+    }
+  },
+  "paper_metrics": "artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_paper_metrics.json",
+  "pod": "prod-rsv-jeonghunpark-20260529-c93357",
+  "real_video_embedding": {
+    "backend": "dinov2-torchhub",
+    "frame_source": "video",
+    "target_elapsed_seconds": 25.28446888923645,
+    "target_status": "pass",
+    "train_elapsed_seconds": 26.165845155715942,
+    "train_status": "pass"
+  },
+  "recorded_at": "2026-05-29T23:17:45.033497+09:00",
+  "reservation_cancel_status": "pass",
+  "reservation_id": "rsv-jeonghunpark-20260529-c93357",
+  "rows": {
+    "paper_metrics": 16000,
+    "target": 16000,
+    "train": 16000
+  },
+  "run_summary": "artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_run_summary.json",
+  "schema": "g005_idm_realvideo_frozen_embedding_prefix16k_compact_summary.v1",
+  "status": "nonterminal_negative_probe",
+  "strict_local_all": {
+    "keyboard": {
+      "accuracy": 0.000709471443774388,
+      "num_examples": 2819
+    },
+    "mouse_button": {
+      "accuracy": 0.0,
+      "exact_true_positive_examples": 0,
+      "f1": 0.0,
+      "false_negative_examples": 291,
+      "false_positive_examples": 0,
+      "no_button_examples": 15709,
+      "no_button_false_positive_examples": 0,
+      "no_button_false_positive_rate": 0.0,
+      "num_examples": 291,
+      "precision": null,
+      "predicted_examples": 0,
+      "recall": 0.0
+    }
+  },
+  "target_split_rows": {
+    "eval_split:heldout_game": 0,
+    "eval_split:heldout_recording": 0,
+    "eval_split:temporal": 16000
+  },
+  "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/eoogvkyp"
+}

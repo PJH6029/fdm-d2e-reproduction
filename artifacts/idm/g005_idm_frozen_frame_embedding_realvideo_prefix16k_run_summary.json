@@ -1,0 +1,222 @@
+{
+  "claim_boundary": "Frozen frame-embedding prefix diagnostic only; not G005 completion evidence unless paper targets pass.",
+  "config": "configs/model/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k.yaml",
+  "feature_cache_enabled": "1",
+  "feature_cache_root": "outputs/data/d2e_frozen_frame_embedding_realvideo_prefix16k/feature_cache",
+  "finished_at": "2026-05-29T14:11:58+0000",
+  "gpu_monitor_log": "artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_gpu_monitor.csv",
+  "paper_metrics": {
+    "alignment": {
+      "examples": [],
+      "missing_prediction_rows": 0,
+      "missing_target_rows": 0,
+      "rows_seen": 16000,
+      "sequence_id_mismatches": 0
+    },
+    "claim_boundary": "Paper-compatible metrics approximate public D2E evaluate.py semantics over pre-binned JSONL tokens; exact released G-IDM comparison remains G006.",
+    "error_count": 0,
+    "findings": [],
+    "groups": {
+      "all": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.0003681885125184094,
+            "sample_count": 5432
+          },
+          "mouse_button": {
+            "button_accuracy": 0.0,
+            "sample_count": 306
+          },
+          "mouse_move": {
+            "pearson_x": 0.009464331976296406,
+            "pearson_y": 0.0037073411182904368,
+            "sample_count": 14804,
+            "scale_ratio_x": 4.257093662287426,
+            "scale_ratio_y": 1.0591430378702456,
+            "scale_sample_count": 16000
+          }
+        },
+        "rows": 16000,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.000709471443774388,
+            "num_examples": 2819
+          },
+          "mouse_button": {
+            "accuracy": 0.0,
+            "exact_true_positive_examples": 0,
+            "f1": 0.0,
+            "false_negative_examples": 291,
+            "false_positive_examples": 0,
+            "no_button_examples": 15709,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0,
+            "num_examples": 291,
+            "precision": null,
+            "predicted_examples": 0,
+            "recall": 0.0
+          }
+        }
+      },
+      "eval_split:heldout_game": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": null,
+            "sample_count": 0
+          },
+          "mouse_button": {
+            "button_accuracy": null,
+            "sample_count": 0
+          },
+          "mouse_move": {
+            "pearson_x": null,
+            "pearson_y": null,
+            "sample_count": 0,
+            "scale_ratio_x": null,
+            "scale_ratio_y": null,
+            "scale_sample_count": 0
+          }
+        },
+        "rows": 0,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": null,
+            "num_examples": 0
+          },
+          "mouse_button": {
+            "accuracy": null,
+            "exact_true_positive_examples": 0,
+            "f1": null,
+            "false_negative_examples": 0,
+            "false_positive_examples": 0,
+            "no_button_examples": 0,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": null,
+            "num_examples": 0,
+            "precision": null,
+            "predicted_examples": 0,
+            "recall": null
+          }
+        }
+      },
+      "eval_split:heldout_recording": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": null,
+            "sample_count": 0
+          },
+          "mouse_button": {
+            "button_accuracy": null,
+            "sample_count": 0
+          },
+          "mouse_move": {
+            "pearson_x": null,
+            "pearson_y": null,
+            "sample_count": 0,
+            "scale_ratio_x": null,
+            "scale_ratio_y": null,
+            "scale_sample_count": 0
+          }
+        },
+        "rows": 0,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": null,
+            "num_examples": 0
+          },
+          "mouse_button": {
+            "accuracy": null,
+            "exact_true_positive_examples": 0,
+            "f1": null,
+            "false_negative_examples": 0,
+            "false_positive_examples": 0,
+            "no_button_examples": 0,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": null,
+            "num_examples": 0,
+            "precision": null,
+            "predicted_examples": 0,
+            "recall": null
+          }
+        }
+      },
+      "eval_split:temporal": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.0003681885125184094,
+            "sample_count": 5432
+          },
+          "mouse_button": {
+            "button_accuracy": 0.0,
+            "sample_count": 306
+          },
+          "mouse_move": {
+            "pearson_x": 0.009464331976296406,
+            "pearson_y": 0.0037073411182904368,
+            "sample_count": 14804,
+            "scale_ratio_x": 4.257093662287426,
+            "scale_ratio_y": 1.0591430378702456,
+            "scale_sample_count": 16000
+          }
+        },
+        "rows": 16000,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.000709471443774388,
+            "num_examples": 2819
+          },
+          "mouse_button": {
+            "accuracy": 0.0,
+            "exact_true_positive_examples": 0,
+            "f1": 0.0,
+            "false_negative_examples": 291,
+            "false_positive_examples": 0,
+            "no_button_examples": 15709,
+            "no_button_false_positive_examples": 0,
+            "no_button_false_positive_rate": 0.0,
+            "num_examples": 291,
+            "precision": null,
+            "predicted_examples": 0,
+            "recall": 0.0
+          }
+        }
+      }
+    },
+    "max_rows": 16000,
+    "model_name": "streaming_idm_d2e_full_frozen_frame_embedding_realvideo_prefix16k",
+    "prediction_paths": [
+      "outputs/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k/predictions.jsonl"
+    ],
+    "schema": "paper_idm_metrics.v1",
+    "split_tags": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ],
+    "status": "pass",
+    "target_paths": [
+      "outputs/data/d2e_frozen_frame_embedding_realvideo_prefix16k/target_all_eval.jsonl"
+    ]
+  },
+  "paper_metrics_path": "artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_paper_metrics.json",
+  "schema": "g005_frozen_frame_embedding_prefix_run_summary.v1",
+  "started_at": "2026-05-29T14:10:16+00:00",
+  "status": "pass",
+  "summary_repair": {
+    "claim_boundary": "evidence path repair only; terminal metric values are from standalone paper metrics artifact",
+    "new_paper_metrics_model_name": "streaming_idm_d2e_full_frozen_frame_embedding_realvideo_prefix16k",
+    "old_paper_metrics_model_name": "streaming_idm_d2e_full_frozen_frame_embedding_prefix320k",
+    "reason": "shared wrapper embedded default prefix320k metrics path; replace with active realvideo PAPER_CONFIG output without changing model predictions/metrics",
+    "repaired_at": "2026-05-29T14:14:15+0000",
+    "schema": "g005_run_summary_repair.v1",
+    "status": "repaired"
+  },
+  "target_embedding_summary": "artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_target_prefix16k_materialization_summary.json",
+  "thin_output": "1",
+  "train_embedding_summary": "artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_train_prefix16k_materialization_summary.json",
+  "wandb_sidecar_status": "artifacts/idm/g005_idm_frozen_frame_embedding_realvideo_prefix16k_wandb_sidecar_status.json"
+}
