@@ -9,3 +9,7 @@ outputs/
 
 # Avoid committing live/current MLXP reservation snapshots with operational metadata
 artifacts/mlxp/*current*.safe.json
+
+# Live MLXP watcher/monitor process state; terminal evidence is copied into JSON/CSV artifacts instead.
+artifacts/cluster/*.log
+artifacts/cluster/*.pid
