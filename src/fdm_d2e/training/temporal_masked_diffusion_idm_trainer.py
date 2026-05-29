@@ -1386,6 +1386,33 @@ def _temporal_center_candidates(
                             "direct_auxiliary_candidate": "button_presence_class",
                         }
                     )
+            if "mouse_move" in direct_aux_families and event_probabilities_cpu.get("token_presence") is not None:
+                token_presence = event_probabilities_cpu["token_presence"]
+                for token_idx, token in enumerate(vocab):
+                    token = str(token)
+                    if _action_family(token) != "mouse_move" or token_idx >= int(token_presence.shape[1]):
+                        continue
+                    score = float(token_presence[batch_idx, token_idx])
+                    if score < direct_aux_min_score:
+                        continue
+                    candidates.append(
+                        {
+                            "score": score,
+                            "token_probability": 0.0,
+                            "retrieval_score": 0.0,
+                            "prior_weight": 1.0,
+                            "event_gate_multiplier": 1.0,
+                            "key_presence_score": 0.0,
+                            "button_class_score": 0.0,
+                            "button_class_no_button_gate_score": 1.0,
+                            "button_presence_score": 0.0,
+                            "slot": -1,
+                            "token_index": token_idx,
+                            "token": token,
+                            "family": "mouse_move",
+                            "direct_auxiliary_candidate": "token_presence_mouse_move",
+                        }
+                    )
         candidates.sort(key=lambda item: (-float(item["score"]), int(item["slot"]), int(item["token_index"])))
         if min_candidates_per_family > 0:
             selected: list[dict[str, Any]] = []

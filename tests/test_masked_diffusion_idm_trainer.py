@@ -623,6 +623,33 @@ def test_temporal_direct_auxiliary_candidates_can_override_slot_identity_noise()
     )
 
 
+def test_temporal_direct_auxiliary_candidates_can_add_mouse_move_presence_tokens():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "FDM1_MOUSE_DX_N01", "FDM1_MOUSE_DY_P02"]
+    probabilities = torch.zeros((1, 1, len(vocab)), dtype=torch.float32)
+    probabilities[:, :, 3] = 0.01
+    probabilities[:, :, 4] = 0.01
+    token_presence = torch.zeros((1, len(vocab)), dtype=torch.float32)
+    token_presence[:, 4] = 0.88
+
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={
+            "non_noop_budget_candidates_per_row": 4,
+            "direct_auxiliary_candidate_families": ["mouse_move"],
+        },
+        event_probabilities={"token_presence": token_presence},
+    )
+
+    assert candidates[0][0]["token"] == "FDM1_MOUSE_DY_P02"
+    assert candidates[0][0]["direct_auxiliary_candidate"] == "token_presence_mouse_move"
+    assert candidates[0][0]["score"] == pytest.approx(0.88)
+
+
 def test_temporal_family_token_presence_targets_are_family_scoped_multihot():
     if not torch_available():
         return
