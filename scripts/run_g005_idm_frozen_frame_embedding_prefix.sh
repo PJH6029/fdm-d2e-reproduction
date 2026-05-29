@@ -6,6 +6,7 @@ if [[ -f .env ]]; then set -a; . ./.env; set +a; fi
 
 CONFIG="${CONFIG:-configs/model/idm_streaming_d2e_full_frozen_frame_embedding_prefix320k.yaml}"
 PAPER_CONFIG="${PAPER_CONFIG:-configs/eval/g005_idm_frozen_frame_embedding_prefix320k_paper_metrics.yaml}"
+PAPER_METRICS_JSON="${PAPER_METRICS_JSON:-}"
 SOURCE_INPUT_ROOT="${SOURCE_INPUT_ROOT:-outputs/data/d2e_event_state_duration_context_shards_accel64}"
 SOURCE_PREFIX_ROOT="${SOURCE_PREFIX_ROOT:-outputs/data/d2e_event_state_duration_hierarchical_prefix320k}"
 EMBED_PREFIX_ROOT="${EMBED_PREFIX_ROOT:-outputs/data/d2e_frozen_frame_embedding_prefix320k}"
@@ -243,6 +244,23 @@ fi
 
 uv run --extra train torchrun --standalone --nproc-per-node="$NPROC" scripts/train_idm_streaming.py --config "$CONFIG" --require-torch
 uv run --extra train python scripts/build_g005_idm_paper_metrics.py --config "$PAPER_CONFIG"
+if [[ -z "$PAPER_METRICS_JSON" ]]; then
+  PAPER_METRICS_JSON="$(uv run python - "$PAPER_CONFIG" <<'PY'
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path.cwd() / "src"))
+from fdm_d2e.config import load_config
+
+config = load_config(sys.argv[1])
+metrics_cfg = dict(config.get("paper_metrics", config))
+output = metrics_cfg.get("output_path") or metrics_cfg.get("metrics_path")
+if not output:
+    raise SystemExit(f"paper metrics config has no output_path/metrics_path: {sys.argv[1]}")
+print(output)
+PY
+)"
+fi
 
 python3 - <<PY
 import json, pathlib, time
@@ -257,7 +275,8 @@ summary = {
   "feature_cache_enabled": "$EMBED_FEATURE_CACHE",
   "thin_output": "$EMBED_THIN_OUTPUT",
   "feature_cache_root": "$EMBED_FEATURE_CACHE_ROOT",
-  "paper_metrics": json.load(open("artifacts/idm/g005_idm_frozen_frame_embedding_prefix320k_paper_metrics.json")),
+  "paper_metrics_path": "$PAPER_METRICS_JSON",
+  "paper_metrics": json.load(open("$PAPER_METRICS_JSON")),
   "gpu_monitor_log": "$GPU_MONITOR_LOG",
   "wandb_sidecar_status": "$WANDB_SIDECAR_STATUS",
   "claim_boundary": "Frozen frame-embedding prefix diagnostic only; not G005 completion evidence unless paper targets pass."

@@ -196,6 +196,7 @@ def test_g005_raw112_offset2_candidate_uses_nonleaky_nep100_video_paths() -> Non
 
 def test_g005_realvideo_frozen_embedding_prefix_uses_video_decode_and_cache() -> None:
     text = _script("scripts/run_g005_idm_frozen_frame_embedding_realvideo_prefix16k.sh")
+    base = _script("scripts/run_g005_idm_frozen_frame_embedding_prefix.sh")
     config = json.loads(
         (ROOT / "configs/model/idm_streaming_d2e_full_frozen_frame_embedding_realvideo_prefix16k.yaml").read_text()
     )
@@ -215,6 +216,9 @@ def test_g005_realvideo_frozen_embedding_prefix_uses_video_decode_and_cache() ->
     assert "cv2/ffmpeg" in config["claim_boundary"]
     assert paper["max_rows"] == 16000
     assert paper["target_paths"] == ["outputs/data/d2e_frozen_frame_embedding_realvideo_prefix16k/target_all_eval.jsonl"]
+    assert 'PAPER_METRICS_JSON="${PAPER_METRICS_JSON:-}"' in base
+    assert '"paper_metrics_path": "$PAPER_METRICS_JSON"' in base
+    assert 'g005_idm_frozen_frame_embedding_prefix320k_paper_metrics.json' not in base
 
 
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
