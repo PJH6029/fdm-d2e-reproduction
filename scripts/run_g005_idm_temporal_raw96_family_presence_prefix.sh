@@ -9,6 +9,7 @@ MODEL_SLUG="${MODEL_SLUG:-g005_idm_temporal_masked_diffusion_raw96_family_presen
 OUTPUT_DIR="${OUTPUT_DIR:-outputs/idm_temporal_masked_diffusion_d2e_raw96_family_presence_prefix80k}"
 SUMMARY_PATH="${SUMMARY_PATH:-artifacts/idm/${MODEL_SLUG}_summary.json}"
 RUN_SUMMARY="${RUN_SUMMARY:-artifacts/idm/${MODEL_SLUG}_h200_run.json}"
+COMPACT_SUMMARY="${COMPACT_SUMMARY:-artifacts/idm/${MODEL_SLUG}_h200_compact_summary.json}"
 GPU_MONITOR_LOG="${GPU_MONITOR_LOG:-artifacts/idm/${MODEL_SLUG}_h200_gpu_monitor.csv}"
 GPU_MONITOR_PID_FILE="${GPU_MONITOR_PID_FILE:-outputs/cluster/${MODEL_SLUG}_gpu_monitor.pid}"
 WANDB_SIDECAR_STATUS="${WANDB_SIDECAR_STATUS:-artifacts/idm/${MODEL_SLUG}_h200_wandb_status.json}"
@@ -70,6 +71,7 @@ FINISHED_AT="$(date -Iseconds)"
 python3 - <<PY
 import csv, hashlib, json, pathlib, time
 run_summary = pathlib.Path("$RUN_SUMMARY")
+compact_summary = pathlib.Path("$COMPACT_SUMMARY")
 summary_path = pathlib.Path("$SUMMARY_PATH")
 metrics_path = pathlib.Path("$OUTPUT_DIR/paper_metrics.json")
 gpu_monitor = pathlib.Path("$GPU_MONITOR_LOG")
@@ -127,6 +129,69 @@ payload={
 }
 run_summary.parent.mkdir(parents=True, exist_ok=True)
 run_summary.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\n')
+
+metrics = payload.get('paper_metrics') or {}
+groups = metrics.get('groups') or {}
+all_group = groups.get('all') or {}
+paper = all_group.get('paper_compatible') or {}
+strict = all_group.get('strict_local') or {}
+keyboard = paper.get('keyboard') or {}
+button = paper.get('mouse_button') or {}
+move = paper.get('mouse_move') or {}
+strict_button = strict.get('mouse_button') or {}
+targets = {
+  'keyboard_key_accuracy': 0.73,
+  'mouse_button_accuracy': 0.957,
+  'mouse_button_f1_min_nonzero': 1e-12,
+  'mouse_move_pearson_x': 0.796,
+  'mouse_move_pearson_y': 0.783,
+  'no_button_false_positive_rate_max': 0.10,
+}
+observed = {
+  'keyboard_key_accuracy': keyboard.get('key_accuracy'),
+  'mouse_button_accuracy': button.get('button_accuracy'),
+  'mouse_button_f1': strict_button.get('f1'),
+  'mouse_move_pearson_x': move.get('pearson_x'),
+  'mouse_move_pearson_y': move.get('pearson_y'),
+  'no_button_false_positive_rate': strict_button.get('no_button_false_positive_rate'),
+}
+def ge(value, threshold):
+    return value is not None and float(value) >= float(threshold)
+def le(value, threshold):
+    return value is not None and float(value) <= float(threshold)
+gates = {
+  'keyboard_key_accuracy': ge(observed['keyboard_key_accuracy'], targets['keyboard_key_accuracy']),
+  'mouse_button_accuracy': ge(observed['mouse_button_accuracy'], targets['mouse_button_accuracy']),
+  'mouse_button_f1_nonzero': ge(observed['mouse_button_f1'], targets['mouse_button_f1_min_nonzero']),
+  'mouse_move_pearson_x': ge(observed['mouse_move_pearson_x'], targets['mouse_move_pearson_x']),
+  'mouse_move_pearson_y': ge(observed['mouse_move_pearson_y'], targets['mouse_move_pearson_y']),
+  'no_button_false_positive_rate': le(observed['no_button_false_positive_rate'], targets['no_button_false_positive_rate_max']),
+}
+compact = {
+  'schema': 'g005_temporal_raw96_h200_compact_summary.v1',
+  'status': 'paper_target_pass' if int('$EXIT_CODE') == 0 and all(gates.values()) else ('fail' if int('$EXIT_CODE') != 0 else 'nonterminal_negative_probe'),
+  'exit_code': int('$EXIT_CODE'),
+  'model_slug': '$MODEL_SLUG',
+  'config': '$CONFIG',
+  'run_summary': str(run_summary),
+  'summary_path': str(summary_path),
+  'metrics_path': str(metrics_path),
+  'paper_target_gates': gates,
+  'paper_target_observed': observed,
+  'paper_targets': targets,
+  'train_rows': (payload.get('summary') or {}).get('train_rows'),
+  'fit_rows': (payload.get('summary') or {}).get('fit_rows'),
+  'target_rows': (payload.get('summary') or {}).get('target_rows'),
+  'video_encoder_arch': (payload.get('summary') or {}).get('video_encoder_arch'),
+  'video_tokens_per_offset': (payload.get('summary') or {}).get('video_tokens_per_offset'),
+  'temporal_window': (payload.get('summary') or {}).get('temporal_window'),
+  'loss_weights': (payload.get('summary') or {}).get('loss_weights'),
+  'gpu_monitor_status': payload.get('gpu_monitor_status'),
+  'wandb_sidecar_status': payload.get('wandb_sidecar_status'),
+  'claim_boundary': 'Compact probe evidence only. G005 remains incomplete unless status=paper_target_pass and separate completion/goal checkpoint gates pass.',
+}
+compact_summary.parent.mkdir(parents=True, exist_ok=True)
+compact_summary.write_text(json.dumps(compact, indent=2, sort_keys=True)+'\n')
 PY
 
 exit "$EXIT_CODE"
