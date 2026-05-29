@@ -1,0 +1,52 @@
+{
+  "cancel_response": {
+    "end_at": "2026-05-30T05:00:00+09:00",
+    "gpu_count": 1,
+    "gpu_indices": [
+      1
+    ],
+    "gpu_start": 1,
+    "image_path": "ghcr.io/pjh6029/snupi-personal-codex:20260414",
+    "managed_image_key": "codex",
+    "node_id": "4",
+    "pod_name": "prod-rsv-jeonghunpark-20260530-39a28b",
+    "pod_phase": "",
+    "pod_status": "",
+    "purpose": "Continuous GUI - G005 temporal offset-ensemble prediction-only probe",
+    "reservation_id": "rsv-jeonghunpark-20260530-39a28b",
+    "start_at": "2026-05-30T03:00:00+09:00",
+    "status": "cancelled"
+  },
+  "claim_boundary": "Redacted MLXP cancellation evidence; no token, kubeconfig, Jupyter token, member id, PVC/claim name included.",
+  "metrics_observed": {
+    "keyboard_key_accuracy": 0.016377171215880892,
+    "mouse_button_accuracy": 0.0,
+    "mouse_button_f1": 0.0,
+    "mouse_move_pearson_x": 0.026625633715173874,
+    "mouse_move_pearson_y": null,
+    "no_button_false_positive_rate": 0.011133603238866396,
+    "rows": 1000
+  },
+  "observed_at": "2026-05-30T04:01:46.131799+09:00",
+  "reason": "fast1k offsetensemble probe completed negative and GPU was idle afterward; cancel reservation to preserve approved GPU-hours.",
+  "reservation_before_cancel": {
+    "end_at": "2026-05-30T05:00:00+09:00",
+    "gpu_count": 1,
+    "gpu_indices": [
+      1
+    ],
+    "gpu_start": 1,
+    "image_path": "ghcr.io/pjh6029/snupi-personal-codex:20260414",
+    "managed_image_key": "codex",
+    "node_id": "4",
+    "pod_name": "prod-rsv-jeonghunpark-20260530-39a28b",
+    "pod_phase": "Running",
+    "pod_status": "Running",
+    "purpose": "Continuous GUI - G005 temporal offset-ensemble prediction-only probe",
+    "reservation_id": "rsv-jeonghunpark-20260530-39a28b",
+    "start_at": "2026-05-30T03:00:00+09:00",
+    "status": "running"
+  },
+  "schema": "g005_offsetensemble_cancel.v1",
+  "status": "reservation_cancel_requested_after_negative_probe"
+}

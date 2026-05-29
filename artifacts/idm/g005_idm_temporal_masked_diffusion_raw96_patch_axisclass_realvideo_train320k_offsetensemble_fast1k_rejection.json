@@ -1,0 +1,32 @@
+{
+  "candidate": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_offsetensemble_fast1k",
+  "claim_boundary": "Negative bounded prediction-only probe; not G005 completion evidence, no target-label calibration, no FDM-1 parity claim.",
+  "decision": "Reject temporal source-offset ensembling on the failed train320k raw96 checkpoint; it did not materially improve paper metrics.",
+  "evidence": {
+    "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_offsetensemble_fast1k_compact_summary.json",
+    "paper_metrics": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_offsetensemble_fast1k/paper_metrics.json",
+    "reservation_cancel": "artifacts/cluster/g005_offsetensemble_fast1k_cancel_20260530.json",
+    "summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_offsetensemble_fast1k_summary.json"
+  },
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "next_pivot": "Do not widen this candidate path. Resume with a more fundamental FDM-1-shaped representation/training change or separated G-IDM teacher infrastructure.",
+  "observed": {
+    "keyboard_key_accuracy": 0.016377171215880892,
+    "mouse_button_accuracy": 0.0,
+    "mouse_button_f1": 0.0,
+    "mouse_move_pearson_x": 0.026625633715173874,
+    "mouse_move_pearson_y": null,
+    "no_button_false_positive_rate": 0.011133603238866396,
+    "rows": 1000
+  },
+  "observed_at": "2026-05-30T04:01:46.131491+09:00",
+  "schema": "g005_offsetensemble_fast1k_rejection.v1",
+  "status": "rejected",
+  "targets": {
+    "keyboard_key_accuracy_min": 0.73,
+    "mouse_button_accuracy_min": 0.957,
+    "mouse_move_pearson_x_min": 0.796,
+    "mouse_move_pearson_y_min": 0.783,
+    "no_button_false_positive_rate_max": 0.1
+  }
+}

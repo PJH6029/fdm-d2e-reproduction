@@ -1,0 +1,9 @@
+{
+  "claim_boundary": "Throughput abort only; no metric claim and no G005 checkpoint evidence.",
+  "file_snapshot": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_offsetensemble_predict5k.log 0",
+  "process_snapshot": "    PID    PPID STAT     ELAPSED %CPU %MEM   RSS CMD\n    699     696 Rl         27:20  150  0.9 21101756 /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3 scripts/predict_idm_temporal_masked_diffusion.py --checkpoint outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_target24k/checkpoint.pt --config configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_offsetensemble_predict5k.yaml --output-dir outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_train320k_offsetensemble_predict5k --summary-out artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_offsetensemble_predict5k_summary.json",
+  "reason": "The first 5k/5-source-offset probe stayed CPU-bound for more than 25 minutes with zero prediction rows written. Abort to avoid wasting the short 1xH200 reservation; relaunch a bounded 1k/3-offset probe.",
+  "recorded_at": "2026-05-29T18:47:42.183494+00:00",
+  "schema": "g005_offsetensemble_predict5k_abort.v1",
+  "status": "aborted_for_throughput"
+}
