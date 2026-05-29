@@ -360,6 +360,66 @@
         }
       ],
       "sha256": "b4ac73d2831f62e1fb44c606534e46ca8850fe61cf67bc198519a5e07196f6d9"
+    },
+    {
+      "path": "configs/model/idm_temporal_masked_diffusion_d2e_luma_longctx_tensorfast_prefix80k.yaml",
+      "stage": "idm",
+      "status": "pass",
+      "error_count": 0,
+      "findings": [
+        {
+          "severity": "warning",
+          "code": "mouse_delta_bins_not_public_49",
+          "actual": 11,
+          "public_target": 49
+        }
+      ],
+      "sha256": "f5f3b1ac166d3c69b96da7f461d27f2454bbd40f14fc41d3ccf380ff942a3429"
+    },
+    {
+      "path": "configs/model/idm_temporal_masked_diffusion_d2e_luma_longctx_slim_prefix160k.yaml",
+      "stage": "idm",
+      "status": "pass",
+      "error_count": 0,
+      "findings": [
+        {
+          "severity": "warning",
+          "code": "mouse_delta_bins_not_public_49",
+          "actual": 11,
+          "public_target": 49
+        }
+      ],
+      "sha256": "e1590a58afdcfef6d8153afe31759e23ee491924da39d80fc15737ce7d32d92a"
+    },
+    {
+      "path": "configs/model/idm_temporal_masked_diffusion_d2e_luma_longctx_slim_fast80k_epoch1.yaml",
+      "stage": "idm",
+      "status": "pass",
+      "error_count": 0,
+      "findings": [
+        {
+          "severity": "warning",
+          "code": "mouse_delta_bins_not_public_49",
+          "actual": 11,
+          "public_target": 49
+        }
+      ],
+      "sha256": "e7b1ce9270d200009127f71edd535b4bdda9b1e01641deec86a872f39e03bbed"
+    },
+    {
+      "path": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k_epoch3.yaml",
+      "stage": "idm",
+      "status": "pass",
+      "error_count": 0,
+      "findings": [
+        {
+          "severity": "warning",
+          "code": "mouse_delta_bins_not_public_49",
+          "actual": 11,
+          "public_target": 49
+        }
+      ],
+      "sha256": "83c7ade5c2f65282a7543827e1382592860294288625010217e8076534ec7e01"
     }
   ],
   "findings": [
@@ -383,6 +443,34 @@
       "actual": 11,
       "public_target": 49,
       "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma_longctx_axisclass_metricbins_prefix80k.yaml"
+    },
+    {
+      "severity": "warning",
+      "code": "mouse_delta_bins_not_public_49",
+      "actual": 11,
+      "public_target": 49,
+      "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma_longctx_tensorfast_prefix80k.yaml"
+    },
+    {
+      "severity": "warning",
+      "code": "mouse_delta_bins_not_public_49",
+      "actual": 11,
+      "public_target": 49,
+      "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma_longctx_slim_prefix160k.yaml"
+    },
+    {
+      "severity": "warning",
+      "code": "mouse_delta_bins_not_public_49",
+      "actual": 11,
+      "public_target": 49,
+      "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma_longctx_slim_fast80k_epoch1.yaml"
+    },
+    {
+      "severity": "warning",
+      "code": "mouse_delta_bins_not_public_49",
+      "actual": 11,
+      "public_target": 49,
+      "candidate_path": "configs/model/idm_temporal_masked_diffusion_d2e_luma2_actual_fast80k_epoch3.yaml"
     }
   ],
   "claim_boundary": "Recipe-alignment audit only; metric success and full D2E training evidence remain separate G005/G009 gates."
