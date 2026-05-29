@@ -28,6 +28,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _precompute_video_cache_features,
     _predict_temporal_tokens_batch,
     _raw_video_frame_offsets,
+    _temporal_calibration_split,
 )
 from fdm_d2e.training.torch_idm import require_torch, torch_available
 
@@ -103,27 +104,24 @@ def predict_temporal_masked_diffusion_idm(
 
     calibration_rows: list[dict[str, Any]] = []
     fit_rows = train_rows
+    calibration_indices: list[int] = []
     if bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False))) and len(train_rows) >= 10:
-        calibration_fraction = float(config.get("temporal_calibration_fraction", config.get("factorized_calibration_fraction", 0.0)) or 0.0)
-        calibration_max_rows = int(config.get("temporal_calibration_max_rows", config.get("factorized_calibration_max_rows", 2000)))
-        if calibration_fraction > 0.0:
-            calibration_count = min(calibration_max_rows, max(1, int(len(train_rows) * calibration_fraction)))
-            calibration_rows = train_rows[-calibration_count:]
-            fit_rows = train_rows[:-calibration_count] or train_rows
+        fit_rows, calibration_rows, _, calibration_indices = _temporal_calibration_split(train_rows, config)
 
     vocab = list(checkpoint["vocab"])
     max_slots = int(checkpoint.get("max_slots", config.get("max_action_tokens_per_bin", config.get("max_slots", 16))))
     offsets = [int(value) for value in checkpoint.get("temporal_offsets", config.get("temporal_offsets", [-2, -1, 0, 1, 2]))]
     feature_dim = int(checkpoint.get("feature_dim", _configured_video_feature_dim(config)))
     config = {**config, "video_feature_dim": feature_dim, "max_slots": max_slots, "temporal_offsets": offsets}
+    retrieval_enabled = bool(config.get("retrieval_action_prior_enabled", False))
     feature_source = str(config.get("video_feature_source", "json")).lower()
     if feature_source in {"video_idm_cache", "raw_video_cache"}:
-        train_features = _precompute_video_cache_features(train_paths, split_name="train", config=config, max_rows=len(train_rows))
-        fit_features = train_features[: len(fit_rows)]
-        calibration_features = train_features[len(fit_rows) : len(fit_rows) + len(calibration_rows)] if calibration_rows else []
+        train_features = _precompute_video_cache_features(train_paths, split_name="train", config=config, max_rows=len(train_rows)) if retrieval_enabled else []
+        fit_features = train_features[: len(fit_rows)] if retrieval_enabled else []
+        calibration_features = _precompute_video_cache_features(train_paths, split_name="calibration", config=config, max_rows=len(calibration_rows)) if (calibration_rows and not retrieval_enabled) else (train_features[len(fit_rows) : len(fit_rows) + len(calibration_rows)] if calibration_rows else [])
         target_features = _precompute_video_cache_features(target_paths, split_name="target", config=config, max_rows=len(target_rows))
     else:
-        fit_features = _precompute_features(fit_rows, config=config)
+        fit_features = _precompute_features(fit_rows, config=config) if retrieval_enabled else []
         calibration_features = _precompute_features(calibration_rows, config=config) if calibration_rows else []
         target_features = _precompute_features(target_rows, config=config)
 
@@ -262,6 +260,8 @@ def predict_temporal_masked_diffusion_idm(
         "train_rows": len(train_rows),
         "fit_rows": len(fit_rows),
         "calibration_rows": len(calibration_rows),
+        "calibration_strategy": str(config.get("temporal_calibration_strategy", config.get("calibration_strategy", "tail"))),
+        "calibration_index_preview": calibration_indices[:10],
         "target_rows": len(target_rows),
         "vocab_size": len(vocab),
         "max_slots": max_slots,

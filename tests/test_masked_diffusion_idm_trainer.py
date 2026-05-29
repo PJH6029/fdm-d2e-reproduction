@@ -34,6 +34,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _maybe_tensorize_features,
     _precompute_features,
     _precompute_features_with_distributed_cache,
+    _temporal_calibration_split_indices,
     _temporal_button_class_targets,
     _temporal_center_candidates,
     _temporal_family_class_targets,
@@ -388,6 +389,39 @@ def test_temporal_non_noop_budget_selects_threshold_from_train_heldout_rows():
     assert payload["selected_threshold"] <= 0.88
     assert payload["selected_row"]["predicted_non_noop_tokens"] >= 2
     assert payload["selected_row"]["no_button_false_positive_rate"] == 0.0
+
+
+def test_temporal_calibration_split_can_stratify_sparse_action_families():
+    rows: list[dict] = []
+    for idx in range(40):
+        row = _row(idx, split="train_core")
+        if idx in {3, 23}:
+            row["ground_truth_tokens"] = ["MOUSE_LEFT_DOWN"]
+        elif idx in {7, 27}:
+            row["ground_truth_tokens"] = ["KEY_PRESS_A"]
+        elif idx in {11, 31}:
+            row["ground_truth_tokens"] = ["MOUSE_DX_P1", "MOUSE_DY_N1"]
+        else:
+            row["ground_truth_tokens"] = ["NOOP"]
+        rows.append(row)
+
+    fit_indices, calibration_indices = _temporal_calibration_split_indices(
+        rows,
+        {
+            "calibrate_non_noop_budget": True,
+            "temporal_calibration_fraction": 0.25,
+            "temporal_calibration_max_rows": 8,
+            "temporal_calibration_strategy": "stratified_action",
+        },
+    )
+
+    calibration_rows = [rows[index] for index in calibration_indices]
+    assert len(calibration_indices) == 8
+    assert set(fit_indices).isdisjoint(calibration_indices)
+    assert any("KEY_PRESS_A" in row["ground_truth_tokens"] for row in calibration_rows)
+    assert any("MOUSE_LEFT_DOWN" in row["ground_truth_tokens"] for row in calibration_rows)
+    assert any(any(token.startswith("MOUSE_DX") for token in row["ground_truth_tokens"]) for row in calibration_rows)
+    assert any(row["ground_truth_tokens"] == ["NOOP"] for row in calibration_rows)
 
 
 def test_temporal_family_non_noop_budget_calibrates_separate_action_families():

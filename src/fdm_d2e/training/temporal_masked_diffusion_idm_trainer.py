@@ -251,6 +251,116 @@ def _feature_cache_fingerprint(rows: Sequence[dict[str, Any]], *, split_name: st
     return h.hexdigest()[:20]
 
 
+def _row_action_families(row: dict[str, Any]) -> set[str]:
+    families: set[str] = set()
+    tokens = row.get("ground_truth_tokens") or []
+    if not tokens:
+        families.add("noop")
+        return families
+    non_noop = False
+    for token in tokens:
+        token_str = str(token)
+        if token_str == FDM1_ACTION_NOOP:
+            continue
+        non_noop = True
+        families.add(_action_family(token_str))
+    if non_noop:
+        families.add("non_noop")
+    else:
+        families.add("noop")
+    return families
+
+
+def _evenly_spaced_indices(indices: Sequence[int], count: int) -> list[int]:
+    if count <= 0 or not indices:
+        return []
+    if count >= len(indices):
+        return list(indices)
+    if count == 1:
+        return [indices[len(indices) // 2]]
+    last = len(indices) - 1
+    return [indices[min(last, int(round(pos * last / (count - 1))))] for pos in range(count)]
+
+
+def _temporal_calibration_split_indices(train_rows: Sequence[dict[str, Any]], config: dict[str, Any]) -> tuple[list[int], list[int]]:
+    """Select fit/calibration row indices for budget calibration.
+
+    The historical default used the final training rows as calibration.  For
+    balanced D2E prefixes this can accidentally select a near-noop tail with
+    almost no keyboard/button positives, making train-heldout budget calibration
+    choose abstaining or poorly ranked candidate thresholds.  The opt-in
+    stratified strategy keeps the same train-only calibration contract while
+    spreading calibration rows across action families and the full prefix.
+    """
+
+    if not train_rows:
+        return [], []
+    calibration_fraction = float(config.get("temporal_calibration_fraction", config.get("factorized_calibration_fraction", 0.0)) or 0.0)
+    calibration_max_rows = int(config.get("temporal_calibration_max_rows", config.get("factorized_calibration_max_rows", 2000)))
+    if calibration_fraction <= 0.0 or calibration_max_rows <= 0 or len(train_rows) < 10:
+        return list(range(len(train_rows))), []
+    calibration_count = min(calibration_max_rows, max(1, int(len(train_rows) * calibration_fraction)))
+    strategy = str(config.get("temporal_calibration_strategy", config.get("calibration_strategy", "tail"))).lower()
+    if strategy in {"tail", "last", "suffix"}:
+        calibration_indices = list(range(len(train_rows) - calibration_count, len(train_rows)))
+    elif strategy in {"stratified_action", "action_stratified", "balanced_action", "family_stratified"}:
+        family_order = config.get("temporal_calibration_families", ["keyboard", "mouse_button", "mouse_move", "noop"])
+        if not isinstance(family_order, list) or not family_order:
+            family_order = ["keyboard", "mouse_button", "mouse_move", "noop"]
+        family_order = [str(family) for family in family_order]
+        explicit_quotas = config.get("temporal_calibration_family_quotas")
+        family_to_indices: dict[str, list[int]] = {family: [] for family in family_order}
+        for index, row in enumerate(train_rows):
+            row_families = _row_action_families(row)
+            for family in family_order:
+                if family in row_families:
+                    family_to_indices.setdefault(family, []).append(index)
+        selected: list[int] = []
+        seen: set[int] = set()
+        remaining_budget = calibration_count
+        for family in family_order:
+            candidates = family_to_indices.get(family, [])
+            if not candidates or remaining_budget <= 0:
+                continue
+            if isinstance(explicit_quotas, dict) and family in explicit_quotas:
+                quota = int(explicit_quotas[family])
+            else:
+                quota = max(1, calibration_count // max(1, len(family_order)))
+            quota = min(quota, remaining_budget)
+            for index in _evenly_spaced_indices(candidates, quota):
+                if index in seen:
+                    continue
+                selected.append(index)
+                seen.add(index)
+                remaining_budget -= 1
+                if remaining_budget <= 0:
+                    break
+        if len(selected) < calibration_count:
+            for index in _evenly_spaced_indices(list(range(len(train_rows))), calibration_count * 2):
+                if index in seen:
+                    continue
+                selected.append(index)
+                seen.add(index)
+                if len(selected) >= calibration_count:
+                    break
+        calibration_indices = sorted(selected[:calibration_count])
+    else:
+        raise ValueError(f"unsupported temporal_calibration_strategy: {strategy}")
+    calibration_set = set(calibration_indices)
+    fit_indices = [index for index in range(len(train_rows)) if index not in calibration_set]
+    return fit_indices or list(range(len(train_rows))), calibration_indices
+
+
+def _temporal_calibration_split(train_rows: Sequence[dict[str, Any]], config: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[int], list[int]]:
+    fit_indices, calibration_indices = _temporal_calibration_split_indices(train_rows, config)
+    return (
+        [train_rows[index] for index in fit_indices],
+        [train_rows[index] for index in calibration_indices],
+        fit_indices,
+        calibration_indices,
+    )
+
+
 def _precompute_features_with_distributed_cache(
     rows: Sequence[dict[str, Any]],
     *,
@@ -2846,13 +2956,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         raise ValueError("no target rows found for temporal masked-diffusion IDM")
     calibration_rows: list[dict[str, Any]] = []
     fit_rows = train_rows
+    calibration_indices: list[int] = []
     if bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False))) and len(train_rows) >= 10:
-        calibration_fraction = float(config.get("temporal_calibration_fraction", config.get("factorized_calibration_fraction", 0.0)) or 0.0)
-        calibration_max_rows = int(config.get("temporal_calibration_max_rows", config.get("factorized_calibration_max_rows", 2000)))
-        if calibration_fraction > 0.0:
-            calibration_count = min(calibration_max_rows, max(1, int(len(train_rows) * calibration_fraction)))
-            calibration_rows = train_rows[-calibration_count:]
-            fit_rows = train_rows[:-calibration_count] or train_rows
+        fit_rows, calibration_rows, _, calibration_indices = _temporal_calibration_split(train_rows, config)
     offsets = _temporal_offsets(config)
     max_slots = int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))
     feature_dim = _configured_video_feature_dim(config)
@@ -3709,6 +3815,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "train_rows":len(train_rows),
         "fit_rows":len(fit_rows),
         "calibration_rows":len(calibration_rows),
+        "calibration_strategy":str(config.get("temporal_calibration_strategy", config.get("calibration_strategy", "tail"))),
+        "calibration_index_preview":calibration_indices[:10],
         "target_rows":len(target_rows),
         "vocab_size":len(vocab),
         "max_slots":max_slots,
