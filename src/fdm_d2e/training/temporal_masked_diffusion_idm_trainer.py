@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import glob
+import hashlib
 import json
 import os
 import random
@@ -217,6 +218,157 @@ def _precompute_features(rows: Sequence[dict[str, Any]], *, config: dict[str, An
     feature_paths = list(config.get("video_feature_paths", ["compact_luma_window", "compact_luma_window_mask", "frame.features", "next_frame_features", "frame_delta_features"]))
     feature_dim = _configured_video_feature_dim(config)
     return [video_feature_vector(row, feature_paths=feature_paths, dim=feature_dim) for row in rows]
+
+
+def _feature_cache_fingerprint(rows: Sequence[dict[str, Any]], *, split_name: str, config: dict[str, Any]) -> str:
+    h = hashlib.sha256()
+    h.update(str(split_name).encode("utf-8"))
+    for key in (
+        "video_feature_source",
+        "raw_video_image_size",
+        "raw_video_frame_offsets",
+        "raw_video_frame_fps",
+        "next_frame_offset",
+        "raw_video_aux_feature_paths",
+        "raw_video_aux_feature_dim",
+        "video_feature_dim",
+        "raw_video_feature_tensor_dtype",
+    ):
+        h.update(json.dumps(config.get(key), sort_keys=True, default=str).encode("utf-8"))
+        h.update(b"\0")
+    h.update(str(len(rows)).encode("ascii"))
+    h.update(b"\0")
+    for row in rows[:3]:
+        h.update(str(row.get("sequence_id", "")).encode("utf-8"))
+        h.update(b"\0")
+        h.update(str((row.get("frame") or {}).get("path", "")).encode("utf-8"))
+        h.update(b"\0")
+    for row in rows[-3:]:
+        h.update(str(row.get("sequence_id", "")).encode("utf-8"))
+        h.update(b"\0")
+        h.update(str((row.get("frame") or {}).get("path", "")).encode("utf-8"))
+        h.update(b"\0")
+    return h.hexdigest()[:20]
+
+
+def _precompute_features_with_distributed_cache(
+    rows: Sequence[dict[str, Any]],
+    *,
+    config: dict[str, Any],
+    split_name: str,
+    torch: Any,
+    distributed: bool,
+    rank: int,
+    world_size: int,
+    dist: Any,
+) -> Any:
+    """Precompute raw-frame features once per DDP rank-shard and reuse them.
+
+    Large real-video FDM-1-style IDM probes otherwise make every DDP rank decode
+    every frame before training.  That duplicates CPU/IO work and leaves 4xH200
+    reservations idle.  This cache preserves the same frame-conditioned masked
+    diffusion recipe while sharding raw-frame decode across ranks and then
+    loading a single ordered feature tensor on every rank for the existing
+    temporal-window dataset contract.
+    """
+
+    cache_root_raw = config.get("distributed_feature_cache_dir", config.get("raw_video_distributed_feature_cache_dir"))
+    feature_source = str(config.get("video_feature_source", "json")).lower()
+    if (
+        not cache_root_raw
+        or feature_source not in {"raw_frames", "raw_video_frames", "frame_provider"}
+        or not distributed
+        or world_size <= 1
+    ):
+        return _precompute_features(rows, config=config)
+    cache_root = Path(cache_root_raw)
+    fingerprint = _feature_cache_fingerprint(rows, split_name=split_name, config=config)
+    split_dir = cache_root / f"{split_name}-{fingerprint}"
+    ensure_dir(split_dir)
+    feature_dim = _raw_video_feature_dim(config)
+    dtype_name = str(config.get("raw_video_feature_tensor_dtype", config.get("precompute_feature_tensor_dtype", "float16"))).lower()
+    tensor_dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
+    n = len(rows)
+    start = (n * rank) // world_size
+    end = (n * (rank + 1)) // world_size
+    chunk_path = split_dir / f"chunk_rank{rank:03d}_of_{world_size:03d}.pt"
+    if not chunk_path.exists():
+        shard_config = {
+            **config,
+            "raw_video_feature_storage": "tensor",
+            "raw_video_feature_tensor_dtype": dtype_name,
+            "precompute_features_as_tensor": True,
+            "precompute_feature_tensor_dtype": dtype_name,
+        }
+        shard_features = _precompute_raw_video_features(rows[start:end], config=shard_config)
+        if shard_features:
+            if hasattr(shard_features, "detach") and hasattr(shard_features, "to"):
+                shard_tensor = shard_features.to(dtype=tensor_dtype).contiguous()
+            else:
+                first = shard_features[0]
+                if hasattr(first, "detach") and hasattr(first, "to"):
+                    shard_tensor = torch.stack([feature.to(dtype=tensor_dtype) for feature in shard_features], dim=0).contiguous()
+                else:
+                    shard_tensor = torch.tensor(shard_features, dtype=tensor_dtype).contiguous()
+        else:
+            shard_tensor = torch.empty((0, feature_dim), dtype=tensor_dtype)
+        torch.save(
+            {
+                "schema": "temporal_raw_video_feature_cache_chunk.v1",
+                "split_name": split_name,
+                "fingerprint": fingerprint,
+                "rank": rank,
+                "world_size": world_size,
+                "start": start,
+                "end": end,
+                "feature_dim": feature_dim,
+                "dtype": dtype_name,
+                "features": shard_tensor,
+            },
+            chunk_path,
+        )
+    if dist is not None:
+        dist.barrier()
+    chunks: list[dict[str, Any]] = []
+    for chunk_rank in range(world_size):
+        path = split_dir / f"chunk_rank{chunk_rank:03d}_of_{world_size:03d}.pt"
+        if not path.exists():
+            raise FileNotFoundError(f"missing distributed feature cache chunk: {path}")
+        payload = torch.load(path, map_location="cpu", weights_only=False)
+        if payload.get("fingerprint") != fingerprint:
+            raise ValueError(f"feature cache fingerprint mismatch for {path}")
+        chunks.append(payload)
+    features = torch.empty((n, feature_dim), dtype=tensor_dtype)
+    for payload in sorted(chunks, key=lambda item: int(item["start"])):
+        chunk = payload["features"].to(dtype=tensor_dtype)
+        features[int(payload["start"]) : int(payload["end"])] = chunk
+    if rank == 0:
+        write_json(
+            split_dir / "summary.json",
+            {
+                "schema": "temporal_raw_video_distributed_feature_cache.v1",
+                "status": "pass",
+                "split_name": split_name,
+                "fingerprint": fingerprint,
+                "rows": n,
+                "feature_dim": feature_dim,
+                "world_size": world_size,
+                "dtype": dtype_name,
+                "chunks": [
+                    {
+                        "rank": int(payload["rank"]),
+                        "start": int(payload["start"]),
+                        "end": int(payload["end"]),
+                        "path": str(split_dir / f"chunk_rank{int(payload['rank']):03d}_of_{world_size:03d}.pt"),
+                    }
+                    for payload in sorted(chunks, key=lambda item: int(item["rank"]))
+                ],
+                "claim_boundary": "Decode/cache acceleration evidence only; it does not alter IDM targets or satisfy G005 metrics.",
+            },
+        )
+    if dist is not None:
+        dist.barrier()
+    return features.contiguous()
 
 
 def _maybe_tensorize_features(torch: Any, features: Any, *, config: dict[str, Any], split_name: str) -> Any:
@@ -2770,9 +2922,40 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             max_rows=len(target_rows),
         )
     else:
-        fit_features = _precompute_features(fit_rows, config=config)
-        calibration_features = _precompute_features(calibration_rows, config=config) if calibration_rows else []
-        target_features = _precompute_features(target_rows, config=config)
+        fit_features = _precompute_features_with_distributed_cache(
+            fit_rows,
+            config=config,
+            split_name="fit",
+            torch=torch,
+            distributed=distributed,
+            rank=rank,
+            world_size=world_size,
+            dist=dist,
+        )
+        calibration_features = (
+            _precompute_features_with_distributed_cache(
+                calibration_rows,
+                config=config,
+                split_name="calibration",
+                torch=torch,
+                distributed=distributed,
+                rank=rank,
+                world_size=world_size,
+                dist=dist,
+            )
+            if calibration_rows
+            else []
+        )
+        target_features = _precompute_features_with_distributed_cache(
+            target_rows,
+            config=config,
+            split_name="target",
+            torch=torch,
+            distributed=distributed,
+            rank=rank,
+            world_size=world_size,
+            dist=dist,
+        )
     fit_features = _maybe_tensorize_features(torch, fit_features, config=config, split_name="fit")
     calibration_features = _maybe_tensorize_features(torch, calibration_features, config=config, split_name="calibration")
     target_features = _maybe_tensorize_features(torch, target_features, config=config, split_name="target")

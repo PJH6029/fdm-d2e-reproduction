@@ -1335,3 +1335,11 @@ Materialization is now operational (`16k` train `26.17s`, `16k` target `25.28s`,
 - Training failed before first optimizer step with `ValueError: only one element tensors can be converted to Python scalars` in `_maybe_tensorize_features` because `raw_video_feature_storage=tensor` returned a list of frame tensors and the shared tensorization path called `torch.tensor(list_of_tensors)` instead of stacking.
 - GPU monitor evidence intentionally records zero utilization for this failed pre-train gate; G005 remains incomplete and no paper-target claim is made.
 - Fix direction: stack list-of-tensor features in `_maybe_tensorize_features`, keep the raw-frame FDM-1-shaped config unchanged, then relaunch on the same reservation while quota is available.
+
+### 2026-05-29 KST — balanced real-video raw96 prefix32k terminal negative; train320k follow-up prepared
+
+- Relaunched `g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_prefix32k` on the same `rsv-jeonghunpark-20260529-b8d1e3` reservation after commit `75c25b8` fixed tensorized raw-frame features.
+- The run completed with `exit_code=0` and 4×H200 training evidence, but metric status is non-terminal negative: all-row paper-compatible keyboard `0.009311`, mouse-button `0.006849`, mouse Pearson X/Y `0.000154/-0.000441`; strict mouse-button F1 `0.013917`; no-button FPR `0.018676` passes only the FPR gate.
+- Evidence copied locally: `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_prefix32k_h200_{run,compact_summary,gpu_monitor}.json/csv`, `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_prefix32k_summary.json`, source balanced summaries, and small output metadata under `outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_prefix32k/`.
+- Do not checkpoint `G005-g014-idm-full-paper-target` from this run. It proves the actual-D2E-video/FDM-1-shaped trainer is operational but not useful yet.
+- Follow-up prepared: a larger real-video `train320k/target24k` branch with a 512-dim/6-layer patch-token masked-diffusion IDM and a distributed raw-frame feature cache so future 4×H200 launches do not duplicate raw-frame decode on every rank.

@@ -33,6 +33,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _mouse_axis_class_vocab,
     _maybe_tensorize_features,
     _precompute_features,
+    _precompute_features_with_distributed_cache,
     _temporal_button_class_targets,
     _temporal_center_candidates,
     _temporal_family_class_targets,
@@ -123,6 +124,75 @@ def test_tensorize_features_stacks_raw_video_tensor_storage():
     assert tuple(tensor.shape) == (2, 2)
     assert tensor.dtype == torch.float16
     assert tensor.tolist() == [[0.0, 1.0], [0.5, 0.25]]
+
+
+def test_distributed_raw_video_feature_cache_loads_ordered_chunks(tmp_path: Path):
+    if not torch_available():
+        return
+    import torch
+
+    frame_dir = tmp_path / "frames"
+    frame_dir.mkdir()
+    for idx in range(4):
+        _write_pgm(frame_dir / f"frame_{idx:06d}.ppm", [idx, idx + 1, idx + 2, idx + 3])
+    rows = [
+        {
+            "sequence_id": f"raw-video-cache#{idx}",
+            "frame": {"path": str(frame_dir / f"frame_{idx:06d}.ppm"), "index": idx, "width": 2, "height": 2},
+        }
+        for idx in range(4)
+    ]
+    config = {
+        "video_feature_source": "raw_frames",
+        "raw_video_image_size": 2,
+        "raw_video_frame_offsets": [0],
+        "raw_video_missing_frame_policy": "zero",
+        "video_feature_dim": 4,
+        "distributed_feature_cache_dir": str(tmp_path / "feature_cache"),
+        "raw_video_feature_tensor_dtype": "float32",
+    }
+    # The helper is normally synchronized by torch.distributed.  Pre-create the
+    # other-rank chunk so this unit test can exercise rank0 ordering without
+    # launching a process group.
+    split_dir = next((tmp_path / "feature_cache").glob("fit-*"), None)
+    assert split_dir is None
+    # First call rank0 once without distributed caching to compute the expected
+    # row values, then create the rank1 chunk matching the helper contract.
+    expected = _precompute_features(rows, config=config)
+    split_name = "fit"
+    from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import _feature_cache_fingerprint
+
+    fingerprint = _feature_cache_fingerprint(rows, split_name=split_name, config=config)
+    split_dir = tmp_path / "feature_cache" / f"{split_name}-{fingerprint}"
+    split_dir.mkdir(parents=True)
+    torch.save(
+        {
+            "schema": "temporal_raw_video_feature_cache_chunk.v1",
+            "split_name": split_name,
+            "fingerprint": fingerprint,
+            "rank": 1,
+            "world_size": 2,
+            "start": 2,
+            "end": 4,
+            "feature_dim": 4,
+            "dtype": "float32",
+            "features": torch.tensor(expected[2:4], dtype=torch.float32),
+        },
+        split_dir / "chunk_rank001_of_002.pt",
+    )
+    features = _precompute_features_with_distributed_cache(
+        rows,
+        config=config,
+        split_name=split_name,
+        torch=torch,
+        distributed=True,
+        rank=0,
+        world_size=2,
+        dist=None,
+    )
+    assert tuple(features.shape) == (4, 4)
+    assert features.tolist() == [pytest.approx(row) for row in expected]
+    assert (split_dir / "summary.json").exists()
 
 
 def test_button_event_calibration_uses_dynamic_probability_thresholds():

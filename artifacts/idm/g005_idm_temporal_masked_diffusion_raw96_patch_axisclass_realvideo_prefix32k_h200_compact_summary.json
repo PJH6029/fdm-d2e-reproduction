@@ -1,11 +1,11 @@
 {
   "claim_boundary": "Compact probe evidence only. G005 remains incomplete unless status=paper_target_pass and separate completion/goal checkpoint gates pass.",
   "config": "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_prefix32k.yaml",
-  "exit_code": 1,
+  "exit_code": 0,
   "fit_rows": null,
   "gpu_monitor_status": {
-    "max_gpu_utilization": 0.0,
-    "rows": 24,
+    "max_gpu_utilization": 56.0,
+    "rows": 144,
     "status": "pass",
     "unique_gpu_indices": [
       0,
@@ -20,18 +20,18 @@
   "paper_target_gates": {
     "keyboard_key_accuracy": false,
     "mouse_button_accuracy": false,
-    "mouse_button_f1_nonzero": false,
+    "mouse_button_f1_nonzero": true,
     "mouse_move_pearson_x": false,
     "mouse_move_pearson_y": false,
-    "no_button_false_positive_rate": false
+    "no_button_false_positive_rate": true
   },
   "paper_target_observed": {
-    "keyboard_key_accuracy": null,
-    "mouse_button_accuracy": null,
-    "mouse_button_f1": null,
-    "mouse_move_pearson_x": null,
-    "mouse_move_pearson_y": null,
-    "no_button_false_positive_rate": null
+    "keyboard_key_accuracy": 0.009311095560220823,
+    "mouse_button_accuracy": 0.00684931506849315,
+    "mouse_button_f1": 0.013916500994035786,
+    "mouse_move_pearson_x": 0.00015404190453953211,
+    "mouse_move_pearson_y": -0.0004410300614034566,
+    "no_button_false_positive_rate": 0.01867564917068179
   },
   "paper_targets": {
     "keyboard_key_accuracy": 0.73,
@@ -43,7 +43,7 @@
   },
   "run_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_prefix32k_h200_run.json",
   "schema": "g005_temporal_raw96_h200_compact_summary.v1",
-  "status": "fail",
+  "status": "nonterminal_negative_probe",
   "summary_path": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_prefix32k/summary.json",
   "target_rows": null,
   "temporal_window": null,
@@ -58,40 +58,40 @@
       {
         "index": "0",
         "memory_total_mib": 143771.0,
-        "memory_used_mib": 529.0,
+        "memory_used_mib": 0.0,
         "name": "NVIDIA H200",
-        "power_draw_w": 119.21,
-        "timestamp": "2026/05/29 14:30:53.247",
+        "power_draw_w": 77.39,
+        "timestamp": "2026/05/29 14:36:51.936",
         "utilization_gpu_pct": 0.0,
         "utilization_memory_pct": 0.0
       },
       {
         "index": "1",
         "memory_total_mib": 143771.0,
-        "memory_used_mib": 529.0,
+        "memory_used_mib": 0.0,
         "name": "NVIDIA H200",
-        "power_draw_w": 117.29,
-        "timestamp": "2026/05/29 14:30:53.247",
+        "power_draw_w": 75.97,
+        "timestamp": "2026/05/29 14:36:51.939",
         "utilization_gpu_pct": 0.0,
         "utilization_memory_pct": 0.0
       },
       {
         "index": "2",
         "memory_total_mib": 143771.0,
-        "memory_used_mib": 529.0,
+        "memory_used_mib": 0.0,
         "name": "NVIDIA H200",
-        "power_draw_w": 119.63,
-        "timestamp": "2026/05/29 14:30:53.247",
+        "power_draw_w": 77.66,
+        "timestamp": "2026/05/29 14:36:51.942",
         "utilization_gpu_pct": 0.0,
         "utilization_memory_pct": 0.0
       },
       {
         "index": "3",
         "memory_total_mib": 143771.0,
-        "memory_used_mib": 529.0,
+        "memory_used_mib": 0.0,
         "name": "NVIDIA H200",
-        "power_draw_w": 116.66,
-        "timestamp": "2026/05/29 14:30:53.247",
+        "power_draw_w": 76.14,
+        "timestamp": "2026/05/29 14:36:51.945",
         "utilization_gpu_pct": 0.0,
         "utilization_memory_pct": 0.0
       }
@@ -99,17 +99,17 @@
     "last_epoch": null,
     "logged_epochs_this_loop": 0,
     "logged_epochs_total": [],
-    "loop_index": 6,
+    "loop_index": 1,
     "metadata_exists": false,
     "process_running": true,
     "project": "fdm-d2e-reproduction",
     "rank_progress": [],
     "run_name": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_prefix32k",
-    "run_summary_exists": false,
+    "run_summary_exists": true,
     "schema": "wandb_training_sidecar_status.v1",
-    "status": "running",
-    "updated_at_epoch": 1780065057.495484,
-    "wandb_run_id": "636kotno",
-    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/636kotno"
+    "status": "complete",
+    "updated_at_epoch": 1780065415.8833213,
+    "wandb_run_id": "wxshtll8",
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/wxshtll8"
   }
 }
