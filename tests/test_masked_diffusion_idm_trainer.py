@@ -588,6 +588,41 @@ def test_temporal_button_class_biases_mouse_button_candidate_identity():
     assert candidates[0][0]["button_class_score"] == pytest.approx(0.90)
 
 
+def test_temporal_direct_auxiliary_candidates_can_override_slot_identity_noise():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "KEY_PRESS_A", "KEY_PRESS_D", "MOUSE_LEFT_DOWN"]
+    probabilities = torch.zeros((1, 2, len(vocab)), dtype=torch.float32)
+    probabilities[:, :, 3] = 0.02
+    probabilities[:, :, 4] = 0.02
+    probabilities[:, :, 5] = 0.02
+
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={
+            "non_noop_budget_candidates_per_row": 8,
+            "direct_auxiliary_candidate_families": ["keyboard", "mouse_button"],
+            "direct_auxiliary_button_class_blend": 1.0,
+        },
+        event_probabilities={
+            "key_token_presence": torch.tensor([[0.05, 0.91]], dtype=torch.float32),
+            "button_class": torch.tensor([[0.05, 0.94]], dtype=torch.float32),
+        },
+    )
+
+    assert candidates[0][0]["token"] == "MOUSE_LEFT_DOWN"
+    assert candidates[0][0]["direct_auxiliary_candidate"] == "button_presence_class"
+    assert any(
+        row["token"] == "KEY_PRESS_D"
+        and row.get("direct_auxiliary_candidate") == "key_token_presence"
+        and row["score"] == pytest.approx(0.91)
+        for row in candidates[0]
+    )
+
+
 def test_temporal_family_token_presence_targets_are_family_scoped_multihot():
     if not torch_available():
         return

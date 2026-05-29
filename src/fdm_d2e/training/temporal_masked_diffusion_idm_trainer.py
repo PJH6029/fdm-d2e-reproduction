@@ -1173,6 +1173,11 @@ def _temporal_center_candidates(
     button_vocab = _button_class_vocab(vocab)
     button_class_index = {token: idx + 1 for idx, token in enumerate(button_vocab)}
     button_presence_index = {token: idx for idx, token in enumerate(button_vocab)}
+    direct_aux_families = config.get("direct_auxiliary_candidate_families", [])
+    if not isinstance(direct_aux_families, list):
+        direct_aux_families = []
+    direct_aux_families = {str(item) for item in direct_aux_families}
+    direct_aux_min_score = max(0.0, float(config.get("direct_auxiliary_candidate_min_score", 0.0) or 0.0))
     batch_candidates: list[list[dict[str, Any]]] = []
     for batch_idx in range(int(probabilities_cpu.shape[0])):
         candidates: list[dict[str, Any]] = []
@@ -1293,6 +1298,94 @@ def _temporal_center_candidates(
                         "family": family,
                     }
                 )
+        if direct_aux_families and event_probabilities_cpu:
+            if "keyboard" in direct_aux_families and event_probabilities_cpu.get("key_token_presence") is not None:
+                key_presence = event_probabilities_cpu["key_token_presence"]
+                for token, class_idx in key_presence_index.items():
+                    if class_idx >= int(key_presence.shape[1]):
+                        continue
+                    score = float(key_presence[batch_idx, class_idx])
+                    prior_weight = float(token_prior_weights.get(token, 1.0)) if token_prior_weights else 1.0
+                    if bool(config.get("direct_auxiliary_candidate_apply_token_prior", False)):
+                        score = max(0.0, min(1.0, score * prior_weight))
+                    if score < direct_aux_min_score:
+                        continue
+                    candidates.append(
+                        {
+                            "score": score,
+                            "token_probability": 0.0,
+                            "retrieval_score": 0.0,
+                            "prior_weight": prior_weight,
+                            "event_gate_multiplier": 1.0,
+                            "key_presence_score": score,
+                            "button_class_score": 0.0,
+                            "button_class_no_button_gate_score": 1.0,
+                            "button_presence_score": 0.0,
+                            "slot": -1,
+                            "token_index": key_presence_index[token],
+                            "token": token,
+                            "family": "keyboard",
+                            "direct_auxiliary_candidate": "key_token_presence",
+                        }
+                    )
+            if "mouse_button" in direct_aux_families:
+                button_presence = event_probabilities_cpu.get("button_token_presence")
+                button_class_probs = event_probabilities_cpu.get("button_class")
+                no_button_gate = 1.0
+                if button_class_probs is not None and int(button_class_probs.shape[1]) > 0:
+                    no_button_gate = max(0.0, min(1.0, 1.0 - float(button_class_probs[batch_idx, 0])))
+                for token in button_vocab:
+                    class_idx = button_presence_index.get(token)
+                    class_prob_idx = button_class_index.get(token)
+                    presence_score = (
+                        float(button_presence[batch_idx, class_idx])
+                        if button_presence is not None and class_idx is not None and class_idx < int(button_presence.shape[1])
+                        else 0.0
+                    )
+                    class_score = (
+                        float(button_class_probs[batch_idx, class_prob_idx])
+                        if button_class_probs is not None and class_prob_idx is not None and class_prob_idx < int(button_class_probs.shape[1])
+                        else 0.0
+                    )
+                    blend = max(
+                        0.0,
+                        min(1.0, float(config.get("direct_auxiliary_button_class_blend", 0.5) or 0.0)),
+                    )
+                    score = (1.0 - blend) * presence_score + blend * class_score
+                    gate_power = max(
+                        0.0,
+                        float(config.get("direct_auxiliary_button_no_button_gate_power", 0.0) or 0.0),
+                    )
+                    if gate_power > 0.0:
+                        gate_floor = max(
+                            0.0,
+                            min(1.0, float(config.get("direct_auxiliary_button_no_button_gate_floor", 0.0) or 0.0)),
+                        )
+                        score *= gate_floor + (1.0 - gate_floor) * (no_button_gate**gate_power)
+                    prior_weight = float(token_prior_weights.get(token, 1.0)) if token_prior_weights else 1.0
+                    if bool(config.get("direct_auxiliary_candidate_apply_token_prior", False)):
+                        score = max(0.0, min(1.0, score * prior_weight))
+                    if score < direct_aux_min_score:
+                        continue
+                    token_index = next((idx for idx, vocab_token in enumerate(vocab) if str(vocab_token) == token), class_idx or 0)
+                    candidates.append(
+                        {
+                            "score": score,
+                            "token_probability": 0.0,
+                            "retrieval_score": 0.0,
+                            "prior_weight": prior_weight,
+                            "event_gate_multiplier": 1.0,
+                            "key_presence_score": 0.0,
+                            "button_class_score": class_score,
+                            "button_class_no_button_gate_score": no_button_gate,
+                            "button_presence_score": presence_score,
+                            "slot": -1,
+                            "token_index": token_index,
+                            "token": token,
+                            "family": "mouse_button",
+                            "direct_auxiliary_candidate": "button_presence_class",
+                        }
+                    )
         candidates.sort(key=lambda item: (-float(item["score"]), int(item["slot"]), int(item["token_index"])))
         if min_candidates_per_family > 0:
             selected: list[dict[str, Any]] = []
@@ -2477,6 +2570,12 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 config.get("non_noop_budget_min_candidates_per_family", config.get("candidate_min_candidates_per_family", 0)) or 0
             ),
             "candidate_diagnostics_target_max_rows":int(config.get("candidate_diagnostics_target_max_rows", 0) or 0),
+            "direct_auxiliary_candidate_families":list(config.get("direct_auxiliary_candidate_families", []))
+            if isinstance(config.get("direct_auxiliary_candidate_families", []), list)
+            else [],
+            "direct_auxiliary_candidate_min_score":float(config.get("direct_auxiliary_candidate_min_score", 0.0) or 0.0),
+            "direct_auxiliary_button_class_blend":float(config.get("direct_auxiliary_button_class_blend", 0.5) or 0.0),
+            "direct_auxiliary_button_no_button_gate_power":float(config.get("direct_auxiliary_button_no_button_gate_power", 0.0) or 0.0),
             "token_loss_type":str(config.get("token_loss_type", "cross_entropy")),
             "token_focal_gamma":float(config.get("token_focal_gamma", config.get("focal_gamma", 2.0))),
             "full_action_mask_probability":float(
