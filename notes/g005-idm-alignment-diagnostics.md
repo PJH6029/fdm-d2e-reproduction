@@ -1490,3 +1490,11 @@ New bounded probe paths:
 - `scripts/run_g005_idm_temporal_raw96_patch_axisclass_realvideo_mouseagg_prefix32k.sh`
 
 Validation before any GPU reservation: `python3 -m py_compile` for masked/temporal IDM trainer paths, targeted pytest (`89 passed`), `uv run python scripts/validate_fdm1_recipe_alignment.py` (`status=pass`), and `git diff --check`. Run only as a bounded prefix gate first; do not checkpoint G005 unless paper-target gates pass and later full-corpus completion evidence exists.
+
+## 2026-05-31 KST — mouse-aggregate prefix32k probe rejected
+
+Bounded 4xH200 mouse-aggregate masked-IDM probe ran on reservation `rsv-jeonghunpark-20260531-905ce5` (Node 6 GPU 0-3) from commit `ea03bdb`. It reused byte-identical prefix32k rows via the `d2e_event_state_duration_realvideo_balanced_mouseagg_prefix32k` hardlink namespace, then trained the FDM-1-recipe noncausal masked action-token IDM with D2E raw mouse packets summed and decomposed into bounded metric-bin action tokens.
+
+Terminal compact summary: `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_mouseagg_prefix32k_h200_compact_summary.json` status `nonterminal_negative_probe`. Observed all-split paper-compatible metrics: keyboard key accuracy `0.010533193936225824`, mouse-button accuracy `0.0`, mouse-button F1 `0.0`, mouse-move Pearson X `0.00039407583799564724`, Pearson Y `-0.001601059023924388`, and no-button FPR `0.0`. Strict keyboard accuracy improved to `0.053149083178315175`, but this remains far below the D2E paper target and mouse/button endpoints are still collapsed. GPU monitor covered all four H200s with max utilization `65%`; W&B sidecar completed. Reservation was cancelled immediately after terminal evidence.
+
+This rejects packet aggregation as a standalone fix. The slight keyboard strict improvement suggests the representation is less pathological than per-packet decoding, but the model still lacks a reliable learned action-state/transition signal. G005 remains incomplete. Next branch should either (a) train a recipe-shaped masked-diffusion model over held control-state/action-state tokens with explicit press/release transition reconstruction, or (b) use the existing stronger event-state/closed-loop IDM diagnostics only as a teacher for split-safe distillation into masked action tokens. Do not checkpoint G005 from this probe.
