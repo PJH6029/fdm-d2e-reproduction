@@ -1449,3 +1449,16 @@ New fast probe paths:
 - `scripts/run_g005_idm_temporal_raw96_train320k_offsetensemble_fast1k.sh`
 
 Validation remains passing (`77` targeted tests and FDM-1 recipe-alignment audit). If fast1k is also negative or too slow, reject temporal offset ensembling and pivot to a more fundamental training/representation change rather than widening the same candidate path.
+
+### 2026-05-31 KST — family-count auxiliary branch prepared
+
+After rejecting the train320k raw96 checkpoint family, candidate reranking, and temporal source-offset ensembling, the next G005 branch targets the observed failure mode directly: exact key/button/mouse candidates often exist but are ranked too low or emitted with a global per-family budget that cannot decide row-local sparse action counts.
+
+Implemented a recipe-faithful family-count auxiliary for the temporal masked-diffusion IDM. The model still denoises masked action-token slots from noncausal video/action-token context, but now learns train-only capped per-family action-token counts (`keyboard`, `mouse_button`, `mouse_move`) and can use those probabilities to gate candidate confidence and row-local family budgets during iterative unmasking. This is an approximation of the unpublished FDM-1 confidence/unmask-count machinery, not target-label calibration and not FDM-1 parity.
+
+Prepared bounded next-probe paths:
+
+- `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_counthead_prefix32k.yaml`
+- `scripts/run_g005_idm_temporal_raw96_patch_axisclass_realvideo_counthead_prefix32k.sh`
+
+Validation before any GPU reservation: `python3 -m py_compile` for the temporal trainer/train/predict scripts, `bash -n` for the wrapper, targeted pytest (`79 passed`), and `uv run python scripts/validate_fdm1_recipe_alignment.py` all pass. Do not checkpoint `G005-g014-idm-full-paper-target` from this implementation alone; run it only as a bounded prefix gate first and promote only if keyboard/button/mouse metrics materially move while no-button FPR remains controlled.

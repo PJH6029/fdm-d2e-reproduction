@@ -40,6 +40,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _temporal_button_class_targets,
     _temporal_candidate_rows_from_probabilities,
     _temporal_center_candidates,
+    _temporal_family_count_targets,
     _temporal_family_class_targets,
     _temporal_family_token_presence_targets,
     _target_slots,
@@ -1048,6 +1049,68 @@ def test_temporal_family_token_presence_targets_are_family_scoped_multihot():
     assert button_targets.tolist() == [[[0.0], [1.0], [1.0]]]
 
 
+def test_temporal_family_count_targets_cap_sparse_action_counts():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = [
+        "<FDM1_ACTION_PAD>",
+        "<FDM1_ACTION_MASK>",
+        "NOOP",
+        "KEY_PRESS_W",
+        "KEY_RELEASE_W",
+        "MOUSE_LEFT_DOWN",
+        "MOUSE_DX_P1",
+        "MOUSE_DY_N1",
+    ]
+    ids = torch.tensor([[[3, 4, 5, 6, 7], [0, 2, 3, 6, 6]]], dtype=torch.long)
+    key_counts = _temporal_family_count_targets(torch, ids, vocab, "keyboard", max_count=1)
+    button_counts = _temporal_family_count_targets(torch, ids, vocab, "mouse_button", max_count=2)
+    move_counts = _temporal_family_count_targets(torch, ids, vocab, "mouse_move", max_count=2)
+
+    assert key_counts.tolist() == [[1, 1]]
+    assert button_counts.tolist() == [[1, 0]]
+    assert move_counts.tolist() == [[2, 2]]
+
+
+def test_temporal_family_count_head_gates_candidate_scores_and_budget():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = [
+        "<FDM1_ACTION_PAD>",
+        "<FDM1_ACTION_MASK>",
+        "NOOP",
+        "KEY_PRESS_W",
+        "MOUSE_LEFT_DOWN",
+    ]
+    probabilities = torch.tensor([[[0.01, 0.01, 0.04, 0.55, 0.39]]], dtype=torch.float32)
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={
+            "non_noop_budget_candidates_per_row": 4,
+            "keyboard_count_candidate_score_blend": 1.0,
+            "keyboard_count_candidate_gate_power": 1.0,
+            "keyboard_count_candidate_gate_floor": 0.0,
+        },
+        event_probabilities={"keyboard_count": torch.tensor([[0.90, 0.08, 0.02]], dtype=torch.float32)},
+    )
+    key_candidate = next(item for item in candidates[0] if item["token"] == "KEY_PRESS_W")
+    assert key_candidate["family_count_nonzero_score"] == pytest.approx(0.10)
+    assert key_candidate["family_count_predicted"] == 0
+    assert key_candidate["score"] == pytest.approx(0.01)
+
+    emitted = _tokens_from_family_budget_candidates(
+        candidates[0],
+        family_budgets={"families": {"keyboard": {"status": "pass", "selected_threshold": 0.0, "max_tokens_per_row": 2}}},
+        config={"family_count_candidate_budget": True},
+    )
+    assert emitted == []
+
+
 def test_temporal_family_token_presence_biases_key_and_button_candidate_identity():
     if not torch_available():
         return
@@ -1647,6 +1710,14 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
             "mouse_move_token_presence_pos_weight": 2.0,
             "mouse_move_token_presence_negative_weight": 0.1,
             "mouse_move_token_presence_candidate_score_blend": 0.5,
+            "temporal_family_count_auxiliary": True,
+            "family_count_aux_weight": 0.12,
+            "keyboard_count_max": 2,
+            "mouse_button_count_max": 1,
+            "mouse_move_count_max": 2,
+            "family_count_candidate_score_blend": 0.2,
+            "family_count_candidate_gate_power": 0.5,
+            "family_count_candidate_budget": True,
             "temporal_video_key_token_presence_auxiliary": True,
             "video_key_token_presence_aux_weight": 0.1,
             "video_key_token_presence_rank_weight": 0.05,
@@ -1724,6 +1795,13 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert summary["loss_weights"]["mouse_move_token_presence_aux_weight"] == 0.15
     assert summary["loss_weights"]["mouse_move_token_presence_rank_weight"] == 0.1
     assert summary["loss_weights"]["mouse_move_token_presence_candidate_score_blend"] == 0.5
+    assert summary["loss_weights"]["temporal_family_count_auxiliary"] is True
+    assert summary["loss_weights"]["temporal_keyboard_count_auxiliary"] is True
+    assert summary["loss_weights"]["keyboard_count_aux_weight"] == 0.12
+    assert summary["loss_weights"]["keyboard_count_max"] == 2
+    assert summary["loss_weights"]["mouse_button_count_max"] == 1
+    assert summary["loss_weights"]["mouse_move_count_max"] == 2
+    assert summary["loss_weights"]["family_count_candidate_budget"] is True
     assert summary["loss_weights"]["temporal_video_key_token_presence_auxiliary"] is True
     assert summary["loss_weights"]["video_key_token_presence_aux_weight"] == 0.1
     assert summary["loss_weights"]["video_key_token_presence_rank_weight"] == 0.05
@@ -1742,6 +1820,7 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert any("key_class_loss" in row and "mouse_axis_class_loss" in row for row in summary["history"])
     assert any("key_token_presence_loss" in row and "button_token_presence_loss" in row for row in summary["history"])
     assert any("mouse_move_token_presence_loss" in row and "mouse_move_token_presence_rank_loss" in row for row in summary["history"])
+    assert any("keyboard_count_loss" in row and "mouse_button_count_loss" in row for row in summary["history"])
     assert any("video_key_token_presence_loss" in row and "video_button_token_presence_loss" in row for row in summary["history"])
     assert any("video_mouse_move_token_presence_loss" in row for row in summary["history"])
     assert summary["non_noop_budget"]["status"] in {"pass", "skipped"}

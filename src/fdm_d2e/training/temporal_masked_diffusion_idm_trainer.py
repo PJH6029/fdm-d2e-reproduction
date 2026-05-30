@@ -1024,6 +1024,25 @@ def _build_temporal_model(
             self.key_token_presence_auxiliary = bool(config.get("temporal_key_token_presence_auxiliary", False)) and bool(key_vocab)
             self.button_token_presence_auxiliary = bool(config.get("temporal_button_token_presence_auxiliary", False)) and bool(button_vocab)
             self.mouse_move_token_presence_auxiliary = bool(config.get("temporal_mouse_move_token_presence_auxiliary", False)) and bool(mouse_move_vocab)
+            family_count_auxiliary = bool(config.get("temporal_family_count_auxiliary", False))
+            self.keyboard_count_auxiliary = (
+                bool(config.get("temporal_keyboard_count_auxiliary", family_count_auxiliary)) and bool(key_vocab)
+            )
+            self.mouse_button_count_auxiliary = (
+                bool(config.get("temporal_mouse_button_count_auxiliary", family_count_auxiliary)) and bool(button_vocab)
+            )
+            self.mouse_move_count_auxiliary = (
+                bool(config.get("temporal_mouse_move_count_auxiliary", family_count_auxiliary)) and bool(mouse_move_vocab)
+            )
+            self.keyboard_count_max = max(1, int(config.get("keyboard_count_max", config.get("family_count_keyboard_max", 4)) or 4))
+            self.mouse_button_count_max = max(
+                1,
+                int(config.get("mouse_button_count_max", config.get("family_count_mouse_button_max", 2)) or 2),
+            )
+            self.mouse_move_count_max = max(
+                1,
+                int(config.get("mouse_move_count_max", config.get("family_count_mouse_move_max", 2)) or 2),
+            )
             self.video_key_token_presence_auxiliary = (
                 bool(config.get("temporal_video_key_token_presence_auxiliary", False)) and bool(key_vocab)
             )
@@ -1060,6 +1079,15 @@ def _build_temporal_model(
             )
             self.mouse_move_token_presence_head = (
                 nn.Linear(hidden_dim, len(mouse_move_vocab)) if self.mouse_move_token_presence_auxiliary else None
+            )
+            self.keyboard_count_head = (
+                nn.Linear(hidden_dim, self.keyboard_count_max + 1) if self.keyboard_count_auxiliary else None
+            )
+            self.mouse_button_count_head = (
+                nn.Linear(hidden_dim, self.mouse_button_count_max + 1) if self.mouse_button_count_auxiliary else None
+            )
+            self.mouse_move_count_head = (
+                nn.Linear(hidden_dim, self.mouse_move_count_max + 1) if self.mouse_move_count_auxiliary else None
             )
             self.video_key_token_presence_head = (
                 nn.Linear(hidden_dim, len(key_vocab)) if self.video_key_token_presence_auxiliary else None
@@ -1152,6 +1180,15 @@ def _build_temporal_model(
             if self.mouse_move_token_presence_auxiliary and self.mouse_move_token_presence_head is not None:
                 pooled = action_encoded.mean(dim=2)
                 payload["mouse_move_token_presence_logits"] = self.mouse_move_token_presence_head(pooled)
+            if self.keyboard_count_auxiliary and self.keyboard_count_head is not None:
+                pooled = action_encoded.mean(dim=2)
+                payload["keyboard_count_logits"] = self.keyboard_count_head(pooled)
+            if self.mouse_button_count_auxiliary and self.mouse_button_count_head is not None:
+                pooled = action_encoded.mean(dim=2)
+                payload["mouse_button_count_logits"] = self.mouse_button_count_head(pooled)
+            if self.mouse_move_count_auxiliary and self.mouse_move_count_head is not None:
+                pooled = action_encoded.mean(dim=2)
+                payload["mouse_move_count_logits"] = self.mouse_move_count_head(pooled)
             if self.video_key_token_presence_auxiliary and self.video_key_token_presence_head is not None:
                 payload["video_key_token_presence_logits"] = self.video_key_token_presence_head(video_summary)
             if self.video_button_token_presence_auxiliary and self.video_button_token_presence_head is not None:
@@ -1356,6 +1393,60 @@ def _temporal_family_token_presence_targets(torch: Any, target_ids: Any, vocab: 
     # Channel 0 is the sentinel for non-family tokens; max over slots gives a
     # multi-hot family-token set without looping over every class per batch.
     return torch.nn.functional.one_hot(mapped, num_classes=len(family_vocab) + 1).amax(dim=2)[:, :, 1:].float()
+
+
+def _temporal_family_count_targets(
+    torch: Any,
+    target_ids: Any,
+    vocab: Sequence[str],
+    family: str,
+    *,
+    max_count: int,
+) -> Any:
+    """Return capped per-row action-token counts for a family.
+
+    FDM-1 publicly describes iterative confidence unmasking, but not how it
+    decides how many sparse action tokens to reveal.  This target is still a
+    masked-action-token auxiliary: it derives only from the train-row action
+    token slots and teaches a row-local unmask budget/count signal rather than
+    using eval labels or replacing the denoising objective.
+    """
+
+    max_count = max(1, int(max_count))
+    family_mask = torch.tensor(
+        [1 if _action_family(str(token)) == str(family) else 0 for token in vocab],
+        dtype=torch.long,
+        device=target_ids.device,
+    )
+    counts = family_mask[target_ids].sum(dim=2).clamp(max=max_count)
+    return counts.to(dtype=torch.long)
+
+
+def _family_count_auxiliary_loss(
+    torch: Any,
+    logits: Any,
+    targets: Any,
+    offset_mask: Any,
+    *,
+    zero_weight: float,
+    count_weight: float,
+    focal_gamma: float = 0.0,
+) -> Any:
+    if logits is None or logits.shape[-1] <= 1:
+        return torch.tensor(0.0, device=targets.device)
+    selected_logits = logits[:, offset_mask, :].reshape(-1, logits.shape[-1])
+    selected_targets = targets[:, offset_mask].reshape(-1)
+    if selected_targets.numel() == 0:
+        return torch.tensor(0.0, device=targets.device)
+    weights = torch.ones(logits.shape[-1], dtype=selected_logits.dtype, device=selected_logits.device) * float(count_weight)
+    weights[0] = float(zero_weight)
+    loss = torch.nn.functional.cross_entropy(selected_logits, selected_targets, weight=weights, reduction="none")
+    gamma = float(focal_gamma or 0.0)
+    if gamma > 0.0:
+        probs = torch.softmax(selected_logits, dim=-1)
+        pt = probs.gather(1, selected_targets.unsqueeze(1)).squeeze(1).clamp_min(1e-8)
+        loss = ((1.0 - pt) ** gamma) * loss
+    return loss.mean()
 
 
 def _event_auxiliary_bce_loss(torch: Any, logits: Any, targets: Any, offset_mask: Any, *, pos_weight: float) -> Any:
@@ -1673,6 +1764,9 @@ _CANDIDATE_SCORE_RERANKER_DEFAULT_FEATURES = [
     "retrieval_score",
     "prior_weight",
     "event_gate_multiplier",
+    "family_count_nonzero_score",
+    "family_count_expected",
+    "family_count_predicted",
     "key_presence_score",
     "video_key_presence_score",
     "key_class_score",
@@ -1958,6 +2052,10 @@ def _wants_temporal_aux_payload(config: dict[str, Any]) -> bool:
         or bool(config.get("key_token_presence_bias_candidates", config.get("temporal_key_token_presence_auxiliary", False)))
         or bool(config.get("button_token_presence_bias_candidates", config.get("temporal_button_token_presence_auxiliary", False)))
         or bool(config.get("mouse_move_token_presence_bias_candidates", config.get("temporal_mouse_move_token_presence_auxiliary", False)))
+        or bool(config.get("family_count_bias_candidates", config.get("temporal_family_count_auxiliary", False)))
+        or bool(config.get("keyboard_count_bias_candidates", config.get("temporal_keyboard_count_auxiliary", False)))
+        or bool(config.get("mouse_button_count_bias_candidates", config.get("temporal_mouse_button_count_auxiliary", False)))
+        or bool(config.get("mouse_move_count_bias_candidates", config.get("temporal_mouse_move_count_auxiliary", False)))
         or bool(config.get("video_key_token_presence_bias_candidates", config.get("temporal_video_key_token_presence_auxiliary", False)))
         or bool(config.get("video_button_token_presence_bias_candidates", config.get("temporal_video_button_token_presence_auxiliary", False)))
         or bool(config.get("video_mouse_move_token_presence_bias_candidates", config.get("temporal_video_mouse_move_token_presence_auxiliary", False)))
@@ -2086,6 +2184,12 @@ def _temporal_final_probabilities(
                 event_probabilities["button_token_presence"] = torch.sigmoid(payload["button_token_presence_logits"])
             if "mouse_move_token_presence_logits" in payload:
                 event_probabilities["mouse_move_token_presence"] = torch.sigmoid(payload["mouse_move_token_presence_logits"])
+            if "keyboard_count_logits" in payload:
+                event_probabilities["keyboard_count"] = torch.softmax(payload["keyboard_count_logits"], dim=-1)
+            if "mouse_button_count_logits" in payload:
+                event_probabilities["mouse_button_count"] = torch.softmax(payload["mouse_button_count_logits"], dim=-1)
+            if "mouse_move_count_logits" in payload:
+                event_probabilities["mouse_move_count"] = torch.softmax(payload["mouse_move_count_logits"], dim=-1)
             if "video_key_token_presence_logits" in payload:
                 event_probabilities["video_key_token_presence"] = torch.sigmoid(payload["video_key_token_presence_logits"])
             if "video_button_token_presence_logits" in payload:
@@ -2256,6 +2360,61 @@ def _temporal_center_candidates(
                     event_score = float(event_probabilities_cpu[family][batch_idx])
                     blend = max(0.0, min(1.0, float(config.get("event_auxiliary_candidate_score_blend", 0.5))))
                     score = (1.0 - blend) * token_score + blend * event_score
+                family_count_nonzero_score = 0.0
+                family_count_expected = 0.0
+                family_count_predicted = 0
+                count_key = {
+                    "keyboard": "keyboard_count",
+                    "mouse_button": "mouse_button_count",
+                    "mouse_move": "mouse_move_count",
+                }.get(family)
+                if event_probabilities_cpu and count_key and event_probabilities_cpu.get(count_key) is not None:
+                    count_probs = event_probabilities_cpu[count_key][batch_idx]
+                    family_count_nonzero_score = max(0.0, min(1.0, 1.0 - float(count_probs[0])))
+                    family_count_predicted = int(count_probs.argmax().item()) if hasattr(count_probs, "argmax") else 0
+                    family_count_expected = float(
+                        sum(float(idx) * float(value) for idx, value in enumerate(count_probs.tolist()))
+                    )
+                    blend = max(
+                        0.0,
+                        min(
+                            1.0,
+                            float(
+                                config.get(
+                                    f"{family}_count_candidate_score_blend",
+                                    config.get("family_count_candidate_score_blend", 0.0),
+                                )
+                                or 0.0
+                            ),
+                        ),
+                    )
+                    if blend > 0.0:
+                        score = (1.0 - blend) * score + blend * family_count_nonzero_score
+                    gate_power = max(
+                        0.0,
+                        float(
+                            config.get(
+                                f"{family}_count_candidate_gate_power",
+                                config.get("family_count_candidate_gate_power", 0.0),
+                            )
+                            or 0.0
+                        ),
+                    )
+                    if gate_power > 0.0:
+                        gate_floor = max(
+                            0.0,
+                            min(
+                                1.0,
+                                float(
+                                    config.get(
+                                        f"{family}_count_candidate_gate_floor",
+                                        config.get("family_count_candidate_gate_floor", 0.0),
+                                    )
+                                    or 0.0
+                                ),
+                            ),
+                        )
+                        score *= gate_floor + (1.0 - gate_floor) * (family_count_nonzero_score**gate_power)
                 if event_probabilities_cpu and event_probabilities_cpu.get("token_presence") is not None:
                     presence_score = float(event_probabilities_cpu["token_presence"][batch_idx, token_idx])
                     blend = max(0.0, min(1.0, float(config.get("token_presence_candidate_score_blend", 0.0))))
@@ -2403,6 +2562,9 @@ def _temporal_center_candidates(
                         "retrieval_score": retrieval_score,
                         "prior_weight": prior_weight,
                         "event_gate_multiplier": event_gate_multiplier,
+                        "family_count_nonzero_score": family_count_nonzero_score,
+                        "family_count_expected": family_count_expected,
+                        "family_count_predicted": family_count_predicted,
                         "key_presence_score": key_presence_score,
                         "video_key_presence_score": video_key_presence_score,
                         "key_class_score": key_class_score,
@@ -2844,6 +3006,15 @@ def _tokens_from_family_budget_candidates(
             continue
         threshold = float(budget.get("selected_threshold", budget.get("threshold", 1.1)))
         max_tokens = max(0, int(budget.get("max_tokens_per_row", 0)))
+        if bool(config.get("family_count_candidate_budget", False)):
+            count_candidates = [
+                int(candidate.get("family_count_predicted", max_tokens) or 0)
+                for candidate in candidates
+                if _action_family(str(candidate.get("token", ""))) == str(family)
+                and candidate.get("family_count_predicted") is not None
+            ]
+            if count_candidates:
+                max_tokens = min(max_tokens, max(0, max(count_candidates)))
         if max_tokens <= 0:
             continue
         emitted = 0
@@ -3647,6 +3818,27 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     mouse_move_token_presence_auxiliary = bool(config.get("temporal_mouse_move_token_presence_auxiliary", False))
     mouse_move_token_presence_aux_weight = float(config.get("mouse_move_token_presence_aux_weight", 0.0) or 0.0)
     mouse_move_token_presence_rank_weight = float(config.get("mouse_move_token_presence_rank_weight", 0.0) or 0.0)
+    family_count_auxiliary = bool(config.get("temporal_family_count_auxiliary", False))
+    keyboard_count_auxiliary = bool(config.get("temporal_keyboard_count_auxiliary", family_count_auxiliary)) and bool(key_vocab)
+    mouse_button_count_auxiliary = (
+        bool(config.get("temporal_mouse_button_count_auxiliary", family_count_auxiliary)) and bool(button_vocab)
+    )
+    mouse_move_count_auxiliary = (
+        bool(config.get("temporal_mouse_move_count_auxiliary", family_count_auxiliary)) and bool(mouse_move_vocab)
+    )
+    keyboard_count_aux_weight = float(config.get("keyboard_count_aux_weight", config.get("family_count_aux_weight", 0.0)) or 0.0)
+    mouse_button_count_aux_weight = float(
+        config.get("mouse_button_count_aux_weight", config.get("family_count_aux_weight", 0.0)) or 0.0
+    )
+    mouse_move_count_aux_weight = float(
+        config.get("mouse_move_count_aux_weight", config.get("family_count_aux_weight", 0.0)) or 0.0
+    )
+    keyboard_count_max = max(1, int(config.get("keyboard_count_max", config.get("family_count_keyboard_max", 4)) or 4))
+    mouse_button_count_max = max(
+        1,
+        int(config.get("mouse_button_count_max", config.get("family_count_mouse_button_max", 2)) or 2),
+    )
+    mouse_move_count_max = max(1, int(config.get("mouse_move_count_max", config.get("family_count_mouse_move_max", 2)) or 2))
     video_key_token_presence_auxiliary = bool(config.get("temporal_video_key_token_presence_auxiliary", False))
     video_key_token_presence_aux_weight = float(config.get("video_key_token_presence_aux_weight", 0.0) or 0.0)
     video_key_token_presence_rank_weight = float(config.get("video_key_token_presence_rank_weight", 0.0) or 0.0)
@@ -3681,6 +3873,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         total_button_token_presence_rank = 0.0
         total_mouse_move_token_presence = 0.0
         total_mouse_move_token_presence_rank = 0.0
+        total_keyboard_count = 0.0
+        total_mouse_button_count = 0.0
+        total_mouse_move_count = 0.0
         total_video_key_token_presence = 0.0
         total_video_key_token_presence_rank = 0.0
         total_video_button_token_presence = 0.0
@@ -3703,6 +3898,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 or key_token_presence_auxiliary
                 or button_token_presence_auxiliary
                 or mouse_move_token_presence_auxiliary
+                or keyboard_count_auxiliary
+                or mouse_button_count_auxiliary
+                or mouse_move_count_auxiliary
                 or video_key_token_presence_auxiliary
                 or video_button_token_presence_auxiliary
                 or video_mouse_move_token_presence_auxiliary
@@ -3733,6 +3931,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             button_token_presence_rank_loss = torch.tensor(0.0, device=device)
             mouse_move_token_presence_loss = torch.tensor(0.0, device=device)
             mouse_move_token_presence_rank_loss = torch.tensor(0.0, device=device)
+            keyboard_count_loss = torch.tensor(0.0, device=device)
+            mouse_button_count_loss = torch.tensor(0.0, device=device)
+            mouse_move_count_loss = torch.tensor(0.0, device=device)
             video_key_token_presence_loss = torch.tensor(0.0, device=device)
             video_key_token_presence_rank_loss = torch.tensor(0.0, device=device)
             video_button_token_presence_loss = torch.tensor(0.0, device=device)
@@ -3856,6 +4057,57 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                         margin=float(config.get("mouse_move_token_presence_rank_margin", config.get("token_presence_rank_margin", 1.0))),
                         top_negatives=int(config.get("mouse_move_token_presence_rank_top_negatives", config.get("token_presence_rank_top_negatives", 1))),
                     )
+            if keyboard_count_auxiliary and keyboard_count_aux_weight > 0.0:
+                keyboard_count_targets = _temporal_family_count_targets(
+                    torch,
+                    target_ids,
+                    vocab,
+                    "keyboard",
+                    max_count=keyboard_count_max,
+                )
+                keyboard_count_loss = _family_count_auxiliary_loss(
+                    torch,
+                    payload.get("keyboard_count_logits"),
+                    keyboard_count_targets,
+                    event_offset_mask,
+                    zero_weight=float(config.get("keyboard_count_zero_weight", config.get("family_count_zero_weight", 0.05))),
+                    count_weight=float(config.get("keyboard_count_positive_weight", config.get("key_event_pos_weight", 8.0))),
+                    focal_gamma=float(config.get("keyboard_count_focal_gamma", config.get("family_count_focal_gamma", 0.0)) or 0.0),
+                )
+            if mouse_button_count_auxiliary and mouse_button_count_aux_weight > 0.0:
+                mouse_button_count_targets = _temporal_family_count_targets(
+                    torch,
+                    target_ids,
+                    vocab,
+                    "mouse_button",
+                    max_count=mouse_button_count_max,
+                )
+                mouse_button_count_loss = _family_count_auxiliary_loss(
+                    torch,
+                    payload.get("mouse_button_count_logits"),
+                    mouse_button_count_targets,
+                    event_offset_mask,
+                    zero_weight=float(config.get("mouse_button_count_zero_weight", config.get("family_count_zero_weight", 0.05))),
+                    count_weight=float(config.get("mouse_button_count_positive_weight", config.get("button_event_pos_weight", 16.0))),
+                    focal_gamma=float(config.get("mouse_button_count_focal_gamma", config.get("family_count_focal_gamma", 0.0)) or 0.0),
+                )
+            if mouse_move_count_auxiliary and mouse_move_count_aux_weight > 0.0:
+                mouse_move_count_targets = _temporal_family_count_targets(
+                    torch,
+                    target_ids,
+                    vocab,
+                    "mouse_move",
+                    max_count=mouse_move_count_max,
+                )
+                mouse_move_count_loss = _family_count_auxiliary_loss(
+                    torch,
+                    payload.get("mouse_move_count_logits"),
+                    mouse_move_count_targets,
+                    event_offset_mask,
+                    zero_weight=float(config.get("mouse_move_count_zero_weight", config.get("family_count_zero_weight", 0.05))),
+                    count_weight=float(config.get("mouse_move_count_positive_weight", config.get("token_presence_mouse_move_pos_weight", 2.0))),
+                    focal_gamma=float(config.get("mouse_move_count_focal_gamma", config.get("family_count_focal_gamma", 0.0)) or 0.0),
+                )
             if video_key_token_presence_auxiliary and video_key_token_presence_aux_weight > 0.0 and key_vocab:
                 key_presence_targets = _temporal_family_token_presence_targets(torch, target_ids, vocab, key_vocab)
                 video_key_token_presence_loss = _family_token_presence_bce_loss(
@@ -3941,6 +4193,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 + button_token_presence_rank_weight * button_token_presence_rank_loss
                 + mouse_move_token_presence_aux_weight * mouse_move_token_presence_loss
                 + mouse_move_token_presence_rank_weight * mouse_move_token_presence_rank_loss
+                + keyboard_count_aux_weight * keyboard_count_loss
+                + mouse_button_count_aux_weight * mouse_button_count_loss
+                + mouse_move_count_aux_weight * mouse_move_count_loss
                 + video_key_token_presence_aux_weight * video_key_token_presence_loss
                 + video_key_token_presence_rank_weight * video_key_token_presence_rank_loss
                 + video_button_token_presence_aux_weight * video_button_token_presence_loss
@@ -3969,6 +4224,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             total_button_token_presence_rank += float(button_token_presence_rank_loss.detach().cpu()) * batch
             total_mouse_move_token_presence += float(mouse_move_token_presence_loss.detach().cpu()) * batch
             total_mouse_move_token_presence_rank += float(mouse_move_token_presence_rank_loss.detach().cpu()) * batch
+            total_keyboard_count += float(keyboard_count_loss.detach().cpu()) * batch
+            total_mouse_button_count += float(mouse_button_count_loss.detach().cpu()) * batch
+            total_mouse_move_count += float(mouse_move_count_loss.detach().cpu()) * batch
             total_video_key_token_presence += float(video_key_token_presence_loss.detach().cpu()) * batch
             total_video_key_token_presence_rank += float(video_key_token_presence_rank_loss.detach().cpu()) * batch
             total_video_button_token_presence += float(video_button_token_presence_loss.detach().cpu()) * batch
@@ -4004,6 +4262,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                         "button_token_presence_rank_loss": total_button_token_presence_rank / max(1, total_examples),
                         "mouse_move_token_presence_loss": total_mouse_move_token_presence / max(1, total_examples),
                         "mouse_move_token_presence_rank_loss": total_mouse_move_token_presence_rank / max(1, total_examples),
+                        "keyboard_count_loss": total_keyboard_count / max(1, total_examples),
+                        "mouse_button_count_loss": total_mouse_button_count / max(1, total_examples),
+                        "mouse_move_count_loss": total_mouse_move_count / max(1, total_examples),
                         "video_key_token_presence_loss": total_video_key_token_presence / max(1, total_examples),
                         "video_key_token_presence_rank_loss": total_video_key_token_presence_rank / max(1, total_examples),
                         "video_button_token_presence_loss": total_video_button_token_presence / max(1, total_examples),
@@ -4030,6 +4291,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                     total_button_token_presence_rank,
                     total_mouse_move_token_presence,
                     total_mouse_move_token_presence_rank,
+                    total_keyboard_count,
+                    total_mouse_button_count,
+                    total_mouse_move_count,
                     total_video_key_token_presence,
                     total_video_key_token_presence_rank,
                     total_video_button_token_presence,
@@ -4059,6 +4323,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 total_button_token_presence_rank,
                 total_mouse_move_token_presence,
                 total_mouse_move_token_presence_rank,
+                total_keyboard_count,
+                total_mouse_button_count,
+                total_mouse_move_count,
                 total_video_key_token_presence,
                 total_video_key_token_presence_rank,
                 total_video_button_token_presence,
@@ -4088,6 +4355,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 "button_token_presence_rank_loss": total_button_token_presence_rank / max(1, total_examples),
                 "mouse_move_token_presence_loss": total_mouse_move_token_presence / max(1, total_examples),
                 "mouse_move_token_presence_rank_loss": total_mouse_move_token_presence_rank / max(1, total_examples),
+                "keyboard_count_loss": total_keyboard_count / max(1, total_examples),
+                "mouse_button_count_loss": total_mouse_button_count / max(1, total_examples),
+                "mouse_move_count_loss": total_mouse_move_count / max(1, total_examples),
                 "video_key_token_presence_loss": total_video_key_token_presence / max(1, total_examples),
                 "video_key_token_presence_rank_loss": total_video_key_token_presence_rank / max(1, total_examples),
                 "video_button_token_presence_loss": total_video_button_token_presence / max(1, total_examples),
@@ -4421,6 +4691,22 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "mouse_move_token_presence_pos_weight":float(config.get("mouse_move_token_presence_pos_weight", config.get("token_presence_mouse_move_pos_weight", 2.0))),
             "mouse_move_token_presence_negative_weight":float(config.get("mouse_move_token_presence_negative_weight", 0.05)),
             "mouse_move_token_presence_candidate_score_blend":float(config.get("mouse_move_token_presence_candidate_score_blend", 0.0)),
+            "temporal_family_count_auxiliary":family_count_auxiliary,
+            "temporal_keyboard_count_auxiliary":keyboard_count_auxiliary,
+            "keyboard_count_aux_weight":keyboard_count_aux_weight,
+            "keyboard_count_max":keyboard_count_max,
+            "keyboard_count_candidate_score_blend":float(config.get("keyboard_count_candidate_score_blend", config.get("family_count_candidate_score_blend", 0.0)) or 0.0),
+            "temporal_mouse_button_count_auxiliary":mouse_button_count_auxiliary,
+            "mouse_button_count_aux_weight":mouse_button_count_aux_weight,
+            "mouse_button_count_max":mouse_button_count_max,
+            "mouse_button_count_candidate_score_blend":float(config.get("mouse_button_count_candidate_score_blend", config.get("family_count_candidate_score_blend", 0.0)) or 0.0),
+            "temporal_mouse_move_count_auxiliary":mouse_move_count_auxiliary,
+            "mouse_move_count_aux_weight":mouse_move_count_aux_weight,
+            "mouse_move_count_max":mouse_move_count_max,
+            "mouse_move_count_candidate_score_blend":float(config.get("mouse_move_count_candidate_score_blend", config.get("family_count_candidate_score_blend", 0.0)) or 0.0),
+            "family_count_candidate_gate_power":float(config.get("family_count_candidate_gate_power", 0.0) or 0.0),
+            "family_count_candidate_gate_floor":float(config.get("family_count_candidate_gate_floor", 0.0) or 0.0),
+            "family_count_candidate_budget":bool(config.get("family_count_candidate_budget", False)),
             "temporal_video_key_token_presence_auxiliary":video_key_token_presence_auxiliary,
             "video_key_token_presence_aux_weight":video_key_token_presence_aux_weight,
             "video_key_token_presence_rank_weight":video_key_token_presence_rank_weight,
