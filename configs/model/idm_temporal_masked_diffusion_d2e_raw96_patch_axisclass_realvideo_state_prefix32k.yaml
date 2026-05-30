@@ -14,6 +14,7 @@
   "allow_duplicate_action_token_families": [
     "mouse_move"
   ],
+  "allow_prefix_feature_cache_reuse": true,
   "batch_size": 32,
   "button_class_aux_weight": 0.8,
   "button_class_bias_candidates": true,
@@ -56,7 +57,7 @@
   "candidate_token_prior_strength": 0.35,
   "candidate_token_prior_summary_limit": 16,
   "candidate_token_prior_unseen_weight": 0.25,
-  "claim_boundary": "G005 bounded real-video raw96 masked-diffusion IDM held-state-token probe. It preserves the public FDM-1 noncausal masked action-token objective while predicting D2E end-of-bin control-state tokens (held keys/buttons plus aggregate binned mouse delta) and converting them to press/release events with a closed-loop state tracker for D2E paper metrics. Not G005 completion evidence.",
+  "claim_boundary": "G005 bounded real-video raw96 masked-diffusion IDM held-state-token probe. It preserves the public FDM-1 noncausal masked action-token objective while predicting D2E end-of-bin control-state tokens (held keys/buttons plus aggregate binned mouse delta) and converting them to press/release events with a closed-loop state tracker for D2E paper metrics. Not G005 completion evidence. Uses DDP-sharded raw-video feature caching to avoid duplicating decode work across H200 ranks.",
   "diffusion_steps": 16,
   "direct_auxiliary_button_class_blend": 0.7,
   "direct_auxiliary_button_no_button_gate_floor": 0.0,
@@ -70,6 +71,7 @@
   "direct_auxiliary_candidate_min_score": 0.0,
   "direct_auxiliary_key_class_blend": 0.9,
   "direct_auxiliary_mouse_axis_class_blend": 0.95,
+  "distributed_feature_cache_dir": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_state_prefix32k/raw_video_feature_cache",
   "dropout": 0.1,
   "epochs": 4,
   "event_aux_weight": 0.0,
@@ -140,7 +142,8 @@
         "key action-token class auxiliary head trained from the same masked-diffusion representation to improve exact key-token confidence ranking during iterative unmasking",
         "separate mouse X/Y binned action-token class heads and axis-constrained mouse emission, preserving discrete FDM-1-style mouse-delta tokens while preventing duplicate-axis emissions",
         "D2E packet-to-frame mouse aggregation adapter: sum raw mouse packets per bin and decompose into repeated D2E metric action tokens before masked-diffusion IDM training",
-        "held-control-state action-token target: predict end-of-bin key/button state plus binned aggregate mouse movement with masked diffusion, then convert to press/release event tokens using a closed-loop state tracker"
+        "held-control-state action-token target: predict end-of-bin key/button state plus binned aggregate mouse movement with masked diffusion, then convert to press/release event tokens using a closed-loop state tracker",
+        "DDP-sharded raw-video feature cache for held-state prefix probe to prevent duplicated frame decode and sustained H200 idle time"
       ],
       "public_components": [
         "video_encoder",
@@ -201,6 +204,11 @@
       "claim_boundary": "Open D2E adapter for paper-target IDM metrics; it preserves discrete binned action-token denoising and does not use target labels or claim closed-source FDM-1 tokenizer parity.",
       "d2e_approximation": "Sum raw D2E mouse_move dx/dy within a row and emit bounded decomposed D2E metric-bin tokens for the aggregate row delta before masked-diffusion action-token training.",
       "public_anchor": "FDM-1 uses binned mouse movement action tokens over model frame/action-token steps, while D2E rows contain multiple raw OS packets per 50ms bin."
+    },
+    "ddp_sharded_raw_video_cache": {
+      "claim_boundary": "Throughput hardening only; it is not metric evidence and does not alter labels or prediction targets.",
+      "d2e_approximation": "Decode raw D2E frame windows once per DDP rank shard, write ordered tensor chunks, and reuse them for fit/calibration/target feature tensors.",
+      "public_anchor": "FDM-1 trains on compressed screen-video representations; efficient caching changes only the open D2E data path, not the action-token objective."
     },
     "direct_auxiliary_mouse_move_candidates": "Uses the same masked action-token presence head to rank FDM-1 binned mouse-delta tokens during iterative unmasking, preserving discrete action-token modeling rather than adding a non-recipe regression head.",
     "direct_auxiliary_unmask_candidates": "Uses auxiliary action-token presence/class heads trained on the same noncausal masked-diffusion transformer as confidence candidates inside the iterative unmasking decoder; this approximates unpublished FDM-1 confidence-ranking details without target-label calibration.",
@@ -365,6 +373,11 @@
   "precompute_feature_tensor_dtype": "float16",
   "precompute_features_as_tensor": true,
   "prediction_batch_size": 64,
+  "prefix_feature_cache_reuse_splits": [
+    "fit",
+    "calibration",
+    "target"
+  ],
   "preserve_pad_action_slots": true,
   "random_token_probability": 0.05,
   "rank_progress_every_batches": 50,
