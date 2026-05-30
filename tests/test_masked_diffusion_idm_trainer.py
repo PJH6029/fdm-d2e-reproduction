@@ -47,6 +47,7 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _target_slots_for_config,
     _token_presence_targets,
     _tokens_from_family_budget_candidates,
+    _tokens_from_non_noop_candidates,
     train_temporal_masked_diffusion_idm,
 )
 
@@ -503,6 +504,32 @@ def test_temporal_family_non_noop_budget_calibrates_separate_action_families():
     )
     assert "MOUSE_LEFT_DOWN" in tokens
     assert "KEY_PRESS_A" not in tokens
+
+
+def test_candidate_decode_can_preserve_mouse_trajectory_duplicates():
+    candidates = [
+        {"score": 0.95, "token": "MOUSE_DX_P5", "slot": 0, "token_index": 2},
+        {"score": 0.94, "token": "MOUSE_DX_P5", "slot": 1, "token_index": 2},
+        {"score": 0.93, "token": "MOUSE_DY_P4", "slot": 2, "token_index": 3},
+        {"score": 0.92, "token": "MOUSE_DY_P4", "slot": 3, "token_index": 3},
+    ]
+
+    collapsed = _tokens_from_non_noop_candidates(candidates, threshold=0.5, max_tokens=8)
+    trajectory = _tokens_from_non_noop_candidates(
+        candidates,
+        threshold=0.5,
+        max_tokens=8,
+        config={"candidate_duplicate_families": ["mouse_move"]},
+    )
+    assert collapsed == ["MOUSE_DX_P5", "MOUSE_DY_P4"]
+    assert trajectory == ["MOUSE_DX_P5", "MOUSE_DX_P5", "MOUSE_DY_P4", "MOUSE_DY_P4"]
+
+    family_tokens = _tokens_from_family_budget_candidates(
+        candidates,
+        family_budgets={"families": {"mouse_move": {"status": "pass", "selected_threshold": 0.5, "max_tokens_per_row": 8}}},
+        config={"candidate_duplicate_families": ["mouse_move"]},
+    )
+    assert family_tokens == trajectory
 
 
 def test_unlabeled_family_budget_adaptation_raises_shifted_button_threshold_without_labels():

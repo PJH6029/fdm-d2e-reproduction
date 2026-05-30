@@ -2972,17 +2972,58 @@ def _retrieval_priors_for_batch(
     return priors
 
 
-def _tokens_from_non_noop_candidates(candidates: Sequence[dict[str, Any]], *, threshold: float, max_tokens: int) -> list[str]:
+def _duplicate_candidate_families(config: dict[str, Any] | None) -> set[str]:
+    """Families whose action-token multiplicity should be preserved at decode.
+
+    D2E mouse movement bins can contain a short trajectory: multiple mouse
+    packets inside one 50ms bin often quantize to the same binned token.  Public
+    FDM-1 describes mouse trajectory-style action tokens, so a recipe-faithful
+    decoder must be able to emit repeated mouse movement tokens from distinct
+    masked slots instead of collapsing them into a set.  Keyboard/button events
+    remain de-duplicated by default because duplicate press/release tokens are
+    generally not meaningful for the D2E IDM metrics.
+    """
+
+    if not config:
+        return set()
+    raw = config.get("candidate_duplicate_families", config.get("allow_duplicate_action_token_families", []))
+    if raw is True:
+        return {"keyboard", "mouse_button", "mouse_move"}
+    if isinstance(raw, str):
+        return {raw}
+    if not isinstance(raw, list):
+        return set()
+    return {str(item) for item in raw}
+
+
+def _candidate_seen_key(candidate: dict[str, Any], token: str, *, duplicate_families: set[str]) -> tuple[Any, ...]:
+    family = _action_family(token)
+    if family in duplicate_families:
+        return (family, int(candidate.get("source_offset", 0) or 0), int(candidate.get("slot", -1) or -1), token)
+    return (family, token)
+
+
+def _tokens_from_non_noop_candidates(
+    candidates: Sequence[dict[str, Any]],
+    *,
+    threshold: float,
+    max_tokens: int,
+    config: dict[str, Any] | None = None,
+) -> list[str]:
     tokens: list[str] = []
-    seen: set[str] = set()
+    seen: set[tuple[Any, ...]] = set()
+    duplicate_families = _duplicate_candidate_families(config)
     for candidate in candidates:
         if float(candidate.get("score", 0.0)) < threshold:
             continue
         token = str(candidate.get("token", ""))
-        if not _is_predictable_action_token(token) or token in seen:
+        if not _is_predictable_action_token(token):
+            continue
+        seen_key = _candidate_seen_key(candidate, token, duplicate_families=duplicate_families)
+        if seen_key in seen:
             continue
         tokens.append(token)
-        seen.add(token)
+        seen.add(seen_key)
         if len(tokens) >= max_tokens:
             break
     return tokens
@@ -2995,8 +3036,9 @@ def _tokens_from_family_budget_candidates(
     config: dict[str, Any] | None = None,
 ) -> list[str]:
     tokens: list[str] = []
-    seen: set[str] = set()
+    seen: set[tuple[Any, ...]] = set()
     config = config or {}
+    duplicate_families = _duplicate_candidate_families(config)
     mouse_axis_constrained = bool(config.get("mouse_move_axis_constrained_budget", False))
     families = family_budgets.get("families", family_budgets) if isinstance(family_budgets, dict) else {}
     if not isinstance(families, dict):
@@ -3025,7 +3067,10 @@ def _tokens_from_family_budget_candidates(
                 continue
             if float(candidate.get("score", 0.0)) < threshold:
                 continue
-            if not _is_predictable_action_token(token) or token in seen:
+            if not _is_predictable_action_token(token):
+                continue
+            seen_key = _candidate_seen_key(candidate, token, duplicate_families=duplicate_families)
+            if seen_key in seen:
                 continue
             if str(family) == "mouse_move" and mouse_axis_constrained:
                 axis = _mouse_axis_for_token(token)
@@ -3034,7 +3079,7 @@ def _tokens_from_family_budget_candidates(
                 if axis is not None:
                     emitted_mouse_axes.add(axis)
             tokens.append(token)
-            seen.add(token)
+            seen.add(seen_key)
             emitted += 1
             if emitted >= max_tokens:
                 break
@@ -3096,7 +3141,12 @@ def _predict_temporal_tokens_batch(
                 config=config,
             )
         elif budgeted:
-            fdm1_tokens = _tokens_from_non_noop_candidates(candidate_rows[batch_idx], threshold=budget_threshold, max_tokens=budget_max_tokens)
+            fdm1_tokens = _tokens_from_non_noop_candidates(
+                candidate_rows[batch_idx],
+                threshold=budget_threshold,
+                max_tokens=budget_max_tokens,
+                config=config,
+            )
         else:
             fdm1_tokens = [str(vocab[idx]) for idx in center_ids if idx != noop_index and _is_predictable_action_token(str(vocab[idx]))]
         width, height = _screen_size(row)
@@ -3366,7 +3416,12 @@ def _calibrate_temporal_family_non_noop_budget(probability_rows: Sequence[dict[s
             predicted_non_noop = 0
             for item in probability_rows:
                 family_row_candidates = [candidate for candidate in item.get("candidates", []) if _action_family(str(candidate.get("token", ""))) == family]
-                fdm1_tokens = _tokens_from_non_noop_candidates(family_row_candidates, threshold=threshold, max_tokens=max_tokens)
+                fdm1_tokens = _tokens_from_non_noop_candidates(
+                    family_row_candidates,
+                    threshold=threshold,
+                    max_tokens=max_tokens,
+                    config=config,
+                )
                 predicted_non_noop += len(fdm1_tokens)
                 width, height = _screen_size(item["row"])
                 pred_tokens = d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height) or [FDM1_ACTION_NOOP]
@@ -3550,7 +3605,12 @@ def _calibrate_temporal_non_noop_budget(probability_rows: Sequence[dict[str, Any
         predicted_non_noop = 0
         for item in probability_rows:
             row = item["row"]
-            fdm1_tokens = _tokens_from_non_noop_candidates(item.get("candidates", []), threshold=threshold, max_tokens=max_tokens)
+            fdm1_tokens = _tokens_from_non_noop_candidates(
+                item.get("candidates", []),
+                threshold=threshold,
+                max_tokens=max_tokens,
+                config=config,
+            )
             predicted_non_noop += len(fdm1_tokens)
             width, height = _screen_size(row)
             pred_tokens = d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height) or [FDM1_ACTION_NOOP]
