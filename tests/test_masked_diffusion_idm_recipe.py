@@ -118,6 +118,30 @@ def test_canonical_action_slots_apply_aggregate_mouse_tokenization_to_existing_t
     assert sum(token.startswith("MOUSE_DY_") for token in record.tokens) >= 1
 
 
+def test_canonical_tokens_can_target_held_control_state_from_prior_and_events():
+    row = {
+        "prior_action_tokens": ["KEY_DOWN_87", "MOUSE_LEFT_DOWN"],
+        "events": [
+            {"type": "keyboard", "event_type": "release", "key": "87"},
+            {"type": "keyboard", "event_type": "press", "key": "65"},
+            {"type": "mouse_move", "dx": 9, "dy": -3},
+        ],
+    }
+
+    tokens = canonical_fdm1_action_tokens(
+        row,
+        mouse_token_mode="d2e_metric_aggregate_decomposed_bins",
+        mouse_max_tokens_per_axis=4,
+        action_target_mode="held_state_tokens",
+    )
+
+    assert "KEY_DOWN_87" not in tokens
+    assert "KEY_DOWN_65" in tokens
+    assert "MOUSE_LEFT_DOWN" in tokens
+    assert any(token.startswith("MOUSE_DX_P") for token in tokens)
+    assert any(token.startswith("MOUSE_DY_N") for token in tokens)
+
+
 def test_corrupt_action_slots_masks_non_pad_targets_deterministically():
     slots = ["KEY_PRESS_A", FDM1_ACTION_PAD, "FDM1_MOUSE_DX_P01"]
     corrupted, loss_mask = corrupt_action_slots(

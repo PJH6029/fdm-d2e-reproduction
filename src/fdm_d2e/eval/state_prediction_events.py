@@ -211,6 +211,34 @@ def convert_state_prediction_tokens(
     return out or ["NOOP"]
 
 
+def event_tokens_from_state_prediction(
+    tokens: Sequence[str],
+    *,
+    prior_tokens: Sequence[str] | None = None,
+    key_press_rows: int = 1,
+    key_release_rows: int = 1,
+    button_press_rows: int = 1,
+    button_release_rows: int = 1,
+    include_mouse_motion: bool = True,
+) -> list[str]:
+    """Convert one predicted held-state row into D2E event tokens.
+
+    This is the single-row counterpart to ``convert_state_prediction_file``.
+    It is used during train-heldout calibration of state-token masked IDM
+    candidates, where rows are sampled non-contiguously and must be compared
+    against the row's pre-bin prior state without reading target labels.
+    """
+
+    state = _RecordingState(
+        key_press_rows=key_press_rows,
+        key_release_rows=key_release_rows,
+        button_press_rows=button_press_rows,
+        button_release_rows=button_release_rows,
+    )
+    state.seed_from_prior_tokens(prior_tokens or [])
+    return convert_state_prediction_tokens(tokens, state, include_mouse_motion=include_mouse_motion)
+
+
 def convert_state_prediction_file(
     *,
     prediction_paths: Sequence[str | Path],

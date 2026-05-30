@@ -1498,3 +1498,16 @@ Bounded 4xH200 mouse-aggregate masked-IDM probe ran on reservation `rsv-jeonghun
 Terminal compact summary: `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_mouseagg_prefix32k_h200_compact_summary.json` status `nonterminal_negative_probe`. Observed all-split paper-compatible metrics: keyboard key accuracy `0.010533193936225824`, mouse-button accuracy `0.0`, mouse-button F1 `0.0`, mouse-move Pearson X `0.00039407583799564724`, Pearson Y `-0.001601059023924388`, and no-button FPR `0.0`. Strict keyboard accuracy improved to `0.053149083178315175`, but this remains far below the D2E paper target and mouse/button endpoints are still collapsed. GPU monitor covered all four H200s with max utilization `65%`; W&B sidecar completed. Reservation was cancelled immediately after terminal evidence.
 
 This rejects packet aggregation as a standalone fix. The slight keyboard strict improvement suggests the representation is less pathological than per-packet decoding, but the model still lacks a reliable learned action-state/transition signal. G005 remains incomplete. Next branch should either (a) train a recipe-shaped masked-diffusion model over held control-state/action-state tokens with explicit press/release transition reconstruction, or (b) use the existing stronger event-state/closed-loop IDM diagnostics only as a teacher for split-safe distillation into masked action tokens. Do not checkpoint G005 from this probe.
+
+## 2026-05-31 KST — held-state masked IDM branch prepared
+
+After trajectory-duplicate and mouse-aggregate probes both collapsed, the next G005 branch changes the action-token target while preserving the public FDM-1 IDM recipe. Instead of denoising only sparse press/release event tokens, the temporal masked-diffusion IDM can now denoise held control-state action tokens: end-of-bin held keys/buttons plus aggregate binned mouse deltas. Predictions are converted back to D2E press/release/click event tokens by a closed-loop state tracker seeded only from the first target prior per recording, so target labels are not used for prediction or calibration.
+
+This is an open D2E approximation to unpublished FDM-1 IDM details, not an FDM-1 parity claim and not a regression/table shortcut. It keeps video-token conditioning, noncausal masked action-token denoising, and iterative unmasking while giving sparse keyboard/button state a more learnable target.
+
+New bounded probe paths:
+
+- `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_state_prefix32k.yaml`
+- `scripts/run_g005_idm_temporal_raw96_patch_axisclass_realvideo_state_prefix32k.sh`
+
+Validation before GPU reservation: `python3 -m py_compile` for tokenization/state-eventification/temporal trainer paths, targeted pytest (`96 passed`), `uv run python scripts/validate_fdm1_recipe_alignment.py` (`status=pass`), and `git diff --check`. Run only as a bounded prefix gate first; do not checkpoint G005 unless paper-target gates pass and later full-corpus completion evidence exists.

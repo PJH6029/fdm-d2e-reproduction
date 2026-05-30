@@ -125,6 +125,34 @@ def state_tokens_from_event_tokens(
     return state_tokens or ["NOOP"], keys, buttons
 
 
+def held_keys_from_state_tokens(tokens: Iterable[str]) -> set[str]:
+    """Extract held-key state from D2E/FDM action-state tokens."""
+
+    keys: set[str] = set()
+    for raw in tokens:
+        token = str(raw)
+        if token.startswith("KEY_DOWN_"):
+            keys.add(_clean_state_key(token, "KEY_DOWN_"))
+        elif token.startswith("KEY_PRESS_"):
+            keys.add(_clean_state_key(token, "KEY_PRESS_"))
+        elif token.startswith("KEY_RELEASE_"):
+            keys.discard(_clean_state_key(token, "KEY_RELEASE_"))
+    return keys
+
+
+def held_buttons_from_state_tokens(tokens: Iterable[str]) -> set[str]:
+    """Extract held mouse-button state from D2E/FDM action-state tokens."""
+
+    buttons: set[str] = set()
+    for raw in tokens:
+        token = str(raw)
+        if token.startswith("MOUSE_") and token.endswith("_DOWN") and not token.startswith(("MOUSE_DX_", "MOUSE_DY_")):
+            buttons.add(token[len("MOUSE_") : -len("_DOWN")])
+        elif token.startswith("MOUSE_") and token.endswith("_UP") and not token.startswith(("MOUSE_DX_", "MOUSE_DY_")):
+            buttons.discard(token[len("MOUSE_") : -len("_UP")])
+    return buttons
+
+
 def tokenize_event(event: dict[str, Any]) -> list[str]:
     etype = event.get('type')
     if etype == 'keyboard':

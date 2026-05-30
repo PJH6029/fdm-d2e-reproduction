@@ -5,7 +5,15 @@ import random
 from dataclasses import dataclass
 from typing import Any, Iterable, Sequence
 
-from fdm_d2e.tokenization.actions import _clean_key, bin_delta, token_to_delta_class, tokens_from_delta
+from fdm_d2e.tokenization.actions import (
+    _clean_key,
+    bin_delta,
+    held_buttons_from_state_tokens,
+    held_keys_from_state_tokens,
+    state_tokens_from_event_tokens,
+    token_to_delta_class,
+    tokens_from_delta,
+)
 
 FDM1_ACTION_PAD = "<FDM1_ACTION_PAD>"
 FDM1_ACTION_MASK = "<FDM1_ACTION_MASK>"
@@ -184,6 +192,35 @@ def _normalize_mouse_token_mode(value: str | None) -> str:
     raise ValueError(f"unsupported mouse tokenization mode: {value}")
 
 
+def normalize_action_target_mode(value: str | None) -> str:
+    """Normalize the action-token target representation for masked IDM.
+
+    ``event_tokens`` is the ordinary D2E/FDM-1 action-event sequence
+    (press/release/click/mouse-delta tokens). ``held_state_tokens`` keeps the
+    same discrete action-token objective but predicts the 50 ms end-of-bin
+    control state: held keys/buttons plus binned aggregate mouse delta.  The
+    latter is useful for D2E because keyboard/button transitions are sparse but
+    the public FDM-1 recipe still requires masked action-token denoising rather
+    than a shortcut regressor/table.
+    """
+
+    normalized = str(value or "event_tokens").replace("-", "_").lower()
+    if normalized in {"event", "events", "event_token", "event_tokens", "action_events", "press_release"}:
+        return "event_tokens"
+    if normalized in {
+        "state",
+        "held_state",
+        "held_state_token",
+        "held_state_tokens",
+        "control_state",
+        "control_state_tokens",
+        "end_state",
+        "end_state_tokens",
+    }:
+        return "held_state_tokens"
+    raise ValueError(f"unsupported action target mode: {value}")
+
+
 def _aggregate_mouse_tokens(
     dx: float,
     dy: float,
@@ -320,6 +357,58 @@ def _tokens_from_existing_tokens(
     return converted
 
 
+def _event_tokens_for_row(
+    row: dict[str, Any],
+    *,
+    screen_width: int,
+    screen_height: int,
+    mouse_token_mode: str,
+    mouse_max_tokens_per_axis: int,
+) -> list[str]:
+    tokens = _tokens_from_events(
+        row,
+        screen_width=screen_width,
+        screen_height=screen_height,
+        mouse_token_mode=mouse_token_mode,
+        mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+    )
+    if tokens:
+        return tokens
+    return _tokens_from_existing_tokens(
+        row,
+        screen_width=screen_width,
+        screen_height=screen_height,
+        mouse_token_mode=mouse_token_mode,
+        mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+    )
+
+
+def _held_state_tokens_for_row(
+    row: dict[str, Any],
+    *,
+    screen_width: int,
+    screen_height: int,
+    mouse_token_mode: str,
+    mouse_max_tokens_per_axis: int,
+) -> list[str]:
+    event_tokens = _event_tokens_for_row(
+        row,
+        screen_width=screen_width,
+        screen_height=screen_height,
+        mouse_token_mode=mouse_token_mode,
+        mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+    )
+    prior_tokens = [str(token) for token in row.get("prior_action_tokens", []) or []]
+    state_tokens, _keys, _buttons = state_tokens_from_event_tokens(
+        event_tokens,
+        pressed_keys=held_keys_from_state_tokens(prior_tokens),
+        pressed_buttons=held_buttons_from_state_tokens(prior_tokens),
+        mouse_emit_mode="decompose" if mouse_token_mode == "d2e_metric_aggregate_decomposed_bins" else "single",
+        mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+    )
+    return state_tokens
+
+
 def canonical_fdm1_action_tokens(
     row: dict[str, Any],
     *,
@@ -328,19 +417,22 @@ def canonical_fdm1_action_tokens(
     include_noop: bool = True,
     mouse_token_mode: str = "fdm1_49",
     mouse_max_tokens_per_axis: int = 8,
+    action_target_mode: str = "event_tokens",
 ) -> list[str]:
     """Return recipe-shaped action tokens for one D2E bin/window row."""
 
     width, height = _screen_size(row, default_width=default_width, default_height=default_height)
-    tokens = _tokens_from_events(
-        row,
-        screen_width=width,
-        screen_height=height,
-        mouse_token_mode=mouse_token_mode,
-        mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
-    )
-    if not tokens:
-        tokens = _tokens_from_existing_tokens(
+    target_mode = normalize_action_target_mode(action_target_mode)
+    if target_mode == "held_state_tokens":
+        tokens = _held_state_tokens_for_row(
+            row,
+            screen_width=width,
+            screen_height=height,
+            mouse_token_mode=mouse_token_mode,
+            mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+        )
+    else:
+        tokens = _event_tokens_for_row(
             row,
             screen_width=width,
             screen_height=height,
@@ -361,6 +453,7 @@ def canonical_action_slot_record(
     default_height: int = 480,
     mouse_token_mode: str = "fdm1_49",
     mouse_max_tokens_per_axis: int = 8,
+    action_target_mode: str = "event_tokens",
 ) -> ActionSlotRecord:
     max_slots = max(1, int(max_slots))
     tokens = canonical_fdm1_action_tokens(
@@ -369,6 +462,7 @@ def canonical_action_slot_record(
         default_height=default_height,
         mouse_token_mode=mouse_token_mode,
         mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+        action_target_mode=action_target_mode,
     )
     kept = tuple(tokens[:max_slots])
     overflow = tuple(tokens[max_slots:])

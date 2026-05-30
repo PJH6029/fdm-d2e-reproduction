@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Iterator, Sequence
 
 from fdm_d2e.eval.paper_idm_metrics import _PaperMetricAccumulator, write_paper_idm_metrics
+from fdm_d2e.eval.state_prediction_events import convert_state_prediction_file, event_tokens_from_state_prediction
 from fdm_d2e.io_utils import ensure_dir, write_json
 from fdm_d2e.training.masked_diffusion_idm import (
     FDM1_ACTION_PAD,
@@ -21,6 +22,7 @@ from fdm_d2e.training.masked_diffusion_idm import (
     corrupt_action_slots,
     d2e_metric_tokens_from_fdm1_tokens,
     iterative_unmask_counts,
+    normalize_action_target_mode,
     select_topk_masked,
 )
 from fdm_d2e.training.masked_diffusion_idm_trainer import _screen_size, video_feature_vector
@@ -78,6 +80,10 @@ def _action_mouse_max_tokens_per_axis(config: dict[str, Any]) -> int:
     )
 
 
+def _action_target_mode(config: dict[str, Any]) -> str:
+    return normalize_action_target_mode(config.get("action_target_mode", config.get("action_token_target_mode", "event_tokens")))
+
+
 def _target_slots_for_config(
     row: dict[str, Any],
     *,
@@ -90,6 +96,7 @@ def _target_slots_for_config(
         max_slots=max_slots,
         mouse_token_mode=_action_mouse_token_mode(config),
         mouse_max_tokens_per_axis=_action_mouse_max_tokens_per_axis(config),
+        action_target_mode=_action_target_mode(config),
     )
     if preserve_pad_slots:
         return list(record.padded_tokens)
@@ -123,6 +130,39 @@ def _build_vocab_for_config(
     vocab = ["<FDM1_ACTION_PAD>", FDM1_ACTION_MASK]
     vocab.extend(sorted(token for token, count in counts.items() if count >= min_count and token not in vocab))
     return vocab
+
+
+def _state_eventification_kwargs(config: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "key_press_rows": max(1, int(config.get("state_eventification_key_press_rows", config.get("key_press_rows", 1)) or 1)),
+        "key_release_rows": max(1, int(config.get("state_eventification_key_release_rows", config.get("key_release_rows", 1)) or 1)),
+        "button_press_rows": max(1, int(config.get("state_eventification_button_press_rows", config.get("button_press_rows", 1)) or 1)),
+        "button_release_rows": max(
+            1,
+            int(config.get("state_eventification_button_release_rows", config.get("button_release_rows", 1)) or 1),
+        ),
+        "include_mouse_motion": bool(config.get("state_eventification_include_mouse_motion", True)),
+    }
+
+
+def _decode_model_action_tokens_for_metric(
+    tokens: Sequence[str],
+    row: dict[str, Any],
+    *,
+    config: dict[str, Any],
+    eventify_state_from_prior: bool,
+) -> list[str]:
+    width, height = _screen_size(row)
+    metric_tokens = d2e_metric_tokens_from_fdm1_tokens(tokens, screen_width=width, screen_height=height) or [FDM1_ACTION_NOOP]
+    if _action_target_mode(config) != "held_state_tokens":
+        return metric_tokens
+    if not eventify_state_from_prior:
+        return metric_tokens
+    return event_tokens_from_state_prediction(
+        metric_tokens,
+        prior_tokens=[str(token) for token in row.get("prior_action_tokens", []) or []],
+        **_state_eventification_kwargs(config),
+    )
 
 
 def _temporal_offsets(config: dict[str, Any]) -> list[int]:
@@ -3167,8 +3207,14 @@ def _predict_temporal_tokens_batch(
             )
         else:
             fdm1_tokens = [str(vocab[idx]) for idx in center_ids if idx != noop_index and _is_predictable_action_token(str(vocab[idx]))]
-        width, height = _screen_size(row)
-        predictions.append(d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height) or [FDM1_ACTION_NOOP])
+        predictions.append(
+            _decode_model_action_tokens_for_metric(
+                fdm1_tokens,
+                row,
+                config=config,
+                eventify_state_from_prior=not bool(config.get("_defer_state_eventification", False)),
+            )
+        )
     return predictions
 
 
@@ -3230,6 +3276,7 @@ def _collect_temporal_probability_rows(
                             include_noop=False,
                             mouse_token_mode=_action_mouse_token_mode(config),
                             mouse_max_tokens_per_axis=_action_mouse_max_tokens_per_axis(config),
+                            action_target_mode=_action_target_mode(config),
                         )
                     ],
                 }
@@ -3442,8 +3489,12 @@ def _calibrate_temporal_family_non_noop_budget(probability_rows: Sequence[dict[s
                     config=config,
                 )
                 predicted_non_noop += len(fdm1_tokens)
-                width, height = _screen_size(item["row"])
-                pred_tokens = d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height) or [FDM1_ACTION_NOOP]
+                pred_tokens = _decode_model_action_tokens_for_metric(
+                    fdm1_tokens,
+                    item["row"],
+                    config=config,
+                    eventify_state_from_prior=True,
+                )
                 acc.update(pred_tokens, item.get("ground_truth_tokens", []))
             metrics = acc.metrics()
             score = _family_budget_score(family, metrics, max_button_fpr=max_button_fpr, beta=beta)
@@ -3631,8 +3682,12 @@ def _calibrate_temporal_non_noop_budget(probability_rows: Sequence[dict[str, Any
                 config=config,
             )
             predicted_non_noop += len(fdm1_tokens)
-            width, height = _screen_size(row)
-            pred_tokens = d2e_metric_tokens_from_fdm1_tokens(fdm1_tokens, screen_width=width, screen_height=height) or [FDM1_ACTION_NOOP]
+            pred_tokens = _decode_model_action_tokens_for_metric(
+                fdm1_tokens,
+                row,
+                config=config,
+                eventify_state_from_prior=True,
+            )
             acc.update(pred_tokens, item.get("ground_truth_tokens", []))
         metrics = acc.metrics()
         strict_button = metrics["strict_local"]["mouse_button"]
@@ -4627,10 +4682,19 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             config=config,
         )
         config["family_non_noop_budget"] = family_non_noop_budget
+    state_eventification_summary: dict[str, Any] = {"status": "skipped", "reason": "action_target_mode_is_event_tokens"}
+    state_eventification_enabled = _action_target_mode(config) == "held_state_tokens" and bool(
+        config.get("eventify_state_predictions", True)
+    )
+    state_predictions_path = Path(output_dir) / "state_predictions.jsonl"
     predictions_path = Path(output_dir) / "predictions.jsonl"
+    raw_predictions_path = state_predictions_path if state_eventification_enabled else predictions_path
     prediction_batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
     prediction_batches = (len(target_rows) + prediction_batch_size - 1) // prediction_batch_size
-    with predictions_path.open("w", encoding="utf-8") as handle:
+    prediction_config = {**config, "max_slots": max_slots}
+    if state_eventification_enabled:
+        prediction_config["_defer_state_eventification"] = True
+    with raw_predictions_path.open("w", encoding="utf-8") as handle:
         for prediction_batch_index, start_idx in enumerate(range(0, len(target_rows), prediction_batch_size), 1):
             batch_rows = target_rows[start_idx : start_idx + prediction_batch_size]
             batch_predictions = _predict_temporal_tokens_batch(
@@ -4640,7 +4704,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 target_features[start_idx : start_idx + prediction_batch_size],
                 start_index=start_idx,
                 all_features=target_features,
-                config={**config, "max_slots": max_slots},
+                config=prediction_config,
                 vocab=vocab,
                 device=device,
                 retrieval_index=retrieval_index,
@@ -4663,6 +4727,16 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                         "examples": min(len(target_rows), start_idx + len(batch_rows)),
                     },
                 )
+    if state_eventification_enabled:
+        state_eventification_summary = convert_state_prediction_file(
+            prediction_paths=[raw_predictions_path],
+            output_path=predictions_path,
+            seed_prior_paths=target_paths if bool(config.get("state_eventification_seed_prior_from_target", True)) else None,
+            include_state_prediction_tokens=bool(config.get("state_eventification_include_state_prediction_tokens", False)),
+            progress_output_path=Path(output_dir) / "state_eventification_progress.json",
+            progress_rows=max(1, int(config.get("state_eventification_progress_rows", 1_000_000) or 1_000_000)),
+            **_state_eventification_kwargs(config),
+        )
     metrics_path = Path(output_dir) / "paper_metrics.json"
     write_paper_idm_metrics(
         prediction_paths=[predictions_path],
@@ -4684,6 +4758,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "target_rows":len(target_rows),
         "vocab_size":len(vocab),
         "max_slots":max_slots,
+        "action_target_mode":_action_target_mode(config),
+        "state_eventification":state_eventification_summary,
+        "state_predictions_path":str(state_predictions_path) if state_eventification_enabled else None,
         "action_mouse_tokenization":action_mouse_tokenization,
         "preserve_pad_action_slots":preserve_pad_slots,
         "temporal_offsets":offsets,

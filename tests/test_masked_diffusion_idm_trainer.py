@@ -9,6 +9,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.io_utils import read_json
+from fdm_d2e.eval.state_prediction_events import event_tokens_from_state_prediction
 from fdm_d2e.training.masked_diffusion_idm_trainer import (
     _button_class_conditional_prior_offsets,
     _button_probabilities_from_output,
@@ -130,6 +131,39 @@ def test_tensorize_features_stacks_raw_video_tensor_storage():
     assert tuple(tensor.shape) == (2, 2)
     assert tensor.dtype == torch.float16
     assert tensor.tolist() == [[0.0, 1.0], [0.5, 0.25]]
+
+
+def test_temporal_target_slots_support_held_state_action_tokens():
+    row = {
+        "prior_action_tokens": ["KEY_DOWN_87", "MOUSE_LEFT_DOWN"],
+        "ground_truth_tokens": ["KEY_RELEASE_87", "KEY_PRESS_65", "MOUSE_DX_P2", "MOUSE_DY_Z0"],
+    }
+    slots = _target_slots_for_config(
+        row,
+        max_slots=8,
+        config={
+            "action_target_mode": "held_state_tokens",
+            "action_mouse_tokenization": "d2e_metric_aggregate_decomposed_bins",
+        },
+        preserve_pad_slots=True,
+    )
+
+    assert "KEY_DOWN_87" not in slots
+    assert "KEY_DOWN_65" in slots
+    assert "MOUSE_LEFT_DOWN" in slots
+    assert "MOUSE_DX_P2" in slots
+
+
+def test_state_prediction_eventification_from_row_prior_produces_transitions():
+    converted = event_tokens_from_state_prediction(
+        ["MOUSE_DX_P1", "MOUSE_DY_Z0", "KEY_DOWN_65", "MOUSE_LEFT_DOWN"],
+        prior_tokens=["KEY_DOWN_87", "MOUSE_LEFT_DOWN"],
+    )
+
+    assert "KEY_PRESS_65" in converted
+    assert "KEY_RELEASE_87" in converted
+    assert "MOUSE_LEFT_DOWN" not in converted
+    assert "MOUSE_DX_P1" in converted
 
 
 def test_distributed_raw_video_feature_cache_loads_ordered_chunks(tmp_path: Path):
@@ -1881,6 +1915,81 @@ def test_train_temporal_masked_diffusion_idm_tiny_smoke(tmp_path: Path):
     assert Path(summary["checkpoint_path"]).exists()
     assert Path(summary["predictions_path"]).exists()
     assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 4
+
+
+def test_train_temporal_masked_diffusion_idm_held_state_eventifies_predictions(tmp_path: Path):
+    if not torch_available():
+        return
+    train_path = tmp_path / "train_state_temporal.jsonl"
+    target_path = tmp_path / "target_state_temporal.jsonl"
+    train_rows = []
+    for i in range(6):
+        row = _row(i, split="train_core")
+        row["compact_luma_window"] = [[float(i + pix) / 10.0 for pix in range(4)] for _ in range(2)]
+        row["compact_luma_window_mask"] = [1.0, 1.0]
+        row["prior_action_tokens"] = ["KEY_DOWN_87"] if i % 2 else []
+        row["ground_truth_tokens"] = ["KEY_RELEASE_87", "KEY_PRESS_65", "MOUSE_DX_P1", "MOUSE_DY_Z0"] if i % 2 else [
+            "KEY_PRESS_87",
+            "MOUSE_DX_Z0",
+            "MOUSE_DY_Z0",
+        ]
+        train_rows.append(row)
+    target_rows = []
+    for i in range(6, 8):
+        row = _row(i, split="eval")
+        row["recording_id"] = "unit-state"
+        row["compact_luma_window"] = [[float(i + pix) / 10.0 for pix in range(4)] for _ in range(2)]
+        row["compact_luma_window_mask"] = [1.0, 1.0]
+        row["prior_action_tokens"] = ["KEY_DOWN_87"] if i == 6 else ["KEY_DOWN_65"]
+        row["ground_truth_tokens"] = ["KEY_RELEASE_87", "KEY_PRESS_65", "MOUSE_DX_P1", "MOUSE_DY_Z0"]
+        target_rows.append(row)
+    _write_jsonl(train_path, train_rows)
+    _write_jsonl(target_path, target_rows)
+
+    summary = train_temporal_masked_diffusion_idm(
+        {
+            "model_name": "unit_temporal_masked_diffusion_state_idm",
+            "train_records": str(train_path),
+            "target_records": str(target_path),
+            "output_dir": str(tmp_path / "out_state_temporal"),
+            "summary_out": str(tmp_path / "summary_state_temporal.json"),
+            "max_train_rows": 6,
+            "max_target_rows": 2,
+            "max_action_tokens_per_bin": 6,
+            "action_target_mode": "held_state_tokens",
+            "action_mouse_tokenization": "d2e_metric_aggregate_decomposed_bins",
+            "eventify_state_predictions": True,
+            "temporal_offsets": [0],
+            "temporal_loss_offsets": [0],
+            "video_feature_paths": ["compact_luma_window", "compact_luma_window_mask", "frame.features"],
+            "video_feature_dim": 12,
+            "video_encoder_arch": "compact_luma_window_cnn",
+            "luma_window_frames": 2,
+            "luma_window_size": 2,
+            "luma_encoder_channels": 2,
+            "luma_encoder_pool_hw": 1,
+            "luma_aux_hidden_dim": 4,
+            "hidden_dim": 16,
+            "transformer_layers": 1,
+            "transformer_heads": 4,
+            "dropout": 0.0,
+            "batch_size": 2,
+            "prediction_batch_size": 2,
+            "epochs": 1,
+            "lr": 0.001,
+            "mask_probability": 1.0,
+            "random_token_probability": 0.0,
+            "diffusion_steps": 2,
+            "force_cpu": True,
+        }
+    )
+
+    assert summary["status"] == "pass"
+    assert summary["action_target_mode"] == "held_state_tokens"
+    assert summary["state_eventification"]["status"] == "pass"
+    assert Path(summary["state_predictions_path"]).exists()
+    assert Path(summary["predictions_path"]).exists()
+    assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 2
 
 
 def test_train_temporal_masked_diffusion_idm_raw_video_cnn_tiny_smoke(tmp_path: Path):
