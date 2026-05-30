@@ -1292,6 +1292,32 @@ def test_temporal_target_slots_can_preserve_padding_for_sparse_action_sequences(
     assert pad_aware_slots == ["KEY_PRESS_A", "<FDM1_ACTION_PAD>", "<FDM1_ACTION_PAD>", "<FDM1_ACTION_PAD>"]
 
 
+def test_temporal_target_slots_support_aggregate_decomposed_mouse_config():
+    row = {
+        "frame": {"width": 854, "height": 480},
+        "events": [
+            {"type": "mouse_move", "dx": 66, "dy": 18},
+            {"type": "mouse_move", "dx": 67, "dy": 17},
+            {"type": "keyboard", "event_type": "press", "key": "w"},
+        ],
+    }
+
+    slots = _target_slots_for_config(
+        row,
+        max_slots=20,
+        config={
+            "action_mouse_tokenization": "d2e_metric_aggregate_decomposed_bins",
+            "action_mouse_max_tokens_per_axis": 8,
+        },
+        preserve_pad_slots=True,
+    )
+
+    assert "KEY_PRESS_W" in slots
+    assert slots.count("MOUSE_DX_P5") > 2
+    assert any(token.startswith("MOUSE_DY_P") for token in slots)
+    assert slots[-1] == "<FDM1_ACTION_PAD>"
+
+
 def test_temporal_token_presence_targets_exclude_pad_and_noop_by_default():
     if not torch_available():
         return

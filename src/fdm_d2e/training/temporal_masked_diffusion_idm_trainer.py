@@ -65,6 +65,19 @@ def _action_mouse_token_mode(config: dict[str, Any]) -> str:
     return str(config.get("action_mouse_tokenization", config.get("mouse_token_mode", "fdm1_49")))
 
 
+def _action_mouse_max_tokens_per_axis(config: dict[str, Any]) -> int:
+    return max(
+        1,
+        int(
+            config.get(
+                "action_mouse_max_tokens_per_axis",
+                config.get("mouse_max_tokens_per_axis", config.get("d2e_metric_mouse_max_tokens_per_axis", 8)),
+            )
+            or 8
+        ),
+    )
+
+
 def _target_slots_for_config(
     row: dict[str, Any],
     *,
@@ -72,7 +85,12 @@ def _target_slots_for_config(
     config: dict[str, Any],
     preserve_pad_slots: bool = False,
 ) -> list[str]:
-    record = canonical_action_slot_record(row, max_slots=max_slots, mouse_token_mode=_action_mouse_token_mode(config))
+    record = canonical_action_slot_record(
+        row,
+        max_slots=max_slots,
+        mouse_token_mode=_action_mouse_token_mode(config),
+        mouse_max_tokens_per_axis=_action_mouse_max_tokens_per_axis(config),
+    )
     if preserve_pad_slots:
         return list(record.padded_tokens)
     return [FDM1_ACTION_NOOP if token.startswith("<FDM1_ACTION_PAD") else token for token in record.padded_tokens]
@@ -3211,6 +3229,7 @@ def _collect_temporal_probability_rows(
                             default_height=_screen_size(row)[1],
                             include_noop=False,
                             mouse_token_mode=_action_mouse_token_mode(config),
+                            mouse_max_tokens_per_axis=_action_mouse_max_tokens_per_axis(config),
                         )
                     ],
                 }

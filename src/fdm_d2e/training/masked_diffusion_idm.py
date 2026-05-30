@@ -158,14 +158,79 @@ def _normalize_mouse_token_mode(value: str | None) -> str:
     normalized = str(value or "fdm1_49").replace("-", "_").lower()
     if normalized in {"fdm1", "fdm1_49", "public_49", "recipe_49"}:
         return "fdm1_49"
+    if normalized in {"fdm1_aggregate", "fdm1_49_aggregate", "public_49_aggregate", "recipe_49_aggregate"}:
+        return "fdm1_49_aggregate"
     if normalized in {"d2e", "d2e_metric", "d2e_metric_bins", "metric", "metric_bins", "coarse"}:
         return "d2e_metric_bins"
+    if normalized in {
+        "d2e_metric_aggregate",
+        "d2e_metric_aggregate_bins",
+        "metric_aggregate",
+        "metric_aggregate_bins",
+        "coarse_aggregate",
+    }:
+        return "d2e_metric_aggregate_bins"
+    if normalized in {
+        "d2e_metric_decompose",
+        "d2e_metric_decomposed",
+        "d2e_metric_decomposed_bins",
+        "d2e_metric_aggregate_decompose",
+        "d2e_metric_aggregate_decomposed",
+        "d2e_metric_aggregate_decomposed_bins",
+        "metric_decompose",
+        "metric_decomposed",
+    }:
+        return "d2e_metric_aggregate_decomposed_bins"
     raise ValueError(f"unsupported mouse tokenization mode: {value}")
 
 
-def _tokens_from_events(row: dict[str, Any], *, screen_width: int, screen_height: int, mouse_token_mode: str = "fdm1_49") -> list[str]:
+def _aggregate_mouse_tokens(
+    dx: float,
+    dy: float,
+    *,
+    screen_width: int,
+    screen_height: int,
+    mouse_token_mode: str,
+    mouse_max_tokens_per_axis: int,
+) -> list[str]:
+    """Return frame/bin-level mouse action tokens for an accumulated delta.
+
+    FDM-1 publicly describes binned mouse movement action tokens at the model
+    frame/action-token level; D2E rows can contain many raw OS mouse packets in
+    a 50 ms bin.  Aggregating packets before token emission is therefore a
+    recipe-shaped D2E adapter, not a target-label calibration shortcut.
+    """
+
+    if mouse_token_mode == "d2e_metric_aggregate_bins":
+        return tokens_from_delta(dx, dy, emit_mode="single", max_tokens_per_axis=mouse_max_tokens_per_axis)
+    if mouse_token_mode == "d2e_metric_aggregate_decomposed_bins":
+        return tokens_from_delta(dx, dy, emit_mode="decompose", max_tokens_per_axis=mouse_max_tokens_per_axis)
+    if mouse_token_mode == "fdm1_49_aggregate":
+        return [
+            fdm1_mouse_axis_token("x", dx, screen_extent=screen_width),
+            fdm1_mouse_axis_token("y", dy, screen_extent=screen_height),
+        ]
+    raise ValueError(f"unsupported aggregate mouse tokenization mode: {mouse_token_mode}")
+
+
+def _tokens_from_events(
+    row: dict[str, Any],
+    *,
+    screen_width: int,
+    screen_height: int,
+    mouse_token_mode: str = "fdm1_49",
+    mouse_max_tokens_per_axis: int = 8,
+) -> list[str]:
     tokens: list[str] = []
     mouse_token_mode = _normalize_mouse_token_mode(mouse_token_mode)
+    aggregate_mouse = mouse_token_mode in {
+        "fdm1_49_aggregate",
+        "d2e_metric_aggregate_bins",
+        "d2e_metric_aggregate_decomposed_bins",
+    }
+    mouse_dx = 0.0
+    mouse_dy = 0.0
+    saw_mouse = False
     for event in row.get("events", []) or []:
         if not isinstance(event, dict):
             continue
@@ -179,7 +244,11 @@ def _tokens_from_events(row: dict[str, Any], *, screen_width: int, screen_height
             tokens.append(f"MOUSE_{_clean_button(event.get('button', 'UNKNOWN'))}_{action}")
             continue
         if etype == "mouse_move":
-            if mouse_token_mode == "d2e_metric_bins":
+            if aggregate_mouse:
+                mouse_dx += float(event.get("dx", 0) or 0)
+                mouse_dy += float(event.get("dy", 0) or 0)
+                saw_mouse = True
+            elif mouse_token_mode == "d2e_metric_bins":
                 tokens.extend(tokens_from_delta(float(event.get("dx", 0) or 0), float(event.get("dy", 0) or 0), emit_mode="single"))
             else:
                 tokens.append(fdm1_mouse_axis_token("x", event.get("dx", 0), screen_extent=screen_width))
@@ -188,16 +257,48 @@ def _tokens_from_events(row: dict[str, Any], *, screen_width: int, screen_height
         if etype == "scroll":
             dy = float(event.get("dy", 0) or 0)
             tokens.append("SCROLL_Z0" if dy == 0 else ("SCROLL_UP" if dy > 0 else "SCROLL_DOWN"))
+    if aggregate_mouse and saw_mouse:
+        tokens.extend(
+            _aggregate_mouse_tokens(
+                mouse_dx,
+                mouse_dy,
+                screen_width=screen_width,
+                screen_height=screen_height,
+                mouse_token_mode=mouse_token_mode,
+                mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+            )
+        )
     return tokens
 
 
-def _tokens_from_existing_tokens(row: dict[str, Any], *, screen_width: int, screen_height: int, mouse_token_mode: str = "fdm1_49") -> list[str]:
+def _tokens_from_existing_tokens(
+    row: dict[str, Any],
+    *,
+    screen_width: int,
+    screen_height: int,
+    mouse_token_mode: str = "fdm1_49",
+    mouse_max_tokens_per_axis: int = 8,
+) -> list[str]:
     converted: list[str] = []
     mouse_token_mode = _normalize_mouse_token_mode(mouse_token_mode)
+    aggregate_mouse = mouse_token_mode in {
+        "fdm1_49_aggregate",
+        "d2e_metric_aggregate_bins",
+        "d2e_metric_aggregate_decomposed_bins",
+    }
+    mouse_dx = 0.0
+    mouse_dy = 0.0
+    saw_mouse = False
     for raw in row.get("ground_truth_tokens", []) or []:
         token = str(raw)
         delta_class = token_to_delta_class(token)
-        if mouse_token_mode == "d2e_metric_bins" and delta_class is not None and token.startswith(("MOUSE_DX_", "MOUSE_DY_")):
+        if aggregate_mouse and delta_class is not None and token.startswith(("MOUSE_DX_", "MOUSE_DY_")):
+            if token.startswith("MOUSE_DX_"):
+                mouse_dx += float(delta_class)
+            else:
+                mouse_dy += float(delta_class)
+            saw_mouse = True
+        elif mouse_token_mode == "d2e_metric_bins" and delta_class is not None and token.startswith(("MOUSE_DX_", "MOUSE_DY_")):
             converted.append(token)
         elif delta_class is not None and token.startswith("MOUSE_DX_"):
             converted.append(fdm1_mouse_axis_token("x", delta_class, screen_extent=screen_width))
@@ -205,6 +306,17 @@ def _tokens_from_existing_tokens(row: dict[str, Any], *, screen_width: int, scre
             converted.append(fdm1_mouse_axis_token("y", delta_class, screen_extent=screen_height))
         else:
             converted.append(token)
+    if aggregate_mouse and saw_mouse:
+        converted.extend(
+            _aggregate_mouse_tokens(
+                mouse_dx,
+                mouse_dy,
+                screen_width=screen_width,
+                screen_height=screen_height,
+                mouse_token_mode=mouse_token_mode,
+                mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+            )
+        )
     return converted
 
 
@@ -215,13 +327,26 @@ def canonical_fdm1_action_tokens(
     default_height: int = 480,
     include_noop: bool = True,
     mouse_token_mode: str = "fdm1_49",
+    mouse_max_tokens_per_axis: int = 8,
 ) -> list[str]:
     """Return recipe-shaped action tokens for one D2E bin/window row."""
 
     width, height = _screen_size(row, default_width=default_width, default_height=default_height)
-    tokens = _tokens_from_events(row, screen_width=width, screen_height=height, mouse_token_mode=mouse_token_mode)
+    tokens = _tokens_from_events(
+        row,
+        screen_width=width,
+        screen_height=height,
+        mouse_token_mode=mouse_token_mode,
+        mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+    )
     if not tokens:
-        tokens = _tokens_from_existing_tokens(row, screen_width=width, screen_height=height, mouse_token_mode=mouse_token_mode)
+        tokens = _tokens_from_existing_tokens(
+            row,
+            screen_width=width,
+            screen_height=height,
+            mouse_token_mode=mouse_token_mode,
+            mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+        )
     tokens = [token for token in tokens if token and token != FDM1_ACTION_PAD]
     if not tokens and include_noop:
         return [FDM1_ACTION_NOOP]
@@ -235,6 +360,7 @@ def canonical_action_slot_record(
     default_width: int = 854,
     default_height: int = 480,
     mouse_token_mode: str = "fdm1_49",
+    mouse_max_tokens_per_axis: int = 8,
 ) -> ActionSlotRecord:
     max_slots = max(1, int(max_slots))
     tokens = canonical_fdm1_action_tokens(
@@ -242,6 +368,7 @@ def canonical_action_slot_record(
         default_width=default_width,
         default_height=default_height,
         mouse_token_mode=mouse_token_mode,
+        mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
     )
     kept = tuple(tokens[:max_slots])
     overflow = tuple(tokens[max_slots:])
@@ -282,10 +409,22 @@ def d2e_metric_tokens_from_fdm1_tokens(
     return converted or ([FDM1_ACTION_NOOP] if not drop_noop else [])
 
 
-def build_action_vocab(rows: Iterable[dict[str, Any]], *, max_slots: int, min_count: int = 1, mouse_token_mode: str = "fdm1_49") -> list[str]:
+def build_action_vocab(
+    rows: Iterable[dict[str, Any]],
+    *,
+    max_slots: int,
+    min_count: int = 1,
+    mouse_token_mode: str = "fdm1_49",
+    mouse_max_tokens_per_axis: int = 8,
+) -> list[str]:
     counts: dict[str, int] = {}
     for row in rows:
-        record = canonical_action_slot_record(row, max_slots=max_slots, mouse_token_mode=mouse_token_mode)
+        record = canonical_action_slot_record(
+            row,
+            max_slots=max_slots,
+            mouse_token_mode=mouse_token_mode,
+            mouse_max_tokens_per_axis=mouse_max_tokens_per_axis,
+        )
         for token in record.tokens:
             counts[token] = counts.get(token, 0) + 1
     vocab = [FDM1_ACTION_PAD, FDM1_ACTION_MASK]

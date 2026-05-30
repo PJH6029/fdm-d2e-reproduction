@@ -56,6 +56,33 @@ def test_canonical_tokens_preserve_event_multiplicity_and_press_release():
     assert sum(token.startswith("FDM1_MOUSE_DY_") for token in tokens) == 2
 
 
+def test_canonical_tokens_can_aggregate_d2e_mouse_packets_into_decomposed_frame_delta():
+    row = {
+        "frame": {"width": 854, "height": 480},
+        "events": [
+            {"type": "mouse_move", "dx": 66, "dy": 18},
+            {"type": "mouse_move", "dx": 67, "dy": 17},
+            {"type": "keyboard", "event_type": "release", "key": "space"},
+            {"type": "mouse_move", "dx": -1, "dy": -2},
+        ],
+    }
+
+    per_packet = canonical_fdm1_action_tokens(row, mouse_token_mode="d2e_metric_bins")
+    aggregate = canonical_fdm1_action_tokens(
+        row,
+        mouse_token_mode="d2e_metric_aggregate_decomposed_bins",
+        mouse_max_tokens_per_axis=8,
+    )
+
+    assert per_packet.count("MOUSE_DX_P5") == 2
+    assert per_packet.count("MOUSE_DY_P5") == 2
+    assert "KEY_RELEASE_SPACE" in aggregate
+    assert sum(token.startswith("MOUSE_DX_") for token in aggregate) <= 8
+    assert sum(token.startswith("MOUSE_DY_") for token in aggregate) <= 8
+    assert aggregate.count("MOUSE_DX_P5") > per_packet.count("MOUSE_DX_P5")
+    assert any(token.startswith("MOUSE_DY_P") for token in aggregate)
+
+
 def test_canonical_action_slots_record_overflow_and_padding():
     row = {"ground_truth_tokens": ["KEY_PRESS_A", "KEY_PRESS_B", "KEY_PRESS_C"]}
     record = canonical_action_slot_record(row, max_slots=2)
@@ -65,6 +92,30 @@ def test_canonical_action_slots_record_overflow_and_padding():
     noop_record = canonical_action_slot_record({"ground_truth_tokens": []}, max_slots=3)
     assert noop_record.tokens == (FDM1_ACTION_NOOP,)
     assert noop_record.padded_tokens == (FDM1_ACTION_NOOP, FDM1_ACTION_PAD, FDM1_ACTION_PAD)
+
+
+def test_canonical_action_slots_apply_aggregate_mouse_tokenization_to_existing_tokens():
+    row = {
+        "ground_truth_tokens": [
+            "MOUSE_DX_P5",
+            "MOUSE_DY_P2",
+            "MOUSE_DX_P5",
+            "MOUSE_DY_P2",
+            "KEY_PRESS_W",
+        ]
+    }
+
+    record = canonical_action_slot_record(
+        row,
+        max_slots=12,
+        mouse_token_mode="d2e_metric_aggregate_decomposed_bins",
+        mouse_max_tokens_per_axis=4,
+    )
+
+    assert "KEY_PRESS_W" in record.tokens
+    assert record.tokens.count("MOUSE_DX_P5") >= 2
+    assert record.tokens.count("MOUSE_DY_P2") >= 2
+    assert sum(token.startswith("MOUSE_DY_") for token in record.tokens) >= 1
 
 
 def test_corrupt_action_slots_masks_non_pad_targets_deterministically():

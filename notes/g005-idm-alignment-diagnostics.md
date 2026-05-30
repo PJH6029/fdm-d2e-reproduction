@@ -1477,3 +1477,16 @@ Bounded 4xH200 trajectory-duplicate masked-IDM probe ran on reservation `rsv-jeo
 Terminal compact summary: `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_trajectorydup_prefix32k_h200_compact_summary.json` status `nonterminal_negative_probe`. Observed all-split paper-compatible metrics: keyboard key accuracy `0.004659616016705013`, mouse-button accuracy `0.0`, mouse-button F1 `0.0`, mouse-move Pearson X `0.0012711480672229175`, Pearson Y unavailable, mouse scale ratio X `560.473138548539`, and no-button FPR `0.0`. GPU monitor covered all four H200s with max utilization `100%`; W&B sidecar completed (`run_id=gbj01qeh`). Reservation was cancelled immediately after terminal evidence.
 
 This rejects the duplicate-preserving decoder as a standalone fix. It solved the structural duplicate-collapse issue in code, but the learned masked-token scores still fail to recover keyboard/buttons and emit poorly calibrated mouse trajectories. G005 remains incomplete; do not checkpoint. Next branch should not add another threshold-only decoder patch. It should change the recipe-faithful training target/representation, likely toward state-transition action tokens (key/button press/release plus mouse delta residual or trajectory bins) with an explicit train-heldout calibration/evaluation contract, while retaining video-token conditioning and noncausal masked-diffusion denoising.
+
+## 2026-05-31 KST — mouse-aggregate masked IDM branch prepared
+
+After the trajectory-duplicate probe, a storage-shell prediction audit showed a degenerate decoded sequence: every target row emitted key tokens and mostly repeated `MOUSE_DY_Z0`, while true target rows contain paired X/Y mouse movement tokens and varied key/button transitions. This means preserving duplicate packet tokens alone is insufficient; the target representation itself is too packet-order-heavy and lets slot confidence collapse to constant frequent tokens.
+
+Prepared the next recipe-faithful branch by changing the D2E adapter target, not the FDM-1 public recipe: raw D2E mouse packets inside a 50ms row are summed to a frame/bin-level mouse delta, then decomposed into bounded repeated D2E metric-bin action tokens before noncausal masked action-token denoising. This matches the public FDM-1 shape of binned mouse movement action tokens at model frame/action-token steps while keeping D2E paper metric tokens for auditable evaluation. It uses train-heldout stratified calibration (`keyboard`, `mouse_button`, `mouse_move`, `noop`) and no target-label calibration.
+
+New bounded probe paths:
+
+- `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_mouseagg_prefix32k.yaml`
+- `scripts/run_g005_idm_temporal_raw96_patch_axisclass_realvideo_mouseagg_prefix32k.sh`
+
+Validation before any GPU reservation: `python3 -m py_compile` for masked/temporal IDM trainer paths, targeted pytest (`89 passed`), `uv run python scripts/validate_fdm1_recipe_alignment.py` (`status=pass`), and `git diff --check`. Run only as a bounded prefix gate first; do not checkpoint G005 unless paper-target gates pass and later full-corpus completion evidence exists.
