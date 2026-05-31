@@ -302,6 +302,36 @@ def test_g005_statectx_candidate_reranker_is_prediction_only_and_split_safe() ->
     assert "target-label calibration" in config["fdm1_recipe_alignment"]["candidate_score_reranker"]["claim_boundary"]
 
 
+def test_g005_statectx_train320k_scales_best_prefix_with_state_features() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_patch_axisclass_realvideo_statectx_train320k_target24k.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k.yaml"
+        ).read_text()
+    )
+
+    materialize_idx = text.index("scripts/materialize_balanced_prefix.py")
+    train_idx = text.index("scripts/run_g005_idm_temporal_raw96_family_presence_prefix.sh")
+    assert materialize_idx < train_idx
+    assert 'MAX_TRAIN_ROWS="${MAX_TRAIN_ROWS:-320000}"' in text
+    assert 'NPROC_PER_NODE="${NPROC_PER_NODE:-4}"' in text
+    assert "state_duration_prior_action_features" in text
+    assert "state-context,balanced-prefix,train320k" in text
+    assert "outputs/data/d2e_event_state_duration_realvideo_balanced_train320k_target24k" in text
+    assert config["raw_video_aux_feature_paths"] == ["state_duration_prior_action_features"]
+    assert config["raw_video_aux_feature_dim"] == 156
+    assert config["video_feature_dim"] == 27804
+    assert config["max_train_rows"] == 320000
+    assert config["max_target_rows"] == 24000
+    assert config["hidden_dim"] == 512
+    assert config["transformer_layers"] == 6
+    assert config["epochs"] == 6
+    assert config["distributed_feature_cache_dir"].endswith("/distributed_statectx_feature_cache")
+    assert "state_context_320k_scaleup" in config["fdm1_recipe_alignment"]
+    assert "not fdm-1 parity" in config["claim_boundary"].lower()
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())
