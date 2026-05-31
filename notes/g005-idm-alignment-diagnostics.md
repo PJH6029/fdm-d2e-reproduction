@@ -1660,3 +1660,14 @@ Evidence:
 Best variant is `stratcal_noadapt`: keyboard key accuracy `0.507053`, mouse-button accuracy `0.690722`, strict mouse-button F1 `0.801778`, mouse Pearson X/Y `0.623534/0.664550`, and no-button FPR `0.004349`. This preserves the low-FPR property and materially improves button F1 over the uncalibrated 320k probe, but it still misses D2E paper targets for keyboard accuracy (`0.73`), mouse-button accuracy (`0.957`), and mouse Pearson X/Y (`0.796/0.783`). `stratcal_adapt_relaxed` is worse on button accuracy/F1 and has the same keyboard/motion limits.
 
 Conclusion: reject calibration-only promotion. G005 remains incomplete and must not be checkpointed. Keep the noadapt calibration lesson, but the next branch must change underlying recipe-shaped representation/objective or split-safe teacher/curriculum for keyboard and mouse motion instead of more threshold-only sweeps.
+
+### 2026-05-31 KST — prediction-only keyrerank/source-offset probes rejected; move back to training/objective
+
+Two no-target-adapt prediction sweeps from the `train320k` state-context raw96 masked-diffusion checkpoint were completed on reservation `rsv-jeonghunpark-20260531-5bc874` and logged to W&B:
+
+- `g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_keyrerank_blend025_predict24k` (`wandb jgaqr6l7`) rejected: keyboard `0.3957576638`, mouse-button accuracy `0.6907216495`, mouse-button F1 `0.8017777778`, mouse Pearson X/Y `0.6235339427/0.6645501093`, no-button FPR `0.0043491238`.
+- `g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k` (`wandb kwf89zb6`) rejected: keyboard `0.3295714753`, mouse-button accuracy `0.3522504892`, mouse-button F1 `0.5033112583`, mouse Pearson X/Y `0.5829203653/0.6088640671`, no-button FPR `0.0177376029`.
+
+Implementation hardening from these probes is useful: vectorized iterative confidence unmasking, optional BF16 prediction autocast, tensorized video-cache features, and per-batch prediction progress JSON. A failed first launch exposed fp16 index rounding in tensorized temporal window gathering; fixed by constructing long indices directly on the tensor device. The reservation was cancelled after terminal negative evidence to avoid idle H200 time.
+
+Conclusion: do not checkpoint `G005-g014-idm-full-paper-target`. Prediction-only source-offset/reranker sweeps are exhausted for this checkpoint family. The next G005 branch should change the underlying recipe-shaped training target/objective or use split-safe teacher/curriculum distillation into masked action tokens; do not spend more GPU on threshold-only or target-calibrated decode hacks.

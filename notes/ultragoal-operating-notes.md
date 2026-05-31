@@ -631,3 +631,10 @@ Current implementation follow-up: batched factorized masked-diffusion IDM calibr
 - Aborted the first 5k/five-offset source-offset ensemble probe because it was CPU-bound for >25 minutes and wrote zero predictions while holding GPU memory. This is not metric evidence.
 - Prepared a narrower fast1k probe with source offsets `[-1,0,1]`, 256 stratified calibration rows, and 1k target rows so the current 1×H200 reservation can still produce a bounded decision signal.
 - Do not widen this path unless fast1k materially improves paper metrics; otherwise reject offset ensembling and pivot.
+
+## 2026-05-31 KST — G005 keyrerank/source-offset probes are negative; reservation cancelled
+
+- Active story remains `G005-g014-idm-full-paper-target`; no checkpoint was recorded.
+- Committed evidence through `e688412`: keyrerank and source-offset fast256 prediction-only probes both failed paper targets. Source-offset regressed to keyboard `0.3296`, button accuracy `0.3523`, F1 `0.5033`, Pearson X/Y `0.5829/0.6089`, no-button FPR `0.0177`.
+- Useful code hardening: vectorized iterative unmasking, BF16 prediction autocast, tensorized video-cache features, progress JSON, and fp16-safe tensor index construction.
+- Cancelled idle reservation `rsv-jeonghunpark-20260531-5bc874` after terminal negative evidence. Next G005 work should be a materially different FDM-1-shaped training/objective branch, not another prediction-only threshold/source-offset sweep.
