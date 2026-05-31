@@ -27,6 +27,7 @@ DEFAULT_LOG = "artifacts/logs/fdm1_g003_action_dataset_pipeline.log"
 DEFAULT_PID = "outputs/cluster/fdm1_g003_action_dataset_pipeline.pid"
 DEFAULT_LAUNCH_CONTEXT = "artifacts/cluster/fdm1_g003_action_dataset_pod_launch_context.json"
 DEFAULT_PIPELINE = "bash scripts/run_g003_fdm1_action_dataset_pipeline.sh"
+DEFAULT_PREFLIGHT_MIN_FREE_GB = 100.0
 
 
 def q(value: str | Path) -> str:
@@ -92,6 +93,7 @@ def build_launch_commands(
     background: bool = True,
     extra_env: dict[str, str] | None = None,
     replace_existing: bool = False,
+    preflight_min_free_gb: float = DEFAULT_PREFLIGHT_MIN_FREE_GB,
 ) -> list[str]:
     env = dict(extra_env or {})
     log_dir = Path(log_path).parent
@@ -114,6 +116,9 @@ def build_launch_commands(
         )
     if sync:
         commands.append("uv sync --extra d2e --extra train --extra test")
+    commands.append(
+        f"uv run python scripts/preflight_g003_fdm1_action_dataset_pod.py --require-pod --expected-branch {q(branch)} --min-free-gb {preflight_min_free_gb:g}"
+    )
     commands.extend(
         [
             f"mkdir -p {q(log_dir)} {q(pid_dir)} {q(launch_context_dir)} artifacts/sources artifacts/reports",
@@ -172,6 +177,7 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         background=not args.foreground,
         extra_env=extra_env,
         replace_existing=args.replace_existing,
+        preflight_min_free_gb=args.preflight_min_free_gb,
     )
     return {
         "schema": "fdm1_g003_pod_launch_plan.v1",
@@ -186,6 +192,7 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         "sync": not args.skip_sync,
         "pull": not args.skip_pull,
         "replace_existing": args.replace_existing,
+        "preflight_min_free_gb": args.preflight_min_free_gb,
         "extra_env": extra_env,
         "runtime_detection": detect_runtime(args.repo_dir),
         "commands": commands,
@@ -228,6 +235,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--skip-pull", action="store_true")
     parser.add_argument("--foreground", action="store_true")
     parser.add_argument("--replace-existing", action="store_true", help="Stop an active pid from the same pid file before relaunching. Default refuses duplicates.")
+    parser.add_argument("--preflight-min-free-gb", type=float, default=DEFAULT_PREFLIGHT_MIN_FREE_GB)
     parser.add_argument("--env", action="append", help="Extra environment assignment, e.g. EXTRACT_EXTRA_ARGS=--max-recordings 2")
     parser.add_argument("--execute", action="store_true", help="Execute the generated shell script. Refuses unless this process is inside the MLXP pod workspace.")
     args = parser.parse_args(argv)

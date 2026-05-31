@@ -8,6 +8,7 @@ git fetch origin research/fdm1-d2e-ultragoal
 git checkout research/fdm1-d2e-ultragoal
 git pull --ff-only
 uv sync --extra d2e --extra train --extra test
+uv run python scripts/preflight_g003_fdm1_action_dataset_pod.py --require-pod --expected-branch research/fdm1-d2e-ultragoal --min-free-gb 100
 mkdir -p artifacts/logs outputs/cluster artifacts/cluster artifacts/sources artifacts/reports
 git rev-parse HEAD > artifacts/sources/fdm1_g003_pod_launch_commit.txt
 if [[ -s outputs/cluster/fdm1_g003_action_dataset_pipeline.pid ]] && kill -0 "$(cat outputs/cluster/fdm1_g003_action_dataset_pipeline.pid)" 2>/dev/null; then echo 'refusing: existing G003 pipeline pid is still active:' $(cat outputs/cluster/fdm1_g003_action_dataset_pipeline.pid) >&2; exit 3; fi

@@ -89,3 +89,31 @@ Observed evidence:
 
 - Monitor/launcher tests: `10 passed`.
 - Local monitor status is currently `incomplete`, as expected before the MLXP full-corpus materialization run.
+
+## Preflight hardening
+
+Added a fail-closed preflight before full-corpus extraction starts:
+
+- `scripts/preflight_g003_fdm1_action_dataset_pod.py`
+  - Verifies ROADMAP/G002/G003 required configs and split manifests are present and JSON-parseable.
+  - Checks reset contract invariants: `split_mode=fdm1-g002`, D2E-480p-only source/resolution, 50ms/20Hz timebase, K=8 event slots, 459 expected recording variants.
+  - Checks branch, optional pod requirement, optional cache-dir requirement, free disk threshold, and duplicate active pid.
+  - Writes `artifacts/cluster/fdm1_g003_action_dataset_preflight.json` with artifact hashes, disk state, pid state, and findings.
+- `scripts/launch_g003_fdm1_action_dataset_pod.py`
+  - Generated pod launch shell now runs preflight with `--require-pod --expected-branch research/fdm1-d2e-ultragoal --min-free-gb 100` before launching the background pipeline.
+- `scripts/run_g003_fdm1_action_dataset_pipeline.sh`
+  - Runs preflight before extraction; pod launch can tighten it through `PREFLIGHT_EXTRA_ARGS`.
+
+Additional verification:
+
+```bash
+uv run python -m py_compile scripts/preflight_g003_fdm1_action_dataset_pod.py
+uv run pytest tests/test_preflight_g003_fdm1_action_dataset_pod.py -q
+uv run python scripts/preflight_g003_fdm1_action_dataset_pod.py --output /tmp/fdm1_g003_preflight_local.json --allow-blocked
+uv run python -m json.tool /tmp/fdm1_g003_preflight_local.json
+```
+
+Observed evidence:
+
+- Preflight tests: `5 passed`.
+- Local preflight status is `ready` with no errors; it records a warning that the pod cache path is not readable from the local workstation, which is expected outside MLXP.

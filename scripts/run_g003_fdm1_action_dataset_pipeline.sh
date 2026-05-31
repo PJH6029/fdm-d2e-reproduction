@@ -9,6 +9,9 @@ set -euo pipefail
 
 export PATH="$HOME/.local/bin:$PATH"
 
+uv run python scripts/preflight_g003_fdm1_action_dataset_pod.py \
+  ${PREFLIGHT_EXTRA_ARGS:-}
+
 uv run python scripts/extract_d2e_full_corpus.py \
   --config configs/data/fdm1_d2e_480p_full_corpus_extract.yaml \
   ${EXTRACT_EXTRA_ARGS:-}

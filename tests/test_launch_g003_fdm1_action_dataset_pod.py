@@ -64,6 +64,7 @@ def test_cli_writes_plan_and_shell_without_executing(tmp_path: Path):
     assert shell_text.startswith("#!/usr/bin/env bash")
     assert "EXTRACT_EXTRA_ARGS='--max-recordings 2'" in shell_text
     assert "uv run python - <<'PY'" in shell_text
+    assert "preflight_g003_fdm1_action_dataset_pod.py --require-pod" in shell_text
 
 
 def test_execute_refuses_outside_pod(tmp_path: Path, monkeypatch):
