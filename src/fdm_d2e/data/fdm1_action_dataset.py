@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -323,10 +324,12 @@ def _merge_alignment(total: dict[str, Any], batch: dict[str, Any]) -> None:
     total["errors"].extend(batch.get("errors", []))
 
 
-def _iter_jsonl_rows(path: str | Path) -> Iterable[dict[str, Any]]:
-    with Path(path).open(encoding="utf-8") as handle:
-        for line_no, line in enumerate(handle, 1):
-            line = line.strip()
+def _iter_jsonl_rows(path: str | Path, *, digest: Any | None = None) -> Iterable[dict[str, Any]]:
+    with Path(path).open("rb") as handle:
+        for line_no, raw_line in enumerate(handle, 1):
+            if digest is not None:
+                digest.update(raw_line)
+            line = raw_line.decode("utf-8").strip()
             if not line:
                 continue
             row = json.loads(line)
@@ -335,13 +338,14 @@ def _iter_jsonl_rows(path: str | Path) -> Iterable[dict[str, Any]]:
             yield row
 
 
-def _iter_recording_batches(input_paths: Sequence[str | Path]) -> Iterable[list[dict[str, Any]]]:
+def _iter_recording_batches(input_paths: Sequence[str | Path], *, source_digests: dict[str, Any] | None = None) -> Iterable[list[dict[str, Any]]]:
     """Yield consecutive recording groups without loading a full corpus JSONL."""
 
     current_key: str | None = None
     current_rows: list[dict[str, Any]] = []
     for path in input_paths:
-        for row in _iter_jsonl_rows(path):
+        digest = source_digests.get(str(path)) if source_digests is not None else None
+        for row in _iter_jsonl_rows(path, digest=digest):
             key = str(row.get("recording_id", row.get("source_recording_key", "UNKNOWN")))
             if current_key is None:
                 current_key = key
@@ -385,7 +389,7 @@ def write_action_slot_dataset_streaming_from_jsonl(
     first_sequences: list[Any] = []
     last_sequences: list[Any] = []
     source_paths = [str(path) for path in input_paths]
-    source_hashes = {str(path): sha256_file(path) for path in source_paths if Path(path).exists()}
+    source_digests = {str(path): hashlib.sha256() for path in source_paths if Path(path).exists()}
     alignment_total: dict[str, Any] = {
         "schema": "fdm1_action_slot_alignment_summary.v1",
         "status": "pass",
@@ -408,7 +412,7 @@ def write_action_slot_dataset_streaming_from_jsonl(
     records_written = 0
     batches = 0
     stop = False
-    for batch in _iter_recording_batches(input_paths):
+    for batch in _iter_recording_batches(input_paths, source_digests=source_digests):
         if max_records is not None:
             remaining = int(max_records) - records_written
             if remaining <= 0:
@@ -466,9 +470,12 @@ def write_action_slot_dataset_streaming_from_jsonl(
         "threshold_exceeded": (overflow_bins / records_written) > 0.001 if records_written else False,
     }
     split_counts.setdefault("all", records_written)
+    source_hashes = {path: digest.hexdigest() for path, digest in source_digests.items()} if max_records is None else {}
+    source_prefix_hashes: dict[str, str] = {}
     dataset_fingerprint = stable_hash_json(
         {
             "source_hashes": source_hashes,
+            "source_prefix_hashes": source_prefix_hashes,
             "records": records_written,
             "split_counts": dict(split_counts),
             "first_sequences": first_sequences,
@@ -483,6 +490,8 @@ def write_action_slot_dataset_streaming_from_jsonl(
         "streaming_policy": "consecutive_recording_groups",
         "source_paths": source_paths,
         "source_hashes": source_hashes,
+        "source_prefix_hashes": source_prefix_hashes,
+        "source_hash_policy": "sha256_while_streaming_full_input" if max_records is None else "omitted_because_max_records_was_set",
         "tokenization_config": tokenization_config_path,
         "tokenization_config_sha256": sha256_file(tokenization_config_path) if tokenization_config_path and Path(tokenization_config_path).exists() else None,
         "timebase": {"bin_ms": int(bin_ms), "frame_fps": int(frame_fps)},
