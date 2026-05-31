@@ -1,0 +1,10 @@
+{
+  "claim_boundary": "Failure evidence only; no metric or G005 completion claim.",
+  "exit_code": 1,
+  "fix_commit": "a44f42a",
+  "model_slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_warm_continue1m_target24k",
+  "recovery_plan": "pull latest, reuse materialized train/target JSONL and distributed raw-video feature cache, relaunch with source_checkpoint_vocab_remap=true and strict=false",
+  "root_cause": "source checkpoint strict vocab mismatch: 1M train vocabulary has 12 key press/release tokens absent from the 320k source checkpoint vocabulary",
+  "schema": "g005_warm_continue1m_strict_vocab_fail_root_cause.v1",
+  "status": "fail"
+}

@@ -1,0 +1,126 @@
+balanced prefix: status=pass rows=1000000 output=outputs/data/d2e_event_state_duration_realvideo_balanced_train1m_target24k/train_core.jsonl
+balanced prefix: status=pass rows=24000 output=outputs/data/d2e_event_state_duration_realvideo_balanced_train1m_target24k/target_all_eval.jsonl
+W0531 13:38:33.527000 517 torch/distributed/run.py:862] 
+W0531 13:38:33.527000 517 torch/distributed/run.py:862] *****************************************
+W0531 13:38:33.527000 517 torch/distributed/run.py:862] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0531 13:38:33.527000 517 torch/distributed/run.py:862] *****************************************
+[W531 13:38:35.505955536 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [localhost]:46411 (errno: 97 - Address family not supported by protocol).
+[W531 13:38:35.511059735 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:46411 (errno: 97 - Address family not supported by protocol).
+[W531 13:38:35.514108958 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:46411 (errno: 97 - Address family not supported by protocol).
+[W531 13:38:35.838409304 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.98]:42039 (errno: 97 - Address family not supported by protocol).
+[W531 13:43:12.539920835 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.98]:42039 (errno: 97 - Address family not supported by protocol).
+[W531 13:43:12.669443835 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.98]:42039 (errno: 97 - Address family not supported by protocol).
+[W531 13:43:13.815757718 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.98]:42039 (errno: 97 - Address family not supported by protocol).
+[W531 13:43:16.782538040 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.98]:42039 (errno: 97 - Address family not supported by protocol).
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W531 13:54:01.004091434 ProcessGroupNCCL.cpp:5324] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 43, in <module>
+[rank0]:     raise SystemExit(main())
+[rank0]:                      ^^^^^^
+[rank0]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 27, in main
+[rank0]:     summary = train_temporal_masked_diffusion_idm(config)
+[rank0]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 4459, in train_temporal_masked_diffusion_idm
+[rank0]:     source_checkpoint_summary = _load_source_checkpoint_for_training(
+[rank0]:                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 1279, in _load_source_checkpoint_for_training
+[rank0]:     raise ValueError(
+[rank0]: ValueError: source checkpoint is incompatible with requested temporal IDM config: vocab (outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt)
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 43, in <module>
+[rank1]:     raise SystemExit(main())
+[rank1]:                      ^^^^^^
+[rank1]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 27, in main
+[rank1]:     summary = train_temporal_masked_diffusion_idm(config)
+[rank1]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 4459, in train_temporal_masked_diffusion_idm
+[rank1]:     source_checkpoint_summary = _load_source_checkpoint_for_training(
+[rank1]:                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 1279, in _load_source_checkpoint_for_training
+[rank1]:     raise ValueError(
+[rank1]: ValueError: source checkpoint is incompatible with requested temporal IDM config: vocab (outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt)
+[rank2]: Traceback (most recent call last):
+[rank2]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 43, in <module>
+[rank2]:     raise SystemExit(main())
+[rank2]:                      ^^^^^^
+[rank2]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 27, in main
+[rank2]:     summary = train_temporal_masked_diffusion_idm(config)
+[rank2]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 4459, in train_temporal_masked_diffusion_idm
+[rank2]:     source_checkpoint_summary = _load_source_checkpoint_for_training(
+[rank2]:                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 1279, in _load_source_checkpoint_for_training
+[rank2]:     raise ValueError(
+[rank2]: ValueError: source checkpoint is incompatible with requested temporal IDM config: vocab (outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt)
+[rank3]: Traceback (most recent call last):
+[rank3]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 43, in <module>
+[rank3]:     raise SystemExit(main())
+[rank3]:                      ^^^^^^
+[rank3]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/train_idm_temporal_masked_diffusion.py", line 27, in main
+[rank3]:     summary = train_temporal_masked_diffusion_idm(config)
+[rank3]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 4459, in train_temporal_masked_diffusion_idm
+[rank3]:     source_checkpoint_summary = _load_source_checkpoint_for_training(
+[rank3]:                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 1279, in _load_source_checkpoint_for_training
+[rank3]:     raise ValueError(
+[rank3]: ValueError: source checkpoint is incompatible with requested temporal IDM config: vocab (outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt)
+[rank0]:[W531 14:04:04.739350500 ProcessGroupNCCL.cpp:1647] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+W0531 14:04:07.228000 517 torch/distributed/elastic/multiprocessing/api.py:1014] Sending process 744 closing signal SIGTERM
+W0531 14:04:07.233000 517 torch/distributed/elastic/multiprocessing/api.py:1014] Sending process 745 closing signal SIGTERM
+W0531 14:04:07.234000 517 torch/distributed/elastic/multiprocessing/api.py:1014] Sending process 746 closing signal SIGTERM
+E0531 14:04:11.420000 517 torch/distributed/elastic/multiprocessing/api.py:988] failed (exitcode: 1) local_rank: 0 (pid: 743) of binary: /mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/python3
+Traceback (most recent call last):
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/bin/torchrun", line 10, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 367, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/run.py", line 1016, in main
+    run(args)
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/run.py", line 1007, in run
+    elastic_launch(
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 191, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 371, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+scripts/train_idm_temporal_masked_diffusion.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2026-05-31_14:04:11
+  host      : prod-rsv-jeonghunpark-20260531-0f69d7
+  rank      : 1 (local_rank: 1)
+  exitcode  : -15 (pid: 744)  (SIGTERM)
+  error_file: <N/A>
+  traceback : Signal 15 (SIGTERM) received by PID 744
+[2]:
+  time      : 2026-05-31_14:04:11
+  host      : prod-rsv-jeonghunpark-20260531-0f69d7
+  rank      : 2 (local_rank: 2)
+  exitcode  : -15 (pid: 745)  (SIGTERM)
+  error_file: <N/A>
+  traceback : Signal 15 (SIGTERM) received by PID 745
+[3]:
+  time      : 2026-05-31_14:04:11
+  host      : prod-rsv-jeonghunpark-20260531-0f69d7
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 746) 
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-31_14:04:07
+  host      : prod-rsv-jeonghunpark-20260531-0f69d7
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 743) 
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

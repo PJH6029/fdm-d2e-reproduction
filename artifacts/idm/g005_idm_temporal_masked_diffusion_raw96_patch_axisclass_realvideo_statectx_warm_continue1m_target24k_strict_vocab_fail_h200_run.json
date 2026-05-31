@@ -1,0 +1,90 @@
+{
+  "claim_boundary": "Bounded H200/prefix temporal-video FDM-1-recipe IDM probe; config-specific video source and GPU count are recorded in the resolved config, monitor, and summary. Not G005 completion evidence unless paper targets are beaten and audited.",
+  "config": "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_warm_continue1m_target24k.yaml",
+  "exit_code": 1,
+  "finished_at": "2026-05-31T14:04:11+00:00",
+  "gpu_monitor_log": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_warm_continue1m_target24k_h200_gpu_monitor.csv",
+  "gpu_monitor_sha256": "e58793b11d30e45b4179cf174bdb34e746350199aa703b292cd79026ad595df0",
+  "gpu_monitor_status": {
+    "max_gpu_utilization": 100.0,
+    "rows": 208,
+    "status": "pass",
+    "unique_gpu_indices": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "metrics_path": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_warm_continue1m_target24k/paper_metrics.json",
+  "model_slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_warm_continue1m_target24k",
+  "paper_metrics": null,
+  "schema": "g005_temporal_raw96_family_presence_prefix_h200_run.v1",
+  "started_at": "2026-05-31T13:38:30+00:00",
+  "status": "fail",
+  "summary": null,
+  "summary_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_warm_continue1m_target24k_summary.json",
+  "wandb_sidecar_status": {
+    "checkpoint_exists": false,
+    "claim_boundary": "W&B sidecar status contains no secrets and is logging-only evidence.",
+    "entity_configured": true,
+    "gpu_latest": [
+      {
+        "index": "0",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 1781.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 116.6,
+        "timestamp": "2026/05/31 14:04:01.056",
+        "utilization_gpu_pct": 0.0,
+        "utilization_memory_pct": 0.0
+      },
+      {
+        "index": "1",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 1781.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 115.97,
+        "timestamp": "2026/05/31 14:04:01.056",
+        "utilization_gpu_pct": 0.0,
+        "utilization_memory_pct": 0.0
+      },
+      {
+        "index": "2",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 1781.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 124.39,
+        "timestamp": "2026/05/31 14:04:01.056",
+        "utilization_gpu_pct": 0.0,
+        "utilization_memory_pct": 0.0
+      },
+      {
+        "index": "3",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 1781.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 117.5,
+        "timestamp": "2026/05/31 14:04:01.056",
+        "utilization_gpu_pct": 0.0,
+        "utilization_memory_pct": 0.0
+      }
+    ],
+    "last_epoch": null,
+    "logged_epochs_this_loop": 0,
+    "logged_epochs_total": [],
+    "loop_index": 52,
+    "metadata_exists": false,
+    "process_running": true,
+    "project": "fdm-d2e-reproduction",
+    "rank_progress": [],
+    "run_name": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_warm_continue1m_target24k",
+    "run_summary_exists": false,
+    "schema": "wandb_training_sidecar_status.v1",
+    "status": "running",
+    "updated_at_epoch": 1780236245.4842596,
+    "wandb_run_id": "lwvkud7u",
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/lwvkud7u"
+  },
+  "wandb_sidecar_status_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_warm_continue1m_target24k_h200_wandb_status.json"
+}
