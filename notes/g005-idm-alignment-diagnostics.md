@@ -1542,3 +1542,26 @@ next branch should use the stronger event-state/duration diagnostics as a
 split-safe teacher or curriculum while keeping the student as the public
 FDM-1-shaped noncausal masked action-token IDM, rather than adding more decoder
 threshold patches.
+
+## 2026-05-31 KST — state-context masked IDM branch prepared
+
+After the held-state probe collapsed to nearly constant held-control state, the
+next recipe-faithful branch keeps the FDM-1-shaped student (raw screen-video
+patch tokens + noncausal temporal masked action-token denoising + iterative
+unmasking) but gives it the closed-loop context that D2E/G-IDM-style inference
+uses autoregressively: prior held key/button state, hold durations, and previous
+event-token sketches. These features are derived only from past action-token
+state in the row stream and are appended as named auxiliary conditioning
+features to the raw video tokens; current target labels are still only training
+labels/evaluation labels, never inference features or target-label calibration.
+
+New bounded probe paths:
+
+- `configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_prefix32k.yaml`
+- `scripts/run_g005_idm_temporal_raw96_patch_axisclass_realvideo_statectx_prefix32k.sh`
+
+This is a split-safe action-state-context/curriculum approximation to the
+unpublished details of FDM-1 IDM sequence conditioning, not an FDM-1 parity
+claim. Run it as a bounded prefix gate first; do not checkpoint
+`G005-g014-idm-full-paper-target` unless paper-target metrics pass and later
+full-corpus completion/audit evidence exists.

@@ -94,6 +94,31 @@ def test_video_feature_vector_flattens_luma_window_tokens():
     assert features == [0.1, 0.2, 0.3, 0.4, 1.0, 0.0, 0.5, 0.6, 0.0, 0.0]
 
 
+def test_video_feature_vector_supports_closed_loop_state_context_features():
+    row = _row(3, split="train_core")
+    row.update(
+        {
+            "prior_action_tokens": ["KEY_DOWN_87", "MOUSE_LEFT_DOWN"],
+            "prior_key_hold_bins": {"87": 12},
+            "prior_button_hold_bins": {"LEFT": 3},
+            "prior_since_key_transition_bins": 5,
+            "prior_since_button_transition_bins": 2,
+            "previous_event_tokens": ["KEY_PRESS_87", "MOUSE_DX_P1", "MOUSE_DY_Z0"],
+        }
+    )
+
+    features = video_feature_vector(
+        row,
+        feature_paths=["state_duration_prior_action_features"],
+        dim=156,
+    )
+
+    assert len(features) == 156
+    assert any(value != 0.0 for value in features[:80])
+    assert any(value != 0.0 for value in features[80:118])
+    assert any(value != 0.0 for value in features[118:])
+
+
 def test_temporal_raw_video_feature_source_reads_frame_offsets(tmp_path: Path):
     _write_pgm(tmp_path / "frame_000000.ppm", [0, 64, 128, 255])
     _write_pgm(tmp_path / "frame_000001.ppm", [255, 128, 64, 0])

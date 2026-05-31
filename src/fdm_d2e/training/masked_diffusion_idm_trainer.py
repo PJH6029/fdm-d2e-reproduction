@@ -94,6 +94,51 @@ def _float_list(value: Any) -> list[float]:
     return []
 
 
+def _semantic_feature_vector(row: dict[str, Any], path: str) -> list[float] | None:
+    """Return named non-visual context features for recipe-shaped IDM probes.
+
+    Temporal masked-diffusion IDM candidates primarily consume video/window
+    tokens.  D2E rows can also carry closed-loop action-state context produced
+    from previous bins (prior held keys/buttons, hold durations, and previous
+    events).  Exposing those values through an explicit named feature path keeps
+    them auditable and split-safe: the values are derived from prior/predicted
+    action-token state, never from the current target label at inference time.
+    """
+
+    normalized = str(path).strip().lower()
+    if normalized in {"prior_action_features", "prior_action_context_features"}:
+        from fdm_d2e.training.neural_idm import _prior_action_features
+
+        return _prior_action_features(row)
+    if normalized in {"previous_event_features", "previous_action_event_features"}:
+        from fdm_d2e.training.neural_idm import _previous_event_features
+
+        return _previous_event_features(row)
+    if normalized in {"state_duration_features", "held_state_duration_features"}:
+        from fdm_d2e.training.neural_idm import _state_duration_features
+
+        return _state_duration_features(row)
+    if normalized in {
+        "state_duration_prior_action_features",
+        "closed_loop_state_duration_prior_action_features",
+    }:
+        from fdm_d2e.training.neural_idm import (
+            _previous_event_features,
+            _prior_action_features,
+            _state_duration_features,
+        )
+
+        return _state_duration_features(row) + _prior_action_features(row) + _previous_event_features(row)
+    if normalized.startswith("record_features:"):
+        from fdm_d2e.training.neural_idm import record_features
+
+        mode = str(path).split(":", 1)[1].strip()
+        if not mode:
+            return []
+        return [float(value) for value in record_features(row, feature_mode=mode)]
+    return None
+
+
 def video_feature_vector(row: dict[str, Any], *, feature_paths: Sequence[str], dim: int) -> list[float]:
     """Compact video-window feature vector for the first recipe-aligned trainer.
 
@@ -105,6 +150,10 @@ def video_feature_vector(row: dict[str, Any], *, feature_paths: Sequence[str], d
 
     values: list[float] = []
     for path in feature_paths:
+        semantic = _semantic_feature_vector(row, str(path))
+        if semantic is not None:
+            values.extend(semantic)
+            continue
         values.extend(_float_list(_nested_get(row, path)))
     if not values:
         values = [float(row.get("bin_index", 0) or 0) / 1000.0]
