@@ -1596,3 +1596,34 @@ it still does not justify full-corpus promotion or any G005 checkpoint. Next
 branch should preserve this context and move to a stronger split-safe teacher or
 curriculum/distillation signal for token ranking/counts, rather than another
 threshold-only decoder patch.
+
+### 2026-05-31 KST — state-context candidate reranker probe rejected
+
+- Commit `abece79` added a prediction-only, split-safe candidate-score reranker for the
+  state-context raw96 masked-diffusion IDM. The reranker fits tiny family-specific
+  logistic confidence models on held-out train candidate rows only, then applies them
+  to the 24k target prefix without target-label calibration.
+- MLXP evidence: primary reservation `rsv-jeonghunpark-20260531-29eee9` on 1xH200
+  ran pod `prod-rsv-jeonghunpark-20260531-29eee9`; a guard continuation
+  `rsv-jeonghunpark-20260531-a9bf4b` was scheduled before expiry and both were
+  cancelled after terminal evidence. A short retrieval reservation
+  `rsv-jeonghunpark-20260531-e10d5b` copied the DDN artifacts after the primary pod
+  was already deleted, then was cancelled.
+- Terminal compact evidence:
+  `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_reranker_predict24k_compact_summary.json`
+  reports `status=nonterminal_negative_probe`, target rows `24000`, W&B run
+  `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/i6oijrgf`.
+- Observed paper-compatible metrics regressed badly: keyboard key accuracy
+  `0.15436645122501128`, mouse-button accuracy `0.011824324324324325`, strict
+  mouse-button F1 `0.024305555555555556`, mouse Pearson X/Y
+  `0.11381185505448885` / `-0.04320073824203138`, no-button FPR
+  `0.0007248539632456402`. Only no-button FPR and nonzero button F1 passed;
+  paper-target G005 remains incomplete and must not be checkpointed.
+- Diagnostic implication: exact action tokens are still present in candidate pools for
+  many rows, but the train-heldout logistic reranker over current candidate features
+  does not generalize; it over-ranks repeated motion/no-action patterns and destroys
+  button/keyboard accuracy. Next branches should stop treating confidence reranking as
+  sufficient and instead improve the underlying recipe-shaped representation/objective:
+  e.g. longer real-video/state-context training, stronger token-presence supervision,
+  sequence-state action token modeling, or distillation from released G-IDM once exact
+  split inference is available.
