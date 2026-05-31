@@ -1627,3 +1627,21 @@ threshold-only decoder patch.
   e.g. longer real-video/state-context training, stronger token-presence supervision,
   sequence-state action token modeling, or distillation from released G-IDM once exact
   split inference is available.
+
+## 2026-05-31 KST — State-context raw96 320k 4×H200 scale probe rejected
+
+Ran `g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_target24k` from commit `88bb4ed` on MLXP reservation `rsv-jeonghunpark-20260531-d1937d` (production Node 6 GPUs 0-3, 11:00-15:00 KST). A continuation reservation `rsv-jeonghunpark-20260531-abe79b` (15:00-21:00 KST) was pre-scheduled because early throughput suggested possible overrun; after terminal evidence was copied both reservations were cancelled and the continuation was never used.
+
+Terminal evidence:
+
+- `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_target24k_h200_run.json`: `status=pass`, `exit_code=0`, `train_rows=320000`, `target_rows=24000`, GPU monitor `status=pass` over GPU indices `[0,1,2,3]`.
+- `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_target24k_h200_compact_summary.json`: `status=nonterminal_negative_probe`.
+- W&B sidecar: `artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_target24k_h200_wandb_status.json`, `status=complete`.
+
+Observed paper-compatible metrics over the 24k balanced target:
+
+- all: key accuracy `0.5291914518616435`, mouse-button accuracy `0.5035087719298246`, mouse Pearson X/Y `0.6268087428249076` / `0.6662588817682397`.
+- strict local: mouse-button F1 `0.6522781774580336`, no-button FPR `0.0`.
+- split highlights: temporal key `0.6468129571577848`, temporal Pearson X/Y `0.8763048568429475` / `0.7586018756294395`; heldout-recording key `0.45375494071146244`, button `0.29797979797979796`; heldout-game key `0.16842105263157894`, button `0.7101449275362319`, Pearson X/Y `0.9275568385444877` / `0.9190754972130755`.
+
+Conclusion: this is a useful 4×H200 FDM-1-shaped negative probe, but it does **not** complete `G005-g014-idm-full-paper-target`. It fixes no-button FPR and improves some motion splits, but still misses paper targets for key accuracy, mouse-button accuracy, and both all-split motion Pearson targets. The next IDM branch should not continue pure scale-up alone; it needs a split-aware candidate ranking/temporal-state correction that preserves the low FPR while increasing recall/key generalization, especially heldout-recording and heldout-game keyboard.

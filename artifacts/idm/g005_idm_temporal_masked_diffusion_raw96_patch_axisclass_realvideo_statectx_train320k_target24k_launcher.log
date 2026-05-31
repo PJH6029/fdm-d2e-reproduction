@@ -1,0 +1,21 @@
+W0531 02:04:53.501000 310 torch/distributed/run.py:862]
+W0531 02:04:53.501000 310 torch/distributed/run.py:862] *****************************************
+W0531 02:04:53.501000 310 torch/distributed/run.py:862] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+W0531 02:04:53.501000 310 torch/distributed/run.py:862] *****************************************
+[W531 02:04:55.537517149 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [localhost]:40539 (errno: 97 - Address family not supported by protocol).
+[W531 02:04:55.542301275 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:40539 (errno: 97 - Address family not supported by protocol).
+[W531 02:04:55.545089484 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:127.0.0.1]:40539 (errno: 97 - Address family not supported by protocol).
+[W531 02:04:55.780059904 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.102]:42277 (errno: 97 - Address family not supported by protocol).
+[W531 02:06:28.314356987 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.102]:42277 (errno: 97 - Address family not supported by protocol).
+[W531 02:06:31.602452862 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.102]:42277 (errno: 97 - Address family not supported by protocol).
+[W531 02:06:31.855048657 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.102]:42277 (errno: 97 - Address family not supported by protocol).
+[W531 02:06:33.525782671 socket.cpp:764] [c10d] The client socket cannot be initialized to connect to [::ffff:198.18.190.102]:42277 (errno: 97 - Address family not supported by protocol).
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W531 02:07:50.595913645 ProcessGroupNCCL.cpp:5324] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/.venv/lib/python3.11/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+trained temporal masked-diffusion IDM: rank=1 world_size=4 non_main_rank_complete
+trained temporal masked-diffusion IDM: rank=2 world_size=4 non_main_rank_complete
+trained temporal masked-diffusion IDM: rank=3 world_size=4 non_main_rank_complete
+trained temporal masked-diffusion IDM: model=g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_target24k train=320000 target=24000 device=cuda:0 metrics=outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/paper_metrics.json
