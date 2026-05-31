@@ -559,6 +559,39 @@ def test_g005_statectx_source_m101_fast256_uses_noncausal_offset_candidates() ->
     assert "target labels" in config["claim_boundary"]
 
 
+def test_g005_statectx_teacher_motiondistill_runs_train_teacher_before_masked_student() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_statectx_teacher_motiondistill_train320k.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_teacher_motiondistill_train320k_target24k.yaml"
+        ).read_text()
+    )
+    teacher = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_streaming_d2e_full_event_state_duration_context_teacher_train320k_predict.yaml"
+        ).read_text()
+    )
+
+    materialize_idx = text.index("scripts/materialize_balanced_prefix.py")
+    teacher_idx = text.index("scripts/predict_idm_streaming.py")
+    train_idx = text.index("scripts/run_g005_idm_temporal_raw96_family_presence_prefix.sh")
+    assert materialize_idx < teacher_idx < train_idx
+    assert "teacher-motion-distill" in text
+    assert config["teacher_distillation_enabled"] is True
+    assert config["teacher_distillation_families"] == ["mouse_move"]
+    assert config["teacher_distillation_aux_weight"] == 0.4
+    assert config["teacher_prediction_paths"] == [
+        "outputs/idm_streaming_d2e_full_event_state_duration_context_teacher_train320k_predictions/predictions.jsonl"
+    ]
+    assert "train_teacher_motion_distillation" in config["fdm1_recipe_alignment"]
+    assert "Target labels are never used" in config["claim_boundary"]
+    assert teacher["records_path"] == "outputs/data/d2e_event_state_duration_realvideo_balanced_train320k_target24k/train_core.jsonl"
+    assert teacher["checkpoint_path"] == "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint.pt"
+    assert teacher["claim_boundary"].startswith("Prediction-only train-row teacher artifact")
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())

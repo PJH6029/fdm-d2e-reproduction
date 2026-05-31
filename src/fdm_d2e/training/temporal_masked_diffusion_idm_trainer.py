@@ -133,6 +133,216 @@ def _build_vocab_for_config(
     return vocab
 
 
+def _prediction_tokens_from_row(row: dict[str, Any], *, preferred_key: str | None = None) -> list[str]:
+    """Return action-token predictions from a teacher/pseudolabel JSONL row."""
+
+    candidate_keys = [
+        preferred_key,
+        "predicted_tokens",
+        "pseudo_label_tokens",
+        "pseudolabel_tokens",
+        "tokens",
+        "action_tokens",
+        "predictions",
+    ]
+    for key in candidate_keys:
+        if not key:
+            continue
+        value = row.get(str(key))
+        if isinstance(value, list):
+            return [str(token) for token in value]
+    return []
+
+
+def _teacher_prediction_key(row: dict[str, Any], *, fallback_index: int) -> str:
+    for key in ("sequence_id", "record_id", "id"):
+        value = row.get(key)
+        if value is not None:
+            return str(value)
+    return f"__row_index__:{int(fallback_index)}"
+
+
+def _load_teacher_prediction_token_map(
+    paths: Sequence[Path],
+    *,
+    preferred_key: str | None = None,
+) -> tuple[dict[str, list[str]], dict[str, Any]]:
+    token_map: dict[str, list[str]] = {}
+    rows_seen = 0
+    duplicate_keys = 0
+    empty_rows = 0
+    for path in paths:
+        with path.open("r", encoding="utf-8") as handle:
+            for line_no, line in enumerate(handle, 1):
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                if not isinstance(row, dict):
+                    raise ValueError(f"teacher prediction row must be an object at {path}:{line_no}")
+                tokens = _prediction_tokens_from_row(row, preferred_key=preferred_key)
+                if not tokens:
+                    empty_rows += 1
+                key = _teacher_prediction_key(row, fallback_index=rows_seen)
+                if key in token_map:
+                    duplicate_keys += 1
+                token_map[key] = tokens
+                rows_seen += 1
+    return token_map, {
+        "paths": [str(path) for path in paths],
+        "rows_seen": rows_seen,
+        "unique_keys": len(token_map),
+        "duplicate_keys": duplicate_keys,
+        "empty_rows": empty_rows,
+    }
+
+
+def _filter_teacher_tokens(tokens: Sequence[str], *, config: dict[str, Any]) -> list[str]:
+    raw_families = config.get("teacher_distillation_families", ["mouse_move"])
+    families = {str(item) for item in raw_families} if isinstance(raw_families, list) else {"mouse_move"}
+    include_noop_negative = bool(config.get("teacher_distillation_include_noop_negative", False))
+    filtered = [
+        str(token)
+        for token in tokens
+        if str(token) not in {FDM1_ACTION_PAD, FDM1_ACTION_MASK}
+        and (
+            _action_family(str(token)) in families
+            or (include_noop_negative and str(token) == FDM1_ACTION_NOOP)
+        )
+    ]
+    if not filtered and include_noop_negative:
+        filtered = [FDM1_ACTION_NOOP]
+    return filtered
+
+
+def _load_teacher_distillation_slots(
+    rows: Sequence[dict[str, Any]],
+    *,
+    max_slots: int,
+    config: dict[str, Any],
+) -> tuple[list[list[str]], list[list[bool]], dict[str, Any]]:
+    """Load split-safe teacher action-token slots for auxiliary distillation.
+
+    This is intentionally an auxiliary *training* signal for the FDM-1-shaped
+    masked action-token IDM student.  It never reads target/eval labels and it
+    does not replace the ground-truth denoising objective.  Teacher predictions
+    are aligned by ``sequence_id`` when present, falling back to JSONL row order
+    for prediction files that omit stable ids.
+    """
+
+    teacher_paths = _expand_paths(config.get("teacher_prediction_paths", config.get("teacher_distillation_prediction_paths")))
+    if not teacher_paths:
+        return [], [], {"status": "skipped", "reason": "no_teacher_prediction_paths"}
+    preferred_key = config.get("teacher_prediction_token_key", config.get("teacher_distillation_token_key"))
+    token_map, load_summary = _load_teacher_prediction_token_map(teacher_paths, preferred_key=preferred_key)
+    include_missing_as_noop = bool(config.get("teacher_distillation_missing_as_noop", False))
+    slots: list[list[str]] = []
+    masks: list[list[bool]] = []
+    matched_rows = 0
+    missing_rows = 0
+    emitted_tokens = 0
+    truncated_tokens = 0
+    family_counts: dict[str, int] = {}
+    for row_index, row in enumerate(rows):
+        key = _teacher_prediction_key(row, fallback_index=row_index)
+        raw_tokens = token_map.get(key)
+        if raw_tokens is None:
+            missing_rows += 1
+            filtered = [FDM1_ACTION_NOOP] if include_missing_as_noop else []
+        else:
+            matched_rows += 1
+            filtered = _filter_teacher_tokens(raw_tokens, config=config)
+        kept = list(filtered[:max_slots])
+        truncated_tokens += max(0, len(filtered) - len(kept))
+        emitted_tokens += len(kept)
+        for token in kept:
+            family = _action_family(token)
+            family_counts[family] = family_counts.get(family, 0) + 1
+        padded = kept + [FDM1_ACTION_PAD] * max(0, max_slots - len(kept))
+        mask = [token != FDM1_ACTION_PAD for token in padded]
+        slots.append(padded[:max_slots])
+        masks.append(mask[:max_slots])
+    status = "pass" if matched_rows > 0 and emitted_tokens > 0 else "skipped"
+    reason = None if status == "pass" else ("no_teacher_tokens_after_filter" if matched_rows > 0 else "no_teacher_rows_matched")
+    summary = {
+        "schema": "temporal_teacher_distillation_slots.v1",
+        "status": status,
+        "reason": reason,
+        "teacher_prediction_load": load_summary,
+        "rows": len(rows),
+        "matched_rows": matched_rows,
+        "missing_rows": missing_rows,
+        "emitted_tokens": emitted_tokens,
+        "truncated_tokens": truncated_tokens,
+        "families": family_counts,
+        "families_enabled": list(config.get("teacher_distillation_families", ["mouse_move"]))
+        if isinstance(config.get("teacher_distillation_families", ["mouse_move"]), list)
+        else ["mouse_move"],
+        "include_noop_negative": bool(config.get("teacher_distillation_include_noop_negative", False)),
+        "claim_boundary": "Teacher distillation uses train-split teacher predictions only as an auxiliary masked-token loss; target/eval labels are never used and the base masked-diffusion IDM objective remains primary.",
+    }
+    return slots, masks, summary
+
+
+def _extend_vocab_with_teacher_slots(vocab: Sequence[str], teacher_slots: Sequence[Sequence[str]]) -> list[str]:
+    out = list(vocab)
+    seen = set(out)
+    additions = sorted(
+        {
+            str(token)
+            for slots in teacher_slots
+            for token in slots
+            if str(token) not in seen and str(token) not in {FDM1_ACTION_PAD, FDM1_ACTION_MASK}
+        }
+    )
+    out.extend(additions)
+    return out
+
+
+def _precompute_teacher_target_ids(
+    teacher_slots: Sequence[Sequence[str]],
+    teacher_masks: Sequence[Sequence[bool]],
+    *,
+    max_slots: int,
+    token_to_index: dict[str, int],
+) -> tuple[list[list[int]], list[list[bool]], dict[str, Any]]:
+    noop = token_to_index[FDM1_ACTION_NOOP]
+    pad = token_to_index["<FDM1_ACTION_PAD>"]
+    ids: list[list[int]] = []
+    masks: list[list[bool]] = []
+    unknown_tokens: dict[str, int] = {}
+    usable_tokens = 0
+    for row_slots, row_masks in zip(teacher_slots, teacher_masks):
+        row_ids: list[int] = []
+        row_out_mask: list[bool] = []
+        for slot_idx in range(max_slots):
+            token = str(row_slots[slot_idx]) if slot_idx < len(row_slots) else FDM1_ACTION_PAD
+            wanted = bool(row_masks[slot_idx]) if slot_idx < len(row_masks) else False
+            if token == FDM1_ACTION_PAD:
+                row_ids.append(pad)
+                row_out_mask.append(False)
+                continue
+            token_idx = token_to_index.get(token)
+            if token_idx is None:
+                unknown_tokens[token] = unknown_tokens.get(token, 0) + 1
+                row_ids.append(noop)
+                row_out_mask.append(False)
+                continue
+            row_ids.append(token_idx)
+            row_out_mask.append(wanted)
+            if wanted:
+                usable_tokens += 1
+        ids.append(row_ids)
+        masks.append(row_out_mask)
+    return ids, masks, {
+        "usable_tokens": usable_tokens,
+        "unknown_token_count": sum(unknown_tokens.values()),
+        "unknown_tokens_preview": [
+            {"token": token, "count": count}
+            for token, count in sorted(unknown_tokens.items(), key=lambda item: (-item[1], item[0]))[:16]
+        ],
+    }
+
+
 def _state_eventification_kwargs(config: dict[str, Any]) -> dict[str, Any]:
     return {
         "key_press_rows": max(1, int(config.get("state_eventification_key_press_rows", config.get("key_press_rows", 1)) or 1)),
@@ -872,12 +1082,16 @@ class _TemporalMaskedDiffusionDataset:
         target_ids: Sequence[Sequence[int]],
         config: dict[str, Any],
         vocab: Sequence[str],
+        teacher_ids: Sequence[Sequence[int]] | None = None,
+        teacher_loss_masks: Sequence[Sequence[bool]] | None = None,
     ) -> None:
         torch = require_torch()
         self.torch = torch
         self.features = features if hasattr(features, "detach") and hasattr(features, "to") else list(features)
         self.features_are_tensor = hasattr(self.features, "detach") and hasattr(self.features, "to")
         self.target_ids = [list(row) for row in target_ids]
+        self.teacher_ids = [list(row) for row in teacher_ids] if teacher_ids is not None else None
+        self.teacher_loss_masks = [list(row) for row in teacher_loss_masks] if teacher_loss_masks is not None else None
         self.vocab = list(vocab)
         self.token_to_index = {token: idx for idx, token in enumerate(self.vocab)}
         self.max_slots = int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))
@@ -899,6 +1113,7 @@ class _TemporalMaskedDiffusionDataset:
         self.seed = int(config.get("seed", 7))
         self.offsets = _temporal_offsets(config)
         self.loss_offsets = set(int(value) for value in config.get("temporal_loss_offsets", self.offsets))
+        self.teacher_loss_offsets = set(int(value) for value in config.get("teacher_distillation_offsets", self.loss_offsets))
 
     def __len__(self) -> int:
         return len(self.features)
@@ -912,10 +1127,12 @@ class _TemporalMaskedDiffusionDataset:
             return value.to(dtype=self.torch.float32)
         return self.torch.tensor(list(value), dtype=self.torch.float32)
 
-    def __getitem__(self, idx: int) -> tuple[Any, Any, Any, Any]:
+    def __getitem__(self, idx: int) -> tuple[Any, ...]:
         corrupted_rows: list[list[int]] = []
         target_rows: list[list[int]] = []
         mask_rows: list[list[bool]] = []
+        teacher_rows: list[list[int]] = []
+        teacher_mask_rows: list[list[bool]] = []
         index_to_token = {idx_: token for token, idx_ in self.token_to_index.items()}
         mask_index = self.token_to_index[FDM1_ACTION_MASK]
         force_full_mask = random.Random(self.seed + idx * 104729).random() < self.full_action_mask_probability
@@ -949,16 +1166,30 @@ class _TemporalMaskedDiffusionDataset:
             corrupted_rows.append([self.token_to_index.get(token, mask_index) for token in corrupted_tokens])
             target_rows.append(target)
             mask_rows.append(loss_mask)
+            if self.teacher_ids is not None and self.teacher_loss_masks is not None:
+                teacher_target = list(self.teacher_ids[row_index])
+                teacher_mask = list(self.teacher_loss_masks[row_index])
+                if offset not in self.teacher_loss_offsets:
+                    teacher_mask = [False for _ in teacher_mask]
+                teacher_rows.append(teacher_target)
+                teacher_mask_rows.append(teacher_mask)
         if self.features_are_tensor:
             index_tensor = self.torch.tensor(row_indices, dtype=self.torch.long, device=self.features.device)
             feature_tensor = self.features.index_select(0, index_tensor).to(dtype=self.torch.float32)
         else:
             feature_tensor = self.torch.stack([self._feature_tensor(row_index) for row_index in row_indices], dim=0)
-        return (
+        base = (
             feature_tensor,
             self.torch.tensor(corrupted_rows, dtype=self.torch.long),
             self.torch.tensor(target_rows, dtype=self.torch.long),
             self.torch.tensor(mask_rows, dtype=self.torch.bool),
+        )
+        if self.teacher_ids is None or self.teacher_loss_masks is None:
+            return base
+        return (
+            *base,
+            self.torch.tensor(teacher_rows, dtype=self.torch.long),
+            self.torch.tensor(teacher_mask_rows, dtype=self.torch.bool),
         )
 
 
@@ -1432,7 +1663,8 @@ def _pretrain_video_encoder(model: Any, torch: Any, loader: Any, *, config: dict
         model.train()
         total = 0.0
         examples = 0
-        for batch_index, (features, _corrupted, _targets, _mask) in enumerate(loader, 1):
+        for batch_index, batch_items in enumerate(loader, 1):
+            features = batch_items[0]
             features = features.to(device=device, dtype=torch.float32)
             loss = _masked_video_reconstruction_loss(model, torch, features, config=config)
             optimizer.zero_grad(set_to_none=True)
@@ -3959,9 +4191,10 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         raise ValueError("no target rows found for temporal masked-diffusion IDM")
     calibration_rows: list[dict[str, Any]] = []
     fit_rows = train_rows
+    fit_indices: list[int] = list(range(len(train_rows)))
     calibration_indices: list[int] = []
     if bool(config.get("calibrate_non_noop_budget", config.get("non_noop_budgeted_unmasking", False))) and len(train_rows) >= 10:
-        fit_rows, calibration_rows, _, calibration_indices = _temporal_calibration_split(train_rows, config)
+        fit_rows, calibration_rows, fit_indices, calibration_indices = _temporal_calibration_split(train_rows, config)
     offsets = _temporal_offsets(config)
     max_slots = int(config.get("max_action_tokens_per_bin", config.get("max_slots", 16)))
     feature_dim = _configured_video_feature_dim(config)
@@ -4006,6 +4239,18 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     preserve_pad_slots = bool(config.get("preserve_pad_action_slots", config.get("pad_action_slots_as_pad", False)))
     action_mouse_tokenization = _action_mouse_token_mode(config)
     config["action_mouse_tokenization"] = action_mouse_tokenization
+    teacher_slots: list[list[str]] = []
+    teacher_masks: list[list[bool]] = []
+    teacher_distillation_summary: dict[str, Any] = {"status": "skipped", "reason": "disabled"}
+    if bool(config.get("teacher_distillation_enabled", False)):
+        train_teacher_slots, train_teacher_masks, teacher_distillation_summary = _load_teacher_distillation_slots(
+            train_rows,
+            max_slots=max_slots,
+            config=config,
+        )
+        if train_teacher_slots and train_teacher_masks:
+            teacher_slots = [train_teacher_slots[index] for index in fit_indices]
+            teacher_masks = [train_teacher_masks[index] for index in fit_indices]
     vocab = _build_vocab_for_config(
         train_rows,
         max_slots=max_slots,
@@ -4013,6 +4258,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         min_count=int(config.get("vocab_min_count", 1)),
         preserve_pad_slots=preserve_pad_slots,
     )
+    if teacher_slots and bool(config.get("teacher_distillation_extend_vocab", True)):
+        vocab = _extend_vocab_with_teacher_slots(vocab, teacher_slots)
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
     feature_source = str(config.get("video_feature_source", "json")).lower()
     if feature_source in {"video_idm_cache", "raw_video_cache"}:
@@ -4075,7 +4322,32 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         config=config,
         preserve_pad_slots=preserve_pad_slots,
     )
-    dataset = _TemporalMaskedDiffusionDataset(features=fit_features, target_ids=fit_target_ids, config={**config, "max_slots": max_slots}, vocab=vocab)
+    teacher_target_ids: list[list[int]] | None = None
+    teacher_loss_masks: list[list[bool]] | None = None
+    if teacher_slots and teacher_masks and teacher_distillation_summary.get("status") == "pass":
+        teacher_target_ids, teacher_loss_masks, teacher_id_summary = _precompute_teacher_target_ids(
+            teacher_slots,
+            teacher_masks,
+            max_slots=max_slots,
+            token_to_index=token_to_index,
+        )
+        teacher_distillation_summary = {**teacher_distillation_summary, "teacher_id_mapping": teacher_id_summary}
+        if int(teacher_id_summary.get("usable_tokens", 0) or 0) <= 0:
+            teacher_target_ids = None
+            teacher_loss_masks = None
+            teacher_distillation_summary = {
+                **teacher_distillation_summary,
+                "status": "skipped",
+                "reason": "no_usable_teacher_tokens_after_vocab_mapping",
+            }
+    dataset = _TemporalMaskedDiffusionDataset(
+        features=fit_features,
+        target_ids=fit_target_ids,
+        config={**config, "max_slots": max_slots},
+        vocab=vocab,
+        teacher_ids=teacher_target_ids,
+        teacher_loss_masks=teacher_loss_masks,
+    )
     dataloader_workers = max(0, int(config.get("dataloader_num_workers", config.get("num_workers", 0)) or 0))
     sampler = (
         torch.utils.data.distributed.DistributedSampler(
@@ -4175,6 +4447,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
     token_presence_auxiliary = bool(config.get("temporal_token_presence_auxiliary", config.get("token_presence_auxiliary", False)))
     token_presence_aux_weight = float(config.get("token_presence_aux_weight", 0.0) or 0.0)
     token_presence_pos_weights = _token_presence_pos_weights(torch, vocab, config, device=device)
+    teacher_distillation_aux_weight = float(config.get("teacher_distillation_aux_weight", config.get("teacher_distillation_weight", 0.0)) or 0.0)
+    teacher_distillation_active = teacher_target_ids is not None and teacher_loss_masks is not None and teacher_distillation_aux_weight > 0.0
     event_offset_mask = _temporal_loss_offset_mask(torch, offsets, config, device=device)
     history: list[dict[str, Any]] = []
     progress_every = max(1, int(config.get("rank_progress_every_batches", 50)))
@@ -4207,13 +4481,22 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         total_video_mouse_move_token_presence = 0.0
         total_video_mouse_move_token_presence_rank = 0.0
         total_token_presence = 0.0
+        total_teacher_distillation = 0.0
         total_targets = 0
+        total_teacher_targets = 0
         total_examples = 0
-        for batch_index, (features, corrupted_ids, target_ids, loss_mask) in enumerate(loader, 1):
+        for batch_index, batch_items in enumerate(loader, 1):
+            features, corrupted_ids, target_ids, loss_mask = batch_items[:4]
+            teacher_ids = batch_items[4] if len(batch_items) > 4 else None
+            teacher_mask = batch_items[5] if len(batch_items) > 5 else None
             features = features.to(device=device, dtype=torch.float32)
             corrupted_ids = corrupted_ids.to(device)
             target_ids = target_ids.to(device)
             loss_mask = loss_mask.to(device)
+            if teacher_ids is not None:
+                teacher_ids = teacher_ids.to(device)
+            if teacher_mask is not None:
+                teacher_mask = teacher_mask.to(device)
             if (
                 event_auxiliary
                 or button_class_auxiliary
@@ -4265,6 +4548,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             video_mouse_move_token_presence_loss = torch.tensor(0.0, device=device)
             video_mouse_move_token_presence_rank_loss = torch.tensor(0.0, device=device)
             token_presence_loss = torch.tensor(0.0, device=device)
+            teacher_distillation_loss = torch.tensor(0.0, device=device)
             if event_auxiliary and (key_event_aux_weight > 0.0 or button_event_aux_weight > 0.0):
                 key_targets = _temporal_event_targets(torch, target_ids, vocab, ("KEY_",))
                 button_targets = _temporal_event_targets(torch, target_ids, vocab, ("MOUSE_LEFT_", "MOUSE_RIGHT_", "MOUSE_MIDDLE_"))
@@ -4503,6 +4787,15 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                     event_offset_mask,
                     token_presence_pos_weights,
                 )
+            if teacher_distillation_active and teacher_ids is not None and teacher_mask is not None:
+                teacher_distillation_loss = _temporal_action_loss(
+                    torch,
+                    logits,
+                    teacher_ids,
+                    teacher_mask,
+                    class_weights,
+                    config,
+                )
             loss = (
                 action_loss
                 + video_reconstruction_aux_weight * video_loss
@@ -4527,6 +4820,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 + video_mouse_move_token_presence_aux_weight * video_mouse_move_token_presence_loss
                 + video_mouse_move_token_presence_rank_weight * video_mouse_move_token_presence_rank_loss
                 + token_presence_aux_weight * token_presence_loss
+                + teacher_distillation_aux_weight * teacher_distillation_loss
             )
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
@@ -4558,7 +4852,10 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             total_video_mouse_move_token_presence += float(video_mouse_move_token_presence_loss.detach().cpu()) * batch
             total_video_mouse_move_token_presence_rank += float(video_mouse_move_token_presence_rank_loss.detach().cpu()) * batch
             total_token_presence += float(token_presence_loss.detach().cpu()) * batch
+            teacher_count = int(teacher_mask.sum().detach().cpu()) if teacher_mask is not None else 0
+            total_teacher_distillation += float(teacher_distillation_loss.detach().cpu()) * max(1, teacher_count)
             total_targets += count
+            total_teacher_targets += teacher_count
             total_examples += batch
             if batch_index == 1 or batch_index % progress_every == 0 or (total_batches and batch_index == total_batches):
                 _write_rank_progress(
@@ -4596,6 +4893,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                         "video_mouse_move_token_presence_loss": total_video_mouse_move_token_presence / max(1, total_examples),
                         "video_mouse_move_token_presence_rank_loss": total_video_mouse_move_token_presence_rank / max(1, total_examples),
                         "token_presence_loss": total_token_presence / max(1, total_examples),
+                        "teacher_distillation_loss": total_teacher_distillation / max(1, total_teacher_targets),
+                        "teacher_distillation_targets": total_teacher_targets,
                     },
                 )
         if distributed and dist is not None:
@@ -4625,7 +4924,9 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                     total_video_mouse_move_token_presence,
                     total_video_mouse_move_token_presence_rank,
                     total_token_presence,
+                    total_teacher_distillation,
                     float(total_targets),
+                    float(total_teacher_targets),
                     float(total_examples),
                 ],
                 dtype=torch.float64,
@@ -4657,10 +4958,13 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 total_video_mouse_move_token_presence,
                 total_video_mouse_move_token_presence_rank,
                 total_token_presence,
+                total_teacher_distillation,
                 total_targets_f,
+                total_teacher_targets_f,
                 total_examples_f,
             ) = [float(value) for value in totals.detach().cpu().tolist()]
             total_targets = int(total_targets_f)
+            total_teacher_targets = int(total_teacher_targets_f)
             total_examples = int(total_examples_f)
         if is_main_rank:
             history.append({
@@ -4689,6 +4993,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
                 "video_mouse_move_token_presence_loss": total_video_mouse_move_token_presence / max(1, total_examples),
                 "video_mouse_move_token_presence_rank_loss": total_video_mouse_move_token_presence_rank / max(1, total_examples),
                 "token_presence_loss": total_token_presence / max(1, total_examples),
+                "teacher_distillation_loss": total_teacher_distillation / max(1, total_teacher_targets),
+                "teacher_distillation_targets": total_teacher_targets,
                 "masked_targets": total_targets,
                 "distributed_world_size": world_size,
             })
@@ -4980,6 +5286,7 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         "candidate_family_diagnostics":candidate_family_diagnostics,
         "retrieval_action_prior":retrieval_summary,
         "candidate_token_prior":candidate_token_prior_summary,
+        "teacher_distillation": teacher_distillation_summary,
         "loss_weights":{
             "noop_loss_weight":float(config.get("noop_loss_weight", 1.0)),
             "pad_loss_weight":float(config.get("pad_loss_weight", 0.0)),
@@ -5093,6 +5400,14 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             "token_presence_keyboard_pos_weight":float(config.get("token_presence_keyboard_pos_weight", config.get("key_event_pos_weight", 8.0))),
             "token_presence_mouse_button_pos_weight":float(config.get("token_presence_mouse_button_pos_weight", config.get("button_event_pos_weight", 16.0))),
             "token_presence_mouse_move_pos_weight":float(config.get("token_presence_mouse_move_pos_weight", 2.0)),
+            "teacher_distillation_enabled": bool(config.get("teacher_distillation_enabled", False)),
+            "teacher_distillation_active": bool(teacher_distillation_active),
+            "teacher_distillation_aux_weight": teacher_distillation_aux_weight,
+            "teacher_distillation_families": list(config.get("teacher_distillation_families", ["mouse_move"]))
+            if isinstance(config.get("teacher_distillation_families", ["mouse_move"]), list)
+            else ["mouse_move"],
+            "teacher_distillation_extend_vocab": bool(config.get("teacher_distillation_extend_vocab", True)),
+            "teacher_distillation_include_noop_negative": bool(config.get("teacher_distillation_include_noop_negative", False)),
             "retrieval_action_prior_blend":float(config.get("retrieval_action_prior_blend", 0.35)),
             "candidate_token_prior_correction":bool(config.get("candidate_token_prior_correction", False)),
             "candidate_token_prior_strength":float(config.get("candidate_token_prior_strength", 0.5)),

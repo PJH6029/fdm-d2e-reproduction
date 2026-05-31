@@ -1,0 +1,27 @@
+{
+  "baseline_names": [
+    "noop",
+    "global_majority",
+    "last_seen_train"
+  ],
+  "batch_size": 4096,
+  "checkpoint_metadata_path": "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint_metadata.json",
+  "checkpoint_path": "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint.pt",
+  "claim_boundary": "Prediction-only train-row teacher artifact for G005 masked-diffusion IDM distillation. It uses no target/eval labels and is not promoted as our-IDM metric evidence.",
+  "endpoints": "configs/eval/primary_endpoints.yaml",
+  "eval_batch_size": 4096,
+  "max_target_examples": 320000,
+  "model_name": "g005_event_state_duration_context_teacher_train320k_predict",
+  "mouse_emit_mode": "decompose",
+  "mouse_max_tokens_per_axis": 32,
+  "mouse_output_gain_mode": "train_abs_ratio_per_axis",
+  "output_dir": "outputs/idm_streaming_d2e_full_event_state_duration_context_teacher_train320k_predictions",
+  "prediction_cuda_devices": [
+    0
+  ],
+  "prediction_workers": 1,
+  "records_path": "outputs/data/d2e_event_state_duration_realvideo_balanced_train320k_target24k/train_core.jsonl",
+  "resume_predictions": true,
+  "schema": "streaming_idm_predict_config.v1",
+  "summary_out": "artifacts/idm/g005_event_state_duration_context_teacher_train320k_predict_summary.json"
+}
