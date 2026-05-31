@@ -1,0 +1,18 @@
+{
+  "claim_boundary": "Launch evidence only; not a completion claim.",
+  "command": "nohup bash scripts/run_g005_idm_temporal_raw96_statectx_source_m101_fast256_predict24k.sh > artifacts/idm/${SLUG}.pod.log 2>&1 &",
+  "expected_outputs": [
+    "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary.json",
+    "outputs/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k/paper_metrics.json"
+  ],
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "launched_at_local": "2026-05-31T18:43:29.321731+09:00",
+  "namespace": "p-production",
+  "pid_file": "outputs/cluster/g005_statectx_source_m101_fast256_predict24k.pid",
+  "pod": "prod-rsv-jeonghunpark-20260531-5bc874",
+  "repo_commit": "8876375",
+  "reservation_end_at": "2026-05-31T21:00:00+09:00",
+  "reservation_id": "rsv-jeonghunpark-20260531-5bc874",
+  "schema": "g005_idm_probe_launch_context.v1",
+  "slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k"
+}
