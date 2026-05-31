@@ -1511,3 +1511,34 @@ New bounded probe paths:
 - `scripts/run_g005_idm_temporal_raw96_patch_axisclass_realvideo_state_prefix32k.sh`
 
 Validation before GPU reservation: `python3 -m py_compile` for tokenization/state-eventification/temporal trainer paths, targeted pytest (`96 passed`), `uv run python scripts/validate_fdm1_recipe_alignment.py` (`status=pass`), and `git diff --check`. Run only as a bounded prefix gate first; do not checkpoint G005 unless paper-target gates pass and later full-corpus completion evidence exists.
+
+## 2026-05-31 KST — held-state prefix32k probe rejected
+
+Bounded 4xH200 held-state masked-IDM probe ran on reservation
+`rsv-jeonghunpark-20260531-6127a2` (Node 6 GPU 0-3) from the latest pushed
+state-token branch after relaunching with distributed raw-video feature-cache
+reuse. The first launch was aborted and recorded because raw-video decode was
+duplicated across ranks with sustained 0% GPU utilization; the relaunch reused
+rank-sharded feature caches and completed with GPU monitor coverage over all
+four H200s.
+
+Terminal compact summary:
+`artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_state_prefix32k_h200_compact_summary.json`
+status `nonterminal_negative_probe`. Observed all-split paper-compatible
+metrics: keyboard key accuracy `0.0`, mouse-button accuracy `0.0`, mouse-button
+F1 `0.0`, mouse-move Pearson X `0.005305588874170259`, Pearson Y unavailable,
+and no-button FPR `0.0`. The held-state eventifier converted 24,000 state rows
+into only one keyboard-event row, zero mouse-button event rows, and 6,976 mouse
+motion rows, indicating the model learned a mostly constant held-control state
+rather than usable press/release transitions. W&B sidecar completed
+(`run_id=9b5dfgoc`); reservation was cancelled at 2026-05-31 09:12 KST after
+small artifact copy.
+
+This rejects held control-state tokens as a standalone G005 solution. It
+improves the recipe-fidelity story (state-like action tokens remain public
+FDM-1-compatible), but the learned denoising/ranking still collapses sparse
+keyboard/button transitions. G005 remains incomplete; do not checkpoint. The
+next branch should use the stronger event-state/duration diagnostics as a
+split-safe teacher or curriculum while keeping the student as the public
+FDM-1-shaped noncausal masked action-token IDM, rather than adding more decoder
+threshold patches.
