@@ -12,7 +12,7 @@ uv run python scripts/preflight_g003_fdm1_action_dataset_pod.py --require-pod --
 mkdir -p artifacts/logs outputs/cluster artifacts/cluster artifacts/sources artifacts/reports
 git rev-parse HEAD > artifacts/sources/fdm1_g003_pod_launch_commit.txt
 if [[ -s outputs/cluster/fdm1_g003_action_dataset_pipeline.pid ]] && kill -0 "$(cat outputs/cluster/fdm1_g003_action_dataset_pipeline.pid)" 2>/dev/null; then echo 'refusing: existing G003 pipeline pid is still active:' $(cat outputs/cluster/fdm1_g003_action_dataset_pipeline.pid) >&2; exit 3; fi
-nohup bash scripts/run_g003_fdm1_action_dataset_pipeline.sh > artifacts/logs/fdm1_g003_action_dataset_pipeline.log 2>&1 & echo $! > outputs/cluster/fdm1_g003_action_dataset_pipeline.pid
+nohup bash scripts/run_g003_fdm1_action_dataset_sharded_pipeline.sh > artifacts/logs/fdm1_g003_action_dataset_pipeline.log 2>&1 & echo $! > outputs/cluster/fdm1_g003_action_dataset_pipeline.pid
 echo launched $(cat outputs/cluster/fdm1_g003_action_dataset_pipeline.pid) log=artifacts/logs/fdm1_g003_action_dataset_pipeline.log
 uv run python - <<'PY'
 import json, os, subprocess, time

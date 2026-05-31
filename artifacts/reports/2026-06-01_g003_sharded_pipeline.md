@@ -1,0 +1,53 @@
+# G003 shard-parallel pipeline hardening — 2026-06-01 KST
+
+## Target
+
+Reduce real MLXP/PVC wall time for the full D2E-480p G003 materialization by running extraction in independent shards, then merging into the canonical reset G003 decode artifacts before finalization/audit/bundle/handoff.
+
+## Added/changed artifacts
+
+- `scripts/merge_d2e_full_corpus_shards.py`
+  - Preserves reset audit metadata from shard summaries: `split_mode`, `source_ids`, `resolution_tiers`, `data_universe`, `fdm1_split_manifests`, and shard-level metadata.
+  - Records mixed split modes as merge failures instead of silently emitting an audit-incompatible summary.
+- `scripts/run_g003_fdm1_action_dataset_sharded_pipeline.sh`
+  - Runs `extract_d2e_full_corpus.py` over `NUM_SHARDS` shard directories with bounded `MAX_PARALLEL_SHARDS` concurrency.
+  - Writes shard logs and pid files under `artifacts/logs/fdm1_g003_shards/` and `outputs/cluster/fdm1_g003_shards/`.
+  - Merges shards into canonical `outputs/data/fdm1_d2e_480p_window_records` and `artifacts/sources/fdm1_d2e_480p_window_records_decode_summary.json`.
+  - Runs finalization, evidence bundle, monitor, and checkpoint handoff generation after merge.
+- `scripts/launch_g003_fdm1_action_dataset_pod.py`
+  - Default pod pipeline now launches `bash scripts/run_g003_fdm1_action_dataset_sharded_pipeline.sh`.
+- `artifacts/cluster/fdm1_g003_action_dataset_pod_launch_plan.json`
+  - Regenerated to use the sharded pipeline by default.
+- Tests:
+  - `tests/test_merge_d2e_full_corpus_shards.py`
+  - `tests/test_run_g003_fdm1_sharded_pipeline_script.py`
+
+## Intended pod knobs
+
+```bash
+NUM_SHARDS=16 \
+MAX_PARALLEL_SHARDS=8 \
+CACHE_DIR=/root/work/data/d2e/cache \
+uv run python scripts/launch_g003_fdm1_action_dataset_pod.py --execute
+```
+
+For more CPU/network parallelism on a sufficiently provisioned pod, raise `MAX_PARALLEL_SHARDS`; for conservative network pressure, lower it.
+
+## Verification
+
+```bash
+bash -n scripts/run_g003_fdm1_action_dataset_sharded_pipeline.sh
+uv run python -m py_compile scripts/merge_d2e_full_corpus_shards.py scripts/launch_g003_fdm1_action_dataset_pod.py
+uv run pytest tests/test_merge_d2e_full_corpus_shards.py tests/test_run_g003_fdm1_sharded_pipeline_script.py tests/test_launch_g003_fdm1_action_dataset_pod.py -q
+uv run python scripts/launch_g003_fdm1_action_dataset_pod.py
+uv run python -m json.tool artifacts/cluster/fdm1_g003_action_dataset_pod_launch_plan.json
+```
+
+Observed evidence:
+
+- Sharded pipeline/merge/launch tests passed locally.
+- Launch plan now uses `run_g003_fdm1_action_dataset_sharded_pipeline.sh`.
+
+## Claim boundary
+
+This is run-path hardening only. It does not run full D2E-480p, does not produce completion artifacts, and does not satisfy G003 until the real pod run passes the completion audit/evidence bundle gates.

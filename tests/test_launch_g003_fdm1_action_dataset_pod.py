@@ -14,7 +14,7 @@ def test_build_launch_commands_refuse_non_pod_and_duplicate_pid():
     assert "KUBERNETES_SERVICE_HOST" in joined
     assert "refusing: this launch script must run inside the MLXP Kubernetes pod" in joined
     assert "existing G003 pipeline pid is still active" in joined
-    assert "nohup bash scripts/run_g003_fdm1_action_dataset_pipeline.sh" in joined
+    assert "nohup bash scripts/run_g003_fdm1_action_dataset_sharded_pipeline.sh" in joined
 
 
 def test_build_launch_commands_can_replace_existing_pid():

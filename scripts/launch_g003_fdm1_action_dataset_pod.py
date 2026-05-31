@@ -26,7 +26,7 @@ DEFAULT_SHELL_OUT = "artifacts/cluster/fdm1_g003_action_dataset_pod_launch.sh"
 DEFAULT_LOG = "artifacts/logs/fdm1_g003_action_dataset_pipeline.log"
 DEFAULT_PID = "outputs/cluster/fdm1_g003_action_dataset_pipeline.pid"
 DEFAULT_LAUNCH_CONTEXT = "artifacts/cluster/fdm1_g003_action_dataset_pod_launch_context.json"
-DEFAULT_PIPELINE = "bash scripts/run_g003_fdm1_action_dataset_pipeline.sh"
+DEFAULT_PIPELINE = "bash scripts/run_g003_fdm1_action_dataset_sharded_pipeline.sh"
 DEFAULT_PREFLIGHT_MIN_FREE_GB = 100.0
 
 
