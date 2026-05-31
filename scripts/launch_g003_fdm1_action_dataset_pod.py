@@ -192,6 +192,7 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         "post_launch_checks": [
             f"tail -n 80 {args.log_path}",
             f"cat {args.pid_path}",
+            "uv run python scripts/monitor_g003_fdm1_action_dataset_pod.py --refresh-audit --build-bundle-if-pass",
             "uv run python scripts/validate_fdm1_g003_action_dataset_completion.py --config configs/eval/fdm1_g003_action_dataset_completion.yaml --allow-fail",
             "uv run python scripts/build_fdm1_g003_evidence_bundle.py --completion-config configs/eval/fdm1_g003_action_dataset_completion.yaml",
         ],

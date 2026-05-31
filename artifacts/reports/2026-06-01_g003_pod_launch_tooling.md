@@ -60,3 +60,32 @@ Observed evidence:
 ## Claim boundary
 
 This is launch readiness only. G003 remains incomplete until the full D2E-480p materialization run completes, `validate_fdm1_g003_action_dataset_completion.py` reports pass, the evidence bundle is built, and the OMX ultragoal ledger is checkpointed with a fresh Codex goal snapshot.
+
+## Monitor/final-status hardening
+
+Added after the initial pod launch helper:
+
+- `scripts/monitor_g003_fdm1_action_dataset_pod.py`
+  - Reads the launch pid/log paths and reports `running`, `incomplete`, `failed_or_interrupted`, `audit_pass_bundle_missing`, or `pass`.
+  - Tails the launch log and surfaces fatal patterns such as `Traceback`, `RuntimeError`, `No space left`, `Killed`, and CUDA OOM.
+  - Reads the G003 completion audit and evidence-bundle manifest; it only reports full `pass` when both are pass.
+  - Emits artifact existence/size/hash evidence while avoiding expensive hashes for large JSONL payloads.
+  - Supports `--refresh-audit` and `--build-bundle-if-pass` for post-run collection.
+- `scripts/run_g003_fdm1_action_dataset_pipeline.sh`
+  - Now runs the monitor at the end of a successful pipeline after audit and evidence bundle creation.
+- `artifacts/cluster/fdm1_g003_action_dataset_pod_launch_plan.json`
+  - Post-launch checks now include the monitor command.
+
+Additional verification:
+
+```bash
+uv run python -m py_compile scripts/monitor_g003_fdm1_action_dataset_pod.py scripts/launch_g003_fdm1_action_dataset_pod.py
+uv run pytest tests/test_monitor_g003_fdm1_action_dataset_pod.py tests/test_launch_g003_fdm1_action_dataset_pod.py -q
+uv run python scripts/monitor_g003_fdm1_action_dataset_pod.py --output /tmp/fdm1_g003_monitor_local.json
+uv run python -m json.tool /tmp/fdm1_g003_monitor_local.json
+```
+
+Observed evidence:
+
+- Monitor/launcher tests: `10 passed`.
+- Local monitor status is currently `incomplete`, as expected before the MLXP full-corpus materialization run.
