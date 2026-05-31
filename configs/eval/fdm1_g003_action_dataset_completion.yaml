@@ -12,6 +12,8 @@
   "required_nonzero_splits": ["train_core", "target_all_eval", "recording_val", "recording_test", "heldout_game", "pseudo_idm_labeled_a", "pseudo_pseudo_b", "pseudo_fdm_gt_eval"],
   "min_unique_tokens": 16,
   "min_visual_rows": 8,
+  "omit_sha256_artifact_keys": ["action_slots", "train_core_slots", "target_all_eval_slots", "recording_val_slots", "recording_test_slots", "heldout_game_slots", "pseudo_idm_labeled_a_slots", "pseudo_pseudo_b_slots", "pseudo_fdm_gt_eval_slots"],
+  "required_output_hash_roles": ["all", "train_core", "target_all_eval", "recording_val", "recording_test", "heldout_game", "pseudo_idm_labeled_a", "pseudo_pseudo_b", "pseudo_fdm_gt_eval"],
   "paths": {
     "decode_summary": "artifacts/sources/fdm1_d2e_480p_window_records_decode_summary.json",
     "fitted_mouse_bins": "artifacts/sources/fdm1_g003_fitted_mouse_bins.json",

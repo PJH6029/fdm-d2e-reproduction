@@ -13,10 +13,15 @@ def _load_json(path: Path) -> dict[str, Any] | None:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _file_status(path: Path, rel_path: str) -> dict[str, Any]:
+def _file_status(path: Path, rel_path: str, *, hash_file: bool = True) -> dict[str, Any]:
     if not path.exists() or not path.is_file():
         return {"path": rel_path, "exists": False, "bytes": 0, "sha256": None}
-    return {"path": rel_path, "exists": True, "bytes": path.stat().st_size, "sha256": sha256_file(path)}
+    payload = {"path": rel_path, "exists": True, "bytes": path.stat().st_size, "sha256": None}
+    if hash_file:
+        payload["sha256"] = sha256_file(path)
+    else:
+        payload["hash_omitted_reason"] = "large_artifact_hash_recorded_in_dataset_summary_output_hashes"
+    return payload
 
 
 def _goal_statuses(root: Path, goals_path: str) -> dict[str, str]:
@@ -55,7 +60,8 @@ def validate_fdm1_g003_action_dataset_completion(config: dict[str, Any], *, root
     root_path = Path(root)
     findings: list[dict[str, Any]] = []
     paths = {key: str(value) for key, value in dict(config.get("paths", {})).items()}
-    artifacts = {key: _file_status(root_path / rel_path, rel_path) for key, rel_path in paths.items()}
+    omit_hash_keys = set(map(str, config.get("omit_sha256_artifact_keys", [])))
+    artifacts = {key: _file_status(root_path / rel_path, rel_path, hash_file=key not in omit_hash_keys) for key, rel_path in paths.items()}
     for key in config.get("required_artifacts", paths.keys()):
         _expect_file(artifacts, findings, str(key))
 
@@ -126,6 +132,10 @@ def validate_fdm1_g003_action_dataset_completion(config: dict[str, Any], *, root
         expected_tokenization = config.get("expected_tokenization_config")
         if expected_tokenization and dataset.get("tokenization_config") != expected_tokenization:
             _error(findings, "dataset_tokenization_config_mismatch", expected=expected_tokenization, actual=dataset.get("tokenization_config"))
+        output_hashes = dataset.get("output_hashes") or {}
+        for role in config.get("required_output_hash_roles", []):
+            if not output_hashes.get(str(role)):
+                _error(findings, "dataset_missing_output_hash", role=str(role))
 
     if overflow is not None:
         if records_expected and int(overflow.get("bins", 0) or 0) != records_expected:

@@ -23,6 +23,8 @@ def _config(root: Path) -> dict:
         "required_nonzero_splits": ["train_core", "target_all_eval"],
         "min_unique_tokens": 2,
         "min_visual_rows": 2,
+        "omit_sha256_artifact_keys": ["action_slots", "train_core_slots", "target_all_eval_slots"],
+        "required_output_hash_roles": ["all", "train_core", "target_all_eval"],
         "paths": {
             "decode_summary": "artifacts/sources/decode.json",
             "fitted_mouse_bins": "artifacts/sources/bins.json",
@@ -150,3 +152,14 @@ def test_fdm1_g003_completion_audit_requires_fitted_tokenization_config(tmp_path
     codes = {item["code"] for item in payload["findings"]}
     assert payload["status"] == "fail"
     assert "dataset_tokenization_config_mismatch" in codes
+
+
+def test_fdm1_g003_completion_audit_requires_dataset_output_hashes(tmp_path: Path):
+    cfg = _complete_fixture(tmp_path)
+    summary = read_json(tmp_path / cfg["paths"]["dataset_summary"])
+    summary["output_hashes"].pop("target_all_eval", None)
+    write_json(tmp_path / cfg["paths"]["dataset_summary"], summary)
+    payload = validate_fdm1_g003_action_dataset_completion(cfg, root=tmp_path)
+    codes = {item["code"] for item in payload["findings"]}
+    assert payload["status"] == "fail"
+    assert "dataset_missing_output_hash" in codes

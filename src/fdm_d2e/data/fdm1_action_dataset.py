@@ -268,6 +268,7 @@ def write_action_slot_dataset(
         path = split_dir / f"{name}.jsonl"
         write_jsonl(path, rows)
         output_paths[name] = str(path)
+    output_hashes = {name: sha256_file(path) for name, path in output_paths.items()}
     alignment = build_alignment_summary(records, bin_ms=bin_ms, frame_fps=frame_fps)
     overflow = summarize_slot_overflow(action_records, by_game=[str(row.get("game", "UNKNOWN")) for row in action_records])
     summary = build_action_dataset_summary(
@@ -279,6 +280,7 @@ def write_action_slot_dataset(
         frame_fps=frame_fps,
         k_event_slots=tokenizer.k_event_slots,
     )
+    summary["output_hashes"] = output_hashes
     sequence_pack = {
         "schema": "fdm1_action_sequence_pack.v1",
         "canonical_roadmap": "ROADMAP.md",
@@ -302,11 +304,14 @@ def write_action_slot_dataset(
 
 
 
-def _append_jsonl(path: Path, rows: Iterable[dict[str, Any]]) -> None:
+def _append_jsonl(path: Path, rows: Iterable[dict[str, Any]], *, digest: Any | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
         for row in rows:
-            handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+            line = json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n"
+            if digest is not None:
+                digest.update(line.encode("utf-8"))
+            handle.write(line)
 
 
 def _empty_output_paths(output_root: Path) -> dict[str, str]:
@@ -390,6 +395,7 @@ def write_action_slot_dataset_streaming_from_jsonl(
     tokenizer = tokenizer or ActionSlotTokenizer(k_event_slots=8, bin_ms=bin_ms)
     output_root = ensure_dir(output_dir)
     output_paths = _empty_output_paths(output_root)
+    output_digests = {name: hashlib.sha256() for name in output_paths}
     token_counter: Counter[str] = Counter()
     split_counts: Counter[str] = Counter()
     games: set[str] = set()
@@ -439,11 +445,11 @@ def write_action_slot_dataset_streaming_from_jsonl(
             screen_size=screen_size,
         )
         split_rows = split_action_slot_records(action_records)
-        _append_jsonl(Path(output_paths["all"]), action_records)
+        _append_jsonl(Path(output_paths["all"]), action_records, digest=output_digests["all"])
         for name, rows in split_rows.items():
             split_counts[name] += len(rows)
             if name != "all":
-                _append_jsonl(Path(output_paths[name]), rows)
+                _append_jsonl(Path(output_paths[name]), rows, digest=output_digests[name])
         for row in action_records:
             token_counter.update(row.get("action_tokens", []))
             if row.get("game") is not None:
@@ -480,10 +486,12 @@ def write_action_slot_dataset_streaming_from_jsonl(
     split_counts.setdefault("all", records_written)
     source_hashes = {path: digest.hexdigest() for path, digest in source_digests.items()} if max_records is None else {}
     source_prefix_hashes: dict[str, str] = {}
+    output_hashes = {name: digest.hexdigest() for name, digest in output_digests.items()}
     dataset_fingerprint = stable_hash_json(
         {
             "source_hashes": source_hashes,
             "source_prefix_hashes": source_prefix_hashes,
+            "output_hashes": output_hashes,
             "records": records_written,
             "split_counts": dict(split_counts),
             "first_sequences": first_sequences,
@@ -512,6 +520,7 @@ def write_action_slot_dataset_streaming_from_jsonl(
         "unique_token_count": len(token_counter),
         "top_tokens": token_counter.most_common(20),
         "output_paths": output_paths,
+        "output_hashes": output_hashes,
         "dataset_fingerprint": dataset_fingerprint,
     }
     sequence_pack = {

@@ -79,6 +79,8 @@ def test_write_action_slot_dataset_emits_packed_splits_and_summaries(tmp_path: P
     assert len(read_jsonl(tmp_path / "splits" / "pseudo_pseudo_b.jsonl")) == 1
     assert len(read_jsonl(tmp_path / "splits" / "pseudo_fdm_gt_eval.jsonl")) == 1
     assert result["summary"]["dataset_fingerprint"] == pack["dataset_fingerprint"]
+    assert set(summary["output_hashes"]) >= {"all", "train_core", "target_all_eval", "recording_test", "heldout_game", "pseudo_pseudo_b", "pseudo_fdm_gt_eval"}
+    assert len(summary["output_hashes"]["all"]) == 64
 
 
 def test_alignment_summary_fails_events_outside_50ms_bin():
