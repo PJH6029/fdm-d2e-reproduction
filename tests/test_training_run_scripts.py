@@ -319,6 +319,8 @@ def test_g005_statectx_train320k_scales_best_prefix_with_state_features() -> Non
     assert "state_duration_prior_action_features" in text
     assert "state-context,balanced-prefix,train320k" in text
     assert "outputs/data/d2e_event_state_duration_realvideo_balanced_train320k_target24k" in text
+    assert "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_target24k_source_train_balanced_summary.json" in text
+    assert "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_target24k_source_target_balanced_summary.json" in text
     assert config["raw_video_aux_feature_paths"] == ["state_duration_prior_action_features"]
     assert config["raw_video_aux_feature_dim"] == 156
     assert config["video_feature_dim"] == 27804

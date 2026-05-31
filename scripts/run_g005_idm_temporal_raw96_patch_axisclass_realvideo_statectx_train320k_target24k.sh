@@ -11,8 +11,8 @@ SOURCE_INPUT_ROOT="${SOURCE_INPUT_ROOT:-outputs/data/d2e_event_state_duration_co
 # Reuse the 320k/24k balanced real-video rows from the non-state-context train320k branch when present.
 # Those rows originate from the event-state-duration context shards and carry state_duration_prior_action_features.
 SOURCE_PREFIX_ROOT="${SOURCE_PREFIX_ROOT:-outputs/data/d2e_event_state_duration_realvideo_balanced_train320k_target24k}"
-SOURCE_TRAIN_PREFIX_SUMMARY="${SOURCE_TRAIN_PREFIX_SUMMARY:-artifacts/idm/${MODEL_SLUG}_source_train_balanced_summary.json}"
-SOURCE_TARGET_PREFIX_SUMMARY="${SOURCE_TARGET_PREFIX_SUMMARY:-artifacts/idm/${MODEL_SLUG}_source_target_balanced_summary.json}"
+SOURCE_TRAIN_PREFIX_SUMMARY="${SOURCE_TRAIN_PREFIX_SUMMARY:-artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_target24k_source_train_balanced_summary.json}"
+SOURCE_TARGET_PREFIX_SUMMARY="${SOURCE_TARGET_PREFIX_SUMMARY:-artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_train320k_target24k_source_target_balanced_summary.json}"
 MAX_TRAIN_ROWS="${MAX_TRAIN_ROWS:-320000}"
 MAX_TARGET_ROWS="${MAX_TARGET_ROWS:-24000}"
 TRAIN_MAX_PER_RECORDING="${TRAIN_MAX_PER_RECORDING:-20000}"
