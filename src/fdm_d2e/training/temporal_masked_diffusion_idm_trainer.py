@@ -1385,6 +1385,96 @@ def _load_source_checkpoint_for_training(
             + f" ({path})"
         )
 
+    vocab_remap_summary: dict[str, Any] = {"status": "skipped", "reason": "no_vocab_mismatch"}
+    if "vocab" in mismatches and bool(config.get("source_checkpoint_vocab_remap", config.get("source_checkpoint_allow_mismatch", False))):
+        target_state = model.state_dict()
+        remapped_state = dict(state_dict)
+        remapped_keys: list[str] = []
+        skipped_keys: list[str] = []
+
+        def remap_rows(
+            key: str,
+            source_labels: Sequence[str],
+            target_labels: Sequence[str],
+            *,
+            source_offset: int = 0,
+            target_offset: int = 0,
+            copy_sentinel: bool = False,
+        ) -> None:
+            source_tensor = state_dict.get(key)
+            target_tensor = target_state.get(key)
+            if source_tensor is None or target_tensor is None or not hasattr(source_tensor, "shape"):
+                return
+            if tuple(source_tensor.shape) == tuple(target_tensor.shape):
+                return
+            if len(source_tensor.shape) != len(target_tensor.shape) or tuple(source_tensor.shape[1:]) != tuple(target_tensor.shape[1:]):
+                skipped_keys.append(key)
+                remapped_state.pop(key, None)
+                return
+            next_tensor = target_tensor.detach().clone()
+            if copy_sentinel and source_tensor.shape[0] > 0 and target_tensor.shape[0] > 0:
+                next_tensor[0].copy_(source_tensor[0])
+            source_index_by_label = {str(label): int(index) + int(source_offset) for index, label in enumerate(source_labels)}
+            copied = 1 if copy_sentinel else 0
+            for target_index, label in enumerate(target_labels):
+                source_index = source_index_by_label.get(str(label))
+                if source_index is None or source_index >= int(source_tensor.shape[0]):
+                    continue
+                write_index = int(target_index) + int(target_offset)
+                if write_index >= int(target_tensor.shape[0]):
+                    continue
+                next_tensor[write_index].copy_(source_tensor[source_index])
+                copied += 1
+            remapped_state[key] = next_tensor
+            remapped_keys.append(f"{key}:{copied}")
+
+        source_key_vocab = _key_class_vocab(source_vocab)
+        current_key_vocab = _key_class_vocab(current_vocab)
+        source_button_vocab = _button_class_vocab(source_vocab)
+        current_button_vocab = _button_class_vocab(current_vocab)
+        source_mouse_move_vocab = _mouse_move_class_vocab(source_vocab)
+        current_mouse_move_vocab = _mouse_move_class_vocab(current_vocab)
+        source_mouse_dx_vocab = _mouse_axis_class_vocab(source_vocab, "x")
+        current_mouse_dx_vocab = _mouse_axis_class_vocab(current_vocab, "x")
+        source_mouse_dy_vocab = _mouse_axis_class_vocab(source_vocab, "y")
+        current_mouse_dy_vocab = _mouse_axis_class_vocab(current_vocab, "y")
+
+        for key in ("action_embed.weight", "head.weight", "head.bias", "token_presence_head.weight", "token_presence_head.bias"):
+            remap_rows(key, source_vocab, current_vocab)
+        for key in ("key_class_head.weight", "key_class_head.bias"):
+            remap_rows(key, source_key_vocab, current_key_vocab, source_offset=1, target_offset=1, copy_sentinel=True)
+        for key in ("button_class_head.weight", "button_class_head.bias"):
+            remap_rows(key, source_button_vocab, current_button_vocab, source_offset=1, target_offset=1, copy_sentinel=True)
+        for key in ("mouse_dx_class_head.weight", "mouse_dx_class_head.bias"):
+            remap_rows(key, source_mouse_dx_vocab, current_mouse_dx_vocab, source_offset=1, target_offset=1, copy_sentinel=True)
+        for key in ("mouse_dy_class_head.weight", "mouse_dy_class_head.bias"):
+            remap_rows(key, source_mouse_dy_vocab, current_mouse_dy_vocab, source_offset=1, target_offset=1, copy_sentinel=True)
+        for key in ("key_token_presence_head.weight", "key_token_presence_head.bias", "video_key_token_presence_head.weight", "video_key_token_presence_head.bias"):
+            remap_rows(key, source_key_vocab, current_key_vocab)
+        for key in ("button_token_presence_head.weight", "button_token_presence_head.bias", "video_button_token_presence_head.weight", "video_button_token_presence_head.bias"):
+            remap_rows(key, source_button_vocab, current_button_vocab)
+        for key in ("mouse_move_token_presence_head.weight", "mouse_move_token_presence_head.bias", "video_mouse_move_token_presence_head.weight", "video_mouse_move_token_presence_head.bias"):
+            remap_rows(key, source_mouse_move_vocab, current_mouse_move_vocab)
+
+        target_shapes = {key: tuple(value.shape) for key, value in target_state.items() if hasattr(value, "shape")}
+        for key, value in list(remapped_state.items()):
+            if hasattr(value, "shape") and key in target_shapes and tuple(value.shape) != target_shapes[key]:
+                skipped_keys.append(key)
+                remapped_state.pop(key, None)
+        state_dict = remapped_state
+        vocab_remap_summary = {
+            "status": "pass",
+            "remapped_keys": remapped_keys,
+            "skipped_mismatched_keys": sorted(set(skipped_keys)),
+            "source_vocab_size": len(source_vocab),
+            "current_vocab_size": len(current_vocab),
+            "added_current_tokens": sorted(set(current_vocab) - set(source_vocab))[:64],
+            "added_current_token_count": len(set(current_vocab) - set(source_vocab)),
+            "missing_source_tokens": sorted(set(source_vocab) - set(current_vocab))[:64],
+            "missing_source_token_count": len(set(source_vocab) - set(current_vocab)),
+            "claim_boundary": "Warm-start vocabulary remap copies shared action-token rows and leaves newly observed train-only tokens randomly initialized; it is not target-label calibration.",
+        }
+
     strict = bool(config.get("source_checkpoint_strict", not bool(config.get("source_checkpoint_allow_mismatch", False))))
     load_result = model.load_state_dict(state_dict, strict=strict)
     missing_keys = list(getattr(load_result, "missing_keys", []) or [])
@@ -1406,6 +1496,7 @@ def _load_source_checkpoint_for_training(
         "current_feature_dim": int(feature_dim),
         "source_temporal_offsets": [int(value) for value in source_offsets] if source_offsets is not None else None,
         "current_temporal_offsets": [int(value) for value in offsets],
+        "vocab_remap": vocab_remap_summary,
     }
 
 

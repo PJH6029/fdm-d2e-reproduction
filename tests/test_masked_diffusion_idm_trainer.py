@@ -2363,6 +2363,93 @@ def test_train_temporal_masked_diffusion_idm_warm_starts_from_source_checkpoint(
     assert second["loss_weights"]["source_checkpoint_skip_video_pretrain"] is True
 
 
+def test_train_temporal_masked_diffusion_idm_remaps_extended_source_vocab(tmp_path: Path):
+    if not torch_available():
+        return
+    source_train = tmp_path / "train_warm_remap_source.jsonl"
+    extended_train = tmp_path / "train_warm_remap_extended.jsonl"
+    target_path = tmp_path / "target_warm_remap.jsonl"
+    source_rows = []
+    extended_rows = []
+    for i in range(4):
+        row = _row(i, split="train_core")
+        row["compact_luma_window"] = [[float(i + pix) / 10.0 for pix in range(4)] for _ in range(2)]
+        row["compact_luma_window_mask"] = [1.0, 1.0]
+        row["ground_truth_tokens"] = ["KEY_PRESS_A", "MOUSE_DX_P1", "MOUSE_DY_Z0"]
+        source_rows.append(dict(row))
+        extended = dict(row)
+        extended["ground_truth_tokens"] = ["KEY_PRESS_A", "KEY_PRESS_B", "MOUSE_DX_P1", "MOUSE_DY_Z0"]
+        extended_rows.append(extended)
+    target_rows = []
+    for i in range(4, 6):
+        row = _row(i, split="eval")
+        row["compact_luma_window"] = [[float(i + pix) / 10.0 for pix in range(4)] for _ in range(2)]
+        row["compact_luma_window_mask"] = [1.0, 1.0]
+        target_rows.append(row)
+    _write_jsonl(source_train, source_rows)
+    _write_jsonl(extended_train, extended_rows)
+    _write_jsonl(target_path, target_rows)
+    base_config = {
+        "model_name": "unit_temporal_masked_diffusion_warm_remap_idm",
+        "target_records": str(target_path),
+        "max_train_rows": 4,
+        "max_target_rows": 2,
+        "max_action_tokens_per_bin": 4,
+        "action_mouse_tokenization": "d2e_metric_bins",
+        "temporal_offsets": [0],
+        "temporal_loss_offsets": [0],
+        "video_feature_paths": ["compact_luma_window", "compact_luma_window_mask", "frame.features"],
+        "video_feature_dim": 12,
+        "video_encoder_arch": "compact_luma_window_cnn",
+        "luma_window_frames": 2,
+        "luma_window_size": 2,
+        "luma_encoder_channels": 2,
+        "luma_encoder_pool_hw": 1,
+        "luma_aux_hidden_dim": 4,
+        "hidden_dim": 16,
+        "transformer_layers": 1,
+        "transformer_heads": 4,
+        "dropout": 0.0,
+        "batch_size": 2,
+        "prediction_batch_size": 2,
+        "epochs": 1,
+        "lr": 0.001,
+        "mask_probability": 1.0,
+        "random_token_probability": 0.0,
+        "diffusion_steps": 2,
+        "force_cpu": True,
+    }
+    first = train_temporal_masked_diffusion_idm(
+        {
+            **base_config,
+            "train_records": str(source_train),
+            "output_dir": str(tmp_path / "out_remap_source"),
+            "summary_out": str(tmp_path / "summary_remap_source.json"),
+        }
+    )
+    second = train_temporal_masked_diffusion_idm(
+        {
+            **base_config,
+            "train_records": str(extended_train),
+            "output_dir": str(tmp_path / "out_remap_student"),
+            "summary_out": str(tmp_path / "summary_remap_student.json"),
+            "source_checkpoint": first["checkpoint_path"],
+            "source_checkpoint_allow_mismatch": True,
+            "source_checkpoint_strict": False,
+            "source_checkpoint_vocab_remap": True,
+        }
+    )
+
+    assert second["status"] == "pass"
+    assert second["source_checkpoint"]["status"] == "pass"
+    assert second["source_checkpoint"]["mismatches"] == ["vocab"]
+    remap = second["source_checkpoint"]["vocab_remap"]
+    assert remap["status"] == "pass"
+    assert remap["added_current_token_count"] == 1
+    assert remap["added_current_tokens"] == ["KEY_PRESS_B"]
+    assert any(key.startswith("action_embed.weight:") for key in remap["remapped_keys"])
+
+
 def test_train_temporal_masked_diffusion_idm_raw_video_cnn_tiny_smoke(tmp_path: Path):
     if not torch_available():
         return

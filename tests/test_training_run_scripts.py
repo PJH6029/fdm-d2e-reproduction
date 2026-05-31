@@ -640,7 +640,9 @@ def test_g005_statectx_warm_continue1m_scales_recipe_checkpoint_without_target_c
     assert config["source_checkpoint"] == (
         "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt"
     )
-    assert config["source_checkpoint_strict"] is True
+    assert config["source_checkpoint_allow_mismatch"] is True
+    assert config["source_checkpoint_strict"] is False
+    assert config["source_checkpoint_vocab_remap"] is True
     assert config["source_checkpoint_skip_video_pretrain"] is True
     assert config["max_train_rows"] == 1_000_000
     assert config["max_target_rows"] == 24_000
