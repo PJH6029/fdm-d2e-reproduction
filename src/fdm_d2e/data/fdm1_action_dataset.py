@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Iterable, Sequence
@@ -291,9 +292,238 @@ def write_action_slot_dataset(
     return {"records": action_records, "alignment": alignment, "overflow": overflow, "summary": summary, "sequence_pack": sequence_pack}
 
 
+
+def _append_jsonl(path: Path, rows: Iterable[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        for row in rows:
+            handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+
+
+def _empty_output_paths(output_root: Path) -> dict[str, str]:
+    split_dir = ensure_dir(output_root / "splits")
+    paths = {"all": str(output_root / "action_slots.jsonl")}
+    for name in ("train_core", "target_temporal", "target_heldout_recording", "target_heldout_game", "target_all_eval"):
+        paths[name] = str(split_dir / f"{name}.jsonl")
+    for path in paths.values():
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        Path(path).write_text("", encoding="utf-8")
+    return paths
+
+
+def _merge_alignment(total: dict[str, Any], batch: dict[str, Any]) -> None:
+    total["record_count"] += int(batch.get("record_count", 0))
+    total["recording_count"] += int(batch.get("recording_count", 0))
+    total["events_checked"] += int(batch.get("events_checked", 0))
+    total["event_outside_bin_count"] += int(batch.get("event_outside_bin_count", 0))
+    total["non_monotonic_count"] += int(batch.get("non_monotonic_count", 0))
+    total["bad_bin_spacing_count"] += int(batch.get("bad_bin_spacing_count", 0))
+    total["frame_index_missing_count"] += int(batch.get("frame_index_missing_count", 0))
+    total["frame_features_missing_count"] += int(batch.get("frame_features_missing_count", 0))
+    total["errors"].extend(batch.get("errors", []))
+
+
+def _iter_jsonl_rows(path: str | Path) -> Iterable[dict[str, Any]]:
+    with Path(path).open(encoding="utf-8") as handle:
+        for line_no, line in enumerate(handle, 1):
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            if not isinstance(row, dict):
+                raise ValueError(f"JSONL row must be object at {path}:{line_no}")
+            yield row
+
+
+def _iter_recording_batches(input_paths: Sequence[str | Path]) -> Iterable[list[dict[str, Any]]]:
+    """Yield consecutive recording groups without loading a full corpus JSONL."""
+
+    current_key: str | None = None
+    current_rows: list[dict[str, Any]] = []
+    for path in input_paths:
+        for row in _iter_jsonl_rows(path):
+            key = str(row.get("recording_id", row.get("source_recording_key", "UNKNOWN")))
+            if current_key is None:
+                current_key = key
+            if key != current_key and current_rows:
+                yield current_rows
+                current_rows = []
+                current_key = key
+            current_rows.append(row)
+    if current_rows:
+        yield current_rows
+
+
+def write_action_slot_dataset_streaming_from_jsonl(
+    input_paths: Sequence[str | Path],
+    *,
+    output_dir: str | Path,
+    tokenization_config_path: str | None = None,
+    tokenizer: ActionSlotTokenizer | None = None,
+    bin_ms: int = 50,
+    frame_fps: int = 20,
+    click_horizon_seconds: float = 1.0,
+    click_grid: tuple[int, int] = (32, 18),
+    screen_size: tuple[int, int] = (854, 480),
+    max_records: int | None = None,
+) -> dict[str, Any]:
+    """Stream materialization from decoded D2E JSONL grouped by recording.
+
+    Full D2E-480p materialization can contain tens of millions of 50ms rows.
+    This writer only holds one consecutive recording group at a time, preserving
+    next-click horizon targets within each recording while avoiding all-corpus
+    memory pressure.
+    """
+
+    tokenizer = tokenizer or ActionSlotTokenizer(k_event_slots=8, bin_ms=bin_ms)
+    output_root = ensure_dir(output_dir)
+    output_paths = _empty_output_paths(output_root)
+    token_counter: Counter[str] = Counter()
+    split_counts: Counter[str] = Counter()
+    games: set[str] = set()
+    first_samples: list[dict[str, Any]] = []
+    first_sequences: list[Any] = []
+    last_sequences: list[Any] = []
+    source_paths = [str(path) for path in input_paths]
+    source_hashes = {str(path): sha256_file(path) for path in source_paths if Path(path).exists()}
+    alignment_total: dict[str, Any] = {
+        "schema": "fdm1_action_slot_alignment_summary.v1",
+        "status": "pass",
+        "errors": [],
+        "record_count": 0,
+        "recording_count": 0,
+        "bin_ms": int(bin_ms),
+        "frame_fps": int(frame_fps),
+        "expected_frame_interval_ms": 1000.0 / float(frame_fps) if frame_fps else None,
+        "events_checked": 0,
+        "event_outside_bin_count": 0,
+        "non_monotonic_count": 0,
+        "bad_bin_spacing_count": 0,
+        "frame_index_missing_count": 0,
+        "frame_features_missing_count": 0,
+    }
+    overflow_bins = 0
+    overflow_events = 0
+    per_game_overflow: dict[str, Counter[str]] = defaultdict(Counter)
+    records_written = 0
+    batches = 0
+    stop = False
+    for batch in _iter_recording_batches(input_paths):
+        if max_records is not None:
+            remaining = int(max_records) - records_written
+            if remaining <= 0:
+                break
+            if len(batch) > remaining:
+                batch = batch[:remaining]
+                stop = True
+        batches += 1
+        action_records = materialize_action_slot_records(
+            batch,
+            tokenizer=tokenizer,
+            bin_ms=bin_ms,
+            frame_fps=frame_fps,
+            click_horizon_seconds=click_horizon_seconds,
+            click_grid=click_grid,
+            screen_size=screen_size,
+        )
+        split_rows = split_action_slot_records(action_records)
+        _append_jsonl(Path(output_paths["all"]), action_records)
+        for name, rows in split_rows.items():
+            split_counts[name] += len(rows)
+            if name != "all":
+                _append_jsonl(Path(output_paths[name]), rows)
+        for row in action_records:
+            token_counter.update(row.get("action_tokens", []))
+            if row.get("game") is not None:
+                games.add(str(row.get("game")))
+            if len(first_samples) < 3:
+                first_samples.append(row)
+            if len(first_sequences) < 16:
+                first_sequences.append(row.get("sequence_id"))
+            last_sequences.append(row.get("sequence_id"))
+            if len(last_sequences) > 16:
+                last_sequences.pop(0)
+        alignment_batch = build_alignment_summary(batch, bin_ms=bin_ms, frame_fps=frame_fps)
+        _merge_alignment(alignment_total, alignment_batch)
+        overflow_batch = summarize_slot_overflow(action_records, by_game=[str(row.get("game", "UNKNOWN")) for row in action_records])
+        overflow_bins += int(overflow_batch.get("overflow_bins", 0))
+        overflow_events += int(overflow_batch.get("overflow_events", 0))
+        for game, counts in overflow_batch.get("per_game", {}).items():
+            for key, value in counts.items():
+                per_game_overflow[str(game)][str(key)] += int(value)
+        records_written += len(action_records)
+        if stop:
+            break
+    alignment_total["status"] = "pass" if not alignment_total["errors"] else "fail"
+    overflow = {
+        "schema": "fdm1_action_slot_overflow_summary.v1",
+        "bins": records_written,
+        "overflow_bins": overflow_bins,
+        "overflow_events": overflow_events,
+        "overflow_rate": (overflow_bins / records_written) if records_written else 0.0,
+        "per_game": {game: dict(counter) for game, counter in sorted(per_game_overflow.items())},
+        "recommended_threshold": 0.001,
+        "threshold_exceeded": (overflow_bins / records_written) > 0.001 if records_written else False,
+    }
+    split_counts.setdefault("all", records_written)
+    dataset_fingerprint = stable_hash_json(
+        {
+            "source_hashes": source_hashes,
+            "records": records_written,
+            "split_counts": dict(split_counts),
+            "first_sequences": first_sequences,
+            "last_sequences": last_sequences,
+            "tokenization": {"bin_ms": int(bin_ms), "frame_fps": int(frame_fps), "k_event_slots": int(tokenizer.k_event_slots)},
+        }
+    )
+    summary = {
+        "schema": "fdm1_action_slot_dataset_summary.v1",
+        "canonical_roadmap": "ROADMAP.md",
+        "streaming": True,
+        "streaming_policy": "consecutive_recording_groups",
+        "source_paths": source_paths,
+        "source_hashes": source_hashes,
+        "tokenization_config": tokenization_config_path,
+        "tokenization_config_sha256": sha256_file(tokenization_config_path) if tokenization_config_path and Path(tokenization_config_path).exists() else None,
+        "timebase": {"bin_ms": int(bin_ms), "frame_fps": int(frame_fps)},
+        "k_event_slots": int(tokenizer.k_event_slots),
+        "records": records_written,
+        "recording_batches": batches,
+        "split_counts": dict(split_counts),
+        "games": sorted(games),
+        "token_count": sum(token_counter.values()),
+        "unique_token_count": len(token_counter),
+        "top_tokens": token_counter.most_common(20),
+        "output_paths": output_paths,
+        "dataset_fingerprint": dataset_fingerprint,
+    }
+    sequence_pack = {
+        "schema": "fdm1_action_sequence_pack.v1",
+        "canonical_roadmap": "ROADMAP.md",
+        "dataset_fingerprint": dataset_fingerprint,
+        "timebase": summary["timebase"],
+        "streaming": True,
+        "tokenization": {
+            "config_path": tokenization_config_path,
+            "k_event_slots": tokenizer.k_event_slots,
+            "mouse_boundaries": list(tokenizer.mouse_binner.boundaries),
+            "mouse_compound": tokenizer.mouse_binner.compound,
+        },
+        "counts": dict(split_counts),
+        "paths": output_paths,
+        "sample_records": first_samples,
+    }
+    write_json(output_root / "alignment_summary.json", alignment_total)
+    write_json(output_root / "overflow_summary.json", overflow)
+    write_json(output_root / "dataset_summary.json", summary)
+    write_json(output_root / "sequence_pack.json", sequence_pack)
+    return {"alignment": alignment_total, "overflow": overflow, "summary": summary, "sequence_pack": sequence_pack}
+
+
 __all__ = [
     "build_alignment_summary",
     "materialize_action_slot_records",
     "split_action_slot_records",
     "write_action_slot_dataset",
+    "write_action_slot_dataset_streaming_from_jsonl",
 ]

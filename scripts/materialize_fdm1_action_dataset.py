@@ -9,7 +9,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.config import load_config
-from fdm_d2e.data.fdm1_action_dataset import write_action_slot_dataset
+from fdm_d2e.data.fdm1_action_dataset import write_action_slot_dataset, write_action_slot_dataset_streaming_from_jsonl
 from fdm_d2e.io_utils import read_json, read_jsonl
 from fdm_d2e.tokenization.fdm1_actions import ActionSlotTokenizer, MouseMoveBinner
 
@@ -63,25 +63,40 @@ def main() -> None:
     parser.add_argument("--screen-width", type=int, default=int(defaults.get("screen_width", 854)))
     parser.add_argument("--screen-height", type=int, default=int(defaults.get("screen_height", 480)))
     parser.add_argument("--max-records", type=int, default=defaults.get("max_records"))
+    parser.add_argument("--no-streaming", action="store_true", default=bool(defaults.get("no_streaming", False)), help="Load all rows in memory; only safe for small fixtures.")
     args = parser.parse_args()
 
     input_records = args.input_records if isinstance(args.input_records, list) else [args.input_records]
-    rows = _load_records([str(path) for path in input_records], max_records=args.max_records)
-    if not rows:
-        raise SystemExit("no input records loaded")
     tokenizer = _tokenizer_from_config(args.tokenization_config, k_event_slots=args.k_event_slots, bin_ms=args.bin_ms)
-    result = write_action_slot_dataset(
-        rows,
-        output_dir=args.output_dir,
-        source_paths=[str(path) for path in input_records],
-        tokenization_config_path=args.tokenization_config,
-        tokenizer=tokenizer,
-        bin_ms=args.bin_ms,
-        frame_fps=args.frame_fps,
-        click_horizon_seconds=args.click_horizon_seconds,
-        click_grid=(args.click_grid_width, args.click_grid_height),
-        screen_size=(args.screen_width, args.screen_height),
-    )
+    if args.no_streaming:
+        rows = _load_records([str(path) for path in input_records], max_records=args.max_records)
+        if not rows:
+            raise SystemExit("no input records loaded")
+        result = write_action_slot_dataset(
+            rows,
+            output_dir=args.output_dir,
+            source_paths=[str(path) for path in input_records],
+            tokenization_config_path=args.tokenization_config,
+            tokenizer=tokenizer,
+            bin_ms=args.bin_ms,
+            frame_fps=args.frame_fps,
+            click_horizon_seconds=args.click_horizon_seconds,
+            click_grid=(args.click_grid_width, args.click_grid_height),
+            screen_size=(args.screen_width, args.screen_height),
+        )
+    else:
+        result = write_action_slot_dataset_streaming_from_jsonl(
+            [str(path) for path in input_records],
+            output_dir=args.output_dir,
+            tokenization_config_path=args.tokenization_config,
+            tokenizer=tokenizer,
+            bin_ms=args.bin_ms,
+            frame_fps=args.frame_fps,
+            click_horizon_seconds=args.click_horizon_seconds,
+            click_grid=(args.click_grid_width, args.click_grid_height),
+            screen_size=(args.screen_width, args.screen_height),
+            max_records=args.max_records,
+        )
     summary = result["summary"]
     alignment = result["alignment"]
     print(

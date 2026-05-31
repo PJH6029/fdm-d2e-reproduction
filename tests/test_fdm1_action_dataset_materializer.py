@@ -108,4 +108,6 @@ def test_materialize_fdm1_action_dataset_cli_smoke(tmp_path: Path):
     assert "materialized FDM-1 action slots" in completed.stdout
     rows = read_jsonl(output_dir / "action_slots.jsonl")
     assert rows[0]["event_slots"][0] == "KEY_DOWN_87"
-    assert json.loads((output_dir / "dataset_summary.json").read_text())["records"] == 2
+    cli_summary = json.loads((output_dir / "dataset_summary.json").read_text())
+    assert cli_summary["records"] == 2
+    assert cli_summary["streaming"] is True
