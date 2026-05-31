@@ -1,0 +1,419 @@
+{
+  "claim_boundary": "Bounded H200/prefix temporal-video FDM-1-recipe IDM probe; config-specific video source and GPU count are recorded in the resolved config, monitor, and summary. Not G005 completion evidence unless paper targets are beaten and audited.",
+  "config": "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k.yaml",
+  "exit_code": 0,
+  "finished_at": "2026-05-31T06:36:27+00:00",
+  "gpu_monitor_log": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k_h200_gpu_monitor.csv",
+  "gpu_monitor_sha256": "bd33797d6c50efff3636cf05afa163fa11debb21b3491b55e1ce0d0df08cacff",
+  "gpu_monitor_status": {
+    "max_gpu_utilization": 100.0,
+    "rows": 448,
+    "status": "pass",
+    "unique_gpu_indices": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "metrics_path": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k/paper_metrics.json",
+  "model_slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k",
+  "paper_metrics": {
+    "alignment": {
+      "examples": [],
+      "missing_prediction_rows": 0,
+      "missing_target_rows": 0,
+      "rows_seen": 24000,
+      "sequence_id_mismatches": 0
+    },
+    "claim_boundary": "Paper-compatible metrics approximate public D2E evaluate.py semantics over pre-binned JSONL tokens; exact released G-IDM comparison remains G006.",
+    "error_count": 0,
+    "findings": [],
+    "groups": {
+      "all": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.1347093970668115,
+            "sample_count": 16569
+          },
+          "mouse_button": {
+            "button_accuracy": 0.02443033669651967,
+            "sample_count": 17642
+          },
+          "mouse_move": {
+            "pearson_x": 0.43443396271390267,
+            "pearson_y": 0.446041797957737,
+            "sample_count": 11133,
+            "scale_ratio_x": 6.4445937598214,
+            "scale_ratio_y": 3.503803623245236,
+            "scale_sample_count": 24000
+          }
+        },
+        "rows": 24000,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.5333510496943927,
+            "num_examples": 3763
+          },
+          "mouse_button": {
+            "accuracy": 0.7477148080438757,
+            "exact_true_positive_examples": 409,
+            "f1": 0.0453185595567867,
+            "false_negative_examples": 138,
+            "false_positive_examples": 17094,
+            "no_button_examples": 23453,
+            "no_button_false_positive_examples": 16956,
+            "no_button_false_positive_rate": 0.7229778706348868,
+            "num_examples": 547,
+            "precision": 0.023367422727532422,
+            "predicted_examples": 17503,
+            "recall": 0.7477148080438757
+          }
+        }
+      },
+      "eval_split:heldout_game": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.004830917874396135,
+            "sample_count": 2484
+          },
+          "mouse_button": {
+            "button_accuracy": 0.02425825713752566,
+            "sample_count": 5359
+          },
+          "mouse_move": {
+            "pearson_x": 0.3051415895445462,
+            "pearson_y": 0.4065814051461679,
+            "sample_count": 954,
+            "scale_ratio_x": 5.6034370241461815,
+            "scale_ratio_y": 6.7338559163867115,
+            "scale_sample_count": 8000
+          }
+        },
+        "rows": 8000,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.2727272727272727,
+            "num_examples": 33
+          },
+          "mouse_button": {
+            "accuracy": 0.9420289855072463,
+            "exact_true_positive_examples": 130,
+            "f1": 0.04736746219712151,
+            "false_negative_examples": 8,
+            "false_positive_examples": 5221,
+            "no_button_examples": 7862,
+            "no_button_false_positive_examples": 5213,
+            "no_button_false_positive_rate": 0.6630628338845077,
+            "num_examples": 138,
+            "precision": 0.024294524387964866,
+            "predicted_examples": 5351,
+            "recall": 0.9420289855072463
+          }
+        }
+      },
+      "eval_split:heldout_recording": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.17058419243986253,
+            "sample_count": 7275
+          },
+          "mouse_button": {
+            "button_accuracy": 0.019971693662525554,
+            "sample_count": 6359
+          },
+          "mouse_move": {
+            "pearson_x": 0.4718605497476494,
+            "pearson_y": 0.482825779767171,
+            "sample_count": 5592,
+            "scale_ratio_x": 7.111483708707498,
+            "scale_ratio_y": 2.8292948771694473,
+            "scale_sample_count": 8000
+          }
+        },
+        "rows": 8000,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.5085049239033125,
+            "num_examples": 2234
+          },
+          "mouse_button": {
+            "accuracy": 0.631578947368421,
+            "exact_true_positive_examples": 120,
+            "f1": 0.03704847175054029,
+            "false_negative_examples": 70,
+            "false_positive_examples": 6168,
+            "no_button_examples": 7810,
+            "no_button_false_positive_examples": 6098,
+            "no_button_false_positive_rate": 0.7807938540332906,
+            "num_examples": 190,
+            "precision": 0.019083969465648856,
+            "predicted_examples": 6288,
+            "recall": 0.631578947368421
+          }
+        }
+      },
+      "eval_split:temporal": {
+        "paper_compatible": {
+          "empty_bins_as_correct": false,
+          "keyboard": {
+            "key_accuracy": 0.14375917767988253,
+            "sample_count": 6810
+          },
+          "mouse_button": {
+            "button_accuracy": 0.02937204591492235,
+            "sample_count": 5924
+          },
+          "mouse_move": {
+            "pearson_x": 0.3755992315538754,
+            "pearson_y": 0.4303643559797616,
+            "sample_count": 4587,
+            "scale_ratio_x": 4.982611407852158,
+            "scale_ratio_y": 4.138310580204778,
+            "scale_sample_count": 8000
+          }
+        },
+        "rows": 8000,
+        "strict_local": {
+          "keyboard": {
+            "accuracy": 0.5762032085561497,
+            "num_examples": 1496
+          },
+          "mouse_button": {
+            "accuracy": 0.726027397260274,
+            "exact_true_positive_examples": 159,
+            "f1": 0.05227683708696367,
+            "false_negative_examples": 60,
+            "false_positive_examples": 5705,
+            "no_button_examples": 7781,
+            "no_button_false_positive_examples": 5645,
+            "no_button_false_positive_rate": 0.7254851561495952,
+            "num_examples": 219,
+            "precision": 0.027114597544338336,
+            "predicted_examples": 5864,
+            "recall": 0.726027397260274
+          }
+        }
+      }
+    },
+    "max_rows": 24000,
+    "model_name": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_target24k",
+    "prediction_paths": [
+      "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k/predictions.jsonl"
+    ],
+    "schema": "paper_idm_metrics.v1",
+    "split_tags": [
+      "temporal",
+      "heldout_recording",
+      "heldout_game"
+    ],
+    "status": "pass",
+    "target_paths": [
+      "outputs/data/d2e_event_state_duration_realvideo_balanced_train320k_target24k/target_all_eval.jsonl"
+    ]
+  },
+  "schema": "g005_temporal_raw96_family_presence_prefix_h200_run.v1",
+  "started_at": "2026-05-31T05:40:45+00:00",
+  "status": "pass",
+  "summary": null,
+  "summary_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k_summary.json",
+  "wandb_sidecar_status": {
+    "checkpoint_exists": true,
+    "claim_boundary": "W&B sidecar status contains no secrets and is logging-only evidence.",
+    "entity_configured": true,
+    "gpu_latest": [
+      {
+        "index": "0",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 7743.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 118.2,
+        "timestamp": "2026/05/31 06:36:15.459",
+        "utilization_gpu_pct": 0.0,
+        "utilization_memory_pct": 0.0
+      },
+      {
+        "index": "1",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 4.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 75.54,
+        "timestamp": "2026/05/31 06:36:15.460",
+        "utilization_gpu_pct": 0.0,
+        "utilization_memory_pct": 0.0
+      },
+      {
+        "index": "2",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 4.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 82.85,
+        "timestamp": "2026/05/31 06:36:15.460",
+        "utilization_gpu_pct": 0.0,
+        "utilization_memory_pct": 0.0
+      },
+      {
+        "index": "3",
+        "memory_total_mib": 143771.0,
+        "memory_used_mib": 4.0,
+        "name": "NVIDIA H200",
+        "power_draw_w": 77.57,
+        "timestamp": "2026/05/31 06:36:15.460",
+        "utilization_gpu_pct": 0.0,
+        "utilization_memory_pct": 0.0
+      }
+    ],
+    "last_epoch": 6,
+    "logged_epochs_this_loop": 0,
+    "logged_epochs_total": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "loop_index": 112,
+    "metadata_exists": false,
+    "process_running": true,
+    "project": "fdm-d2e-reproduction",
+    "rank_progress": [
+      {
+        "batch": 375,
+        "batches": 375,
+        "examples": 24000,
+        "heartbeat_age_sec": 3.782972574234009,
+        "path": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k/rank_progress/train_rank0.json",
+        "phase": "prediction",
+        "rank": 0,
+        "schema": "temporal_masked_diffusion_rank_progress.v1",
+        "updated_at_epoch": 1780209377.6541953
+      },
+      {
+        "action_loss": 1.1190742108446736,
+        "batch": 2485,
+        "batches": 2485,
+        "button_class_loss": 0.0003084444326025878,
+        "button_event_loss": 0.0013003215801013625,
+        "button_token_presence_loss": 0.00027764313356949417,
+        "button_token_presence_rank_loss": 2.3487222440098974e-05,
+        "epoch": 6,
+        "epochs": 6,
+        "examples": 79500,
+        "heartbeat_age_sec": 1855.016104221344,
+        "key_class_loss": 0.010839604661293854,
+        "key_event_loss": 0.0030593934666032978,
+        "key_token_presence_loss": 0.0006508462802864284,
+        "key_token_presence_rank_loss": 0.002456677554917314,
+        "keyboard_count_loss": 0.0,
+        "loss": 3.0898064740893507,
+        "masked_targets": 625718,
+        "mouse_axis_class_loss": 1.5077389919352981,
+        "mouse_button_count_loss": 0.0,
+        "mouse_move_count_loss": 0.0,
+        "mouse_move_token_presence_loss": 0.005586712300871153,
+        "mouse_move_token_presence_rank_loss": 0.5953057911500991,
+        "path": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k/rank_progress/train_rank1.json",
+        "phase": "action_denoising",
+        "rank": 1,
+        "schema": "temporal_masked_diffusion_rank_progress.v1",
+        "token_presence_loss": 0.017955130041114188,
+        "updated_at_epoch": 1780207526.4210637,
+        "video_button_token_presence_loss": 0.0,
+        "video_button_token_presence_rank_loss": 0.0,
+        "video_key_token_presence_loss": 0.0,
+        "video_key_token_presence_rank_loss": 0.0,
+        "video_mouse_move_token_presence_loss": 0.0,
+        "video_mouse_move_token_presence_rank_loss": 0.0,
+        "video_reconstruction_loss": 0.0
+      },
+      {
+        "action_loss": 1.116827658903699,
+        "batch": 2485,
+        "batches": 2485,
+        "button_class_loss": 0.0004709618637116026,
+        "button_event_loss": 0.0014037673681975874,
+        "button_token_presence_loss": 0.0002776021000836923,
+        "button_token_presence_rank_loss": 1.9901697061596007e-05,
+        "epoch": 6,
+        "epochs": 6,
+        "examples": 79500,
+        "heartbeat_age_sec": 1855.016025543213,
+        "key_class_loss": 0.010173215620353513,
+        "key_event_loss": 0.0030630058139700257,
+        "key_token_presence_loss": 0.0006465137223156649,
+        "key_token_presence_rank_loss": 0.002740399992895904,
+        "keyboard_count_loss": 0.0,
+        "loss": 3.0882897524101978,
+        "masked_targets": 625467,
+        "mouse_axis_class_loss": 1.5102048817400662,
+        "mouse_button_count_loss": 0.0,
+        "mouse_move_count_loss": 0.0,
+        "mouse_move_token_presence_loss": 0.005590565417688223,
+        "mouse_move_token_presence_rank_loss": 0.5941367685899794,
+        "path": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k/rank_progress/train_rank2.json",
+        "phase": "action_denoising",
+        "rank": 2,
+        "schema": "temporal_masked_diffusion_rank_progress.v1",
+        "token_presence_loss": 0.017957539162920706,
+        "updated_at_epoch": 1780207526.4211423,
+        "video_button_token_presence_loss": 0.0,
+        "video_button_token_presence_rank_loss": 0.0,
+        "video_key_token_presence_loss": 0.0,
+        "video_key_token_presence_rank_loss": 0.0,
+        "video_mouse_move_token_presence_loss": 0.0,
+        "video_mouse_move_token_presence_rank_loss": 0.0,
+        "video_reconstruction_loss": 0.0
+      },
+      {
+        "action_loss": 1.1322688026591856,
+        "batch": 2485,
+        "batches": 2485,
+        "button_class_loss": 0.0007050320553506651,
+        "button_event_loss": 0.0012844613321372981,
+        "button_token_presence_loss": 0.00029651424987461276,
+        "button_token_presence_rank_loss": 2.4631733383253745e-05,
+        "epoch": 6,
+        "epochs": 6,
+        "examples": 79500,
+        "heartbeat_age_sec": 1855.01616024971,
+        "key_class_loss": 0.011777950719923711,
+        "key_event_loss": 0.003326566428096918,
+        "key_token_presence_loss": 0.0006552828648808535,
+        "key_token_presence_rank_loss": 0.0027548357434660194,
+        "keyboard_count_loss": 0.0,
+        "loss": 3.123861724243666,
+        "masked_targets": 626489,
+        "mouse_axis_class_loss": 1.5239469006016568,
+        "mouse_button_count_loss": 0.0,
+        "mouse_move_count_loss": 0.0,
+        "mouse_move_token_presence_loss": 0.005623503238431313,
+        "mouse_move_token_presence_rank_loss": 0.5971949969207716,
+        "path": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k/rank_progress/train_rank3.json",
+        "phase": "action_denoising",
+        "rank": 3,
+        "schema": "temporal_masked_diffusion_rank_progress.v1",
+        "token_presence_loss": 0.018115993350884825,
+        "updated_at_epoch": 1780207526.4210076,
+        "video_button_token_presence_loss": 0.0,
+        "video_button_token_presence_rank_loss": 0.0,
+        "video_key_token_presence_loss": 0.0,
+        "video_key_token_presence_rank_loss": 0.0,
+        "video_mouse_move_token_presence_loss": 0.0,
+        "video_mouse_move_token_presence_rank_loss": 0.0,
+        "video_reconstruction_loss": 0.0
+      }
+    ],
+    "run_name": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k",
+    "run_summary_exists": false,
+    "schema": "wandb_training_sidecar_status.v1",
+    "status": "running",
+    "updated_at_epoch": 1780209381.451739,
+    "wandb_run_id": "liod5qkt",
+    "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/liod5qkt"
+  },
+  "wandb_sidecar_status_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k_h200_wandb_status.json"
+}
