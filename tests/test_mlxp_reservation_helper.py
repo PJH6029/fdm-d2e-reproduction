@@ -85,3 +85,46 @@ def test_validate_payload_cli_outputs_pass(tmp_path: Path):
     data = json.loads(completed.stdout)
     assert data["status"] == "pass"
     assert data["payload_summary"]["gpu_count"] == 1
+
+
+def test_summarize_board_counts_free_cells_by_node():
+    board = {
+        "project_id": "production",
+        "now_iso": "2026-06-01T01:00:00+09:00",
+        "slot_minutes": 60,
+        "default_image_key": "base",
+        "managed_images": {"base": {}},
+        "registry_profiles": {},
+        "nodes": [{"node_id": "1"}, {"node_id": "2"}],
+        "rows": [
+            {"cells": [None, {"reservation_id": "busy"}] + [None] * 14},
+            {"cells": [{"reservation_id": "busy"}] * 8 + [None] * 8},
+        ],
+    }
+    summary = helper.summarize_board(board)
+    assert summary["free_cells_by_node"] == {"1": 7, "2": 16}
+    assert summary["managed_image_keys"] == ["base"]
+
+
+def test_board_command_writes_full_board_and_summary(tmp_path: Path, monkeypatch, capsys):
+    board_payload = {
+        "now_iso": "2026-06-01T01:00:00+09:00",
+        "slot_minutes": 60,
+        "nodes": [{"node_id": "1"}],
+        "rows": [{"cells": [None] * 8}],
+    }
+    monkeypatch.setenv("RESERVATION_API_TOKEN", "token")
+
+    def fake_request(base_url, path, *, token, method="GET", payload=None, timeout=60):
+        assert path == "/api/projects/production/board?days=1"
+        assert token == "token"
+        return board_payload
+
+    monkeypatch.setattr(helper, "request_json", fake_request)
+    board_out = tmp_path / "board.json"
+    summary_out = tmp_path / "summary.json"
+    rc = helper.main(["board", "--output", str(board_out), "--summary-output", str(summary_out)])
+    assert rc == 0
+    assert json.loads(board_out.read_text())["rows"]
+    assert json.loads(summary_out.read_text())["free_cells_by_node"] == {"1": 8}
+    assert "free_cells_by_node" in capsys.readouterr().out

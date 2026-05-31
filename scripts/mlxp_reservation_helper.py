@@ -93,6 +93,28 @@ def summarize_payload(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def summarize_board(board: dict[str, Any]) -> dict[str, Any]:
+    nodes = [str(node.get("node_id")) for node in board.get("nodes", [])]
+    free_by_node = {node_id: 0 for node_id in nodes}
+    for row in board.get("rows", []):
+        cells = list(row.get("cells", []))
+        for node_index, node_id in enumerate(nodes):
+            start = node_index * 8
+            free_by_node[node_id] += sum(1 for cell in cells[start : start + 8] if cell is None)
+    return {
+        "schema": "mlxp_board_summary.v1",
+        "project_id": board.get("project_id") or "production",
+        "now_iso": board.get("now_iso"),
+        "slot_minutes": board.get("slot_minutes"),
+        "node_ids": nodes,
+        "row_count": len(board.get("rows", [])),
+        "free_cells_by_node": free_by_node,
+        "default_image_key": board.get("default_image_key"),
+        "managed_image_keys": sorted((board.get("managed_images") or {}).keys()) if isinstance(board.get("managed_images"), dict) else [],
+        "registry_profile_keys": sorted((board.get("registry_profiles") or {}).keys()) if isinstance(board.get("registry_profiles"), dict) else [],
+    }
+
+
 def command_validate(args: argparse.Namespace) -> int:
     payload = read_json(args.payload)
     errors = validate_payload(payload)
@@ -101,6 +123,18 @@ def command_validate(args: argparse.Namespace) -> int:
         write_json(args.output, result)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if not errors else 2
+
+
+def command_board(args: argparse.Namespace) -> int:
+    token = token_from_env()
+    result = request_json(args.base_url, f"/api/projects/production/board?days={int(args.days)}", token=token)
+    if args.output:
+        write_json(args.output, result)
+    summary = summarize_board(result)
+    if args.summary_output:
+        write_json(args.summary_output, summary)
+    print(json.dumps(result if args.print_full else summary, ensure_ascii=False, indent=2))
+    return 0
 
 
 def command_create(args: argparse.Namespace) -> int:
@@ -148,6 +182,13 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("--payload", required=True)
     validate.add_argument("--output")
     validate.set_defaults(func=command_validate)
+
+    board = sub.add_parser("board")
+    board.add_argument("--days", type=int, default=1)
+    board.add_argument("--output")
+    board.add_argument("--summary-output")
+    board.add_argument("--print-full", action="store_true")
+    board.set_defaults(func=command_board)
 
     create = sub.add_parser("create")
     create.add_argument("--payload", required=True)
