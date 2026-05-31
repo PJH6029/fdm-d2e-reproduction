@@ -334,6 +334,38 @@ def test_g005_statectx_train320k_scales_best_prefix_with_state_features() -> Non
     assert "not fdm-1 parity" in config["claim_boundary"].lower()
 
 
+def test_g005_statectx_public49_train320k_keeps_recipe_bins_and_train_calibration() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_patch_axisclass_realvideo_statectx_public49_train320k_stratcal_target24k.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_public49_train320k_stratcal_target24k.yaml"
+        ).read_text()
+    )
+
+    assert "public49" in text
+    assert "statectx_public49_train320k_stratcal_target24k" in text
+    assert "scripts/run_g005_idm_temporal_raw96_family_presence_prefix.sh" in text
+    assert 'NPROC_PER_NODE="${NPROC_PER_NODE:-4}"' in text
+    assert "outputs/data/d2e_event_state_duration_realvideo_balanced_train320k_target24k" in text
+    assert config["action_mouse_tokenization"] == "fdm1_49_aggregate"
+    assert config["fdm1_recipe"]["action_tokenization"]["mouse_delta_bins_per_axis"] == 49
+    assert config["fdm1_recipe"]["action_tokenization"]["metric_conversion_for_eval_only"] is True
+    assert config["temporal_calibration_strategy"] == "stratified_action"
+    assert config["temporal_calibration_max_rows"] == 8000
+    assert config["temporal_calibration_family_quotas"] == {
+        "keyboard": 2000,
+        "mouse_button": 2000,
+        "mouse_move": 2000,
+        "noop": 2000,
+    }
+    assert config["adaptive_family_budget_to_unlabeled_target"] is False
+    assert config["family_non_noop_budget_mouse_button_max_no_button_fpr"] == 0.10
+    assert config["distributed_feature_cache_dir"].endswith("/distributed_statectx_feature_cache")
+    assert "public_49_mouse_bins_state_context" in config["fdm1_recipe_alignment"]
+    assert "no target-label calibration" in config["claim_boundary"]
+    assert "Not FDM-1 parity" in config["claim_boundary"]
+
 def test_g005_statectx_train320k_stratified_calibration_is_prediction_only() -> None:
     text = _script("scripts/run_g005_idm_temporal_raw96_statectx_train320k_predict24k.sh")
     noadapt = json.loads(
