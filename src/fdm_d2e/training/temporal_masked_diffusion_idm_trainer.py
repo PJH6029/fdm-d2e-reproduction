@@ -2848,6 +2848,9 @@ def _temporal_center_candidates(
                         min(1.0, float(config.get("direct_auxiliary_mouse_axis_class_blend", 0.0) or 0.0)),
                     )
                     score = (1.0 - blend) * presence_score + blend * axis_score
+                    prior_weight = float(token_prior_weights.get(token, 1.0)) if token_prior_weights else 1.0
+                    if bool(config.get("direct_auxiliary_candidate_apply_token_prior", False)):
+                        score = max(0.0, min(1.0, score * prior_weight))
                     if score < direct_aux_min_score:
                         continue
                     direct_label = direct_source
@@ -2858,7 +2861,7 @@ def _temporal_center_candidates(
                             "score": score,
                             "token_probability": 0.0,
                             "retrieval_score": 0.0,
-                            "prior_weight": 1.0,
+                            "prior_weight": prior_weight,
                             "event_gate_multiplier": 1.0,
                             "key_presence_score": 0.0,
                             "video_key_presence_score": 0.0,

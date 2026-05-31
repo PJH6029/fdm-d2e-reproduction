@@ -1048,6 +1048,40 @@ def test_temporal_direct_auxiliary_candidates_prefer_dedicated_mouse_move_head()
     assert candidates[0][0]["mouse_move_presence_score"] == pytest.approx(0.91)
 
 
+def test_temporal_direct_mouse_move_candidates_apply_train_prior_when_enabled():
+    if not torch_available():
+        return
+    import torch
+
+    vocab = ["<FDM1_ACTION_PAD>", "<FDM1_ACTION_MASK>", "NOOP", "MOUSE_DX_Z0", "MOUSE_DX_P3"]
+    probabilities = torch.zeros((1, 1, len(vocab)), dtype=torch.float32)
+    mouse_move_presence = torch.tensor([[0.90, 0.40]], dtype=torch.float32)
+
+    candidates = _temporal_center_candidates(
+        probabilities,
+        vocab=vocab,
+        config={
+            "non_noop_budget_candidates_per_row": 4,
+            "direct_auxiliary_candidate_families": ["mouse_move"],
+            "direct_auxiliary_candidate_apply_token_prior": True,
+            "mouse_move_token_presence_candidate_score_blend": 1.0,
+        },
+        event_probabilities={"mouse_move_token_presence": mouse_move_presence},
+        token_prior_weights={"MOUSE_DX_Z0": 0.25, "MOUSE_DX_P3": 2.0},
+    )
+
+    assert candidates[0][0]["token"] == "MOUSE_DX_P3"
+    assert candidates[0][0]["score"] == pytest.approx(0.80)
+    assert candidates[0][0]["prior_weight"] == pytest.approx(2.0)
+    z0_direct = next(
+        row
+        for row in candidates[0]
+        if row["token"] == "MOUSE_DX_Z0" and row.get("direct_auxiliary_candidate") == "mouse_move_token_presence"
+    )
+    assert z0_direct["score"] == pytest.approx(0.225)
+    assert z0_direct["prior_weight"] == pytest.approx(0.25)
+
+
 def test_temporal_video_presence_heads_can_rank_direct_action_candidates():
     if not torch_available():
         return

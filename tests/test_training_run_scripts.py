@@ -434,6 +434,32 @@ def test_g005_statectx_train320k_stratified_calibration_is_prediction_only() -> 
     assert adapt["adaptive_family_budget_only_raise_threshold"] is False
 
 
+def test_g005_statectx_mouseprior_keyadapt_predict24k_is_split_safe_prediction_only() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_statectx_mouseprior_keyadapt_predict24k.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_mouseprior_keyadapt_predict24k.yaml"
+        ).read_text()
+    )
+
+    assert "scripts/run_g005_idm_temporal_raw96_statectx_train320k_predict24k.sh" in text
+    assert "train-fit-mouse-prior" in text
+    assert "torchrun" not in text
+    assert config["source_checkpoint"] == (
+        "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt"
+    )
+    assert config["candidate_token_prior_correction"] is True
+    assert config["candidate_token_prior_families"] == ["mouse_move"]
+    assert config["direct_auxiliary_candidate_apply_token_prior"] is True
+    assert config["adaptive_family_budget_to_unlabeled_target"] is True
+    assert config["adaptive_family_budget_families"] == ["keyboard", "mouse_move"]
+    assert config["adaptive_family_budget_only_raise_threshold"] is False
+    assert config["family_non_noop_budget_keyboard_max_tokens_per_row"] == 3
+    assert "No target labels are used for calibration" in config["claim_boundary"]
+    assert "not completion evidence" in config["claim_boundary"]
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())
