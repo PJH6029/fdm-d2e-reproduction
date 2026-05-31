@@ -205,6 +205,10 @@ def build_preflight(args: argparse.Namespace) -> dict[str, Any]:
     if args.require_cache_dir and cache_dir and not cache_exists:
         findings.append({"severity": "error", "code": "missing_cache_dir", "path": str(cache_dir), "error": cache_error})
 
+    ffmpeg_path = shutil.which("ffmpeg")
+    if not ffmpeg_path:
+        findings.append({"severity": "error", "code": "missing_ffmpeg", "path": "PATH"})
+
     disk_target = _path(root, str(extract.get("output_dir", "outputs/data/fdm1_d2e_480p_window_records"))).parent
     disk_target.mkdir(parents=True, exist_ok=True)
     usage = shutil.disk_usage(disk_target)
@@ -222,7 +226,14 @@ def build_preflight(args: argparse.Namespace) -> dict[str, Any]:
         "status": "ready" if not errors else "blocked",
         "canonical_roadmap": "ROADMAP.md",
         "git": {"branch": current_branch, "head": git_head, "dirty": bool(dirty)},
-        "runtime": {"inside_kubernetes_pod": in_pod, "require_pod": args.require_pod, "cache_dir": str(cache_dir) if cache_dir else None, "cache_dir_exists": cache_exists, "cache_dir_error": cache_error},
+        "runtime": {
+            "inside_kubernetes_pod": in_pod,
+            "require_pod": args.require_pod,
+            "cache_dir": str(cache_dir) if cache_dir else None,
+            "cache_dir_exists": cache_exists,
+            "cache_dir_error": cache_error,
+            "ffmpeg_path": ffmpeg_path,
+        },
         "disk": {"path": str(disk_target), "free_gb": round(free_gb, 3), "min_free_gb": args.min_free_gb},
         "pid": {"path": str(pid_path), "pid": active_pid, "running": active},
         "artifacts": artifacts,

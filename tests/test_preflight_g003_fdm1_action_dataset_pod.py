@@ -163,3 +163,11 @@ def test_preflight_cache_stat_error_is_warning_unless_required(tmp_path: Path, m
     payload = preflight.build_preflight(_args(tmp_path, require_cache_dir=True))
     assert payload["status"] == "blocked"
     assert any(f["code"] == "missing_cache_dir" for f in payload["findings"])
+
+
+def test_preflight_blocks_when_ffmpeg_missing(tmp_path: Path, monkeypatch):
+    _fixture(tmp_path)
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: None if name == "ffmpeg" else "/usr/bin/" + name)
+    payload = preflight.build_preflight(_args(tmp_path))
+    assert payload["status"] == "blocked"
+    assert any(f["code"] == "missing_ffmpeg" for f in payload["findings"])

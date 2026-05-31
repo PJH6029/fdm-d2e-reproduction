@@ -39,3 +39,26 @@ Observed evidence: `10 passed` locally. Pod reservation status after redacted st
 ## Claim boundary
 
 This report records reservation and launch progress only. G003 remains incomplete until the relaunched pod pipeline produces a passing completion audit, evidence bundle, monitor JSON, copyback artifacts, and OMX checkpoint with a fresh active Codex goal snapshot.
+
+## Pod dependency blocker and recovery
+
+The first real extraction shards decoded MCAP successfully but all failed at video frame extraction because the production base image lacked `ffmpeg`:
+
+```text
+RuntimeError: ffmpeg is required for real D2E video feature extraction
+```
+
+Recovery actions:
+
+- Stopped the failed sharded pipeline (`pid=440`) before merge/finalization.
+- Installed `ffmpeg` in the running pod with `apt-get install -y ffmpeg` and verified `ffmpeg version 4.4.2`.
+- Hardened `preflight_g003_fdm1_action_dataset_pod.py` to fail before launch when `ffmpeg` is absent from `PATH`.
+
+Verification:
+
+```bash
+uv run pytest tests/test_preflight_g003_fdm1_action_dataset_pod.py -q
+uv run python -m py_compile scripts/preflight_g003_fdm1_action_dataset_pod.py
+```
+
+Observed evidence: `7 passed` locally.
