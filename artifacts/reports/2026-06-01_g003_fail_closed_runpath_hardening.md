@@ -44,3 +44,21 @@ uv run python scripts/build_fdm1_g003_checkpoint_handoff.py --codex-goal-json .o
 ```
 
 Observed blocker codes: `monitor_missing`, `completion_audit_missing`, `evidence_bundle_missing`, `monitor_not_pass`, `completion_audit_not_pass`, `evidence_bundle_not_pass`.
+
+## Pod launch self-PID preflight fix
+
+The first live pod launch attempt on reservation `rsv-jeonghunpark-20260601-5c5df9` reached the latest branch, but the sharded pipeline stopped before extraction because the launch wrapper writes its background PID before the pipeline's own preflight. The preflight then interpreted that same PID as an already-active competing G003 run.
+
+Fix:
+
+- `run_g003_fdm1_action_dataset_sharded_pipeline.sh` now detects when `outputs/cluster/fdm1_g003_action_dataset_pipeline.pid` contains its own `$$` and passes `--allow-active-pid` only for that self-PID case.
+- This preserves duplicate-run protection in the outer launch wrapper while allowing the wrapped pipeline to pass its internal preflight.
+
+Verification:
+
+```bash
+bash -n scripts/run_g003_fdm1_action_dataset_sharded_pipeline.sh
+uv run pytest tests/test_run_g003_fdm1_sharded_pipeline_script.py tests/test_preflight_g003_fdm1_action_dataset_pod.py -q
+```
+
+Observed evidence: `7 passed` locally.

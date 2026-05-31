@@ -23,10 +23,17 @@ LOG_DIR="${LOG_DIR:-artifacts/logs/fdm1_g003_shards}"
 CACHE_DIR="${CACHE_DIR:-/root/work/data/d2e/cache}"
 PIPELINE_SUMMARY="${PIPELINE_SUMMARY:-artifacts/cluster/fdm1_g003_sharded_pipeline_summary.json}"
 PID_DIR="${PID_DIR:-outputs/cluster/fdm1_g003_shards}"
+PIPELINE_PID_FILE="${PIPELINE_PID_FILE:-outputs/cluster/fdm1_g003_action_dataset_pipeline.pid}"
 
 mkdir -p "$SHARD_ROOT" "$MERGED_OUTPUT_DIR" "$LOG_DIR" "$PID_DIR" artifacts/cluster artifacts/sources artifacts/reports
 
+preflight_self_pid_args=()
+if [[ -s "$PIPELINE_PID_FILE" ]] && [[ "$(cat "$PIPELINE_PID_FILE")" == "$$" ]]; then
+  preflight_self_pid_args+=(--pid-file "$PIPELINE_PID_FILE" --allow-active-pid)
+fi
+
 uv run python scripts/preflight_g003_fdm1_action_dataset_pod.py \
+  "${preflight_self_pid_args[@]}" \
   ${PREFLIGHT_EXTRA_ARGS:-}
 
 batch_pids=()

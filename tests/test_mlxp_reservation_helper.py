@@ -106,6 +106,36 @@ def test_summarize_board_counts_free_cells_by_node():
     assert summary["managed_image_keys"] == ["base"]
 
 
+def test_redact_response_removes_reservation_secrets():
+    payload = {
+        "reservation_id": "rsv-test",
+        "jupyter_token": "secret",
+        "nested": {"access_token": "secret2", "ok": True},
+        "items": [{"api_token": "secret3"}],
+    }
+    assert helper.redact_response(payload) == {
+        "reservation_id": "rsv-test",
+        "jupyter_token": "<redacted>",
+        "nested": {"access_token": "<redacted>", "ok": True},
+        "items": [{"api_token": "<redacted>"}],
+    }
+
+
+def test_status_command_redacts_jupyter_token(tmp_path: Path, monkeypatch, capsys):
+    monkeypatch.setenv("RESERVATION_API_TOKEN", "token")
+
+    def fake_request(base_url, path, *, token, method="GET", payload=None, timeout=60):
+        assert path == "/api/projects/production/reservations/rsv-test"
+        return {"reservation_id": "rsv-test", "jupyter_token": "secret"}
+
+    monkeypatch.setattr(helper, "request_json", fake_request)
+    output = tmp_path / "status.json"
+    rc = helper.main(["status", "--reservation-id", "rsv-test", "--output", str(output)])
+    assert rc == 0
+    assert json.loads(output.read_text())["jupyter_token"] == "<redacted>"
+    assert "secret" not in capsys.readouterr().out
+
+
 def test_board_command_writes_full_board_and_summary(tmp_path: Path, monkeypatch, capsys):
     board_payload = {
         "now_iso": "2026-06-01T01:00:00+09:00",

@@ -12,6 +12,14 @@ from typing import Any
 
 DEFAULT_BASE_URL = "http://147.46.219.248:8000"
 TOKEN_ENV_NAMES = ("RESERVATION_API_TOKEN", "MLXP_RESERVATION_API_TOKEN", "MLXP_API_TOKEN", "SNUPI_RESERVATION_API_TOKEN")
+SENSITIVE_RESPONSE_KEYS = {
+    "jupyter_token",
+    "token",
+    "access_token",
+    "refresh_token",
+    "api_token",
+    "password",
+}
 
 
 class MLXPError(RuntimeError):
@@ -26,6 +34,20 @@ def write_json(path: str | Path, payload: Any) -> None:
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def redact_response(payload: Any) -> Any:
+    if isinstance(payload, dict):
+        redacted: dict[str, Any] = {}
+        for key, value in payload.items():
+            if str(key).lower() in SENSITIVE_RESPONSE_KEYS:
+                redacted[key] = "" if value in (None, "") else "<redacted>"
+            else:
+                redacted[key] = redact_response(value)
+        return redacted
+    if isinstance(payload, list):
+        return [redact_response(item) for item in payload]
+    return payload
 
 
 def token_from_env() -> str:
@@ -145,7 +167,7 @@ def command_create(args: argparse.Namespace) -> int:
     if not args.i_confirm_live_production_reservation:
         raise MLXPError("refusing live production reservation without --i-confirm-live-production-reservation")
     token = token_from_env()
-    result = request_json(args.base_url, "/api/projects/production/reservations", token=token, method="POST", payload=payload)
+    result = redact_response(request_json(args.base_url, "/api/projects/production/reservations", token=token, method="POST", payload=payload))
     if args.output:
         write_json(args.output, result)
     print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -154,7 +176,7 @@ def command_create(args: argparse.Namespace) -> int:
 
 def command_status(args: argparse.Namespace) -> int:
     token = token_from_env()
-    result = request_json(args.base_url, f"/api/projects/production/reservations/{args.reservation_id}", token=token)
+    result = redact_response(request_json(args.base_url, f"/api/projects/production/reservations/{args.reservation_id}", token=token))
     if args.output:
         write_json(args.output, result)
     print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -166,7 +188,7 @@ def command_cancel(args: argparse.Namespace) -> int:
         raise MLXPError("refusing cancellation without --i-confirm-cancel-reservation")
     token = token_from_env()
     payload = {"actor_name": args.actor_name}
-    result = request_json(args.base_url, f"/api/projects/production/reservations/{args.reservation_id}/cancel", token=token, method="POST", payload=payload)
+    result = redact_response(request_json(args.base_url, f"/api/projects/production/reservations/{args.reservation_id}/cancel", token=token, method="POST", payload=payload))
     if args.output:
         write_json(args.output, result)
     print(json.dumps(result, ensure_ascii=False, indent=2))
