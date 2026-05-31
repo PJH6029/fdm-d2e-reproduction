@@ -5,6 +5,7 @@ import argparse
 import glob
 import json
 import math
+import os
 import time
 from collections import Counter
 from pathlib import Path
@@ -84,7 +85,7 @@ def materialize_balanced_prefix(
         raise ValueError("provide --per-group-rows, --max-per-group, or --group-values with --max-rows")
     target_groups = list(group_values or [])
     counts: Counter[str] = Counter()
-    selected: list[dict[str, Any]] = []
+    selected_rows = 0
     seen: set[str] = set()
     scanned_rows = 0
     skipped_duplicate_rows = 0
@@ -101,52 +102,52 @@ def materialize_balanced_prefix(
         assert max_per_group is not None
         return any(counts[group] < max_per_group for group in groups)
 
-    for path in paths:
-        if len(selected) >= max_rows:
-            break
-        path_rows = 0
-        selected_for_path = 0
-        with path.open("r", encoding="utf-8") as handle:
-            for line_no, line in enumerate(handle, 1):
-                if len(selected) >= max_rows:
-                    break
-                if not line.strip():
-                    continue
-                row = _loads(line, path=path, line_no=line_no)
-                scanned_rows += 1
-                path_rows += 1
-                groups = _row_groups(row, balance_key, allowed)
-                if not groups:
-                    skipped_missing_group_rows += 1
-                    continue
-                rid = _row_id(row)
-                if rid in seen:
-                    skipped_duplicate_rows += 1
-                    continue
-                if not group_has_capacity(groups):
-                    skipped_saturated_rows += 1
-                    continue
-                selected.append(row)
-                seen.add(rid)
-                selected_for_path += 1
-                for group in groups:
-                    counts[group] += 1
-                if target_groups and all(counts[group] >= int(per_group_rows or 0) for group in target_groups):
-                    if len(selected) >= max_rows or per_group_rows is not None:
-                        break
-        source_rows_by_path[str(path)] = path_rows
-        selected_rows_by_path[str(path)] = selected_for_path
-        if target_groups and all(counts[group] >= int(per_group_rows or 0) for group in target_groups):
-            break
-
     output.parent.mkdir(parents=True, exist_ok=True)
     summary_out.parent.mkdir(parents=True, exist_ok=True)
-    with output.open("w", encoding="utf-8") as handle:
-        for row in selected:
-            handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
+    temp_output = output.with_name(f"{output.name}.tmp.{os.getpid()}")
+    with temp_output.open("w", encoding="utf-8") as out_handle:
+        for path in paths:
+            if selected_rows >= max_rows:
+                break
+            path_rows = 0
+            selected_for_path = 0
+            with path.open("r", encoding="utf-8") as handle:
+                for line_no, line in enumerate(handle, 1):
+                    if selected_rows >= max_rows:
+                        break
+                    if not line.strip():
+                        continue
+                    row = _loads(line, path=path, line_no=line_no)
+                    scanned_rows += 1
+                    path_rows += 1
+                    groups = _row_groups(row, balance_key, allowed)
+                    if not groups:
+                        skipped_missing_group_rows += 1
+                        continue
+                    rid = _row_id(row)
+                    if rid in seen:
+                        skipped_duplicate_rows += 1
+                        continue
+                    if not group_has_capacity(groups):
+                        skipped_saturated_rows += 1
+                        continue
+                    out_handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
+                    selected_rows += 1
+                    seen.add(rid)
+                    selected_for_path += 1
+                    for group in groups:
+                        counts[group] += 1
+                    if target_groups and all(counts[group] >= int(per_group_rows or 0) for group in target_groups):
+                        if selected_rows >= max_rows or per_group_rows is not None:
+                            break
+            source_rows_by_path[str(path)] = path_rows
+            selected_rows_by_path[str(path)] = selected_for_path
+            if target_groups and all(counts[group] >= int(per_group_rows or 0) for group in target_groups):
+                break
+    temp_output.replace(output)
     status = "pass"
     errors: list[str] = []
-    if not selected:
+    if not selected_rows:
         status = "fail"
         errors.append("no rows selected")
     if target_groups:
@@ -167,7 +168,7 @@ def materialize_balanced_prefix(
         "per_group_rows": per_group_rows,
         "max_per_group": max_per_group,
         "max_rows": max_rows,
-        "rows": len(selected),
+        "rows": selected_rows,
         "scanned_rows": scanned_rows,
         "group_counts": dict(sorted(counts.items())),
         "source_rows_by_path": source_rows_by_path,

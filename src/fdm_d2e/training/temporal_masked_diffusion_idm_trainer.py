@@ -686,6 +686,43 @@ def _temporal_calibration_split(train_rows: Sequence[dict[str, Any]], config: di
     )
 
 
+def _write_feature_cache_progress(
+    config: dict[str, Any],
+    *,
+    split_name: str,
+    phase: str,
+    rank: int,
+    world_size: int,
+    rows: int,
+    start: int | None = None,
+    end: int | None = None,
+    path: Path | None = None,
+) -> None:
+    """Best-effort progress evidence for long CPU/IO video-cache phases."""
+
+    output_dir_raw = config.get("output_dir")
+    if not output_dir_raw:
+        return
+    payload: dict[str, Any] = {
+        "phase": phase,
+        "feature_cache_phase": phase,
+        "split_name": split_name,
+        "rank": int(rank),
+        "world_size": int(world_size),
+        "rows": int(rows),
+    }
+    if start is not None:
+        payload["start"] = int(start)
+    if end is not None:
+        payload["end"] = int(end)
+    if path is not None:
+        payload["path"] = str(path)
+    try:
+        _write_rank_progress(config, output_dir=Path(output_dir_raw), payload=payload)
+    except Exception:
+        return
+
+
 def _precompute_features_with_distributed_cache(
     rows: Sequence[dict[str, Any]],
     *,
@@ -788,6 +825,17 @@ def _precompute_features_with_distributed_cache(
             tensor_dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
             chunk_path = split_dir / "chunk_rank000_of_001.pt"
             if not chunk_path.exists():
+                _write_feature_cache_progress(
+                    config,
+                    split_name=split_name,
+                    phase="feature_cache_precompute_start",
+                    rank=0,
+                    world_size=1,
+                    rows=len(rows),
+                    start=0,
+                    end=len(rows),
+                    path=chunk_path,
+                )
                 shard_config = {
                     **config,
                     "raw_video_feature_storage": "tensor",
@@ -821,6 +869,17 @@ def _precompute_features_with_distributed_cache(
                         "features": shard_tensor,
                     },
                     chunk_path,
+                )
+                _write_feature_cache_progress(
+                    config,
+                    split_name=split_name,
+                    phase="feature_cache_chunk_saved",
+                    rank=0,
+                    world_size=1,
+                    rows=len(rows),
+                    start=0,
+                    end=len(rows),
+                    path=chunk_path,
                 )
                 write_json(
                     split_dir / "summary.json",
@@ -872,6 +931,17 @@ def _precompute_features_with_distributed_cache(
     end = (n * (rank + 1)) // world_size
     chunk_path = split_dir / f"chunk_rank{rank:03d}_of_{world_size:03d}.pt"
     if not chunk_path.exists():
+        _write_feature_cache_progress(
+            config,
+            split_name=split_name,
+            phase="feature_cache_precompute_start",
+            rank=rank,
+            world_size=world_size,
+            rows=n,
+            start=start,
+            end=end,
+            path=chunk_path,
+        )
         shard_config = {
             **config,
             "raw_video_feature_storage": "tensor",
@@ -906,8 +976,30 @@ def _precompute_features_with_distributed_cache(
             },
             chunk_path,
         )
+        _write_feature_cache_progress(
+            config,
+            split_name=split_name,
+            phase="feature_cache_chunk_saved",
+            rank=rank,
+            world_size=world_size,
+            rows=n,
+            start=start,
+            end=end,
+            path=chunk_path,
+        )
     if dist is not None:
         dist.barrier()
+    _write_feature_cache_progress(
+        config,
+        split_name=split_name,
+        phase="feature_cache_loading_ordered",
+        rank=rank,
+        world_size=world_size,
+        rows=n,
+        start=start,
+        end=end,
+        path=chunk_path,
+    )
     chunks: list[dict[str, Any]] = []
     for chunk_rank in range(world_size):
         path = split_dir / f"chunk_rank{chunk_rank:03d}_of_{world_size:03d}.pt"
@@ -947,6 +1039,17 @@ def _precompute_features_with_distributed_cache(
         )
     if dist is not None:
         dist.barrier()
+    _write_feature_cache_progress(
+        config,
+        split_name=split_name,
+        phase="feature_cache_ready",
+        rank=rank,
+        world_size=world_size,
+        rows=n,
+        start=start,
+        end=end,
+        path=chunk_path,
+    )
     return features.contiguous()
 
 
