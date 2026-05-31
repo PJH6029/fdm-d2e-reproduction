@@ -84,6 +84,57 @@ def _check_equal(findings: list[dict[str, Any]], actual: Any, expected: Any, *, 
         findings.append({"severity": "error", "code": "unexpected_config_value", "path": path, "expected": expected, "actual": actual})
 
 
+def _strictly_increasing(values: list[Any]) -> bool:
+    try:
+        nums = [float(value) for value in values]
+    except Exception:
+        return False
+    return len(nums) >= 2 and all(a < b for a, b in zip(nums, nums[1:]))
+
+
+def _check_tokenization_invariants(findings: list[dict[str, Any]], config: dict[str, Any], *, path: str) -> None:
+    required_special = {
+        "MASK_ACTION",
+        "NO_ACTION",
+        "PAD_ACTION",
+        "BOS_ACTION",
+        "EOS_ACTION",
+        "EVENT_OVERFLOW",
+    }
+    _check_equal(findings, config.get("canonical_roadmap"), "ROADMAP.md", path=f"{path}:canonical_roadmap")
+    _check_equal(findings, config.get("bin_ms"), 50, path=f"{path}:bin_ms")
+    _check_equal(findings, config.get("video_fps"), 20, path=f"{path}:video_fps")
+    _check_equal(findings, config.get("k_event_slots_default"), 8, path=f"{path}:k_event_slots_default")
+    special = set(map(str, config.get("special_tokens", [])))
+    missing_special = sorted(required_special - special)
+    if missing_special:
+        findings.append(
+            {
+                "severity": "error",
+                "code": "tokenization_missing_special_tokens",
+                "path": f"{path}:special_tokens",
+                "missing": missing_special,
+            }
+        )
+    mouse = config.get("mouse_move", {}) if isinstance(config.get("mouse_move"), dict) else {}
+    _check_equal(findings, mouse.get("default"), "compound", path=f"{path}:mouse_move.default")
+    _check_equal(findings, mouse.get("axis_bins"), 49, path=f"{path}:mouse_move.axis_bins")
+    boundaries = list(mouse.get("positive_boundaries_default", []))
+    if len(boundaries) != 24 or not _strictly_increasing(boundaries):
+        findings.append(
+            {
+                "severity": "error",
+                "code": "tokenization_invalid_mouse_boundaries",
+                "path": f"{path}:mouse_move.positive_boundaries_default",
+                "expected_count": 24,
+                "actual_count": len(boundaries),
+            }
+        )
+    click = config.get("click_position_aux", {}) if isinstance(config.get("click_position_aux"), dict) else {}
+    _check_equal(findings, click.get("default_horizon_seconds"), 1.0, path=f"{path}:click_position_aux.default_horizon_seconds")
+    _check_equal(findings, click.get("default_grid"), [32, 18], path=f"{path}:click_position_aux.default_grid")
+
+
 def build_preflight(args: argparse.Namespace) -> dict[str, Any]:
     root = Path(args.root)
     findings: list[dict[str, Any]] = []
@@ -111,6 +162,8 @@ def build_preflight(args: argparse.Namespace) -> dict[str, Any]:
     extract = load_config(_path(root, args.extract_config)) if _path(root, args.extract_config).exists() else {}
     finalization = load_config(_path(root, args.finalization_config)) if _path(root, args.finalization_config).exists() else {}
     completion = load_config(_path(root, args.completion_config)) if _path(root, args.completion_config).exists() else {}
+    tokenization_path = "configs/tokenization/fdm1_action_slots.json"
+    tokenization = load_config(_path(root, tokenization_path)) if _path(root, tokenization_path).exists() else {}
 
     _check_equal(findings, extract.get("canonical_roadmap"), "ROADMAP.md", path=f"{args.extract_config}:canonical_roadmap")
     _check_equal(findings, extract.get("split_mode"), "fdm1-g002", path=f"{args.extract_config}:split_mode")
@@ -123,6 +176,8 @@ def build_preflight(args: argparse.Namespace) -> dict[str, Any]:
     _check_equal(findings, completion.get("expected_split_mode"), "fdm1-g002", path=f"{args.completion_config}:expected_split_mode")
     _check_equal(findings, completion.get("required_source_ids"), ["d2e_480p"], path=f"{args.completion_config}:required_source_ids")
     _check_equal(findings, completion.get("required_resolution_tiers"), ["480p"], path=f"{args.completion_config}:required_resolution_tiers")
+    if tokenization:
+        _check_tokenization_invariants(findings, tokenization, path=tokenization_path)
 
     g002_path = _path(root, "artifacts/sources/fdm1_d2e_g002_validation.json")
     if g002_path.exists():

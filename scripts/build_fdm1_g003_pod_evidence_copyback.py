@@ -31,11 +31,14 @@ DEFAULT_EXTRA_PATHS = [
     "artifacts/cluster/fdm1_g003_action_dataset_preflight.json",
     "artifacts/cluster/fdm1_g003_action_dataset_pod_launch_context.json",
     "artifacts/cluster/fdm1_g003_action_dataset_pod_monitor.json",
+    "artifacts/cluster/fdm1_g003_sharded_pipeline_summary.json",
     "artifacts/cluster/fdm1_g003_checkpoint_handoff.json",
     "artifacts/sources/fdm1_g003_evidence_bundle_manifest.json",
     "artifacts/sources/fdm1_g003_evidence_bundle",
     "artifacts/sources/fdm1_g003_action_dataset_finalization_summary.json",
     "artifacts/logs/fdm1_g003_action_dataset_pipeline.log",
+    "artifacts/logs/fdm1_g003_shards",
+    "outputs/cluster/fdm1_g003_shards",
     "artifacts/reports/fdm1_g003_action_alignment_visual_check.md",
 ]
 

@@ -107,6 +107,11 @@ if summary["status"] != "pass":
     raise SystemExit(2)
 PY
 
+if [[ "$failures" -ne 0 ]]; then
+  echo "one or more shard processes failed before merge: $failures" >&2
+  exit 2
+fi
+
 uv run python scripts/merge_d2e_full_corpus_shards.py \
   --shard-root "$SHARD_ROOT" \
   --output-dir "$MERGED_OUTPUT_DIR" \
@@ -129,8 +134,3 @@ uv run python scripts/monitor_g003_fdm1_action_dataset_pod.py \
 uv run python scripts/build_fdm1_g003_checkpoint_handoff.py \
   --allow-blocked \
   ${CHECKPOINT_HANDOFF_EXTRA_ARGS:-}
-
-if [[ "$failures" -ne 0 ]]; then
-  echo "one or more shard processes failed before summary generation: $failures" >&2
-  exit 2
-fi

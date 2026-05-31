@@ -66,4 +66,6 @@ def test_cli_writes_plan_and_shell(tmp_path: Path):
     assert summary["status"] == "planned"
     data = json.loads(output.read_text())
     assert data["pod"] == "pod-a"
+    assert "artifacts/cluster/fdm1_g003_sharded_pipeline_summary.json" in data["copy_paths"]
+    assert "artifacts/logs/fdm1_g003_shards" in data["copy_paths"]
     assert shell.read_text().startswith("#!/usr/bin/env bash")

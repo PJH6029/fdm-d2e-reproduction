@@ -14,7 +14,7 @@ def _write_json(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data), encoding="utf-8")
 
 
-def _fixture(root: Path, *, bad_split: bool = False) -> None:
+def _fixture(root: Path, *, bad_split: bool = False, bad_tokenization: bool = False) -> None:
     (root / "ROADMAP.md").write_text("# roadmap\n", encoding="utf-8")
     _write_json(
         root / "configs/data/fdm1_d2e_480p_full_corpus_extract.yaml",
@@ -46,9 +46,34 @@ def _fixture(root: Path, *, bad_split: bool = False) -> None:
         "artifacts/sources/fdm1_d2e_heldout_game_split_manifest.json",
         "artifacts/sources/fdm1_d2e_pseudo_label_split_manifest.json",
         "artifacts/sources/fdm1_d2e_scale_split_manifest.json",
-        "configs/tokenization/fdm1_action_slots.json",
     ]:
         _write_json(root / rel, {"ok": True, "padding": "x" * 40})
+    _write_json(
+        root / "configs/tokenization/fdm1_action_slots.json",
+        {
+            "canonical_roadmap": "ROADMAP.md",
+            "bin_ms": 50,
+            "video_fps": 20,
+            "k_event_slots_default": 4 if bad_tokenization else 8,
+            "special_tokens": [
+                "MASK_ACTION",
+                "NO_ACTION",
+                "PAD_ACTION",
+                "BOS_ACTION",
+                "EOS_ACTION",
+                "EVENT_OVERFLOW",
+            ],
+            "mouse_move": {
+                "default": "compound",
+                "axis_bins": 49,
+                "positive_boundaries_default": list(range(1, 25)),
+            },
+            "click_position_aux": {
+                "default_horizon_seconds": 1.0,
+                "default_grid": [32, 18],
+            },
+        },
+    )
 
 
 def _args(root: Path, **overrides):
@@ -84,6 +109,17 @@ def test_preflight_blocks_wrong_split_mode(tmp_path: Path):
     payload = preflight.build_preflight(_args(tmp_path))
     assert payload["status"] == "blocked"
     assert any(f["code"] == "unexpected_config_value" for f in payload["findings"])
+
+
+def test_preflight_blocks_bad_action_tokenization_invariants(tmp_path: Path):
+    _fixture(tmp_path, bad_tokenization=True)
+    payload = preflight.build_preflight(_args(tmp_path))
+    assert payload["status"] == "blocked"
+    assert any(
+        f["code"] == "unexpected_config_value"
+        and f["path"].endswith("k_event_slots_default")
+        for f in payload["findings"]
+    )
 
 
 def test_preflight_require_pod_blocks_local(tmp_path: Path):
