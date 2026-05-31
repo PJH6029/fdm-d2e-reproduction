@@ -1,0 +1,3826 @@
+{
+  "blocked": {},
+  "default_image": {
+    "description": "Default managed reservation image built from images/production-base.",
+    "image": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+    "key": "base",
+    "label": "Production Base"
+  },
+  "default_image_key": "base",
+  "dummy_enabled": true,
+  "free_gpu_totals": {
+    "1": 6,
+    "2": 0,
+    "3": 0,
+    "4": 6,
+    "5": 4,
+    "6": 8
+  },
+  "managed_images": [
+    {
+      "description": "Codex-enabled image that inherits from the production base image.",
+      "image": "ghcr.io/pjh6029/snupi-personal-codex:20260414",
+      "key": "codex",
+      "label": "Codex"
+    }
+  ],
+  "namespace": "p-production",
+  "nodes": [
+    {
+      "gpu_count": 8,
+      "label": "Node 1",
+      "node_id": "1"
+    },
+    {
+      "gpu_count": 8,
+      "label": "Node 2",
+      "node_id": "2"
+    },
+    {
+      "gpu_count": 8,
+      "label": "Node 3",
+      "node_id": "3"
+    },
+    {
+      "gpu_count": 8,
+      "label": "Node 4",
+      "node_id": "4"
+    },
+    {
+      "gpu_count": 8,
+      "label": "Node 5",
+      "node_id": "5"
+    },
+    {
+      "gpu_count": 8,
+      "label": "Node 6",
+      "node_id": "6"
+    }
+  ],
+  "now_iso": "2026-05-31T18:02:22+09:00",
+  "project_id": "production",
+  "project_label": "Production",
+  "registry_profiles": [
+    {
+      "image_prefixes": [
+        "snupi-nas2.synology.me:55031/"
+      ],
+      "key": "snupi-lab-registry",
+      "label": "SNUPI Lab Registry"
+    }
+  ],
+  "reservations": {
+    "rsv-gson-20260529-8eeb82": {
+      "args": [],
+      "can_view_secrets": true,
+      "cleanup_requested_at": "",
+      "color": "hsl(157 65% 82%)",
+      "command": [],
+      "controller_note": "",
+      "created_at": "2026-05-29T16:39:14+09:00",
+      "display_name": "\uc190\uaddc\uc9c4",
+      "end_at": "2026-06-05T16:00:00+09:00",
+      "extra_volume_request": "",
+      "google_email": "guijin.son@snu.ac.kr",
+      "gpu_count": 2,
+      "gpu_indices": [
+        0,
+        1
+      ],
+      "gpu_start": 0,
+      "image_contract": "default",
+      "image_label": "Production Base",
+      "image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "jupyter_token": "zoLw9m6rmx-eMnTzHqul7TQwOm53pCPZ",
+      "managed_image_key": "base",
+      "member_id": "5",
+      "mlxp_username": "gson",
+      "namespace": "p-production",
+      "node_id": "1",
+      "notify_email": "guijin.son@snu.ac.kr",
+      "personal_pvc_name": "personal-pvc-gson",
+      "pod_name": "prod-rsv-gson-20260529-cf0fa7",
+      "pod_phase": "",
+      "pod_status": "",
+      "project_id": "production",
+      "project_label": "Production",
+      "purpose": "",
+      "registry_profile_key": "",
+      "registry_profile_label": "",
+      "reservation_id": "rsv-gson-20260529-8eeb82",
+      "resolved_image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "shell_login_user": "root",
+      "start_at": "2026-05-30T03:00:00+09:00",
+      "status": "running",
+      "status_class": "pending",
+      "status_label": "Provisioning",
+      "storage_claim_name": "personal-pvc-gson",
+      "supports_jupyter": true,
+      "updated_at": "2026-05-31T18:02:01+09:00",
+      "uses_default_image": true,
+      "warning_sent_at": ""
+    },
+    "rsv-hard2251-20260529-5b33aa": {
+      "args": [],
+      "can_view_secrets": true,
+      "cleanup_requested_at": "",
+      "color": "hsl(287 65% 82%)",
+      "command": [],
+      "controller_note": "",
+      "created_at": "2026-05-29T00:40:10+09:00",
+      "display_name": "\uc624\uae30\uc601",
+      "end_at": "2026-06-01T04:00:00+09:00",
+      "extra_volume_request": "",
+      "google_email": "hard2251@snu.ac.kr",
+      "gpu_count": 8,
+      "gpu_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "gpu_start": 0,
+      "image_contract": "default",
+      "image_label": "Production Base",
+      "image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "jupyter_token": "1nRcq0_hHhX9AiWT8RJWP8B2S89G4ZS4",
+      "managed_image_key": "base",
+      "member_id": "4",
+      "mlxp_username": "hard2251",
+      "namespace": "p-production",
+      "node_id": "2",
+      "notify_email": "hard2251@snu.ac.kr",
+      "personal_pvc_name": "personal-pvc-hard2251",
+      "pod_name": "prod-rsv-hard2251-20260521-d13abe",
+      "pod_phase": "",
+      "pod_status": "",
+      "project_id": "production",
+      "project_label": "Production",
+      "purpose": "Recaptioning Datacomp+Residues ~20M Qwen 3.5-35B-A3B dp=8 135img/s",
+      "registry_profile_key": "",
+      "registry_profile_label": "",
+      "reservation_id": "rsv-hard2251-20260529-5b33aa",
+      "resolved_image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "shell_login_user": "root",
+      "start_at": "2026-05-29T03:00:00+09:00",
+      "status": "running",
+      "status_class": "pending",
+      "status_label": "Provisioning",
+      "storage_claim_name": "personal-pvc-hard2251",
+      "supports_jupyter": true,
+      "updated_at": "2026-05-31T18:02:01+09:00",
+      "uses_default_image": true,
+      "warning_sent_at": ""
+    },
+    "rsv-hard2251-20260529-5e2c00": {
+      "args": [],
+      "can_view_secrets": true,
+      "cleanup_requested_at": "",
+      "color": "hsl(287 65% 82%)",
+      "command": [],
+      "controller_note": "",
+      "created_at": "2026-05-29T00:40:25+09:00",
+      "display_name": "\uc624\uae30\uc601",
+      "end_at": "2026-06-01T04:00:00+09:00",
+      "extra_volume_request": "",
+      "google_email": "hard2251@snu.ac.kr",
+      "gpu_count": 8,
+      "gpu_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "gpu_start": 0,
+      "image_contract": "default",
+      "image_label": "Production Base",
+      "image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "jupyter_token": "OFOgHmLX2tPqL48EBNf2uJaAWV6BQT1X",
+      "managed_image_key": "base",
+      "member_id": "4",
+      "mlxp_username": "hard2251",
+      "namespace": "p-production",
+      "node_id": "3",
+      "notify_email": "hard2251@snu.ac.kr",
+      "personal_pvc_name": "personal-pvc-hard2251",
+      "pod_name": "prod-rsv-hard2251-20260528-e5a86b",
+      "pod_phase": "",
+      "pod_status": "",
+      "project_id": "production",
+      "project_label": "Production",
+      "purpose": "[LG-WM Project]Training Delta-JEPA",
+      "registry_profile_key": "",
+      "registry_profile_label": "",
+      "reservation_id": "rsv-hard2251-20260529-5e2c00",
+      "resolved_image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "shell_login_user": "root",
+      "start_at": "2026-05-29T03:00:00+09:00",
+      "status": "running",
+      "status_class": "pending",
+      "status_label": "Provisioning",
+      "storage_claim_name": "personal-pvc-hard2251",
+      "supports_jupyter": true,
+      "updated_at": "2026-05-31T18:02:01+09:00",
+      "uses_default_image": true,
+      "warning_sent_at": ""
+    },
+    "rsv-jerry0110-20260527-7f1660": {
+      "args": [],
+      "can_view_secrets": true,
+      "cleanup_requested_at": "",
+      "color": "hsl(173 65% 82%)",
+      "command": [],
+      "controller_note": "",
+      "created_at": "2026-05-27T09:00:43+09:00",
+      "display_name": "\uae40\uc138\uc9c4",
+      "end_at": "2026-06-03T08:00:00+09:00",
+      "extra_volume_request": "",
+      "google_email": "jerry0110@yonsei.ac.kr",
+      "gpu_count": 4,
+      "gpu_indices": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "gpu_start": 0,
+      "image_contract": "default",
+      "image_label": "Production Base",
+      "image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "jupyter_token": "bWX0pqYL7hlyRX6esXDe5UaWhi0Qt1kd",
+      "managed_image_key": "base",
+      "member_id": "10",
+      "mlxp_username": "jerry0110",
+      "namespace": "p-production",
+      "node_id": "5",
+      "notify_email": "jerry0110@yonsei.ac.kr",
+      "personal_pvc_name": "personal-pvc-jerry0110",
+      "pod_name": "prod-rsv-jerry0110-20260527-7f1660",
+      "pod_phase": "",
+      "pod_status": "",
+      "project_id": "production",
+      "project_label": "Production",
+      "purpose": "COLM rebuttal (v1 reasoning model)",
+      "registry_profile_key": "",
+      "registry_profile_label": "",
+      "reservation_id": "rsv-jerry0110-20260527-7f1660",
+      "resolved_image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "shell_login_user": "root",
+      "start_at": "2026-05-27T10:00:00+09:00",
+      "status": "running",
+      "status_class": "pending",
+      "status_label": "Provisioning",
+      "storage_claim_name": "personal-pvc-jerry0110",
+      "supports_jupyter": true,
+      "updated_at": "2026-05-31T18:02:01+09:00",
+      "uses_default_image": true,
+      "warning_sent_at": ""
+    },
+    "rsv-snail0822-20260529-acb82c": {
+      "args": [],
+      "can_view_secrets": true,
+      "cleanup_requested_at": "",
+      "color": "hsl(305 65% 82%)",
+      "command": [],
+      "controller_note": "",
+      "created_at": "2026-05-29T11:17:49+09:00",
+      "display_name": "\uc815\uc9c4\ud64d",
+      "end_at": "2026-06-03T18:00:00+09:00",
+      "extra_volume_request": "",
+      "google_email": "jjhsnail0822@gmail.com",
+      "gpu_count": 1,
+      "gpu_indices": [
+        0
+      ],
+      "gpu_start": 0,
+      "image_contract": "default",
+      "image_label": "Production Base",
+      "image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "jupyter_token": "RxSjL9JY8RYHZ56JLoQBIKjGKeW7mZ8g",
+      "managed_image_key": "base",
+      "member_id": "14",
+      "mlxp_username": "snail0822",
+      "namespace": "p-production",
+      "node_id": "4",
+      "notify_email": "jjhsnail0822@gmail.com",
+      "personal_pvc_name": "personal-pvc-snail0822",
+      "pod_name": "prod-rsv-snail0822-20260529-acb82c",
+      "pod_phase": "",
+      "pod_status": "",
+      "project_id": "production",
+      "project_label": "Production",
+      "purpose": "conlangbench training",
+      "registry_profile_key": "",
+      "registry_profile_label": "",
+      "reservation_id": "rsv-snail0822-20260529-acb82c",
+      "resolved_image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "shell_login_user": "root",
+      "start_at": "2026-05-29T11:00:00+09:00",
+      "status": "running",
+      "status_class": "pending",
+      "status_label": "Provisioning",
+      "storage_claim_name": "personal-pvc-snail0822",
+      "supports_jupyter": true,
+      "updated_at": "2026-05-31T18:02:01+09:00",
+      "uses_default_image": true,
+      "warning_sent_at": ""
+    },
+    "rsv-snail0822-20260531-76f48a": {
+      "args": [],
+      "can_view_secrets": true,
+      "cleanup_requested_at": "",
+      "color": "hsl(305 65% 82%)",
+      "command": [],
+      "controller_note": "",
+      "created_at": "2026-05-31T17:57:24+09:00",
+      "display_name": "\uc815\uc9c4\ud64d",
+      "end_at": "2026-06-03T18:00:00+09:00",
+      "extra_volume_request": "",
+      "google_email": "jjhsnail0822@gmail.com",
+      "gpu_count": 1,
+      "gpu_indices": [
+        1
+      ],
+      "gpu_start": 1,
+      "image_contract": "default",
+      "image_label": "Production Base",
+      "image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "jupyter_token": "ZpkNqwSb-yXJm231i7PAFax-mhhtJd5S",
+      "managed_image_key": "base",
+      "member_id": "14",
+      "mlxp_username": "snail0822",
+      "namespace": "p-production",
+      "node_id": "4",
+      "notify_email": "jjhsnail0822@gmail.com",
+      "personal_pvc_name": "personal-pvc-snail0822",
+      "pod_name": "prod-rsv-snail0822-20260531-76f48a",
+      "pod_phase": "",
+      "pod_status": "",
+      "project_id": "production",
+      "project_label": "Production",
+      "purpose": "PoC",
+      "registry_profile_key": "",
+      "registry_profile_label": "",
+      "reservation_id": "rsv-snail0822-20260531-76f48a",
+      "resolved_image_path": "ghcr.io/pjh6029/snupi-prod-base:cu124-20260414",
+      "shell_login_user": "root",
+      "start_at": "2026-05-31T18:00:00+09:00",
+      "status": "running",
+      "status_class": "pending",
+      "status_label": "Provisioning",
+      "storage_claim_name": "personal-pvc-snail0822",
+      "supports_jupyter": true,
+      "updated_at": "2026-05-31T18:02:01+09:00",
+      "uses_default_image": true,
+      "warning_sent_at": ""
+    }
+  },
+  "rows": [
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "05-31 18:00",
+      "slot_end": "2026-05-31T19:00:00+09:00",
+      "slot_start": "2026-05-31T18:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "05-31 19:00",
+      "slot_end": "2026-05-31T20:00:00+09:00",
+      "slot_start": "2026-05-31T19:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "05-31 20:00",
+      "slot_end": "2026-05-31T21:00:00+09:00",
+      "slot_start": "2026-05-31T20:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "05-31 21:00",
+      "slot_end": "2026-05-31T22:00:00+09:00",
+      "slot_start": "2026-05-31T21:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "05-31 22:00",
+      "slot_end": "2026-05-31T23:00:00+09:00",
+      "slot_start": "2026-05-31T22:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "05-31 23:00",
+      "slot_end": "2026-06-01T00:00:00+09:00",
+      "slot_start": "2026-05-31T23:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 00:00",
+      "slot_end": "2026-06-01T01:00:00+09:00",
+      "slot_start": "2026-06-01T00:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 01:00",
+      "slot_end": "2026-06-01T02:00:00+09:00",
+      "slot_start": "2026-06-01T01:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 02:00",
+      "slot_end": "2026-06-01T03:00:00+09:00",
+      "slot_start": "2026-06-01T02:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5b33aa",
+          "shell_group_id": "prod-rsv-hard2251-20260521-d13abe",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(287 65% 82%)",
+          "label": "\uc624\uae30\uc601",
+          "reservation_id": "rsv-hard2251-20260529-5e2c00",
+          "shell_group_id": "prod-rsv-hard2251-20260528-e5a86b",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 03:00",
+      "slot_end": "2026-06-01T04:00:00+09:00",
+      "slot_start": "2026-06-01T03:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 04:00",
+      "slot_end": "2026-06-01T05:00:00+09:00",
+      "slot_start": "2026-06-01T04:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 05:00",
+      "slot_end": "2026-06-01T06:00:00+09:00",
+      "slot_start": "2026-06-01T05:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 06:00",
+      "slot_end": "2026-06-01T07:00:00+09:00",
+      "slot_start": "2026-06-01T06:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 07:00",
+      "slot_end": "2026-06-01T08:00:00+09:00",
+      "slot_start": "2026-06-01T07:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 08:00",
+      "slot_end": "2026-06-01T09:00:00+09:00",
+      "slot_start": "2026-06-01T08:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 09:00",
+      "slot_end": "2026-06-01T10:00:00+09:00",
+      "slot_start": "2026-06-01T09:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 10:00",
+      "slot_end": "2026-06-01T11:00:00+09:00",
+      "slot_start": "2026-06-01T10:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 11:00",
+      "slot_end": "2026-06-01T12:00:00+09:00",
+      "slot_start": "2026-06-01T11:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 12:00",
+      "slot_end": "2026-06-01T13:00:00+09:00",
+      "slot_start": "2026-06-01T12:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 13:00",
+      "slot_end": "2026-06-01T14:00:00+09:00",
+      "slot_start": "2026-06-01T13:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 14:00",
+      "slot_end": "2026-06-01T15:00:00+09:00",
+      "slot_start": "2026-06-01T14:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 15:00",
+      "slot_end": "2026-06-01T16:00:00+09:00",
+      "slot_start": "2026-06-01T15:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 16:00",
+      "slot_end": "2026-06-01T17:00:00+09:00",
+      "slot_start": "2026-06-01T16:00:00+09:00"
+    },
+    {
+      "cells": [
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        {
+          "color": "hsl(157 65% 82%)",
+          "label": "\uc190\uaddc\uc9c4",
+          "reservation_id": "rsv-gson-20260529-8eeb82",
+          "shell_group_id": "prod-rsv-gson-20260529-cf0fa7",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260529-acb82c",
+          "shell_group_id": "prod-rsv-snail0822-20260529-acb82c",
+          "status": "running"
+        },
+        {
+          "color": "hsl(305 65% 82%)",
+          "label": "\uc815\uc9c4\ud64d",
+          "reservation_id": "rsv-snail0822-20260531-76f48a",
+          "shell_group_id": "prod-rsv-snail0822-20260531-76f48a",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        {
+          "color": "hsl(173 65% 82%)",
+          "label": "\uae40\uc138\uc9c4",
+          "reservation_id": "rsv-jerry0110-20260527-7f1660",
+          "shell_group_id": "prod-rsv-jerry0110-20260527-7f1660",
+          "status": "running"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "label": "06-01 17:00",
+      "slot_end": "2026-06-01T18:00:00+09:00",
+      "slot_start": "2026-06-01T17:00:00+09:00"
+    }
+  ],
+  "slot_hours": 1.0,
+  "slot_label": "1-hour",
+  "slot_minutes": 60,
+  "visible_days": 1,
+  "window_end": "2026-06-01T18:00:00+09:00",
+  "window_start": "2026-05-31T18:00:00+09:00"
+}
