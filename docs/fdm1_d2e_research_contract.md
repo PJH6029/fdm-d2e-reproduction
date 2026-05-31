@@ -1,9 +1,15 @@
 # FDM-1-style D2E reproduction research contract
 
 **Status:** active contract for the reset ultragoal started on 2026-06-01 KST.  
+**Canonical roadmap/spec:** `ROADMAP.md`.
 **Durable plan:** `.omx/ultragoal/goals.json` (ignored by Git but authoritative inside this runtime).  
 **Progress reports:** `artifacts/reports/`.  
 **Gate config:** `configs/eval/fdm1_d2e_research_gates.json`.
+
+`ROADMAP.md` is the canonical roadmap for goal execution. This document is an
+operational summary and governance layer; if it omits detail from `ROADMAP.md`,
+the roadmap still applies. If it appears to conflict with `ROADMAP.md`, preserve
+the user-provided roadmap and update this contract instead of weakening the goal.
 
 ## Source anchors
 

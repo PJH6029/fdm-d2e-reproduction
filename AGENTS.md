@@ -7,8 +7,13 @@ These instructions apply to this repository and all child paths unless a deeper 
 ## Active reset (authoritative as of 2026-06-01 KST)
 
 The active research objective has been reset by the repo owner to the FDM-1-style
-D2E reproduction contract in `docs/fdm1_d2e_research_contract.md` and the
-runtime OMX plan in `.omx/ultragoal/goals.json`.
+D2E reproduction roadmap in `ROADMAP.md`, the operational contract in
+`docs/fdm1_d2e_research_contract.md`, and the runtime OMX plan in
+`.omx/ultragoal/goals.json`.
+
+`ROADMAP.md` is the canonical roadmap/specification for the whole goal. The
+contract and gates may summarize or operationalize it, but must not weaken or
+silently override it.
 
 Earlier D2E-paper-metric-oriented ultragoal artifacts, G00x/G-XXX logs, and
 completion notes remain provenance/source-code references only. They are not

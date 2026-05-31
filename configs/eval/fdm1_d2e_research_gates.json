@@ -11,17 +11,134 @@
     "Checkpoint-backed desktop/open-game action-sequence harness evidence required before final success"
   ],
   "goals": [
-    {"id": "G001", "gate": "research_contract", "status": "defined", "required_evidence": ["docs/fdm1_d2e_research_contract.md", "artifacts/reports/2026-06-01_g001_research_reset.md", "AGENTS.md reset notice"]},
-    {"id": "G002", "gate": "d2e_universe_splits", "status": "pending", "required_evidence": ["pinned dataset revision", "all-game inventory", "recording/heldout/pseudo/scale split manifests"]},
-    {"id": "G003", "gate": "action_token_pipeline", "status": "pending", "required_evidence": ["50ms binning tests", "tokenizer/detokenizer tests", "overflow/alignment reports"]},
-    {"id": "G004", "gate": "baselines_metrics", "status": "pending", "required_evidence": ["baseline metrics", "per-game/category macro/micro reports", "metric harness tests"]},
-    {"id": "G005", "gate": "video_encoder_candidates", "status": "pending", "required_evidence": ["V-JEPA2 integration", "VE-0/VE-1/VE-2/VE-3 reports", "cache/provenance manifests"]},
-    {"id": "G006", "gate": "idm_ablation", "status": "pending", "required_evidence": ["non-causal IDM", "causal/action-prior baselines", "calibration and pseudo-label quality reports"]},
-    {"id": "G007", "gate": "pseudo_label_datasets", "status": "pending", "required_evidence": ["D_GT", "D_PSEUDO_ALL", "D_PSEUDO_FILTERED", "D_MIX", "confidence manifests"]},
-    {"id": "G008", "gate": "fdm_ablation", "status": "pending", "required_evidence": ["FDM-GT", "FDM-Pseudo", "FDM-FilteredPseudo", "FDM-Mix", "logged free-run metrics"]},
-    {"id": "G009", "gate": "full_corpus_4xh200_scaling", "status": "pending", "required_evidence": ["4xH200 full-corpus run", "GPU monitor evidence", "scale/context/model curves"]},
-    {"id": "G010", "gate": "rq_synthesis_failure_analysis", "status": "pending", "required_evidence": ["RQ1-RQ5 answer matrix", "statistical comparisons", "claim taxonomy", "failure analysis"]},
-    {"id": "G011", "gate": "desktop_game_harness", "status": "pending", "required_evidence": ["checkpoint-backed harness", "latency/failure/replay/video logs", "safety guards"]},
-    {"id": "G012", "gate": "final_report_repro_package", "status": "pending", "required_evidence": ["final report", "runbooks", "package manifest hashes", "final quality audits", "independent review evidence"]}
-  ]
+    {
+      "id": "G001",
+      "gate": "research_contract",
+      "status": "defined",
+      "required_evidence": [
+        "docs/fdm1_d2e_research_contract.md",
+        "artifacts/reports/2026-06-01_g001_research_reset.md",
+        "AGENTS.md reset notice"
+      ]
+    },
+    {
+      "id": "G002",
+      "gate": "d2e_universe_splits",
+      "status": "pending",
+      "required_evidence": [
+        "pinned dataset revision",
+        "all-game inventory",
+        "recording/heldout/pseudo/scale split manifests"
+      ]
+    },
+    {
+      "id": "G003",
+      "gate": "action_token_pipeline",
+      "status": "pending",
+      "required_evidence": [
+        "50ms binning tests",
+        "tokenizer/detokenizer tests",
+        "overflow/alignment reports"
+      ]
+    },
+    {
+      "id": "G004",
+      "gate": "baselines_metrics",
+      "status": "pending",
+      "required_evidence": [
+        "baseline metrics",
+        "per-game/category macro/micro reports",
+        "metric harness tests"
+      ]
+    },
+    {
+      "id": "G005",
+      "gate": "video_encoder_candidates",
+      "status": "pending",
+      "required_evidence": [
+        "V-JEPA2 integration",
+        "VE-0/VE-1/VE-2/VE-3 reports",
+        "cache/provenance manifests"
+      ]
+    },
+    {
+      "id": "G006",
+      "gate": "idm_ablation",
+      "status": "pending",
+      "required_evidence": [
+        "non-causal IDM",
+        "causal/action-prior baselines",
+        "calibration and pseudo-label quality reports"
+      ]
+    },
+    {
+      "id": "G007",
+      "gate": "pseudo_label_datasets",
+      "status": "pending",
+      "required_evidence": [
+        "D_GT",
+        "D_PSEUDO_ALL",
+        "D_PSEUDO_FILTERED",
+        "D_MIX",
+        "confidence manifests"
+      ]
+    },
+    {
+      "id": "G008",
+      "gate": "fdm_ablation",
+      "status": "pending",
+      "required_evidence": [
+        "FDM-GT",
+        "FDM-Pseudo",
+        "FDM-FilteredPseudo",
+        "FDM-Mix",
+        "logged free-run metrics"
+      ]
+    },
+    {
+      "id": "G009",
+      "gate": "full_corpus_4xh200_scaling",
+      "status": "pending",
+      "required_evidence": [
+        "4xH200 full-corpus run",
+        "GPU monitor evidence",
+        "scale/context/model curves"
+      ]
+    },
+    {
+      "id": "G010",
+      "gate": "rq_synthesis_failure_analysis",
+      "status": "pending",
+      "required_evidence": [
+        "RQ1-RQ5 answer matrix",
+        "statistical comparisons",
+        "claim taxonomy",
+        "failure analysis"
+      ]
+    },
+    {
+      "id": "G011",
+      "gate": "desktop_game_harness",
+      "status": "pending",
+      "required_evidence": [
+        "checkpoint-backed harness",
+        "latency/failure/replay/video logs",
+        "safety guards"
+      ]
+    },
+    {
+      "id": "G012",
+      "gate": "final_report_repro_package",
+      "status": "pending",
+      "required_evidence": [
+        "final report",
+        "runbooks",
+        "package manifest hashes",
+        "final quality audits",
+        "independent review evidence"
+      ]
+    }
+  ],
+  "canonical_roadmap_doc": "ROADMAP.md",
+  "roadmap_contract_note": "ROADMAP.md is the canonical user-provided spec; gate artifacts operationalize it and must not weaken it."
 }

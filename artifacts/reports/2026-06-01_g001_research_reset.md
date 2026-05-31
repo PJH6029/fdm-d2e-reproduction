@@ -12,6 +12,7 @@ The repo now has a clean reset contract for the new FDM-1-style D2E objective. P
 ## Evidence created
 
 - `.omx/ultragoal/brief.md`, `.omx/ultragoal/goals.json`, `.omx/ultragoal/ledger.jsonl` — runtime ultragoal plan with 12 stories.
+- `ROADMAP.md` — canonical roadmap/specification from the user-provided FDM-1/D2E PoC spec.
 - `docs/fdm1_d2e_research_contract.md` — active human-readable research contract.
 - `configs/eval/fdm1_d2e_research_gates.json` — machine-readable gate map.
 - `AGENTS.md` — reset notice for future agents.
