@@ -1,0 +1,91 @@
+{
+  "schema": "fdm1_action_slot_tokenization.v1",
+  "canonical_roadmap": "ROADMAP.md",
+  "bin_ms": 50,
+  "video_fps": 20,
+  "k_event_slots_default": 8,
+  "k_event_slot_ablations": [
+    4,
+    8,
+    16
+  ],
+  "special_tokens": [
+    "MASK_ACTION",
+    "NO_ACTION",
+    "PAD_ACTION",
+    "BOS_ACTION",
+    "EOS_ACTION",
+    "EVENT_OVERFLOW"
+  ],
+  "mouse_move": {
+    "default": "compound",
+    "compound_token": "MOUSE_MOVE_BIN_<xbin>_<ybin>",
+    "axis_bins": 49,
+    "positive_boundaries_default": [
+      1,
+      2,
+      3,
+      4,
+      6,
+      8,
+      12,
+      16,
+      24,
+      32,
+      48,
+      64,
+      96,
+      128,
+      192,
+      256,
+      384,
+      512,
+      768,
+      1024,
+      1536,
+      2048,
+      3072,
+      4096
+    ],
+    "fit_policy": "fit global signed-magnitude boundaries on training set; default boundaries are used until G003 full materialization computes fitted bins"
+  },
+  "keyboard": {
+    "tokens": [
+      "KEY_DOWN_<key>",
+      "KEY_UP_<key>"
+    ],
+    "identity": "D2E virtual/physical key code or normalized key name"
+  },
+  "mouse_buttons": [
+    "MOUSE_LEFT_DOWN",
+    "MOUSE_LEFT_UP",
+    "MOUSE_RIGHT_DOWN",
+    "MOUSE_RIGHT_UP",
+    "MOUSE_MIDDLE_DOWN",
+    "MOUSE_MIDDLE_UP"
+  ],
+  "scroll": [
+    "SCROLL_UP",
+    "SCROLL_DOWN",
+    "SCROLL_LEFT",
+    "SCROLL_RIGHT"
+  ],
+  "click_position_aux": {
+    "target": "NEXT_CLICK_POSITION_BIN_<x>_<y>",
+    "no_click": "NO_CLICK_WITHIN_H",
+    "default_horizon_seconds": 1.0,
+    "default_grid": [
+      32,
+      18
+    ]
+  },
+  "ordering": [
+    "mouse movement token first",
+    "mouse button transitions",
+    "key down",
+    "key up",
+    "scroll",
+    "NO_ACTION padding"
+  ],
+  "overflow_policy": "reserve final event slot for EVENT_OVERFLOW when sorted discrete events exceed K; report overflow globally and per game"
+}
