@@ -1,0 +1,14 @@
+{
+  "claim_boundary": "Operational abort only; not metric evidence and not G005 completion evidence.",
+  "created_at": "2026-05-31T05:34:52+0000",
+  "gpu_monitor_rows": 72,
+  "max_gpu_utilization": null,
+  "model_slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_public49_train320k_stratcal_target24k",
+  "monitor_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_public49_train320k_stratcal_target24k_h200_gpu_monitor.csv",
+  "pod_name": "prod-rsv-jeonghunpark-20260531-3cb608",
+  "reason": "The stratified 8k calibration split changed feature-cache hashes and kept 4xH200 at 0% utilization during CPU/raw-video cache work; retry with existing cache-compatible train run and defer stratified calibration to prediction-only.",
+  "repo_head": "3496ea1",
+  "reservation_id": "rsv-jeonghunpark-20260531-3cb608",
+  "schema": "g005_public49_idle_precompute_abort.v1",
+  "status": "aborted_for_gpu_idle_precompute"
+}

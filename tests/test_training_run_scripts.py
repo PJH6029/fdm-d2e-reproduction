@@ -366,6 +366,29 @@ def test_g005_statectx_public49_train320k_keeps_recipe_bins_and_train_calibratio
     assert "no target-label calibration" in config["claim_boundary"]
     assert "Not FDM-1 parity" in config["claim_boundary"]
 
+
+def test_g005_statectx_public49_cache_train320k_reuses_feature_cache() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_public49_cache_train320k_target24k.yaml"
+        ).read_text()
+    )
+
+    assert "cache-reuse" in text
+    assert "statectx_public49_cache_train320k_target24k" in text
+    assert config["action_mouse_tokenization"] == "fdm1_49_aggregate"
+    assert config["fdm1_recipe"]["action_tokenization"]["mouse_delta_bins_per_axis"] == 49
+    assert config["temporal_calibration_strategy"] == "tail"
+    assert config["temporal_calibration_max_rows"] == 2000
+    assert "temporal_calibration_family_quotas" not in config
+    assert config["adaptive_family_budget_to_unlabeled_target"] is False
+    assert config["distributed_feature_cache_dir"].endswith("/distributed_statectx_feature_cache")
+    assert "cache_compatible_public49_training" in config["fdm1_recipe_alignment"]
+    assert "Stratified" not in config["claim_boundary"]
+    assert "feature cache" in config["claim_boundary"]
+
 def test_g005_statectx_train320k_stratified_calibration_is_prediction_only() -> None:
     text = _script("scripts/run_g005_idm_temporal_raw96_statectx_train320k_predict24k.sh")
     noadapt = json.loads(
