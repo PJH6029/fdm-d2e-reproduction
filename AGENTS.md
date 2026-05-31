@@ -4,6 +4,29 @@ This repository is a serious research reproduction of the **publicly inferable r
 
 These instructions apply to this repository and all child paths unless a deeper `AGENTS.md` overrides them.
 
+## Active reset (authoritative as of 2026-06-01 KST)
+
+The active research objective has been reset by the repo owner to the FDM-1-style
+D2E reproduction contract in `docs/fdm1_d2e_research_contract.md` and the
+runtime OMX plan in `.omx/ultragoal/goals.json`.
+
+Earlier D2E-paper-metric-oriented ultragoal artifacts, G00x/G-XXX logs, and
+completion notes remain provenance/source-code references only. They are not
+terminal success evidence for this reset unless a new gate explicitly re-audits
+them against the current FDM-1 recipe-fidelity contract.
+
+Future agents should follow the 2026-06-01 reset goals:
+
+1. D2E-480p full all-game data universe and leakage-safe splits.
+2. 50ms action-token pipeline with key press/release, binned mouse/click/scroll,
+   fixed action slots, and detokenization.
+3. V-JEPA2-style video-token candidates.
+4. Non-causal masked-diffusion IDM with iterative confidence unmasking.
+5. Pseudo-label datasets and confidence filtering.
+6. Causal FDM over interleaved video/action tokens with GT vs pseudo ablations.
+7. Full-corpus 4xH200 scaling evidence, failure analysis, checkpoint-backed
+   desktop/open-game action-sequence harness evidence, and final repro report.
+
 ## Non-negotiable research contract
 
 - **No FDM-1 parity claim.** We can reproduce/approximate method ideas, not claim equivalence to the closed-source system.
