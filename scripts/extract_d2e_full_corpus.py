@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fdm_d2e.config import load_config
 from fdm_d2e.data.d2e_real import build_window_records, decode_mcap_events, download_recording_ref, extract_video_frame_features
+from fdm_d2e.data.fdm1_g003_splits import annotate_window_records_with_fdm1_splits, load_g002_split_index
 from fdm_d2e.data.full_corpus import (
     annotate_window_records,
     d2e_ref_from_universe_row,
@@ -88,7 +89,7 @@ def _emit_stage(row: dict[str, Any], stage: str, **fields: Any) -> None:
     )
 
 
-def _load_or_extract_recording(args: argparse.Namespace, split_contract: dict[str, Any], row: dict[str, Any]) -> dict[str, Any]:
+def _load_or_extract_recording(args: argparse.Namespace, split_contract: Any, row: dict[str, Any]) -> dict[str, Any]:
     rec_dir = _recording_dir(Path(args.output_dir), row)
     rec_dir.mkdir(parents=True, exist_ok=True)
     records_path = rec_dir / "all_records.jsonl"
@@ -163,7 +164,10 @@ def _load_or_extract_recording(args: argparse.Namespace, split_contract: dict[st
         frame_features=frame_features,
     )
     _emit_stage(row, "build_records_done", elapsed_seconds=round(time.time() - stage_start, 3), records=len(raw_records))
-    records = annotate_window_records(raw_records, universe_row=row, split_contract=split_contract)
+    if args.split_mode == "fdm1-g002":
+        records = annotate_window_records_with_fdm1_splits(raw_records, universe_row=row, split_index=split_contract)
+    else:
+        records = annotate_window_records(raw_records, universe_row=row, split_contract=split_contract)
     _emit_stage(row, "annotate_records_done", records=len(records))
     write_jsonl(records_path, records)
     summary = {
@@ -212,6 +216,11 @@ def main() -> None:
         defaults = {
             "data_universe": cfg.get("data_universe"),
             "split_contract": cfg.get("split_contract"),
+            "split_mode": cfg.get("split_mode"),
+            "recording_level_split_manifest": cfg.get("recording_level_split_manifest"),
+            "heldout_game_split_manifest": cfg.get("heldout_game_split_manifest"),
+            "pseudo_label_split_manifest": cfg.get("pseudo_label_split_manifest"),
+            "scale_split_manifest": cfg.get("scale_split_manifest"),
             "output_dir": cfg.get("output_dir"),
             "summary_out": cfg.get("summary_out"),
             "cache_dir": cfg.get("cache_dir"),
@@ -229,6 +238,11 @@ def main() -> None:
     parser.set_defaults(**defaults)
     parser.add_argument("--data-universe", default=defaults.get("data_universe", "artifacts/sources/d2e_full_data_universe_manifest.json"))
     parser.add_argument("--split-contract", default=defaults.get("split_contract", "artifacts/sources/d2e_full_split_contract.json"))
+    parser.add_argument("--split-mode", choices=["legacy", "fdm1-g002"], default=defaults.get("split_mode", "legacy"))
+    parser.add_argument("--recording-level-split-manifest", default=defaults.get("recording_level_split_manifest", "artifacts/sources/fdm1_d2e_recording_level_split_manifest.json"))
+    parser.add_argument("--heldout-game-split-manifest", default=defaults.get("heldout_game_split_manifest", "artifacts/sources/fdm1_d2e_heldout_game_split_manifest.json"))
+    parser.add_argument("--pseudo-label-split-manifest", default=defaults.get("pseudo_label_split_manifest", "artifacts/sources/fdm1_d2e_pseudo_label_split_manifest.json"))
+    parser.add_argument("--scale-split-manifest", default=defaults.get("scale_split_manifest", "artifacts/sources/fdm1_d2e_scale_split_manifest.json"))
     parser.add_argument("--output-dir", default=defaults.get("output_dir", "outputs/data/d2e_full_corpus"))
     parser.add_argument("--summary-out", default=defaults.get("summary_out", "artifacts/sources/d2e_full_corpus_decode_summary.json"))
     parser.add_argument("--cache-dir", default=defaults.get("cache_dir", "/root/work/data/d2e/cache"))
@@ -248,7 +262,15 @@ def main() -> None:
     parser.add_argument("--hf-token")
     args = parser.parse_args()
 
-    split_contract = read_json(args.split_contract)
+    if args.split_mode == "fdm1-g002":
+        split_contract = load_g002_split_index(
+            recording_level_split_path=args.recording_level_split_manifest,
+            heldout_game_split_path=args.heldout_game_split_manifest,
+            pseudo_label_split_path=args.pseudo_label_split_manifest,
+            scale_split_path=args.scale_split_manifest,
+        )
+    else:
+        split_contract = read_json(args.split_contract)
     rows = _selected_rows(args)
     output_dir = Path(args.output_dir)
     paths = split_output_paths(output_dir)
@@ -287,7 +309,14 @@ def main() -> None:
         "schema": "d2e_full_corpus_decode_summary.v1",
         "output_dir": str(output_dir),
         "data_universe": args.data_universe,
-        "split_contract": args.split_contract,
+        "split_contract": args.split_contract if args.split_mode == "legacy" else None,
+        "split_mode": args.split_mode,
+        "fdm1_split_manifests": {
+            "recording_level_split": args.recording_level_split_manifest,
+            "heldout_game_split": args.heldout_game_split_manifest,
+            "pseudo_label_split": args.pseudo_label_split_manifest,
+            "scale_split": args.scale_split_manifest,
+        } if args.split_mode == "fdm1-g002" else None,
         "selected_recording_variants": len(rows),
         "shard": {"index": args.shard_index, "num_shards": args.num_shards},
         "source_ids": sorted({str(row.get("source_id")) for row in rows}),
@@ -299,7 +328,8 @@ def main() -> None:
         "dataset_fingerprint": stable_hash_json(
             {
                 "data_universe": read_json(args.data_universe).get("dataset_fingerprint"),
-                "split_contract": split_contract.get("dataset_fingerprint"),
+                "split_mode": args.split_mode,
+                "split_contract": split_contract.get("dataset_fingerprint") if isinstance(split_contract, dict) else getattr(split_contract, "fingerprints", {}),
                 "rows": [universe_row_id(row) for row in rows],
                 "counts": aggregate_counts,
                 "shard": {"index": args.shard_index, "num_shards": args.num_shards},

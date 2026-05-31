@@ -1,0 +1,22 @@
+{
+  "schema": "fdm1_d2e_480p_full_corpus_extract_config.v1",
+  "canonical_roadmap": "ROADMAP.md",
+  "data_universe": "artifacts/sources/d2e_full_data_universe_manifest.json",
+  "split_mode": "fdm1-g002",
+  "recording_level_split_manifest": "artifacts/sources/fdm1_d2e_recording_level_split_manifest.json",
+  "heldout_game_split_manifest": "artifacts/sources/fdm1_d2e_heldout_game_split_manifest.json",
+  "pseudo_label_split_manifest": "artifacts/sources/fdm1_d2e_pseudo_label_split_manifest.json",
+  "scale_split_manifest": "artifacts/sources/fdm1_d2e_scale_split_manifest.json",
+  "output_dir": "outputs/data/fdm1_d2e_480p_window_records",
+  "summary_out": "artifacts/sources/fdm1_d2e_480p_window_records_decode_summary.json",
+  "cache_dir": "/root/work/data/d2e/cache",
+  "source_ids": ["d2e_480p"],
+  "resolution_tiers": ["480p"],
+  "bin_ms": 50,
+  "frame_fps": 20,
+  "image_size": 64,
+  "video_mode": "download",
+  "compact_features": true,
+  "keep_frames": false,
+  "claim_boundary": "G003 full-corpus extraction for the reset roadmap uses D2E-480p primary rows and G002 FDM-1 split manifests, not the legacy combined-source split contract."
+}
