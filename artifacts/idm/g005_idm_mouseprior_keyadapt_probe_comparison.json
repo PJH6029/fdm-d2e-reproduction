@@ -1,0 +1,70 @@
+{
+  "best_known_probe": {
+    "metrics": {
+      "keyboard_key_accuracy": 0.5070531400966184,
+      "mouse_button_accuracy": 0.6907216494845361,
+      "mouse_button_f1": 0.8017777777777778,
+      "mouse_move_pearson_x": 0.6235339427480717,
+      "mouse_move_pearson_y": 0.6645501092688513,
+      "no_button_false_positive_rate": 0.004349123779473841
+    },
+    "metrics_path": "outputs/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k/paper_metrics.json",
+    "slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k"
+  },
+  "claim_boundary": "Negative exploration evidence only; G005 remains incomplete and no ultragoal checkpoint should be marked complete.",
+  "created_at_epoch": 1780213843.0608869,
+  "decision": "Do not promote train-fit mouse-prior + keyboard/mouse-move adaptive budget probe: it preserves no-button FPR and F1 but regresses keyboard and loses valid mouse-move Pearson relative to the best known state-context stratcal/noadapt branch.",
+  "new_minus_best": {
+    "keyboard_key_accuracy": -0.25525814133454855,
+    "mouse_button_accuracy": -0.00010581370740991858,
+    "mouse_button_f1": -7.866273353029918e-06,
+    "mouse_move_pearson_x": null,
+    "mouse_move_pearson_y": null,
+    "no_button_false_positive_rate": 0.0001279154052786424
+  },
+  "new_probe": {
+    "metrics": {
+      "keyboard_key_accuracy": 0.25179499876206984,
+      "mouse_button_accuracy": 0.6906158357771262,
+      "mouse_button_f1": 0.8017699115044248,
+      "mouse_move_pearson_x": null,
+      "mouse_move_pearson_y": null,
+      "no_button_false_positive_rate": 0.004477039184752484
+    },
+    "metrics_path": "outputs/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_mouseprior_keyadapt_predict24k/paper_metrics.json",
+    "slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_mouseprior_keyadapt_predict24k"
+  },
+  "next_recommended_direction": [
+    "Keep best known statectx stratcal/noadapt branch as incumbent.",
+    "Investigate mouse-move decoding/metric null by separating DX/DY axis token emission from Z0 prior correction rather than applying direct token-prior to all mouse_move candidates.",
+    "Improve throughput for prediction-only probes by reusing calibration/target raw-video feature caches or writing single-process cache chunks before future H200 runs."
+  ],
+  "paper_targets": {
+    "keyboard_key_accuracy": {
+      "op": ">=",
+      "value": 0.73
+    },
+    "mouse_button_accuracy": {
+      "op": ">=",
+      "value": 0.957
+    },
+    "mouse_button_f1": {
+      "op": ">",
+      "value": 0.0
+    },
+    "mouse_move_pearson_x": {
+      "op": ">=",
+      "value": 0.796
+    },
+    "mouse_move_pearson_y": {
+      "op": ">=",
+      "value": 0.783
+    },
+    "no_button_false_positive_rate": {
+      "op": "<=",
+      "value": 0.1
+    }
+  },
+  "schema": "g005_idm_probe_comparison.v1",
+  "status": "reject_mouseprior_keyadapt_probe"
+}
