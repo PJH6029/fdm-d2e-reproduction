@@ -246,9 +246,41 @@ def predict_temporal_masked_diffusion_idm(
 
     predictions_path = Path(output_dir) / "predictions.jsonl"
     prediction_batch_size = max(1, int(config.get("prediction_batch_size", config.get("batch_size", 64))))
+    prediction_batches = (len(target_rows) + prediction_batch_size - 1) // prediction_batch_size
+    progress_path = Path(
+        config.get(
+            "prediction_progress_path",
+            Path(output_dir) / "prediction_progress.json",
+        )
+    )
+    progress_every = max(1, int(config.get("prediction_progress_every_batches", config.get("write_prediction_progress_every", 25)) or 25))
+
+    def write_prediction_progress(payload: dict[str, Any]) -> None:
+        payload = {
+            "schema": "temporal_masked_diffusion_idm_prediction_progress.v1",
+            "model_name": str(config.get("model_name", "temporal_masked_diffusion_idm")),
+            "target_rows": len(target_rows),
+            "prediction_batch_size": prediction_batch_size,
+            "prediction_batches": prediction_batches,
+            "updated_at_epoch": time.time(),
+            **payload,
+        }
+        write_json(progress_path, payload)
+
+    write_prediction_progress({"phase": "prediction_start", "batch": 0, "rows_written": 0})
     with predictions_path.open("w", encoding="utf-8") as handle:
-        for start_idx in range(0, len(target_rows), prediction_batch_size):
+        for batch_index, start_idx in enumerate(range(0, len(target_rows), prediction_batch_size), 1):
             batch_rows = target_rows[start_idx : start_idx + prediction_batch_size]
+            if batch_index == 1 or batch_index % progress_every == 0:
+                write_prediction_progress(
+                    {
+                        "phase": "batch_start",
+                        "batch": batch_index,
+                        "start_index": start_idx,
+                        "batch_rows": len(batch_rows),
+                        "rows_written": start_idx,
+                    }
+                )
             batch_predictions = _predict_temporal_tokens_batch(
                 model,
                 torch,
@@ -264,6 +296,17 @@ def predict_temporal_masked_diffusion_idm(
             )
             for row, predicted_tokens in zip(batch_rows, batch_predictions):
                 handle.write(json.dumps({"sequence_id": row.get("sequence_id"), "predicted_tokens": predicted_tokens}, sort_keys=True) + "\n")
+            if batch_index == 1 or batch_index % progress_every == 0 or batch_index == prediction_batches:
+                handle.flush()
+                write_prediction_progress(
+                    {
+                        "phase": "batch_complete",
+                        "batch": batch_index,
+                        "start_index": start_idx,
+                        "batch_rows": len(batch_rows),
+                        "rows_written": min(len(target_rows), start_idx + len(batch_rows)),
+                    }
+                )
 
     metrics_path = Path(output_dir) / "paper_metrics.json"
     write_paper_idm_metrics(

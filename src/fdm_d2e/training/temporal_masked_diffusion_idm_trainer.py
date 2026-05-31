@@ -7,6 +7,7 @@ import math
 import os
 import random
 import time
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any, Iterator, Sequence
 
@@ -772,7 +773,7 @@ def _precompute_video_cache_features(
     split_name: str,
     config: dict[str, Any],
     max_rows: int,
-) -> list[Any]:
+) -> Any:
     """Load raw frame-token features from existing video-IDM tensor caches.
 
     This avoids reserving H200s for slow ffmpeg decode when a prior raw-video
@@ -795,7 +796,15 @@ def _precompute_video_cache_features(
     feature_dim = _raw_video_feature_dim(config)
     dtype_name = str(config.get("raw_video_feature_tensor_dtype", "float16")).lower()
     tensor_dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
+    tensorize = bool(
+        config.get(
+            "precompute_video_cache_features_as_tensor",
+            config.get("video_cache_features_as_tensor", config.get("precompute_features_as_tensor", False)),
+        )
+    )
     features: list[Any] = []
+    tensor_features = torch.empty((int(max_rows), feature_dim), dtype=tensor_dtype) if tensorize else None
+    cursor = 0
     remaining = int(max_rows)
     for manifest in manifests:
         for chunk in manifest.get("chunks", []):
@@ -808,12 +817,19 @@ def _precompute_video_cache_features(
             if int(flat.shape[1]) < feature_dim:
                 flat = torch.cat([flat, torch.zeros((take, feature_dim - int(flat.shape[1])), dtype=torch.float32)], dim=1)
             flat = flat[:, :feature_dim].to(dtype=tensor_dtype).contiguous()
-            features.extend(flat[idx].clone() for idx in range(take))
+            if tensor_features is not None:
+                tensor_features[cursor : cursor + take].copy_(flat)
+                cursor += take
+            else:
+                features.extend(flat[idx].clone() for idx in range(take))
             remaining -= take
         if remaining <= 0:
             break
-    if len(features) < max_rows:
-        raise ValueError(f"video cache split {split_name} provided {len(features)} rows, expected {max_rows}")
+    loaded = cursor if tensor_features is not None else len(features)
+    if loaded < max_rows:
+        raise ValueError(f"video cache split {split_name} provided {loaded} rows, expected {max_rows}")
+    if tensor_features is not None:
+        return tensor_features.contiguous()
     return features
 
 
@@ -2149,11 +2165,82 @@ def _temporal_window_features_for_batch(
     all_features: Sequence[Sequence[float]],
     offsets: Sequence[int],
 ) -> list[list[list[float]]]:
+    if hasattr(all_features, "index_select") and hasattr(all_features, "shape"):
+        row_count = len(rows)
+        if row_count <= 0:
+            return all_features[:0]
+        feature_count = int(all_features.shape[0])
+        if feature_count <= 0:
+            return all_features[:0]
+        indices: list[int] = []
+        for local_idx in range(row_count):
+            global_idx = start_index + local_idx
+            indices.extend(max(0, min(feature_count - 1, global_idx + int(offset))) for offset in offsets)
+        index_tensor = all_features.new_tensor(indices).long()
+        gathered = all_features.index_select(0, index_tensor)
+        return gathered.reshape(row_count, len(offsets), int(all_features.shape[-1]))
     window_features: list[list[Any]] = []
     for local_idx, _row in enumerate(rows):
         global_idx = start_index + local_idx
         window_features.append([all_features[max(0, min(len(all_features) - 1, global_idx + offset))] for offset in offsets])
     return window_features
+
+
+def _prediction_autocast_context(torch: Any, *, device: Any, config: dict[str, Any]) -> Any:
+    dtype_name = str(config.get("prediction_autocast_dtype", config.get("inference_autocast_dtype", "")) or "").lower()
+    enabled = bool(dtype_name) and str(device).startswith("cuda")
+    if not enabled:
+        return nullcontext()
+    dtype = {
+        "bf16": torch.bfloat16,
+        "bfloat16": torch.bfloat16,
+        "fp16": torch.float16,
+        "float16": torch.float16,
+        "half": torch.float16,
+    }.get(dtype_name)
+    if dtype is None:
+        return nullcontext()
+    return torch.autocast(device_type="cuda", dtype=dtype)
+
+
+def _reveal_topk_masked_tokens_vectorized(
+    torch: Any,
+    *,
+    corrupted: Any,
+    masked: Any,
+    best_prob: Any,
+    best_id: Any,
+    count: int,
+) -> tuple[Any, Any]:
+    """Reveal top-confidence masked slots without host-side per-row sorting.
+
+    This preserves the iterative confidence unmasking objective used by the
+    FDM-1-shaped IDM while avoiding a CPU synchronization loop for every row and
+    denoising step during large heldout prediction sweeps.
+    """
+
+    k = max(0, int(count))
+    if k <= 0:
+        return corrupted, masked
+    batch = int(masked.shape[0])
+    flat_masked = masked.reshape(batch, -1)
+    if not bool(flat_masked.any()):
+        return corrupted, masked
+    slot_count = int(flat_masked.shape[1])
+    k = min(k, slot_count)
+    scores = best_prob.reshape(batch, -1).float()
+    # Match select_topk_masked's deterministic lower-index tie break.
+    tie_break = torch.arange(slot_count, device=scores.device, dtype=scores.dtype).view(1, -1) * 1.0e-8
+    scores = (scores - tie_break).masked_fill(~flat_masked, float("-inf"))
+    selected_scores, selected = torch.topk(scores, k=k, dim=1)
+    valid = selected_scores.isfinite()
+    selected = torch.where(valid, selected, torch.zeros_like(selected))
+    flat_best_id = best_id.reshape(batch, -1)
+    flat_corrupted = corrupted.reshape(batch, -1)
+    flat_updates = flat_best_id.gather(1, selected)
+    flat_corrupted.scatter_(1, selected, flat_updates)
+    flat_masked.scatter_(1, selected, torch.zeros_like(valid, dtype=torch.bool))
+    return flat_corrupted.reshape_as(corrupted), flat_masked.reshape_as(masked)
 
 
 def _feature_sequence_tensor(torch: Any, feature_rows: Sequence[Any], *, device: Any) -> Any:
@@ -2278,7 +2365,9 @@ def _temporal_final_probabilities(
     token_to_index = {token: idx for idx, token in enumerate(vocab)}
     mask_index = token_to_index[FDM1_ACTION_MASK]
     window_features = _temporal_window_features_for_batch(rows=rows, start_index=start_index, all_features=all_features, offsets=offsets)
-    if not window_features:
+    if (hasattr(window_features, "shape") and int(window_features.shape[0]) == 0) or (
+        not hasattr(window_features, "shape") and not window_features
+    ):
         return None, None, {}
     model.eval()
     feature_tensor = _feature_window_tensor(torch, window_features, device=device)
@@ -2286,28 +2375,41 @@ def _temporal_final_probabilities(
     corrupted = torch.full((batch, len(offsets), max_slots), mask_index, dtype=torch.long, device=device)
     masked = torch.ones((batch, len(offsets), max_slots), dtype=torch.bool, device=device)
     counts = iterative_unmask_counts(len(offsets) * max_slots, steps=int(config.get("diffusion_steps", 16)))
-    with torch.no_grad():
+    with torch.inference_mode():
         for count in counts:
             if not bool(masked.any()):
                 break
-            logits = model(feature_tensor, corrupted)
-            probs = torch.softmax(logits, dim=-1)
+            with _prediction_autocast_context(torch, device=device, config=config):
+                logits = model(feature_tensor, corrupted)
+            probs = torch.softmax(logits.float(), dim=-1)
             best_prob, best_id = torch.max(probs, dim=-1)
-            for batch_idx in range(batch):
-                flat_probs = [float(value) for value in best_prob[batch_idx].reshape(-1).detach().cpu().tolist()]
-                flat_masked = [bool(value) for value in masked[batch_idx].reshape(-1).detach().cpu().tolist()]
-                selected = select_topk_masked(flat_probs, flat_masked, k=count)
-                for flat_idx in selected:
-                    off_idx = flat_idx // max_slots
-                    slot_idx = flat_idx % max_slots
-                    corrupted[batch_idx, off_idx, slot_idx] = best_id[batch_idx, off_idx, slot_idx]
-                    masked[batch_idx, off_idx, slot_idx] = False
+            if bool(config.get("vectorized_iterative_unmasking", True)):
+                corrupted, masked = _reveal_topk_masked_tokens_vectorized(
+                    torch,
+                    corrupted=corrupted,
+                    masked=masked,
+                    best_prob=best_prob,
+                    best_id=best_id,
+                    count=count,
+                )
+            else:
+                for batch_idx in range(batch):
+                    flat_probs = [float(value) for value in best_prob[batch_idx].reshape(-1).detach().cpu().tolist()]
+                    flat_masked = [bool(value) for value in masked[batch_idx].reshape(-1).detach().cpu().tolist()]
+                    selected = select_topk_masked(flat_probs, flat_masked, k=count)
+                    for flat_idx in selected:
+                        off_idx = flat_idx // max_slots
+                        slot_idx = flat_idx % max_slots
+                        corrupted[batch_idx, off_idx, slot_idx] = best_id[batch_idx, off_idx, slot_idx]
+                        masked[batch_idx, off_idx, slot_idx] = False
         if bool(masked.any()):
-            logits = model(feature_tensor, corrupted)
+            with _prediction_autocast_context(torch, device=device, config=config):
+                logits = model(feature_tensor, corrupted)
             best_id = torch.argmax(logits, dim=-1)
             corrupted = torch.where(masked, best_id, corrupted)
         if _wants_temporal_aux_payload(config) and hasattr(model, "forward_with_aux"):
-            payload = model.forward_with_aux(feature_tensor, corrupted)
+            with _prediction_autocast_context(torch, device=device, config=config):
+                payload = model.forward_with_aux(feature_tensor, corrupted)
             final_logits = payload["action_logits"]
             event_probabilities = {
                 "keyboard": torch.sigmoid(payload["key_event_logits"]) if "key_event_logits" in payload else None,
@@ -2342,9 +2444,10 @@ def _temporal_final_probabilities(
             if "mouse_dy_class_logits" in payload:
                 event_probabilities["mouse_dy_class"] = torch.softmax(payload["mouse_dy_class_logits"], dim=-1)
         else:
-            final_logits = model(feature_tensor, corrupted)
+            with _prediction_autocast_context(torch, device=device, config=config):
+                final_logits = model(feature_tensor, corrupted)
             event_probabilities = {}
-        final_probs = torch.softmax(final_logits, dim=-1)
+        final_probs = torch.softmax(final_logits.float(), dim=-1)
     return final_probs, corrupted, event_probabilities
 
 

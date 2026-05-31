@@ -512,6 +512,53 @@ def test_g005_statectx_keyrerank_blend_predict24k_is_train_heldout_only() -> Non
     assert "no target-label calibration" in config["claim_boundary"]
 
 
+def test_g005_statectx_keyrerank_fast256_preserves_recipe_and_adds_progress() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_statectx_keyrerank_blend025_fast256_predict24k.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_keyrerank_blend025_fast256_predict24k.yaml"
+        ).read_text()
+    )
+
+    assert "scripts/run_g005_idm_temporal_raw96_statectx_train320k_predict24k.sh" in text
+    assert "keyboard-reranker" in text
+    assert "fast256" in text
+    assert config["candidate_score_reranker_enabled"] is True
+    assert config["candidate_score_reranker_families"] == ["keyboard"]
+    assert config["adaptive_family_budget_to_unlabeled_target"] is False
+    assert config["prediction_batch_size"] == 256
+    assert config["prediction_autocast_dtype"] == "bfloat16"
+    assert config["vectorized_iterative_unmasking"] is True
+    assert config["precompute_video_cache_features_as_tensor"] is True
+    assert config["prediction_progress_every_batches"] == 1
+    assert "held-out train rows" in config["claim_boundary"]
+    assert "no target-label calibration" in config["claim_boundary"]
+
+
+def test_g005_statectx_source_m101_fast256_uses_noncausal_offset_candidates() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_statectx_source_m101_fast256_predict24k.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k.yaml"
+        ).read_text()
+    )
+
+    assert "scripts/run_g005_idm_temporal_raw96_statectx_train320k_predict24k.sh" in text
+    assert "temporal-source-offsets" in text
+    assert config["temporal_candidate_source_offsets"] == [-1, 0, 1]
+    assert config["temporal_candidate_source_offset_weights"] == {"-1": 0.85, "0": 1.0, "1": 0.85}
+    assert config["adaptive_family_budget_to_unlabeled_target"] is False
+    assert config["candidate_token_prior_correction"] is True
+    assert config["prediction_batch_size"] == 256
+    assert config["prediction_autocast_dtype"] == "bfloat16"
+    assert config["vectorized_iterative_unmasking"] is True
+    assert config["precompute_video_cache_features_as_tensor"] is True
+    assert "temporal_source_offset_candidate_aggregation" in config["fdm1_recipe_alignment"]
+    assert "target labels" in config["claim_boundary"]
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())

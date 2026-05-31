@@ -46,6 +46,8 @@ from fdm_d2e.training.temporal_masked_diffusion_idm_trainer import (
     _temporal_family_token_presence_targets,
     _target_slots,
     _target_slots_for_config,
+    _temporal_window_features_for_batch,
+    _reveal_topk_masked_tokens_vectorized,
     _token_presence_targets,
     _tokens_from_family_budget_candidates,
     _tokens_from_non_noop_candidates,
@@ -79,6 +81,50 @@ def test_video_feature_vector_uses_configured_paths_and_padding():
     features = video_feature_vector(row, feature_paths=["frame.features", "next_frame_features"], dim=6)
     assert features[:4] == [0.1, 1.0, 0.2, 0.5]
     assert features[4:] == [0.0, 0.0]
+
+
+def test_temporal_window_features_gathers_tensor_cache_without_row_boxing():
+    torch = pytest.importorskip("torch")
+    features = torch.arange(30, dtype=torch.float16).reshape(10, 3)
+    rows = [{"sequence_id": "a"}, {"sequence_id": "b"}]
+
+    gathered = _temporal_window_features_for_batch(
+        rows=rows,
+        start_index=1,
+        all_features=features,
+        offsets=[-1, 0, 2],
+    )
+
+    assert hasattr(gathered, "shape")
+    assert tuple(gathered.shape) == (2, 3, 3)
+    expected = torch.stack(
+        [
+            torch.stack([features[0], features[1], features[3]], dim=0),
+            torch.stack([features[1], features[2], features[4]], dim=0),
+        ],
+        dim=0,
+    )
+    assert torch.equal(gathered, expected)
+
+
+def test_vectorized_iterative_unmask_matches_lower_index_tie_break():
+    torch = pytest.importorskip("torch")
+    corrupted = torch.full((1, 1, 4), 99, dtype=torch.long)
+    masked = torch.tensor([[[True, True, True, True]]])
+    best_prob = torch.tensor([[[0.7, 0.7, 0.6, 0.1]]])
+    best_id = torch.tensor([[[10, 11, 12, 13]]])
+
+    updated, updated_mask = _reveal_topk_masked_tokens_vectorized(
+        torch,
+        corrupted=corrupted,
+        masked=masked,
+        best_prob=best_prob,
+        best_id=best_id,
+        count=2,
+    )
+
+    assert updated.tolist() == [[[10, 11, 99, 99]]]
+    assert updated_mask.tolist() == [[[False, False, True, True]]]
 
 
 def test_video_feature_vector_flattens_luma_window_tokens():
