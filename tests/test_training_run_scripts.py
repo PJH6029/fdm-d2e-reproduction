@@ -485,6 +485,33 @@ def test_g005_statectx_mouseprior_noadapt_predict24k_keeps_train_only_calibratio
     assert "unlabeled-target rate adaptation" in config["claim_boundary"]
 
 
+def test_g005_statectx_keyrerank_blend_predict24k_is_train_heldout_only() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_statectx_keyrerank_blend025_predict24k.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_keyrerank_blend025_predict24k.yaml"
+        ).read_text()
+    )
+
+    assert "scripts/run_g005_idm_temporal_raw96_statectx_train320k_predict24k.sh" in text
+    assert "keyboard-reranker" in text
+    assert "no-target-adapt" in text
+    assert "torchrun" not in text
+    assert config["source_checkpoint"] == (
+        "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt"
+    )
+    assert config["candidate_score_reranker_enabled"] is True
+    assert config["candidate_score_reranker_families"] == ["keyboard"]
+    assert config["candidate_score_reranker_blend"] == 0.25
+    assert config["adaptive_family_budget_to_unlabeled_target"] is False
+    assert config["candidate_token_prior_correction"] is False
+    assert config["write_single_process_feature_cache_splits"] == ["calibration", "target"]
+    assert "train_heldout_keyboard_reranker" in config["fdm1_recipe_alignment"]
+    assert "held-out train rows" in config["claim_boundary"]
+    assert "no target-label calibration" in config["claim_boundary"]
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())

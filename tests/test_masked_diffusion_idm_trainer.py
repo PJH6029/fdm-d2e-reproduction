@@ -344,6 +344,48 @@ def test_single_process_raw_video_feature_cache_writes_missing_chunks(tmp_path: 
     assert cached.tolist() == [pytest.approx(row) for row in features.tolist()]
 
 
+def test_single_process_raw_video_feature_cache_respects_split_allowlist(tmp_path: Path):
+    if not torch_available():
+        return
+    import torch
+
+    frame_dir = tmp_path / "frames"
+    frame_dir.mkdir()
+    for idx in range(2):
+        _write_pgm(frame_dir / f"frame_{idx:06d}.ppm", [idx, idx + 1, idx + 2, idx + 3])
+    rows = [
+        {
+            "sequence_id": f"raw-video-cache-allowlist#{idx}",
+            "frame": {"path": str(frame_dir / f"frame_{idx:06d}.ppm"), "index": idx, "width": 2, "height": 2},
+        }
+        for idx in range(2)
+    ]
+    config = {
+        "video_feature_source": "raw_frames",
+        "raw_video_image_size": 2,
+        "raw_video_frame_offsets": [0],
+        "video_feature_dim": 4,
+        "distributed_feature_cache_dir": str(tmp_path / "feature_cache"),
+        "raw_video_feature_tensor_dtype": "float32",
+        "write_single_process_feature_cache": True,
+        "write_single_process_feature_cache_splits": ["target"],
+    }
+
+    features = _precompute_features_with_distributed_cache(
+        rows,
+        config=config,
+        split_name="fit",
+        torch=torch,
+        distributed=False,
+        rank=0,
+        world_size=1,
+        dist=None,
+    )
+
+    assert len(features) == 2
+    assert not list((tmp_path / "feature_cache").glob("fit-*"))
+
+
 def test_button_event_calibration_uses_dynamic_probability_thresholds():
     rows = [
         {"button_event_prob": 0.491, "button_event_label": 1},

@@ -559,8 +559,17 @@ def _precompute_features_with_distributed_cache(
                 )
                 if cached is not None:
                     return cached
-        if bool(config.get("write_single_process_feature_cache", config.get("write_missing_feature_cache", False))) and (
-            not distributed or world_size <= 1
+        write_cache_splits_raw = config.get("write_single_process_feature_cache_splits")
+        write_cache_splits = (
+            {str(item) for item in write_cache_splits_raw}
+            if isinstance(write_cache_splits_raw, list)
+            else None
+        )
+        write_cache_split_allowed = write_cache_splits is None or split_name in write_cache_splits
+        if (
+            write_cache_split_allowed
+            and bool(config.get("write_single_process_feature_cache", config.get("write_missing_feature_cache", False)))
+            and (not distributed or world_size <= 1)
         ):
             ensure_dir(split_dir)
             feature_dim = _raw_video_feature_dim(config)
