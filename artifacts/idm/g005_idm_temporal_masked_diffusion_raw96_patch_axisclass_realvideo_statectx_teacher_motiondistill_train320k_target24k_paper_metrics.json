@@ -1,0 +1,197 @@
+{
+  "schema": "paper_idm_metrics.v1",
+  "status": "pass",
+  "error_count": 0,
+  "model_name": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_teacher_motiondistill_train320k_target24k",
+  "prediction_paths": [
+    "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_teacher_motiondistill_train320k_target24k/predictions.jsonl"
+  ],
+  "target_paths": [
+    "outputs/data/d2e_event_state_duration_realvideo_balanced_train320k_target24k/target_all_eval.jsonl"
+  ],
+  "split_tags": [
+    "temporal",
+    "heldout_recording",
+    "heldout_game"
+  ],
+  "max_rows": 24000,
+  "alignment": {
+    "rows_seen": 24000,
+    "sequence_id_mismatches": 0,
+    "missing_prediction_rows": 0,
+    "missing_target_rows": 0,
+    "examples": []
+  },
+  "groups": {
+    "all": {
+      "rows": 24000,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.6162087348192268,
+          "pearson_y": 0.6686832764520063,
+          "scale_ratio_x": 13.830635407944923,
+          "scale_ratio_y": 9.071472081218275,
+          "sample_count": 12181,
+          "scale_sample_count": 24000
+        },
+        "keyboard": {
+          "key_accuracy": 0.16015668718522663,
+          "sample_count": 17870
+        },
+        "mouse_button": {
+          "button_accuracy": 0.45614035087719296,
+          "sample_count": 570
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.4305075737443529,
+          "num_examples": 3763
+        },
+        "mouse_button": {
+          "accuracy": 0.45886654478976235,
+          "num_examples": 547,
+          "predicted_examples": 260,
+          "exact_true_positive_examples": 251,
+          "false_positive_examples": 9,
+          "false_negative_examples": 296,
+          "precision": 0.9653846153846154,
+          "recall": 0.45886654478976235,
+          "f1": 0.6220570012391574,
+          "no_button_examples": 23453,
+          "no_button_false_positive_examples": 0,
+          "no_button_false_positive_rate": 0.0
+        }
+      }
+    },
+    "eval_split:heldout_game": {
+      "rows": 8000,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.9280005348457847,
+          "pearson_y": 0.9203183991235704,
+          "scale_ratio_x": 4.510418490632113,
+          "scale_ratio_y": 4.001774622892635,
+          "sample_count": 1097,
+          "scale_sample_count": 8000
+        },
+        "keyboard": {
+          "key_accuracy": 0.0024691358024691358,
+          "sample_count": 6885
+        },
+        "mouse_button": {
+          "button_accuracy": 0.7318840579710145,
+          "sample_count": 138
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.12121212121212122,
+          "num_examples": 33
+        },
+        "mouse_button": {
+          "accuracy": 0.7318840579710145,
+          "num_examples": 138,
+          "predicted_examples": 101,
+          "exact_true_positive_examples": 101,
+          "false_positive_examples": 0,
+          "false_negative_examples": 37,
+          "precision": 1.0,
+          "recall": 0.7318840579710145,
+          "f1": 0.8451882845188284,
+          "no_button_examples": 7862,
+          "no_button_false_positive_examples": 0,
+          "no_button_false_positive_rate": 0.0
+        }
+      }
+    },
+    "eval_split:heldout_recording": {
+      "rows": 8000,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.9072347139862825,
+          "pearson_y": 0.6016903564941061,
+          "scale_ratio_x": 31.809619961058626,
+          "scale_ratio_y": 27.899958660603552,
+          "sample_count": 6230,
+          "scale_sample_count": 8000
+        },
+        "keyboard": {
+          "key_accuracy": 0.28233904311872415,
+          "sample_count": 5079
+        },
+        "mouse_button": {
+          "button_accuracy": 0.30303030303030304,
+          "sample_count": 198
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.4368845120859445,
+          "num_examples": 2234
+        },
+        "mouse_button": {
+          "accuracy": 0.30526315789473685,
+          "num_examples": 190,
+          "predicted_examples": 60,
+          "exact_true_positive_examples": 58,
+          "false_positive_examples": 2,
+          "false_negative_examples": 132,
+          "precision": 0.9666666666666667,
+          "recall": 0.30526315789473685,
+          "f1": 0.464,
+          "no_button_examples": 7810,
+          "no_button_false_positive_examples": 0,
+          "no_button_false_positive_rate": 0.0
+        }
+      }
+    },
+    "eval_split:temporal": {
+      "rows": 8000,
+      "paper_compatible": {
+        "empty_bins_as_correct": false,
+        "mouse_move": {
+          "pearson_x": 0.8682968886166436,
+          "pearson_y": 0.7548342385157224,
+          "scale_ratio_x": 5.457297805107183,
+          "scale_ratio_y": 6.180045871559633,
+          "sample_count": 4854,
+          "scale_sample_count": 8000
+        },
+        "keyboard": {
+          "key_accuracy": 0.23890958347443278,
+          "sample_count": 5906
+        },
+        "mouse_button": {
+          "button_accuracy": 0.4230769230769231,
+          "sample_count": 234
+        }
+      },
+      "strict_local": {
+        "keyboard": {
+          "accuracy": 0.42780748663101603,
+          "num_examples": 1496
+        },
+        "mouse_button": {
+          "accuracy": 0.4200913242009132,
+          "num_examples": 219,
+          "predicted_examples": 99,
+          "exact_true_positive_examples": 92,
+          "false_positive_examples": 7,
+          "false_negative_examples": 127,
+          "precision": 0.9292929292929293,
+          "recall": 0.4200913242009132,
+          "f1": 0.5786163522012578,
+          "no_button_examples": 7781,
+          "no_button_false_positive_examples": 0,
+          "no_button_false_positive_rate": 0.0
+        }
+      }
+    }
+  },
+  "findings": [],
+  "claim_boundary": "Paper-compatible metrics approximate public D2E evaluate.py semantics over pre-binned JSONL tokens; exact released G-IDM comparison remains G006."
+}

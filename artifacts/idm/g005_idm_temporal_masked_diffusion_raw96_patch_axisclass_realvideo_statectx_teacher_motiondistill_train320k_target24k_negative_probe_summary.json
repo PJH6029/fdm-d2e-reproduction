@@ -1,0 +1,77 @@
+{
+  "schema": "g005_teacher_motiondistill_negative_probe_summary.v1",
+  "status": "nonterminal_negative_probe",
+  "model_slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_teacher_motiondistill_train320k_target24k",
+  "evidence": {
+    "run_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_teacher_motiondistill_train320k_target24k_h200_run.json",
+    "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_teacher_motiondistill_train320k_target24k_h200_compact_summary.json",
+    "paper_metrics": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_teacher_motiondistill_train320k_target24k_paper_metrics.json",
+    "gpu_monitor": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_teacher_motiondistill_train320k_target24k_h200_gpu_monitor.csv",
+    "wandb_status": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_teacher_motiondistill_train320k_target24k_h200_wandb_status.json",
+    "pod_log": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_teacher_motiondistill_train320k_target24k.pod.log"
+  },
+  "paper_target_gates": {
+    "keyboard_key_accuracy": false,
+    "mouse_button_accuracy": false,
+    "mouse_button_f1_nonzero": true,
+    "mouse_move_pearson_x": false,
+    "mouse_move_pearson_y": false,
+    "no_button_false_positive_rate": true
+  },
+  "paper_target_observed": {
+    "keyboard_key_accuracy": 0.16015668718522663,
+    "mouse_button_accuracy": 0.45614035087719296,
+    "mouse_button_f1": 0.6220570012391574,
+    "mouse_move_pearson_x": 0.6162087348192268,
+    "mouse_move_pearson_y": 0.6686832764520063,
+    "no_button_false_positive_rate": 0.0
+  },
+  "paper_targets": {
+    "keyboard_key_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "mouse_button_f1_min_nonzero": 1e-12,
+    "mouse_move_pearson_x": 0.796,
+    "mouse_move_pearson_y": 0.783,
+    "no_button_false_positive_rate_max": 0.1
+  },
+  "groups": {
+    "all": {
+      "rows": 24000,
+      "keyboard_key_accuracy": 0.16015668718522663,
+      "mouse_button_accuracy": 0.45614035087719296,
+      "mouse_button_f1": 0.6220570012391574,
+      "mouse_move_pearson_x": 0.6162087348192268,
+      "mouse_move_pearson_y": 0.6686832764520063,
+      "no_button_false_positive_rate": 0.0
+    },
+    "eval_split:heldout_game": {
+      "rows": 8000,
+      "keyboard_key_accuracy": 0.0024691358024691358,
+      "mouse_button_accuracy": 0.7318840579710145,
+      "mouse_button_f1": 0.8451882845188284,
+      "mouse_move_pearson_x": 0.9280005348457847,
+      "mouse_move_pearson_y": 0.9203183991235704,
+      "no_button_false_positive_rate": 0.0
+    },
+    "eval_split:heldout_recording": {
+      "rows": 8000,
+      "keyboard_key_accuracy": 0.28233904311872415,
+      "mouse_button_accuracy": 0.30303030303030304,
+      "mouse_button_f1": 0.464,
+      "mouse_move_pearson_x": 0.9072347139862825,
+      "mouse_move_pearson_y": 0.6016903564941061,
+      "no_button_false_positive_rate": 0.0
+    },
+    "eval_split:temporal": {
+      "rows": 8000,
+      "keyboard_key_accuracy": 0.23890958347443278,
+      "mouse_button_accuracy": 0.4230769230769231,
+      "mouse_button_f1": 0.5786163522012578,
+      "mouse_move_pearson_x": 0.8682968886166436,
+      "mouse_move_pearson_y": 0.7548342385157224,
+      "no_button_false_positive_rate": 0.0
+    }
+  },
+  "claim_boundary": "This is failure evidence for a recipe-aligned G005 probe. G005 remains in_progress; do not checkpoint complete from this run.",
+  "next_direction": "Keyboard key accuracy and button accuracy remain far below paper targets; retain train-only teacher distillation as a negative probe and pivot to stronger key/action token modeling without weakening FDM-1 masked-diffusion recipe fidelity."
+}
