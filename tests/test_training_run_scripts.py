@@ -598,6 +598,33 @@ def test_g005_statectx_teacher_motiondistill_runs_train_teacher_before_masked_st
     assert teacher["claim_boundary"].startswith("Prediction-only train-row teacher artifact")
 
 
+def test_g005_statectx_warm_teacher_motiondistill_warm_starts_best_checkpoint() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_statectx_warm_teacher_motiondistill_train320k.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_warm_teacher_motiondistill_train320k_target24k.yaml"
+        ).read_text()
+    )
+
+    assert "run_g005_idm_temporal_raw96_statectx_teacher_motiondistill_train320k.sh" in text
+    assert "warm-start" in text
+    assert config["source_checkpoint"] == (
+        "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt"
+    )
+    assert config["source_checkpoint_strict"] is True
+    assert config["source_checkpoint_skip_video_pretrain"] is True
+    assert config["teacher_distillation_enabled"] is True
+    assert config["teacher_distillation_families"] == ["mouse_move"]
+    assert config["teacher_distillation_aux_weight"] == 0.08
+    assert config["teacher_distillation_extend_vocab"] is False
+    assert config["epochs"] == 2
+    assert config["lr"] == 5e-5
+    assert "source_checkpoint_warm_start" in config["fdm1_recipe_alignment"]
+    assert "prediction shortcut" in config["claim_boundary"]
+    assert "target-label calibration" in config["claim_boundary"]
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())

@@ -2284,6 +2284,85 @@ def test_train_temporal_masked_diffusion_idm_uses_train_teacher_distillation(tmp
     assert read_json(summary["metrics_path"])["alignment"]["rows_seen"] == 2
 
 
+def test_train_temporal_masked_diffusion_idm_warm_starts_from_source_checkpoint(tmp_path: Path):
+    if not torch_available():
+        return
+    train_path = tmp_path / "train_warm_start_temporal.jsonl"
+    target_path = tmp_path / "target_warm_start_temporal.jsonl"
+    train_rows = []
+    for i in range(4):
+        row = _row(i, split="train_core")
+        row["compact_luma_window"] = [[float(i + pix) / 10.0 for pix in range(4)] for _ in range(2)]
+        row["compact_luma_window_mask"] = [1.0, 1.0]
+        row["ground_truth_tokens"] = ["KEY_PRESS_A", "MOUSE_DX_P1", "MOUSE_DY_Z0"] if i % 2 == 0 else []
+        train_rows.append(row)
+    target_rows = []
+    for i in range(4, 6):
+        row = _row(i, split="eval")
+        row["compact_luma_window"] = [[float(i + pix) / 10.0 for pix in range(4)] for _ in range(2)]
+        row["compact_luma_window_mask"] = [1.0, 1.0]
+        target_rows.append(row)
+    _write_jsonl(train_path, train_rows)
+    _write_jsonl(target_path, target_rows)
+    base_config = {
+        "model_name": "unit_temporal_masked_diffusion_warm_start_idm",
+        "train_records": str(train_path),
+        "target_records": str(target_path),
+        "max_train_rows": 4,
+        "max_target_rows": 2,
+        "max_action_tokens_per_bin": 4,
+        "action_mouse_tokenization": "d2e_metric_bins",
+        "temporal_offsets": [0],
+        "temporal_loss_offsets": [0],
+        "video_feature_paths": ["compact_luma_window", "compact_luma_window_mask", "frame.features"],
+        "video_feature_dim": 12,
+        "video_encoder_arch": "compact_luma_window_cnn",
+        "luma_window_frames": 2,
+        "luma_window_size": 2,
+        "luma_encoder_channels": 2,
+        "luma_encoder_pool_hw": 1,
+        "luma_aux_hidden_dim": 4,
+        "hidden_dim": 16,
+        "transformer_layers": 1,
+        "transformer_heads": 4,
+        "dropout": 0.0,
+        "batch_size": 2,
+        "prediction_batch_size": 2,
+        "epochs": 1,
+        "lr": 0.001,
+        "mask_probability": 1.0,
+        "random_token_probability": 0.0,
+        "diffusion_steps": 2,
+        "force_cpu": True,
+    }
+    first = train_temporal_masked_diffusion_idm(
+        {
+            **base_config,
+            "output_dir": str(tmp_path / "out_warm_source"),
+            "summary_out": str(tmp_path / "summary_warm_source.json"),
+        }
+    )
+    second = train_temporal_masked_diffusion_idm(
+        {
+            **base_config,
+            "output_dir": str(tmp_path / "out_warm_student"),
+            "summary_out": str(tmp_path / "summary_warm_student.json"),
+            "source_checkpoint": first["checkpoint_path"],
+            "video_encoder_pretrain_epochs": 1,
+            "video_encoder_pretrain_max_batches": 1,
+        }
+    )
+
+    assert second["status"] == "pass"
+    assert second["source_checkpoint"]["status"] == "pass"
+    assert second["source_checkpoint"]["path"] == first["checkpoint_path"]
+    assert second["source_checkpoint"]["mismatches"] == []
+    assert second["source_checkpoint_skip_video_pretrain"] is True
+    assert second["video_encoder_pretrain_history"] == []
+    assert second["loss_weights"]["source_checkpoint_loaded"] is True
+    assert second["loss_weights"]["source_checkpoint_skip_video_pretrain"] is True
+
+
 def test_train_temporal_masked_diffusion_idm_raw_video_cnn_tiny_smoke(tmp_path: Path):
     if not torch_available():
         return

@@ -1225,6 +1225,87 @@ def _mouse_axis_for_token(token: str) -> str | None:
     return None
 
 
+def _load_source_checkpoint_for_training(
+    torch: Any,
+    model: Any,
+    config: dict[str, Any],
+    *,
+    vocab: Sequence[str],
+    max_slots: int,
+    feature_dim: int,
+    offsets: Sequence[int],
+    device: Any,
+) -> dict[str, Any]:
+    """Warm-start a temporal masked-diffusion IDM from a prior checkpoint.
+
+    This is a training-time initialization path, not a prediction shortcut: the
+    loaded model still optimizes the masked action-token denoising objective
+    over the requested train rows before target prediction.  Compatibility
+    checks default to fail-closed so a probe cannot silently load a checkpoint
+    with a different action vocabulary or video-token shape.
+    """
+
+    raw_path = config.get("source_checkpoint") or config.get("init_checkpoint") or config.get("warm_start_checkpoint")
+    if not raw_path:
+        return {"status": "skipped", "reason": "no_source_checkpoint"}
+    path = Path(str(raw_path))
+    if not path.exists():
+        if bool(config.get("source_checkpoint_optional", False)):
+            return {"status": "skipped", "reason": "missing_optional_source_checkpoint", "path": str(path)}
+        raise FileNotFoundError(f"source checkpoint does not exist: {path}")
+
+    checkpoint = torch.load(path, map_location=device, weights_only=False)
+    if not isinstance(checkpoint, dict):
+        raise ValueError(f"source checkpoint must be a dict: {path}")
+    state_dict = checkpoint.get("model_state_dict") or checkpoint.get("state_dict")
+    if not state_dict:
+        raise ValueError(f"source checkpoint has no model_state_dict/state_dict: {path}")
+
+    mismatches: list[str] = []
+    source_vocab = [str(token) for token in checkpoint.get("vocab", [])]
+    current_vocab = [str(token) for token in vocab]
+    if source_vocab and source_vocab != current_vocab:
+        mismatches.append("vocab")
+    source_max_slots = checkpoint.get("max_slots")
+    if source_max_slots is not None and int(source_max_slots) != int(max_slots):
+        mismatches.append("max_slots")
+    source_feature_dim = checkpoint.get("feature_dim")
+    if source_feature_dim is not None and int(source_feature_dim) != int(feature_dim):
+        mismatches.append("feature_dim")
+    source_offsets = checkpoint.get("temporal_offsets")
+    if source_offsets is not None and [int(value) for value in source_offsets] != [int(value) for value in offsets]:
+        mismatches.append("temporal_offsets")
+    if mismatches and not bool(config.get("source_checkpoint_allow_mismatch", False)):
+        raise ValueError(
+            "source checkpoint is incompatible with requested temporal IDM config: "
+            + ", ".join(mismatches)
+            + f" ({path})"
+        )
+
+    strict = bool(config.get("source_checkpoint_strict", not bool(config.get("source_checkpoint_allow_mismatch", False))))
+    load_result = model.load_state_dict(state_dict, strict=strict)
+    missing_keys = list(getattr(load_result, "missing_keys", []) or [])
+    unexpected_keys = list(getattr(load_result, "unexpected_keys", []) or [])
+    return {
+        "status": "pass",
+        "path": str(path),
+        "strict": strict,
+        "mismatches": mismatches,
+        "missing_keys": missing_keys[:32],
+        "missing_key_count": len(missing_keys),
+        "unexpected_keys": unexpected_keys[:32],
+        "unexpected_key_count": len(unexpected_keys),
+        "source_vocab_size": len(source_vocab) if source_vocab else None,
+        "current_vocab_size": len(current_vocab),
+        "source_max_slots": int(source_max_slots) if source_max_slots is not None else None,
+        "current_max_slots": int(max_slots),
+        "source_feature_dim": int(source_feature_dim) if source_feature_dim is not None else None,
+        "current_feature_dim": int(feature_dim),
+        "source_temporal_offsets": [int(value) for value in source_offsets] if source_offsets is not None else None,
+        "current_temporal_offsets": [int(value) for value in offsets],
+    }
+
+
 def _build_temporal_model(
     torch: Any,
     *,
@@ -4375,7 +4456,25 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             loader_kwargs["prefetch_factor"] = max(1, int(prefetch_factor))
     loader = torch.utils.data.DataLoader(dataset, **loader_kwargs)
     model = _build_temporal_model(torch, video_dim=feature_dim, vocab_size=len(vocab), max_slots=max_slots, offsets=offsets, config=config, vocab=vocab).to(device)
-    video_pretrain_history = _pretrain_video_encoder(model, torch, loader, config=config, device=device) if is_main_rank else []
+    source_checkpoint_summary = _load_source_checkpoint_for_training(
+        torch,
+        model,
+        config,
+        vocab=vocab,
+        max_slots=max_slots,
+        feature_dim=feature_dim,
+        offsets=offsets,
+        device=device,
+    )
+    skip_source_pretrain = (
+        source_checkpoint_summary.get("status") == "pass"
+        and bool(config.get("source_checkpoint_skip_video_pretrain", config.get("skip_video_pretrain_when_source_checkpoint", True)))
+    )
+    video_pretrain_history = (
+        []
+        if skip_source_pretrain or not is_main_rank
+        else _pretrain_video_encoder(model, torch, loader, config=config, device=device)
+    )
     if distributed and dist is not None:
         dist.barrier()
     train_model = (
@@ -5278,6 +5377,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
         else None,
         "video_cache_dir":str(config.get("video_cache_dir")) if feature_source in {"video_idm_cache", "raw_video_cache"} else None,
         "video_cache_stats_path":str(config.get("video_cache_stats_path", config.get("stats_path"))) if feature_source in {"video_idm_cache", "raw_video_cache"} else None,
+        "source_checkpoint":source_checkpoint_summary,
+        "source_checkpoint_skip_video_pretrain":skip_source_pretrain,
         "video_encoder_pretrain_history":video_pretrain_history,
         "history":history,
         "non_noop_budget":non_noop_budget,
@@ -5408,6 +5509,8 @@ def train_temporal_masked_diffusion_idm(config: dict[str, Any]) -> dict[str, Any
             else ["mouse_move"],
             "teacher_distillation_extend_vocab": bool(config.get("teacher_distillation_extend_vocab", True)),
             "teacher_distillation_include_noop_negative": bool(config.get("teacher_distillation_include_noop_negative", False)),
+            "source_checkpoint_loaded": source_checkpoint_summary.get("status") == "pass",
+            "source_checkpoint_skip_video_pretrain": skip_source_pretrain,
             "retrieval_action_prior_blend":float(config.get("retrieval_action_prior_blend", 0.35)),
             "candidate_token_prior_correction":bool(config.get("candidate_token_prior_correction", False)),
             "candidate_token_prior_strength":float(config.get("candidate_token_prior_strength", 0.5)),
