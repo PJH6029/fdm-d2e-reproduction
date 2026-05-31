@@ -585,7 +585,13 @@ def test_g005_statectx_teacher_motiondistill_runs_train_teacher_before_masked_st
     assert config["teacher_prediction_paths"] == [
         "outputs/idm_streaming_d2e_full_event_state_duration_context_teacher_train320k_predictions/predictions.jsonl"
     ]
+    assert (
+        config["distributed_feature_cache_dir"]
+        == "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/distributed_statectx_feature_cache"
+    )
+    assert config["teacher_distillation_reuses_statectx_feature_cache"] is True
     assert "train_teacher_motion_distillation" in config["fdm1_recipe_alignment"]
+    assert "statectx_feature_cache_reuse" in config["fdm1_recipe_alignment"]
     assert "Target labels are never used" in config["claim_boundary"]
     assert teacher["records_path"] == "outputs/data/d2e_event_state_duration_realvideo_balanced_train320k_target24k/train_core.jsonl"
     assert teacher["checkpoint_path"] == "outputs/idm_streaming_d2e_full_event_state_duration_context_paper_target/checkpoint.pt"

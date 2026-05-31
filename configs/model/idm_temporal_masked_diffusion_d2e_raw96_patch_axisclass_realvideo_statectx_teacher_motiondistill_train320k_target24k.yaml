@@ -49,7 +49,7 @@
   "candidate_token_prior_strength": 0.35,
   "candidate_token_prior_summary_limit": 16,
   "candidate_token_prior_unseen_weight": 0.25,
-  "claim_boundary": "G005 320k/24k teacher-motion-distillation branch for the raw96 state-context masked-diffusion IDM. It keeps the public FDM-1-shaped noncausal masked action-token objective and adds split-safe train-only mouse-motion teacher predictions from the event-state-duration-context IDM as an auxiliary token loss. Target labels are never used for teacher distillation; not FDM-1 parity and not completion evidence unless paper targets pass and audits/checkpoints follow.",
+  "claim_boundary": "G005 320k/24k teacher-motion-distillation branch for the raw96 state-context masked-diffusion IDM. It keeps the public FDM-1-shaped noncausal masked action-token objective and adds split-safe train-only mouse-motion teacher predictions from the event-state-duration-context IDM as an auxiliary token loss. Target labels are never used for teacher distillation; not FDM-1 parity and not completion evidence unless paper targets pass and audits/checkpoints follow. Reuses the prior statectx raw-video distributed feature cache because feature inputs and split rows are unchanged; this avoids reserving H200s for duplicate CPU decode.",
   "diffusion_steps": 16,
   "direct_auxiliary_button_class_blend": 0.7,
   "direct_auxiliary_button_no_button_gate_floor": 0.0,
@@ -63,7 +63,7 @@
   "direct_auxiliary_candidate_min_score": 0.0,
   "direct_auxiliary_key_class_blend": 0.9,
   "direct_auxiliary_mouse_axis_class_blend": 0.95,
-  "distributed_feature_cache_dir": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_teacher_motiondistill_train320k_target24k/distributed_statectx_feature_cache",
+  "distributed_feature_cache_dir": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/distributed_statectx_feature_cache",
   "dropout": 0.1,
   "epochs": 6,
   "event_aux_weight": 0.0,
@@ -263,6 +263,11 @@
       "d2e_approximation": "Scale the strongest split-safe state-context raw96 masked-diffusion IDM from 32k train rows to 320k balanced D2E rows while preserving real-video patch tokens and masked action-token denoising.",
       "public_anchor": "FDM-1 trains IDM over large-scale screen-video/action-token data rather than tiny prefixes."
     },
+    "statectx_feature_cache_reuse": {
+      "claim_boundary": "Cache reuse is an execution/throughput optimization only; it does not change action targets, teacher distillation labels, or metric claims.",
+      "d2e_approximation": "Reuse the previously audited raw96 state-context distributed screen-video feature cache when train/target rows and video feature settings are unchanged, so the new teacher-distilled objective spends 4xH200 time on model training instead of duplicate CPU/IO materialization.",
+      "public_anchor": "FDM-1 recipe requires screen-video token conditioning, not repeated ffmpeg/raw-frame decode work."
+    },
     "temporal_button_class_auxiliary": {
       "claim_boundary": "Open D2E approximation inside the public masked-diffusion action-token recipe; not a post-hoc target heuristic and not closed-source FDM-1 parity.",
       "d2e_approximation": "Train a no-button-vs-button-token auxiliary classifier from the same temporal masked action-token representation over fit D2E rows, then blend per-token class probabilities into mouse-button candidate scores before train-heldout family calibration. Target labels are never used for scoring.",
@@ -414,6 +419,7 @@
   ],
   "teacher_distillation_include_noop_negative": false,
   "teacher_distillation_missing_as_noop": false,
+  "teacher_distillation_reuses_statectx_feature_cache": true,
   "teacher_prediction_paths": [
     "outputs/idm_streaming_d2e_full_event_state_duration_context_teacher_train320k_predictions/predictions.jsonl"
   ],
