@@ -1,0 +1,27 @@
+{
+  "schema": "fdm1_g003_action_dataset_finalization_config.v1",
+  "canonical_roadmap": "ROADMAP.md",
+  "decoded_records": "outputs/data/fdm1_d2e_480p_window_records/all_records.jsonl",
+  "base_tokenization_config": "configs/tokenization/fdm1_action_slots.json",
+  "completion_config": "configs/eval/fdm1_g003_action_dataset_completion.yaml",
+  "action_output_dir": "outputs/data/fdm1_action_slots",
+  "bin_ms": 50,
+  "frame_fps": 20,
+  "k_event_slots": 8,
+  "click_horizon_seconds": 1.0,
+  "click_grid_width": 32,
+  "click_grid_height": 18,
+  "screen_width": 854,
+  "screen_height": 480,
+  "mouse_fit_split": "train_core",
+  "alignment_max_rows": 24,
+  "paths": {
+    "fitted_mouse_bins": "artifacts/sources/fdm1_g003_fitted_mouse_bins.json",
+    "fitted_tokenization_config": "artifacts/sources/fdm1_action_slots_fitted_config.json",
+    "action_slots": "outputs/data/fdm1_action_slots/action_slots.jsonl",
+    "dataset_summary": "outputs/data/fdm1_action_slots/dataset_summary.json",
+    "visual_alignment_audit": "artifacts/sources/fdm1_g003_action_alignment_visual_check.json",
+    "visual_alignment_report": "artifacts/reports/fdm1_g003_action_alignment_visual_check.md"
+  },
+  "output_path": "artifacts/sources/fdm1_g003_action_dataset_finalization_summary.json"
+}
