@@ -16,3 +16,6 @@ uv run python scripts/extract_d2e_full_corpus.py \
 uv run python scripts/finalize_g003_fdm1_action_dataset.py \
   --config configs/data/fdm1_g003_action_dataset_finalization.yaml \
   ${FINALIZE_EXTRA_ARGS:-}
+
+
+uv run python scripts/build_fdm1_g003_evidence_bundle.py   --completion-config configs/eval/fdm1_g003_action_dataset_completion.yaml   ${BUNDLE_EXTRA_ARGS:-}
