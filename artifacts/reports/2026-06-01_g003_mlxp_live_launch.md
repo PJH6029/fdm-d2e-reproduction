@@ -62,3 +62,22 @@ uv run python -m py_compile scripts/preflight_g003_fdm1_action_dataset_pod.py
 ```
 
 Observed evidence: `7 passed` locally.
+
+## 16-way relaunch env-prefix fix
+
+To reduce reservation wall-clock, the pod was restarted with `MAX_PARALLEL_SHARDS=16`. That exposed a launch-wrapper bug: `nohup KEY=VALUE ...` treats the assignment as the executable, so the attempt failed with:
+
+```text
+nohup: failed to run command 'MAX_PARALLEL_SHARDS=16': No such file or directory
+```
+
+Fix:
+
+- `launch_g003_fdm1_action_dataset_pod.py` now emits `nohup env KEY=VALUE ...` when extra launch environment variables are present.
+
+Verification:
+
+```bash
+uv run pytest tests/test_launch_g003_fdm1_action_dataset_pod.py -q
+uv run python -m py_compile scripts/launch_g003_fdm1_action_dataset_pod.py
+```

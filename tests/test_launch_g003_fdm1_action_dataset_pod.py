@@ -62,7 +62,7 @@ def test_cli_writes_plan_and_shell_without_executing(tmp_path: Path):
     assert data["runtime_detection"]["inside_mlxp_pod"] is False
     shell_text = shell.read_text()
     assert shell_text.startswith("#!/usr/bin/env bash")
-    assert "EXTRACT_EXTRA_ARGS='--max-recordings 2'" in shell_text
+    assert "env EXTRACT_EXTRA_ARGS='--max-recordings 2'" in shell_text
     assert "uv run python - <<'PY'" in shell_text
     assert "preflight_g003_fdm1_action_dataset_pod.py --require-pod" in shell_text
 

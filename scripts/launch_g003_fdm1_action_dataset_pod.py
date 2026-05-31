@@ -132,7 +132,7 @@ def build_launch_commands(
     env_prefix = " ".join(f"{_assignment_key(key)}={q(value)}" for key, value in sorted(env.items()))
     pipeline = pipeline_command
     if env_prefix:
-        pipeline = f"{env_prefix} {pipeline}"
+        pipeline = f"env {env_prefix} {pipeline}"
     if background:
         commands.append(f"nohup {pipeline} > {q(log_path)} 2>&1 & echo $! > {q(pid_path)}")
         commands.append(f"echo launched $(cat {q(pid_path)}) log={q(log_path)}")
