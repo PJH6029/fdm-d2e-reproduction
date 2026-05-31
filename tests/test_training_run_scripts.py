@@ -334,6 +334,51 @@ def test_g005_statectx_train320k_scales_best_prefix_with_state_features() -> Non
     assert "not fdm-1 parity" in config["claim_boundary"].lower()
 
 
+def test_g005_statectx_train320k_stratified_calibration_is_prediction_only() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_statectx_train320k_predict24k.sh")
+    noadapt = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k.yaml"
+        ).read_text()
+    )
+    adapt = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_adapt_relaxed_predict24k.yaml"
+        ).read_text()
+    )
+
+    assert "scripts/predict_idm_temporal_masked_diffusion.py" in text
+    assert "scripts/log_wandb_artifacts.py" in text
+    assert "prediction-calibration" in text
+    assert "paper_target_pass" in text
+    assert "torchrun" not in text
+    assert "no target-label calibration" in text
+    for config in [noadapt, adapt]:
+        assert config["source_checkpoint"] == (
+            "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt"
+        )
+        assert config["train_records"] == "outputs/data/d2e_event_state_duration_realvideo_balanced_train320k_target24k/train_core.jsonl"
+        assert config["target_records"] == "outputs/data/d2e_event_state_duration_realvideo_balanced_train320k_target24k/target_all_eval.jsonl"
+        assert config["max_train_rows"] == 320000
+        assert config["max_target_rows"] == 24000
+        assert config["temporal_calibration_strategy"] == "stratified_action"
+        assert config["temporal_calibration_family_quotas"] == {
+            "keyboard": 600,
+            "mouse_button": 600,
+            "mouse_move": 600,
+            "noop": 600,
+        }
+        assert config["candidate_score_reranker_enabled"] is False
+        assert config["family_non_noop_budget_mouse_button_max_no_button_fpr"] == 0.10
+        assert "calibration_sweep" in config["fdm1_recipe_alignment"]
+        assert "target-label calibration" in config["claim_boundary"]
+    assert noadapt["adaptive_family_budget_to_unlabeled_target"] is False
+    assert adapt["adaptive_family_budget_to_unlabeled_target"] is True
+    assert adapt["adaptive_family_budget_only_raise_threshold"] is False
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())
