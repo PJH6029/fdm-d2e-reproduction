@@ -625,6 +625,39 @@ def test_g005_statectx_warm_teacher_motiondistill_warm_starts_best_checkpoint() 
     assert "target-label calibration" in config["claim_boundary"]
 
 
+def test_g005_statectx_warm_continue1m_scales_recipe_checkpoint_without_target_calibration() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_statectx_warm_continue1m.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_warm_continue1m_target24k.yaml"
+        ).read_text()
+    )
+
+    assert 'MAX_TRAIN_ROWS="${MAX_TRAIN_ROWS:-1000000}"' in text
+    assert "run_g005_idm_temporal_raw96_family_presence_prefix.sh" in text
+    assert "teacher" not in config["model_name"].lower()
+    assert config["source_checkpoint"] == (
+        "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt"
+    )
+    assert config["source_checkpoint_strict"] is True
+    assert config["source_checkpoint_skip_video_pretrain"] is True
+    assert config["max_train_rows"] == 1_000_000
+    assert config["max_target_rows"] == 24_000
+    assert config["temporal_calibration_strategy"] == "stratified_action"
+    assert config["temporal_calibration_family_quotas"] == {
+        "keyboard": 1000,
+        "mouse_button": 1000,
+        "mouse_move": 1000,
+        "noop": 1000,
+    }
+    assert config["adaptive_family_budget_to_unlabeled_target"] is False
+    assert config["family_non_noop_budget_mouse_button_max_no_button_fpr"] == 0.10
+    assert "No target-label calibration" in config["fdm1_recipe_alignment"]["warm_continue_1m_scaleup"][
+        "claim_boundary"
+    ]
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())
