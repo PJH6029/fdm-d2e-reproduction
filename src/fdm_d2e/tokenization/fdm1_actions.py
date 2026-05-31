@@ -134,6 +134,50 @@ def fit_signed_exponential_boundaries(values: Iterable[float | int], *, num_posi
     return tuple(fixed)
 
 
+def fit_signed_exponential_boundaries_from_histogram(
+    magnitude_counts: dict[int | float, int],
+    *,
+    num_positive_bins: int = 24,
+) -> tuple[float, ...]:
+    """Fit positive signed-magnitude boundaries from a magnitude histogram.
+
+    This is the full-corpus-friendly variant of
+    :func:`fit_signed_exponential_boundaries`: D2E can contain tens of millions
+    of 50ms rows, so callers should not keep every raw dx/dy in memory just to
+    fit global mouse bins.
+    """
+
+    weighted = sorted((abs(float(mag)), int(count)) for mag, count in magnitude_counts.items() if abs(float(mag)) > 0 and int(count) > 0)
+    if not weighted:
+        return DEFAULT_MOUSE_BOUNDARIES_24[:num_positive_bins]
+    anchors = [1.0, 2.0, 3.0, 4.0]
+    boundaries: list[float] = []
+    for value in anchors:
+        if len(boundaries) < num_positive_bins:
+            boundaries.append(value)
+    remaining = num_positive_bins - len(boundaries)
+    total = sum(count for _mag, count in weighted)
+    cumulative: list[tuple[float, int]] = []
+    running = 0
+    for mag, count in weighted:
+        running += count
+        cumulative.append((mag, running))
+    for i in range(remaining):
+        target = ((i + 1) / max(remaining, 1)) * total
+        chosen = cumulative[-1][0]
+        for mag, running_count in cumulative:
+            if running_count >= target:
+                chosen = mag
+                break
+        boundaries.append(max(boundaries[-1] + 1.0, chosen))
+    fixed: list[float] = []
+    last = 0.0
+    for boundary in boundaries[:num_positive_bins]:
+        last = max(float(boundary), last + 1.0)
+        fixed.append(last)
+    return tuple(fixed)
+
+
 @dataclass
 class BinnedInputEvent:
     timestamp_ns: int
