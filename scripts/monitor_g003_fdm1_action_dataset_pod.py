@@ -25,6 +25,7 @@ DEFAULT_LOG = "artifacts/logs/fdm1_g003_action_dataset_pipeline.log"
 DEFAULT_COMPLETION_CONFIG = "configs/eval/fdm1_g003_action_dataset_completion.yaml"
 DEFAULT_OUTPUT = "artifacts/cluster/fdm1_g003_action_dataset_pod_monitor.json"
 DEFAULT_BUNDLE_MANIFEST = "artifacts/sources/fdm1_g003_evidence_bundle_manifest.json"
+DEFAULT_CHECKPOINT_HANDOFF = "artifacts/cluster/fdm1_g003_checkpoint_handoff.json"
 FATAL_PATTERNS = ("Traceback", "RuntimeError", "CalledProcessError", "No space left", "Killed", "CUDA out of memory")
 LARGE_SUFFIXES = {".jsonl", ".mcap", ".mp4", ".pt", ".bin"}
 
@@ -156,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--log-path", default=DEFAULT_LOG)
     parser.add_argument("--completion-config", default=DEFAULT_COMPLETION_CONFIG)
     parser.add_argument("--bundle-manifest", default=DEFAULT_BUNDLE_MANIFEST)
+    parser.add_argument("--checkpoint-handoff-output", default=DEFAULT_CHECKPOINT_HANDOFF)
     parser.add_argument("--output", default=DEFAULT_OUTPUT)
     parser.add_argument("--tail", type=int, default=80)
     parser.add_argument("--refresh-audit", action="store_true", help="Run the G003 completion validator with --allow-fail before collecting status.")
@@ -208,6 +210,21 @@ def main(argv: list[str] | None = None) -> int:
             completion_config_path=args.completion_config,
             bundle_manifest_path=args.bundle_manifest,
             tail=args.tail,
+        )
+    if status["status"] == "pass":
+        commands.append(
+            run_command(
+                [
+                    "uv",
+                    "run",
+                    "python",
+                    "scripts/build_fdm1_g003_checkpoint_handoff.py",
+                    "--output",
+                    str(args.checkpoint_handoff_output),
+                    "--allow-blocked",
+                ],
+                root=args.root,
+            )
         )
     if commands:
         status["commands"] = commands

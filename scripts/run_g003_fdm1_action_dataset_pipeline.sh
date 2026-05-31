@@ -27,3 +27,7 @@ uv run python scripts/monitor_g003_fdm1_action_dataset_pod.py \
   --refresh-audit \
   --build-bundle-if-pass \
   ${MONITOR_EXTRA_ARGS:-}
+
+uv run python scripts/build_fdm1_g003_checkpoint_handoff.py \
+  --allow-blocked \
+  ${CHECKPOINT_HANDOFF_EXTRA_ARGS:-}
