@@ -1,0 +1,244 @@
+{
+  "active_story": "G005-g014-idm-full-paper-target",
+  "candidate_metrics_path": "outputs/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_mouseprior_noadapt_predict24k/paper_metrics.json",
+  "candidate_metrics_sha256": "56b6af26c30979dfdc15c422f80bc3758817039d1f812159b8dc9e9c4729d72d",
+  "candidate_paper_target_observed": {
+    "keyboard_key_accuracy": 0.5096547688706846,
+    "mouse_button_accuracy": 0.6907216494845361,
+    "mouse_button_f1": 0.8017777777777778,
+    "mouse_move_pearson_x": 0.619406469395099,
+    "mouse_move_pearson_y": 0.6591836337569023,
+    "no_button_false_positive_rate": 0.004349123779473841
+  },
+  "candidate_paper_target_passes": {
+    "keyboard_key_accuracy": false,
+    "mouse_button_accuracy": false,
+    "mouse_button_f1_nonzero": true,
+    "mouse_move_pearson_x": false,
+    "mouse_move_pearson_y": false,
+    "no_button_false_positive_rate": true
+  },
+  "candidate_slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_mouseprior_noadapt_predict24k",
+  "candidate_summary_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_mouseprior_noadapt_predict24k_compact_summary.json",
+  "candidate_summary_sha256": "338b88787f4b693eaa027c2931e1ca74bc70512317d286cad4d6cf711408ad64",
+  "candidate_wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/rmg7lulw",
+  "claim_boundary": "Negative prediction-only probe evidence. This does not satisfy G005 paper targets and is not promoted as the selected IDM.",
+  "decision": "reject_no_promote",
+  "incumbent_metrics_path": "outputs/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k/paper_metrics.json",
+  "incumbent_metrics_sha256": "e05f39e6e5fc078708f24da0e11cea0fc15992e359f85b27c0245d4d89138ea0",
+  "incumbent_paper_target_observed": {
+    "keyboard_key_accuracy": 0.5070531400966184,
+    "mouse_button_accuracy": 0.6907216494845361,
+    "mouse_button_f1": 0.8017777777777778,
+    "mouse_move_pearson_x": 0.6235339427480717,
+    "mouse_move_pearson_y": 0.6645501092688513,
+    "no_button_false_positive_rate": 0.004349123779473841
+  },
+  "incumbent_paper_target_passes": {
+    "keyboard_key_accuracy": false,
+    "mouse_button_accuracy": false,
+    "mouse_button_f1_nonzero": true,
+    "mouse_move_pearson_x": false,
+    "mouse_move_pearson_y": false,
+    "no_button_false_positive_rate": true
+  },
+  "incumbent_slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k",
+  "interpretation": [
+    "Candidate preserves no-button FPR and mouse-button F1 but still fails keyboard, mouse-button accuracy, and overall mouse Pearson paper targets.",
+    "Candidate improves all-row keyboard key accuracy by only about +0.0026 absolute while regressing all-row mouse Pearson X/Y relative to incumbent.",
+    "Heldout-game and temporal mouse correlations remain strong, but heldout-recording Y and all-row X/Y remain below paper targets; heldout-game keyboard remains very poor.",
+    "Target-rate adaptation remains rejected from previous probe; this no-target-adapt train-fit mouse prior is also not sufficient for promotion."
+  ],
+  "metrics": {
+    "candidate": {
+      "all": {
+        "keyboard_key_accuracy": 0.5096547688706846,
+        "keyboard_sample_count": 5127,
+        "mouse_button_accuracy": 0.6907216494845361,
+        "mouse_button_f1": 0.8017777777777778,
+        "mouse_button_sample_count": 679,
+        "mouse_move_pearson_x": 0.619406469395099,
+        "mouse_move_pearson_y": 0.6591836337569023,
+        "mouse_move_sample_count": 17306,
+        "mouse_move_scale_ratio_x": 12.218747431577217,
+        "mouse_move_scale_ratio_y": 9.431496727886849,
+        "no_button_false_positive_rate": 0.004349123779473841,
+        "rows": 24000
+      },
+      "eval_split:heldout_game": {
+        "keyboard_key_accuracy": 0.10526315789473684,
+        "keyboard_sample_count": 152,
+        "mouse_button_accuracy": 0.8609271523178808,
+        "mouse_button_f1": 0.9252669039145908,
+        "mouse_button_sample_count": 151,
+        "mouse_move_pearson_x": 0.9116685388494283,
+        "mouse_move_pearson_y": 0.9039925927343154,
+        "mouse_move_sample_count": 4624,
+        "mouse_move_scale_ratio_x": 2.7200633579725446,
+        "mouse_move_scale_ratio_y": 4.0612336785231875,
+        "no_button_false_positive_rate": 0.0016535232765199695,
+        "rows": 8000
+      },
+      "eval_split:heldout_recording": {
+        "keyboard_key_accuracy": 0.45561079545454547,
+        "keyboard_sample_count": 2816,
+        "mouse_button_accuracy": 0.6203703703703703,
+        "mouse_button_f1": 0.7660818713450293,
+        "mouse_button_sample_count": 216,
+        "mouse_move_pearson_x": 0.9106555765029113,
+        "mouse_move_pearson_y": 0.548465322200634,
+        "mouse_move_sample_count": 6808,
+        "mouse_move_scale_ratio_x": 30.481929375993364,
+        "mouse_move_scale_ratio_y": 31.910165484633563,
+        "no_button_false_positive_rate": 0.0016645326504481433,
+        "rows": 8000
+      },
+      "eval_split:temporal": {
+        "keyboard_key_accuracy": 0.6086150995831403,
+        "keyboard_sample_count": 2159,
+        "mouse_button_accuracy": 0.657051282051282,
+        "mouse_button_f1": 0.7569721115537849,
+        "mouse_button_sample_count": 312,
+        "mouse_move_pearson_x": 0.8658957326895026,
+        "mouse_move_pearson_y": 0.7581144777492217,
+        "mouse_move_sample_count": 5874,
+        "mouse_move_scale_ratio_x": 5.1683989161645165,
+        "mouse_move_scale_ratio_y": 6.336686699764829,
+        "no_button_false_positive_rate": 0.009767382084564966,
+        "rows": 8000
+      }
+    },
+    "candidate_minus_incumbent": {
+      "all": {
+        "keyboard_key_accuracy": 0.0026016287740662225,
+        "keyboard_sample_count": -48,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_sample_count": 0,
+        "mouse_move_pearson_x": -0.004127473352972699,
+        "mouse_move_pearson_y": -0.00536647551194902,
+        "mouse_move_sample_count": 1634,
+        "mouse_move_scale_ratio_x": -0.7504142189505671,
+        "mouse_move_scale_ratio_y": -0.44332829237396254,
+        "no_button_false_positive_rate": 0.0,
+        "rows": 0
+      },
+      "eval_split:heldout_game": {
+        "keyboard_key_accuracy": 0.0026990553306342757,
+        "keyboard_sample_count": -4,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_sample_count": 0,
+        "mouse_move_pearson_x": -0.007265538933353244,
+        "mouse_move_pearson_y": -0.011875475088868659,
+        "mouse_move_sample_count": 1477,
+        "mouse_move_scale_ratio_x": -0.5870363980937028,
+        "mouse_move_scale_ratio_y": -0.2535235565880294,
+        "no_button_false_positive_rate": 0.0,
+        "rows": 0
+      },
+      "eval_split:heldout_recording": {
+        "keyboard_key_accuracy": 0.0003606192741367198,
+        "keyboard_sample_count": -22,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_sample_count": 0,
+        "mouse_move_pearson_x": -0.001729592751269382,
+        "mouse_move_pearson_y": -0.05425178257072316,
+        "mouse_move_sample_count": 56,
+        "mouse_move_scale_ratio_x": -0.733412779551184,
+        "mouse_move_scale_ratio_y": -1.5338384796875495,
+        "no_button_false_positive_rate": 0.0,
+        "rows": 0
+      },
+      "eval_split:temporal": {
+        "keyboard_key_accuracy": 0.005222160564341549,
+        "keyboard_sample_count": -22,
+        "mouse_button_accuracy": 0.0,
+        "mouse_button_f1": 0.0,
+        "mouse_button_sample_count": 0,
+        "mouse_move_pearson_x": -0.009721558902996752,
+        "mouse_move_pearson_y": 0.00045236573001761204,
+        "mouse_move_sample_count": 101,
+        "mouse_move_scale_ratio_x": -0.17168966815773068,
+        "mouse_move_scale_ratio_y": -0.24061191699676598,
+        "no_button_false_positive_rate": 0.0,
+        "rows": 0
+      }
+    },
+    "incumbent": {
+      "all": {
+        "keyboard_key_accuracy": 0.5070531400966184,
+        "keyboard_sample_count": 5175,
+        "mouse_button_accuracy": 0.6907216494845361,
+        "mouse_button_f1": 0.8017777777777778,
+        "mouse_button_sample_count": 679,
+        "mouse_move_pearson_x": 0.6235339427480717,
+        "mouse_move_pearson_y": 0.6645501092688513,
+        "mouse_move_sample_count": 15672,
+        "mouse_move_scale_ratio_x": 12.969161650527784,
+        "mouse_move_scale_ratio_y": 9.874825020260811,
+        "no_button_false_positive_rate": 0.004349123779473841,
+        "rows": 24000
+      },
+      "eval_split:heldout_game": {
+        "keyboard_key_accuracy": 0.10256410256410256,
+        "keyboard_sample_count": 156,
+        "mouse_button_accuracy": 0.8609271523178808,
+        "mouse_button_f1": 0.9252669039145908,
+        "mouse_button_sample_count": 151,
+        "mouse_move_pearson_x": 0.9189340777827816,
+        "mouse_move_pearson_y": 0.9158680678231841,
+        "mouse_move_sample_count": 3147,
+        "mouse_move_scale_ratio_x": 3.3070997560662474,
+        "mouse_move_scale_ratio_y": 4.314757235111217,
+        "no_button_false_positive_rate": 0.0016535232765199695,
+        "rows": 8000
+      },
+      "eval_split:heldout_recording": {
+        "keyboard_key_accuracy": 0.45525017618040875,
+        "keyboard_sample_count": 2838,
+        "mouse_button_accuracy": 0.6203703703703703,
+        "mouse_button_f1": 0.7660818713450293,
+        "mouse_button_sample_count": 216,
+        "mouse_move_pearson_x": 0.9123851692541807,
+        "mouse_move_pearson_y": 0.6027171047713572,
+        "mouse_move_sample_count": 6752,
+        "mouse_move_scale_ratio_x": 31.215342155544548,
+        "mouse_move_scale_ratio_y": 33.44400396432111,
+        "no_button_false_positive_rate": 0.0016645326504481433,
+        "rows": 8000
+      },
+      "eval_split:temporal": {
+        "keyboard_key_accuracy": 0.6033929390187988,
+        "keyboard_sample_count": 2181,
+        "mouse_button_accuracy": 0.657051282051282,
+        "mouse_button_f1": 0.7569721115537849,
+        "mouse_button_sample_count": 312,
+        "mouse_move_pearson_x": 0.8756172915924993,
+        "mouse_move_pearson_y": 0.7576621120192041,
+        "mouse_move_sample_count": 5773,
+        "mouse_move_scale_ratio_x": 5.340088584322247,
+        "mouse_move_scale_ratio_y": 6.5772986167615946,
+        "no_button_false_positive_rate": 0.009767382084564966,
+        "rows": 8000
+      }
+    }
+  },
+  "next_actions": [
+    "Do not checkpoint G005 complete from this probe.",
+    "Keep incumbent stratcal_noadapt_predict24k as best known paper-target candidate.",
+    "Run deeper keyboard and heldout-recording mouse failure diagnostics before any longer 4xH200 run.",
+    "Prefer recipe-aligned architecture/data changes over target-label calibration."
+  ],
+  "paper_targets": {
+    "keyboard_key_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "mouse_button_f1_min_nonzero": 1e-12,
+    "mouse_move_pearson_x": 0.796,
+    "mouse_move_pearson_y": 0.783,
+    "no_button_false_positive_rate_max": 0.1
+  },
+  "schema": "g005_idm_candidate_comparison.v1",
+  "status": "pass"
+}
