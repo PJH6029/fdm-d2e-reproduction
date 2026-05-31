@@ -1,0 +1,906 @@
+{
+  "schema": "fdm1_d2e_game_metadata.v1",
+  "generated_at_utc": "2026-05-31T15:54:07Z",
+  "canonical_roadmap": "ROADMAP.md",
+  "primary_source_id": "d2e_480p",
+  "dataset_fingerprint": "a4d96c1b35a770a5ce426a3407af4fbd728ddac9a648cdb4746e2f827f803216",
+  "readme_source": {
+    "url": "https://huggingface.co/datasets/open-world-agents/D2E-480p/raw/f075f7e25df6f6d385840a836f86bf92dfb877ff/README.md",
+    "revision": "f075f7e25df6f6d385840a836f86bf92dfb877ff",
+    "sha256": "3165f6996d884e1750a1f1a602113a8fde88a8ec860b05eb9635bdd04adbfacf"
+  },
+  "totals": {
+    "games": 29,
+    "primary_recordings": 459,
+    "published_summary_hours_from_readme_text": 268.7,
+    "published_hours_from_readme_table_sum": 269.8,
+    "published_hours_from_readme": 269.8,
+    "decoded_window_records_50ms": 19080656,
+    "decoded_events": 187861349
+  },
+  "games": [
+    {
+      "game": "Apex_Legends",
+      "display_name": "Apex Legends",
+      "primary_category": "fps_shooter",
+      "tags": [
+        "fps",
+        "shooter",
+        "battle_royale",
+        "high_mouse_motion"
+      ],
+      "published_hours_480p_readme": 25.6,
+      "recording_count_480p": 36,
+      "source_bytes_480p": 27239788164,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 8818585,
+        "frame_features": 1820649,
+        "window_records_50ms": 1820649,
+        "estimated_decoded_hours_from_50ms_windows": 25.286792,
+        "decoded_events_per_hour": 348742.735,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 185316,
+          "target_temporal": 364128,
+          "train_core": 1308268
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Barony",
+      "display_name": "Barony",
+      "primary_category": "first_person_roguelike",
+      "tags": [
+        "first_person",
+        "dungeon_crawler",
+        "roguelike",
+        "survival"
+      ],
+      "published_hours_480p_readme": 9.3,
+      "recording_count_480p": 11,
+      "source_bytes_480p": 6731478752,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 12031742,
+        "frame_features": 665733,
+        "window_records_50ms": 665733,
+        "estimated_decoded_hours_from_50ms_windows": 9.246292,
+        "decoded_events_per_hour": 1301250.49,
+        "split_window_counts": {
+          "target_heldout_game": 665733,
+          "target_heldout_recording": 172425,
+          "target_temporal": 133146,
+          "train_core": 0
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Battlefield_6_Open_Beta",
+      "display_name": "Battlefield 6 Open Beta",
+      "primary_category": "fps_shooter",
+      "tags": [
+        "fps",
+        "shooter",
+        "vehicle",
+        "large_map"
+      ],
+      "published_hours_480p_readme": 2.2,
+      "recording_count_480p": 7,
+      "source_bytes_480p": 2194136891,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 3546415,
+        "frame_features": 158077,
+        "window_records_50ms": 158077,
+        "estimated_decoded_hours_from_50ms_windows": 2.195514,
+        "decoded_events_per_hour": 1615300.563,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 20602,
+          "target_temporal": 31614,
+          "train_core": 109981
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Brotato",
+      "display_name": "Brotato",
+      "primary_category": "top_down_2d_action",
+      "tags": [
+        "top_down",
+        "2d_action",
+        "roguelike",
+        "high_event_density"
+      ],
+      "published_hours_480p_readme": 6.0,
+      "recording_count_480p": 13,
+      "source_bytes_480p": 2983504247,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 3822947,
+        "frame_features": 427049,
+        "window_records_50ms": 427049,
+        "estimated_decoded_hours_from_50ms_windows": 5.931236,
+        "decoded_events_per_hour": 644544.746,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 43255,
+          "target_temporal": 85409,
+          "train_core": 307036
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Core_Keeper",
+      "display_name": "Core Keeper",
+      "primary_category": "top_down_sandbox",
+      "tags": [
+        "top_down",
+        "sandbox",
+        "crafting",
+        "survival"
+      ],
+      "published_hours_480p_readme": 8.9,
+      "recording_count_480p": 19,
+      "source_bytes_480p": 5832534498,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 3480087,
+        "frame_features": 638594,
+        "window_records_50ms": 638594,
+        "estimated_decoded_hours_from_50ms_windows": 8.869361,
+        "decoded_events_per_hour": 392371.784,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 231542,
+          "target_temporal": 127720,
+          "train_core": 325641
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Counter-Strike_2",
+      "display_name": "Counter-Strike 2",
+      "primary_category": "fps_shooter",
+      "tags": [
+        "fps",
+        "tactical_shooter",
+        "high_mouse_motion"
+      ],
+      "published_hours_480p_readme": 9.9,
+      "recording_count_480p": 10,
+      "source_bytes_480p": 6252493260,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 6994283,
+        "frame_features": 709660,
+        "window_records_50ms": 709660,
+        "estimated_decoded_hours_from_50ms_windows": 9.856389,
+        "decoded_events_per_hour": 709619.212,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 149528,
+          "target_temporal": 141930,
+          "train_core": 448108
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Cyberpunk_2077",
+      "display_name": "Cyberpunk 2077",
+      "primary_category": "open_world",
+      "tags": [
+        "first_person",
+        "open_world",
+        "rpg",
+        "driving_segments"
+      ],
+      "published_hours_480p_readme": 14.2,
+      "recording_count_480p": 33,
+      "source_bytes_480p": 7273525562,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 9997095,
+        "frame_features": 1006073,
+        "window_records_50ms": 1006073,
+        "estimated_decoded_hours_from_50ms_windows": 13.973236,
+        "decoded_events_per_hour": 715445.943,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 233939,
+          "target_temporal": 201215,
+          "train_core": 617707
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Dinkum",
+      "display_name": "Dinkum",
+      "primary_category": "life_sim",
+      "tags": [
+        "life_sim",
+        "farming",
+        "sandbox",
+        "slower_paced"
+      ],
+      "published_hours_480p_readme": 10.4,
+      "recording_count_480p": 33,
+      "source_bytes_480p": 8539421851,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 8692258,
+        "frame_features": 734693,
+        "window_records_50ms": 734693,
+        "estimated_decoded_hours_from_50ms_windows": 10.204069,
+        "decoded_events_per_hour": 851842.339,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 167482,
+          "target_temporal": 146939,
+          "train_core": 453768
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Eternal_Return",
+      "display_name": "Eternal Return",
+      "primary_category": "top_down_2d_action",
+      "tags": [
+        "top_down",
+        "moba",
+        "battle_royale",
+        "ui_heavy"
+      ],
+      "published_hours_480p_readme": 17.1,
+      "recording_count_480p": 30,
+      "source_bytes_480p": 11905371150,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 13700266,
+        "frame_features": 1217283,
+        "window_records_50ms": 1217283,
+        "estimated_decoded_hours_from_50ms_windows": 16.906708,
+        "decoded_events_per_hour": 810344.983,
+        "split_window_counts": {
+          "target_heldout_game": 1217283,
+          "target_heldout_recording": 578566,
+          "target_temporal": 243457,
+          "train_core": 0
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Euro_Truck_Simulator_2",
+      "display_name": "Euro Truck Simulator 2",
+      "primary_category": "driving_vehicle",
+      "tags": [
+        "driving",
+        "vehicle",
+        "simulation",
+        "low_frequency_controls"
+      ],
+      "published_hours_480p_readme": 19.6,
+      "recording_count_480p": 35,
+      "source_bytes_480p": 11351884306,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 6871873,
+        "frame_features": 1402283,
+        "window_records_50ms": 1402283,
+        "estimated_decoded_hours_from_50ms_windows": 19.476153,
+        "decoded_events_per_hour": 352835.234,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 159402,
+          "target_temporal": 280455,
+          "train_core": 994306
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Grand_Theft_Auto_V",
+      "display_name": "Grand Theft Auto V",
+      "primary_category": "open_world",
+      "tags": [
+        "third_person",
+        "open_world",
+        "driving",
+        "shooter"
+      ],
+      "published_hours_480p_readme": 12.9,
+      "recording_count_480p": 11,
+      "source_bytes_480p": 7377339811,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 7804314,
+        "frame_features": 810024,
+        "window_records_50ms": 810024,
+        "estimated_decoded_hours_from_50ms_windows": 11.250333,
+        "decoded_events_per_hour": 693696.267,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 131542,
+          "target_temporal": 162004,
+          "train_core": 542786
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Grounded",
+      "display_name": "Grounded",
+      "primary_category": "sandbox_survival",
+      "tags": [
+        "first_person",
+        "sandbox",
+        "survival",
+        "crafting"
+      ],
+      "published_hours_480p_readme": 9.7,
+      "recording_count_480p": 31,
+      "source_bytes_480p": 7603066619,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 10232608,
+        "frame_features": 673143,
+        "window_records_50ms": 673143,
+        "estimated_decoded_hours_from_50ms_windows": 9.349208,
+        "decoded_events_per_hour": 1094489.287,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 15320,
+          "target_temporal": 134629,
+          "train_core": 526258
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "MapleStory_Worlds_Southperry",
+      "display_name": "MapleStory Worlds Southperry",
+      "primary_category": "side_scroller_ui",
+      "tags": [
+        "side_scroller",
+        "2d",
+        "mmo",
+        "ui_heavy",
+        "keyboard_heavy"
+      ],
+      "published_hours_480p_readme": 14.1,
+      "recording_count_480p": 8,
+      "source_bytes_480p": 9381096749,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 3511267,
+        "frame_features": 1011269,
+        "window_records_50ms": 1011269,
+        "estimated_decoded_hours_from_50ms_windows": 14.045403,
+        "decoded_events_per_hour": 249994.037,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 270043,
+          "target_temporal": 202254,
+          "train_core": 592980
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Medieval_Dynasty",
+      "display_name": "Medieval Dynasty",
+      "primary_category": "open_world_survival",
+      "tags": [
+        "first_person",
+        "open_world",
+        "survival",
+        "life_sim"
+      ],
+      "published_hours_480p_readme": 10.9,
+      "recording_count_480p": 12,
+      "source_bytes_480p": 8829594694,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 8579281,
+        "frame_features": 781730,
+        "window_records_50ms": 781730,
+        "estimated_decoded_hours_from_50ms_windows": 10.857361,
+        "decoded_events_per_hour": 790181.058,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 98239,
+          "target_temporal": 156346,
+          "train_core": 546793
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Minecraft_1.21.8",
+      "display_name": "Minecraft 1.21.8",
+      "primary_category": "sandbox_survival",
+      "tags": [
+        "first_person",
+        "sandbox",
+        "crafting",
+        "survival"
+      ],
+      "published_hours_480p_readme": 8.6,
+      "recording_count_480p": 10,
+      "source_bytes_480p": 4726177252,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 10683627,
+        "frame_features": 619416,
+        "window_records_50ms": 619416,
+        "estimated_decoded_hours_from_50ms_windows": 8.603,
+        "decoded_events_per_hour": 1241849.006,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 132736,
+          "target_temporal": 123883,
+          "train_core": 389344
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Monster_Hunter_Wilds",
+      "display_name": "Monster Hunter Wilds",
+      "primary_category": "third_person_action",
+      "tags": [
+        "third_person",
+        "action_rpg",
+        "open_area",
+        "controller_like_keyboard_mouse"
+      ],
+      "published_hours_480p_readme": 7.9,
+      "recording_count_480p": 34,
+      "source_bytes_480p": 7269299298,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 6551064,
+        "frame_features": 561104,
+        "window_records_50ms": 561104,
+        "estimated_decoded_hours_from_50ms_windows": 7.793111,
+        "decoded_events_per_hour": 840622.442,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 107900,
+          "target_temporal": 112222,
+          "train_core": 362562
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "OguForest",
+      "display_name": "OguForest",
+      "primary_category": "top_down_2d_action",
+      "tags": [
+        "top_down",
+        "2d",
+        "adventure",
+        "low_resource"
+      ],
+      "published_hours_480p_readme": 0.8,
+      "recording_count_480p": 1,
+      "source_bytes_480p": 364868508,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 212435,
+        "frame_features": 60629,
+        "window_records_50ms": 60629,
+        "estimated_decoded_hours_from_50ms_windows": 0.842069,
+        "decoded_events_per_hour": 252277.426,
+        "split_window_counts": {
+          "target_heldout_game": 60629,
+          "target_heldout_recording": 0,
+          "target_temporal": 12126,
+          "train_core": 0
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "PEAK",
+      "display_name": "PEAK",
+      "primary_category": "first_person_traversal",
+      "tags": [
+        "first_person",
+        "traversal",
+        "survival",
+        "low_resource"
+      ],
+      "published_hours_480p_readme": 1.8,
+      "recording_count_480p": 9,
+      "source_bytes_480p": 943321582,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 2257945,
+        "frame_features": 121812,
+        "window_records_50ms": 121812,
+        "estimated_decoded_hours_from_50ms_windows": 1.691833,
+        "decoded_events_per_hour": 1334614.587,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 43672,
+          "target_temporal": 24363,
+          "train_core": 62512
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "PUBG",
+      "display_name": "PUBG",
+      "primary_category": "fps_shooter",
+      "tags": [
+        "fps",
+        "shooter",
+        "battle_royale",
+        "high_mouse_motion"
+      ],
+      "published_hours_480p_readme": 4.9,
+      "recording_count_480p": 13,
+      "source_bytes_480p": 4097161971,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 3219577,
+        "frame_features": 346408,
+        "window_records_50ms": 346408,
+        "estimated_decoded_hours_from_50ms_windows": 4.811222,
+        "decoded_events_per_hour": 669180.72,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 156062,
+          "target_temporal": 69282,
+          "train_core": 152277
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Raft",
+      "display_name": "Raft",
+      "primary_category": "sandbox_survival",
+      "tags": [
+        "first_person",
+        "sandbox",
+        "survival",
+        "crafting"
+      ],
+      "published_hours_480p_readme": 10.8,
+      "recording_count_480p": 21,
+      "source_bytes_480p": 5696610601,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 15280936,
+        "frame_features": 734385,
+        "window_records_50ms": 734385,
+        "estimated_decoded_hours_from_50ms_windows": 10.199792,
+        "decoded_events_per_hour": 1498161.531,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 106750,
+          "target_temporal": 146878,
+          "train_core": 502107
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Rainbow_Six",
+      "display_name": "Rainbow Six",
+      "primary_category": "fps_shooter",
+      "tags": [
+        "fps",
+        "tactical_shooter",
+        "ui_heavy",
+        "high_mouse_motion"
+      ],
+      "published_hours_480p_readme": 13.7,
+      "recording_count_480p": 11,
+      "source_bytes_480p": 8688115042,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 5922900,
+        "frame_features": 986219,
+        "window_records_50ms": 986219,
+        "estimated_decoded_hours_from_50ms_windows": 13.697486,
+        "decoded_events_per_hour": 432407.816,
+        "split_window_counts": {
+          "target_heldout_game": 986219,
+          "target_heldout_recording": 107691,
+          "target_temporal": 197244,
+          "train_core": 0
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Ready_Or_Not",
+      "display_name": "Ready Or Not",
+      "primary_category": "fps_shooter",
+      "tags": [
+        "fps",
+        "tactical_shooter",
+        "slow_tactical",
+        "high_mouse_motion"
+      ],
+      "published_hours_480p_readme": 9.6,
+      "recording_count_480p": 16,
+      "source_bytes_480p": 5326230653,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 7937661,
+        "frame_features": 686147,
+        "window_records_50ms": 686147,
+        "estimated_decoded_hours_from_50ms_windows": 9.529819,
+        "decoded_events_per_hour": 832928.831,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 108892,
+          "target_temporal": 137228,
+          "train_core": 461805
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Satisfactory",
+      "display_name": "Satisfactory",
+      "primary_category": "sandbox_factory",
+      "tags": [
+        "first_person",
+        "sandbox",
+        "factory",
+        "crafting",
+        "ui_heavy"
+      ],
+      "published_hours_480p_readme": 9.8,
+      "recording_count_480p": 22,
+      "source_bytes_480p": 9760441138,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 8248839,
+        "frame_features": 693866,
+        "window_records_50ms": 693866,
+        "estimated_decoded_hours_from_50ms_windows": 9.637028,
+        "decoded_events_per_hour": 855952.582,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 18530,
+          "target_temporal": 138773,
+          "train_core": 540269
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Skul",
+      "display_name": "Skul",
+      "primary_category": "side_scroller_2d_action",
+      "tags": [
+        "side_scroller",
+        "2d_action",
+        "platformer_like",
+        "low_resource"
+      ],
+      "published_hours_480p_readme": 2.0,
+      "recording_count_480p": 1,
+      "source_bytes_480p": 1233631426,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 475002,
+        "frame_features": 141386,
+        "window_records_50ms": 141386,
+        "estimated_decoded_hours_from_50ms_windows": 1.963694,
+        "decoded_events_per_hour": 241892.067,
+        "split_window_counts": {
+          "target_heldout_game": 141386,
+          "target_heldout_recording": 0,
+          "target_temporal": 28277,
+          "train_core": 0
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Slime_Rancher",
+      "display_name": "Slime Rancher",
+      "primary_category": "open_world_sandbox",
+      "tags": [
+        "first_person",
+        "open_world",
+        "sandbox",
+        "slower_paced"
+      ],
+      "published_hours_480p_readme": 10.7,
+      "recording_count_480p": 10,
+      "source_bytes_480p": 8670562506,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 12236653,
+        "frame_features": 767202,
+        "window_records_50ms": 767202,
+        "estimated_decoded_hours_from_50ms_windows": 10.655583,
+        "decoded_events_per_hour": 1148379.493,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 123809,
+          "target_temporal": 153442,
+          "train_core": 514713
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Stardew_Valley",
+      "display_name": "Stardew Valley",
+      "primary_category": "life_sim",
+      "tags": [
+        "top_down",
+        "farming",
+        "life_sim",
+        "ui_heavy",
+        "slower_paced"
+      ],
+      "published_hours_480p_readme": 14.6,
+      "recording_count_480p": 13,
+      "source_bytes_480p": 9470363089,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 5563315,
+        "frame_features": 1038965,
+        "window_records_50ms": 1038965,
+        "estimated_decoded_hours_from_50ms_windows": 14.430069,
+        "decoded_events_per_hour": 385536.272,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 410606,
+          "target_temporal": 207793,
+          "train_core": 502688
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Super_Bunny_Man",
+      "display_name": "Super Bunny Man",
+      "primary_category": "side_scroller_2d_action",
+      "tags": [
+        "side_scroller",
+        "2d",
+        "platformer_like",
+        "physics",
+        "low_resource"
+      ],
+      "published_hours_480p_readme": 0.7,
+      "recording_count_480p": 3,
+      "source_bytes_480p": 304857148,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 172592,
+        "frame_features": 49334,
+        "window_records_50ms": 49334,
+        "estimated_decoded_hours_from_50ms_windows": 0.685194,
+        "decoded_events_per_hour": 251887.787,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 1303,
+          "target_temporal": 9867,
+          "train_core": 38425
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "VALORANT",
+      "display_name": "VALORANT",
+      "primary_category": "fps_shooter",
+      "tags": [
+        "fps",
+        "tactical_shooter",
+        "high_mouse_motion",
+        "low_resource"
+      ],
+      "published_hours_480p_readme": 0.3,
+      "recording_count_480p": 1,
+      "source_bytes_480p": 179272981,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 235989,
+        "frame_features": 18063,
+        "window_records_50ms": 18063,
+        "estimated_decoded_hours_from_50ms_windows": 0.250875,
+        "decoded_events_per_hour": 940663.677,
+        "split_window_counts": {
+          "target_heldout_game": 0,
+          "target_heldout_recording": 0,
+          "target_temporal": 3613,
+          "train_core": 14450
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    },
+    {
+      "game": "Vampire_Survivors",
+      "display_name": "Vampire Survivors",
+      "primary_category": "top_down_2d_action",
+      "tags": [
+        "top_down",
+        "2d_action",
+        "roguelike",
+        "low_resource"
+      ],
+      "published_hours_480p_readme": 2.8,
+      "recording_count_480p": 5,
+      "source_bytes_480p": 3422558559,
+      "coarse_action_statistics": {
+        "source": "d2e_full_corpus_decode_summary",
+        "granularity": "pre_tokenization_event_and_50ms_window_counts",
+        "decoded_events": 779793,
+        "frame_features": 199460,
+        "window_records_50ms": 199460,
+        "estimated_decoded_hours_from_50ms_windows": 2.770278,
+        "decoded_events_per_hour": 281485.468,
+        "split_window_counts": {
+          "target_heldout_game": 199460,
+          "target_heldout_recording": 125803,
+          "target_temporal": 39892,
+          "train_core": 0
+        },
+        "token_level_breakdown_deferred_to": "G003 action-token dataset pipeline"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "severity": "info",
+      "code": "readme_summary_hours_differs_from_table_sum",
+      "summary_hours": 268.7,
+      "table_sum_hours": 269.8,
+      "interpretation": "Pinned README text and per-game table disagree; downstream reports should cite both and use manifest/table hours for per-game allocation."
+    }
+  ],
+  "fingerprint": "11aa1458bb0fe6a52e47b7700062ab5623799dbde861f4d7b4470d61029c8323"
+}
