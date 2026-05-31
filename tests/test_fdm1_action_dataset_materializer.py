@@ -26,6 +26,7 @@ def _window_records() -> list[dict]:
                 {"type": "keyboard", "event_type": "press", "vk": 87, "timestamp_ns": 20_000_000},
             ],
             "eval_split_tags": [],
+            "fdm1_pseudo_label_split": "D_PSEUDO_B",
         },
         {
             "schema": "d2e_window_record.v1",
@@ -33,7 +34,8 @@ def _window_records() -> list[dict]:
             "recording_id": "Toy/0001",
             "game": "ToyGame",
             "split": "eval",
-            "eval_split_tags": ["temporal"],
+            "eval_split_tags": ["temporal", "recording_test", "heldout_game", "pseudo_gt_eval"],
+            "fdm1_pseudo_label_split": "D_FDM_GT_EVAL",
             "timestamp_ns": 50_000_000,
             "bin_index": 1,
             "frame": {"path": "toy.mkv#frame=1", "index": 1, "features": [0.2]},
@@ -72,6 +74,10 @@ def test_write_action_slot_dataset_emits_packed_splits_and_summaries(tmp_path: P
     assert overflow["overflow_events"] == 0
     assert pack["schema"] == "fdm1_action_sequence_pack.v1"
     assert len(read_jsonl(tmp_path / "splits" / "target_all_eval.jsonl")) == 1
+    assert len(read_jsonl(tmp_path / "splits" / "recording_test.jsonl")) == 1
+    assert len(read_jsonl(tmp_path / "splits" / "heldout_game.jsonl")) == 1
+    assert len(read_jsonl(tmp_path / "splits" / "pseudo_pseudo_b.jsonl")) == 1
+    assert len(read_jsonl(tmp_path / "splits" / "pseudo_fdm_gt_eval.jsonl")) == 1
     assert result["summary"]["dataset_fingerprint"] == pack["dataset_fingerprint"]
 
 

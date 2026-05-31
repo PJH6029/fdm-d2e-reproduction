@@ -100,7 +100,7 @@ def materialize_action_slot_records(
             "overflow_count": int(serialized["overflow_count"]),
             "source": "fdm1_action_slot_materializer",
         }
-        for key in ("source_id", "resolution_tier", "source_recording_key", "cross_resolution_key", "universe_row_id"):
+        for key in ("source_id", "resolution_tier", "source_recording_key", "cross_resolution_key", "universe_row_id", "fdm1_recording_split", "fdm1_heldout_game_split", "fdm1_pseudo_label_split", "fdm1_scale_memberships", "fdm1_split_fingerprints"):
             if key in row:
                 packed[key] = row[key]
         out.append(packed)
@@ -111,9 +111,17 @@ def split_action_slot_records(records: Sequence[dict[str, Any]]) -> dict[str, li
     buckets = {
         "all": list(records),
         "train_core": [row for row in records if row.get("split") == "train_core"],
+        # Legacy/pre-reset split tags kept for compatibility with older D2E audits.
         "target_temporal": [row for row in records if "temporal" in (row.get("eval_split_tags") or [])],
         "target_heldout_recording": [row for row in records if "heldout_recording" in (row.get("eval_split_tags") or [])],
         "target_heldout_game": [row for row in records if "heldout_game" in (row.get("eval_split_tags") or [])],
+        # Reset ROADMAP split tags from G002.
+        "recording_val": [row for row in records if "recording_val" in (row.get("eval_split_tags") or [])],
+        "recording_test": [row for row in records if "recording_test" in (row.get("eval_split_tags") or [])],
+        "heldout_game": [row for row in records if "heldout_game" in (row.get("eval_split_tags") or [])],
+        "pseudo_idm_labeled_a": [row for row in records if row.get("fdm1_pseudo_label_split") == "D_IDM_LABELED_A"],
+        "pseudo_pseudo_b": [row for row in records if row.get("fdm1_pseudo_label_split") == "D_PSEUDO_B"],
+        "pseudo_fdm_gt_eval": [row for row in records if row.get("fdm1_pseudo_label_split") == "D_FDM_GT_EVAL"],
     }
     buckets["target_all_eval"] = [row for row in records if row.get("eval_split_tags")]
     return buckets
@@ -304,7 +312,7 @@ def _append_jsonl(path: Path, rows: Iterable[dict[str, Any]]) -> None:
 def _empty_output_paths(output_root: Path) -> dict[str, str]:
     split_dir = ensure_dir(output_root / "splits")
     paths = {"all": str(output_root / "action_slots.jsonl")}
-    for name in ("train_core", "target_temporal", "target_heldout_recording", "target_heldout_game", "target_all_eval"):
+    for name in ("train_core", "target_temporal", "target_heldout_recording", "target_heldout_game", "recording_val", "recording_test", "heldout_game", "pseudo_idm_labeled_a", "pseudo_pseudo_b", "pseudo_fdm_gt_eval", "target_all_eval"):
         paths[name] = str(split_dir / f"{name}.jsonl")
     for path in paths.values():
         Path(path).parent.mkdir(parents=True, exist_ok=True)
