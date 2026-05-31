@@ -81,3 +81,25 @@ Verification:
 uv run pytest tests/test_launch_g003_fdm1_action_dataset_pod.py -q
 uv run python -m py_compile scripts/launch_g003_fdm1_action_dataset_pod.py
 ```
+
+## 16-way relaunch running evidence
+
+After the `nohup env` fix was pulled into the pod, G003 was relaunched with:
+
+```text
+NUM_SHARDS=16
+MAX_PARALLEL_SHARDS=16
+PREFLIGHT_EXTRA_ARGS="--require-pod --min-free-gb 100"
+```
+
+Runtime snapshot:
+
+- Pod branch/head: `research/fdm1-d2e-ultragoal` at `fa12bcc`.
+- Pipeline PID: `9530`.
+- Status at `2026-05-31T17:46:42Z` / `2026-06-01T02:46:42+09:00`: running.
+- Active workers: 16 shard extractors; 13 active ffmpeg processes at snapshot.
+- Shard logs: no traceback/runtime errors in sampled shards.
+- Early output growth: `outputs/data/fdm1_d2e_480p_window_records_shards` reached 11GiB; 5 per-recording decode summaries observed.
+- GPU utilization remained 0%, expected for this CPU/IO materialization reservation; only 1×H200 is held for the managed production pod/PVC workspace.
+
+G003 remains non-terminal until the sharded extraction, merge, action-slot finalization, completion audit, evidence bundle, monitor, copyback, and OMX checkpoint all pass.
