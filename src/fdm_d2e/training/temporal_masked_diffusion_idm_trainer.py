@@ -559,6 +559,80 @@ def _precompute_features_with_distributed_cache(
                 )
                 if cached is not None:
                     return cached
+        if bool(config.get("write_single_process_feature_cache", config.get("write_missing_feature_cache", False))) and (
+            not distributed or world_size <= 1
+        ):
+            ensure_dir(split_dir)
+            feature_dim = _raw_video_feature_dim(config)
+            dtype_name = str(config.get("raw_video_feature_tensor_dtype", config.get("precompute_feature_tensor_dtype", "float16"))).lower()
+            tensor_dtype = torch.float16 if dtype_name in {"float16", "fp16", "half"} else torch.float32
+            chunk_path = split_dir / "chunk_rank000_of_001.pt"
+            if not chunk_path.exists():
+                shard_config = {
+                    **config,
+                    "raw_video_feature_storage": "tensor",
+                    "raw_video_feature_tensor_dtype": dtype_name,
+                    "precompute_features_as_tensor": True,
+                    "precompute_feature_tensor_dtype": dtype_name,
+                }
+                shard_features = _precompute_raw_video_features(rows, config=shard_config)
+                if shard_features:
+                    if hasattr(shard_features, "detach") and hasattr(shard_features, "to"):
+                        shard_tensor = shard_features.to(dtype=tensor_dtype).contiguous()
+                    else:
+                        first = shard_features[0]
+                        if hasattr(first, "detach") and hasattr(first, "to"):
+                            shard_tensor = torch.stack([feature.to(dtype=tensor_dtype) for feature in shard_features], dim=0).contiguous()
+                        else:
+                            shard_tensor = torch.tensor(shard_features, dtype=tensor_dtype).contiguous()
+                else:
+                    shard_tensor = torch.empty((0, feature_dim), dtype=tensor_dtype)
+                torch.save(
+                    {
+                        "schema": "temporal_raw_video_feature_cache_chunk.v1",
+                        "split_name": split_name,
+                        "fingerprint": fingerprint,
+                        "rank": 0,
+                        "world_size": 1,
+                        "start": 0,
+                        "end": len(rows),
+                        "feature_dim": feature_dim,
+                        "dtype": dtype_name,
+                        "features": shard_tensor,
+                    },
+                    chunk_path,
+                )
+                write_json(
+                    split_dir / "summary.json",
+                    {
+                        "schema": "temporal_raw_video_distributed_feature_cache.v1",
+                        "status": "pass",
+                        "split_name": split_name,
+                        "fingerprint": fingerprint,
+                        "rows": len(rows),
+                        "feature_dim": feature_dim,
+                        "world_size": 1,
+                        "dtype": dtype_name,
+                        "chunks": [
+                            {
+                                "rank": 0,
+                                "start": 0,
+                                "end": len(rows),
+                                "path": str(chunk_path),
+                            }
+                        ],
+                        "claim_boundary": "Single-process decode/cache acceleration evidence only; it does not alter IDM targets or satisfy G005 metrics.",
+                    },
+                )
+            cached = _load_ordered_feature_cache_chunks(
+                [chunk_path],
+                torch=torch,
+                expected_fingerprint=fingerprint,
+                requested_rows=len(rows),
+                config=config,
+            )
+            if cached is not None:
+                return cached
     if (
         not cache_root_raw
         or feature_source not in {"raw_frames", "raw_video_frames", "frame_provider"}

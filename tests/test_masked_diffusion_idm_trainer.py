@@ -284,6 +284,66 @@ def test_distributed_raw_video_feature_cache_loads_ordered_chunks(tmp_path: Path
     assert cached_prefix.tolist() == [pytest.approx(row) for row in expected[:2]]
 
 
+def test_single_process_raw_video_feature_cache_writes_missing_chunks(tmp_path: Path):
+    if not torch_available():
+        return
+    import torch
+
+    frame_dir = tmp_path / "frames"
+    frame_dir.mkdir()
+    for idx in range(3):
+        _write_pgm(frame_dir / f"frame_{idx:06d}.ppm", [idx, idx + 1, idx + 2, idx + 3])
+    rows = [
+        {
+            "sequence_id": f"raw-video-cache-write#{idx}",
+            "frame": {"path": str(frame_dir / f"frame_{idx:06d}.ppm"), "index": idx, "width": 2, "height": 2},
+        }
+        for idx in range(3)
+    ]
+    config = {
+        "video_feature_source": "raw_frames",
+        "raw_video_image_size": 2,
+        "raw_video_frame_offsets": [0],
+        "video_feature_dim": 4,
+        "distributed_feature_cache_dir": str(tmp_path / "feature_cache"),
+        "raw_video_feature_tensor_dtype": "float32",
+        "write_single_process_feature_cache": True,
+    }
+
+    features = _precompute_features_with_distributed_cache(
+        rows,
+        config=config,
+        split_name="calibration",
+        torch=torch,
+        distributed=False,
+        rank=0,
+        world_size=1,
+        dist=None,
+    )
+
+    split_dir = next((tmp_path / "feature_cache").glob("calibration-*"), None)
+    assert split_dir is not None
+    assert (split_dir / "chunk_rank000_of_001.pt").exists()
+    summary = json.loads((split_dir / "summary.json").read_text())
+    assert summary["world_size"] == 1
+    assert summary["rows"] == 3
+
+    for frame_path in frame_dir.glob("*.ppm"):
+        frame_path.unlink()
+    cached = _precompute_features_with_distributed_cache(
+        rows,
+        config=config,
+        split_name="calibration",
+        torch=torch,
+        distributed=False,
+        rank=0,
+        world_size=1,
+        dist=None,
+    )
+    assert tuple(cached.shape) == (3, 4)
+    assert cached.tolist() == [pytest.approx(row) for row in features.tolist()]
+
+
 def test_button_event_calibration_uses_dynamic_probability_thresholds():
     rows = [
         {"button_event_prob": 0.491, "button_event_label": 1},
