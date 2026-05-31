@@ -1,0 +1,49 @@
+{
+  "calibration_index_preview": null,
+  "calibration_rows": null,
+  "calibration_strategy": null,
+  "candidate_family_diagnostics": null,
+  "candidate_token_prior": null,
+  "checkpoint": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt",
+  "claim_boundary": "Prediction-only stratified train-heldout calibration sweep from the 320k state-context masked-diffusion checkpoint; no target-label calibration and not G005 completion evidence unless followed by full-corpus promotion/audits.",
+  "config": "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k.yaml",
+  "exit_code": 1,
+  "family_non_noop_budget": null,
+  "finished_at": "2026-05-31T09:49:38+00:00",
+  "fit_rows": null,
+  "metrics_path": "outputs/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k/paper_metrics.json",
+  "metrics_sha256": null,
+  "model_slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k",
+  "non_noop_budget": null,
+  "paper_target_observed": {
+    "keyboard_key_accuracy": null,
+    "mouse_button_accuracy": null,
+    "mouse_button_f1": null,
+    "mouse_move_pearson_x": null,
+    "mouse_move_pearson_y": null,
+    "no_button_false_positive_rate": null
+  },
+  "paper_target_passes": {
+    "keyboard_key_accuracy": false,
+    "mouse_button_accuracy": false,
+    "mouse_button_f1_nonzero": false,
+    "mouse_move_pearson_x": false,
+    "mouse_move_pearson_y": false,
+    "no_button_false_positive_rate": false
+  },
+  "paper_targets": {
+    "keyboard_key_accuracy": 0.73,
+    "mouse_button_accuracy": 0.957,
+    "mouse_button_f1_min_nonzero": 1e-12,
+    "mouse_move_pearson_x": 0.796,
+    "mouse_move_pearson_y": 0.783,
+    "no_button_false_positive_rate_max": 0.1
+  },
+  "retrieval_action_prior": null,
+  "schema": "g005_statectx_train320k_stratified_calibration_prediction_compact.v1",
+  "started_at": "2026-05-31T09:43:06+00:00",
+  "status": "fail",
+  "summary_path": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_summary.json",
+  "summary_sha256": null,
+  "target_rows": null
+}

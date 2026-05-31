@@ -2176,7 +2176,8 @@ def _temporal_window_features_for_batch(
         for local_idx in range(row_count):
             global_idx = start_index + local_idx
             indices.extend(max(0, min(feature_count - 1, global_idx + int(offset))) for offset in offsets)
-        index_tensor = all_features.new_tensor(indices).long()
+        torch = require_torch()
+        index_tensor = torch.tensor(indices, dtype=torch.long, device=all_features.device)
         gathered = all_features.index_select(0, index_tensor)
         return gathered.reshape(row_count, len(offsets), int(all_features.shape[-1]))
     window_features: list[list[Any]] = []

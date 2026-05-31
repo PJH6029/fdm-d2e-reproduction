@@ -85,12 +85,12 @@ def test_video_feature_vector_uses_configured_paths_and_padding():
 
 def test_temporal_window_features_gathers_tensor_cache_without_row_boxing():
     torch = pytest.importorskip("torch")
-    features = torch.arange(30, dtype=torch.float16).reshape(10, 3)
+    features = torch.arange(7500, dtype=torch.float16).reshape(2500, 3)
     rows = [{"sequence_id": "a"}, {"sequence_id": "b"}]
 
     gathered = _temporal_window_features_for_batch(
         rows=rows,
-        start_index=1,
+        start_index=2398,
         all_features=features,
         offsets=[-1, 0, 2],
     )
@@ -99,8 +99,8 @@ def test_temporal_window_features_gathers_tensor_cache_without_row_boxing():
     assert tuple(gathered.shape) == (2, 3, 3)
     expected = torch.stack(
         [
-            torch.stack([features[0], features[1], features[3]], dim=0),
-            torch.stack([features[1], features[2], features[4]], dim=0),
+            torch.stack([features[2397], features[2398], features[2400]], dim=0),
+            torch.stack([features[2398], features[2399], features[2401]], dim=0),
         ],
         dim=0,
     )

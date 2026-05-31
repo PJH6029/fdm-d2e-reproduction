@@ -1,0 +1,77 @@
+Traceback (most recent call last):
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/predict_idm_temporal_masked_diffusion.py", line 390, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/predict_idm_temporal_masked_diffusion.py", line 366, in main
+    summary = predict_temporal_masked_diffusion_idm(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/scripts/predict_idm_temporal_masked_diffusion.py", line 179, in predict_temporal_masked_diffusion_idm
+    probability_rows = _collect_temporal_probability_rows(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 3431, in _collect_temporal_probability_rows
+    final_probs, _predicted_ids, event_probabilities = _temporal_final_probabilities(
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 2367, in _temporal_final_probabilities
+    window_features = _temporal_window_features_for_batch(rows=rows, start_index=start_index, all_features=all_features, offsets=offsets)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/ddn/prod-runs/jeonghunpark/code/continuous-gui-poc/fdm-d2e-reproduction/src/fdm_d2e/training/temporal_masked_diffusion_idm_trainer.py", line 2180, in _temporal_window_features_for_batch
+    gathered = all_features.index_select(0, index_tensor)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IndexError: index out of range in self
+{
+  "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary.json",
+  "observed": {
+    "keyboard_key_accuracy": null,
+    "mouse_button_accuracy": null,
+    "mouse_button_f1": null,
+    "mouse_move_pearson_x": null,
+    "mouse_move_pearson_y": null,
+    "no_button_false_positive_rate": null
+  },
+  "status": "fail"
+}
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: pjh6029 (pjh6029-seoul-national-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run mwvyc1jf
+wandb: Tracking run with wandb version 0.27.0
+wandb: Run data is saved locally in outputs/wandb/wandb/run-20260531_094940-mwvyc1jf
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k
+wandb: ⭐️ View project at https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction
+wandb: 🚀 View run at https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/mwvyc1jf
+wandb: updating run metadata; uploading artifact g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k-evidence
+wandb: uploading artifact g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k-evidence
+wandb: uploading wandb-metadata.json; uploading requirements.txt; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading history steps 0-0, summary
+wandb: 
+wandb: Run history:
+wandb:                                         g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/exit_code ▁
+wandb:         g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/keyboard_key_accuracy ▁
+wandb:         g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/mouse_button_accuracy ▁
+wandb:       g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/mouse_button_f1_nonzero ▁
+wandb:          g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/mouse_move_pearson_x ▁
+wandb:          g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/mouse_move_pearson_y ▁
+wandb: g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/no_button_false_positive_rate ▁
+wandb:               g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_targets/keyboard_key_accuracy ▁
+wandb:               g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_targets/mouse_button_accuracy ▁
+wandb:         g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_targets/mouse_button_f1_min_nonzero ▁
+wandb:                                                                                                                                                                                     +3 ...
+wandb: 
+wandb: Run summary:
+wandb:                                         g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/exit_code 1
+wandb:         g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/keyboard_key_accuracy 0
+wandb:         g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/mouse_button_accuracy 0
+wandb:       g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/mouse_button_f1_nonzero 0
+wandb:          g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/mouse_move_pearson_x 0
+wandb:          g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/mouse_move_pearson_y 0
+wandb: g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_target_passes/no_button_false_positive_rate 0
+wandb:               g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_targets/keyboard_key_accuracy 0.73
+wandb:               g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_targets/mouse_button_accuracy 0.957
+wandb:         g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k_compact_summary/paper_targets/mouse_button_f1_min_nonzero 0.0
+wandb:                                                                                                                                                                                     +3 ...
+wandb: 
+wandb: 🚀 View run g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_source_m101_fast256_predict24k at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/mwvyc1jf
+wandb: ⭐️ View project at: https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction
+wandb: Synced 4 W&B file(s), 0 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: outputs/wandb/wandb/run-20260531_094940-mwvyc1jf/logs
+{"status": "partial", "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/mwvyc1jf"}
