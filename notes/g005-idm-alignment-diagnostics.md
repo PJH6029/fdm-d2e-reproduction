@@ -1645,3 +1645,18 @@ Observed paper-compatible metrics over the 24k balanced target:
 - split highlights: temporal key `0.6468129571577848`, temporal Pearson X/Y `0.8763048568429475` / `0.7586018756294395`; heldout-recording key `0.45375494071146244`, button `0.29797979797979796`; heldout-game key `0.16842105263157894`, button `0.7101449275362319`, Pearson X/Y `0.9275568385444877` / `0.9190754972130755`.
 
 Conclusion: this is a useful 4×H200 FDM-1-shaped negative probe, but it does **not** complete `G005-g014-idm-full-paper-target`. It fixes no-button FPR and improves some motion splits, but still misses paper targets for key accuracy, mouse-button accuracy, and both all-split motion Pearson targets. The next IDM branch should not continue pure scale-up alone; it needs a split-aware candidate ranking/temporal-state correction that preserves the low FPR while increasing recall/key generalization, especially heldout-recording and heldout-game keyboard.
+
+## 2026-05-31 KST — train-stratified calibration sweeps rejected
+
+Ran prediction-only train-heldout stratified calibration sweeps from the 4xH200 `statectx_train320k_target24k` checkpoint on reservation `rsv-jeonghunpark-20260531-852586` (1xH200, Node 6). A continuation reservation `rsv-jeonghunpark-20260531-903229` was pre-scheduled for expiry risk and cancelled unused after terminal evidence. Both reservations have safe cancelled artifacts; the primary pod was deleted after completion.
+
+Evidence:
+
+- Chain summary: `artifacts/idm/g005_statectx_train320k_stratcal_sweeps_summary.json` (`status=nonterminal_negative_probe`).
+- Rejection record: `artifacts/idm/g005_statectx_train320k_stratcal_sweeps_rejection.json`.
+- GPU monitor: `artifacts/idm/g005_statectx_train320k_stratcal_sweeps_gpu_monitor.csv`.
+- W&B: noadapt `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/t0xcy3r6`; adapt-relaxed `https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/ybepdc24`.
+
+Best variant is `stratcal_noadapt`: keyboard key accuracy `0.507053`, mouse-button accuracy `0.690722`, strict mouse-button F1 `0.801778`, mouse Pearson X/Y `0.623534/0.664550`, and no-button FPR `0.004349`. This preserves the low-FPR property and materially improves button F1 over the uncalibrated 320k probe, but it still misses D2E paper targets for keyboard accuracy (`0.73`), mouse-button accuracy (`0.957`), and mouse Pearson X/Y (`0.796/0.783`). `stratcal_adapt_relaxed` is worse on button accuracy/F1 and has the same keyboard/motion limits.
+
+Conclusion: reject calibration-only promotion. G005 remains incomplete and must not be checkpointed. Keep the noadapt calibration lesson, but the next branch must change underlying recipe-shaped representation/objective or split-safe teacher/curriculum for keyboard and mouse motion instead of more threshold-only sweeps.

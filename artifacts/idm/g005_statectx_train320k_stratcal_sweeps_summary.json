@@ -1,0 +1,56 @@
+{
+  "claim_boundary": "Prediction-only stratified calibration sweeps from a prior 4xH200 checkpoint; not G005 completion evidence unless paper targets pass and follow-up audits/checkpointing succeed.",
+  "finished_at": "2026-05-31T04:58:35+00:00",
+  "gpu_monitor": "artifacts/idm/g005_statectx_train320k_stratcal_sweeps_gpu_monitor.csv",
+  "repo_head": "f8148fc",
+  "reservation_id": "rsv-jeonghunpark-20260531-852586",
+  "schema": "g005_statectx_train320k_stratcal_sweeps_summary.v1",
+  "started_at": "2026-05-31T03:18:12+00:00",
+  "status": "nonterminal_negative_probe",
+  "variants": [
+    {
+      "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k_compact_summary.json",
+      "exit_code": 0,
+      "model_slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k",
+      "observed": {
+        "keyboard_key_accuracy": 0.5070531400966184,
+        "mouse_button_accuracy": 0.6907216494845361,
+        "mouse_button_f1": 0.8017777777777778,
+        "mouse_move_pearson_x": 0.6235339427480717,
+        "mouse_move_pearson_y": 0.6645501092688513,
+        "no_button_false_positive_rate": 0.004349123779473841
+      },
+      "passes": {
+        "keyboard_key_accuracy": false,
+        "mouse_button_accuracy": false,
+        "mouse_button_f1_nonzero": true,
+        "mouse_move_pearson_x": false,
+        "mouse_move_pearson_y": false,
+        "no_button_false_positive_rate": true
+      },
+      "status": "nonterminal_negative_probe"
+    },
+    {
+      "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_adapt_relaxed_predict24k_compact_summary.json",
+      "exit_code": 0,
+      "model_slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_adapt_relaxed_predict24k",
+      "observed": {
+        "keyboard_key_accuracy": 0.5070531400966184,
+        "mouse_button_accuracy": 0.6118881118881119,
+        "mouse_button_f1": 0.743047830923248,
+        "mouse_move_pearson_x": 0.6235339427480717,
+        "mouse_move_pearson_y": 0.6645501092688513,
+        "no_button_false_positive_rate": 0.0
+      },
+      "passes": {
+        "keyboard_key_accuracy": false,
+        "mouse_button_accuracy": false,
+        "mouse_button_f1_nonzero": true,
+        "mouse_move_pearson_x": false,
+        "mouse_move_pearson_y": false,
+        "no_button_false_positive_rate": true
+      },
+      "status": "nonterminal_negative_probe"
+    }
+  ]
+}

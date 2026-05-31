@@ -1,0 +1,108 @@
+{
+  "claim_boundary": "Prediction-only train-heldout stratified calibration sweeps from an existing 4xH200 checkpoint. This is negative evidence only; it does not complete G005 and uses no target-label calibration.",
+  "created_at": "2026-05-31T05:15:37.887460+00:00",
+  "decision": {
+    "checkpoint_g005": false,
+    "promote_to_full_g005": false,
+    "reason": "The noadapt sweep preserves low no-button FPR and improves mouse-button F1, but both variants still miss keyboard accuracy, paper mouse-button accuracy, and both mouse-motion Pearson targets.",
+    "reject": true
+  },
+  "goal_id": "G005-g014-idm-full-paper-target",
+  "next_branch_guidance": [
+    "Keep train-heldout stratified noadapt calibration as useful mouse-button/FPR evidence, not as completion evidence.",
+    "Do not continue threshold-only/adapt-relaxed calibration sweeps; the ranking/model representation is the bottleneck.",
+    "Next recipe-faithful IDM branch should improve keyboard and mouse-motion scoring/tokenization while preserving FPR <= 0.10, likely via better sequence-state or teacher-assisted masked-action-token training rather than target-label calibration."
+  ],
+  "reservation_evidence": {
+    "chain_summary": "artifacts/idm/g005_statectx_train320k_stratcal_sweeps_summary.json",
+    "continuation_cancelled_unused": "artifacts/mlxp/g005_statectx_train320k_stratcal_predict_after_cancel_rsv-jeonghunpark-20260531-903229.safe.json",
+    "gpu_monitor": "artifacts/idm/g005_statectx_train320k_stratcal_sweeps_gpu_monitor.csv",
+    "launch_context": "artifacts/cluster/g005_statectx_train320k_stratcal_sweeps_launch_context.json",
+    "primary": "artifacts/mlxp/g005_statectx_train320k_stratcal_predict_after_cancel_rsv-jeonghunpark-20260531-852586.safe.json"
+  },
+  "schema": "g005_idm_stratified_calibration_rejection.v1",
+  "source_checkpoint": "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_train320k_target24k/checkpoint.pt",
+  "status": "rejected_no_variant_meets_paper_targets",
+  "variants": [
+    {
+      "calibration_rows": 2400,
+      "calibration_strategy": "stratified_action",
+      "evidence": {
+        "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k_compact_summary.json",
+        "paper_metrics": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k_paper_metrics.json",
+        "resolved_config": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k_resolved_config.json",
+        "summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k_summary.json",
+        "wandb_status": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k_wandb_status.json"
+      },
+      "fit_rows": 317600,
+      "paper_target_observed": {
+        "keyboard_key_accuracy": 0.5070531400966184,
+        "mouse_button_accuracy": 0.6907216494845361,
+        "mouse_button_f1": 0.8017777777777778,
+        "mouse_move_pearson_x": 0.6235339427480717,
+        "mouse_move_pearson_y": 0.6645501092688513,
+        "no_button_false_positive_rate": 0.004349123779473841
+      },
+      "paper_target_passes": {
+        "keyboard_key_accuracy": false,
+        "mouse_button_accuracy": false,
+        "mouse_button_f1_nonzero": true,
+        "mouse_move_pearson_x": false,
+        "mouse_move_pearson_y": false,
+        "no_button_false_positive_rate": true
+      },
+      "paper_targets": {
+        "keyboard_key_accuracy": 0.73,
+        "mouse_button_accuracy": 0.957,
+        "mouse_button_f1_min_nonzero": 1e-12,
+        "mouse_move_pearson_x": 0.796,
+        "mouse_move_pearson_y": 0.783,
+        "no_button_false_positive_rate_max": 0.1
+      },
+      "slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_noadapt_predict24k",
+      "status": "nonterminal_negative_probe",
+      "target_rows": 24000,
+      "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/t0xcy3r6"
+    },
+    {
+      "calibration_rows": 2400,
+      "calibration_strategy": "stratified_action",
+      "evidence": {
+        "compact_summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_adapt_relaxed_predict24k_compact_summary.json",
+        "paper_metrics": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_adapt_relaxed_predict24k_paper_metrics.json",
+        "resolved_config": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_adapt_relaxed_predict24k_resolved_config.json",
+        "summary": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_adapt_relaxed_predict24k_summary.json",
+        "wandb_status": "artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_adapt_relaxed_predict24k_wandb_status.json"
+      },
+      "fit_rows": 317600,
+      "paper_target_observed": {
+        "keyboard_key_accuracy": 0.5070531400966184,
+        "mouse_button_accuracy": 0.6118881118881119,
+        "mouse_button_f1": 0.743047830923248,
+        "mouse_move_pearson_x": 0.6235339427480717,
+        "mouse_move_pearson_y": 0.6645501092688513,
+        "no_button_false_positive_rate": 0.0
+      },
+      "paper_target_passes": {
+        "keyboard_key_accuracy": false,
+        "mouse_button_accuracy": false,
+        "mouse_button_f1_nonzero": true,
+        "mouse_move_pearson_x": false,
+        "mouse_move_pearson_y": false,
+        "no_button_false_positive_rate": true
+      },
+      "paper_targets": {
+        "keyboard_key_accuracy": 0.73,
+        "mouse_button_accuracy": 0.957,
+        "mouse_button_f1_min_nonzero": 1e-12,
+        "mouse_move_pearson_x": 0.796,
+        "mouse_move_pearson_y": 0.783,
+        "no_button_false_positive_rate_max": 0.1
+      },
+      "slug": "g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_train320k_stratcal_adapt_relaxed_predict24k",
+      "status": "nonterminal_negative_probe",
+      "target_rows": 24000,
+      "wandb_run_url": "https://wandb.ai/pjh6029-seoul-national-university/fdm-d2e-reproduction/runs/ybepdc24"
+    }
+  ]
+}
