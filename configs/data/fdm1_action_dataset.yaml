@@ -1,0 +1,18 @@
+{
+  "schema": "fdm1_action_dataset_materialization_config.v1",
+  "canonical_roadmap": "ROADMAP.md",
+  "input_records": [
+    "outputs/data/d2e_full_corpus/all_records.jsonl"
+  ],
+  "output_dir": "outputs/data/fdm1_action_slots",
+  "tokenization_config": "configs/tokenization/fdm1_action_slots.json",
+  "bin_ms": 50,
+  "frame_fps": 20,
+  "k_event_slots": 8,
+  "click_horizon_seconds": 1.0,
+  "click_grid_width": 32,
+  "click_grid_height": 18,
+  "screen_width": 854,
+  "screen_height": 480,
+  "claim_boundary": "G003 materializes action-slot datasets from decoded D2E window records; it does not claim model training or metric wins."
+}

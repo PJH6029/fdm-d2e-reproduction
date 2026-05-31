@@ -221,6 +221,7 @@ def bin_events(events: Sequence[dict[str, Any]], *, bin_ms: int = 50, start_ns: 
 class ActionSlotTokenizer:
     k_event_slots: int = 8
     mouse_binner: MouseMoveBinner = field(default_factory=MouseMoveBinner)
+    bin_ms: int = 50
 
     def serialize_bin(self, events: Sequence[dict[str, Any]]) -> dict[str, Any]:
         dx = 0.0
@@ -245,7 +246,7 @@ class ActionSlotTokenizer:
         action_tokens = self.mouse_binner.tokenize(dx, dy) + event_slots
         return {
             "schema": "fdm1_action_slots.v1",
-            "bin_ms": 50,
+            "bin_ms": int(self.bin_ms),
             "k_event_slots": self.k_event_slots,
             "mouse_dx_sum": dx,
             "mouse_dy_sum": dy,
