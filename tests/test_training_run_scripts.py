@@ -271,6 +271,37 @@ def test_g005_realvideo_raw96_train320k_uses_distributed_feature_cache() -> None
     assert "distributed raw-frame feature cache" in config["claim_boundary"]
 
 
+def test_g005_statectx_candidate_reranker_is_prediction_only_and_split_safe() -> None:
+    text = _script("scripts/run_g005_idm_temporal_raw96_statectx_reranker_predict24k.sh")
+    config = json.loads(
+        (
+            ROOT
+            / "configs/model/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_reranker_predict24k.yaml"
+        ).read_text()
+    )
+
+    assert "scripts/predict_idm_temporal_masked_diffusion.py" in text
+    assert "scripts/log_wandb_artifacts.py" in text
+    assert "statectx_prefix32k" in text
+    assert 'CHECKPOINT="${CHECKPOINT:-$BASE_OUTPUT_DIR/checkpoint.pt}"' in text
+    assert "prediction-reranker" in text
+    assert "paper_target_pass" in text
+    assert "not G005 completion evidence" in text
+    assert "torchrun" not in text
+    assert config["source_checkpoint"] == (
+        "outputs/idm_temporal_masked_diffusion_d2e_raw96_patch_axisclass_realvideo_statectx_prefix32k/checkpoint.pt"
+    )
+    assert config["target_records"] == (
+        "outputs/data/d2e_event_state_duration_realvideo_balanced_mouseagg_prefix32k/target_all_eval.jsonl"
+    )
+    assert config["candidate_score_reranker_enabled"] is True
+    assert config["candidate_score_reranker_blend"] == 1.0
+    assert config["candidate_score_reranker_epochs"] == 300
+    assert config["candidate_score_reranker_max_examples_per_family"] == 240000
+    assert "candidate_score_reranker" in config["fdm1_recipe_alignment"]
+    assert "target-label calibration" in config["fdm1_recipe_alignment"]["candidate_score_reranker"]["claim_boundary"]
+
+
 def test_g005_compact_luma_window5_materializes_nep_context_before_training() -> None:
     text = _script("scripts/run_g005_idm_compact_luma_window5_4xh200.sh")
     config = json.loads((ROOT / "configs/model/idm_streaming_d2e_full_compact_luma_window5_paper_target.yaml").read_text())
