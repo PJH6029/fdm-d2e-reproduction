@@ -1565,3 +1565,34 @@ unpublished details of FDM-1 IDM sequence conditioning, not an FDM-1 parity
 claim. Run it as a bounded prefix gate first; do not checkpoint
 `G005-g014-idm-full-paper-target` unless paper-target metrics pass and later
 full-corpus completion/audit evidence exists.
+
+## 2026-05-31 KST — state-context prefix32k probe rejected
+
+Bounded 4xH200 state-context masked-IDM probe ran on reservation
+`rsv-jeonghunpark-20260531-11e337` (Node 6 GPU 0-3) from commit `1376151`.
+It reused the existing `d2e_event_state_duration_realvideo_balanced_mouseagg_prefix32k`
+train/target rows, built rank-sharded raw-video feature caches for fit,
+calibration, and target, then trained the FDM-1-recipe noncausal temporal masked
+action-token IDM with split-safe prior action-state context appended to the raw
+screen-video tokens. W&B sidecar completed (`run_id=c31gqkl6`); reservation was
+cancelled at 2026-05-31 09:56 KST after terminal evidence copy.
+
+Terminal compact summary:
+`artifacts/idm/g005_idm_temporal_masked_diffusion_raw96_patch_axisclass_realvideo_statectx_prefix32k_h200_compact_summary.json`
+status `nonterminal_negative_probe`. Observed all-split paper-compatible metrics:
+keyboard key accuracy `0.2655554141748314`, mouse-button accuracy
+`0.24516129032258063`, strict mouse-button F1 `0.35514018691588783`, mouse-move
+Pearson X/Y `0.505477143904009` / `0.2932998526999713`, and no-button FPR
+`0.0013644309896388522`. Split-level no-button FPR is comfortably below the
+renewed 0.10 gate, and keyboard/button metrics improved over the held-state and
+mouse-aggregate probes, but the run is still far below D2E paper/repo G-IDM
+targets (`keyboard>=0.73`, `mouse-button-accuracy>=0.957`,
+`mouse Pearson X/Y>=0.796/0.783`).
+
+This rejects prior-action state context as a standalone G005 solution. The
+result is useful because it is the first recent masked-diffusion branch with
+nonzero keyboard/button recovery while keeping false positives controlled, but
+it still does not justify full-corpus promotion or any G005 checkpoint. Next
+branch should preserve this context and move to a stronger split-safe teacher or
+curriculum/distillation signal for token ranking/counts, rather than another
+threshold-only decoder patch.
