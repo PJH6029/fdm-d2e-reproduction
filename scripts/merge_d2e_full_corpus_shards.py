@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import json
 import sys
 from pathlib import Path
@@ -15,6 +16,23 @@ from fdm_d2e.io_utils import stable_hash_json, write_json
 
 def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text())
+
+
+def _parse_shard_index(path: Path) -> int | None:
+    prefix = "shard_"
+    if not path.name.startswith(prefix):
+        return None
+    suffix = path.name[len(prefix) :]
+    if not suffix.isdigit():
+        return None
+    return int(suffix)
+
+
+def _shard_sort_key(path: Path) -> tuple[int, int, str]:
+    index = _parse_shard_index(path)
+    if index is None:
+        return (1, 10**9, path.name)
+    return (0, index, path.name)
 
 
 def _concat_jsonl(inputs: list[Path], output: Path) -> int:
@@ -48,13 +66,58 @@ def _first_non_empty(summaries: list[dict[str, Any]], key: str) -> Any:
     return None
 
 
-def merge_shards(*, shard_root: str | Path, output_dir: str | Path, summary_out: str | Path) -> dict[str, Any]:
+def merge_shards(
+    *,
+    shard_root: str | Path,
+    output_dir: str | Path,
+    summary_out: str | Path,
+    expected_shards: int | None = None,
+) -> dict[str, Any]:
     shard_root_path = Path(shard_root)
-    shard_dirs = sorted(path for path in shard_root_path.glob("shard_*") if path.is_dir())
+    shard_dirs = sorted(
+        (path for path in shard_root_path.glob("shard_*") if path.is_dir()),
+        key=_shard_sort_key,
+    )
     if not shard_dirs:
         raise ValueError(f"no shard directories found under {shard_root_path}")
     shard_pairs: list[tuple[Path, dict[str, Any]]] = []
     failures: list[dict[str, Any]] = []
+    shard_indices = [_parse_shard_index(path) for path in shard_dirs]
+    invalid_shards = [
+        path.name
+        for path, index in zip(shard_dirs, shard_indices, strict=True)
+        if index is None
+    ]
+    if invalid_shards:
+        failures.append(
+            {
+                "shard": "merge",
+                "error": "invalid_shard_names",
+                "invalid_shards": invalid_shards,
+            }
+        )
+    if expected_shards is not None:
+        expected_count = int(expected_shards)
+        expected_indices = list(range(expected_count))
+        actual_indices = [index for index in shard_indices if index is not None]
+        duplicates = sorted(
+            index for index, count in Counter(actual_indices).items() if count > 1
+        )
+        missing = [idx for idx in expected_indices if idx not in actual_indices]
+        extra = sorted(idx for idx in actual_indices if idx not in expected_indices)
+        if missing or extra or duplicates or len(shard_dirs) != expected_count or invalid_shards:
+            failures.append(
+                {
+                    "shard": "merge",
+                    "error": "shard_coverage_mismatch",
+                    "expected_shards": expected_count,
+                    "actual_shards": len(shard_dirs),
+                    "missing_indices": missing,
+                    "extra_indices": extra,
+                    "duplicate_indices": duplicates,
+                    "invalid_shards": invalid_shards,
+                }
+            )
     for shard_dir in shard_dirs:
         summary_path = shard_dir / "decode_summary.json"
         if not summary_path.exists():
@@ -89,6 +152,11 @@ def merge_shards(*, shard_root: str | Path, output_dir: str | Path, summary_out:
         "fdm1_split_manifests": fdm1_split_manifests,
         "shard_root": str(shard_root_path),
         "num_shards": len(shard_dirs),
+        "expected_shards": expected_shards,
+        "shard_indices": [
+            {"name": path.name, "index": index}
+            for path, index in zip(shard_dirs, shard_indices, strict=True)
+        ],
         "selected_recording_variants": selected,
         "source_ids": _union_list(shard_summaries, "source_ids"),
         "resolution_tiers": _union_list(shard_summaries, "resolution_tiers"),
@@ -129,9 +197,15 @@ def main() -> None:
     parser.add_argument("--shard-root", default="outputs/data/d2e_full_corpus_shards")
     parser.add_argument("--output-dir", default="outputs/data/d2e_full_corpus")
     parser.add_argument("--summary-out", default="artifacts/sources/d2e_full_corpus_decode_summary.json")
+    parser.add_argument("--expected-shards", type=int)
     args = parser.parse_args()
     try:
-        summary = merge_shards(shard_root=args.shard_root, output_dir=args.output_dir, summary_out=args.summary_out)
+        summary = merge_shards(
+            shard_root=args.shard_root,
+            output_dir=args.output_dir,
+            summary_out=args.summary_out,
+            expected_shards=args.expected_shards,
+        )
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
     print(

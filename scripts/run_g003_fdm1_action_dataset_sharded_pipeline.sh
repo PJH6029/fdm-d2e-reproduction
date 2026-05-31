@@ -110,7 +110,8 @@ PY
 uv run python scripts/merge_d2e_full_corpus_shards.py \
   --shard-root "$SHARD_ROOT" \
   --output-dir "$MERGED_OUTPUT_DIR" \
-  --summary-out "$DECODE_SUMMARY"
+  --summary-out "$DECODE_SUMMARY" \
+  --expected-shards "$NUM_SHARDS"
 
 uv run python scripts/finalize_g003_fdm1_action_dataset.py \
   --config configs/data/fdm1_g003_action_dataset_finalization.yaml \

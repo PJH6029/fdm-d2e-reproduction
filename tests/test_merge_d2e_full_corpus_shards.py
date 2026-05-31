@@ -47,15 +47,69 @@ def test_merge_shards_preserves_fdm1_metadata_for_completion_audit(tmp_path: Pat
     shard_root = tmp_path / "shards"
     _write_shard(shard_root, 0)
     _write_shard(shard_root, 1)
-    summary = merge_shards(shard_root=shard_root, output_dir=tmp_path / "merged", summary_out=tmp_path / "summary.json")
+    summary = merge_shards(
+        shard_root=shard_root,
+        output_dir=tmp_path / "merged",
+        summary_out=tmp_path / "summary.json",
+        expected_shards=2,
+    )
     assert summary["split_mode"] == "fdm1-g002"
     assert summary["source_ids"] == ["d2e_480p"]
     assert summary["resolution_tiers"] == ["480p"]
+    assert summary["expected_shards"] == 2
+    assert summary["shard_indices"] == [
+        {"name": "shard_0", "index": 0},
+        {"name": "shard_1", "index": 1},
+    ]
     assert summary["selected_recording_variants"] == 2
     assert summary["counts"]["all"] == 2
     assert summary["counts"]["train_core"] == 1
     assert summary["counts"]["target_all_eval"] == 1
     assert summary["fdm1_split_manifests"] == {"recording_level_split": "recording.json"}
+
+
+def test_merge_shards_uses_numeric_shard_order_for_jsonl_concat(tmp_path: Path):
+    shard_root = tmp_path / "shards"
+    _write_shard(shard_root, 10)
+    _write_shard(shard_root, 2)
+    _write_shard(shard_root, 0)
+    output_dir = tmp_path / "merged"
+    summary = merge_shards(
+        shard_root=shard_root,
+        output_dir=output_dir,
+        summary_out=tmp_path / "summary.json",
+    )
+    assert [item["index"] for item in summary["shard_indices"]] == [0, 2, 10]
+    all_rows = [
+        json.loads(line)
+        for line in split_output_paths(output_dir)["all"].read_text().splitlines()
+        if line.strip()
+    ]
+    assert [row["recording_id"] for row in all_rows] == [
+        "d2e_480p:Toy/rec0",
+        "d2e_480p:Toy/rec2",
+        "d2e_480p:Toy/rec10",
+    ]
+
+
+def test_merge_shards_records_expected_shard_coverage_failure(tmp_path: Path):
+    shard_root = tmp_path / "shards"
+    _write_shard(shard_root, 0)
+    _write_shard(shard_root, 2)
+    summary = merge_shards(
+        shard_root=shard_root,
+        output_dir=tmp_path / "merged",
+        summary_out=tmp_path / "summary.json",
+        expected_shards=3,
+    )
+    coverage_failures = [
+        item
+        for item in summary["failures"]
+        if item.get("error") == "shard_coverage_mismatch"
+    ]
+    assert coverage_failures
+    assert coverage_failures[0]["missing_indices"] == [1]
+    assert coverage_failures[0]["actual_shards"] == 2
 
 
 def test_merge_shards_records_mixed_split_mode_failure(tmp_path: Path):
@@ -80,6 +134,8 @@ def test_merge_shards_cli_writes_summary(tmp_path: Path):
             str(tmp_path / "merged"),
             "--summary-out",
             str(tmp_path / "summary.json"),
+            "--expected-shards",
+            "1",
         ],
         check=True,
         text=True,
